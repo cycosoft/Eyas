@@ -26,7 +26,7 @@ setupServer()
 	// then create the UI
 	.then(() => {
 		console.log(`whenReady ()`, 0);
-		createWindow();
+		startApplication();
 		console.log(`whenReady ()`, 1);
 
 		// On macOS it`s common to re-create a window in the app when the
@@ -35,7 +35,7 @@ setupServer()
 			console.log(`activate ()`, 0);
 			if (BrowserWindow.getAllWindows().length === 0) {
 				console.log(`activate ()`, 1);
-				createWindow();
+				startApplication();
 			}
 		});
 	});
@@ -94,10 +94,10 @@ function setMenu () {
 	console.log(`setMenu ()`, 1);
 
 	// Add the menu items from the config
-	config.menu.forEach(item => menuTemplate.push({
-		label: item.label,
-		click: () => navigate(item.url)
-	}));
+	// config.menu.forEach(item => menuTemplate.push({
+	// 	label: item.label,
+	// 	click: () => navigate(item.url)
+	// }));
 	console.log(`setMenu ()`, 2);
 
 	// Set the modified menu as the application menu
@@ -117,23 +117,23 @@ function navigate (url, external) {
 }
 
 // Configure and create an instance of BrowserWindow to display the UI
-function createWindow () {
-	console.log(`createWindow ()`, 0);
+function startApplication () {
+	console.log(`startApplication ()`, 0);
 	// Create the browser window
 	clientWindow = new BrowserWindow(windowConfig);
-	console.log(`createWindow ()`, 1);
+	console.log(`startApplication ()`, 1);
 
 	// Prevent the title from changing
-	clientWindow.on(`page-title-updated`, (evt) => evt.preventDefault());
-	console.log(`createWindow ()`, 2);
+	// clientWindow.on(`page-title-updated`, (evt) => evt.preventDefault());
+	console.log(`startApplication ()`, 2);
 
 	// Create a menu template
-	setMenu();
-	console.log(`createWindow ()`, 3);
+	// setMenu();
+	console.log(`startApplication ()`, 3);
 
 	// Load the index.html of the app
-	navigate(appUrl);
-	console.log(`createWindow ()`, 4);
+	// navigate(appUrl);
+	console.log(`startApplication ()`, 4);
 }
 
 // Set up Express to serve files from dist/
