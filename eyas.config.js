@@ -6,5 +6,5 @@ module.exports = {
 	appTitle: `Demo App`,
 	appWidth: 1024,
 	appHeight: 768,
-	menu: []
+	menu: [{ label: `Cycosoft.com`, url: `https://cycosoft.com`, external: true }]
 };
