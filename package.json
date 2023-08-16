@@ -1,0 +1,12 @@
+{
+  "name": "eyas",
+  "version": "0.1.0",
+  "description": "A \"shift-left\" testing solution for static web applications",
+  "main": "eyas.js",
+  "scripts": {
+    "dev": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Cycosoft, LLC",
+  "license": "ISC"
+}
