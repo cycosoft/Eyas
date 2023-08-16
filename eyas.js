@@ -6,11 +6,9 @@ const serverLayer = require(`https`);
 const mkcert = require(`mkcert`);
 const config = require(`./eyas.config.js`);
 
-// TODO manage config defaults
-
 // config
 const appTitle = `Eyas`;
-const serverPort = config.port;
+const serverPort = config.serverPort;
 const appUrl = config.appUrl || `https://localhost:${serverPort}`;
 const windowConfig = {
 	width: config.appWidth,
@@ -109,14 +107,14 @@ function startApplication () {
 	// Create the browser window
 	clientWindow = new BrowserWindow(windowConfig);
 
-	// Prevent the title from changing
-	clientWindow.on(`page-title-updated`, (evt) => evt.preventDefault());
-
 	// Create a menu template
 	setMenu();
 
+	// Prevent the title from changing
+	clientWindow.on(`page-title-updated`, (evt) => evt.preventDefault());
+
 	// Load the index.html of the app
-	// navigate(appUrl);
+	navigate(appUrl);
 }
 
 // Set up Express to serve files from dist/
@@ -154,7 +152,7 @@ async function setupServer () {
 
 // SSL/TSL: this is the self signed certificate support
 electronLayer.on('certificate-error', (event, webContents, url, error, certificate, callback) => {
-	// On certificate error we disable default behaviour (stop loading the page)
+	// On certificate error we disable default behavior (stop loading the page)
 	// and we then say "it is all fine - true" to the callback
 	event.preventDefault();
 	callback(true);
