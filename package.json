@@ -5,16 +5,29 @@
   "publishConfig": {
     "access": "public"
   },
-  "main": "eyas.js",
-  "scripts": {
-    "dev": "npm i && npm-check -u && electron --trace-warnings ."
+  "main": "index.js",
+  "bin": {
+    "eyas": "./index.js"
   },
-  "author": "Cycosoft, LLC",
+  "scripts": {
+    "start": "electron index.js",
+    "dev": "npm i && npm-check -u && npm run start"
+  },
+  "author": "Cycosoft, LLC (https://cycosoft.com)",
+  "homepage": "https://cycosoft.com",
   "license": "ISC",
+  "keywords": [
+    "testing",
+    "static",
+    "web",
+    "applications"
+  ],
   "devDependencies": {
+    "npm-check": "^6.0.1"
+  },
+  "dependencies": {
     "electron": "^26.0.0",
     "express": "^4.18.2",
-    "mkcert": "^1.5.1",
-    "npm-check": "^6.0.1"
+    "mkcert": "^1.5.1"
   }
 }
