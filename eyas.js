@@ -86,7 +86,7 @@ function setMenu () {
 	];
 
 	// Add the menu items from the config
-	config.menuTemplate.forEach((item) => menuTemplate.push({
+	config.menu.forEach(item => menuTemplate.push({
 		label: item.label,
 		click: () => navigate(item.url)
 	}));
