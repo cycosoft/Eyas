@@ -125,7 +125,7 @@ async function setupServer () {
 	expressLayer = express();
 
 	// Serve static files from dist/
-	expressLayer.use(express.static(path.join(__dirname, config.appInput)));
+	expressLayer.use(express.static(path.join(__dirname, config.testSourceDirectory)));
 
 	// create SSL certificate for the server
 	const ca = await mkcert.createCA({
