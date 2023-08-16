@@ -1,5 +1,5 @@
 module.exports = {
-	appInput: `dist`,
+	appInput: `demo`,
 	serverPort: 3000,
 	appUrl: null,
 	buildVersion: (process.env.CURRENT_BRANCH || `Unknown Source Branch`).trim(),
