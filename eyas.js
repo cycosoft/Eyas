@@ -54,7 +54,7 @@ function setMenu () {
 					type: `question`,
 					buttons: [`Yes`, `No`],
 					title: `Exit Confirmation`,
-					message: `Close the test?`
+					message: `Close Eyas?`
 				}).then((result) => {
 					// User clicked "Yes"
 					if (result.response === 0) {
