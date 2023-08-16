@@ -2,11 +2,13 @@
 
 // imports
 const { app: electronLayer, BrowserWindow, Menu, dialog, shell } = require(`electron`);
+console.log({electronLayer});
 const express = require(`express`);
 const path = require(`path`);
 const serverLayer = require(`https`);
 const mkcert = require(`mkcert`);
-const config = require(`./eyas.config.js`);
+const config = require(path.join(process.cwd(), 'eyas.config.js'));
+console.log({config});
 
 // config
 const appTitle = `Eyas`;
