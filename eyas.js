@@ -9,8 +9,8 @@ const config = require(`./eyas.config.js`);
 // TODO manage config defaults
 
 // config
-const localPort = config.port;
-const appUrl = config.appUrl;
+const serverPort = config.port;
+const appUrl = config.appUrl || `https://localhost:${serverPort}`;
 const windowConfig = {
 	width: config.appWidth,
 	height: config.appHeight,
@@ -167,7 +167,7 @@ async function setupServer () {
 	// Start the server
 	serverLayer
 		.createServer({ key: cert.key, cert: cert.cert }, expressLayer)
-		.listen(localPort);
+		.listen(serverPort);
 	console.log(`setupServer ()`, 4);
 
 	// Properly close the server when the app is closed

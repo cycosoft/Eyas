@@ -1,7 +1,7 @@
 module.exports = {
 	appInput: `dist`,
-	serverPort: 443,
-	appUrl: `https://localhost:443`,
+	serverPort: 3000,
+	appUrl: null,
 	buildVersion: (process.env.CURRENT_BRANCH || `Unknown Source Branch`).trim(),
 	appTitle: `Demo App`,
 	appWidth: 1024,
