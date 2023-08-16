@@ -9,12 +9,13 @@ const config = require(`./eyas.config.js`);
 // TODO manage config defaults
 
 // config
+const appTitle = `Eyas`;
 const serverPort = config.port;
 const appUrl = config.appUrl || `https://localhost:${serverPort}`;
 const windowConfig = {
 	width: config.appWidth,
 	height: config.appHeight,
-	title: `Eyas : ${config.appTitle} : ${config.buildVersion}`
+	title: `${appTitle} : ${config.appTitle} : ${config.buildVersion}`
 };
 let clientWindow = null;
 let expressLayer = null;
@@ -54,7 +55,7 @@ function setMenu () {
 					type: `question`,
 					buttons: [`Yes`, `No`],
 					title: `Exit Confirmation`,
-					message: `Close Eyas?`
+					message: `Close ${appTitle}?`
 				}).then((result) => {
 					// User clicked "Yes"
 					if (result.response === 0) {
