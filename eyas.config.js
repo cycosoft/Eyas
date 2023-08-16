@@ -3,7 +3,7 @@ module.exports = {
 	serverPort: 443,
 	appUrl: `https://localhost:443`,
 	buildVersion: (process.env.CURRENT_BRANCH || `Unknown Source Branch`).trim(),
-	appTitle: ``,
+	appTitle: `Demo App`,
 	appWidth: 1024,
 	appHeight: 768,
 	menu: []
