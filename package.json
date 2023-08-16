@@ -4,7 +4,7 @@
   "description": "A \"shift-left\" testing solution for static web applications",
   "main": "eyas.js",
   "scripts": {
-    "dev": "npm i && electron --trace-warnings ."
+    "dev": "npm i && npm-check -u && electron --trace-warnings ."
   },
   "author": "Cycosoft, LLC",
   "license": "ISC",
