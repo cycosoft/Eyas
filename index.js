@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 // imports
 const { app: electronLayer, BrowserWindow, Menu, dialog, shell } = require(`electron`);
 const express = require(`express`);
