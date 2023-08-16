@@ -13,7 +13,7 @@ const appUrl = config.appUrl || `https://localhost:${serverPort}`;
 const windowConfig = {
 	width: config.appWidth,
 	height: config.appHeight,
-	title: `${appTitle} : ${config.appTitle} : ${config.buildVersion || `Unspecified Build`}`.trim()
+	title: `${appTitle} : ${config.appTitle} : ${config.buildVersion || `Unspecified Build`} ✨`.trim()
 };
 let clientWindow = null;
 let expressLayer = null;
