@@ -4,7 +4,7 @@
   "description": "A \"shift-left\" testing solution for static web applications",
   "main": "eyas.js",
   "scripts": {
-    "dev": "electron ."
+    "dev": "electron --trace-warnings ."
   },
   "author": "Cycosoft, LLC",
   "license": "ISC",
