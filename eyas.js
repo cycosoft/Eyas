@@ -47,7 +47,7 @@ function setMenu () {
 	// Create a new menu template
 	const menuTemplate = [
 		{
-			label: `Exit`,
+			label: `🏃 Exit`,
 			click: () => {
 				dialog.showMessageBox({
 					type: `question`,
@@ -62,27 +62,26 @@ function setMenu () {
 				});
 			}
 		},
-		{ type: `separator` },
 		{
-			label: `Open Dev Tools`,
+			label: `🩻 DevTools`,
 			click: () => clientWindow.webContents.openDevTools()
 		},
-		{ type: `separator` },
 		{
-			label: `Test in App`,
+			label: `📦 Test in App`,
 			click: () => navigate(appUrl)
 		},
-		{ type: `separator` },
 		{
-			label: `Test in Browser`,
+			label: `🖥️ Test in Browser`,
 			click: () => navigate(appUrl, true)
 		},
-		{ type: `separator` },
 		{
-			label: `Reload Page`,
+			label: `♻️ Reload Page`,
 			click: () => clientWindow.webContents.reloadIgnoringCache()
 		}
 	];
+
+	// Add a separator if there are custom menu items
+	if(config.menu.length > 0) menuTemplate.push({ type: `separator` });
 
 	// Add the menu items from the config
 	config.menu.forEach(item => menuTemplate.push({
