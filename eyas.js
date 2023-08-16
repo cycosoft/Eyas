@@ -86,10 +86,10 @@ function setMenu () {
 	];
 
 	// Add the menu items from the config
-	// config.menu.forEach(item => menuTemplate.push({
-	// 	label: item.label,
-	// 	click: () => navigate(item.url)
-	// }));
+	config.menu.forEach(item => menuTemplate.push({
+		label: item.label,
+		click: () => navigate(item.url)
+	}));
 
 	// Set the modified menu as the application menu
 	Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate));
