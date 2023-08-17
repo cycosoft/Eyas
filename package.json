@@ -5,14 +5,14 @@
   "publishConfig": {
     "access": "public"
   },
-  "main": "index.js",
+  "main": "eyas-dist.js",
   "bin": {
-    "eyas": "./index.js"
+    "eyas": "./eyas-dist.js"
   },
   "scripts": {
-    "start": "electron index.js",
-    "dev": "npm i && npm-check -u && npm run start",
-    "bundle": "npm i && npm pack"
+    "start": "electron eyas-dist.js",
+    "dev": "npm i && npm-check -u && electron src/index.js",
+    "bundle": "npm ci && webpack && npm pack --dry-run"
   },
   "author": "Cycosoft, LLC (https://cycosoft.com)",
   "homepage": "https://cycosoft.com",
@@ -21,10 +21,18 @@
     "testing",
     "static",
     "web",
-    "applications"
+    "applications",
+    "server"
+  ],
+  "files": [
+    "eyas-dist.js",
+    "package.json",
+    "README.md"
   ],
   "devDependencies": {
-    "npm-check": "^6.0.1"
+    "npm-check": "^6.0.1",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4"
   },
   "dependencies": {
     "electron": "^26.0.0",
