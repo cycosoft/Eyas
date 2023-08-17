@@ -51,7 +51,7 @@ function setMenu () {
 	//build the default menu in MacOS style
 	const menuDefault = [
 		{
-			label: `Application`, //should never actually be visible
+			label: appTitle,
 			submenu: [
 				{
 					label: `🏃 Exit`,
