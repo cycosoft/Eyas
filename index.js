@@ -48,53 +48,70 @@ electronLayer.on(`window-all-closed`, () => {
 });
 
 function setMenu () {
-	// Create a new menu template
-	const menuTemplate = [
+	//build the default menu in MacOS style
+	const menuDefault = [
 		{
-			label: `🏃 Exit`,
-			click: () => {
-				dialog.showMessageBox({
-					type: `question`,
-					buttons: [`Yes`, `No`],
-					title: `Exit Confirmation`,
-					message: `Close ${appTitle}?`
-				}).then((result) => {
-					// User clicked "Yes"
-					if (result.response === 0) {
-						electronLayer.quit();
+			label: `Application`, //should never actually be visible
+			submenu: [
+				{
+					label: `🏃 Exit`,
+					click: () => {
+						dialog.showMessageBox({
+							type: `question`,
+							buttons: [`Yes`, `No`],
+							title: `Exit Confirmation`,
+							message: `Close ${appTitle}?`
+						}).then((result) => {
+							// User clicked "Yes"
+							if (result.response === 0) {
+								electronLayer.quit();
+							}
+						});
 					}
-				});
-			}
+				}
+			]
 		},
+
 		{
-			label: `🩻 DevTools`,
-			click: () => clientWindow.webContents.openDevTools()
-		},
-		{
-			label: `📦 Test in App`,
-			click: () => navigate(appUrl)
-		},
-		{
-			label: `🖥️ Test in Browser`,
-			click: () => navigate(appUrl, true)
-		},
-		{
-			label: `♻️ Reload Page`,
-			click: () => clientWindow.webContents.reloadIgnoringCache()
+			label: `🧪 Testing`,
+			submenu: [
+				{
+					label: `📦 Test in App`,
+					click: () => navigate(appUrl)
+				},
+				{ type: `separator` },
+				{
+					label: `🖥️ Test in Browser`,
+					click: () => navigate(appUrl, true)
+				},
+				{ type: `separator` },
+				{
+					label: `⚙️ DevTools`,
+					click: () => clientWindow.webContents.openDevTools()
+				},
+				{ type: `separator` },
+				{
+					label: `♻️ Reload Page`,
+					click: () => clientWindow.webContents.reloadIgnoringCache()
+				}
+			]
 		}
 	];
 
-	// Add a separator if there are custom menu items
-	if(config.menu.length > 0) menuTemplate.push({ type: `separator` });
-
 	// Add the menu items from the config
-	config.menu.forEach(item => menuTemplate.push({
-		label: item.label,
-		click: () => navigate(item.url, item.external)
-	}));
+	if(config.menu?.length){
+		//add a custom menu item
+		const finalIndex = menuDefault.push({ label: `💼 Custom`, submenu: [] }) - 1;
+
+		//push the custom items into the menu
+		config.menu.forEach(item => menuDefault[finalIndex].submenu.push({
+			label: item.label,
+			click: () => navigate(item.url, item.external)
+		}));
+	}
 
 	// Set the modified menu as the application menu
-	Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate));
+	Menu.setApplicationMenu(Menu.buildFromTemplate(menuDefault));
 }
 
 function navigate (url, external) {
