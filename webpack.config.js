@@ -1,4 +1,5 @@
 //imports
+const webpack = require('webpack');
 const path = require(`path`);
 const TerserPlugin = require('terser-webpack-plugin');
 
@@ -20,6 +21,10 @@ module.exports = {
 		//give more detauls on build warnings/errors
 		errorDetails: true
 	},
+
+	plugins: [
+		new webpack.BannerPlugin({ banner: "#!/usr/bin/env node", raw: true })
+	],
 
 	optimization: {
 		minimizer: [new TerserPlugin({
