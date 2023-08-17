@@ -11,7 +11,7 @@
   "scripts": {
     "start": "electron ./eyas-dist.js",
     "dev": "npm i && npm-check -u && electron src/index.js",
-    "bundle": "npm ci && webpack && npm pack --dry-run"
+    "bundle": "npm ci && webpack && npm pack"
   },
   "author": "Cycosoft, LLC (https://cycosoft.com)",
   "homepage": "https://cycosoft.com",
