@@ -23,6 +23,7 @@ module.exports = {
 	},
 
 	plugins: [
+		//add a shebang to the top of the file so script doesn't just open in IDE
 		new webpack.BannerPlugin({ banner: "#!/usr/bin/env node", raw: true })
 	],
 
