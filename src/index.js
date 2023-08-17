@@ -6,7 +6,7 @@ const express = require('express');
 const path = require('path');
 const serverLayer = require('https');
 const mkcert = require('mkcert');
-const config = require(path.join(process.cwd(), 'eyas.config.js'));
+const config = require(/* webpackIgnore: true */ './eyas.config.js');
 
 // config
 const appTitle = `Eyas`;
