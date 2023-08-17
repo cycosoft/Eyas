@@ -16,13 +16,6 @@ module.exports = {
 		filename: `eyas-dist.js`
 	},
 
-	resolve: {
-		alias: {
-			//this is here to limit webpack warnings when used within the entry file
-			'./eyas.config.js': path.resolve(__dirname, 'eyas.config.js')
-		}
-	},
-
 	stats: {
 		//give more detauls on build warnings/errors
 		errorDetails: true
