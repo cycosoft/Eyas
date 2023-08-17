@@ -9,7 +9,7 @@
     "eyas": "./eyas-dist.js"
   },
   "scripts": {
-    "start": "electron ./eyas-dist.js",
+    "start": "electron .",
     "dev": "npm i && npm-check -u && electron src/index.js",
     "bundle": "npm ci && webpack && npm pack"
   },
