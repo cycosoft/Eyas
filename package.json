@@ -5,6 +5,7 @@
   "publishConfig": {
     "access": "public"
   },
+  "main": "eyas-dist.js",
   "bin": {
     "eyas": "./eyas-dist.js"
   },
