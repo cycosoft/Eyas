@@ -9,12 +9,14 @@ module.exports = {
 	target: `electron-main`,
 
 	//the main file that runs the application
-	entry: `./src/index.js`,
+	entry: {
+		eyas: `./src/index.js`
+	},
 
 	//where to put the built files
 	output: {
 		path: path.resolve(__dirname),
-		filename: `eyas-dist.js`
+		filename: `[name].min.js`
 	},
 
 	stats: {
@@ -26,6 +28,15 @@ module.exports = {
 		//add a shebang to the top of the file so script doesn't just open in IDE
 		new webpack.BannerPlugin({ banner: "#!/usr/bin/env node", raw: true })
 	],
+
+	//don't bundle these modules
+	externals: {
+		express: `commonjs express`,
+		https: `commonjs https`,
+		mkcert: `commonjs mkcert`,
+		electron: `commonjs electron`,
+		'./eyas.config.js': `commonjs ./eyas.config.js`
+	},
 
 	optimization: {
 		minimizer: [new TerserPlugin({

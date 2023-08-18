@@ -5,9 +5,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "main": "eyas-dist.js",
+  "main": "eyas.min.js",
   "bin": {
-    "eyas": "./eyas-dist.js"
+    "eyas": "./eyas.min.js"
   },
   "scripts": {
     "start": "electron .",
@@ -25,18 +25,16 @@
     "server"
   ],
   "files": [
-    "eyas-dist.js",
+    "eyas.min.js",
     "package.json",
     "README.md"
   ],
   "devDependencies": {
+    "electron": "^26.0.0",
+    "express": "^4.18.2",
+    "mkcert": "^1.5.1",
     "npm-check": "^6.0.1",
     "webpack": "^5.88.2",
     "webpack-cli": "^5.1.4"
-  },
-  "dependencies": {
-    "electron": "^26.0.0",
-    "express": "^4.18.2",
-    "mkcert": "^1.5.1"
   }
 }

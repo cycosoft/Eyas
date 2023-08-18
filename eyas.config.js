@@ -4,12 +4,12 @@ const branch = execSync(`git rev-parse --abbrev-ref HEAD`).toString().trim();
 
 //export the config for the project
 module.exports = {
-	testSourceDirectory: `demo`,
+	testSourceDirectory: `src/demo`,
 	serverPort: 3000,
 	appUrl: null,
-	buildVersion: `${branch}`,
-	appTitle: `Dev App`,
+	buildVersion: ``,
+	appTitle: `Demo App`,
 	appWidth: 1024,
 	appHeight: 768,
-	menu: [{ label: `Cycosoft.com`, url: `https://cycosoft.com`, external: true }]
+	menu: [{ label: `Cycosoft.com`, url: `https://cycosoft.com`, external: false }]
 };

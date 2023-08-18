@@ -2,7 +2,7 @@
 node_modules/
 
 # do not include the build output
-eyas-dist.js
+eyas.min.js
 
 # do not include the packaged output
 cycosoft-eyas-*.tgz
