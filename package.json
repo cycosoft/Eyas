@@ -26,7 +26,6 @@
   ],
   "files": [
     "eyas.min.js",
-    "package.json",
     "README.md"
   ],
   "bundleDependencies": [
