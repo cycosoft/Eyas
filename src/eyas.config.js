@@ -8,7 +8,7 @@ module.exports = {
 	serverPort: 3000,
 	appUrl: null,
 	buildVersion: `${branch}`,
-	appTitle: `Dev App`,
+	appTitle: `Src App`,
 	appWidth: 1024,
 	appHeight: 768,
 	menu: [{ label: `Cycosoft.com`, url: `https://cycosoft.com`, external: true }]

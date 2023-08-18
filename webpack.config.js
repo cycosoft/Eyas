@@ -35,6 +35,7 @@ module.exports = {
 		https: `commonjs https`,
 		mkcert: `commonjs mkcert`,
 		electron: `commonjs electron`,
+		path: `commonjs path`,
 		'./eyas.config.js': `commonjs ./eyas.config.js`
 	},
 
