@@ -39,6 +39,7 @@
     "mkcert": "^1.5.1"
   },
   "devDependencies": {
+    "eslint": "^8.47.0",
     "npm-check": "^6.0.1",
     "uglify-js": "^3.17.4"
   }
