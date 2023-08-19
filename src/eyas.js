@@ -1,8 +1,5 @@
 // imports
-console.log({__dirname});
-console.log({__filename});
-const electronPath = require.resolve('electron');
-const { app: electronLayer, BrowserWindow, Menu, dialog, shell } = require(electronPath);
+const { app: electronLayer, BrowserWindow, Menu, dialog, shell } = require('electron');
 const express = require('express');
 const path = require('path');
 const serverLayer = require('https');
