@@ -7,12 +7,13 @@
   },
   "main": "eyas.min.js",
   "bin": {
-    "eyas": "./eyas.min.js"
+    "eyas": "./cli.min.js"
   },
   "scripts": {
-    "start": "electron .",
-    "dev": "npm i && npm-check -u && electron src/index.js",
-    "build": "npm ci && webpack && npm pack"
+    "demo": "electron .",
+    "dev": "npm i && npm-check -u && electron src/eyas.js",
+    "build": "",
+    "bundle": "npm ci && npm run build && npm pack"
   },
   "author": "Cycosoft, LLC (https://cycosoft.com)",
   "homepage": "https://cycosoft.com",
@@ -25,13 +26,9 @@
     "server"
   ],
   "files": [
+    "cli.min.js",
     "eyas.min.js",
     "README.md"
-  ],
-  "bundleDependencies": [
-    "electron",
-    "express",
-    "mkcert"
   ],
   "dependencies": {
     "electron": "^26.0.0",

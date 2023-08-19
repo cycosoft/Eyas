@@ -6,7 +6,7 @@ const TerserPlugin = require('terser-webpack-plugin');
 //output the config to webpack
 module.exports = {
 	mode: `production`,
-	target: `electron-main`,
+	target: `electron-renderer`,
 
 	//the main file that runs the application
 	entry: {
@@ -24,10 +24,10 @@ module.exports = {
 		errorDetails: true
 	},
 
-	plugins: [
-		//add a shebang to the top of the file so script doesn't just open in IDE
-		new webpack.BannerPlugin({ banner: "#!/usr/bin/env node", raw: true })
-	],
+	// plugins: [
+	// 	//add a shebang to the top of the file so script doesn't just open in IDE
+	// 	new webpack.BannerPlugin({ banner: "#!/usr/bin/env node", raw: true })
+	// ],
 
 	//don't bundle these modules
 	externals: {

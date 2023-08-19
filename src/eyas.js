@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 // imports
+console.log({__dirname});
+console.log({__filename});
 const electronPath = require.resolve('electron');
-console.log({electronPath});
 const { app: electronLayer, BrowserWindow, Menu, dialog, shell } = require(electronPath);
-console.log({electronLayer});
 const express = require('express');
 const path = require('path');
 const serverLayer = require('https');
