@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
-const { spawn } = require('child_process');
-const electron = require('electron');
-const path = require('path');
+/* global __dirname process */
+
+const { spawn } = require(`child_process`);
+const electron = require(`electron`);
+const path = require(`path`);
 
 //import the package.json file
 const package = require(path.join(__dirname, `package.json`));
@@ -12,15 +14,16 @@ const eyasPath = path.join(__dirname, package.main);
 
 //run the electron app
 const child = spawn(electron, [eyasPath], {
-	stdio: 'inherit',
+	stdio: `inherit`,
 	windowsHide: false,
 	cwd: process.cwd()
 });
 
 //handle the child process exit
-child.on('close', function (code, signal) {
+child.on(`close`, function (code, signal) {
 	if(code === null) {
-		console.error(electron, 'exited with signal', signal);
+		// eslint-disable-next-line no-console
+		console.error(electron, `exited with signal`, signal);
 		process.exit(1);
 	}
 
@@ -36,6 +39,6 @@ const handleTerminationSignal = function (signal) {
 	});
 };
 
-//
-handleTerminationSignal('SIGINT');
-handleTerminationSignal('SIGTERM');
+//run the signal handlers
+handleTerminationSignal(`SIGINT`);
+handleTerminationSignal(`SIGTERM`);

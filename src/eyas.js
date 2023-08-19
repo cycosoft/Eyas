@@ -1,9 +1,11 @@
+/* global process */
+
 // imports
-const { app: electronLayer, BrowserWindow, Menu, dialog, shell } = require('electron');
-const express = require('express');
-const path = require('path');
-const serverLayer = require('https');
-const mkcert = require('mkcert');
+const { app: electronLayer, BrowserWindow, Menu, dialog, shell } = require(`electron`);
+const express = require(`express`);
+const path = require(`path`);
+const serverLayer = require(`https`);
+const mkcert = require(`mkcert`);
 const config = require(path.join(process.cwd(), `eyas.config.js`));
 
 // config
@@ -167,7 +169,7 @@ async function setupServer () {
 }
 
 // SSL/TSL: this is the self signed certificate support
-electronLayer.on('certificate-error', (event, webContents, url, error, certificate, callback) => {
+electronLayer.on(`certificate-error`, (event, webContents, url, error, certificate, callback) => {
 	// On certificate error we disable default behavior (stop loading the page)
 	// and we then say "it is all fine - true" to the callback
 	event.preventDefault();
