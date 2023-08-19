@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 // imports
 console.log({__dirname});
 console.log({__filename});

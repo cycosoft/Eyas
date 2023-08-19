@@ -12,8 +12,11 @@
   "scripts": {
     "demo": "electron .",
     "dev": "npm i && npm-check -u && electron src/eyas.js",
-    "build": "",
-    "bundle": "npm ci && npm run build && npm pack"
+    "build": "npm run build:eyas && npm run build:cli",
+    "bundle": "npm ci && npm run build && npm pack",
+    "_____________SCRIPTS_____________": "",
+    "build:eyas": "uglifyjs src/eyas.js -c -m --toplevel --output eyas.min.js",
+    "build:cli": "uglifyjs src/cli.js -c -m --toplevel -o cli.min.js"
   },
   "author": "Cycosoft, LLC (https://cycosoft.com)",
   "homepage": "https://cycosoft.com",
@@ -37,7 +40,6 @@
   },
   "devDependencies": {
     "npm-check": "^6.0.1",
-    "webpack": "^5.88.2",
-    "webpack-cli": "^5.1.4"
+    "uglify-js": "^3.17.4"
   }
 }
