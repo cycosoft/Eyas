@@ -7,9 +7,9 @@ module.exports = {
 	testSourceDirectory: `src/demo`,
 	serverPort: 3000,
 	appUrl: null,
-	buildVersion: `Root Build`,
-	appTitle: `Root App`,
+	buildVersion: `${branch}`,
+	appTitle: `Demo App`,
 	appWidth: 1024,
 	appHeight: 768,
-	menu: [{ label: `Cycosoft.com`, url: `https://cycosoft.com`, external: false }]
+	menu: [{ label: `Cycosoft.com`, url: `https://cycosoft.com`, external: true }]
 };
