@@ -11,8 +11,6 @@
 	const express = require(`express`);
 	const path = require(`path`);
 	const https = require(`https`);
-	const { createProxyMiddleware } = require(`http-proxy-middleware`);
-	var httpProxy = require(`http-proxy`);
 	const mkcert = require(`mkcert`);
 	const config = require(path.join(process.cwd(), `.eyasrc.js`));
 
@@ -182,46 +180,6 @@
 		https
 			.createServer({ key: cert.key, cert: cert.cert }, expressLayer)
 			.listen(serverPort);
-
-
-
-		const proxy = httpProxy.createProxyServer({
-			target: serverUrl,
-			secure: true
-		});
-
-		const proxyServer = https.createServer((req, res) => {
-			console.log(req.method, req.url);
-
-			// Check the requested hostname
-			// if (req.headers.host === `google.com`) {
-			// 	// Intercept requests to google.com and redirect to localhost
-			// 	console.log(`Intercepted request to google.com`);
-			// 	proxy.web(req, res);
-			// } else {
-			// 	// Handle other requests here (if needed)
-			// 	console.log(`Received request:`, req.method, req.url);
-			// 	res.writeHead(200, { 'Content-Type': `text/plain` });
-			// 	res.end(`Hello from proxy server!`);
-			// }
-
-			res.writeHead(200, {'Content-Type': `text/plain`});
-			res.write(`Hello World!`);
-			res.end();
-		}).listen(8080, () => {
-			console.log(`Proxy server is running`);
-		});
-
-		proxyServer.on(`error`, error => {
-			console.error(`Proxy server error:`, error);
-		});
-
-		proxy.on(`error`, error => {
-			console.error(`Proxy error:`, error);
-		});
-
-
-
 
 		// Properly close the server when the app is closed
 		electronLayer.on(`before-quit`, () => process.exit(0));
