@@ -11,12 +11,11 @@
 	const https = require(`https`);
 	const mkcert = require(`mkcert`);
 	const mockttp = require(`mockttp`);
-	const getPort = require(`get-port`);
 	const config = require(path.join(process.cwd(), `.eyasrc.js`));
 
 	// config
 	const appTitle = `Eyas`;
-	const serverPort = config.serverPort || await getPort({ port: 3000 });
+	const serverPort = config.serverPort || 3000;
 	const serverUrl = `https://localhost:${serverPort}`;
 	const appUrl = config.appUrl || serverUrl;
 	const windowConfig = {
