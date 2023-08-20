@@ -65,7 +65,7 @@
 								buttons: [`Yes`, `No`],
 								title: `Exit Confirmation`,
 								message: `Close ${appTitle}?`
-							}).then((result) => {
+							}).then(result => {
 							// User clicked "Yes"
 								if (result.response === 0) {
 									electronLayer.quit();
@@ -138,7 +138,7 @@
 		setMenu();
 
 		// Prevent the title from changing
-		clientWindow.on(`page-title-updated`, (evt) => evt.preventDefault());
+		clientWindow.on(`page-title-updated`, evt => evt.preventDefault());
 
 		// Load the index.html of the app
 		navigate(appUrl);
