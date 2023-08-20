@@ -188,6 +188,10 @@
 		//if the user didn't specify an appUrl, don't create a proxy server
 		if(!config.appUrl){ return; }
 
+		//we only need a host name for the proxy server
+		const { hostname } = new URL(config.appUrl);
+		console.log(`hostname`, hostname);
+
 		// Create a proxy server with a self-signed HTTPS CA certificate:
 		const https = await mockttp.generateCACertificate();
 		const proxyServer = mockttp.getLocal({ https });
