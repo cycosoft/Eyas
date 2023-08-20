@@ -201,7 +201,7 @@
 
 		// Redirect any github requests to wikipedia.org:
 		proxyServer.forAnyRequest()
-			.forHostname(appUrl)
+			.forHostname(hostname)
 			.thenForwardTo(testServerUrl);
 
 		// Start the server
