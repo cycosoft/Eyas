@@ -190,7 +190,7 @@
 		const proxyServer = mockttp.getLocal({ https });
 
 		//set up a general rule to allow all requests to continue as normal
-		proxyServer.forGet(`/`).thenReply(200);
+		proxyServer.forAnyRequest().thenPassThrough();
 
 		// Redirect any github requests to wikipedia.org:
 		proxyServer.forAnyRequest()
