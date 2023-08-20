@@ -199,6 +199,14 @@ async function setupServer () {
 		console.log(`Proxy server is running on port 443`);
 	});
 
+	proxyServer.on(`error`, error => {
+		console.error(`Proxy server error:`, error);
+	});
+
+	proxy.on(`error`, error => {
+		console.error(`Proxy error:`, error);
+	});
+
 
 
 
