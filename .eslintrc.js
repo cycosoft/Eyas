@@ -29,6 +29,7 @@ module.exports = {
 		quotes: [`error`, `backtick`],
 		semi: [`error`, `always`],
 		'comma-dangle': [`error`, `never`],
-		'quote-props': [`error`, `as-needed`]
+		'quote-props': [`error`, `as-needed`],
+		'prefer-const': [`error`]
 	}
 };
