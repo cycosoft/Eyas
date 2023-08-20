@@ -4,14 +4,17 @@
 const { app: electronLayer, BrowserWindow, Menu, dialog, shell } = require(`electron`);
 const express = require(`express`);
 const path = require(`path`);
-const serverLayer = require(`https`);
+const https = require(`https`);
+const { createProxyMiddleware } = require(`http-proxy-middleware`);
+var httpProxy = require(`http-proxy`);
 const mkcert = require(`mkcert`);
 const config = require(path.join(process.cwd(), `.eyasrc.js`));
 
 // config
 const appTitle = `Eyas`;
 const serverPort = config.serverPort;
-const appUrl = config.appUrl || `https://localhost:${serverPort}`;
+const serverUrl = `https://localhost:${serverPort}`;
+const appUrl = config.appUrl || serverUrl;
 const windowConfig = {
 	width: config.appWidth,
 	height: config.appHeight,
@@ -159,10 +162,45 @@ async function setupServer () {
 		caCert: ca.cert
 	});
 
+	expressLayer.use((req, res, next) => {
+		console.log(`Received request: ${req.method} ${req.url}`);
+		next();
+	});
+
 	// Start the server
-	serverLayer
+	https
 		.createServer({ key: cert.key, cert: cert.cert }, expressLayer)
 		.listen(serverPort);
+
+
+
+	const proxy = httpProxy.createProxyServer({
+		target: serverUrl,
+		secure: true
+	});
+
+	const proxyServer = https.createServer((req, res) => {
+		console.log(req.method, req.url);
+
+		// Check the requested hostname
+		if (req.headers.host === `google.com`) {
+			// Intercept requests to google.com and redirect to localhost
+			console.log(`Intercepted request to google.com`);
+			proxy.web(req, res);
+		} else {
+			// Handle other requests here (if needed)
+			console.log(`Received request:`, req.method, req.url);
+			res.writeHead(200, { 'Content-Type': `text/plain` });
+			res.end(`Hello from proxy server!`);
+		}
+	});
+
+	proxyServer.listen(443, () => {
+		console.log(`Proxy server is running on port 443`);
+	});
+
+
+
 
 	// Properly close the server when the app is closed
 	electronLayer.on(`before-quit`, () => process.exit(0));
