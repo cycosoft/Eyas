@@ -134,6 +134,11 @@
 	// Create the browser window
 		clientWindow = new BrowserWindow(windowConfig);
 
+		//require requests to be made through the proxy
+		clientWindow.webContents.session.setProxy({
+			proxyRules: `http://localhost:8080`
+		});
+
 		// Create a menu template
 		setMenu();
 
