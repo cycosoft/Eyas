@@ -4,19 +4,19 @@
 
 //wrapped in an async function to allow for await calls
 (async () => {
-
-
 	// imports
 	const { app: electronLayer, BrowserWindow, Menu, dialog, shell } = require(`electron`);
 	const express = require(`express`);
 	const path = require(`path`);
 	const https = require(`https`);
 	const mkcert = require(`mkcert`);
+	const mockttp = require(`mockttp`);
+	const getPort = require(`get-port`);
 	const config = require(path.join(process.cwd(), `.eyasrc.js`));
 
 	// config
 	const appTitle = `Eyas`;
-	const serverPort = config.serverPort;
+	const serverPort = config.serverPort || await getPort({ port: 3000 });
 	const serverUrl = `https://localhost:${serverPort}`;
 	const appUrl = config.appUrl || serverUrl;
 	const windowConfig = {
@@ -27,7 +27,10 @@
 	let clientWindow = null;
 	let expressLayer = null;
 
-	// start the server to manage requests
+	// start the proxy server
+	await createProxyServer();
+
+	// start the test server
 	setupServer()
 	// then listen for the app to be ready
 		.then(() => electronLayer.whenReady())
@@ -181,8 +184,19 @@
 			.createServer({ key: cert.key, cert: cert.cert }, expressLayer)
 			.listen(serverPort);
 
+		console.log(`Test server listening on port ${serverPort}`);
+
 		// Properly close the server when the app is closed
 		electronLayer.on(`before-quit`, () => process.exit(0));
+	}
+
+	async function createProxyServer() {
+		// Create a proxy server with a self-signed HTTPS CA certificate:
+		const https = await mockttp.generateCACertificate();
+		const server = mockttp.getLocal({ https });
+		await server.start();
+
+		console.log(`proxy server.port`, server.port);
 	}
 
 	// SSL/TSL: this is the self signed certificate support
