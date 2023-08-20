@@ -30,6 +30,7 @@ module.exports = {
 		semi: [`error`, `always`],
 		'comma-dangle': [`error`, `never`],
 		'quote-props': [`error`, `as-needed`],
-		'prefer-const': [`error`]
+		'prefer-const': [`error`],
+		'arrow-parens': [`error`, `as-needed`]
 	}
 };
