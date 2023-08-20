@@ -15,9 +15,9 @@
 
 	// config
 	const appTitle = `Eyas`;
-	const serverPort = config.serverPort || 3000;
-	const serverUrl = `https://localhost:${serverPort}`;
-	const appUrl = config.appUrl || serverUrl;
+	const testServerPort = config.serverPort || 3000;
+	const testServerUrl = `https://localhost:${testServerPort}`;
+	const appUrl = config.appUrl || testServerUrl;
 	const windowConfig = {
 		width: config.appWidth,
 		height: config.appHeight,
@@ -25,9 +25,6 @@
 	};
 	let clientWindow = null;
 	let expressLayer = null;
-
-	// start the proxy server
-	await createProxyServer();
 
 	// start the test server
 	setupServer()
@@ -130,14 +127,12 @@
 	}
 
 	// Configure and create an instance of BrowserWindow to display the UI
-	function startApplication () {
+	async function startApplication () {
 	// Create the browser window
 		clientWindow = new BrowserWindow(windowConfig);
 
-		//require requests to be made through the proxy
-		clientWindow.webContents.session.setProxy({
-			proxyRules: `http://localhost:8080`
-		});
+		// start the proxy server
+		createProxyServer();
 
 		// Create a menu template
 		setMenu();
@@ -181,9 +176,9 @@
 		// Start the server
 		https
 			.createServer({ key: cert.key, cert: cert.cert }, expressLayer)
-			.listen(serverPort);
+			.listen(testServerPort);
 
-		console.log(`Test server listening on port ${serverPort}`);
+		console.log(`Test server listening on port ${testServerPort}`);
 
 		// Properly close the server when the app is closed
 		electronLayer.on(`before-quit`, () => process.exit(0));
@@ -192,10 +187,25 @@
 	async function createProxyServer() {
 		// Create a proxy server with a self-signed HTTPS CA certificate:
 		const https = await mockttp.generateCACertificate();
-		const server = mockttp.getLocal({ https });
-		await server.start();
+		const proxyServer = mockttp.getLocal({ https });
 
-		console.log(`proxy server.port`, server.port);
+		//set up a general rule to allow all requests to continue as normal
+		proxyServer.forGet(`/`).thenReply(200);
+
+		// Redirect any github requests to wikipedia.org:
+		proxyServer.forAnyRequest()
+			.forHostname(appUrl)
+			.thenForwardTo(testServerUrl);
+
+		// Start the server
+		await proxyServer.start();
+
+		console.log(`proxy server.port`, proxyServer.port);
+
+		//require requests to be made through the proxy
+		clientWindow.webContents.session.setProxy({
+			proxyRules: `http://localhost:${proxyServer.port}`
+		});
 	}
 
 	// SSL/TSL: this is the self signed certificate support
