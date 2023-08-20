@@ -119,7 +119,8 @@
 	}
 
 	function navigate (url, external) {
-	// go to the requested url in electron
+		console.log(`navigate`, url, {external});
+		// go to the requested url in electron
 		!external && clientWindow.loadURL(url);
 
 		// open the requested url in the default browser
@@ -128,17 +129,17 @@
 
 	// Configure and create an instance of BrowserWindow to display the UI
 	async function startApplication () {
-	// Create the browser window
+		// Create the browser window
 		clientWindow = new BrowserWindow(windowConfig);
-
-		// start the proxy server
-		createProxyServer();
 
 		// Create a menu template
 		setMenu();
 
 		// Prevent the title from changing
 		clientWindow.on(`page-title-updated`, evt => evt.preventDefault());
+
+		// start the proxy server
+		await createProxyServer();
 
 		// Load the index.html of the app
 		navigate(appUrl);
@@ -178,7 +179,7 @@
 			.createServer({ key: cert.key, cert: cert.cert }, expressLayer)
 			.listen(testServerPort);
 
-		console.log(`Test server listening on port ${testServerPort}`);
+		console.log(`Test server listening on port:`, testServerPort);
 
 		// Properly close the server when the app is closed
 		electronLayer.on(`before-quit`, () => process.exit(0));
@@ -190,28 +191,68 @@
 
 		//we only need a host name for the proxy server
 		const { hostname } = new URL(config.appUrl);
-		console.log(`hostname`, hostname);
+		console.log(`proxy on:`, {hostname});
+
+		// create SSL certificate for the server
+		const ca = await mkcert.createCA({
+			organization: `Cycosoft, LLC - Temporary Proxy Testing`,
+			countryCode: `US`,
+			state: `Arizona`,
+			locality: `Chandler`,
+			validityDays: 1
+		});
+
+		const cert = await mkcert.createCert({
+			domains: [`localhost`],
+			validityDays: 1,
+			caKey: ca.key,
+			caCert: ca.cert
+		});
+
+		// const httpProxy = require(`http-proxy`);
+
+		// const proxy = httpProxy.createProxyServer();
+
+		// https.createServer({
+		// 	ssl: {
+		// 		key: cert.key,
+		// 		cert: cert.cert
+		// 	},
+		// 	target: testServerUrl,
+		// 	secure: true
+		// }, (req, res) => {
+		// 	// res.writeHead(200);
+		// 	// res.end(`hello world\n`);
+		// 	console.log(req, res);
+		// 	proxy.web(req, res, {
+		// 		target: testServerUrl
+		// 	});
+		// }).listen(443, () => {
+		// 	console.log(`started proxy server on 443`);
+		// });
 
 		// Create a proxy server with a self-signed HTTPS CA certificate:
-		const https = await mockttp.generateCACertificate();
-		const proxyServer = mockttp.getLocal({ https });
-
-		//set up a general rule to allow all requests to continue as normal
-		proxyServer.forAnyRequest().thenPassThrough();
+		// const https = await mockttp.generateCACertificate();
+		// const proxyServer = mockttp.getLocal({ https });
+		const proxyServer = mockttp.getLocal({ ssl: { key: cert.key, cert: cert.cert } });
 
 		// Redirect any github requests to wikipedia.org:
-		proxyServer.forAnyRequest()
-			.forHostname(hostname)
-			.thenForwardTo(testServerUrl);
+		// await proxyServer.forAnyRequest()
+		// 	.forHost(hostname)
+		// 	.always()
+		// 	.thenForwardTo(testServerUrl);
+
+		//set up a general rule to allow all requests to continue as normal
+		// await proxyServer.forAnyRequest().thenPassThrough();
 
 		// Start the server
 		await proxyServer.start();
 
-		console.log(`proxy server.port`, proxyServer.port);
+		console.log(`proxy server loaded on:`, proxyServer.port);
 
 		//require requests to be made through the proxy
 		clientWindow.webContents.session.setProxy({
-			proxyRules: `http://localhost:${proxyServer.port}`
+			proxyRules: `https://localhost:${proxyServer.port}`
 		});
 	}
 
