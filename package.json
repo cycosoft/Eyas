@@ -11,7 +11,7 @@
   },
   "scripts": {
     "demo": "electron .",
-    "dev": "npm i && npm-check -u && electron src/eyas.js",
+    "dev": "npm i && npm-check -u && electron --trace-warnings src/eyas.js",
     "build": "npm run build:eyas && npm run build:cli",
     "bundle": "npm ci && npm run build && npm pack",
     "_____________SCRIPTS_____________": "",

@@ -26,10 +26,30 @@
 	let clientWindow = null;
 	let expressLayer = null;
 
+	// create SSL certificate for the server
+	const ca = await mkcert.createCA({
+		organization: `Cycosoft, LLC - Temporary Proxy Testing`,
+		countryCode: `US`,
+		state: `Arizona`,
+		locality: `Chandler`,
+		validityDays: 1
+	});
+
+	const cert = await mkcert.createCert({
+		domains: [`localhost`],
+		validityDays: 1,
+		caKey: ca.key,
+		caCert: ca.cert
+	});
+
 	// start the test server
-	setupServer()
+	await setupTestServer();
+
+	// start the proxy server
+	await createProxyServer();
+
 	// then listen for the app to be ready
-		.then(() => electronLayer.whenReady())
+	electronLayer.whenReady()
 	// then create the UI
 		.then(() => {
 			startApplication();
@@ -138,36 +158,17 @@
 		// Prevent the title from changing
 		clientWindow.on(`page-title-updated`, evt => evt.preventDefault());
 
-		// start the proxy server
-		await createProxyServer();
-
 		// Load the index.html of the app
 		navigate(appUrl);
 	}
 
 	// Set up Express to serve files from dist/
-	async function setupServer () {
+	async function setupTestServer () {
 	// Create the Express app
 		expressLayer = express();
 
 		// Serve static files from dist/
 		expressLayer.use(express.static(path.join(process.cwd(), config.testSourceDirectory)));
-
-		// create SSL certificate for the server
-		const ca = await mkcert.createCA({
-			organization: `Cycosoft, LLC`,
-			countryCode: `US`,
-			state: `Arizona`,
-			locality: `Chandler`,
-			validityDays: 1
-		});
-
-		const cert = await mkcert.createCert({
-			domains: [`localhost`],
-			validityDays: 1,
-			caKey: ca.key,
-			caCert: ca.cert
-		});
 
 		expressLayer.use((req, res, next) => {
 			console.log(`Received request: ${req.method} ${req.url}`);
@@ -191,23 +192,7 @@
 
 		//we only need a host name for the proxy server
 		const { hostname } = new URL(config.appUrl);
-		console.log(`proxy on:`, {hostname});
-
-		// create SSL certificate for the server
-		const ca = await mkcert.createCA({
-			organization: `Cycosoft, LLC - Temporary Proxy Testing`,
-			countryCode: `US`,
-			state: `Arizona`,
-			locality: `Chandler`,
-			validityDays: 1
-		});
-
-		const cert = await mkcert.createCert({
-			domains: [`localhost`, hostname],
-			validityDays: 1,
-			caKey: ca.key,
-			caCert: ca.cert
-		});
+		console.log(`proxy goal:`, {hostname});
 
 		// const httpProxy = require(`http-proxy`);
 
@@ -244,7 +229,7 @@
 		// 	.thenForwardTo(testServerUrl);
 
 		//set up a general rule to allow all requests to continue as normal
-		await proxyServer.forAnyRequest().thenReply(200, `hello world`);
+		// await proxyServer.forAnyRequest().thenReply(200, `hello world`);
 		// await proxyServer.forAnyRequest().thenPassThrough();
 
 		// Start the server
@@ -259,9 +244,11 @@
 		// console.log(`CA cert fingerprint ${caFingerprint}`);
 
 		//require requests to be made through the proxy
-		await clientWindow.webContents.session.setProxy({
-			proxyRules: `https://localhost:${proxyServer.port}`
-		});
+		// await clientWindow.webContents.session.setProxy({
+		// 	proxyRules: `https://localhost:${proxyServer.port}`
+		// });
+
+		electronLayer.commandLine.appendSwitch( `proxy-server`, `https://localhost:${proxyServer.port}`);
 
 		// console.log(`setProxy:`, `https://localhost:${proxyServer.port}`);
 	}
