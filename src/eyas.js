@@ -244,23 +244,26 @@
 		// 	.thenForwardTo(testServerUrl);
 
 		//set up a general rule to allow all requests to continue as normal
+		await proxyServer.forAnyRequest().thenReply(200, `hello world`);
 		// await proxyServer.forAnyRequest().thenPassThrough();
 
 		// Start the server
-		await proxyServer.start(443);
-		setTimeout(() => {
-			proxyServer.stop();
-			console.log(`proxy server stopped`);
-		}, 1000 * 5);
+		await proxyServer.start();
+		// setTimeout(() => {
+		// 	proxyServer.stop();
+		// 	console.log(`proxy server stopped`);
+		// }, 1000 * 10);
 
 		console.log(`proxy server loaded on:`, proxyServer.port);
+		// const caFingerprint = mockttp.generateSPKIFingerprint(https.cert);
+		// console.log(`CA cert fingerprint ${caFingerprint}`);
 
 		//require requests to be made through the proxy
-		// clientWindow.webContents.session.setProxy({
-		// 	proxyRules: `https://localhost:${proxyServer.port}`
-		// });
+		await clientWindow.webContents.session.setProxy({
+			proxyRules: `https://localhost:${proxyServer.port}`
+		});
 
-		console.log(`setProxy:`, `https://localhost:${proxyServer.port}`);
+		// console.log(`setProxy:`, `https://localhost:${proxyServer.port}`);
 	}
 
 	// SSL/TSL: this is the self signed certificate support
