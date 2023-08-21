@@ -254,13 +254,13 @@
 		});
 		// const proxyServer = mockttp.getLocal({ ssl: { key: cert.key, cert: cert.cert } });
 
-
-		await proxyServer.forAnyRequest()
-			.forHost(hostname)
+		await proxyServer
+			.forAnyRequest()
+			.forHostname(hostname)
 			.always()
 			.thenForwardTo(testServerUrl);
 
-		await proxyServer.forAnyRequest().thenPassThrough();
+		// await proxyServer.forAnyRequest().thenPassThrough();
 
 
 
