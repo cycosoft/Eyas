@@ -11,5 +11,8 @@ module.exports = {
 	appTitle: `Demo App`,
 	appWidth: 1024,
 	appHeight: 768,
-	menu: [{ label: `Cycosoft.com`, url: `https://cycosoft.com`, external: false }]
+	menu: [
+		{ label: `Cycosoft.com`, url: `https://cycosoft.com`, external: false },
+		{ label: `Proxy Server`, url: `https://localhost:443`, external: false }
+	]
 };

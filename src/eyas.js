@@ -203,7 +203,7 @@
 		});
 
 		const cert = await mkcert.createCert({
-			domains: [`localhost`],
+			domains: [`localhost`, hostname],
 			validityDays: 1,
 			caKey: ca.key,
 			caCert: ca.cert
@@ -234,9 +234,10 @@
 		// Create a proxy server with a self-signed HTTPS CA certificate:
 		// const https = await mockttp.generateCACertificate();
 		// const proxyServer = mockttp.getLocal({ https });
+		// const proxyServer = mockttp.getLocal();
 		const proxyServer = mockttp.getLocal({ ssl: { key: cert.key, cert: cert.cert } });
 
-		// Redirect any github requests to wikipedia.org:
+		//
 		// await proxyServer.forAnyRequest()
 		// 	.forHost(hostname)
 		// 	.always()
@@ -246,14 +247,20 @@
 		// await proxyServer.forAnyRequest().thenPassThrough();
 
 		// Start the server
-		await proxyServer.start();
+		await proxyServer.start(443);
+		setTimeout(() => {
+			proxyServer.stop();
+			console.log(`proxy server stopped`);
+		}, 1000 * 5);
 
 		console.log(`proxy server loaded on:`, proxyServer.port);
 
 		//require requests to be made through the proxy
-		clientWindow.webContents.session.setProxy({
-			proxyRules: `https://localhost:${proxyServer.port}`
-		});
+		// clientWindow.webContents.session.setProxy({
+		// 	proxyRules: `https://localhost:${proxyServer.port}`
+		// });
+
+		console.log(`setProxy:`, `https://localhost:${proxyServer.port}`);
 	}
 
 	// SSL/TSL: this is the self signed certificate support
@@ -264,3 +271,5 @@
 		callback(true);
 	});
 })();
+
+//ERR_PROXY_CONNECTION_FAILED if restart works, document this in readme
