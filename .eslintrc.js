@@ -31,6 +31,7 @@ module.exports = {
 		'comma-dangle': [`error`, `never`],
 		'quote-props': [`error`, `as-needed`],
 		'prefer-const': [`error`],
-		'arrow-parens': [`error`, `as-needed`]
+		'arrow-parens': [`error`, `as-needed`],
+		'no-spaced-func': [`error`]
 	}
 };
