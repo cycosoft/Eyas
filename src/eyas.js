@@ -17,6 +17,7 @@
 	const appTitle = `Eyas`;
 	const testServerPort = config.serverPort || 3000;
 	const testServerUrl = `https://localhost:${testServerPort}`;
+	const proxyServerPort = 3100;
 	const appUrl = config.appUrl || testServerUrl;
 	const windowConfig = {
 		width: config.appWidth,
@@ -26,21 +27,9 @@
 	let clientWindow = null;
 	let expressLayer = null;
 
-	// create SSL certificate for the server
-	const ca = await mkcert.createCA({
-		organization: `Cycosoft, LLC - Temporary Proxy Testing`,
-		countryCode: `US`,
-		state: `Arizona`,
-		locality: `Chandler`,
-		validityDays: 1
-	});
-
-	const cert = await mkcert.createCert({
-		domains: [`localhost`],
-		validityDays: 1,
-		caKey: ca.key,
-		caCert: ca.cert
-	});
+	// Configure Electron to ignore certificate errors
+	electronLayer.commandLine.appendSwitch(`ignore-certificate-errors`);
+	electronLayer.commandLine.appendSwitch(`proxy-server`, `https://localhost:${proxyServerPort}`);
 
 	// start the test server
 	await setupTestServer();
@@ -175,6 +164,22 @@
 			next();
 		});
 
+		// create SSL certificate for the server
+		const ca = await mkcert.createCA({
+			organization: `Cycosoft, LLC - Test Server`,
+			countryCode: `US`,
+			state: `Arizona`,
+			locality: `Chandler`,
+			validityDays: 1
+		});
+
+		const cert = await mkcert.createCert({
+			domains: [`localhost`],
+			validityDays: 1,
+			caKey: ca.key,
+			caCert: ca.cert
+		});
+
 		// Start the server
 		https
 			.createServer({ key: cert.key, cert: cert.cert }, expressLayer)
@@ -194,9 +199,29 @@
 		const { hostname } = new URL(config.appUrl);
 		console.log(`proxy goal:`, {hostname});
 
-		// const httpProxy = require(`http-proxy`);
+		// create SSL certificate for the server
+		const ca = await mkcert.createCA({
+			organization: `Cycosoft, LLC - Proxy Server`,
+			countryCode: `US`,
+			state: `Arizona`,
+			locality: `Chandler`,
+			validityDays: 1
+		});
 
-		// const proxy = httpProxy.createProxyServer();
+		const cert = await mkcert.createCert({
+			domains: [`localhost`],
+			validityDays: 1,
+			caKey: ca.key,
+			caCert: ca.cert
+		});
+
+		// const httpProxy = require(`http-proxy`);
+		// const proxyServer = httpProxy.createProxyServer({
+		// 	target: testServerUrl,
+		// 	ssl: { key: cert.key, cert: cert.cert },
+		// 	secure: false,
+		// 	changeOrigin: true
+		// }).listen(3100);
 
 		// https.createServer({
 		// 	ssl: {
@@ -217,49 +242,62 @@
 		// });
 
 		// Create a proxy server with a self-signed HTTPS CA certificate:
-		// const https = await mockttp.generateCACertificate();
+		const https = await mockttp.generateCACertificate();
+		// const https = { key: cert.key, cert: cert.cert };
 		// const proxyServer = mockttp.getLocal({ https });
-		// const proxyServer = mockttp.getLocal();
-		const proxyServer = mockttp.getLocal({ ssl: { key: cert.key, cert: cert.cert } });
+		const proxyServer = mockttp.getLocal({
+			cors: true,
+			debug: true,
+			http2: true,
+			https,
+			recordTraffic: false
+		});
+		// const proxyServer = mockttp.getLocal({ ssl: { key: cert.key, cert: cert.cert } });
 
-		//
-		// await proxyServer.forAnyRequest()
-		// 	.forHost(hostname)
-		// 	.always()
-		// 	.thenForwardTo(testServerUrl);
+
+		await proxyServer.forAnyRequest()
+			.forHost(hostname)
+			.always()
+			.thenForwardTo(testServerUrl);
+
+		await proxyServer.forAnyRequest().thenPassThrough();
+
+
+
+		await proxyServer.start(proxyServerPort);
 
 		//set up a general rule to allow all requests to continue as normal
 		// await proxyServer.forAnyRequest().thenReply(200, `hello world`);
 		// await proxyServer.forAnyRequest().thenPassThrough();
 
 		// Start the server
-		await proxyServer.start();
 		// setTimeout(() => {
 		// 	proxyServer.stop();
 		// 	console.log(`proxy server stopped`);
 		// }, 1000 * 10);
 
-		console.log(`proxy server loaded on:`, proxyServer.port);
+
+		// const proxyServerPort = proxyServer.port;
+
+		// console.log(`proxy server loaded on:`, proxyServerPort);
 		// const caFingerprint = mockttp.generateSPKIFingerprint(https.cert);
 		// console.log(`CA cert fingerprint ${caFingerprint}`);
 
 		//require requests to be made through the proxy
 		// await clientWindow.webContents.session.setProxy({
-		// 	proxyRules: `https://localhost:${proxyServer.port}`
+		// 	proxyRules: `https://localhost:${proxyServerPort}`
 		// });
 
-		electronLayer.commandLine.appendSwitch( `proxy-server`, `https://localhost:${proxyServer.port}`);
+		// electronLayer.commandLine.appendSwitch(`proxy-server`, `https://localhost:${proxyServerPort}`);
 
-		// console.log(`setProxy:`, `https://localhost:${proxyServer.port}`);
+		// console.log(`setProxy:`, `https://localhost:${proxyServerPort}`);
 	}
 
 	// SSL/TSL: this is the self signed certificate support
-	electronLayer.on(`certificate-error`, (event, webContents, url, error, certificate, callback) => {
-	// On certificate error we disable default behavior (stop loading the page)
-	// and we then say "it is all fine - true" to the callback
-		event.preventDefault();
-		callback(true);
-	});
+	// electronLayer.on(`certificate-error`, (event, webContents, url, error, certificate, callback) => {
+	// // On certificate error we disable default behavior (stop loading the page)
+	// // and we then say "it is all fine - true" to the callback
+	// 	event.preventDefault();
+	// 	callback(true);
+	// });
 })();
-
-//ERR_PROXY_CONNECTION_FAILED if restart works, document this in readme
