@@ -17,7 +17,7 @@
 	const appTitle = `Eyas`;
 	const testServerPort = config.serverPort || 3000;
 	const testServerUrl = `https://localhost:${testServerPort}`;
-	const proxyServerPort = 443;
+	const proxyServerPort = 3100;
 	const appUrl = config.appUrl || testServerUrl;
 	const windowConfig = {
 		width: config.appWidth,
@@ -191,10 +191,10 @@
 
 				createProxyServer();
 			});
-
-		// Properly close the server when the app is closed
-		electronLayer.on(`before-quit`, () => process.exit(0));
 	}
+
+	// Properly close the server when the app is closed
+	electronLayer.on(`before-quit`, () => process.exit(0));
 
 	async function createProxyServer() {
 		//if the user didn't specify an appUrl, don't create a proxy server
@@ -214,43 +214,43 @@
 		});
 
 		const cert = await mkcert.createCert({
-			domains: [`localhost`, hostname],
+			domains: [`google.com`, `*.google.com`, `localhost`, `127.0.0.1`, `::1`],
 			validityDays: 7,
 			caKey: ca.key,
 			caCert: ca.cert
 		});
 
-		const { createProxyMiddleware } = require(`http-proxy-middleware`);
-		const app = express();
-		console.log(`define proxy server`);
-		app.use(
-			`/`,
-			createProxyMiddleware({
-				target: testServerUrl,
-				ssl: { key: cert.key, cert: cert.cert },
-				changeOrigin: true,
-				secure: false,
-				onError: (err, req, res) => console.log(`proxy error:`, err),
-				onClose: () => console.log(`proxy closed`),
-				onProxyReq: (proxyReq, req, res) => {
-					console.log(`proxy request:`, req.url);
-				},
-				onProxyRes: (proxyRes, req, res) => {
-					console.log(`proxy response:`, req.url);
-				},
-				onOpen: proxySocket => {
-					console.log(`proxy open:`, proxySocket);
-				},
-				onProxyReqWs: (proxyReq, req, socket, options, head) => {
-					console.log(`proxy ws request:`, req.url);
-				}
-			})
-		);
-		app.listen(proxyServerPort, () => {
-			console.log(`started proxy server on ${proxyServerPort}`);
+		// const { createProxyMiddleware } = require(`http-proxy-middleware`);
+		// const app = express();
+		// console.log(`define proxy server`);
+		// app.use(
+		// 	`/`,
+		// 	createProxyMiddleware({
+		// 		target: testServerUrl,
+		// 		ssl: { key: cert.key, cert: cert.cert },
+		// 		changeOrigin: true,
+		// 		secure: false,
+		// 		onError: (err, req, res) => console.log(`proxy error:`, err),
+		// 		onClose: () => console.log(`proxy closed`),
+		// 		onProxyReq: (proxyReq, req, res) => {
+		// 			console.log(`proxy request:`, req.url);
+		// 		},
+		// 		onProxyRes: (proxyRes, req, res) => {
+		// 			console.log(`proxy response:`, req.url);
+		// 		},
+		// 		onOpen: proxySocket => {
+		// 			console.log(`proxy open:`, proxySocket);
+		// 		},
+		// 		onProxyReqWs: (proxyReq, req, socket, options, head) => {
+		// 			console.log(`proxy ws request:`, req.url);
+		// 		}
+		// 	})
+		// );
+		// app.listen(proxyServerPort, () => {
+		// 	console.log(`started proxy server on ${proxyServerPort}`);
 
-			electronInit();
-		});
+		// 	electronInit();
+		// });
 
 		// const httpProxy = require(`http-proxy`);
 		// const proxyServer = httpProxy.createProxyServer({
@@ -279,28 +279,29 @@
 		// });
 
 		// Create a proxy server with a self-signed HTTPS CA certificate:
-		// const https = await mockttp.generateCACertificate();
-		// // const https = { key: cert.key, cert: cert.cert };
-		// // const proxyServer = mockttp.getLocal({ https });
-		// const proxyServer = mockttp.getLocal({
-		// 	cors: true,
-		// 	debug: true,
-		// 	http2: true,
-		// 	https,
-		// 	recordTraffic: false
-		// });
+		// const certs = await mockttp.generateCACertificate();
+		const certs = { key: cert.key, cert: cert.cert };
+		// const proxyServer = mockttp.getLocal({ https });
+		const proxyServer = mockttp.getLocal({
+			cors: true,
+			debug: true,
+			http2: true,
+			https: certs,
+			recordTraffic: false
+		});
 
-		// await proxyServer
-		// 	.forAnyRequest()
-		// 	.forHostname(hostname)
-		// 	.always()
-		// 	.thenForwardTo(testServerUrl);
+		await proxyServer
+			.forAnyRequest()
+			.forHostname(hostname)
+			.always()
+			.thenForwardTo(testServerUrl);
 
-		// await proxyServer.forAnyRequest().thenPassThrough();
+		await proxyServer.forAnyRequest().thenPassThrough();
 
 
 
-		// await proxyServer.start(proxyServerPort);
+		await proxyServer.start(proxyServerPort);
+		electronInit();
 
 
 		// const proxyServerPort = proxyServer.port;
