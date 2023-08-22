@@ -300,4 +300,8 @@
 	// 	event.preventDefault();
 	// 	callback(true);
 	// });
+
+	//perform app cleanup
+	//	shut down test server
+	//	shut down proxy server
 })();
