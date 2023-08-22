@@ -17,7 +17,7 @@
 	const appTitle = `Eyas`;
 	const testServerPort = config.serverPort || 3000;
 	const testServerUrl = `https://localhost:${testServerPort}`;
-	const proxyServerPort = 3100;
+	const proxyServerPort = 443;
 	const appUrl = config.appUrl || testServerUrl;
 	const windowConfig = {
 		width: config.appWidth,
@@ -35,22 +35,24 @@
 	await setupTestServer();
 
 	// start the proxy server
-	await createProxyServer();
+	// await createProxyServer();
 
 	// then listen for the app to be ready
-	electronLayer.whenReady()
-	// then create the UI
-		.then(() => {
-			startApplication();
+	function electronInit() {
+		electronLayer.whenReady()
+		// then create the UI
+			.then(() => {
+				startApplication();
 
-			// On macOS it`s common to re-create a window in the app when the
-			// dock icon is clicked and there are no other windows open
-			electronLayer.on(`activate`, () => {
-				if (BrowserWindow.getAllWindows().length === 0) {
-					startApplication();
-				}
+				// On macOS it`s common to re-create a window in the app when the
+				// dock icon is clicked and there are no other windows open
+				electronLayer.on(`activate`, () => {
+					if (BrowserWindow.getAllWindows().length === 0) {
+						startApplication();
+					}
+				});
 			});
-		});
+	}
 
 	// Quit when all windows are closed, except on macOS. There, it`s common for
 	// applications and their menu bar to stay active until the user quits
@@ -159,6 +161,7 @@
 		// Serve static files from dist/
 		expressLayer.use(express.static(path.join(process.cwd(), config.testSourceDirectory)));
 
+		//is this actually doing anything?
 		expressLayer.use((req, res, next) => {
 			console.log(`Received request: ${req.method} ${req.url}`);
 			next();
@@ -170,22 +173,24 @@
 			countryCode: `US`,
 			state: `Arizona`,
 			locality: `Chandler`,
-			validityDays: 1
+			validityDays: 7
 		});
 
 		const cert = await mkcert.createCert({
 			domains: [`localhost`],
-			validityDays: 1,
+			validityDays: 7,
 			caKey: ca.key,
 			caCert: ca.cert
 		});
 
 		// Start the server
-		https
+		return https
 			.createServer({ key: cert.key, cert: cert.cert }, expressLayer)
-			.listen(testServerPort);
+			.listen(testServerPort, () => {
+				console.log(`started test server on ${testServerPort}`);
 
-		console.log(`Test server listening on port:`, testServerPort);
+				createProxyServer();
+			});
 
 		// Properly close the server when the app is closed
 		electronLayer.on(`before-quit`, () => process.exit(0));
@@ -205,14 +210,46 @@
 			countryCode: `US`,
 			state: `Arizona`,
 			locality: `Chandler`,
-			validityDays: 1
+			validityDays: 7
 		});
 
 		const cert = await mkcert.createCert({
-			domains: [`localhost`],
-			validityDays: 1,
+			domains: [`localhost`, hostname],
+			validityDays: 7,
 			caKey: ca.key,
 			caCert: ca.cert
+		});
+
+		const { createProxyMiddleware } = require(`http-proxy-middleware`);
+		const app = express();
+		console.log(`define proxy server`);
+		app.use(
+			`/`,
+			createProxyMiddleware({
+				target: testServerUrl,
+				ssl: { key: cert.key, cert: cert.cert },
+				changeOrigin: true,
+				secure: false,
+				onError: (err, req, res) => console.log(`proxy error:`, err),
+				onClose: () => console.log(`proxy closed`),
+				onProxyReq: (proxyReq, req, res) => {
+					console.log(`proxy request:`, req.url);
+				},
+				onProxyRes: (proxyRes, req, res) => {
+					console.log(`proxy response:`, req.url);
+				},
+				onOpen: proxySocket => {
+					console.log(`proxy open:`, proxySocket);
+				},
+				onProxyReqWs: (proxyReq, req, socket, options, head) => {
+					console.log(`proxy ws request:`, req.url);
+				}
+			})
+		);
+		app.listen(proxyServerPort, () => {
+			console.log(`started proxy server on ${proxyServerPort}`);
+
+			electronInit();
 		});
 
 		// const httpProxy = require(`http-proxy`);
@@ -221,7 +258,7 @@
 		// 	ssl: { key: cert.key, cert: cert.cert },
 		// 	secure: false,
 		// 	changeOrigin: true
-		// }).listen(3100);
+		// }).listen(proxyServerPort);
 
 		// https.createServer({
 		// 	ssl: {
@@ -242,39 +279,28 @@
 		// });
 
 		// Create a proxy server with a self-signed HTTPS CA certificate:
-		const https = await mockttp.generateCACertificate();
-		// const https = { key: cert.key, cert: cert.cert };
-		// const proxyServer = mockttp.getLocal({ https });
-		const proxyServer = mockttp.getLocal({
-			cors: true,
-			debug: true,
-			http2: true,
-			https,
-			recordTraffic: false
-		});
-		// const proxyServer = mockttp.getLocal({ ssl: { key: cert.key, cert: cert.cert } });
+		// const https = await mockttp.generateCACertificate();
+		// // const https = { key: cert.key, cert: cert.cert };
+		// // const proxyServer = mockttp.getLocal({ https });
+		// const proxyServer = mockttp.getLocal({
+		// 	cors: true,
+		// 	debug: true,
+		// 	http2: true,
+		// 	https,
+		// 	recordTraffic: false
+		// });
 
-		await proxyServer
-			.forAnyRequest()
-			.forHostname(hostname)
-			.always()
-			.thenForwardTo(testServerUrl);
+		// await proxyServer
+		// 	.forAnyRequest()
+		// 	.forHostname(hostname)
+		// 	.always()
+		// 	.thenForwardTo(testServerUrl);
 
 		// await proxyServer.forAnyRequest().thenPassThrough();
 
 
 
-		await proxyServer.start(proxyServerPort);
-
-		//set up a general rule to allow all requests to continue as normal
-		// await proxyServer.forAnyRequest().thenReply(200, `hello world`);
-		// await proxyServer.forAnyRequest().thenPassThrough();
-
-		// Start the server
-		// setTimeout(() => {
-		// 	proxyServer.stop();
-		// 	console.log(`proxy server stopped`);
-		// }, 1000 * 10);
+		// await proxyServer.start(proxyServerPort);
 
 
 		// const proxyServerPort = proxyServer.port;
@@ -287,8 +313,6 @@
 		// await clientWindow.webContents.session.setProxy({
 		// 	proxyRules: `https://localhost:${proxyServerPort}`
 		// });
-
-		// electronLayer.commandLine.appendSwitch(`proxy-server`, `https://localhost:${proxyServerPort}`);
 
 		// console.log(`setProxy:`, `https://localhost:${proxyServerPort}`);
 	}

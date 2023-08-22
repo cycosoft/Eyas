@@ -38,6 +38,7 @@
     "express": "^4.18.2",
     "get-port": "^7.0.0",
     "http-proxy": "^1.18.1",
+    "http-proxy-middleware": "^2.0.6",
     "mkcert": "^1.5.1",
     "mockttp": "^3.9.1"
   },
