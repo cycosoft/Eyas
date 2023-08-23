@@ -33,7 +33,15 @@
 
 	// Configure Electron to ignore certificate errors
 	// electronLayer.commandLine.appendSwitch(`ignore-certificate-errors`);
-	// electronLayer.commandLine.appendSwitch(`proxy-server`, `https://localhost:${proxyServerPort}`);
+	electronLayer.commandLine.appendSwitch(`proxy-server`, `https://localhost:${proxyServerPort}`);
+
+	const ca = await mkcert.createCA({
+		organization: `Cycosoft, LLC - Test Server`,
+		countryCode: `US`,
+		state: `Arizona`,
+		locality: `Chandler`,
+		validityDays: 7
+	});
 
 	// start the test server
 	await setupTestServer();
@@ -159,6 +167,8 @@
 
 	// Set up Express to serve files from dist/
 	async function setupTestServer () {
+		//NOTE: might not need express
+
 		// Create the Express app
 		expressLayer = express();
 
@@ -166,21 +176,21 @@
 		expressLayer.use(express.static(path.join(process.cwd(), config.testSourceDirectory)));
 
 		//is this actually doing anything?
-		expressLayer.use((req, res, next) => {
-			console.log(`Received request: ${req.method} ${req.url}`);
-			next();
-		});
+		// expressLayer.use((req, res, next) => {
+		// 	console.log(`Received request: ${req.method} ${req.url}`);
+		// 	next();
+		// });
 
 		// create SSL certificate for the server
-		const ca = await mkcert.createCA({
-			organization: `Cycosoft, LLC - Test Server`,
-			countryCode: `US`,
-			state: `Arizona`,
-			locality: `Chandler`,
-			validityDays: 7
-		});
+		// const ca = await mkcert.createCA({
+		// 	organization: `Cycosoft, LLC - Test Server`,
+		// 	countryCode: `US`,
+		// 	state: `Arizona`,
+		// 	locality: `Chandler`,
+		// 	validityDays: 7
+		// });
 
-		console.log({ca});
+		// console.log({ca});
 
 		// process.env.NODE_EXTRA_CA_CERTS = ca.cert;
 
@@ -191,11 +201,19 @@
 			caCert: ca.cert
 		});
 
-		console.log({cert});
+		// console.log({cert});
+
+		var testServerOptions = {
+			key: cert.key,
+			cert: cert.cert,
+			ca: ca.cert,
+			requestCert: true,
+			rejectUnauthorized: true
+		};
 
 		// Start the server
 		return https
-			.createServer({ key: cert.key, cert: cert.cert }, expressLayer)
+			.createServer(testServerOptions, expressLayer)
 			.listen(testServerPort, () => {
 				console.log(`started test server on ${testServerPort}`);
 
@@ -215,19 +233,19 @@
 		console.log(`proxy goal:`, {hostname});
 
 		// create SSL certificate for the server
-		const ca = await mkcert.createCA({
-			organization: `Cycosoft, LLC - Proxy Server`,
-			countryCode: `US`,
-			state: `Arizona`,
-			locality: `Chandler`,
-			validityDays: 7
-		});
+		// const ca = await mkcert.createCA({
+		// 	organization: `Cycosoft, LLC - Proxy Server`,
+		// 	countryCode: `US`,
+		// 	state: `Arizona`,
+		// 	locality: `Chandler`,
+		// 	validityDays: 7
+		// });
 
 		// Configure the NODE_EXTRA_CA_CERTS environment variable to use the root CA certificate
 		// process.env.NODE_EXTRA_CA_CERTS = ca.cert;
 
 		const cert = await mkcert.createCert({
-			domains: [`google.com`, `*.google.com`, `localhost`, `127.0.0.1`, `::1`],
+			domains: [`localhost`],
 			validityDays: 7,
 			caKey: ca.key,
 			caCert: ca.cert
@@ -265,7 +283,45 @@
 		// 	electronInit();
 		// });
 
-		// const httpProxy = require(`http-proxy`);
+		const httpProxy = require(`http-proxy`);
+		var proxy = httpProxy.createServer();
+		// https://github.com/nodejitsu/node-http-proxy/issues/734
+		//	this might not be needed any longer
+		proxy.on(`proxyRes`, function(proxyRes, req, res) {
+			console.log(`proxy response:`, req.url);
+			if (res.shouldKeepAlive) {
+				proxyRes.headers.connection = `keep-alive`;
+			}
+		});
+
+		var proxyServer = http.createServer(function(req, res) {
+			var proxyServerOptions = {
+				target: {
+					host: `localhost`,
+					port: testServerPort,
+					protocol: `https:`,
+					key: cert.key,
+					cert: cert.cert,
+					ca: ca.cert
+				},
+				changeOrigin: true
+			};
+
+			proxy.web(req, res, proxyServerOptions, function(err) {
+				console.log(`oh nooooo: ` + err.toString());
+
+				if (!res.headersSent) {
+					res.statusCode = 502;
+					res.end(`bad gateway`);
+				}
+			});
+		});
+
+		proxyServer.listen(proxyServerPort, function() {
+			console.log(`proxy server on port ${proxyServerPort}`);
+			electronInit();
+		});
+
 		// const proxyServer = httpProxy.createProxyServer({
 		// 	target: testServerUrl,
 		// 	ssl: { key: cert.key, cert: cert.cert },
@@ -292,25 +348,25 @@
 		// });
 
 		// Create a proxy server with a self-signed HTTPS CA certificate:
-		const certs = await mockttp.generateCACertificate();
+		// const certs = await mockttp.generateCACertificate();
 		// const certs = { key: cert.key, cert: cert.cert };
 		// const proxyServer = mockttp.getLocal({ https });
-		const proxyServer = mockttp.getLocal({
-			cors: true,
-			debug: true,
-			http2: true,
-			https: certs,
-			recordTraffic: false
-		});
-		await proxyServer
-			.forAnyRequest()
-			.forHostname(hostname)
-			.always()
-			.thenForwardTo(testServerUrl);
-		await proxyServer.forAnyRequest().thenPassThrough();
-		await proxyServer.start(proxyServerPort);
+		// const proxyServer = mockttp.getLocal({
+		// 	cors: true,
+		// 	debug: true,
+		// 	http2: true,
+		// 	https: certs,
+		// 	recordTraffic: false
+		// });
+		// await proxyServer
+		// 	.forAnyRequest()
+		// 	.forHostname(hostname)
+		// 	.always()
+		// 	.thenForwardTo(testServerUrl);
+		// await proxyServer.forAnyRequest().thenPassThrough();
+		// await proxyServer.start(proxyServerPort);
 
-		electronInit();
+
 
 
 		// const proxyServerPort = proxyServer.port;
