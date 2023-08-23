@@ -43,6 +43,8 @@
 		validityDays: 7
 	});
 
+	// process.env.NODE_EXTRA_CA_CERTS = ca.cert;
+
 	// start the test server
 	await setupTestServer();
 
@@ -192,7 +194,7 @@
 
 		// console.log({ca});
 
-		// process.env.NODE_EXTRA_CA_CERTS = ca.cert;
+
 
 		const cert = await mkcert.createCert({
 			domains: [`localhost`],
