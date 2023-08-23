@@ -2,12 +2,16 @@
 
 //note https://httptoolkit.com/blog/javascript-mitm-proxy-mockttp/
 
+// We have to deal with self-signed and therefore untrusted root certificates.
+// process.env.NODE_TLS_REJECT_UNAUTHORIZED = `0`;
+
 //wrapped in an async function to allow for await calls
 (async () => {
 	// imports
 	const { app: electronLayer, BrowserWindow, Menu, dialog, shell } = require(`electron`);
 	const express = require(`express`);
 	const path = require(`path`);
+	const http = require(`http`);
 	const https = require(`https`);
 	const mkcert = require(`mkcert`);
 	const mockttp = require(`mockttp`);
@@ -28,8 +32,8 @@
 	let expressLayer = null;
 
 	// Configure Electron to ignore certificate errors
-	electronLayer.commandLine.appendSwitch(`ignore-certificate-errors`);
-	electronLayer.commandLine.appendSwitch(`proxy-server`, `https://localhost:${proxyServerPort}`);
+	// electronLayer.commandLine.appendSwitch(`ignore-certificate-errors`);
+	// electronLayer.commandLine.appendSwitch(`proxy-server`, `https://localhost:${proxyServerPort}`);
 
 	// start the test server
 	await setupTestServer();
@@ -155,7 +159,7 @@
 
 	// Set up Express to serve files from dist/
 	async function setupTestServer () {
-	// Create the Express app
+		// Create the Express app
 		expressLayer = express();
 
 		// Serve static files from dist/
@@ -176,12 +180,18 @@
 			validityDays: 7
 		});
 
+		console.log({ca});
+
+		// process.env.NODE_EXTRA_CA_CERTS = ca.cert;
+
 		const cert = await mkcert.createCert({
 			domains: [`localhost`],
 			validityDays: 7,
 			caKey: ca.key,
 			caCert: ca.cert
 		});
+
+		console.log({cert});
 
 		// Start the server
 		return https
@@ -212,6 +222,9 @@
 			locality: `Chandler`,
 			validityDays: 7
 		});
+
+		// Configure the NODE_EXTRA_CA_CERTS environment variable to use the root CA certificate
+		// process.env.NODE_EXTRA_CA_CERTS = ca.cert;
 
 		const cert = await mkcert.createCert({
 			domains: [`google.com`, `*.google.com`, `localhost`, `127.0.0.1`, `::1`],
@@ -279,8 +292,8 @@
 		// });
 
 		// Create a proxy server with a self-signed HTTPS CA certificate:
-		// const certs = await mockttp.generateCACertificate();
-		const certs = { key: cert.key, cert: cert.cert };
+		const certs = await mockttp.generateCACertificate();
+		// const certs = { key: cert.key, cert: cert.cert };
 		// const proxyServer = mockttp.getLocal({ https });
 		const proxyServer = mockttp.getLocal({
 			cors: true,
@@ -289,18 +302,14 @@
 			https: certs,
 			recordTraffic: false
 		});
-
 		await proxyServer
 			.forAnyRequest()
 			.forHostname(hostname)
 			.always()
 			.thenForwardTo(testServerUrl);
-
 		await proxyServer.forAnyRequest().thenPassThrough();
-
-
-
 		await proxyServer.start(proxyServerPort);
+
 		electronInit();
 
 
@@ -320,6 +329,7 @@
 
 	// SSL/TSL: this is the self signed certificate support
 	// electronLayer.on(`certificate-error`, (event, webContents, url, error, certificate, callback) => {
+	// 	console.log(`cert error detected`);
 	// // On certificate error we disable default behavior (stop loading the page)
 	// // and we then say "it is all fine - true" to the callback
 	// 	event.preventDefault();

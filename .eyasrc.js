@@ -13,6 +13,6 @@ module.exports = {
 	appHeight: 768,
 	menu: [
 		{ label: `Cycosoft.com`, url: `https://cycosoft.com`, external: false },
-		{ label: `Proxy Server`, url: `https://localhost:443`, external: false }
+		{ label: `Test Server`, url: `https://localhost:3000`, external: false }
 	]
 };
