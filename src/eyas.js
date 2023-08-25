@@ -8,7 +8,14 @@
 //wrapped in an async function to allow for await calls
 (async () => {
 	// imports
-	const { app: electronLayer, BrowserWindow, Menu, dialog, shell } = require(`electron`);
+	const {
+		app: electronLayer,
+		BrowserWindow,
+		Menu,
+		dialog,
+		shell,
+		session
+	} = require(`electron`);
 	const express = require(`express`);
 	const path = require(`path`);
 	const http = require(`http`);
@@ -22,31 +29,52 @@
 	const testServerPort = config.serverPort || 3000;
 	const testServerUrl = `https://localhost:${testServerPort}`;
 	const proxyServerPort = 3100;
+	const dnsServerPort = 3200;
 	const appUrl = config.appUrl || testServerUrl;
 	const windowConfig = {
 		width: config.appWidth,
 		height: config.appHeight,
-		title: `${appTitle} : ${config.appTitle} : ${config.buildVersion || `Unspecified Build`} ✨`.trim()
+		title: `${appTitle} : ${config.appTitle} : ${config.buildVersion || `Unspecified Build`} ✨`.trim(),
+		webPreferences: {
+			contextIsolation: false
+		}
 	};
 	let clientWindow = null;
 	let expressLayer = null;
 
 	// Configure Electron to ignore certificate errors
 	// electronLayer.commandLine.appendSwitch(`ignore-certificate-errors`);
-	electronLayer.commandLine.appendSwitch(`proxy-server`, `https://localhost:${proxyServerPort}`);
+	// electronLayer.commandLine.appendSwitch(`proxy-server`, `https://localhost:${proxyServerPort}`);
+	// electronLayer.commandLine.appendSwitch(
+	// 	`host-resolver-rules`,
+	// 	`MAP * ~NOTFOUND, EXCLUDE localhost:${dnsServerPort}`
+	// );
 
-	const ca = await mkcert.createCA({
-		organization: `Cycosoft, LLC - Test Server`,
-		countryCode: `US`,
-		state: `Arizona`,
-		locality: `Chandler`,
-		validityDays: 7
-	});
+	// const { hostname } = new URL(config.appUrl);
+	// console.log(`proxy goal:`, {hostname});
+
+
+	electronLayer.commandLine.appendSwitch(`host-resolver-rules`, `MAP *.google.com localhost:3000`);
+	// electronLayer.commandLine.appendSwitch(`host-rules`, `MAP google.com localhost:3000`);
+	// electronLayer.commandLine.appendSwitch(`host-rules`, `MAP google.com/ localhost:3000`);
+	// electronLayer.commandLine.appendSwitch(`host-rules`, `MAP https://google.com localhost:3000`);
+	// electronLayer.commandLine.appendSwitch(`host-rules`, `MAP https://google.com/ localhost:3000`);
+	// electronLayer.commandLine.appendSwitch(`host-rules`, `MAP www.google.com localhost:3000`);
+	// electronLayer.commandLine.appendSwitch(`host-rules`, `MAP www.google.com/ localhost:3000`);
+
+	// const ca = await mkcert.createCA({
+	// 	organization: `Cycosoft, LLC - Test Server`,
+	// 	countryCode: `US`,
+	// 	state: `Arizona`,
+	// 	locality: `Chandler`,
+	// 	validityDays: 7
+	// });
 
 	// process.env.NODE_EXTRA_CA_CERTS = ca.cert;
 
 	// start the test server
 	await setupTestServer();
+	// await startMockTtpServer();
 
 	// start the proxy server
 	// await createProxyServer();
@@ -56,6 +84,15 @@
 		electronLayer.whenReady()
 		// then create the UI
 			.then(() => {
+				// const { hostname } = new URL(config.appUrl);
+				// console.log(`proxy goal:`, {hostname});
+
+				// electronLayer.commandLine.appendSwitch(
+				// 	`host-rules`,
+				// 	// `MAP ${hostname} ${testServerUrl}`
+				// 	`MAP google.com localhost:3000`
+				// );
+
 				startApplication();
 
 				// On macOS it`s common to re-create a window in the app when the
@@ -157,6 +194,34 @@
 		// Create the browser window
 		clientWindow = new BrowserWindow(windowConfig);
 
+		// Create a custom session for request handling
+		// const customSession = session.fromPartition(`custom-session`);
+
+		// Intercept and handle requests
+		// customSession.webRequest.onBeforeRequest((details, callback) => {
+		// clientWindow.webContents.session.webRequest.onBeforeRequest((details, callback) => {
+		// 	const originalUrl = details.url;
+
+		// 	if (
+		// 		(
+		// 			details.referrer === ``
+		// 			|| details.referrer === config.appUrl
+		// 		)
+		// 		&& originalUrl.startsWith(config.appUrl)
+		// 	) {
+		// 		console.log(`it starts with config.appUrl`);
+		// 		// Modify the destination URL to your local server's address
+		// 		const modifiedDetails = {
+		// 			...details,
+		// 			url: originalUrl.replace(config.appUrl, `${testServerUrl}/`)
+		// 		};
+		// 		console.log({modifiedDetails});
+		// 		callback(modifiedDetails);
+		// 	} else {
+		// 		callback(details);
+		// 	}
+		// });
+
 		// Create a menu template
 		setMenu();
 
@@ -194,37 +259,102 @@
 
 		// console.log({ca});
 
-
+		const ca = await mkcert.createCA({
+			organization: `Cycosoft, LLC - Test Server`,
+			countryCode: `US`,
+			state: `Arizona`,
+			locality: `Chandler`,
+			validityDays: 7
+		});
 
 		const cert = await mkcert.createCert({
-			domains: [`localhost`],
-			validityDays: 7,
-			caKey: ca.key,
-			caCert: ca.cert
+			ca,
+			domains: [`localhost`, `127.0.0.1`],
+			validity: 7
 		});
 
 		// console.log({cert});
 
 		var testServerOptions = {
 			key: cert.key,
-			cert: cert.cert,
-			ca: ca.cert,
-			requestCert: true,
-			rejectUnauthorized: true
+			cert: cert.cert//,
+			// ca: ca.cert,
+			// requestCert: true,
+			// rejectUnauthorized: true
 		};
 
 		// Start the server
 		return https
 			.createServer(testServerOptions, expressLayer)
-			.listen(testServerPort, () => {
+			.listen(testServerPort, async () => {
 				console.log(`started test server on ${testServerPort}`);
 
-				createProxyServer();
+				// electronLayer.commandLine.appendSwitch(`host-resolver-rules`, `MAP * 127.0.0.1`);
+
+				// await createProxyServer();
+				// createDnsServer();
+				electronInit();
 			});
+	}
+
+	async function startMockTtpServer() {
+		// Create a proxy server with a self-signed HTTPS CA certificate:
+		const certs = await mockttp.generateCACertificate();
+		// const certs = { key: cert.key, cert: cert.cert };
+		// const proxyServer = mockttp.getLocal({ https });
+		const server = mockttp.getLocal({
+			cors: true,
+			debug: true,
+			http2: true,
+			https: certs,
+			recordTraffic: false
+		});
+		// await server
+		// 	.forAnyRequest()
+		// 	.forHostname(hostname)
+		// 	.always()
+		// 	.thenForwardTo(testServerUrl);
+		// await server.forAnyRequest().thenPassThrough();
+		await server.start(testServerPort);
+		electronInit();
 	}
 
 	// Properly close the server when the app is closed
 	electronLayer.on(`before-quit`, () => process.exit(0));
+
+	//
+	function createDnsServer() {
+		const dns2 = require(`dns2`);
+		const server = dns2.createUDPServer();
+
+		const localIpAddress = `127.0.0.1`; // Replace with your local IP address
+
+		server.on(`request`, (request, send, rinfo) => {
+			console.log({request});
+			console.log({send});
+			console.log({rinfo});
+			const response = dns2.Packet.createResponseFromRequest(request);
+
+			//
+			console.log(request.questions[0].name);
+			if (request.questions[0].name === config.appUrl) {
+				response.answers.push({
+					name: config.appUrl,
+					type: dns2.Packet.TYPE.A,
+					class: dns2.Packet.CLASS.IN,
+					ttl: 300,
+					address: localIpAddress
+				});
+			}
+
+			send(response);
+		});
+
+		server.listen(dnsServerPort, `0.0.0.0`, () => {
+			console.log(`DNS server is running on port`, server.address().port);
+			electronInit();
+		});
+	}
 
 	async function createProxyServer() {
 		//if the user didn't specify an appUrl, don't create a proxy server
@@ -234,23 +364,13 @@
 		const { hostname } = new URL(config.appUrl);
 		console.log(`proxy goal:`, {hostname});
 
-		// create SSL certificate for the server
-		// const ca = await mkcert.createCA({
-		// 	organization: `Cycosoft, LLC - Proxy Server`,
-		// 	countryCode: `US`,
-		// 	state: `Arizona`,
-		// 	locality: `Chandler`,
-		// 	validityDays: 7
-		// });
-
 		// Configure the NODE_EXTRA_CA_CERTS environment variable to use the root CA certificate
 		// process.env.NODE_EXTRA_CA_CERTS = ca.cert;
 
 		const cert = await mkcert.createCert({
-			domains: [`localhost`],
-			validityDays: 7,
-			caKey: ca.key,
-			caCert: ca.cert
+			ca: { key: ca.key, cert: ca.cert },
+			domains: [`127.0.0.1`, `localhost`],
+			validity: 7
 		});
 
 		// const { createProxyMiddleware } = require(`http-proxy-middleware`);
@@ -385,14 +505,14 @@
 		// console.log(`setProxy:`, `https://localhost:${proxyServerPort}`);
 	}
 
-	// SSL/TSL: this is the self signed certificate support
-	// electronLayer.on(`certificate-error`, (event, webContents, url, error, certificate, callback) => {
-	// 	console.log(`cert error detected`);
-	// // On certificate error we disable default behavior (stop loading the page)
-	// // and we then say "it is all fine - true" to the callback
-	// 	event.preventDefault();
-	// 	callback(true);
-	// });
+	//Allow self-signed certificates to be used instead of showing a blank page
+	electronLayer.on(`certificate-error`, (event, webContents, url, error, certificate, callback) => {
+		console.error(`cert error detected`);
+		// On certificate error we disable default behavior (stop loading the page)
+		// and we then say "it is all fine - true" to the callback
+		event.preventDefault();
+		callback(true);
+	});
 
 	//perform app cleanup
 	//	shut down test server
