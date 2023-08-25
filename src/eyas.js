@@ -54,7 +54,14 @@
 	// console.log(`proxy goal:`, {hostname});
 
 
-	electronLayer.commandLine.appendSwitch(`host-resolver-rules`, `MAP *.google.com localhost:3000`);
+	//if a custom domain is provided
+	if(config.appUrl){
+		//override requests to the custom domain to use the test server
+		electronLayer.commandLine.appendSwitch(
+			`host-resolver-rules`,
+			`MAP *.google.com localhost:${testServerPort}`
+		);
+	}
 	// electronLayer.commandLine.appendSwitch(`host-rules`, `MAP google.com localhost:3000`);
 	// electronLayer.commandLine.appendSwitch(`host-rules`, `MAP google.com/ localhost:3000`);
 	// electronLayer.commandLine.appendSwitch(`host-rules`, `MAP https://google.com localhost:3000`);
@@ -269,7 +276,7 @@
 
 		const cert = await mkcert.createCert({
 			ca,
-			domains: [`localhost`, `127.0.0.1`],
+			domains: [`localhost`],
 			validity: 7
 		});
 
