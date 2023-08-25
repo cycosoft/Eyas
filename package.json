@@ -44,7 +44,7 @@
     "mockttp": "^3.9.1"
   },
   "devDependencies": {
-    "eslint": "^8.47.0",
+    "eslint": "^8.48.0",
     "npm-check": "^6.0.1",
     "uglify-js": "^3.17.4"
   }
