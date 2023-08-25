@@ -31,6 +31,7 @@
 	};
 	let clientWindow = null;
 	let expressLayer = null;
+	let testServer = null;
 
 	// Configure Electron to ignore certificate errors
 	electronLayer.commandLine.appendSwitch(`ignore-certificate-errors`);
@@ -45,7 +46,7 @@
 	}
 
 	// start the test server
-	await setupTestServer();
+	setupTestServer();
 
 	// then listen for the app to be ready
 	function electronInit() {
@@ -149,7 +150,7 @@
 	}
 
 	// Configure and create an instance of BrowserWindow to display the UI
-	async function startApplication () {
+	function startApplication() {
 		// Create the browser window
 		clientWindow = new BrowserWindow(windowConfig);
 
@@ -164,7 +165,7 @@
 	}
 
 	// Set up Express to serve files from dist/
-	async function setupTestServer () {
+	async function setupTestServer() {
 		// Create the Express app
 		expressLayer = express();
 
@@ -185,19 +186,18 @@
 			validity: 7
 		});
 
-		var testServerOptions = {
-			key: cert.key,
-			cert: cert.cert
-		};
-
 		// Start the server
-		return https
-			.createServer(testServerOptions, expressLayer)
-			.listen(testServerPort, async () => {
-				electronInit();
-			});
+		testServer = https
+			.createServer({ key: cert.key, cert: cert.cert }, expressLayer)
+			.listen(testServerPort, electronInit);
 	}
 
 	// Properly close the server when the app is closed
-	electronLayer.on(`before-quit`, () => process.exit(0));
+	electronLayer.on(`before-quit`, () => {
+		// Shut down the HTTPS server
+		testServer.close(() => {
+			// Exit the Node.js process with a status code of 0
+			process.exit(0);
+		});
+	});
 })();
