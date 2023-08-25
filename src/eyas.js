@@ -43,7 +43,7 @@
 	let expressLayer = null;
 
 	// Configure Electron to ignore certificate errors
-	// electronLayer.commandLine.appendSwitch(`ignore-certificate-errors`);
+	electronLayer.commandLine.appendSwitch(`ignore-certificate-errors`);
 	// electronLayer.commandLine.appendSwitch(`proxy-server`, `https://localhost:${proxyServerPort}`);
 	// electronLayer.commandLine.appendSwitch(
 	// 	`host-resolver-rules`,
@@ -513,13 +513,13 @@
 	}
 
 	//Allow self-signed certificates to be used instead of showing a blank page
-	electronLayer.on(`certificate-error`, (event, webContents, url, error, certificate, callback) => {
-		console.error(`cert error detected`);
-		// On certificate error we disable default behavior (stop loading the page)
-		// and we then say "it is all fine - true" to the callback
-		event.preventDefault();
-		callback(true);
-	});
+	// electronLayer.on(`certificate-error`, (event, webContents, url, error, certificate, callback) => {
+	// 	console.error(`cert error detected`);
+	// 	// On certificate error we disable default behavior (stop loading the page)
+	// 	// and we then say "it is all fine - true" to the callback
+	// 	event.preventDefault();
+	// 	callback(true);
+	// });
 
 	//perform app cleanup
 	//	shut down test server
