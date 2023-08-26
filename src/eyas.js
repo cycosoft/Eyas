@@ -33,10 +33,7 @@
 	const windowConfig = {
 		width: config.appWidth,
 		height: config.appHeight,
-		title: getAppTitle(),
-		webPreferences: {
-			contextIsolation: false
-		}
+		title: getAppTitle()
 	};
 
 	// Configure Electron to ignore certificate errors
