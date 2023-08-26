@@ -71,7 +71,7 @@
 		let output = null;
 
 		// exit if not a valid url
-		if(!isURL(url)){ return output; }
+		if(!url || !isURL(url)){ return output; }
 
 		// parse the url
 		const parsed = parseURL(url);
