@@ -32,6 +32,8 @@ module.exports = {
 		'quote-props': [`error`, `as-needed`],
 		'prefer-const': [`error`],
 		'arrow-parens': [`error`, `as-needed`],
-		'no-spaced-func': [`error`]
+		'no-spaced-func': [`error`],
+		'no-trailing-spaces': [`error`],
+		"spaced-comment": [`error`, `always`]
 	}
 };

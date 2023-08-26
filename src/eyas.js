@@ -1,6 +1,6 @@
 /* global process */
 
-//wrapped in an async function to allow for "root" await calls
+// wrapped in an async function to allow for "root" await calls
 (async () => {
 	// imports
 	const {
@@ -76,7 +76,7 @@
 	});
 
 	function setMenu () {
-	//build the default menu in MacOS style
+	// build the default menu in MacOS style
 		const menuDefault = [
 			{
 				label: appTitle,
@@ -128,10 +128,10 @@
 
 		// Add the menu items from the config
 		if(config.menu?.length){
-			//add a custom menu item
+			// add a custom menu item
 			const finalIndex = menuDefault.push({ label: `💼 Custom`, submenu: [] }) - 1;
 
-			//push the custom items into the menu
+			// push the custom items into the menu
 			config.menu.forEach(item => menuDefault[finalIndex].submenu.push({
 				label: item.label || item.url,
 				click: () => navigate(item.url, item.external)
@@ -142,7 +142,7 @@
 		Menu.setApplicationMenu(Menu.buildFromTemplate(menuDefault));
 	}
 
-	//manage navigation
+	// manage navigation
 	function navigate (url, external) {
 		// go to the requested url in electron
 		!external && clientWindow.loadURL(url);
