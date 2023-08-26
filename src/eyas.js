@@ -21,7 +21,7 @@
 	const appTitle = `Eyas`;
 	const testServerPort = config.serverPort || 3000;
 	const testServerUrl = `https://localhost:${testServerPort}`;
-	const appUrl = config.customDomain || testServerUrl;
+	let appUrl = testServerUrl; // default to the test server
 	const windowConfig = {
 		width: config.appWidth,
 		height: config.appHeight,
@@ -37,14 +37,17 @@
 	// Configure Electron to ignore certificate errors
 	electronLayer.commandLine.appendSwitch(`ignore-certificate-errors`);
 
-	//if a custom domain is provided
-	console.log(isURL(config.customDomain));
+	// if a custom domain is provided
 	if(config.customDomain && isURL(config.customDomain)){
-		//override requests to the custom domain to use the test server
+		console.log(`custom domain is set AND is valid`);
+		// override requests to the custom domain to use the test server
 		electronLayer.commandLine.appendSwitch(
 			`host-resolver-rules`,
 			`MAP *.google.com localhost:${testServerPort}`
 		);
+
+		// set the app url to the custom domain
+		appUrl = config.customDomain;
 	}
 
 	// start the test server
