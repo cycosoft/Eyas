@@ -1,5 +1,7 @@
 /* global process */
 
+'use strict';
+
 // wrapped in an async function to allow for "root" await calls
 (async () => {
 	// imports
@@ -15,13 +17,15 @@
 	const https = require(`https`);
 	const mkcert = require(`mkcert`);
 	const config = require(path.join(process.cwd(), `.eyasrc.js`));
-	var { isURL } = require(`validator`);
+	const { isURL } = require(`validator`);
+	const parseURL = require(`url-parse`);
 
 	// config
 	const appName = `Eyas`;
 	const testServerPort = config.serverPort || 3000;
 	const testServerUrl = `https://localhost:${testServerPort}`;
-	let appUrl = testServerUrl; // default to the test server
+	const appUrlOverride = formatURL(config.customDomain);
+	const appUrl = appUrlOverride || testServerUrl;
 	let clientWindow = null;
 	let expressLayer = null;
 	let testServer = null;
@@ -38,20 +42,43 @@
 	electronLayer.commandLine.appendSwitch(`ignore-certificate-errors`);
 
 	// if a custom domain is provided
-	if(config.customDomain && isURL(config.customDomain)){
-		console.log(`custom domain is set AND is valid`);
+	if(appUrlOverride){
 		// override requests to the custom domain to use the test server
 		electronLayer.commandLine.appendSwitch(
 			`host-resolver-rules`,
 			`MAP *.google.com localhost:${testServerPort}`
 		);
-
-		// set the app url to the custom domain
-		appUrl = config.customDomain;
 	}
 
 	// start the test server
 	setupTestServer();
+
+	// format the url for electron consumption
+	function formatURL(url) {
+		// config
+		let output = null;
+
+		// exit if not a valid url
+		if(!isURL(url)){ return output; }
+
+		//
+		const parsed = parseURL(url);
+
+		console.log(parsed);
+
+		//
+		if(!parsed.protocol){
+			console.log(`no protocol found`);
+			parsed.set(`protocol`, `https:`);
+		}
+
+		//
+		output = parsed.toString();
+
+		console.log({output});
+
+		return output;
+	}
 
 	// then listen for the app to be ready
 	function electronInit() {

@@ -42,6 +42,7 @@
     "http-proxy-middleware": "^2.0.6",
     "mkcert": "^3.0.0",
     "mockttp": "^3.9.1",
+    "url-parse": "^1.5.10",
     "validator": "^13.11.0"
   },
   "devDependencies": {
