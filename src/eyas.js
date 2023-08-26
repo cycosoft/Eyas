@@ -133,7 +133,7 @@
 
 			//push the custom items into the menu
 			config.menu.forEach(item => menuDefault[finalIndex].submenu.push({
-				label: item.label,
+				label: item.label || item.url,
 				click: () => navigate(item.url, item.external)
 			}));
 		}
