@@ -15,6 +15,7 @@
 	const https = require(`https`);
 	const mkcert = require(`mkcert`);
 	const config = require(path.join(process.cwd(), `.eyasrc.js`));
+	var { isURL } = require(`validator`);
 
 	// config
 	const appTitle = `Eyas`;
@@ -37,7 +38,8 @@
 	electronLayer.commandLine.appendSwitch(`ignore-certificate-errors`);
 
 	//if a custom domain is provided
-	if(config.customDomain){
+	console.log(isURL(config.customDomain));
+	if(config.customDomain && isURL(config.customDomain)){
 		//override requests to the custom domain to use the test server
 		electronLayer.commandLine.appendSwitch(
 			`host-resolver-rules`,
