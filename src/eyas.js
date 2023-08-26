@@ -19,7 +19,6 @@
 	const config = require(path.join(process.cwd(), `.eyasrc.js`));
 	const { isURL } = require(`validator`);
 	const parseURL = require(`url-parse`);
-	const ip = require(`ip`);
 
 	// config
 	const appName = `Eyas`;
@@ -42,24 +41,11 @@
 	// if a custom domain is provided
 	if(appUrlOverride){
 		// config
-		let map = `MAP `;
 		const { hostname: routeFrom } = new URL(appUrlOverride);
 		const { host: routeTo } = new URL(testServerUrl);
 
-		// test if the string is an IP address
-		if(!ip.isV4Format(routeFrom) && !ip.isV6Format(routeFrom)){
-			// prepend MAP with wildcard
-			// map += `*.`;
-		}
-
-		// add the route to the map
-		map += `${routeFrom} ${routeTo}`;
-
-		console.log({routeFrom}, {routeTo});
-		console.log(`formatted as:`, map);
-
 		// override requests to the custom domain to use the test server
-		electronLayer.commandLine.appendSwitch(`host-resolver-rules`, map);
+		electronLayer.commandLine.appendSwitch(`host-resolver-rules`, `MAP ${routeFrom} ${routeTo}`);
 	}
 
 	// start the test server
@@ -84,10 +70,6 @@
 
 		// grab the url as a string from the parsed object
 		output = parsed.toString();
-
-		console.log({output});
-
-		// console.log(`new URL`, new URL(output));
 
 		// send back formatted string
 		return output;
