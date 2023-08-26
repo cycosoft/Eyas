@@ -6,7 +6,7 @@ const branch = execSync(`git rev-parse --abbrev-ref HEAD`).toString().trim();
 module.exports = {
 	testSourceDirectory: `src/demo`,
 	// serverPort: 3000,
-	appUrl: `https://test.google.com`,
+	customDomain: `https://test.google.com`,
 	buildVersion: `${branch}`,
 	appTitle: `Demo App`,
 	appWidth: 1024,
