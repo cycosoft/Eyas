@@ -41,7 +41,8 @@
     "http-proxy": "^1.18.1",
     "http-proxy-middleware": "^2.0.6",
     "mkcert": "^3.0.0",
-    "mockttp": "^3.9.1"
+    "mockttp": "^3.9.1",
+    "validator": "^13.11.0"
   },
   "devDependencies": {
     "eslint": "^8.48.0",
