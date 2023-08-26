@@ -49,7 +49,7 @@
 		// test if the string is an IP address
 		if(!ip.isV4Format(routeFrom) && !ip.isV6Format(routeFrom)){
 			// prepend MAP with wildcard
-			map += `*.`;
+			// map += `*.`;
 		}
 
 		// add the route to the map
@@ -82,14 +82,12 @@
 			parsed.set(`protocol`, `https`);
 		}
 
-		console.log(2, parsed);
-
 		// grab the url as a string from the parsed object
 		output = parsed.toString();
 
 		console.log({output});
 
-		console.log(`new URL`, new URL(output));
+		// console.log(`new URL`, new URL(output));
 
 		// send back formatted string
 		return output;
