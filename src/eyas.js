@@ -61,22 +61,19 @@
 		// exit if not a valid url
 		if(!isURL(url)){ return output; }
 
-		//
+		// parse the url
 		const parsed = parseURL(url);
 
-		console.log(parsed);
-
-		//
+		// if the url is missing a protocol
 		if(!parsed.protocol){
-			console.log(`no protocol found`);
+			// default to https
 			parsed.set(`protocol`, `https:`);
 		}
 
-		//
+		// grab the url as a string from the parsed object
 		output = parsed.toString();
 
-		console.log({output});
-
+		// send back formatted string
 		return output;
 	}
 
@@ -164,7 +161,7 @@
 			// push the custom items into the menu
 			config.menu.forEach(item => menuDefault[finalIndex].submenu.push({
 				label: item.label || item.url,
-				click: () => navigate(item.url, item.external)
+				click: () => navigate(formatURL(item.url) || testServerUrl, item.external)
 			}));
 		}
 
