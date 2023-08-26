@@ -18,21 +18,21 @@
 	var { isURL } = require(`validator`);
 
 	// config
-	const appTitle = `Eyas`;
+	const appName = `Eyas`;
 	const testServerPort = config.serverPort || 3000;
 	const testServerUrl = `https://localhost:${testServerPort}`;
 	let appUrl = testServerUrl; // default to the test server
+	let clientWindow = null;
+	let expressLayer = null;
+	let testServer = null;
 	const windowConfig = {
 		width: config.appWidth,
 		height: config.appHeight,
-		title: `${appTitle} : ${config.appTitle} : ${config.buildVersion || `Unspecified Build`} ✨`.trim(),
+		title: getAppTitle(),
 		webPreferences: {
 			contextIsolation: false
 		}
 	};
-	let clientWindow = null;
-	let expressLayer = null;
-	let testServer = null;
 
 	// Configure Electron to ignore certificate errors
 	electronLayer.commandLine.appendSwitch(`ignore-certificate-errors`);
@@ -82,7 +82,7 @@
 	// build the default menu in MacOS style
 		const menuDefault = [
 			{
-				label: appTitle,
+				label: appName,
 				submenu: [
 					{
 						label: `🏃 Exit`,
@@ -91,7 +91,7 @@
 								type: `question`,
 								buttons: [`Yes`, `No`],
 								title: `Exit Confirmation`,
-								message: `Close ${appTitle}?`
+								message: `Close ${appName}?`
 							}).then(result => {
 							// User clicked "Yes"
 								if (result.response === 0) {
@@ -163,10 +163,36 @@
 		setMenu();
 
 		// Prevent the title from changing
-		clientWindow.on(`page-title-updated`, evt => evt.preventDefault());
+		clientWindow.on(`page-title-updated`, evt => {
+			// Prevent the app from changing the title automatically
+			evt.preventDefault();
+
+			// set a custom title
+			clientWindow.setTitle(getAppTitle());
+		});
 
 		// Load the index.html of the app
 		navigate(appUrl);
+	}
+
+	// Get the app title
+	function getAppTitle() {
+		// Always start with the app name
+		let output = `${appName}`;
+
+		// Add the app title
+		output += ` :: ${config.appTitle.trim() || `Unknown App`}`;
+
+		// Add the build version
+		output += ` :: ${config.buildVersion.trim() || `Unspecified Build`} ✨`;
+
+		// Add the current URL if it`s available
+		if (clientWindow){
+			output += ` :: ( ${clientWindow.webContents.getURL()} )`;
+		}
+
+		// Return the built title
+		return output;
 	}
 
 	// Set up Express to serve files from dist/
