@@ -10,6 +10,7 @@
     "eyas": "./cli.min.js"
   },
   "scripts": {
+    "_______________DEV_______________": "",
     "demo": "electron .",
     "dev": "npm i && npm-check -u && electron --trace-warnings src/eyas.js",
     "build": "npm run build:eyas && npm run build:cli",
