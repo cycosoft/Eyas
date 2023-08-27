@@ -1,4 +1,4 @@
-/* global process */
+/* global process, __dirname */
 
 'use strict';
 
@@ -33,7 +33,8 @@
 	const windowConfig = {
 		width: config.appWidth,
 		height: config.appHeight,
-		title: getAppTitle()
+		title: getAppTitle(),
+		icon: path.join(__dirname, `../_design/eyas-logo.png`)
 	};
 
 	// Configure Electron to ignore certificate errors
