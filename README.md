@@ -10,4 +10,6 @@
 
 ## Attribution
 
-Eyas logo by [Freepik](https://www.freepik.com/free-vector/eagle-logo-design-template_45007164.htm)
+This project includes code and assets from the following sources:
+
+- Project Logo [Freepik](https://www.freepik.com/free-vector/eagle-logo-design-template_45007164.htm)
