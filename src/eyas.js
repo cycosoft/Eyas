@@ -216,7 +216,7 @@
 
 		// Add the current URL if it`s available
 		if (clientWindow){
-			output += ` :: ( ${clientWindow.webContents.getURL()} )`;
+			output += ` ( ${clientWindow.webContents.getURL()} )`;
 		}
 
 		// Return the built title
