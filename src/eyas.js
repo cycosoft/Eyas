@@ -54,7 +54,13 @@
 
 	// get the current branch name for the version number
 	function getBranchName() {
-		return execSync(`git rev-parse --abbrev-ref HEAD`).toString().trim();
+		try {
+			return execSync(`git rev-parse --abbrev-ref HEAD`).toString().trim();
+		} catch (error) {
+			// eslint-disable-next-line no-console
+			console.error(`Error getting branch name:`, error);
+			return null;
+		}
 	}
 
 	// format the url for electron consumption
