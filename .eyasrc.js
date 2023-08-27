@@ -1,9 +1,12 @@
+// import the package.json version
+const { version } = require(`./package.json`);
+
 //export the config for the project
 module.exports = {
 	testSourceDirectory: `src/demo`,
 	// serverPort: 3000,
 	customDomain: `demo.eyas.cycosoft.com`,
-	// buildVersion: `${branch}`,
+	buildVersion: `v${version}`,
 	appTitle: `Demo App`,
 	appWidth: 1024,
 	appHeight: 768,
