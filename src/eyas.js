@@ -163,17 +163,22 @@
 			}
 		];
 
-		// Add the menu items from the config
-		if(config.menu?.length){
-			// add a custom menu item
-			const finalIndex = menuDefault.push({ label: `💼 Custom`, submenu: [] }) - 1;
+		// for each menu item where the list exists
+		const customLinkList = [];
+		config.menu?.forEach(item => {
+			// check if the provided url is valid
+			const itemUrl = formatURL(item.url);
 
-			// push the custom items into the menu
-			config.menu.forEach(item => menuDefault[finalIndex].submenu.push({
-				label: item.label || item.url,
-				click: () => navigate(formatURL(item.url) || testServerUrl, item.external)
-			}));
-		}
+			// add the item to the menu
+			customLinkList.push({
+				label: `${item.label || item.url}${itemUrl ? `` : ` (invalid entry)`}`,
+				click: () => navigate(itemUrl, item.external),
+				enabled: !!itemUrl // disable menu item if invalid url
+			});
+		});
+
+		// if there are any valid items THEN add the list to the menu
+		customLinkList.length && menuDefault.push({ label: `💼 Custom`, submenu: customLinkList });
 
 		// Set the modified menu as the application menu
 		Menu.setApplicationMenu(Menu.buildFromTemplate(menuDefault));

@@ -11,6 +11,7 @@ module.exports = {
 	appWidth: 1024,
 	appHeight: 768,
 	menu: [
+		{ url: `server` },
 		{ label: `Cycosoft.com (electron)`, url: `https://cycosoft.com` },
 		{ label: `Cycosoft.com (browser)`, url: `https://cycosoft.com`, external: true },
 		{ url: `https://142.250.217.142` },
