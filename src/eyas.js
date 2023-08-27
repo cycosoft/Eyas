@@ -19,6 +19,7 @@
 	const config = require(path.join(process.cwd(), `.eyasrc.js`));
 	const { isURL } = require(`validator`);
 	const parseURL = require(`url-parse`);
+	const { execSync } = require(`child_process`);
 
 	// config
 	const appName = `Eyas`;
@@ -50,6 +51,11 @@
 
 	// start the test server
 	setupTestServer();
+
+	// get the current branch name for the version number
+	function getBranchName() {
+		return execSync(`git rev-parse --abbrev-ref HEAD`).toString().trim();
+	}
 
 	// format the url for electron consumption
 	function formatURL(url) {
@@ -206,7 +212,7 @@
 		output += ` :: ${config.appTitle.trim() || `Unknown App`}`;
 
 		// Add the build version
-		output += ` :: ${config.buildVersion.trim() || `Unspecified Build`} ✨`;
+		output += ` :: ${config.buildVersion?.trim() || getBranchName() || `Unspecified Build`} ✨`;
 
 		// Add the current URL if it`s available
 		if (clientWindow){
