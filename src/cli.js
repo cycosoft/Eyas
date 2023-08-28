@@ -6,20 +6,20 @@ const { spawn } = require(`child_process`);
 const electron = require(`electron`);
 const path = require(`path`);
 
-//import the package.json file
+// import the package.json file
 const package = require(path.join(__dirname, `package.json`));
 
-//get the path to the eyas entry point
+// get the path to the eyas entry point
 const eyasPath = path.join(__dirname, package.main);
 
-//run the electron app
+// run the electron app
 const child = spawn(electron, [eyasPath], {
 	stdio: `inherit`,
 	windowsHide: false,
 	cwd: process.cwd()
 });
 
-//handle the child process exit
+// handle the child process exit
 child.on(`close`, function (code, signal) {
 	if(code === null) {
 		// eslint-disable-next-line no-console
@@ -30,7 +30,7 @@ child.on(`close`, function (code, signal) {
 	process.exit(code);
 });
 
-//handle termination signals
+// handle termination signals
 const handleTerminationSignal = function (signal) {
 	process.on(signal, function signalHandler () {
 		if (!child.killed) {
@@ -39,6 +39,6 @@ const handleTerminationSignal = function (signal) {
 	});
 };
 
-//run the signal handlers
+// run the signal handlers
 handleTerminationSignal(`SIGINT`);
 handleTerminationSignal(`SIGTERM`);
