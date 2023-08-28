@@ -2,15 +2,17 @@
 
 /* global __dirname process */
 
+'use strict';
+
 const { spawn } = require(`child_process`);
 const electron = require(`electron`);
 const path = require(`path`);
 
 // import the package.json file
-const package = require(path.join(__dirname, `package.json`));
+const packageJson = require(path.join(__dirname, `package.json`));
 
 // get the path to the eyas entry point
-const eyasPath = path.join(__dirname, package.main);
+const eyasPath = path.join(__dirname, packageJson.main);
 
 // run the electron app
 const child = spawn(electron, [eyasPath], {
