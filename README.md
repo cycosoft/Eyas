@@ -23,6 +23,43 @@
 - **Speed** - No special tools needed, just run the app
 - **Cross-platform** - Test your application in multiple environments
 
+## Install
+```bash
+# Install the package
+npm install @cycosoft/eyas
+```
+
+## Configuration
+
+```js
+// .eyasrc.js
+//export the config for the project
+module.exports = {
+	testSourceDirectory: `src/demo`,
+	// serverPort: 3000,
+	customDomain: `demo.eyas.cycosoft.com`,
+	buildVersion: `v${version}`,
+	appTitle: `Demo App`,
+	appWidth: 1024,
+	appHeight: 768,
+	menu: [
+		{ label: `Cycosoft.com (electron)`, url: `https://cycosoft.com` },
+		{ label: `Cycosoft.com (browser)`, url: `https://cycosoft.com`, external: true },
+	]
+};
+```
+
+## Usage
+
+```json
+// package.json
+{
+  "scripts": {
+	"demo": "eyas build"
+  }
+}
+```
+
 ## Attribution
 
 This project includes code and assets from the following sources:
