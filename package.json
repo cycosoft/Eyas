@@ -11,6 +11,7 @@
   },
   "scripts": {
     "_______________DEV_______________": "",
+    "dev:bundler": "node src/bundler.js",
     "demo": "electron .",
     "dev": "npm i && npm-check -u && electron --trace-warnings src/eyas.js",
     "build": "npm run build:eyas && npm run build:cli && npm run build:bundler",
