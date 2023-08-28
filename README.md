@@ -32,20 +32,18 @@ npm install @cycosoft/eyas
 ## Configuration
 
 ```js
-// .eyasrc.js
-//export the config for the project
+// ./.eyasrc.js
 module.exports = {
-	testSourceDirectory: `src/demo`,
-	// serverPort: 3000,
-	customDomain: `demo.eyas.cycosoft.com`,
-	buildVersion: `v${version}`,
-	appTitle: `Demo App`,
-	appWidth: 1024,
-	appHeight: 768,
-	menu: [
-		{ label: `Cycosoft.com (electron)`, url: `https://cycosoft.com` },
-		{ label: `Cycosoft.com (browser)`, url: `https://cycosoft.com`, external: true },
-	]
+  testSourceDirectory: `dist`,
+  serverPort: 3000,
+  customDomain: `demo.cycosoft.com`,
+  buildVersion: `v1.0.1`, //falls back to branch name
+  appTitle: `Demo App`,
+  appWidth: 1024,
+  appHeight: 768,
+  menu: [
+    { label: `Cycosoft.com`, url: `https://cycosoft.com`, external: true },
+  ]
 };
 ```
 
@@ -55,10 +53,18 @@ module.exports = {
 // package.json
 {
   "scripts": {
-	"demo": "eyas build"
+    "demo": "eyas build"
   }
 }
 ```
+
+## ⚠️ Warning ⚠️
+
+This tool disables certain security features of the browser to allow for testing of local files. **Do not use this tool for anything other than testing.**
+
+## Sponsorship
+
+Please reach out to <sponsor@cycosoft.com>
 
 ## Attribution
 
