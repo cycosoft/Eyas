@@ -13,11 +13,15 @@
     "_______________DEV_______________": "",
     "demo": "electron .",
     "dev": "npm i && npm-check -u && electron --trace-warnings src/eyas.js",
-    "build": "npm run build:eyas && npm run build:cli",
+    "build": "npm run build:eyas && npm run build:cli && npm run build:bundler",
     "bundle": "npm ci && npm run build && npm pack",
+    "_____________PUBLISH_____________": "",
+    "publish": "npm ci && npm run dist:clear && npm run build && pkg dist/bundler.min.js --compress --debug --config pkg.config.json --out-path dist",
     "_____________SCRIPTS_____________": "",
-    "build:eyas": "uglifyjs src/eyas.js -c -m --toplevel --output eyas.min.js",
-    "build:cli": "uglifyjs src/cli.js -c -m --toplevel -o cli.min.js"
+    "build:eyas": "uglifyjs src/eyas.js -c -m --toplevel --output dist/eyas.min.js",
+    "build:cli": "uglifyjs src/cli.js -c -m --toplevel -o dist/cli.min.js",
+    "build:bundler": "uglifyjs src/bundler.js -c -m --toplevel -o dist/bundler.min.js",
+    "dist:clear": "shx rm -rf dist && shx mkdir dist"
   },
   "author": "Cycosoft, LLC (https://cycosoft.com)",
   "homepage": "https://cycosoft.com",
@@ -30,8 +34,7 @@
     "server"
   ],
   "files": [
-    "cli.min.js",
-    "eyas.min.js",
+    "dist",
     "README.md"
   ],
   "dependencies": {
@@ -45,6 +48,7 @@
     "eslint": "^8.48.0",
     "npm-check": "^6.0.1",
     "pkg": "^5.8.1",
+    "shx": "^0.3.4",
     "uglify-js": "^3.17.4"
   },
   "overrides": {

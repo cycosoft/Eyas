@@ -1,0 +1,7 @@
+{
+	"name": "eyas",
+	"scripts": [
+		"dist/bundler.min.js",
+		"dist/eyas.min.js"
+	]
+}
