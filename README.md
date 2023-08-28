@@ -16,6 +16,17 @@
 <br />
 <br />
 
+## Table of Contents
+
+- [Features](#features)
+- [Install](#install)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [Warning](#warning)
+- [Support](#support)
+- [Sponsorship](#sponsorship)
+- [Attribution](#attribution)
+
 ## Features
 - **Serverless** - No need to manage servers or containers
 - **Stability** - Increase confidence in your application by testing before merge
@@ -61,6 +72,10 @@ module.exports = {
 ## ⚠️ Warning ⚠️
 
 This tool disables certain security features of the browser to allow for testing of local files. **Do not use this tool for anything other than testing.**
+
+## Support
+
+Submit your feedback to <support+eyas@cycosoft.com>
 
 ## Sponsorship
 
