@@ -8,8 +8,6 @@
 (async () => {
 	console.log(`Hello World!`);
 
-	// build the users application. include eyas.min.js and their source via the config. embed their config values as a new file.
-
 	// create a folder to work in (.eyas/)
 	// copy the eyas.min.js file to the folder
 	// load the users config file as it could contain dynamic values
@@ -21,14 +19,19 @@
 	// delete the .eyas folder
 
 
-	// DEV ONLY (TO BE REMOVED): At the end of your application code, add the following line:
-	const readline = require(`readline`);
-	const rl = readline.createInterface({
-		input: process.stdin,
-		output: process.stdout
-	});
+	// DEV ONLY (TO BE REMOVED)
+	pauseExit();
 
-	rl.question(`Press Enter to exit...`, () => {
-		rl.close();
-	});
+	// TESTING ONLY: Pause the process to allow for debugging
+	function pauseExit() {
+		const readline = require(`readline`);
+		const rl = readline.createInterface({
+			input: process.stdin,
+			output: process.stdout
+		});
+
+		rl.question(`Press Enter to exit...`, () => {
+			rl.close();
+		});
+	}
 })();
