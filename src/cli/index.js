@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-/* global __dirname process */
+/* global process */
 
 'use strict';
 
@@ -10,6 +10,41 @@
 	const { program: cli } = await import(`commander`);
 	const inquirer = await import(`inquirer`);
 
+	// define the commands for the CLI
+	defineCommands(cli);
+
+	// if arguments were passed to the script
+	if(process.argv.slice(2).length) {
+		// parse the arguments and run the commands
+		cli.parse();
+	}else{
+		// fall back to asking the user how to proceed
+		defaultEntry();
+	}
+})();
+
+// ask the user what they want to do
+function defaultEntry() {
+	console.log(`No arguments passed`);
+}
+
+// launch the configuration editor
+function runCommand_config() {
+	console.log(`config command received`);
+}
+
+// launch a preview of the consumers application
+function runCommand_preview() {
+	console.log(`preview command received`);
+}
+
+// compile the consumers application for deployment
+function runCommand_compile() {
+	console.log(`compile command received`);
+}
+
+// define the commands for the CLI
+function defineCommands(cli) {
 	// define the details for the CLI help
 	cli
 		.name(`eyas`)
@@ -20,35 +55,20 @@
 	cli
 		.command(`config`)
 		.description(`Launch the Eyas configuration editor`)
-		.action(() => {
-			console.log(`config command received`);
-		});
+		.action(runCommand_config);
 
 	// when the user runs the `preview` command
 	cli
 		.command(`preview`)
 		.description(`Launch Eyas with the current configuration`)
-		.action(() => {
-			console.log(`preview command received`);
-		});
+		.action(runCommand_preview);
 
 	// when the user runs the `compile` command
 	cli
 		.command(`compile`)
 		.description(`Bundle and compile the current configuration for deployment`)
-		.action(() => {
-			console.log(`compile command received`);
-		});
-
-	// if there are arguments
-	if(process.argv.slice(2).length) {
-		// parse the arguments
-		cli.parse();
-	}else{
-		// ask the user what they want to do
-		console.log(`No arguments passed`);
-	}
-})();
+		.action(runCommand_preview);
+}
 
 
 // const { spawn } = require(`child_process`);
