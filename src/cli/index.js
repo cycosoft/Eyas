@@ -8,7 +8,6 @@
 (async () => {
 	// import dependencies
 	const { program: cli } = await import(`commander`);
-	const inquirer = await import(`inquirer`);
 
 	// define the commands for the CLI
 	defineCommands(cli);
@@ -24,8 +23,22 @@
 })();
 
 // ask the user what they want to do
-function defaultEntry() {
-	console.log(`No arguments passed`);
+async function defaultEntry() {
+	const inquirer = await import(`inquirer`);
+
+	inquirer
+		.prompt([
+			{
+				type: `list`,
+				name: `action`,
+				message: `What would you like to do?`,
+				choices: [`Configure`, `Preview`, `Compile`]
+			}
+		])
+		.then(answers => {
+			// Use user feedback for... whatever!!
+			console.log(answers);
+		});
 }
 
 // launch the configuration editor
