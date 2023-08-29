@@ -1,4 +1,4 @@
-import { bytecodePlugin } from 'electron-vite'
+import { bytecodePlugin } from 'electron-vite';
 
 export default {
 	main: {

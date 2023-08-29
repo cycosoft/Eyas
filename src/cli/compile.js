@@ -1,13 +1,15 @@
 #!/usr/bin/env node
 
-/* global __dirname process */
+/* global process */
 
 'use strict';
 
+// Import dependencies
 const bytenode = require(`bytenode`);
 const path = require(`path`);
 
-const compiledFilename = bytenode.compileFile({
-    filename: path.join(process.cwd(), `src`, `cli`, `index.js`),
-    output: path.join(process.cwd(), `dist`, `cli.jsc`)
+// Compile the CLI with options
+bytenode.compileFile({
+	filename: path.join(process.cwd(), `src`, `cli`, `index.js`),
+	output: path.join(process.cwd(), `dist`, `cli.jsc`)
 });
