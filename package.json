@@ -11,7 +11,7 @@
   "scripts": {
     "_______________DEV_______________": "",
     "b": "bytenode",
-    "e": "electron-vite build -l info --outDir dist",
+    "e": "electron-vite build",
     "dev:bundler": "node dist/main/index.js",
     "demo": "electron .",
     "dev": "npm i && npm-check -u && electron --trace-warnings src/eyas.js",
