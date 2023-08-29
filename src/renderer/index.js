@@ -34,7 +34,7 @@
 		width: config.appWidth,
 		height: config.appHeight,
 		title: getAppTitle(),
-		icon: path.join(__dirname, `../_design/eyas-logo.png`)
+		icon: path.join(__dirname, `../assets/eyas-logo.png`)
 	};
 
 	// Configure Electron to ignore certificate errors
