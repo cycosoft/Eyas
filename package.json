@@ -10,8 +10,9 @@
   },
   "scripts": {
     "_______________DEV_______________": "",
-    "b": "electron-vite build",
-    "dev:bundler": "node src/bundler.js",
+    "b": "bytenode",
+    "e": "electron-vite build -l info --outDir dist",
+    "dev:bundler": "node dist/main/index.js",
     "demo": "electron .",
     "dev": "npm i && npm-check -u && electron --trace-warnings src/eyas.js",
     "build": "npm run build:eyas && npm run build:cli && npm run build:bundler",
@@ -46,6 +47,7 @@
     "validator": "^13.11.0"
   },
   "devDependencies": {
+    "bytenode": "^1.5.1",
     "electron-vite": "^1.0.27",
     "eslint": "^8.48.0",
     "npm-check": "^6.0.1",

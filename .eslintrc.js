@@ -4,6 +4,7 @@ module.exports = {
 		commonjs: true,
 		es2021: true
 	},
+	sourceType: `module`,
 	extends: `eslint:recommended`,
 	overrides: [
 		{

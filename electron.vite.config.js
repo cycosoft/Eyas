@@ -1,13 +1,5 @@
-const { defineConfig, bytecodePlugin } = require(`electron-vite`);
-
-module.export = defineConfig({
+export default {
 	main: {
-		plugins: [bytecodePlugin()]
-	},
-	preload: {
-		plugins: [bytecodePlugin()]
-	},
-	renderer: {
-		// ...
+		// vite config options
 	}
-});
+}
