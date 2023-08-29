@@ -9,7 +9,7 @@ const electron = require(`electron`);
 const path = require(`path`);
 
 // import the package.json file
-const packageJson = require(path.join(path.cwd(), `package.json`));
+const packageJson = require(path.join(process.cwd(), `package.json`));
 
 // get the path to the eyas entry point
 const eyasPath = path.join(__dirname, packageJson.main);

@@ -10,6 +10,7 @@
   },
   "scripts": {
     "_______________DEV_______________": "",
+    "c": "node src/cli/compile.js",
     "b": "bytenode -compile src/cli/cli.js --compress --loader",
     "e": "electron-vite build",
     "dev:bundler": "node dist/main/index.js",
