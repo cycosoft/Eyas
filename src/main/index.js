@@ -20,7 +20,7 @@
 
 
 	// DEV ONLY (TO BE REMOVED)
-	pauseExit();
+	// pauseExit();
 
 	// TESTING ONLY: Pause the process to allow for debugging
 	function pauseExit() {

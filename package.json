@@ -13,7 +13,7 @@
     "b": "bytenode",
     "e": "electron-vite build",
     "dev:bundler": "node dist/main/index.js",
-    "demo": "electron .",
+    "demo": "electron dist/main/index.js",
     "dev": "npm i && npm-check -u && electron --trace-warnings src/eyas.js",
     "build": "npm run build:eyas && npm run build:cli && npm run build:bundler",
     "bundle": "npm ci && npm run build && npm pack",
