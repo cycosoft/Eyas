@@ -10,6 +10,8 @@ const path = require(`path`);
 
 // Compile the CLI with options
 bytenode.compileFile({
+	createLoader: true,
+	loaderFilename: `%.js`,
 	filename: path.join(process.cwd(), `src`, `cli`, `index.js`),
 	output: path.join(process.cwd(), `dist`, `cli.jsc`)
 });

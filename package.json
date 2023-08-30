@@ -6,28 +6,23 @@
     "access": "public"
   },
   "bin": {
-    "eyas": "./cli.min.js"
+    "eyas": "./dist/cli.js"
   },
   "scripts": {
     "_______________DEV_______________": "",
-    "dev:cli": "node src/cli/index.js",
-    "dev:config": "node src/main/index.js",
-    "dev:client": "node src/renderer/index.js",
+    "dev:cli": "npm i && npm-check -u && node src/cli/index.js",
+    "dev:config": "npm i && npm-check -u && node src/main/index.js",
+    "dev:eyas": "npm i && npm-check -u && node src/renderer/index.js",
     "_______________DEV.BAK_______________": "",
-    "c": "node src/cli/compile.js",
-    "b": "bytenode -compile src/cli/cli.js --compress --loader",
-    "e": "electron-vite build",
-    "dev:bundler": "node dist/main/index.js",
     "demo": "electron dist/main/index.js",
     "dev": "npm i && npm-check -u && electron --trace-warnings src/eyas.js",
     "build": "npm run build:eyas && npm run build:cli && npm run build:bundler",
     "bundle": "npm ci && npm run build && npm pack",
     "_____________COMPILE_____________": "",
-    "publish": "npm ci && npm run dist:clear && npm run build && pkg dist/bundler.min.js --compress --debug --config pkg.config.json --out-path dist",
+    "compile:cli": "node src/cli/compile.js",
+    "compile:eyas": "electron-vite build",
     "_____________SCRIPTS_____________": "",
-    "build:eyas": "uglifyjs src/eyas.js -c -m --toplevel --output dist/eyas.min.js",
-    "build:cli": "uglifyjs src/cli.js -c -m --toplevel -o dist/cli.min.js",
-    "build:bundler": "uglifyjs src/bundler.js -c -m --toplevel -o dist/bundler.min.js",
+    "publish": "npm ci && npm run dist:clear && npm run build && pkg dist/bundler.min.js --compress --debug --config pkg.config.json --out-path dist",
     "dist:clear": "shx rm -rf dist && shx mkdir dist"
   },
   "author": "Cycosoft, LLC (https://cycosoft.com)",
@@ -59,8 +54,7 @@
     "eslint": "^8.48.0",
     "npm-check": "^6.0.1",
     "pkg": "^5.8.1",
-    "shx": "^0.3.4",
-    "uglify-js": "^3.17.4"
+    "shx": "^0.3.4"
   },
   "overrides": {
     "package-json": ">6.5.0 <8.0.0"
