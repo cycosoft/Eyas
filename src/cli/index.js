@@ -75,21 +75,6 @@ async function defaultEntry() {
 		.then(({ action }) => actions[action].action());
 }
 
-// launch the configuration editor
-function runCommand_config() {
-	console.log(`config command received`);
-}
-
-// launch a preview of the consumers application
-function runCommand_preview() {
-	console.log(`preview command received`);
-}
-
-// compile the consumers application for deployment
-function runCommand_compile() {
-	console.log(`compile command received`);
-}
-
 // setup the CLI arguments
 function defineCommands(cli) {
 	// define the details of the CLI
@@ -112,6 +97,21 @@ function defineCommands(cli) {
 			.description(cmd.description)
 			.action(cmd.action);
 	}
+}
+
+// launch the configuration editor
+function runCommand_config() {
+	console.log(`config command received`);
+}
+
+// launch a preview of the consumers application
+function runCommand_preview() {
+	console.log(`preview command received`);
+}
+
+// compile the consumers application for deployment
+function runCommand_compile() {
+	console.log(`compile command received`);
 }
 
 
