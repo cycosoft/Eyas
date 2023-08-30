@@ -106,52 +106,22 @@ function runCommand_config() {
 
 // launch a preview of the consumers application
 function runCommand_preview() {
-	console.log(`preview command received`);
+	const { spawn } = require(`child_process`);
+	const electron = require(`electron`);
+	const path = require(`path`);
+
+	// get the path to the eyas entry point
+	const eyasPath = path.join(process.cwd(), `dist`, `main`, `index.js`);
+
+	// run the electron app
+	spawn(electron, [eyasPath], {
+		stdio: `inherit`,
+		windowsHide: false,
+		cwd: process.cwd()
+	});
 }
 
 // compile the consumers application for deployment
 function runCommand_compile() {
 	console.log(`compile command received`);
 }
-
-
-// const { spawn } = require(`child_process`);
-// const electron = require(`electron`);
-// const path = require(`path`);
-
-// // import the package.json file
-// const packageJson = require(path.join(process.cwd(), `package.json`));
-
-// // get the path to the eyas entry point
-// const eyasPath = path.join(__dirname, packageJson.main);
-
-// // run the electron app
-// const child = spawn(electron, [eyasPath], {
-// 	stdio: `inherit`,
-// 	windowsHide: false,
-// 	cwd: process.cwd()
-// });
-
-// // handle the child process exit
-// child.on(`close`, function (code, signal) {
-// 	if(code === null) {
-// 		// eslint-disable-next-line no-console
-// 		console.error(electron, `exited with signal`, signal);
-// 		process.exit(1);
-// 	}
-
-// 	process.exit(code);
-// });
-
-// // handle termination signals
-// const handleTerminationSignal = function (signal) {
-// 	process.on(signal, function signalHandler () {
-// 		if (!child.killed) {
-// 			child.kill(signal);
-// 		}
-// 	});
-// };
-
-// // run the signal handlers
-// handleTerminationSignal(`SIGINT`);
-// handleTerminationSignal(`SIGTERM`);
