@@ -132,7 +132,7 @@ async function runCommand_compile() {
 	// setup
 	const pathRoot = process.cwd();
 	const names = {
-		input: `.eyas`, // https://kinsta.com/knowledgebase/nodejs-fs/#how-to-create-a-temporary-directory
+		input: `.eyas-preview`, // https://kinsta.com/knowledgebase/nodejs-fs/#how-to-create-a-temporary-directory
 		output: `.eyas-dist`,
 		config: `.eyasrc.js`,
 		assets: `assets`
