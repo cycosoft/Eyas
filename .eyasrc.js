@@ -3,11 +3,11 @@ const { version } = require(`./package.json`);
 
 //export the config for the project
 module.exports = {
-	testSourceDirectory: `src/demo`,
+	testSourceDirectory: `demo`,
 	// serverPort: 3000,
-	customDomain: `demo.eyas.cycosoft.com`,
-	buildVersion: `v${version}`,
-	appTitle: `Demo App`,
+	customDomain: `eyas.cycosoft.com`,
+	// buildVersion: `v${version}`,
+	appTitle: `Eyas App Demo`,
 	appWidth: 1024,
 	appHeight: 768,
 	menu: [
