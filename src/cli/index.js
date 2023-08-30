@@ -125,38 +125,47 @@ function runCommand_preview() {
 async function runCommand_compile() {
 	// imports
 	const fs = require(`fs`);
+	const { mkdir, rm } = require(`fs/promises`);
 	const path = require(`path`);
 	const packager = require(`electron-packager`);
-
-	return;
 
 	// setup
 	const pathRoot = process.cwd();
 	const names = {
-		build: `.eyas`,
-		dist: `.eyas-dist`,
+		input: `.eyas`, // https://kinsta.com/knowledgebase/nodejs-fs/#how-to-create-a-temporary-directory
+		output: `.eyas-dist`,
 		config: `.eyasrc.js`,
 		assets: `assets`
 	};
 	const paths = {
-		build: path.join(pathRoot, names.build),
-		dist: path.join(pathRoot, names.dist),
-		assetSource: path.join(pathRoot, names.assets),
-		assetOutput: path.join(pathRoot, names.build, names.assets),
-		app: path.join(pathRoot, `dist`, `main`),
-		userSourceOutput: path.join(pathRoot, names.build, `user`),
-		configSource: path.join(pathRoot, names.config),
-		configOutput: path.join(pathRoot, names.build, names.config)
+		buildInput: path.join(pathRoot, names.input),
+		buildOutput: path.join(pathRoot, names.output),
+		assetsInput: path.join(pathRoot, names.assets),
+		assetsOutput: path.join(pathRoot, names.input, names.assets),
+		eyasMain: path.join(pathRoot, `dist`, `main`),
+		userSourceOutput: path.join(pathRoot, names.input, `user`),
+		configInput: path.join(pathRoot, names.config),
+		configOutput: path.join(pathRoot, names.input, names.config)
 	};
 
-	// create a folder to work in (.eyas/)
-	fs.mkdirSync(paths.build);
+	console.log({pathRoot});
+	console.log({names});
+	console.log({paths});
+
+	// delete any existing build folders
+	await rm(paths.buildInput, { recursive: true, force: true });
+	await rm(paths.buildOutput, { recursive: true, force: true });
+
+	// create the temp folder to work in
+	await mkdir(paths.buildInput);
+
+	return;
 
 	// copy dist/main/*.* to .eyas/
-	await fs.cp(paths.app, paths.build);
+	await fs.cp(paths.eyasMain, paths.buildInput);
 
 	// load the users config file as it could contain dynamic values
-	const config = require(paths.config);
+	const config = require(paths.configInput);
 
 	// adjust the config to manage any missing values (move from eyas.js)
 	// this might need to be a shared script
@@ -166,11 +175,11 @@ async function runCommand_compile() {
 	fs.writeFileSync(paths.configOutput, data);
 
 	// copy the users source files to the folder .eyas/user/
-	const userSource = path.join(pathRoot, config.testSourceDirectory);
-	await fs.cp(userSource, paths.userSourceOutput);
+	const userSourceInput = path.join(pathRoot, config.testSourceDirectory);
+	await fs.cp(userSourceInput, paths.userSourceOutput);
 
 	// copy any assets to the folder .eyas/assets/
-	await fs.cp(paths.assetSource, paths.assetOutput);
+	await fs.cp(paths.assetsInput, paths.assetsOutput);
 
 	// create electron executable for the requested platforms with the files from .eyas to user's designated output path (or default '.eyas-dist/')
 	const appPaths = await packager({
@@ -179,9 +188,9 @@ async function runCommand_compile() {
 		buildVersion: process.env.npm_package_version,
 		dir: `.eyas`,
 		executableName: `${config.appTitle} - ${config.buildVersion}`,
-		icon: path.join(paths.assetSource, `eyas-logo.png`),
+		icon: path.join(paths.assetsInput, `eyas-logo.png`),
 		name: `Eyas`,
-		out: names.dist,
+		out: names.output,
 		overwrite: true,
 		win32metadata: {
 			CompanyName: `Cycosoft, LLC`,
@@ -193,5 +202,5 @@ async function runCommand_compile() {
 	console.log(`Output created at: ${appPaths.join(`, `)}`);
 
 	// delete the temp .eyas folder
-	fs.rmdirSync(paths.build);
+	await fs.rm(paths.buildInput, { recursive: true, force: true });
 }
