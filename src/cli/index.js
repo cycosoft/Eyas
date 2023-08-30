@@ -122,17 +122,76 @@ function runCommand_preview() {
 }
 
 // compile the consumers application for deployment
-function runCommand_compile() {
-	console.log(`compile command received`);
+async function runCommand_compile() {
+	// imports
+	const fs = require(`fs`);
+	const path = require(`path`);
+	const packager = require(`electron-packager`);
+
+	return;
+
+	// setup
+	const pathRoot = process.cwd();
+	const names = {
+		build: `.eyas`,
+		dist: `.eyas-dist`,
+		config: `.eyasrc.js`,
+		assets: `assets`
+	};
+	const paths = {
+		build: path.join(pathRoot, names.build),
+		dist: path.join(pathRoot, names.dist),
+		assetSource: path.join(pathRoot, names.assets),
+		assetOutput: path.join(pathRoot, names.build, names.assets),
+		app: path.join(pathRoot, `dist`, `main`),
+		userSourceOutput: path.join(pathRoot, names.build, `user`),
+		configSource: path.join(pathRoot, names.config),
+		configOutput: path.join(pathRoot, names.build, names.config)
+	};
+
 	// create a folder to work in (.eyas/)
-	// copy the eyas.min.js file to the folder
+	fs.mkdirSync(paths.build);
+
+	// copy dist/main/*.* to .eyas/
+	await fs.cp(paths.app, paths.build);
+
 	// load the users config file as it could contain dynamic values
-	// adjust the config to manage any missing values (move from eyas.js to bundler.js)
+	const config = require(paths.config);
+
+	// adjust the config to manage any missing values (move from eyas.js)
+	// this might need to be a shared script
+
 	// create a new file with the users snapshotted config values
+	const data = `module.exports = ${JSON.stringify(config)}`;
+	fs.writeFileSync(paths.configOutput, data);
+
 	// copy the users source files to the folder .eyas/user/
+	const userSource = path.join(pathRoot, config.testSourceDirectory);
+	await fs.cp(userSource, paths.userSourceOutput);
+
 	// copy any assets to the folder .eyas/assets/
-	// create electron executable for the requested platforms with the files from .eyas to users designated output path
-	// delete the .eyas folder
+	await fs.cp(paths.assetSource, paths.assetOutput);
 
+	// create electron executable for the requested platforms with the files from .eyas to user's designated output path (or default '.eyas-dist/')
+	const appPaths = await packager({
+		appCopyright: `2023`,
+		appVersion: config.version,
+		buildVersion: process.env.npm_package_version,
+		dir: `.eyas`,
+		executableName: `${config.appTitle} - ${config.buildVersion}`,
+		icon: path.join(paths.assetSource, `eyas-logo.png`),
+		name: `Eyas`,
+		out: names.dist,
+		overwrite: true,
+		win32metadata: {
+			CompanyName: `Cycosoft, LLC`,
+			ProductName: `Eyas`
+		}
+	});
 
+	// let the user know where the output is
+	console.log(`Output created at: ${appPaths.join(`, `)}`);
+
+	// delete the temp .eyas folder
+	fs.rmdirSync(paths.build);
 }

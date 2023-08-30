@@ -39,6 +39,7 @@
     "bytenode": "^1.5.1",
     "commander": "^11.0.0",
     "electron": "^26.1.0",
+    "electron-packager": "^17.1.2",
     "express": "^4.18.2",
     "inquirer": "^9.2.10",
     "mkcert": "^3.0.0",
