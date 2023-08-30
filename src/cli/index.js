@@ -25,7 +25,7 @@
 // define the actions for the CLI
 const actions = {
 	config: {
-		enabled: true,
+		enabled: false,
 		label: `Configure`,
 		description: `Launch the Eyas configuration editor`,
 		command: `config`,
@@ -110,7 +110,7 @@ function defineCommands(cli) {
 		cli
 			.command(cmd.command)
 			.description(cmd.description)
-			.action(cmd.actionFunction);
+			.action(cmd.action);
 	}
 }
 
