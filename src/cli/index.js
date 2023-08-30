@@ -60,13 +60,15 @@ async function defaultEntry() {
 				name: `action`,
 				message: `What would you like to do?`,
 				// create a map of the actions
-				choices: Object.values(actions).map(action => {
-					return {
-						name: action.label,
-						value: action.command,
-						short: action.description
-					};
-				})
+				choices: Object.values(actions)
+					.filter(action => action.enabled)
+					.map(action => {
+						return {
+							name: action.label,
+							value: action.command,
+							short: action.description
+						};
+					})
 			}
 		])
 		// run the selected action
