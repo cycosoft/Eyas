@@ -124,4 +124,15 @@ function runCommand_preview() {
 // compile the consumers application for deployment
 function runCommand_compile() {
 	console.log(`compile command received`);
+	// create a folder to work in (.eyas/)
+	// copy the eyas.min.js file to the folder
+	// load the users config file as it could contain dynamic values
+	// adjust the config to manage any missing values (move from eyas.js to bundler.js)
+	// create a new file with the users snapshotted config values
+	// copy the users source files to the folder .eyas/user/
+	// copy any assets to the folder .eyas/assets/
+	// create electron executable for the requested platforms with the files from .eyas to users designated output path
+	// delete the .eyas folder
+
+
 }
