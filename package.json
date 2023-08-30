@@ -10,7 +10,7 @@
   },
   "scripts": {
     "_______________DEV_______________": "",
-    "dev:cli": "npm i && npm-check -u && node src/cli/index.js",
+    "dev:cli": "npm i && npm-check -u && npm run compile:eyas && node src/cli/index.js",
     "dev:eyas": "npm i && npm-check -u && electron src/main/index.js",
     "_______________DEV.BAK_______________": "",
     "build": "npm run build:eyas && npm run build:cli && npm run build:bundler",
