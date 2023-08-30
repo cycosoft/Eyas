@@ -24,7 +24,8 @@
 
 // ask the user what they want to do
 async function defaultEntry() {
-	const inquirer = await import(`inquirer`);
+	// import
+	const inquirer = (await import(`inquirer`)).default;
 
 	inquirer
 		.prompt([
@@ -35,9 +36,9 @@ async function defaultEntry() {
 				choices: [`Configure`, `Preview`, `Compile`]
 			}
 		])
-		.then(answers => {
+		.then(({ action }) => {
 			// Use user feedback for... whatever!!
-			console.log(answers);
+			console.log(action);
 		});
 }
 
