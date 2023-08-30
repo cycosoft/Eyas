@@ -4,9 +4,9 @@ export default {
 	main: {
 		plugins: [bytecodePlugin()],
 		build: {
-			outDir: 'dist/main'
+			outDir: `dist/main`
 		}
-	},
+	}
 	// preload: {
 	// 	build: {
 	// 		outDir: 'dist/preload'
