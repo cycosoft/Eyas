@@ -22,24 +22,55 @@
 	}
 })();
 
+// define the actions for the CLI
+const actions = {
+	config: {
+		enabled: true,
+		label: `Configure`,
+		description: `Launch the Eyas configuration editor`,
+		command: `config`,
+		action: runCommand_config
+	},
+	preview: {
+		enabled: true,
+		label: `Preview`,
+		description: `Launch Eyas with the current configuration`,
+		command: `preview`,
+		action: runCommand_preview
+	},
+	compile: {
+		enabled: true,
+		label: `Compile`,
+		description: `Bundle and compile Eyas with the current configuration for deployment`,
+		command: `compile`,
+		action: runCommand_compile
+	}
+};
+
 // ask the user what they want to do
 async function defaultEntry() {
 	// import
 	const inquirer = (await import(`inquirer`)).default;
 
+	// ask the user what they want to do
 	inquirer
 		.prompt([
 			{
 				type: `list`,
 				name: `action`,
 				message: `What would you like to do?`,
-				choices: [`Configure`, `Preview`, `Compile`]
+				// create a map of the actions
+				choices: Object.values(actions).map(action => {
+					return {
+						name: action.label,
+						value: action.command,
+						short: action.description
+					};
+				})
 			}
 		])
-		.then(({ action }) => {
-			// Use user feedback for... whatever!!
-			console.log(action);
-		});
+		// run the selected action
+		.then(({ action }) => actions[action].action());
 }
 
 // launch the configuration editor
@@ -57,31 +88,28 @@ function runCommand_compile() {
 	console.log(`compile command received`);
 }
 
-// define the commands for the CLI
+// setup the CLI arguments
 function defineCommands(cli) {
-	// define the details for the CLI help
+	// define the details of the CLI
 	cli
 		.name(`eyas`)
 		.description(`A serverless testing container for web applications`)
 		.version(process.env.npm_package_version);
 
-	// when the user runs the `config` command
-	cli
-		.command(`config`)
-		.description(`Launch the Eyas configuration editor`)
-		.action(runCommand_config);
+	// define commands for the CLI from action object
+	for(const action in actions) {
+		// cache
+		const cmd = actions[action];
 
-	// when the user runs the `preview` command
-	cli
-		.command(`preview`)
-		.description(`Launch Eyas with the current configuration`)
-		.action(runCommand_preview);
+		// skip if disabled
+		if(!actions[action].enabled) { continue; }
 
-	// when the user runs the `compile` command
-	cli
-		.command(`compile`)
-		.description(`Bundle and compile the current configuration for deployment`)
-		.action(runCommand_preview);
+		// define the argument with commander
+		cli
+			.command(cmd.command)
+			.description(cmd.description)
+			.action(cmd.actionFunction);
+	}
 }
 
 
