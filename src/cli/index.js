@@ -191,14 +191,14 @@ async function runCommand_compile() {
 	// copy any assets to the folder .eyas/assets/
 	userLog(`Copying Eyas assets...`);
 	await fs.copy(paths.assetsInput, paths.assetsOutput);
-	return;
 
 	// create electron executable for the requested platforms with the files from .eyas to user's designated output path (or default '.eyas-dist/')
+	userLog(`Creating Electron executables...`);
 	const appPaths = await packager({
 		appCopyright: `2023`,
 		appVersion: config.version,
 		buildVersion: process.env.npm_package_version,
-		dir: `.eyas`,
+		dir: paths.buildInput,
 		executableName: `${config.appTitle} - ${config.buildVersion}`,
 		icon: path.join(paths.assetsInput, `eyas-logo.png`),
 		name: `Eyas`,
@@ -211,10 +211,10 @@ async function runCommand_compile() {
 	});
 
 	// let the user know where the output is
-	console.log(`Output created at: ${appPaths.join(`, `)}`);
+	userLog(`Output created at: ${appPaths.join(`, `)}`);
 
 	// delete the temp .eyas folder
-	await fs.rm(paths.buildInput, { recursive: true, force: true });
+	await fs.remove(paths.buildInput);
 
 	// log the end of the process
 	userLog(``);
