@@ -194,6 +194,7 @@ async function runCommand_compile() {
 
 	// create electron executable for the requested platforms with the files from .eyas to user's designated output path (or default '.eyas-dist/')
 	userLog(`Creating Electron executables...`);
+	userLog(``);
 	const appPaths = await packager({
 		appCopyright: `2023`,
 		appVersion: config.version,
@@ -222,6 +223,9 @@ async function runCommand_compile() {
 
 // wrapper to differentiate user logs (allowed) from system logs (disallowed)
 function userLog(string) {
+	// setup
+	const output = string ? `* ${string}` :``;
+
 	// eslint-disable-next-line no-console
-	console.log(`* ${string}`);
+	console.log(output);
 }
