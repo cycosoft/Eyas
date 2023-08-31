@@ -134,7 +134,8 @@ async function runCommand_compile() {
 		input: `.eyas-preview`, // https://kinsta.com/knowledgebase/nodejs-fs/#how-to-create-a-temporary-directory
 		output: `.eyas-dist`,
 		config: `.eyasrc.js`,
-		assets: `assets`
+		assets: `assets`,
+		userSourceOutput: `user`
 	};
 	const paths = {
 		buildInput: path.join(pathRoot, names.input),
@@ -142,7 +143,7 @@ async function runCommand_compile() {
 		assetsInput: path.join(pathRoot, names.assets),
 		assetsOutput: path.join(pathRoot, names.input, names.assets),
 		eyasMain: path.join(pathRoot, `dist`, `main`),
-		userSourceOutput: path.join(pathRoot, names.input, `user`),
+		userSourceOutput: path.join(pathRoot, names.input, names.userSourceOutput),
 		configInput: path.join(pathRoot, names.config),
 		configOutput: path.join(pathRoot, names.input, names.config)
 	};
@@ -169,8 +170,13 @@ async function runCommand_compile() {
 	// console.log(data);
 	await fs.outputFile(paths.configOutput, data);
 
-	// copy the users source files to the folder .eyas/user/
+	// get the path to the users source files
 	const userSourceInput = path.join(pathRoot, config.testSourceDirectory);
+
+	// point the config to the output folder for the users source files
+	config.testSourceDirectory = names.userSourceOutput;
+
+	// copy the users source files to the folder .eyas/user/
 	await fs.copy(userSourceInput, paths.userSourceOutput);
 
 	// copy any assets to the folder .eyas/assets/
