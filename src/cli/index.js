@@ -172,10 +172,10 @@ async function runCommand_compile() {
 	// copy the users source files to the folder .eyas/user/
 	const userSourceInput = path.join(pathRoot, config.testSourceDirectory);
 	await fs.copy(userSourceInput, paths.userSourceOutput);
-	return;
 
 	// copy any assets to the folder .eyas/assets/
-	await fs.cp(paths.assetsInput, paths.assetsOutput);
+	await fs.copy(paths.assetsInput, paths.assetsOutput);
+	return;
 
 	// create electron executable for the requested platforms with the files from .eyas to user's designated output path (or default '.eyas-dist/')
 	const appPaths = await packager({
