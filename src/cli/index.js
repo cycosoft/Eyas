@@ -52,6 +52,9 @@ async function defaultEntry() {
 	// import
 	const inquirer = (await import(`inquirer`)).default;
 
+	// add a space from the previous output
+	userLog(``);
+
 	// ask the user what they want to do
 	inquirer
 		.prompt([
