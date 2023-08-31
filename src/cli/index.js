@@ -156,17 +156,19 @@ async function runCommand_compile() {
 
 	// copy dist/main/*.* to .eyas/
 	await fs.copy(paths.eyasMain, paths.buildInput);
-	return;
 
 	// load the users config file as it could contain dynamic values
 	const config = require(paths.configInput);
 
 	// adjust the config to manage any missing values (move from eyas.js)
 	// this might need to be a shared script
+	// this needs to resolve properties that are functions
 
 	// create a new file with the users snapshotted config values
-	const data = `module.exports = ${JSON.stringify(config)}`;
-	fs.writeFileSync(paths.configOutput, data);
+	const data = `module.exports = ${JSON.stringify(config, null, 2)}`;
+	console.log(data);
+	await fs.outputFile(paths.configOutput, data);
+	return;
 
 	// copy the users source files to the folder .eyas/user/
 	const userSourceInput = path.join(pathRoot, config.testSourceDirectory);
