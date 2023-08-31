@@ -138,7 +138,8 @@ async function runCommand_compile() {
 		output: `.eyas-dist`,
 		config: `.eyasrc.js`,
 		assets: `assets`,
-		userSourceOutput: `user`
+		userSourceOutput: `user`,
+		package: `package.json`
 	};
 	const paths = {
 		buildInput: path.join(pathRoot, names.input),
@@ -147,6 +148,8 @@ async function runCommand_compile() {
 		assetsOutput: path.join(pathRoot, names.input, names.assets),
 		eyasMain: path.join(pathRoot, `dist`, `main`),
 		userSourceOutput: path.join(pathRoot, names.input, names.userSourceOutput),
+		packageInput: path.join(pathRoot, names.package),
+		packageOutput: path.join(pathRoot, names.input, names.package),
 		configInput: path.join(pathRoot, names.config),
 		configOutput: path.join(pathRoot, names.input, names.config)
 	};
@@ -194,6 +197,10 @@ async function runCommand_compile() {
 	// copy any assets to the folder .eyas/assets/
 	userLog(`Copying Eyas assets...`);
 	await fs.copy(paths.assetsInput, paths.assetsOutput);
+
+	// copy the package.json to the build folder
+	userLog(`Copying package.json...`);
+	await fs.copy(paths.packageInput, paths.packageOutput);
 
 	// create electron executable for the requested platforms with the files from .eyas to user's designated output path (or default '.eyas-dist/')
 	userLog(`Creating Electron executables...`);
