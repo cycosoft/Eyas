@@ -4,3 +4,4 @@ dist/
 
 # do not include the packaged output
 cycosoft-eyas-*.tgz
+.eyas-preview/

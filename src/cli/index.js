@@ -124,8 +124,7 @@ function runCommand_preview() {
 // compile the consumers application for deployment
 async function runCommand_compile() {
 	// imports
-	const fs = require(`fs`);
-	const { mkdir, rm } = require(`fs/promises`);
+	const fs = require(`fs-extra`);
 	const path = require(`path`);
 	const packager = require(`electron-packager`);
 
@@ -148,21 +147,16 @@ async function runCommand_compile() {
 		configOutput: path.join(pathRoot, names.input, names.config)
 	};
 
-	console.log({pathRoot});
-	console.log({names});
-	console.log({paths});
-
 	// delete any existing build folders
-	await rm(paths.buildInput, { recursive: true, force: true });
-	await rm(paths.buildOutput, { recursive: true, force: true });
+	await fs.remove(paths.buildInput);
+	await fs.remove(paths.buildOutput);
 
 	// create the temp folder to work in
-	await mkdir(paths.buildInput);
-
-	return;
+	await fs.ensureDir(paths.buildInput);
 
 	// copy dist/main/*.* to .eyas/
-	await fs.cp(paths.eyasMain, paths.buildInput);
+	await fs.copy(paths.eyasMain, paths.buildInput);
+	return;
 
 	// load the users config file as it could contain dynamic values
 	const config = require(paths.configInput);
