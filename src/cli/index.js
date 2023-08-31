@@ -166,12 +166,13 @@ async function runCommand_compile() {
 
 	// create a new file with the users snapshotted config values
 	const data = `module.exports = ${JSON.stringify(config, null, 2)}`;
-	console.log(data);
+	// console.log(data);
 	await fs.outputFile(paths.configOutput, data);
-	return;
 
 	// copy the users source files to the folder .eyas/user/
 	const userSourceInput = path.join(pathRoot, config.testSourceDirectory);
+	console.log(userSourceInput);
+	return;
 	await fs.cp(userSourceInput, paths.userSourceOutput);
 
 	// copy any assets to the folder .eyas/assets/

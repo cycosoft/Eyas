@@ -1,7 +1,8 @@
 # do not include node_modules in the package
 node_modules/
-dist/
 
 # do not include the packaged output
 cycosoft-eyas-*.tgz
 .eyas-preview/
+.eyas-dist/
+dist/
