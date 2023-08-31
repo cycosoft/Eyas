@@ -171,9 +171,8 @@ async function runCommand_compile() {
 
 	// copy the users source files to the folder .eyas/user/
 	const userSourceInput = path.join(pathRoot, config.testSourceDirectory);
-	console.log(userSourceInput);
+	await fs.copy(userSourceInput, paths.userSourceOutput);
 	return;
-	await fs.cp(userSourceInput, paths.userSourceOutput);
 
 	// copy any assets to the folder .eyas/assets/
 	await fs.cp(paths.assetsInput, paths.assetsOutput);
