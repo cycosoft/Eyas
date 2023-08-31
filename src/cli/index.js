@@ -148,17 +148,24 @@ async function runCommand_compile() {
 		configOutput: path.join(pathRoot, names.input, names.config)
 	};
 
+	// log the start of the process
+	userLog(``);
+
 	// delete any existing build folders
+	userLog(`Resetting build space...`);
 	await fs.remove(paths.buildInput);
 	await fs.remove(paths.buildOutput);
 
 	// create the temp folder to work in
+	userLog(`Creating build directory...`);
 	await fs.ensureDir(paths.buildInput);
 
 	// copy dist/main/*.* to .eyas/
+	userLog(`Copying Eyas runtime files...`);
 	await fs.copy(paths.eyasMain, paths.buildInput);
 
 	// load the users config file as it could contain dynamic values
+	userLog(`Loading user config...`);
 	const config = require(paths.configInput);
 
 	// adjust the config to manage any missing values (move from eyas.js)
@@ -168,6 +175,7 @@ async function runCommand_compile() {
 	// create a new file with the users snapshotted config values
 	const data = `module.exports = ${JSON.stringify(config, null, 2)}`;
 	// console.log(data);
+	userLog(`Creating snapshot of config...`);
 	await fs.outputFile(paths.configOutput, data);
 
 	// get the path to the users source files
@@ -177,9 +185,11 @@ async function runCommand_compile() {
 	config.testSourceDirectory = names.userSourceOutput;
 
 	// copy the users source files to the folder .eyas/user/
+	userLog(`Copying user-provided Eyas source...`);
 	await fs.copy(userSourceInput, paths.userSourceOutput);
 
 	// copy any assets to the folder .eyas/assets/
+	userLog(`Copying Eyas assets...`);
 	await fs.copy(paths.assetsInput, paths.assetsOutput);
 	return;
 
@@ -205,4 +215,13 @@ async function runCommand_compile() {
 
 	// delete the temp .eyas folder
 	await fs.rm(paths.buildInput, { recursive: true, force: true });
+
+	// log the end of the process
+	userLog(``);
+}
+
+// wrapper to differentiate user logs (allowed) from system logs (disallowed)
+function userLog(string) {
+	// eslint-disable-next-line no-console
+	console.log(`* ${string}`);
 }
