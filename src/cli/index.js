@@ -132,7 +132,7 @@ async function runCommand_compile() {
 	const packager = require(`electron-packager`);
 
 	// setup
-	const pathRoot = process.cwd();
+	const consumerRoot = process.cwd();
 	const names = {
 		input: `.eyas-preview`, // https://kinsta.com/knowledgebase/nodejs-fs/#how-to-create-a-temporary-directory
 		output: `.eyas-dist`,
@@ -142,16 +142,16 @@ async function runCommand_compile() {
 		package: `package.json`
 	};
 	const paths = {
-		buildInput: path.join(pathRoot, names.input),
-		buildOutput: path.join(pathRoot, names.output),
-		assetsInput: path.join(pathRoot, names.assets),
-		assetsOutput: path.join(pathRoot, names.input, names.assets),
-		eyasMain: path.join(pathRoot, `dist`, `main`),
-		userSourceOutput: path.join(pathRoot, names.input, names.userSourceOutput),
-		packageInput: path.join(pathRoot, names.package),
-		packageOutput: path.join(pathRoot, names.input, names.package),
-		configInput: path.join(pathRoot, names.config),
-		configOutput: path.join(pathRoot, names.input, names.config)
+		buildInput: path.join(consumerRoot, names.input),
+		buildOutput: path.join(consumerRoot, names.output),
+		assetsInput: path.join(consumerRoot, names.assets),
+		assetsOutput: path.join(consumerRoot, names.input, names.assets),
+		eyasMain: path.join(consumerRoot, `dist`, `main`),
+		userSourceOutput: path.join(consumerRoot, names.input, names.userSourceOutput),
+		packageInput: path.join(consumerRoot, names.package),
+		packageOutput: path.join(consumerRoot, names.input, names.package),
+		configInput: path.join(consumerRoot, names.config),
+		configOutput: path.join(consumerRoot, names.input, names.config)
 	};
 
 	// log the start of the process
@@ -185,7 +185,7 @@ async function runCommand_compile() {
 	await fs.outputFile(paths.configOutput, data);
 
 	// get the path to the users source files
-	const userSourceInput = path.join(pathRoot, config.testSourceDirectory);
+	const userSourceInput = path.join(consumerRoot, config.testSourceDirectory);
 
 	// point the config to the output folder for the users source files
 	config.testSourceDirectory = names.userSourceOutput;
