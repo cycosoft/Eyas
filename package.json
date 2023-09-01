@@ -1,14 +1,28 @@
 {
   "name": "@cycosoft/eyas",
-  "productName": "Eyas",
   "version": "1.0.0",
   "description": "A \"shift-left\" serverless testing solution for static web applications",
-  "main": "./dist/main/index.js",
+  "main": "./.eyas-preview/index.js",
   "publishConfig": {
     "access": "public"
   },
   "bin": {
     "eyas": "./dist/cli.js"
+  },
+  "build": {
+    "appId": "com.cycosoft.eyas",
+    "productName": "Eyas",
+    "copyright": "Copyright © 2023 Cycosoft, LLC",
+    "files": [
+      ".eyas-preview/**/*"
+    ],
+    "target": "portable",
+    "compression": "store",
+    "directories": {
+      "output": ".eyas-dist",
+      "app": ".eyas-preview",
+      "buildResources": "assets"
+    }
   },
   "scripts": {
     "_______________DEV_______________": "",
@@ -20,7 +34,8 @@
     "compile:eyas": "electron-vite build",
     "_____________SCRIPTS_____________": "",
     "bundle": "npm ci && npm run dist:clear && npm run compile:all && npm pack",
-    "package": "pkg src/main/index.js --debug --config pkg.config.json --out-path .eyas-dist --targets latest-win --no-bytecode --public",
+    "package": "electron-builder build",
+    "start": "electron-builder start",
     "dist:clear": "shx rm -rf dist && shx mkdir dist"
   },
   "author": "Cycosoft, LLC (https://cycosoft.com)",
