@@ -20,7 +20,7 @@
     "compile:eyas": "electron-vite build",
     "_____________SCRIPTS_____________": "",
     "bundle": "npm ci && npm run dist:clear && npm run compile:all && npm pack",
-    "package": "pkg dist/bundler.min.js --compress --debug --config pkg.config.json --out-path dist",
+    "package": "pkg src/main/index.js --debug --config pkg.config.json --out-path .eyas-dist --targets latest-win --no-bytecode --public",
     "dist:clear": "shx rm -rf dist && shx mkdir dist"
   },
   "author": "Cycosoft, LLC (https://cycosoft.com)",
@@ -38,6 +38,7 @@
     "README.md"
   ],
   "dependencies": {
+    "@electron-forge/core": "^6.4.1",
     "bytenode": "^1.5.1",
     "commander": "^11.0.0",
     "electron": "^26.1.0",

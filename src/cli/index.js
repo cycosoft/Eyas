@@ -132,6 +132,7 @@ async function runCommand_compile() {
 	const packager = require(`electron-packager`);
 	const builder = require(`electron-builder`);
 	const { exec } = require(`pkg`);
+	const { api } = require(`@electron-forge/core`);
 
 	// setup
 	const isProd = __dirname.includes(`node_modules`);
@@ -250,18 +251,30 @@ async function runCommand_compile() {
 
 	await exec([
 		paths.eyasRunner,
+		`--config`, path.join(eyasRoot, `pkg.config.json`),
 		`--public`,
 		`--debug`,
 		`--out-path`, paths.eyasDist,
-		`--targets`, `latest-macos,latest-win,latest-linux`,
-		`--no-bytecode`
+		`--targets`, `latest-win`, // `latest-macos,latest-win,latest-linux`,
+		`--no-bytecode`,
+		// `--compress`, `Brotli`,
+		// `--compress`, `GZip`
 	]);
+
+	// const response = await api.package({
+	// 	dir: paths.eyasRunner,
+	// 	outDir: paths.eyasDist,
+	// 	platform: [`darwin`, `mas`, `win32`, `linux`],
+	// 	interactive: true
+	// });
+
+	// console.log(response);
 
 	// let the user know where the output is
 	userLog(`Output created at: ${paths.eyasDist}`);
 
 	// delete the build folder
-	await fs.remove(paths.eyasPreview);
+	// await fs.remove(paths.eyasPreview);
 
 	// log the end of the process
 	userLog(``);
