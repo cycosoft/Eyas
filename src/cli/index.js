@@ -228,27 +228,32 @@ async function runCommand_compile() {
 	// 	}
 	// });
 
-	// const Platform = builder.Platform;
-	// console.log(Platform);
+	const Platform = builder.Platform;
+	console.log(Platform);
 
-	// const built = await builder.build({
-	// 	targets: [Platform.WINDOWS.createTarget()],
-	// 	config: {
-	// 		compression: `store`, // normal, maximum, store
-	// 		win: {
-	// 			target: `portable`
-	// 		}
-	// 	}
-	// });
+	const built = await builder.build({
+		// targets: [
+		// 	// Platform.WINDOWS.createTarget(),
+		// 	Platform.MAC.createTarget(),
+		// 	Platform.LINUX.createTarget()
+		// ],
+		config: {
+			compression: `maximum`, // normal, maximum, store
+			win: {
+				target: `portable`
+			},
+			output: paths.eyasDist
+		}
+	});
 
-	// console.log({built});
+	console.log({built});
 
-	exec([
-		paths.eyasRunner,
-		`--out-path`, paths.eyasDist,
-		`--debug`,
-		`--no-bytecode`
-	]);
+	// exec([
+	// 	paths.eyasRunner,
+	// 	`--out-path`, paths.eyasDist,
+	// 	`--debug`,
+	// 	`--no-bytecode`
+	// ]);
 
 	// let the user know where the output is
 	userLog(`Output created at: ${paths.eyasDist}`);
