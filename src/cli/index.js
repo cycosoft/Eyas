@@ -130,6 +130,8 @@ async function runCommand_compile() {
 	const fs = require(`fs-extra`);
 	const path = require(`path`);
 	const packager = require(`electron-packager`);
+	const builder = require(`electron-builder`);
+	const { exec } = require(`pkg`);
 
 	// setup
 	const isProd = __dirname.includes(`node_modules`);
@@ -150,7 +152,8 @@ async function runCommand_compile() {
 		eyasDist: path.join(consumerRoot, names.eyasDist),
 		assetsFrom: path.join(eyasRoot, names.eyasAssets),
 		assetsTo: path.join(consumerRoot, names.eyasPreview, names.eyasAssets),
-		eyasRunner: path.join(eyasRoot, `dist`, `main`),
+		eyasRunnerSource: path.join(eyasRoot, `dist`, `main`),
+		eyasRunner: path.join(consumerRoot, names.eyasPreview, `index.js`),
 		userSourceTo: path.join(consumerRoot, names.eyasPreview, names.userSource),
 		eyasPackageJsonFrom: path.join(consumerRoot, names.eyasPackage),
 		eyasPackageJsonTo: path.join(consumerRoot, names.eyasPreview, names.eyasPackage),
@@ -172,7 +175,7 @@ async function runCommand_compile() {
 
 	// copy dist/main/*.* to .eyas/
 	userLog(`Copying Eyas runtime files...`);
-	await fs.copy(paths.eyasRunner, paths.eyasPreview);
+	await fs.copy(paths.eyasRunnerSource, paths.eyasPreview);
 
 	// load the users config file as it could contain dynamic values
 	userLog(`Loading user config...`);
@@ -209,26 +212,43 @@ async function runCommand_compile() {
 	// create electron executable for the requested platforms with the files from .eyas to user's designated output path (or default '.eyas-dist/')
 	userLog(`Creating Electron executables...`);
 	userLog(``);
-	const appPaths = await packager({
-		appCopyright: `2023`,
-		appVersion: config.version,
-		buildVersion: process.env.npm_package_version,
-		dir: paths.eyasPreview,
-		executableName: `${config.appTitle} - ${config.buildVersion}`,
-		icon: path.join(paths.assetsFrom, `eyas-logo.png`),
-		name: `Eyas`,
-		out: names.eyasDist,
-		overwrite: true,
-		win32metadata: {
-			CompanyName: `Cycosoft, LLC`,
-			ProductName: `Eyas`
-		}
-	});
+	// const appPaths = await packager({
+	// 	appCopyright: `2023`,
+	// 	appVersion: config.version,
+	// 	buildVersion: process.env.npm_package_version,
+	// 	dir: paths.eyasPreview,
+	// 	executableName: `${config.appTitle} - ${config.buildVersion}`,
+	// 	icon: path.join(paths.assetsFrom, `eyas-logo.png`),
+	// 	name: `Eyas`,
+	// 	out: names.eyasDist,
+	// 	overwrite: true,
+	// 	win32metadata: {
+	// 		CompanyName: `Cycosoft, LLC`,
+	// 		ProductName: `Eyas`
+	// 	}
+	// });
+
+	// const Platform = builder.Platform;
+	// console.log(Platform);
+
+	// const built = await builder.build({
+	// 	targets: [Platform.WINDOWS.createTarget()],
+	// 	config: {
+	// 		compression: `store`, // normal, maximum, store
+	// 		win: {
+	// 			target: `portable`
+	// 		}
+	// 	}
+	// });
+
+	// console.log({built});
+
+	await exec([paths.eyasRunner, `--out-path`, paths.eyasDist, `--debug`]);
 
 	// let the user know where the output is
-	userLog(`Output created at: ${appPaths.join(`, `)}`);
+	userLog(`Output created at: ${paths.eyasDist}`);
 
-	// delete the temp .eyas folder
+	// delete the build folder
 	await fs.remove(paths.eyasPreview);
 
 	// log the end of the process
