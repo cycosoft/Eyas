@@ -250,9 +250,11 @@ async function runCommand_compile() {
 
 	await exec([
 		paths.eyasRunner,
+		`--public`,
+		`--debug`,
 		`--out-path`, paths.eyasDist,
-		`--targets`, `latest-macos`,
-		// `--no-bytecode`
+		`--targets`, `latest-macos,latest-win,latest-linux`,
+		`--no-bytecode`
 	]);
 
 	// let the user know where the output is
