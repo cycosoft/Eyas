@@ -243,7 +243,12 @@ async function runCommand_compile() {
 
 	// console.log({built});
 
-	await exec([paths.eyasRunner, `--out-path`, paths.eyasDist, `--debug`]);
+	exec([
+		paths.eyasRunner,
+		`--out-path`, paths.eyasDist,
+		`--debug`,
+		`--no-bytecode`
+	]);
 
 	// let the user know where the output is
 	userLog(`Output created at: ${paths.eyasDist}`);
