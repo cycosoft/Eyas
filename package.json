@@ -45,6 +45,7 @@
     "fs-extra": "^11.1.1",
     "inquirer": "^9.2.10",
     "mkcert": "^3.0.0",
+    "pkg": "^5.8.1",
     "url-parse": "^1.5.10",
     "validator": "^13.11.0"
   },
@@ -52,7 +53,6 @@
     "electron-vite": "^1.0.27",
     "eslint": "^8.48.0",
     "npm-check": "^6.0.1",
-    "pkg": "^5.8.1",
     "shx": "^0.3.4"
   },
   "overrides": {
