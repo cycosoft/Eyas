@@ -210,7 +210,7 @@ async function runCommand_compile() {
 	await fs.copy(paths.eyasPackageJsonFrom, paths.eyasPackageJsonTo);
 
 	// create electron executable for the requested platforms with the files from .eyas to user's designated output path (or default '.eyas-dist/')
-	userLog(`Creating Electron executables...`);
+	userLog(`Creating executables...`);
 	userLog(``);
 	// const appPaths = await packager({
 	// 	appCopyright: `2023`,
