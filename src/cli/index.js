@@ -114,7 +114,7 @@ function runCommand_preview() {
 	const path = require(`path`);
 
 	// get the path to the eyas entry point
-	const eyasPath = path.join(process.cwd(), `dist`, `main`, `index.js`);
+	const eyasPath = path.join(process.cwd(), `.eyas-preview`, `index.js`);
 
 	// run the electron app
 	spawn(electron, [eyasPath], {
@@ -249,17 +249,17 @@ async function runCommand_compile() {
 
 	// console.log({built});
 
-	await exec([
-		paths.eyasRunner,
-		`--config`, path.join(eyasRoot, `pkg.config.json`),
-		`--public`,
-		`--debug`,
-		`--out-path`, paths.eyasDist,
-		`--targets`, `latest-win`, // `latest-macos,latest-win,latest-linux`,
-		`--no-bytecode`,
-		// `--compress`, `Brotli`,
-		// `--compress`, `GZip`
-	]);
+	// await exec([
+	// 	paths.eyasRunner,
+	// 	`--config`, path.join(eyasRoot, `pkg.config.json`),
+	// 	`--public`,
+	// 	`--debug`,
+	// 	`--out-path`, paths.eyasDist,
+	// 	`--targets`, `latest-win`, // `latest-macos,latest-win,latest-linux`,
+	// 	`--no-bytecode`,
+	// 	// `--compress`, `Brotli`,
+	// 	// `--compress`, `GZip`
+	// ]);
 
 	// const response = await api.package({
 	// 	dir: paths.eyasRunner,

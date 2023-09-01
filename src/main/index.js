@@ -16,7 +16,7 @@
 	const path = require(`path`);
 	const https = require(`https`);
 	const mkcert = require(`mkcert`);
-	const config = require(path.join(process.cwd(), `.eyasrc.js`));
+	const config = require(`.eyasrc.js`);
 	const { isURL } = require(`validator`);
 	const parseURL = require(`url-parse`);
 	const { execSync } = require(`child_process`);
@@ -241,7 +241,7 @@
 		expressLayer = express();
 
 		// Serve static files from dist/
-		expressLayer.use(express.static(path.join(process.cwd(), config.testSourceDirectory)));
+		expressLayer.use(express.static(path.join(__dirname, `user`)));
 
 		const ca = await mkcert.createCA({
 			organization: `Cycosoft, LLC - Test Server`,

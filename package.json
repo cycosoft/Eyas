@@ -13,24 +13,17 @@
     "appId": "com.cycosoft.eyas",
     "productName": "Eyas",
     "copyright": "Copyright © 2023 Cycosoft, LLC",
-    "target": "portable",
+    "asar": false,
+    "win": {
+      "target": "portable"
+    },
     "compression": "store",
     "directories": {
       "output": ".eyas-dist",
       "buildResources": ".eyas-preview"
     },
     "removePackageScripts": true,
-    "removePackageKeywords": true,
-    "publish": null,
-    "extraResources": [
-      {
-          "from": "dist/main",
-          "to": ".eyas-preview"
-      }
-    ],
-    "files": [
-      "**/*"
-    ]
+    "removePackageKeywords": true
   },
   "scripts": {
     "_______________DEV_______________": "",
