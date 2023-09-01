@@ -1,3 +1,11 @@
+cd C:\repos\eyas
+npm run compile:eyas && node src/cli/index.js compile
+cd .eyas-preview
+npm i
+npx electron-packager . eyas
+cd eyas-win32-x64
+eyas.exe --trace-warnings
+
 <p align="center">
 	<a href="https://cycosoft.com/">
 		<img src="./_design/eyas-logo.svg" alt="Eyas Logo" width="150px" height="150px">

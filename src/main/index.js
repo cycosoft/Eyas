@@ -16,7 +16,7 @@
 	const path = require(`path`);
 	const https = require(`https`);
 	const mkcert = require(`mkcert`);
-	const config = require(`.eyasrc.js`);
+	const config = require(path.join(__dirname, `.eyasrc.js`));
 	const { isURL } = require(`validator`);
 	const parseURL = require(`url-parse`);
 	const { execSync } = require(`child_process`);
