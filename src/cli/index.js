@@ -232,15 +232,12 @@ async function runCommand_compile() {
 	const Platform = builder.Platform;
 
 	const built = await builder.build({
-		targets: [
-			Platform.WINDOWS.createTarget()
-			// Platform.MAC.createTarget(),
-			// Platform.LINUX.createTarget()
-		],
+		targets: Platform.WINDOWS.createTarget(`portable`),
 		config: {
 			appId: `com.cycosoft.eyas`,
 			productName: `Eyas`,
-			artifactName: `eyas`,
+			// eslint-disable-next-line quotes
+			artifactName: '${productName}.${ext}', // This is not parsed in JS context
 			copyright: `Copyright © 2023 Cycosoft, LLC`,
 			asarUnpack: [`resources/**`],
 			compression: `maximum`, // normal, maximum, store
@@ -249,14 +246,12 @@ async function runCommand_compile() {
 				app: paths.eyasPreview
 			},
 			win: {
-				target: `portable`
+				target: null
 			},
 			removePackageScripts: true,
 			removePackageKeywords: true
 		}
 	});
-
-	console.log({built});
 
 	// await exec([
 	// 	paths.eyasRunner,
@@ -277,16 +272,17 @@ async function runCommand_compile() {
 	// 	interactive: true
 	// });
 
-	// console.log(response);
+	// delete the build folder
+	userLog(``);
+	userLog(`Removing build directory...`);
+	await fs.remove(paths.eyasPreview);
 
 	// let the user know where the output is
-	userLog(`Output created at: ${paths.eyasDist}`);
-
-	// delete the build folder
-	// await fs.remove(paths.eyasPreview);
+	userLog(``);
+	userLog(`Output created at: ${built?.length && built[0]}`);
 
 	// log the end of the process
-	userLog(``);
+	userLog(`Compilation complete!`);
 }
 
 // wrapper to differentiate user logs (allowed) from system logs (disallowed)
