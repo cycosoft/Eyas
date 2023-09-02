@@ -10,20 +10,6 @@
   "bin": {
     "eyas": "./dist/cli.js"
   },
-  "build": {
-    "appId": "com.cycosoft.eyas",
-    "productName": "Eyas",
-    "artifactName": "${productName}.${ext}",
-    "copyright": "Copyright © 2023 Cycosoft, LLC",
-    "asarUnpack": ["resources/**"],
-    "compression": "maximum",
-    "directories": {
-      "output": ".eyas-dist",
-      "app": ".eyas-preview"
-    },
-    "removePackageScripts": true,
-    "removePackageKeywords": true
-  },
   "scripts": {
     "_______________DEV_______________": "",
     "dev:cli": "npm i && npm-check -u && npm run copy:package && npm run compile:eyas && node src/cli/index.js",
