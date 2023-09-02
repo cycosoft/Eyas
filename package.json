@@ -13,11 +13,8 @@
   "build": {
     "appId": "com.cycosoft.eyas",
     "productName": "Eyas",
+    "artifactName": "${productName}.${ext}",
     "copyright": "Copyright © 2023 Cycosoft, LLC",
-    "asar": false,
-    "win": {
-      "target": "portable"
-    },
     "compression": "maximum",
     "directories": {
       "output": ".eyas-dist",
@@ -35,9 +32,8 @@
     "compile:cli": "node src/cli/compile.js",
     "compile:eyas": "electron-vite build",
     "_____________SCRIPTS_____________": "",
-    "bundle": "npm ci && npm run dist:clear && npm run compile:all && npm pack",
-    "package": "electron-builder build --win portable",
-    "start": "electron-builder start",
+    "bundle": "npm ci && npm run compile:all && npm pack",
+    "package": "electron-builder build --win portable --dir false",
     "dist:clear": "shx rm -rf dist && shx mkdir dist"
   },
   "author": "Cycosoft, LLC (https://cycosoft.com)",
