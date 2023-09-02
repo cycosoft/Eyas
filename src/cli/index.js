@@ -245,9 +245,6 @@ async function runCommand_compile() {
 				output: paths.eyasDist,
 				app: paths.eyasPreview
 			},
-			win: {
-				target: null
-			},
 			removePackageScripts: true,
 			removePackageKeywords: true
 		}
