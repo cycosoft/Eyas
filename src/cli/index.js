@@ -229,9 +229,11 @@ async function runCommand_compile() {
 	// 	}
 	// });
 
+	const Platform = builder.Platform;
+
 	const built = await builder.build({
 		targets: [
-			builder.Platform.WINDOWS.createTarget()
+			Platform.WINDOWS.createTarget()
 			// Platform.MAC.createTarget(),
 			// Platform.LINUX.createTarget()
 		],
@@ -243,13 +245,12 @@ async function runCommand_compile() {
 			asarUnpack: [`resources/**`],
 			compression: `maximum`, // normal, maximum, store
 			directories: {
-				output: `.eyas-dist`,
-				app: `.eyas-preview`
+				output: paths.eyasDist,
+				app: paths.eyasPreview
 			},
 			win: {
 				target: `portable`
 			},
-			output: paths.eyasDist,
 			removePackageScripts: true,
 			removePackageKeywords: true
 		}
