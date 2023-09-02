@@ -1,6 +1,7 @@
 cd C:\repos\eyas
 npm run compile:eyas && node src/cli/index.js compile
 --copy over a custom package.json--
+--.eyas-preview and .eyas-dist should not be .gitignored, as they won't be for consumer--
 cd .eyas-preview && npm i
 npx electron-packager . eyas
 cd eyas-win32-x64 && eyas.exe --trace-warnings
