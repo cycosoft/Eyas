@@ -211,7 +211,7 @@ async function runCommand_compile() {
 	await fs.copy(paths.eyasPackageJsonFrom, paths.eyasPackageJsonTo);
 
 	// create electron executable for the requested platforms with the files from .eyas to user's designated output path (or default '.eyas-dist/')
-	userLog(`Creating executables...`);
+	userLog(`Creating executable(s)...`);
 	userLog(``);
 	// const appPaths = await packager({
 	// 	appCopyright: `2023`,
@@ -229,25 +229,33 @@ async function runCommand_compile() {
 	// 	}
 	// });
 
-	// const Platform = builder.Platform;
-	// console.log(Platform);
+	const built = await builder.build({
+		targets: [
+			builder.Platform.WINDOWS.createTarget()
+			// Platform.MAC.createTarget(),
+			// Platform.LINUX.createTarget()
+		],
+		config: {
+			appId: `com.cycosoft.eyas`,
+			productName: `Eyas`,
+			artifactName: `eyas`,
+			copyright: `Copyright © 2023 Cycosoft, LLC`,
+			asarUnpack: [`resources/**`],
+			compression: `maximum`, // normal, maximum, store
+			directories: {
+				output: `.eyas-dist`,
+				app: `.eyas-preview`
+			},
+			win: {
+				target: `portable`
+			},
+			output: paths.eyasDist,
+			removePackageScripts: true,
+			removePackageKeywords: true
+		}
+	});
 
-	// const built = await builder.build({
-	// 	// targets: [
-	// 	// 	// Platform.WINDOWS.createTarget(),
-	// 	// 	Platform.MAC.createTarget(),
-	// 	// 	Platform.LINUX.createTarget()
-	// 	// ],
-	// 	config: {
-	// 		compression: `maximum`, // normal, maximum, store
-	// 		win: {
-	// 			target: `portable`
-	// 		},
-	// 		output: paths.eyasDist
-	// 	}
-	// });
-
-	// console.log({built});
+	console.log({built});
 
 	// await exec([
 	// 	paths.eyasRunner,
