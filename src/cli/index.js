@@ -156,7 +156,7 @@ async function runCommand_compile() {
 		eyasRunnerSource: path.join(eyasRoot, `dist`, `main`),
 		eyasRunner: path.join(consumerRoot, names.eyasPreview, `index.js`),
 		userSourceTo: path.join(consumerRoot, names.eyasPreview, names.userSource),
-		eyasPackageJsonFrom: path.join(consumerRoot, names.eyasPackage),
+		eyasPackageJsonFrom: path.join(eyasRoot, `dist`, names.eyasPackage),
 		eyasPackageJsonTo: path.join(consumerRoot, names.eyasPreview, names.eyasPackage),
 		userConfigFrom: path.join(consumerRoot, names.userConfig),
 		userConfigTo: path.join(consumerRoot, names.eyasPreview, names.userConfig)
