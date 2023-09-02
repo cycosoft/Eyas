@@ -18,10 +18,10 @@
     "win": {
       "target": "portable"
     },
-    "compression": "store",
+    "compression": "maximum",
     "directories": {
       "output": ".eyas-dist",
-      "buildResources": ".eyas-preview"
+      "app": ".eyas-preview"
     },
     "removePackageScripts": true,
     "removePackageKeywords": true
@@ -36,7 +36,7 @@
     "compile:eyas": "electron-vite build",
     "_____________SCRIPTS_____________": "",
     "bundle": "npm ci && npm run dist:clear && npm run compile:all && npm pack",
-    "package": "electron-builder build",
+    "package": "electron-builder build --win portable",
     "start": "electron-builder start",
     "dist:clear": "shx rm -rf dist && shx mkdir dist"
   },
