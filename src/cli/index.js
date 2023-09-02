@@ -278,7 +278,6 @@ async function runCommand_compile() {
 	await fs.remove(paths.eyasPreview);
 
 	// let the user know where the output is
-	userLog(``);
 	userLog(`Output created at: ${built?.length && built[0]}`);
 
 	// log the end of the process
