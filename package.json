@@ -15,6 +15,7 @@
     "productName": "Eyas",
     "artifactName": "${productName}.${ext}",
     "copyright": "Copyright © 2023 Cycosoft, LLC",
+    "asarUnpack": ["resources/**"],
     "compression": "maximum",
     "directories": {
       "output": ".eyas-dist",
