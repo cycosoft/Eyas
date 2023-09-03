@@ -232,7 +232,7 @@ async function runCommand_compile() {
 	const Platform = builder.Platform;
 
 	const built = await builder.build({
-		targets: Platform.MAC.createTarget(),
+		// targets: Platform.MAC.createTarget(),
 		// targets: Platform.WINDOWS.createTarget(`portable`),
 		config: {
 			appId: `com.cycosoft.eyas`,
