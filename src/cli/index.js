@@ -114,7 +114,7 @@ function runCommand_preview() {
 	const path = require(`path`);
 
 	// get the path to the eyas entry point
-	const eyasPath = path.join(process.cwd(), `.eyas-preview`, `index.js`);
+	const eyasPath = path.join(process.cwd(), `.eyas-build`, `index.js`);
 
 	// run the electron app
 	spawn(electron, [eyasPath], {
@@ -141,7 +141,7 @@ async function runCommand_compile() {
 		? path.join(consumerRoot, `node_modules`, `@cycosoft`, `eyas`)
 		: consumerRoot;
 	const names = {
-		eyasPreview: `.eyas-preview`,
+		eyasBuild: `.eyas-build`,
 		eyasDist: `.eyas-dist`,
 		eyasAssets: `assets`,
 		eyasPackage: `package.json`,
@@ -149,17 +149,17 @@ async function runCommand_compile() {
 		userSource: `user`
 	};
 	const paths = {
-		eyasPreview: path.join(consumerRoot, names.eyasPreview),
+		eyasBuild: path.join(consumerRoot, names.eyasBuild),
 		eyasDist: path.join(consumerRoot, names.eyasDist),
-		assetsFrom: path.join(eyasRoot, names.eyasAssets),
-		assetsTo: path.join(consumerRoot, names.eyasPreview, names.eyasAssets),
+		assetsFrom: path.join(eyasRoot, `src`, names.eyasAssets),
+		assetsTo: path.join(consumerRoot, names.eyasBuild, names.eyasAssets),
 		eyasRunnerSource: path.join(eyasRoot, `dist`, `main`),
-		eyasRunner: path.join(consumerRoot, names.eyasPreview, `index.js`),
-		userSourceTo: path.join(consumerRoot, names.eyasPreview, names.userSource),
+		eyasRunner: path.join(consumerRoot, names.eyasBuild, `index.js`),
+		userSourceTo: path.join(consumerRoot, names.eyasBuild, names.userSource),
 		eyasPackageJsonFrom: path.join(eyasRoot, `dist`, names.eyasPackage),
-		eyasPackageJsonTo: path.join(consumerRoot, names.eyasPreview, names.eyasPackage),
+		eyasPackageJsonTo: path.join(consumerRoot, names.eyasBuild, names.eyasPackage),
 		userConfigFrom: path.join(consumerRoot, names.userConfig),
-		userConfigTo: path.join(consumerRoot, names.eyasPreview, names.userConfig)
+		userConfigTo: path.join(consumerRoot, names.eyasBuild, names.userConfig)
 	};
 
 	// log the start of the process
@@ -167,16 +167,16 @@ async function runCommand_compile() {
 
 	// delete any existing build folders
 	userLog(`Resetting build space...`);
-	await fs.remove(paths.eyasPreview);
+	await fs.remove(paths.eyasBuild);
 	await fs.remove(paths.eyasDist);
 
 	// create the temp folder to work in
 	userLog(`Creating build directory...`);
-	await fs.ensureDir(paths.eyasPreview);
+	await fs.ensureDir(paths.eyasBuild);
 
 	// copy dist/main/*.* to .eyas/
 	userLog(`Copying Eyas runtime files...`);
-	await fs.copy(paths.eyasRunnerSource, paths.eyasPreview);
+	await fs.copy(paths.eyasRunnerSource, paths.eyasBuild);
 
 	// load the users config file as it could contain dynamic values
 	userLog(`Loading user config...`);
@@ -243,7 +243,7 @@ async function runCommand_compile() {
 			compression: `maximum`, // normal, maximum, store
 			directories: {
 				output: paths.eyasDist,
-				app: paths.eyasPreview
+				app: paths.eyasBuild
 			},
 			removePackageScripts: true,
 			removePackageKeywords: true
@@ -272,7 +272,7 @@ async function runCommand_compile() {
 	// delete the build folder
 	userLog(``);
 	userLog(`Removing build directory...`);
-	await fs.remove(paths.eyasPreview);
+	await fs.remove(paths.eyasBuild);
 
 	// let the user know where the output is
 	userLog(`Output created at: ${built?.length && built[0]}`);

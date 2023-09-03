@@ -4,7 +4,7 @@ export default {
 	main: {
 		plugins: [bytecodePlugin()],
 		build: {
-			outDir: `dist/main`
+			outDir: `dist/eyas`
 		}
 	}
 	// preload: {
