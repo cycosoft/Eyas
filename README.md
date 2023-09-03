@@ -1,8 +1,3 @@
-cd C:\repos\eyas
-npm run compile:eyas && node src/cli/index.js compile
--- copy over a custom package.json--
-npm run package
-
 <p align="center">
 	<a href="https://cycosoft.com/">
 		<img src="./_design/eyas-logo.svg" alt="Eyas Logo" width="150px" height="150px">
