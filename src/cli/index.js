@@ -153,7 +153,7 @@ async function runCommand_compile() {
 		eyasDist: path.join(consumerRoot, names.eyasDist),
 		assetsFrom: path.join(eyasRoot, `src`, names.eyasAssets),
 		assetsTo: path.join(consumerRoot, names.eyasBuild, names.eyasAssets),
-		eyasRunnerSource: path.join(eyasRoot, `dist`, `main`),
+		eyasRunnerSource: path.join(eyasRoot, `dist`, `eyas`),
 		eyasRunner: path.join(consumerRoot, names.eyasBuild, `index.js`),
 		userSourceTo: path.join(consumerRoot, names.eyasBuild, names.userSource),
 		eyasPackageJsonFrom: path.join(eyasRoot, `dist`, names.eyasPackage),
@@ -232,7 +232,8 @@ async function runCommand_compile() {
 	const Platform = builder.Platform;
 
 	const built = await builder.build({
-		targets: Platform.WINDOWS.createTarget(`portable`),
+		targets: Platform.MAC.createTarget(),
+		// targets: Platform.WINDOWS.createTarget(`portable`),
 		config: {
 			appId: `com.cycosoft.eyas`,
 			productName: `Eyas`,
