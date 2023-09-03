@@ -6,7 +6,7 @@ module.exports = {
 	testSourceDirectory: `demo`,
 	// serverPort: 3000,
 	customDomain: `eyas.cycosoft.com`,
-	buildVersion: `v${version}`,
+	// buildVersion: `v${version}`,
 	appTitle: `Eyas App Demo`,
 	appWidth: 1024,
 	appHeight: 768,

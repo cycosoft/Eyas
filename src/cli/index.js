@@ -221,7 +221,7 @@ async function runCommand_compile() {
 			appId: `com.cycosoft.eyas`,
 			productName: `Eyas`,
 			// eslint-disable-next-line quotes
-			artifactName: '${productName}.${ext}', // This is not parsed in JS context
+			artifactName: `${config.appTitle} - ${config.buildVersion}` + '.${ext}',
 			copyright: `Copyright © 2023 Cycosoft, LLC`,
 			asarUnpack: [`resources/**`],
 			compression: `normal`, // normal, maximum, store
