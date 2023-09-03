@@ -185,9 +185,8 @@ async function runCommand_compile() {
 	// this needs to resolve properties that are functions
 
 	// create a new file with the users snapshotted config values
-	const data = `module.exports = ${JSON.stringify(config, null, 2)}`;
-	// console.log(data);
 	userLog(`Creating snapshot of config...`);
+	const data = `module.exports = ${JSON.stringify(config, null, 2)}`;
 	await fs.outputFile(paths.userConfigTo, data);
 
 	// get the path to the users source files
@@ -217,7 +216,7 @@ async function runCommand_compile() {
 	userLog(``);
 
 	// Build the executables
-	const built = await builder.build({
+	await builder.build({
 		config: {
 			appId: `com.cycosoft.eyas`,
 			productName: `Eyas`,
