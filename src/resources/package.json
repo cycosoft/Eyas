@@ -2,7 +2,6 @@
   "name": "@cycosoft/eyas",
   "version": "1.0.0",
   "description": "A \"shift-left\" serverless testing solution for static web applications",
-  "main": "./index.js",
   "packageName": "Eyas",
   "publishConfig": {
     "access": "public"
