@@ -37,15 +37,12 @@
     "README.md"
   ],
   "dependencies": {
-    "@electron-forge/core": "^6.4.1",
     "bytenode": "^1.5.1",
     "commander": "^11.0.0",
-    "electron-packager": "^17.1.2",
     "express": "^4.18.2",
     "fs-extra": "^11.1.1",
     "inquirer": "^9.2.10",
     "mkcert": "^3.0.0",
-    "pkg": "^5.8.1",
     "url-parse": "^1.5.10",
     "validator": "^13.11.0"
   },
@@ -54,8 +51,7 @@
     "electron-builder": "^24.6.3",
     "electron-vite": "^1.0.27",
     "eslint": "^8.48.0",
-    "npm-check": "^6.0.1",
-    "shx": "^0.3.4"
+    "npm-check": "^6.0.1"
   },
   "overrides": {
     "package-json": ">6.5.0 <8.0.0"

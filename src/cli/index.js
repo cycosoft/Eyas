@@ -129,10 +129,7 @@ async function runCommand_compile() {
 	// imports
 	const fs = require(`fs-extra`);
 	const path = require(`path`);
-	const packager = require(`electron-packager`);
 	const builder = require(`electron-builder`);
-	const { exec } = require(`pkg`);
-	const { api } = require(`@electron-forge/core`);
 	const child_process = require(`child_process`);
 
 	// setup
@@ -218,27 +215,9 @@ async function runCommand_compile() {
 	// create electron executable for the requested platforms with the files from .eyas to user's designated output path (or default '.eyas-dist/')
 	userLog(`Creating executable(s)...`);
 	userLog(``);
-	// const appPaths = await packager({
-	// 	appCopyright: `2023`,
-	// 	appVersion: config.version,
-	// 	buildVersion: process.env.npm_package_version,
-	// 	dir: paths.eyasPreview,
-	// 	executableName: `${config.appTitle} - ${config.buildVersion}`,
-	// 	icon: path.join(paths.assetsFrom, `eyas-logo.png`),
-	// 	name: `Eyas`,
-	// 	out: names.eyasDist,
-	// 	overwrite: true,
-	// 	win32metadata: {
-	// 		CompanyName: `Cycosoft, LLC`,
-	// 		ProductName: `Eyas`
-	// 	}
-	// });
 
-	// const Platform = builder.Platform;
-
+	// Build the executables
 	const built = await builder.build({
-		// targets: Platform.MAC.createTarget(),
-		// targets: Platform.WINDOWS.createTarget(`portable`),
 		config: {
 			appId: `com.cycosoft.eyas`,
 			productName: `Eyas`,
@@ -261,25 +240,6 @@ async function runCommand_compile() {
 			}
 		}
 	});
-
-	// await exec([
-	// 	paths.eyasRunner,
-	// 	`--config`, path.join(eyasRoot, `pkg.config.json`),
-	// 	`--public`,
-	// 	`--debug`,
-	// 	`--out-path`, paths.eyasDist,
-	// 	`--targets`, `latest-win`, // `latest-macos,latest-win,latest-linux`,
-	// 	`--no-bytecode`,
-	// 	// `--compress`, `Brotli`,
-	// 	// `--compress`, `GZip`
-	// ]);
-
-	// const response = await api.package({
-	// 	dir: paths.eyasRunner,
-	// 	outDir: paths.eyasDist,
-	// 	platform: [`darwin`, `mas`, `win32`, `linux`],
-	// 	interactive: true
-	// });
 
 	// delete the build folder
 	userLog(``);
