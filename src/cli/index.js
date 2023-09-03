@@ -246,13 +246,19 @@ async function runCommand_compile() {
 			artifactName: '${productName}.${ext}', // This is not parsed in JS context
 			copyright: `Copyright © 2023 Cycosoft, LLC`,
 			asarUnpack: [`resources/**`],
-			compression: `maximum`, // normal, maximum, store
+			compression: `normal`, // normal, maximum, store
 			directories: {
 				output: paths.eyasDist,
 				app: paths.eyasBuild
 			},
 			removePackageScripts: true,
-			removePackageKeywords: true
+			removePackageKeywords: true,
+			mac: {
+				target: `dmg`
+			},
+			win: {
+				target: `portable`
+			}
 		}
 	});
 
