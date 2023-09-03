@@ -157,7 +157,8 @@ async function runCommand_compile() {
 		eyasPackageJsonFrom: path.join(eyasRoot, `dist`, names.eyasPackage),
 		eyasPackageJsonTo: path.join(consumerRoot, names.eyasBuild, names.eyasPackage),
 		userConfigFrom: path.join(consumerRoot, names.userConfig),
-		userConfigTo: path.join(consumerRoot, names.eyasBuild, names.userConfig)
+		userConfigTo: path.join(consumerRoot, names.eyasBuild, names.userConfig),
+		getConfigScript: path.join(eyasRoot, `src`, `scripts`, `get-config.js`)
 	};
 
 	// log the start of the process
@@ -178,7 +179,12 @@ async function runCommand_compile() {
 
 	// load the users config file as it could contain dynamic values
 	userLog(`Loading user config...`);
-	const config = require(paths.userConfigFrom);
+
+	// load the user's config
+	const config = require(paths.getConfigScript)();
+
+	console.log({config});
+	return;
 
 	// adjust the config to manage any missing values (move from eyas.js)
 	// this might need to be a shared script
