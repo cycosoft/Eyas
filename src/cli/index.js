@@ -133,6 +133,7 @@ async function runCommand_compile() {
 	const builder = require(`electron-builder`);
 	const { exec } = require(`pkg`);
 	const { api } = require(`@electron-forge/core`);
+	const child_process = require(`child_process`);
 
 	// setup
 	const isProd = __dirname.includes(`node_modules`);
@@ -210,6 +211,10 @@ async function runCommand_compile() {
 	userLog(`Copying package.json...`);
 	await fs.copy(paths.eyasPackageJsonFrom, paths.eyasPackageJsonTo);
 
+	// Install dependencies
+	userLog(`Installing dependencies...`);
+	child_process.execSync(`npm i`, { stdio: [0,1,2] });
+
 	// create electron executable for the requested platforms with the files from .eyas to user's designated output path (or default '.eyas-dist/')
 	userLog(`Creating executable(s)...`);
 	userLog(``);
@@ -229,7 +234,7 @@ async function runCommand_compile() {
 	// 	}
 	// });
 
-	const Platform = builder.Platform;
+	// const Platform = builder.Platform;
 
 	const built = await builder.build({
 		// targets: Platform.MAC.createTarget(),
