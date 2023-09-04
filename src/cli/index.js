@@ -145,23 +145,19 @@ async function runCommand_compile() {
 
 	// delete any existing build folders
 	userLog(`Resetting build space...`);
-	await fs.emptyDir(paths.folders.build);
-
-	return;
-
+	await fs.emptyDir(paths.cli.build);
 
 	// copy eyas source to build folder
 	userLog(`Copying Eyas runtime files...`);
-	await fs.copy(paths.folders.eyasRunnerSrc, paths.folders.eyasRunnerDest);
+	await fs.copy(paths.cli.eyasSrc, paths.cli.eyasDest);
 
-	// load the users config file as it could contain dynamic values
+	// load AND run the user's config
 	userLog(`Loading user config...`);
-
-	// load the user's config
-	const config = require(paths.getConfigScript)();
+	const config = require(paths.cli.eyasConfig)();
 
 	console.log({config});
 
+	return;
 	// adjust the config to manage any missing values (move from eyas.js)
 	// this might need to be a shared script
 	// this needs to resolve properties that are functions

@@ -68,7 +68,6 @@ const scripts = {
 
 // object to be exported
 const paths = {
-	// dev context
 	module: {
 		dist: path.join(moduleRoot, `dist`),
 		buildAssetsSrc: path.join(moduleRoot, `src`, `build-assets`),
@@ -80,10 +79,14 @@ const paths = {
 		cliDestFile: path.join(moduleRoot, `dist`, `cli`, `index.jsc`)
 	},
 
-	// consumer context
-	previewEyas: {},
-	compileEyas: {},
-	configEyas: {}
+	cli: {
+		build: path.join(consumerRoot, `.eyas-build`),
+		eyasSrc: path.join(moduleRoot, `dist`, `eyas`),
+		eyasDest: path.join(consumerRoot, `.eyas-build`, `eyas`),
+		eyasConfigSrc: path.join(consumerRoot, `.eyasrc.js`)
+	},
+
+	eyas: {}
 };
 
 console.log({paths});
