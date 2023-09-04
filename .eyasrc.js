@@ -1,8 +1,27 @@
-// import the package.json version
-const { version } = require(`./package.json`);
-
 //export the config for the project
 module.exports = {
+	test: {
+		source: ``, // dist
+		port: ``, // 3000
+		domain: ``, // `locahost:${port}`
+		title: ``, // `Eyas`
+		version: ``, // current branch name
+		resolutions: [ // prepends to menu of resolutions; defaults to first in list
+			{ label: `SD Desktop`, width: 1024, height: 768 },
+		],
+		menu: [ // Adds a menu items of custom links
+			{ label: `Cycosoft.com (browser)`, url: `https://cycosoft.com`, external: true }
+		]
+	},
+
+	// defaults to current platform
+	build: {
+		maxCompression: false, // false
+		windows: undefined, // undefined
+		mac: undefined, // undefined
+		linux: undefined // undefined
+	}
+
 	testSourceDirectory: `demo`,
 	// serverPort: 3000,
 	customDomain: `eyas.cycosoft.com`,
