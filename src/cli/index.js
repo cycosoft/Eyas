@@ -153,19 +153,13 @@ async function runCommand_compile() {
 
 	// load AND run the user's config
 	userLog(`Loading user config...`);
-	const config = require(paths.cli.eyasConfig)();
+	const config = require(paths.cli.getConfigScript);
 
-	console.log({config});
-
-	return;
-	// adjust the config to manage any missing values (move from eyas.js)
-	// this might need to be a shared script
-	// this needs to resolve properties that are functions
-
-	// create a new file with the users snapshotted config values
+	// create a new file with the users snap-shotted config values
 	userLog(`Creating snapshot of config...`);
 	const data = `module.exports = ${JSON.stringify(config, null, 2)}`;
-	await fs.outputFile(paths.userConfigTo, data);
+	await fs.outputFile(paths.cli.configDest, data);
+	return;
 
 	// get the path to the users source files
 	const userSourceInput = path.join(consumerRoot, config.testSourceDirectory);

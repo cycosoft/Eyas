@@ -83,7 +83,12 @@ const paths = {
 		build: path.join(consumerRoot, `.eyas-build`),
 		eyasSrc: path.join(moduleRoot, `dist`, `eyas`),
 		eyasDest: path.join(consumerRoot, `.eyas-build`, `eyas`),
-		eyasConfigSrc: path.join(consumerRoot, `.eyasrc.js`)
+		getConfigScript: path.join(moduleRoot, `src`, `scripts`, `get-config.js`),
+		configDest: path.join(consumerRoot, `.eyas-build`, `.eyasrc.js`)
+	},
+
+	config: {
+		source: path.join(consumerRoot, `.eyasrc.js`)
 	},
 
 	eyas: {}

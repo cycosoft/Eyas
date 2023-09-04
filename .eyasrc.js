@@ -20,7 +20,7 @@ module.exports = {
 		windows: undefined, // undefined
 		mac: undefined, // undefined
 		linux: undefined // undefined
-	}
+	},
 
 	testSourceDirectory: `demo`,
 	// serverPort: 3000,
