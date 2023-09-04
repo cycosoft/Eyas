@@ -156,9 +156,9 @@ async function runCommand_compile() {
 	const config = require(paths.getConfigScript);
 
 	// cache the path to the users source files from the config for later
-	const userSourceInput = path.join(consumerRoot, config.test.source);
+	const userProvidedSource = path.join(consumerRoot, config.test.source);
 
-	// point the config to the new output folder location
+	// point the config test source to the new build folder location
 	config.test.source = paths.testDest;
 
 	// create a new config file with the updated values in the build folder
@@ -166,11 +166,11 @@ async function runCommand_compile() {
 	const data = `module.exports = ${JSON.stringify(config, null, 2)}`;
 	await fs.outputFile(paths.configDest, data);
 
-	return;
-
-	// copy the users source files to the folder .eyas/user/
+	// copy the users source files to the build folder as `test/`
 	userLog(`Copying user source...`);
-	await fs.copy(userSourceInput, paths.userSourceTo);
+	await fs.copy(userProvidedSource, paths.testDest);
+
+	return;
 
 	// copy any assets to the folder .eyas/assets/
 	userLog(`Copying Eyas assets...`);
