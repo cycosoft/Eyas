@@ -1,7 +1,7 @@
 //export the config for the project
 module.exports = {
 	test: {
-		source: ``, // dist
+		source: `demo`, // dist
 		port: ``, // 3000
 		domain: ``, // `locahost:${port}`
 		title: ``, // `Eyas`
