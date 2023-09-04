@@ -37,8 +37,6 @@ const moduleRoot = isProd
 // };
 
 const rootFolders = {
-	consumerRoot,
-	moduleRoot,
 	src: path.join(moduleRoot, `src`),
 	moduleDist: path.join(moduleRoot, `dist`),
 	build: path.join(consumerRoot, `.eyas-build`),
@@ -52,17 +50,20 @@ const folders = {
 	cliSrc: path.join(moduleRoot, `src`, `cli`),
 	cliDest: path.join(moduleRoot, `dist`, `cli`),
 	eyasAssetsSrc: path.join(moduleRoot, `src`, `eyas-assets`),
-	eyasAssetsDest: path.join(moduleRoot, `dist`, `eyas-assets`)
+	eyasAssetsDest: path.join(moduleRoot, `dist`, `eyas-assets`),
+	eyasRunnerSrc: path.join(moduleRoot, `dist`, `eyas`),
+	eyasRunnerDest: path.join(consumerRoot, `.eyas-build`, `eyas`)
 };
 
 const files = {
-	userEyasConfig: `./.eyasrc.js`,
+	eyasConfig: path.join(consumerRoot, `.eyasrc.js`),
 	cliSrc: path.join(folders.cliSrc, `index.js`),
 	cliDest: path.join(folders.cliDest, `index.jsc`)
 };
 
 const scripts = {
-	getConfig: `./src/scripts/get-config.js`
+	getConfigSrc: path.join(moduleRoot, `src`, `scripts`, `get-config.js`),
+	getConfigDest: path.join(moduleRoot, `get-config.jsc`)
 };
 
 // object to be exported

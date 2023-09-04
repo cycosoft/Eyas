@@ -135,47 +135,24 @@ async function runCommand_compile() {
 	// setup
 	const isProd = __dirname.includes(`node_modules`);
 	const consumerRoot = process.cwd();
-	const eyasRoot = isProd
+	const moduleRoot = isProd
 		? path.join(consumerRoot, `node_modules`, `@cycosoft`, `eyas`)
 		: consumerRoot;
-	const names = {
-		eyasBuild: `.eyas-build`,
-		eyasDist: `.eyas-dist`,
-		eyasAssets: `assets`,
-		eyasPackage: `package.json`,
-		userConfig: `.eyasrc.js`,
-		userSource: `user`
-	};
-	const paths = {
-		eyasBuild: path.join(consumerRoot, names.eyasBuild),
-		eyasDist: path.join(consumerRoot, names.eyasDist),
-		assetsFrom: path.join(eyasRoot, `src`, names.eyasAssets),
-		assetsTo: path.join(consumerRoot, names.eyasBuild, names.eyasAssets),
-		eyasRunnerSource: path.join(eyasRoot, `dist`, `eyas`),
-		eyasRunner: path.join(consumerRoot, names.eyasBuild, `index.js`),
-		userSourceTo: path.join(consumerRoot, names.eyasBuild, names.userSource),
-		eyasPackageJsonFrom: path.join(eyasRoot, `dist`, names.eyasPackage),
-		eyasPackageJsonTo: path.join(consumerRoot, names.eyasBuild, names.eyasPackage),
-		userConfigFrom: path.join(consumerRoot, names.userConfig),
-		userConfigTo: path.join(consumerRoot, names.eyasBuild, names.userConfig),
-		getConfigScript: path.join(eyasRoot, `src`, `scripts`, `get-config.js`)
-	};
+	const paths = require(path.join(moduleRoot, `src`, `scripts`, `paths.js`));
 
-	// log the start of the process
+	// give space for the start of the process
 	userLog(``);
 
 	// delete any existing build folders
 	userLog(`Resetting build space...`);
-	await fs.remove(paths.eyasBuild);
-	await fs.remove(paths.eyasDist);
+	await fs.emptyDir(paths.folders.build);
 
-	// create the temp folder to work in
-	userLog(`Creating build directory...`);
-	await fs.ensureDir(paths.eyasBuild);
+	return;
 
-	// copy dist/main/*.* to .eyas/
+
+	// copy eyas source to build folder
 	userLog(`Copying Eyas runtime files...`);
-	await fs.copy(paths.eyasRunnerSource, paths.eyasBuild);
+	await fs.copy(paths.folders.eyasRunnerSrc, paths.folders.eyasRunnerDest);
 
 	// load the users config file as it could contain dynamic values
 	userLog(`Loading user config...`);
@@ -184,7 +161,6 @@ async function runCommand_compile() {
 	const config = require(paths.getConfigScript)();
 
 	console.log({config});
-	return;
 
 	// adjust the config to manage any missing values (move from eyas.js)
 	// this might need to be a shared script
@@ -216,6 +192,8 @@ async function runCommand_compile() {
 	// Install dependencies
 	userLog(`Installing dependencies...`);
 	child_process.execSync(`npm i`, { stdio: [0,1,2] });
+
+	// reset path
 
 	// create electron executable for the requested platforms with the files from .eyas to user's designated output path (or default '.eyas-dist/')
 	userLog(`Creating executable(s)...`);
