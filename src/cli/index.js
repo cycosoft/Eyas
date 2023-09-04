@@ -138,33 +138,33 @@ async function runCommand_compile() {
 	const moduleRoot = isProd
 		? path.join(consumerRoot, `node_modules`, `@cycosoft`, `eyas`)
 		: consumerRoot;
-	const paths = require(path.join(moduleRoot, `src`, `scripts`, `paths.js`));
+	const { cli: paths } = require(path.join(moduleRoot, `src`, `scripts`, `paths.js`));
 
 	// give space for the start of the process
 	userLog(``);
 
 	// delete any existing build folders
 	userLog(`Resetting build space...`);
-	await fs.emptyDir(paths.cli.build);
+	await fs.emptyDir(paths.build);
 
 	// copy eyas source to build folder
 	userLog(`Copying Eyas runtime files...`);
-	await fs.copy(paths.cli.eyasSrc, paths.cli.eyasDest);
+	await fs.copy(paths.eyasSrc, paths.eyasDest);
 
 	// load AND run the user's config
 	userLog(`Loading user config...`);
-	const config = require(paths.cli.getConfigScript);
+	const config = require(paths.getConfigScript);
 
 	// cache the path to the users source files from the config for later
 	const userSourceInput = path.join(consumerRoot, config.test.source);
 
 	// point the config to the new output folder location
-	config.test.source = paths.cli.testDest;
+	config.test.source = paths.testDest;
 
 	// create a new config file with the updated values in the build folder
 	userLog(`Creating snapshot of config...`);
 	const data = `module.exports = ${JSON.stringify(config, null, 2)}`;
-	await fs.outputFile(paths.cli.configDest, data);
+	await fs.outputFile(paths.configDest, data);
 
 	return;
 
