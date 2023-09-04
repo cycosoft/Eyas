@@ -15,7 +15,7 @@ module.exports = {
 	},
 
 	// defaults to current platform
-	build: {
+	outputs: {
 		maxCompression: false, // false
 		windows: undefined, // undefined
 		mac: undefined, // undefined
