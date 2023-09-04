@@ -7,14 +7,4 @@ export default {
 			outDir: `dist/eyas`
 		}
 	}
-	// preload: {
-	// 	build: {
-	// 		outDir: 'dist/preload'
-	// 	}
-	// },
-	// renderer: {
-	// 	build: {
-	// 		outDir: 'dist/renderer'
-	// 	}
-	// }
 };
