@@ -68,9 +68,22 @@ const scripts = {
 
 // object to be exported
 const paths = {
-	files,
-	folders,
-	scripts
+	// dev context
+	module: {
+		dist: path.join(moduleRoot, `dist`),
+		buildAssetsSrc: path.join(moduleRoot, `src`, `build-assets`),
+		buildAssetsDest: path.join(moduleRoot, `dist`, `build-assets`),
+		eyasAssetsSrc: path.join(moduleRoot, `src`, `eyas-assets`),
+		eyasAssetsDest: path.join(moduleRoot, `dist`, `eyas-assets`),
+		cliDest: path.join(moduleRoot, `dist`, `cli`),
+		cliSrcFile: path.join(moduleRoot, `src`, `cli`, `index.js`),
+		cliDestFile: path.join(moduleRoot, `dist`, `cli`, `index.jsc`)
+	},
+
+	// consumer context
+	previewEyas: {},
+	compileEyas: {},
+	configEyas: {}
 };
 
 console.log({paths});

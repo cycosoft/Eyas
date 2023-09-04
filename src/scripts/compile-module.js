@@ -10,22 +10,22 @@
 	const paths = require(`./paths`);
 
 	// Create or empty the dist directory for module output
-	await fs.emptyDir(paths.folders.moduleDist);
+	await fs.emptyDir(paths.module.dist);
 
 	// Copy the build assets to the dist directory
-	await fs.copy(paths.folders.buildAssetsSrc, paths.folders.buildAssetsDest);
+	await fs.copy(paths.module.buildAssetsSrc, paths.module.buildAssetsDest);
 
 	// copy eyas assets to the dist directory
-	await fs.copy(paths.folders.eyasAssetsSrc, paths.folders.eyasAssetsDest);
+	await fs.copy(paths.module.eyasAssetsSrc, paths.module.eyasAssetsDest);
 
 	// set a home for the CLI output
-	await fs.emptyDir(paths.folders.cliDest);
+	await fs.emptyDir(paths.module.cliDest);
 
 	// Compile the CLI
 	bytenode.compileFile({
 		createLoader: true,
 		loaderFilename: `%.js`,
-		filename: paths.files.cliSrc,
-		output: paths.files.cliDest
+		filename: paths.module.cliSrcFile,
+		output: paths.module.cliDestFile
 	});
 })();
