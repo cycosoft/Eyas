@@ -178,11 +178,11 @@ async function runCommand_compile() {
 	userLog(`Copying package.json...`);
 	await fs.copy(paths.packageJsonSrc, paths.packageJsonDest);
 
-	return;
-
 	// Install dependencies
 	userLog(`Installing dependencies...`);
-	child_process.execSync(`npm i`, { stdio: [0,1,2] });
+	child_process.execSync(`npm i`, { cwd: paths.build });
+
+	return;
 
 	// reset path
 
