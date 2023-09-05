@@ -22,8 +22,7 @@
 	await fs.emptyDir(paths.cliDest);
 
 	// Compile the CLI
-	bytenode.compileFile({
-		createLoader: true,
+	await bytenode.compileFile({
 		loaderFilename: `%.js`,
 		filename: paths.cliSrcFile,
 		output: paths.cliDestFile
