@@ -16,7 +16,7 @@ const moduleRoot = isProd
 const names = {
 	files: {
 		eyasrcJs: `.eyasrc.js`,
-		cliJs: `cli.js`,
+		cliJs: `index.js`,
 		cliJsc: `cli.jsc`,
 		getConfigJs: `get-config.js`,
 		packageJson: `package.json`
