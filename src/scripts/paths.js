@@ -38,7 +38,7 @@ const names = {
 const roots = {
 	dist: path.join(moduleRoot, `dist`),
 	src: path.join(moduleRoot, `src`),
-	eyasBuild: path.join(consumerRoot, `.eyas-build`),
+	eyasBuild: path.join(consumerRoot, `.eyas-preview`),
 	eyasDist: path.join(consumerRoot, `.eyas-dist`)
 };
 
