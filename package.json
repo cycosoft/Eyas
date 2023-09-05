@@ -12,8 +12,8 @@
   },
   "scripts": {
     "_______________DEV_______________": "",
-    "dev:cli": "npm i && npm-check -u && npm run compile && node src/cli/index.js",
-    "dev:eyas": "npm i && npm-check -u && electron src/eyas/index.js",
+    "dev": "npm i && npm-check -u -i inquirer && npm run compile && node dist/cli/index.js",
+    "dev:eyas": "npm run compile && electron dist/eyas/index.js",
     "_____________COMPILE_____________": "",
     "compile": "node src/scripts/compile-module.js && electron-vite build",
     "_____________SCRIPTS_____________": "",
@@ -41,7 +41,7 @@
     "electron-builder": "^24.6.4",
     "express": "^4.18.2",
     "fs-extra": "^11.1.1",
-    "inquirer": "^9.2.10",
+    "inquirer": "8.2.6",
     "mkcert": "^3.0.0",
     "url-parse": "^1.5.10",
     "validator": "^13.11.0"

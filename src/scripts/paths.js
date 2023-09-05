@@ -17,7 +17,7 @@ const names = {
 	files: {
 		eyasrcJs: `.eyasrc.js`,
 		cliJs: `index.js`,
-		cliJsc: `cli.jsc`,
+		cliJsc: `index.jsc`,
 		getConfigJs: `get-config.js`,
 		packageJson: `package.json`,
 		eyasLogo: `eyas-logo.png`

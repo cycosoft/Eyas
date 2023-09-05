@@ -4,24 +4,6 @@
 
 'use strict';
 
-// Allow for "root" await calls
-(async () => {
-	// import dependencies
-	const { program: cli } = await import(`commander`);
-
-	// define the commands for the CLI
-	defineCommands(cli);
-
-	// if arguments were passed to the script
-	if(process.argv.slice(2).length) {
-		// parse the arguments and run the commands
-		cli.parse();
-	}else{
-		// fall back to asking the user how to proceed
-		defaultEntry();
-	}
-})();
-
 // define the actions for the CLI
 const actions = {
 	config: {
@@ -47,10 +29,28 @@ const actions = {
 	}
 };
 
+// Allow for "root" await calls
+(async () => {
+	// import dependencies
+	const { program: cli } = require(`commander`);
+
+	// define the commands for the CLI
+	defineCommands(cli);
+
+	// if arguments were passed to the script
+	if(process.argv.slice(2).length) {
+		// parse the arguments and run the commands
+		cli.parse();
+	}else{
+		// fall back to asking the user how to proceed
+		defaultEntry();
+	}
+})();
+
 // ask the user what they want to do
 async function defaultEntry() {
 	// import
-	const inquirer = (await import(`inquirer`)).default;
+	const inquirer = require(`inquirer`);
 
 	// add a space from the previous output
 	userLog(``);
