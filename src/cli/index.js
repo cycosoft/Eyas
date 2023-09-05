@@ -114,14 +114,19 @@ function runCommand_preview() {
 	const electron = require(`electron`);
 	const path = require(`path`);
 
-	// get the path to the eyas entry point
-	const eyasPath = path.join(process.cwd(), `.eyas-build`, `index.js`);
+	// setup
+	const isProd = __dirname.includes(`node_modules`);
+	const consumerRoot = process.cwd();
+	const moduleRoot = isProd
+		? path.join(consumerRoot, `node_modules`, `@cycosoft`, `eyas`)
+		: consumerRoot;
+	const { preview: paths } = require(path.join(moduleRoot, `src`, `scripts`, `paths.js`));
 
 	// run the electron app
-	spawn(electron, [eyasPath], {
+	spawn(electron, [paths.eyas], {
 		stdio: `inherit`,
 		windowsHide: false,
-		cwd: process.cwd()
+		cwd: consumerRoot
 	});
 }
 

@@ -59,7 +59,7 @@ const paths = {
 	},
 
 	preview: {
-
+		eyas: path.join(roots.eyasBuild, `index.js`)
 	},
 
 	compile: {
