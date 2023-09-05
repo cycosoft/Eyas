@@ -186,8 +186,6 @@ async function runCommand_compile() {
 	userLog(`Clearing output directory...`);
 	await fs.emptyDir(paths.dist);
 
-	return;
-
 	// create electron executable for the requested platforms with the files from .eyas to user's designated output path (or default '.eyas-dist/')
 	userLog(`Creating executable(s)...`);
 	userLog(``);
@@ -198,13 +196,13 @@ async function runCommand_compile() {
 			appId: `com.cycosoft.eyas`,
 			productName: `Eyas`,
 			// eslint-disable-next-line quotes
-			artifactName: `${config.appTitle} - ${config.buildVersion}` + '.${ext}',
+			artifactName: `${config.test.title} - ${config.test.version}` + '.${ext}',
 			copyright: `Copyright © 2023 Cycosoft, LLC`,
 			asarUnpack: [`resources/**`],
 			compression: `normal`, // normal, maximum, store
 			directories: {
-				output: paths.eyasDist,
-				app: paths.eyasBuild
+				app: paths.build,
+				output: paths.dist
 			},
 			removePackageScripts: true,
 			removePackageKeywords: true,
@@ -216,6 +214,8 @@ async function runCommand_compile() {
 			}
 		}
 	});
+
+	return;
 
 	// delete the build folder
 	userLog(``);
