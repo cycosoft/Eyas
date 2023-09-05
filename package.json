@@ -27,7 +27,8 @@
     "static",
     "web",
     "applications",
-    "serverless"
+    "serverless",
+    "eyas"
   ],
   "files": [
     "dist",
