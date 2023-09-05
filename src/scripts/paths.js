@@ -19,7 +19,8 @@ const names = {
 		cliJs: `index.js`,
 		cliJsc: `cli.jsc`,
 		getConfigJs: `get-config.js`,
-		packageJson: `package.json`
+		packageJson: `package.json`,
+		eyasLogo: `eyas-logo.png`
 	},
 
 	folders: {
@@ -69,6 +70,12 @@ const paths = {
 
 	config: {
 		source: path.join(consumerRoot, names.files.eyasrcJs)
+	},
+
+	eyas: {
+		config: path.join(consumerRoot, names.files.eyasrcJs),
+		icon: path.join(roots.src, names.folders.eyasAssets, names.files.eyasLogo),
+		testSrc: path.join(roots.src, names.folders.test)
 	}
 };
 

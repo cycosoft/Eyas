@@ -16,24 +16,34 @@
 	const path = require(`path`);
 	const https = require(`https`);
 	const mkcert = require(`mkcert`);
-	const config = require(path.join(__dirname, `.eyasrc.js`));
 	const { isURL } = require(`validator`);
 	const parseURL = require(`url-parse`);
 
+	// setup
+	const isProd = __dirname.includes(`node_modules`);
+	const consumerRoot = process.cwd();
+	const moduleRoot = isProd
+		? path.join(consumerRoot, `node_modules`, `@cycosoft`, `eyas`)
+		: consumerRoot;
+	const paths = require(path.join(moduleRoot, `src`, `scripts`, `paths.js`));
+
+	// load the users config
+	const config = require(paths.eyas.config);
+
 	// config
 	const appName = `Eyas`;
-	const testServerPort = config.serverPort;
+	const testServerPort = config.test.port;
 	const testServerUrl = `https://localhost:${testServerPort}`;
-	const appUrlOverride = formatURL(config.customDomain);
+	const appUrlOverride = formatURL(config.test.domain);
 	const appUrl = appUrlOverride || testServerUrl;
 	let clientWindow = null;
 	let expressLayer = null;
 	let testServer = null;
 	const windowConfig = {
-		width: config.appWidth,
-		height: config.appHeight,
+		width: config.test.resolutions[0].width,
+		height: config.test.resolutions[0].height,
 		title: getAppTitle(),
-		icon: path.join(__dirname, `../assets/eyas-logo.png`)
+		icon: paths.eyas.icon
 	};
 
 	// Configure Electron to ignore certificate errors
@@ -102,7 +112,7 @@
 	});
 
 	function setMenu () {
-	// build the default menu in MacOS style
+		// build the default menu in MacOS style
 		const menuDefault = [
 			{
 				label: appName,
@@ -116,7 +126,7 @@
 								title: `Exit Confirmation`,
 								message: `Close ${appName}?`
 							}).then(result => {
-							// User clicked "Yes"
+								// User clicked "Yes"
 								if (result.response === 0) {
 									electronLayer.quit();
 								}
@@ -229,7 +239,7 @@
 		expressLayer = express();
 
 		// Serve static files from test/
-		expressLayer.use(express.static(path.join(__dirname, `test`)));
+		expressLayer.use(express.static(config.test.source));
 
 		const ca = await mkcert.createCA({
 			organization: `Cycosoft, LLC - Test Server`,
