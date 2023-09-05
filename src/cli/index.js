@@ -183,7 +183,7 @@ async function runCommand_compile() {
 	child_process.execSync(`npm i`, { cwd: paths.build });
 
 	// Clear out the output directory
-	userLog(`Clearing output directory...`);
+	userLog(`Resetting output directory...`);
 	await fs.emptyDir(paths.dist);
 
 	// create electron executable for the requested platforms with the files from .eyas to user's designated output path (or default '.eyas-dist/')
@@ -215,18 +215,17 @@ async function runCommand_compile() {
 		}
 	});
 
-	return;
+	userLog(``);
+	// let the user know where the output is
+	userLog(`Files created at: ${paths.dist}`);
 
 	// delete the build folder
-	userLog(``);
 	userLog(`Removing build directory...`);
-	await fs.remove(paths.eyasBuild);
-
-	// let the user know where the output is
-	userLog(`Output created at: ${paths.eyasDist}`);
+	await fs.remove(paths.build);
 
 	// log the end of the process
 	userLog(`Compilation complete!`);
+	userLog(``);
 }
 
 // wrapper to differentiate user logs (allowed) from system logs (disallowed)
