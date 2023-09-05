@@ -73,7 +73,7 @@ const paths = {
 	},
 
 	eyas: {
-		config: path.join(consumerRoot, names.files.eyasrcJs),
+		getConfigScript: path.join(roots.src, names.folders.scripts, names.files.getConfigJs),
 		icon: path.join(roots.src, names.folders.eyasAssets, names.files.eyasLogo),
 		testSrc: path.join(roots.src, names.folders.test)
 	}
