@@ -16,6 +16,7 @@ const moduleRoot = isProd
 const names = {
 	files: {
 		eyasrcJs: `.eyasrc.js`,
+		eyasJs: `index.js`,
 		cliJs: `index.js`,
 		cliJsc: `index.jsc`,
 		getConfigJs: `get-config.js`,
@@ -55,19 +56,16 @@ const paths = {
 	},
 
 	config: {
-		source: path.join(consumerRoot, names.files.eyasrcJs)
+		source: path.join(consumerRoot, names.files.eyasrcJs),
+		loader: path.join(roots.src, names.folders.scripts, names.files.getConfigJs)
 	},
 
-	preview: {
-		eyas: path.join(roots.eyasBuild, `index.js`)
-	},
-
-	compile: {
+	cli: {
 		build: roots.eyasBuild,
 		dist: roots.eyasDist,
+		eyasApp: path.join(roots.eyasBuild, names.files.eyasJs),
 		eyasSrc: path.join(roots.dist, names.folders.eyas),
 		eyasDest: roots.eyasBuild,
-		getConfigScript: path.join(roots.src, names.folders.scripts, names.files.getConfigJs),
 		configDest: path.join(roots.eyasBuild, names.files.eyasrcJs),
 		testDest: path.join(roots.eyasBuild, names.folders.test),
 		eyasAssetsSrc: path.join(roots.dist, names.folders.eyasAssets),
@@ -77,7 +75,6 @@ const paths = {
 	},
 
 	eyas: {
-		getConfigScript: path.join(roots.src, names.folders.scripts, names.files.getConfigJs),
 		icon: path.join(roots.src, names.folders.eyasAssets, names.files.eyasLogo),
 		testSrc: path.join(roots.src, names.folders.test)
 	}

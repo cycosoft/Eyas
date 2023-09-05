@@ -29,7 +29,22 @@ const actions = {
 	}
 };
 
-// Allow for "root" await calls
+// setup
+const path = require(`path`);
+const isProd = __dirname.includes(`node_modules`);
+const consumerRoot = process.cwd();
+const moduleRoot = isProd
+	? path.join(consumerRoot, `node_modules`, `@cycosoft`, `eyas`)
+	: consumerRoot;
+const {
+	config: configPaths,
+	cli: cliPaths
+} = require(path.join(moduleRoot, `src`, `scripts`, `paths.js`));
+
+// load the user's config
+const config = require(configPaths.loader);
+
+// Entry Point
 (async () => {
 	// import dependencies
 	const { program: cli } = require(`commander`);
@@ -43,17 +58,17 @@ const actions = {
 		cli.parse();
 	}else{
 		// fall back to asking the user how to proceed
-		defaultEntry();
+		askUser();
 	}
 })();
 
 // ask the user what they want to do
-async function defaultEntry() {
+function askUser() {
 	// import
 	const inquirer = require(`inquirer`);
 
 	// add a space from the previous output
-	userLog(``);
+	userLog();
 
 	// ask the user what they want to do
 	inquirer
@@ -62,7 +77,6 @@ async function defaultEntry() {
 				type: `list`,
 				name: `action`,
 				message: `What would you like to do?`,
-				// create a map of the actions
 				choices: Object.values(actions)
 					.filter(action => action.enabled)
 					.map(action => {
@@ -103,98 +117,92 @@ function defineCommands(cli) {
 }
 
 // launch the configuration editor
-function runCommand_config() {
+async function runCommand_config() {
 	// eslint-disable-next-line no-console
 	console.log(`config command disabled`);
 }
 
 // launch a preview of the consumers application
-function runCommand_preview() {
+async function runCommand_preview() {
 	const { spawn } = require(`child_process`);
 	const electron = require(`electron`);
-	const path = require(`path`);
 
-	// setup
-	const isProd = __dirname.includes(`node_modules`);
-	const consumerRoot = process.cwd();
-	const moduleRoot = isProd
-		? path.join(consumerRoot, `node_modules`, `@cycosoft`, `eyas`)
-		: consumerRoot;
-	const { preview: paths } = require(path.join(moduleRoot, `src`, `scripts`, `paths.js`));
+	// create the build folder to prep for usage
+	await createBuildFolder();
 
-	// run the electron app
-	spawn(electron, [paths.eyas], {
+	// Alert that preview is starting
+	userLog(`Launching preview...`);
+
+	// run the app
+	spawn(electron, [cliPaths.eyasApp], {
 		stdio: `inherit`,
 		windowsHide: false,
 		cwd: consumerRoot
 	});
+
+	// log the end of the process
+	userLog(`Preview launched!`);
+	userLog();
+}
+
+// runs all the steps to create the build folder
+async function createBuildFolder() {
+	// imports
+	const fs = require(`fs-extra`);
+
+	// give space for the start of the process
+	userLog();
+
+	// delete any existing build folders
+	userLog(`Resetting build space...`);
+	await fs.emptyDir(cliPaths.build);
+
+	// copy eyas source to build folder
+	userLog(`Copying Eyas runtime files...`);
+	await fs.copy(cliPaths.eyasSrc, cliPaths.eyasDest);
+
+	// copy the users source files to the build folder
+	userLog(`Copying user source...`);
+	await fs.copy(path.join(consumerRoot, config.test.source), cliPaths.testDest);
+
+	// point the config test source to the new build folder location
+	config.test.source = cliPaths.testDest;
+
+	// create a new config file with the updated values in the build folder
+	userLog(`Creating snapshot of config...`);
+	const data = `module.exports = ${JSON.stringify(config)}`;
+	await fs.outputFile(cliPaths.configDest, data);
+
+	// copy eyas assets to the build folder
+	userLog(`Copying Eyas assets...`);
+	await fs.copy(cliPaths.eyasAssetsSrc, cliPaths.eyasAssetsDest);
+
+	// copy the package.json to the build folder
+	userLog(`Copying package.json...`);
+	await fs.copy(cliPaths.packageJsonSrc, cliPaths.packageJsonDest);
 }
 
 // compile the consumers application for deployment
 async function runCommand_compile() {
 	// imports
 	const fs = require(`fs-extra`);
-	const path = require(`path`);
 	const builder = require(`electron-builder`);
 	const child_process = require(`child_process`);
 
-	// setup
-	const isProd = __dirname.includes(`node_modules`);
-	const consumerRoot = process.cwd();
-	const moduleRoot = isProd
-		? path.join(consumerRoot, `node_modules`, `@cycosoft`, `eyas`)
-		: consumerRoot;
-	const { compile: paths } = require(path.join(moduleRoot, `src`, `scripts`, `paths.js`));
-
-	// give space for the start of the process
-	userLog(``);
-
-	// delete any existing build folders
-	userLog(`Resetting build space...`);
-	await fs.emptyDir(paths.build);
-
-	// copy eyas source to build folder
-	userLog(`Copying Eyas runtime files...`);
-	await fs.copy(paths.eyasSrc, paths.eyasDest);
-
-	// load AND run the user's config
-	userLog(`Loading user config...`);
-	const config = require(paths.getConfigScript);
-
-	// cache the path to the users source files from the config for later
-	const userProvidedSource = path.join(consumerRoot, config.test.source);
-
-	// point the config test source to the new build folder location
-	config.test.source = paths.testDest;
-
-	// create a new config file with the updated values in the build folder
-	userLog(`Creating snapshot of config...`);
-	const data = `module.exports = ${JSON.stringify(config, null, 2)}`;
-	await fs.outputFile(paths.configDest, data);
-
-	// copy the users source files to the build folder as `test/`
-	userLog(`Copying user source...`);
-	await fs.copy(userProvidedSource, paths.testDest);
-
-	// copy eyas assets to the build folder
-	userLog(`Copying Eyas assets...`);
-	await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
-
-	// copy the package.json to the build folder
-	userLog(`Copying package.json...`);
-	await fs.copy(paths.packageJsonSrc, paths.packageJsonDest);
+	// create the build folder to prep for usage
+	await createBuildFolder();
 
 	// Install dependencies
 	userLog(`Installing dependencies...`);
-	child_process.execSync(`npm i`, { cwd: paths.build });
+	child_process.execSync(`npm i`, { cwd: cliPaths.build });
 
 	// Clear out the output directory
 	userLog(`Resetting output directory...`);
-	await fs.emptyDir(paths.dist);
+	await fs.emptyDir(cliPaths.dist);
 
-	// create electron executable for the requested platforms with the files from .eyas to user's designated output path (or default '.eyas-dist/')
+	// Log that compilation is starting
 	userLog(`Creating executable(s)...`);
-	userLog(``);
+	userLog();
 
 	// Build the executables
 	await builder.build({
@@ -207,8 +215,8 @@ async function runCommand_compile() {
 			asarUnpack: [`resources/**`],
 			compression: `normal`, // normal, maximum, store
 			directories: {
-				app: paths.build,
-				output: paths.dist
+				app: cliPaths.build,
+				output: cliPaths.dist
 			},
 			removePackageScripts: true,
 			removePackageKeywords: true,
@@ -221,17 +229,17 @@ async function runCommand_compile() {
 		}
 	});
 
-	userLog(``);
 	// let the user know where the output is
-	userLog(`Files created at: ${paths.dist}`);
+	userLog();
+	userLog(`Files created at: ${cliPaths.dist}`);
 
 	// delete the build folder
 	userLog(`Removing build directory...`);
-	await fs.remove(paths.build);
+	await fs.remove(cliPaths.build);
 
 	// log the end of the process
 	userLog(`Compilation complete!`);
-	userLog(``);
+	userLog();
 }
 
 // wrapper to differentiate user logs (allowed) from system logs (disallowed)
