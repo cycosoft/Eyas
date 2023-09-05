@@ -26,10 +26,10 @@ const eyasConfig = {
 
 	// defaults to current platform
 	outputs: {
-		maxCompression: false, // false
-		windows: undefined, // undefined
-		mac: undefined, // undefined
-		linux: undefined // undefined
+		maxCompression: userConfig.outputs.maxCompression || false,
+		windows: parseBoolean(userConfig.outputs.windows),
+		mac: parseBoolean(userConfig.outputs.mac),
+		linux: parseBoolean(userConfig.outputs.linux)
 	}
 };
 
@@ -45,4 +45,18 @@ function getBranchName() {
 		console.error(`Error getting branch name:`, error);
 		return null;
 	}
+}
+
+// return null if the value isn't true or false
+function parseBoolean(value) {
+	// config
+	let output = null;
+
+	// use passed value if set AND is a boolean
+	if(value === true || value === false){
+		output = value;
+	}
+
+	// return the output
+	return output;
 }
