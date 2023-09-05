@@ -176,10 +176,6 @@ async function createBuildFolder() {
 	// copy eyas assets to the build folder
 	userLog(`Copying Eyas assets...`);
 	await fs.copy(cliPaths.eyasAssetsSrc, cliPaths.eyasAssetsDest);
-
-	// copy the package.json to the build folder
-	userLog(`Copying package.json...`);
-	await fs.copy(cliPaths.packageJsonSrc, cliPaths.packageJsonDest);
 }
 
 // compile the consumers application for deployment
@@ -191,6 +187,10 @@ async function runCommand_compile() {
 
 	// create the build folder to prep for usage
 	await createBuildFolder();
+
+	// copy the package.json to the build folder
+	userLog(`Copying build assets...`);
+	await fs.copy(cliPaths.packageJsonSrc, cliPaths.packageJsonDest);
 
 	// Install dependencies
 	userLog(`Installing dependencies...`);
