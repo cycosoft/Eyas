@@ -1,15 +1,15 @@
 //export the config for the project
 module.exports = {
 	test: {
-		source: `demo`, // dist
-		port: ``, // 3000
-		domain: `eyas.cycosoft.com`, // `locahost:${port}`
-		title: `Eyas App Demo`, // `Eyas`
-		version: ``, // current branch name
-		resolutions: [ // prepends to menu of resolutions; defaults to first in list
+		source: `demo`,
+		// port: ``,
+		domain: `eyas.cycosoft.com`,
+		title: `Eyas App Demo`,
+		version: ``,
+		resolutions: [
 			{ label: `SD Desktop`, width: 1024, height: 768 },
 		],
-		menu: [ // Adds a menu items of custom links
+		menu: [
 			{ label: `Cycosoft.com (browser)`, url: `https://cycosoft.com`, external: true },
 			{ url: `server` },
 			{ label: `Cycosoft.com (electron)`, url: `https://cycosoft.com` },

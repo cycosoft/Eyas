@@ -3,12 +3,31 @@
 // imports
 const paths = require(`./paths`);
 
-// load the user's config file
+// setup
 const config = require(paths.config.source);
 
-// adjust the config to manage any missing values (move from eyas.js)
-// this might need to be a shared script
-// this needs to resolve properties that are functions
+// validation
+const eyasConfig = {
+	test: {
+		source: `dist`,
+		port: 3000,
+		domain: ``,
+		title: `Eyas`,
+		version: ``, // current branch name
+		resolutions: [
+			// { label: `SD Desktop`, width: 1024, height: 768 },
+		],
+		menu: []
+	},
+
+	// defaults to current platform
+	outputs: {
+		maxCompression: false, // false
+		windows: undefined, // undefined
+		mac: undefined, // undefined
+		linux: undefined // undefined
+	}
+};
 
 // export the config for the project
-module.exports = config;
+module.exports = eyasConfig;
