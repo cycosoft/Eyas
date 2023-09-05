@@ -104,7 +104,8 @@ function defineCommands(cli) {
 
 // launch the configuration editor
 function runCommand_config() {
-	console.log(`config command received`);
+	// eslint-disable-next-line no-console
+	console.log(`config command disabled`);
 }
 
 // launch a preview of the consumers application
@@ -138,7 +139,7 @@ async function runCommand_compile() {
 	const moduleRoot = isProd
 		? path.join(consumerRoot, `node_modules`, `@cycosoft`, `eyas`)
 		: consumerRoot;
-	const { cli: paths } = require(path.join(moduleRoot, `src`, `scripts`, `paths.js`));
+	const { compile: paths } = require(path.join(moduleRoot, `src`, `scripts`, `paths.js`));
 
 	// give space for the start of the process
 	userLog(``);

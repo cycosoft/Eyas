@@ -54,7 +54,15 @@ const paths = {
 		cliDestFile: path.join(roots.dist, names.folders.cli, names.files.cliJsc)
 	},
 
-	cli: {
+	config: {
+		source: path.join(consumerRoot, names.files.eyasrcJs)
+	},
+
+	preview: {
+
+	},
+
+	compile: {
 		build: roots.eyasBuild,
 		dist: roots.eyasDist,
 		eyasSrc: path.join(roots.dist, names.folders.eyas),
@@ -66,10 +74,6 @@ const paths = {
 		eyasAssetsDest: path.join(roots.eyasBuild, names.folders.eyasAssets),
 		packageJsonSrc: path.join(roots.dist, names.folders.buildAssets, names.files.packageJson),
 		packageJsonDest: path.join(roots.eyasBuild, names.files.packageJson)
-	},
-
-	config: {
-		source: path.join(consumerRoot, names.files.eyasrcJs)
 	},
 
 	eyas: {
