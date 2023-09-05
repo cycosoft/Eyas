@@ -23,7 +23,7 @@
 
 	// config
 	const appName = `Eyas`;
-	const testServerPort = config.serverPort || 3000;
+	const testServerPort = config.serverPort;
 	const testServerUrl = `https://localhost:${testServerPort}`;
 	const appUrlOverride = formatURL(config.customDomain);
 	const appUrl = appUrlOverride || testServerUrl;
@@ -241,7 +241,7 @@
 		expressLayer = express();
 
 		// Serve static files from dist/
-		expressLayer.use(express.static(path.join(__dirname, `user`)));
+		expressLayer.use(express.static(path.join(__dirname, `test`)));
 
 		const ca = await mkcert.createCA({
 			organization: `Cycosoft, LLC - Test Server`,

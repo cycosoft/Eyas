@@ -4,15 +4,15 @@
 const paths = require(`./paths`);
 
 // setup
-const config = require(paths.config.source);
+const userConfig = require(paths.config.source);
 
 // validation
 const eyasConfig = {
 	test: {
-		source: `dist`,
-		port: 3000,
-		domain: ``,
-		title: `Eyas`,
+		source: userConfig.test.source || `dist`,
+		port: userConfig.test.port || 3000,
+		domain: userConfig.test.domain || null,
+		title: userConfig.test.title || `Eyas`,
 		version: ``, // current branch name
 		resolutions: [
 			// { label: `SD Desktop`, width: 1024, height: 768 },
