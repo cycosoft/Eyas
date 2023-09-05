@@ -182,9 +182,11 @@ async function runCommand_compile() {
 	userLog(`Installing dependencies...`);
 	child_process.execSync(`npm i`, { cwd: paths.build });
 
-	return;
+	// Clear out the output directory
+	userLog(`Clearing output directory...`);
+	await fs.emptyDir(paths.dist);
 
-	// reset path
+	return;
 
 	// create electron executable for the requested platforms with the files from .eyas to user's designated output path (or default '.eyas-dist/')
 	userLog(`Creating executable(s)...`);

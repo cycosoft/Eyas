@@ -81,6 +81,7 @@ const paths = {
 
 	cli: {
 		build: path.join(consumerRoot, `.eyas-build`),
+		dist: path.join(consumerRoot, `.eyas-dist`),
 		eyasSrc: path.join(moduleRoot, `dist`, `eyas`),
 		eyasDest: path.join(consumerRoot, `.eyas-build`, `eyas`),
 		getConfigScript: path.join(moduleRoot, `src`, `scripts`, `get-config.js`),
