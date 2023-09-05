@@ -174,11 +174,11 @@ async function runCommand_compile() {
 	userLog(`Copying Eyas assets...`);
 	await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
 
-	return;
-
 	// copy the package.json to the build folder
 	userLog(`Copying package.json...`);
-	await fs.copy(paths.eyasPackageJsonFrom, paths.eyasPackageJsonTo);
+	await fs.copy(paths.packageJsonSrc, paths.packageJsonDest);
+
+	return;
 
 	// Install dependencies
 	userLog(`Installing dependencies...`);
