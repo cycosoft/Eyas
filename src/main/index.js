@@ -223,12 +223,12 @@
 		return output;
 	}
 
-	// Set up Express to serve files from dist/
+	// Set up Express to serve files from test/
 	async function setupTestServer() {
 		// Create the Express app
 		expressLayer = express();
 
-		// Serve static files from dist/
+		// Serve static files from test/
 		expressLayer.use(express.static(path.join(__dirname, `test`)));
 
 		const ca = await mkcert.createCA({
