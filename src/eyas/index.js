@@ -25,7 +25,7 @@
 	const moduleRoot = isProd
 		? path.join(consumerRoot, `node_modules`, `@cycosoft`, `eyas`)
 		: consumerRoot;
-	const paths = require(path.join(moduleRoot, `src`, `scripts`, `paths.js`));
+	const paths = require(path.join(consumerRoot, `.eyas-preview`, `scripts`, `paths.js`));
 
 	// load the users config
 	const config = require(paths.eyas.configLoader);
