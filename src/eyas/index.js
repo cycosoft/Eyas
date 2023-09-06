@@ -28,7 +28,7 @@
 	const paths = require(path.join(moduleRoot, `src`, `scripts`, `paths.js`));
 
 	// load the users config
-	const config = require(paths.config.loader);
+	const config = require(paths.eyas.configLoader);
 
 	// config
 	const appName = `Eyas`;

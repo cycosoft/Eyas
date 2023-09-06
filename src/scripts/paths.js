@@ -62,8 +62,7 @@ const paths = {
 	},
 
 	config: {
-		source: path.join(consumerRoot, names.files.eyasrcJs),
-		loader: path.join(roots.src, names.folders.scripts, names.files.getConfigJs)
+		source: path.join(consumerRoot, names.files.eyasrcJs)
 	},
 
 	cli: {
@@ -77,12 +76,16 @@ const paths = {
 		eyasAssetsSrc: path.join(roots.dist, names.folders.eyasAssets),
 		eyasAssetsDest: path.join(roots.eyasBuild, names.folders.eyasAssets),
 		packageJsonSrc: path.join(roots.dist, names.folders.buildAssets, names.files.packageJson),
-		packageJsonDest: path.join(roots.eyasBuild, names.files.packageJson)
+		packageJsonDest: path.join(roots.eyasBuild, names.files.packageJson),
+		scriptsSrc: path.join(roots.dist, names.folders.scripts),
+		scriptsDest: path.join(roots.eyasBuild, names.folders.scripts),
+		configLoader: path.join(roots.dist, names.folders.scripts, names.files.getConfigJs)
 	},
 
 	eyas: {
 		icon: path.join(roots.src, names.folders.eyasAssets, names.files.eyasLogo),
-		testSrc: path.join(roots.src, names.folders.test)
+		testSrc: path.join(roots.src, names.folders.test),
+		configLoader: path.join(roots.eyasBuild, names.folders.scripts, names.files.getConfigJs)
 	}
 };
 

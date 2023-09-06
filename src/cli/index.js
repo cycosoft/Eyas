@@ -37,12 +37,11 @@ const moduleRoot = isProd
 	? path.join(consumerRoot, `node_modules`, `@cycosoft`, `eyas`)
 	: consumerRoot;
 const {
-	config: configPaths,
 	cli: cliPaths
-} = require(path.join(moduleRoot, `src`, `scripts`, `paths.js`));
+} = require(path.join(moduleRoot, `dist`, `scripts`, `paths.js`));
 
 // load the user's config
-const config = require(configPaths.loader);
+const config = require(cliPaths.configLoader);
 
 // Entry Point
 (async () => {
@@ -160,6 +159,7 @@ async function createBuildFolder() {
 	// copy eyas source to build folder
 	userLog(`Copying Eyas runtime files...`);
 	await fs.copy(cliPaths.eyasSrc, cliPaths.eyasDest);
+	await fs.copy(cliPaths.scriptsSrc, cliPaths.scriptsDest);
 
 	// copy the users source files to the build folder
 	userLog(`Copying user source...`);
