@@ -22,18 +22,19 @@
 - [Install](#install)
 - [Configuration](#configuration)
 - [Usage](#usage)
-- [Warning](#warning)
+- [Warning](#⚠️ Warning ⚠️)
 - [Support](#support)
 - [Sponsorship](#sponsorship)
 - [Attribution](#attribution)
 
 ## Features
 
-- **Serverless** - No need to pay for or manage servers or containers
-- **Stability** - Increase confidence in your application by testing before merge
-- **Shareability** - Share your tests with your team, company or even stakeholders
-- **Speed** - No special tools needed, just run the app
-- **Cross-platform** - Test your application in multiple environments
+- **Cost** - Free to implement! 💰
+- **Serverless** - No need to manage servers or containers 📦
+- **Stability** - Increase confidence in your application by testing before merge 📈
+- **Shareability** - Share your tests with your team, company or even stakeholders 🤝
+- **Speed** - No special tools needed, just run the app 🪄
+- **Cross-platform** - Test your application in multiple environments 🔗
 
 ## Install
 
