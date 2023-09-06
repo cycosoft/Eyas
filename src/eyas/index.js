@@ -22,7 +22,7 @@
 	console.log({ type: `info`, title: `1`, message: ``, buttons: [`OK`] });
 
 	// setup
-	const paths = require(path.join(process.cwd(), `.eyas-preview`, `scripts`, `paths.js`));
+	const paths = require(path.join(__dirname, `scripts`, `paths.js`));
 
 	console.log({ type: `info`, title: `2`, message: JSON.stringify(paths), buttons: [`OK`] });
 
