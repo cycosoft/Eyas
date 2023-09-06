@@ -21,7 +21,8 @@ const names = {
 		cliJsc: `index.jsc`,
 		getConfigJs: `get-config.js`,
 		packageJson: `package.json`,
-		eyasLogo: `eyas-logo.png`
+		eyasLogo: `eyas-logo.png`,
+		pathsJs: `paths.js`
 	},
 
 	folders: {
@@ -30,7 +31,8 @@ const names = {
 		cli: `cli`,
 		eyas: `eyas`,
 		scripts: `scripts`,
-		test: `test`
+		test: `test`,
+		config: `config`
 	}
 };
 
@@ -52,7 +54,11 @@ const paths = {
 		eyasAssetsDest: path.join(roots.dist, names.folders.eyasAssets),
 		cliDest: path.join(roots.dist, names.folders.cli),
 		cliSrcFile: path.join(roots.src, names.folders.cli, names.files.cliJs),
-		cliDestFile: path.join(roots.dist, names.folders.cli, names.files.cliJsc)
+		cliDestFile: path.join(roots.dist, names.folders.cli, names.files.cliJsc),
+		configLoaderSrc: path.join(roots.src, names.folders.scripts, names.files.getConfigJs),
+		configLoaderDest: path.join(roots.dist, names.folders.scripts, names.files.getConfigJs),
+		pathsSrc: path.join(roots.src, names.folders.scripts, names.files.pathsJs),
+		pathsDest: path.join(roots.dist, names.folders.scripts, names.files.pathsJs)
 	},
 
 	config: {
