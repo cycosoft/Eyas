@@ -19,16 +19,17 @@
 	const { isURL } = require(`validator`);
 	const parseURL = require(`url-parse`);
 
+	console.log({ type: `info`, title: `1`, message: ``, buttons: [`OK`] });
+
 	// setup
-	const isProd = __dirname.includes(`node_modules`);
-	const consumerRoot = process.cwd();
-	const moduleRoot = isProd
-		? path.join(consumerRoot, `node_modules`, `@cycosoft`, `eyas`)
-		: consumerRoot;
-	const paths = require(path.join(consumerRoot, `.eyas-preview`, `scripts`, `paths.js`));
+	const paths = require(path.join(process.cwd(), `.eyas-preview`, `scripts`, `paths.js`));
+
+	console.log({ type: `info`, title: `2`, message: JSON.stringify(paths), buttons: [`OK`] });
 
 	// load the users config
 	const config = require(paths.eyas.configLoader);
+
+	console.log({ type: `info`, title: `3`, message: JSON.stringify(config), buttons: [`OK`] });
 
 	// config
 	const appName = `Eyas`;
@@ -45,6 +46,8 @@
 		title: getAppTitle(),
 		icon: paths.eyas.icon
 	};
+
+	console.log({ type: `info`, title: `4`, message: ``, buttons: [`OK`] });
 
 	// Configure Electron to ignore certificate errors
 	electronLayer.commandLine.appendSwitch(`ignore-certificate-errors`);
