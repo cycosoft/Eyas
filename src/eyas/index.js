@@ -19,17 +19,11 @@
 	const { isURL } = require(`validator`);
 	const parseURL = require(`url-parse`);
 
-	console.log({ type: `info`, title: `1`, message: ``, buttons: [`OK`] });
-
 	// setup
-	const paths = require(path.join(__dirname, `scripts`, `paths.js`));
-
-	console.log({ type: `info`, title: `2`, message: JSON.stringify(paths), buttons: [`OK`] });
+	const { eyas: paths } = require(path.join(__dirname, `scripts`, `paths.js`));
 
 	// load the users config
-	const config = require(paths.eyas.configLoader);
-
-	console.log({ type: `info`, title: `3`, message: JSON.stringify(config), buttons: [`OK`] });
+	const config = require(paths.configLoader);
 
 	// config
 	const appName = `Eyas`;
@@ -44,10 +38,8 @@
 		width: config.test.resolutions[0].width,
 		height: config.test.resolutions[0].height,
 		title: getAppTitle(),
-		icon: paths.eyas.icon
+		icon: paths.icon
 	};
-
-	console.log({ type: `info`, title: `4`, message: ``, buttons: [`OK`] });
 
 	// Configure Electron to ignore certificate errors
 	electronLayer.commandLine.appendSwitch(`ignore-certificate-errors`);
@@ -242,7 +234,7 @@
 		expressLayer = express();
 
 		// Serve static files from test/
-		expressLayer.use(express.static(config.test.source));
+		expressLayer.use(express.static(paths.testSrc));
 
 		const ca = await mkcert.createCA({
 			organization: `Cycosoft, LLC - Test Server`,

@@ -36,12 +36,10 @@ const consumerRoot = process.cwd();
 const moduleRoot = isProd
 	? path.join(consumerRoot, `node_modules`, `@cycosoft`, `eyas`)
 	: consumerRoot;
-const {
-	cli: cliPaths
-} = require(path.join(moduleRoot, `dist`, `scripts`, `paths.js`));
+const { cli: paths } = require(path.join(moduleRoot, `dist`, `scripts`, `paths.js`));
 
 // load the user's config
-const config = require(cliPaths.configLoader);
+const config = require(paths.configLoader);
 
 // Entry Point
 (async () => {
@@ -133,7 +131,7 @@ async function runCommand_preview() {
 	userLog(`Launching preview...`);
 
 	// run the app
-	spawn(electron, [cliPaths.eyasApp], {
+	spawn(electron, [paths.eyasApp], {
 		stdio: `inherit`,
 		windowsHide: false,
 		cwd: consumerRoot
@@ -154,28 +152,26 @@ async function createBuildFolder() {
 
 	// delete any existing build folders
 	userLog(`Resetting build space...`);
-	await fs.emptyDir(cliPaths.build);
+	await fs.emptyDir(paths.build);
 
 	// copy eyas source to build folder
 	userLog(`Copying Eyas runtime files...`);
-	await fs.copy(cliPaths.eyasSrc, cliPaths.eyasDest);
-	await fs.copy(cliPaths.scriptsSrc, cliPaths.scriptsDest);
+	await fs.copy(paths.eyasSrc, paths.eyasDest);
+	await fs.copy(paths.scriptsSrc, paths.scriptsDest);
 
 	// copy the users source files to the build folder
-	userLog(`Copying user source...`);
-	await fs.copy(path.join(consumerRoot, config.test.source), cliPaths.testDest);
-
-	// point the config test source to the new build folder location
-	config.test.source = cliPaths.testDest;
+	userLog(`Copying test source...`);
+	await fs.copy(path.join(consumerRoot, config.test.source), paths.testDest);
 
 	// create a new config file with the updated values in the build folder
 	userLog(`Creating snapshot of config...`);
+	delete config.test.source; // isn't used past this point
 	const data = `module.exports = ${JSON.stringify(config)}`;
-	await fs.outputFile(cliPaths.configDest, data);
+	await fs.outputFile(paths.configDest, data);
 
 	// copy eyas assets to the build folder
 	userLog(`Copying Eyas assets...`);
-	await fs.copy(cliPaths.eyasAssetsSrc, cliPaths.eyasAssetsDest);
+	await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
 }
 
 // compile the consumers application for deployment
@@ -190,15 +186,15 @@ async function runCommand_compile() {
 
 	// copy the package.json to the build folder
 	userLog(`Copying build assets...`);
-	await fs.copy(cliPaths.packageJsonSrc, cliPaths.packageJsonDest);
+	await fs.copy(paths.packageJsonSrc, paths.packageJsonDest);
 
 	// Install dependencies
 	userLog(`Installing dependencies...`);
-	child_process.execSync(`npm i`, { cwd: cliPaths.build });
+	child_process.execSync(`npm i`, { cwd: paths.build });
 
 	// Clear out the output directory
 	userLog(`Resetting output directory...`);
-	await fs.emptyDir(cliPaths.dist);
+	await fs.emptyDir(paths.dist);
 
 	// Log that compilation is starting
 	userLog(`Creating executable(s)...`);
@@ -215,8 +211,8 @@ async function runCommand_compile() {
 			asarUnpack: [`resources/**`],
 			compression: `normal`, // normal, maximum, store
 			directories: {
-				app: cliPaths.build,
-				output: cliPaths.dist
+				app: paths.build,
+				output: paths.dist
 			},
 			removePackageScripts: true,
 			removePackageKeywords: true,
@@ -231,11 +227,11 @@ async function runCommand_compile() {
 
 	// let the user know where the output is
 	userLog();
-	userLog(`Files created at: ${cliPaths.dist}`);
+	userLog(`Files created at: ${paths.dist}`);
 
 	// delete the build folder
 	userLog(`Removing build directory...`);
-	await fs.remove(cliPaths.build);
+	await fs.remove(paths.build);
 
 	// log the end of the process
 	userLog(`Compilation complete!`);

@@ -1,11 +1,11 @@
 'use strict';
 
 // imports
-const paths = require(`./paths`);
+const { config: paths } = require(`./paths`);
 const { execSync } = require(`child_process`);
 
 // setup
-const userConfig = require(paths.config.source);
+const userConfig = require(paths.source);
 
 // error checking for config
 userConfig.test = userConfig.test || {};

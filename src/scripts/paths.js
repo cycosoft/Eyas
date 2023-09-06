@@ -11,6 +11,11 @@ const consumerRoot = process.cwd();
 const moduleRoot = isProd
 	? path.join(consumerRoot, `node_modules`, `@cycosoft`, `eyas`)
 	: consumerRoot;
+const eyasRoot = path.join(__dirname, `..`);
+const isPackaged = __dirname.includes(`app.asar`);
+const configRoot = isPackaged
+	? eyasRoot
+	: consumerRoot;
 
 // file and folder names
 const names = {
@@ -62,7 +67,7 @@ const paths = {
 	},
 
 	config: {
-		source: path.join(consumerRoot, names.files.eyasrcJs)
+		source: path.join(configRoot, names.files.eyasrcJs)
 	},
 
 	cli: {
@@ -83,9 +88,9 @@ const paths = {
 	},
 
 	eyas: {
-		icon: path.join(roots.src, names.folders.eyasAssets, names.files.eyasLogo),
-		testSrc: path.join(roots.src, names.folders.test),
-		configLoader: path.join(roots.eyasBuild, names.folders.scripts, names.files.getConfigJs)
+		icon: path.join(eyasRoot, names.folders.eyasAssets, names.files.eyasLogo),
+		testSrc: path.join(eyasRoot, names.folders.test),
+		configLoader: path.join(eyasRoot, names.folders.scripts, names.files.getConfigJs)
 	}
 };
 

@@ -28,13 +28,15 @@
 - [Attribution](#attribution)
 
 ## Features
-- **Serverless** - No need to manage servers or containers
+
+- **Serverless** - No need to pay for or manage servers or containers
 - **Stability** - Increase confidence in your application by testing before merge
 - **Shareability** - Share your tests with your team, company or even stakeholders
 - **Speed** - No special tools needed, just run the app
 - **Cross-platform** - Test your application in multiple environments
 
 ## Install
+
 ```bash
 # Install the package
 npm install @cycosoft/eyas
