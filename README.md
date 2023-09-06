@@ -40,7 +40,7 @@
 
 ```bash
 # Install the package
-npm install @cycosoft/eyas
+npm install @cycosoft/eyas --save-dev
 ```
 
 ## Configuration

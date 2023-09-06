@@ -9,19 +9,36 @@
 	const bytenode = require(`bytenode`);
 	const { module: paths } = require(`./paths`);
 
-	// Create or empty the dist directory for module output
+	// Prep the dist/ directory for module output
 	await fs.emptyDir(paths.dist);
 
-	// Copy over files and folders from their sources to the dist directory
+	// Copy asset directories
 	await fs.copy(paths.buildAssetsSrc, paths.buildAssetsDest);
 	await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
-	await fs.copy(paths.configLoaderSrc, paths.configLoaderDest);
-	await fs.copy(paths.pathsSrc, paths.pathsDest);
 
-	// set a home for the CLI output
-	await fs.emptyDir(paths.cliDest);
+	// Prep the scripts/ directory
+	await fs.emptyDir(paths.scriptsDest);
+
+	// Compile the paths script
+	await bytenode.compileFile({
+		loaderFilename: `%.js`,
+		filename: paths.pathsSrc,
+		output: paths.pathsDest
+	});
+
+	// Compile the get-config script
+	await bytenode.compileFile({
+		loaderFilename: `%.js`,
+		filename: paths.configLoaderSrc,
+		output: paths.configLoaderDest
+	});
+
+	const result = require(paths.configLoaderDest);
+	// prints: Hello World!
+	console.log(result);
 
 	// Compile the CLI
+	await fs.emptyDir(paths.cliDest);
 	await bytenode.compileFile({
 		loaderFilename: `%.js`,
 		filename: paths.cliSrcFile,
