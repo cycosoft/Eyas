@@ -36,8 +36,28 @@ const consumerRoot = process.cwd();
 const moduleRoot = isProd
 	? path.join(consumerRoot, `node_modules`, `@cycosoft`, `eyas`)
 	: consumerRoot;
-const { cli: paths } = require(path.join(moduleRoot, `dist`, `scripts`, `paths.js`));
-
+const roots = require(path.join(moduleRoot, `dist`, `scripts`, `get-roots.js`));
+const names = {
+	packageJson: `package.json`,
+	eyasAssets: `eyas-assets`,
+	scripts: `scripts`
+};
+const paths = {
+	dist: roots.eyasDist,
+	build: roots.eyasBuild,
+	configLoader: path.join(roots.dist, names.scripts, `get-config.js`),
+	configDest: path.join(roots.eyasBuild, `.eyasrc.js`),
+	eyasApp: path.join(roots.eyasBuild, `index.js`),
+	eyasAssetsSrc: path.join(roots.dist, names.eyasAssets),
+	eyasAssetsDest: path.join(roots.eyasBuild, names.eyasAssets),
+	eyasSrc: path.join(roots.dist, `eyas`),
+	eyasDest: roots.eyasBuild,
+	packageJsonSrc: path.join(roots.dist, `build-assets`, names.packageJson),
+	packageJsonDest: path.join(roots.eyasBuild, names.packageJson),
+	scriptsSrc: path.join(roots.dist, names.scripts),
+	scriptsDest: path.join(roots.eyasBuild, names.scripts),
+	testDest: path.join(roots.eyasBuild, `test`)
+};
 // load the user's config
 const config = require(paths.configLoader);
 

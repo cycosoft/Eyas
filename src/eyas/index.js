@@ -20,7 +20,12 @@
 	const parseURL = require(`url-parse`);
 
 	// setup
-	const { eyas: paths } = require(path.join(__dirname, `scripts`, `paths.js`));
+	const roots = require(path.join(__dirname, `scripts`, `get-roots.js`));
+	const paths = {
+		configLoader: path.join(roots.eyas, `scripts`, `get-config.js`),
+		icon: path.join(roots.eyas, `eyas-assets`, `eyas-logo.png`),
+		testSrc: path.join(roots.eyas, `test`)
+	};
 
 	// load the users config
 	const config = require(paths.configLoader);

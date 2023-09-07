@@ -3,11 +3,12 @@
 'use strict';
 
 // imports
-const { config: paths } = require(`./paths`);
+const path = require(`path`);
 const { execSync } = require(`child_process`);
+const roots = require(`./get-roots.js`);
 
 // setup
-const userConfig = require(paths.source);
+const userConfig = require(path.join(roots.config, `.eyasrc.js`));
 
 // error checking for config
 userConfig.test = userConfig.test || {};

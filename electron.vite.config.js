@@ -12,7 +12,7 @@ export default {
 		build: {
 			rollupOptions: {
 				input: {
-					paths: resolve(__dirname, `src/scripts/paths.js`),
+					'get-roots': resolve(__dirname, `src/scripts/get-roots.js`),
 					'get-config': resolve(__dirname, `src/scripts/get-config.js`)
 				}
 			},
