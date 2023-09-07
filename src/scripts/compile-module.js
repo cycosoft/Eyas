@@ -15,27 +15,7 @@
 	// Copy asset directories
 	await fs.copy(paths.buildAssetsSrc, paths.buildAssetsDest);
 	await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
-
-	// Prep the scripts/ directory
-	await fs.emptyDir(paths.scriptsDest);
-
-	// Compile the paths script
-	await bytenode.compileFile({
-		loaderFilename: `%.js`,
-		filename: paths.pathsSrc,
-		output: paths.pathsDest
-	});
-
-	// Compile the get-config script
-	await bytenode.compileFile({
-		loaderFilename: `%.js`,
-		filename: paths.configLoaderSrc,
-		output: paths.configLoaderDest
-	});
-
-	const result = require(paths.configLoaderDest);
-	// prints: Hello World!
-	console.log(result);
+	await fs.copy(paths.scriptsSrc, paths.scriptsDest);
 
 	// Compile the CLI
 	await fs.emptyDir(paths.cliDest);

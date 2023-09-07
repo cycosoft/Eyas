@@ -68,6 +68,7 @@ const paths = {
 		eyasAssetsDest: path.join(roots.dist, names.folders.eyasAssets),
 		pathsSrc: path.join(roots.src, names.folders.scripts, names.files.pathsJs),
 		pathsDest: path.join(roots.dist, names.folders.scripts, names.files.pathsJsc),
+		scriptsSrc: path.join(roots.src, names.folders.scripts),
 		scriptsDest: path.join(roots.dist, names.folders.scripts)
 	},
 
