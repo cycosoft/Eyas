@@ -8,7 +8,17 @@ const { execSync } = require(`child_process`);
 const roots = require(`./get-roots.js`);
 
 // setup
-const userConfig = require(path.join(roots.config, `.eyasrc.js`));
+let userConfig = {};
+const configPath = path.join(roots.config, `.eyasrc.js`);
+try {
+	// attempt to load the user's config
+	userConfig = require(configPath);
+} catch (error) {
+	// otherwise use the default config
+	console.warn(``);
+	console.warn(`⚠️ Cannot locate user config at ( ${configPath} )`);
+	userConfig = {};
+}
 
 // error checking for config
 userConfig.test = userConfig.test || {};
@@ -23,7 +33,7 @@ const eyasConfig = {
 		title: (userConfig.test.title || `Eyas`).trim(),
 		version: (userConfig.test.version || getBranchName() || `Unspecified Version`).trim(),
 		// { label: ``, width: 0, height: 0 },
-		resolutions: userConfig.test.resolutions || [],
+		resolutions: userConfig.test.resolutions || [{ width: 1024, height: 768 }],
 		// { label: ``, url: `` }
 		menu: userConfig.test.menu || []
 	},
