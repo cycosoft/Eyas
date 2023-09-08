@@ -22,7 +22,7 @@
 - [Install](#install)
 - [Configuration](#configuration)
 - [Usage](#usage)
-- [Warning](#⚠️ Warning ⚠️)
+- [Warning](#Warning)
 - [Support](#support)
 - [Sponsorship](#sponsorship)
 - [Attribution](#attribution)
@@ -45,18 +45,24 @@ npm install @cycosoft/eyas --save-dev
 ## Configuration
 
 ```js
-// ./.eyasrc.js
+// <projectRoot>/.eyasrc.js
 module.exports = {
-  testSourceDirectory: `dist`,
-  serverPort: 3000,
-  customDomain: `demo.cycosoft.com`,
-  buildVersion: `v1.0.1`, //falls back to branch name
-  appTitle: `Demo App`,
-  appWidth: 1024,
-  appHeight: 768,
-  menu: [
-    { label: `Cycosoft.com`, url: `https://cycosoft.com`, external: true },
-  ]
+  test: {
+    // The path to the directory containing your application files
+    source: `dist`,
+    // The port your application will be served on via localhost
+    port: 3000,
+    // Run your application from any domain locally instead of localhost
+    domain: null,
+    // The name of your application
+    title: `Eyas`,
+    // The version of your application that was built. Defaults to current branch name.
+    version: `your-feature-branch`,
+    // Additional resolutions to test your application at
+    resolutions: [/* { label: `iPad Pro`, width: 1024, height: 1366 } */],
+    // Custom links to display in the menu
+    menu: [/* { label: `Cycosoft, LLC`, url: `cycosoft.com` } */]
+  }
 };
 ```
 
@@ -66,12 +72,14 @@ module.exports = {
 // package.json
 {
   "scripts": {
-    "demo": "eyas build"
+    "interactive": "eyas",
+    "quick": "eyas preview",
+    "share": "eyas compile"
   }
 }
 ```
 
-## ⚠️ Warning ⚠️
+## Warning
 
 This tool disables certain security features of the browser to allow for testing of local files. **Do not use this tool for anything other than testing.**
 
@@ -81,7 +89,7 @@ Submit your feedback to <support+eyas@cycosoft.com>
 
 ## Sponsorship
 
-Please reach out to <sponsor@cycosoft.com>
+Please reach out to <support+sponsor@cycosoft.com>
 
 ## Attribution
 

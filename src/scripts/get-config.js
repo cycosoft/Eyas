@@ -22,8 +22,9 @@ const eyasConfig = {
 		domain: userConfig.test.domain || null,
 		title: (userConfig.test.title || `Eyas`).trim(),
 		version: (userConfig.test.version || getBranchName() || `Unspecified Version`).trim(),
-		// { label: `SD Desktop`, width: 1024, height: 768 },
+		// { label: ``, width: 0, height: 0 },
 		resolutions: userConfig.test.resolutions || [],
+		// { label: ``, url: `` }
 		menu: userConfig.test.menu || []
 	},
 
