@@ -30,8 +30,7 @@
     "eyas"
   ],
   "files": [
-    "dist",
-    "README.md"
+    "dist"
   ],
   "dependencies": {
     "bytenode": "^1.5.1",
