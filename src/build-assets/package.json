@@ -1,15 +1,15 @@
 {
-  "name": "@cycosoft/eyas",
-  "description": "A \"shift-left\" serverless testing solution for static web applications",
-  "version": "1.0.0",
-  "author": "Cycosoft, LLC (https://cycosoft.com)",
+  "name": "",
+  "description": "",
+  "version": "",
+  "author": "",
   "dependencies": {
-    "express": "^4.18.2",
-    "mkcert": "^3.0.0",
-    "url-parse": "^1.5.10",
-    "validator": "^13.11.0"
+    "express": "",
+    "mkcert": "",
+    "url-parse": "",
+    "validator": ""
   },
   "devDependencies": {
-    "electron": "^26.2.0"
+    "electron": ""
   }
 }
