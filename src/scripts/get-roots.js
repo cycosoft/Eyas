@@ -26,7 +26,8 @@ const roots = {
 	eyasBuild: path.join(consumerRoot, `.eyas-preview`),
 	eyasDist: path.join(consumerRoot, `.eyas-dist`),
 	config: configRoot,
-	eyas: eyasRoot
+	eyas: eyasRoot,
+	module: moduleRoot
 };
 
 // export the config for the project
