@@ -16,25 +16,34 @@
 	const path = require(`path`);
 	const https = require(`https`);
 	const mkcert = require(`mkcert`);
-	const config = require(path.join(process.cwd(), `.eyasrc.js`));
 	const { isURL } = require(`validator`);
 	const parseURL = require(`url-parse`);
-	const { execSync } = require(`child_process`);
+
+	// setup
+	const roots = require(path.join(__dirname, `scripts`, `get-roots.js`));
+	const paths = {
+		configLoader: path.join(roots.eyas, `scripts`, `get-config.js`),
+		icon: path.join(roots.eyas, `eyas-assets`, `eyas-logo.png`),
+		testSrc: path.join(roots.eyas, `test`)
+	};
+
+	// load the users config
+	const config = require(paths.configLoader);
 
 	// config
 	const appName = `Eyas`;
-	const testServerPort = config.serverPort || 3000;
+	const testServerPort = config.test.port;
 	const testServerUrl = `https://localhost:${testServerPort}`;
-	const appUrlOverride = formatURL(config.customDomain);
+	const appUrlOverride = formatURL(config.test.domain);
 	const appUrl = appUrlOverride || testServerUrl;
 	let clientWindow = null;
 	let expressLayer = null;
 	let testServer = null;
 	const windowConfig = {
-		width: config.appWidth,
-		height: config.appHeight,
+		width: config.test.resolutions[0].width,
+		height: config.test.resolutions[0].height,
 		title: getAppTitle(),
-		icon: path.join(__dirname, `../_design/eyas-logo.png`)
+		icon: paths.icon
 	};
 
 	// Configure Electron to ignore certificate errors
@@ -52,17 +61,6 @@
 
 	// start the test server
 	setupTestServer();
-
-	// get the current branch name for the version number
-	function getBranchName() {
-		try {
-			return execSync(`git rev-parse --abbrev-ref HEAD`).toString().trim();
-		} catch (error) {
-			// eslint-disable-next-line no-console
-			console.error(`Error getting branch name:`, error);
-			return null;
-		}
-	}
 
 	// format the url for electron consumption
 	function formatURL(url) {
@@ -114,7 +112,7 @@
 	});
 
 	function setMenu () {
-	// build the default menu in MacOS style
+		// build the default menu in MacOS style
 		const menuDefault = [
 			{
 				label: appName,
@@ -128,7 +126,7 @@
 								title: `Exit Confirmation`,
 								message: `Close ${appName}?`
 							}).then(result => {
-							// User clicked "Yes"
+								// User clicked "Yes"
 								if (result.response === 0) {
 									electronLayer.quit();
 								}
@@ -166,7 +164,7 @@
 
 		// for each menu item where the list exists
 		const customLinkList = [];
-		config.menu?.forEach(item => {
+		config.test.menu?.forEach(item => {
 			// check if the provided url is valid
 			const itemUrl = formatURL(item.url);
 
@@ -221,10 +219,10 @@
 		let output = `${appName}`;
 
 		// Add the app title
-		output += ` :: ${config.appTitle.trim() || `Unknown App`}`;
+		output += ` :: ${config.test.title}`;
 
 		// Add the build version
-		output += ` :: ${config.buildVersion?.trim() || getBranchName() || `Unspecified Build`} ✨`;
+		output += ` :: ${config.test.version} ✨`;
 
 		// Add the current URL if it`s available
 		if (clientWindow){
@@ -235,13 +233,13 @@
 		return output;
 	}
 
-	// Set up Express to serve files from dist/
+	// Set up Express to serve files from test/
 	async function setupTestServer() {
 		// Create the Express app
 		expressLayer = express();
 
-		// Serve static files from dist/
-		expressLayer.use(express.static(path.join(process.cwd(), config.testSourceDirectory)));
+		// Serve static files from test/
+		expressLayer.use(express.static(paths.testSrc));
 
 		const ca = await mkcert.createCA({
 			organization: `Cycosoft, LLC - Test Server`,

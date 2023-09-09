@@ -1,0 +1,15 @@
+{
+  "name": "",
+  "description": "",
+  "version": "",
+  "author": "",
+  "dependencies": {
+    "express": "",
+    "mkcert": "",
+    "url-parse": "",
+    "validator": ""
+  },
+  "devDependencies": {
+    "electron": ""
+  }
+}
