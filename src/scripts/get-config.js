@@ -36,12 +36,12 @@ const eyasConfig = {
 		source: userConfig.test.source || `dist`,
 		port: userConfig.test.port || 3000,
 		domain: userConfig.test.domain || null,
+		routes: userConfig.test.routes || [],
 		title: (userConfig.test.title || `Eyas`).trim(),
 		version: (userConfig.test.version || getBranchName() || `Unspecified Version`).trim(),
 		// { label: ``, width: 0, height: 0 },
 		resolutions: userConfig.test.resolutions || [{ width: 1024, height: 768 }],
-		// { label: ``, url: `` }
-		menu: userConfig.test.menu || []
+		menu: userConfig.test.menu || [/* { label: ``, url: `` } */]
 	},
 
 	// defaults to current platform

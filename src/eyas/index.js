@@ -164,7 +164,7 @@
 
 		// for each menu item where the list exists
 		const customLinkList = [];
-		config.test.menu?.forEach(item => {
+		config.test.menu.forEach(item => {
 			// check if the provided url is valid
 			const itemUrl = formatURL(item.url);
 
@@ -241,6 +241,21 @@
 		// Serve static files from test/
 		expressLayer.use(express.static(paths.testSrc));
 
+		// For each provided route from the user
+		config.test.routes.forEach(route => {
+			// Add a redirect to the test server
+			expressLayer.get(route.from, function (req, res) {
+				// Redirect to the provided route
+				res.redirect(route.to);
+			});
+		});
+
+		// Catch-all for bad requests
+		expressLayer.get(`*`, function (req, res) {
+			res.redirect(`/`);
+		});
+
+		// Create a certificate authority
 		const ca = await mkcert.createCA({
 			organization: `Cycosoft, LLC - Test Server`,
 			countryCode: `US`,
@@ -249,6 +264,7 @@
 			validityDays: 7
 		});
 
+		// Create a certificate for the domain under the certificate authority
 		const cert = await mkcert.createCert({
 			ca,
 			domains: [`localhost`],
