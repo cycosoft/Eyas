@@ -54,6 +54,8 @@ module.exports = {
     port: 3000,
     // Run your application from any domain locally instead of localhost
     domain: null,
+    // Define custom routes for your test
+    routes: [/* { from: `/my-route`, to: `/demo/alt` } */],
     // The name of your application
     title: `Eyas`,
     // The version of your application that was built. Defaults to current branch name.
