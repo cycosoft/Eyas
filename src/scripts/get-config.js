@@ -14,9 +14,15 @@ try {
 	// attempt to load the user's config
 	userConfig = require(configPath);
 } catch (error) {
-	// otherwise use the default config
 	console.warn(``);
-	console.warn(`⚠️ Cannot locate user config at ( ${configPath} )`);
+	console.warn(`⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️`);
+	console.warn(`------ UNABLE TO LOAD USER SETTINGS ------`);
+	console.warn(`-------- proceeding with defaults --------`);
+	console.log(``);
+	console.error(error);
+	console.log(``);
+	console.warn(`⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️`);
+	console.log(``);
 	userConfig = {};
 }
 
