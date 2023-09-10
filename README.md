@@ -22,6 +22,7 @@
 - [Install](#install)
 - [Configuration](#configuration)
 - [Usage](#usage)
+- [Tip](#tip)
 - [Warning](#Warning)
 - [Support](#support)
 - [Sponsorship](#sponsorship)
@@ -32,7 +33,7 @@
 - 💰 **Cost** - Free to implement
 - 📦 **Serverless** - No need to manage a deployment environment
 - 📈 **Speed & Stability** - Ship faster and increase confidence in your application by testing _before merge_
-- 🤝 **Shareability** - No special tools needed, just run the app. Share your work with your team, company or even customers.
+- 🤝 **Shareability** - No special tools needed on your target machines. Share your demo with your team, company or even customers as a downloadable file.
 - 🔗 **Cross-platform** - Test your application in multiple environments
 
 ## Install
@@ -59,7 +60,7 @@ module.exports = {
     // The name of your application
     title: `Eyas`,
     // The version of your application that was built. Defaults to current branch name.
-    version: `your-feature-branch`,
+    version: `<current-branch>`,
     // Additional resolutions to test your application at
     resolutions: [/* { label: `iPad Pro`, width: 1024, height: 1366 } */],
     // Custom links to display in the menu
@@ -75,15 +76,19 @@ module.exports = {
 {
   "scripts": {
     "interactive": "eyas", // Select from a list of avaiable commands
-    "quick": "eyas preview", // Previews the configured app without compiling to distributable
+    "quick": "eyas preview", // Preview the your app without compiling
     "share": "eyas compile" // Compiles the configured app to a distributable
   }
 }
 ```
 
+## Tip
+
+Add `eyas-*` to your `.gitignore` to prevent your compiled application from being committed to your repository.
+
 ## Warning
 
-This tool disables certain security features of the browser to allow for testing of local files. **Do not use this tool for anything other than testing.**
+This tool disables certain security features of the browser. **Do not use this tool for anything other than testing.**
 
 ## Support
 
