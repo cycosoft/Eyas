@@ -22,7 +22,7 @@
 - [Install](#install)
 - [Configuration](#configuration)
 - [Usage](#usage)
-- [Tip](#tip)
+- [Tips](#tips)
 - [Warning](#Warning)
 - [Support](#support)
 - [Sponsorship](#sponsorship)
@@ -82,9 +82,10 @@ module.exports = {
 }
 ```
 
-## Tip
+## Tips
 
-Add `eyas-*` to your `.gitignore` to prevent your compiled application from being committed to your repository.
+- Add `eyas-*` to your `.gitignore` to prevent output from being committed to your repo
+- Windows executables can sometimes be slower to launch due to Microsoft Defender
 
 ## Warning
 
