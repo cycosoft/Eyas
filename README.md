@@ -74,9 +74,9 @@ module.exports = {
 // package.json
 {
   "scripts": {
-    "interactive": "eyas",
-    "quick": "eyas preview",
-    "share": "eyas compile"
+    "interactive": "eyas", // Select from a list of avaiable commands
+    "quick": "eyas preview", // Previews the configured app without compiling to distributable
+    "share": "eyas compile" // Compiles the configured app to a distributable
   }
 }
 ```
