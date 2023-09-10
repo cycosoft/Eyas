@@ -29,11 +29,11 @@
 
 ## Features
 
-- **Cost** - Free to implement 💰
-- **Serverless** - No need to manage a deployment environment 📦
-- **Speed & Stability** - Ship faster and increase confidence in your application by testing _before merge_ 📈
-- **Shareability** - No special tools needed, just run the app. Share your work with your team, company or even customers. 🤝
-- **Cross-platform** - Test your application in multiple environments 🔗
+- 💰 **Cost** - Free to implement
+- 📦 **Serverless** - No need to manage a deployment environment
+- 📈 **Speed & Stability** - Ship faster and increase confidence in your application by testing _before merge_
+- 🤝 **Shareability** - No special tools needed, just run the app. Share your work with your team, company or even customers.
+- 🔗 **Cross-platform** - Test your application in multiple environments
 
 ## Install
 
