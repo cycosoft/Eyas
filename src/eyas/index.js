@@ -189,18 +189,6 @@
 		// build out the menu for selecting a resolution
 		const resolutionMenu = [];
 
-		// if there's a resized resolution
-		if(resizedResolution){
-			// add the resized resolution to the list
-			resizedResolution && resolutionMenu.push({
-				label: `Custom: (${resizedResolution[0]} x ${resizedResolution[1]})`,
-				click: () => clientWindow.setSize(resizedResolution[0], resizedResolution[1])
-			});
-
-			// add a separator
-			resolutionMenu.push({ type: `separator` });
-		}
-
 		// add the default resolutions to the list
 		defaultResolutions.forEach(resolution => {
 			resolutionMenu.push({
@@ -209,7 +197,30 @@
 			});
 		});
 
-		// if there are any valid items THEN add the list to the menu
+		// Add the custom resolution menu item if it's not already in the list
+		(() => {
+			// exit if there's no custom resolution set
+			if(!resizedResolution){ return; }
+
+			// setup
+			const [width, height] = resizedResolution;
+
+			// exit if the custom resolution is already in the list
+			const matchesExistingResolution = [...defaultResolutions, ...config.test.resolutions]
+				.some(res => res.width === width && res.height === height);
+			if(matchesExistingResolution){ return; }
+
+			// add the resized resolution to the list
+			resolutionMenu.unshift(
+				{
+					label: `Current: (${width} x ${height})`,
+					click: () => clientWindow.setSize(width, height)
+				},
+				{ type: `separator` }
+			);
+		})();
+
+		// Add the resolution submenu to the application menu
 		menuDefault.push({ label: `📐 Resolution`, submenu: resolutionMenu });
 
 		// Set the modified menu as the application menu
