@@ -39,9 +39,16 @@
 	let clientWindow = null;
 	let expressLayer = null;
 	let testServer = null;
+	const appDimensions = [
+		...config.test.dimensions,
+		{ isDefault: true, label: `Desktop`, width: 1366, height: 768 },
+		{ isDefault: true, label: `Tablet`, width: 768, height: 1024 },
+		{ isDefault: true, label: `Mobile`, width: 360, height: 640 }
+	];
+	let currentDimensions = [appDimensions[0].width, appDimensions[0].height];
 	const windowConfig = {
-		width: config.test.resolutions[0].width,
-		height: config.test.resolutions[0].height,
+		width: currentDimensions[0],
+		height: currentDimensions[1],
 		title: getAppTitle(),
 		icon: paths.icon
 	};
@@ -177,7 +184,56 @@
 		});
 
 		// if there are any valid items THEN add the list to the menu
-		customLinkList.length && menuDefault.push({ label: `💼 Custom`, submenu: customLinkList });
+		customLinkList.length && menuDefault.push({ label: `💼 Links`, submenu: customLinkList });
+
+		// build out the menu for selecting a screen size
+		const dimensionsMenu = [];
+		const tolerance = 2;
+
+		// add the dimensions to the list
+		let defaultsFound = false;
+		appDimensions.forEach(res => {
+			const [width, height] = currentDimensions || [];
+			const isSizeMatch = Math.abs(res.width - width) <= tolerance && Math.abs(res.height - height) <= tolerance;
+
+			// if this is the first default dimension
+			if(!defaultsFound && res.isDefault){
+				// add a separator
+				dimensionsMenu.push({ type: `separator` });
+
+				// mark that the first default has been found
+				defaultsFound = true;
+			}
+
+			dimensionsMenu.push({
+				label: `${isSizeMatch ? `🔘 ` : ``}${res.label} (${res.width} x ${res.height})`,
+				click: () => clientWindow.setSize(res.width, res.height)
+			});
+		});
+
+		// Add the custom dimension menu item if it's not already in the list
+		(() => {
+			// exit if there's no custom dimension set
+			if(!currentDimensions){ return; }
+
+			// setup
+			const [width, height] = currentDimensions;
+
+			// exit if the custom dimensions are already in the list (within tolerance)
+			if(appDimensions.some(res => Math.abs(res.width - width) <= tolerance && Math.abs(res.height - height) <= tolerance)){ return; }
+
+			// add the custom dimension to the list
+			dimensionsMenu.unshift(
+				{
+					label: `🔘 Current (${width} x ${height})`,
+					click: () => clientWindow.setSize(width, height)
+				},
+				{ type: `separator` }
+			);
+		})();
+
+		// Add the dimensions submenu to the application menu
+		menuDefault.push({ label: `📐 Size`, submenu: dimensionsMenu });
 
 		// Set the modified menu as the application menu
 		Menu.setApplicationMenu(Menu.buildFromTemplate(menuDefault));
@@ -207,6 +263,15 @@
 
 			// set a custom title
 			clientWindow.setTitle(getAppTitle());
+		});
+
+		// listen for changes to the window size
+		clientWindow.on(`resize`, () => {
+			// update the current dimensions
+			currentDimensions = clientWindow.getSize();
+
+			// update the menu
+			setMenu();
 		});
 
 		// Load the index.html of the app
