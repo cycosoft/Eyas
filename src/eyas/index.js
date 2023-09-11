@@ -189,14 +189,11 @@
 		// build out the menu for selecting a resolution
 		const menuList = [];
 
-		// if there's a resized resolution
-		if(resizedResolution){
-			// add the resized resolution to the list
-			menuList.push({
-				label: `Custom (${resizedResolution[0]} x ${resizedResolution[1]})`,
-				click: () => clientWindow.setSize(resizedResolution[0], resizedResolution[1])
-			});
-		}
+		// if there's a resized resolution THEN add the resized resolution to the list
+		resizedResolution && menuList.push({
+			label: `Custom (${resizedResolution[0]} x ${resizedResolution[1]})`,
+			click: () => clientWindow.setSize(resizedResolution[0], resizedResolution[1])
+		});
 
 		// add the default resolutions to the list
 		defaultResolutions.forEach(resolution => {
@@ -241,7 +238,11 @@
 
 		// listen for changes to the window size
 		clientWindow.on(`resize`, () => {
+			// update the resized resolution
 			resizedResolution = clientWindow.getSize();
+
+			// update the menu
+			setMenu();
 		});
 
 		// Load the index.html of the app
