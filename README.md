@@ -66,8 +66,8 @@ module.exports = {
     title: `Eyas`,
     // The version of your application that was built. Defaults to current branch name.
     version: `<current-branch>`,
-    // Additional resolutions to test your application at
-    resolutions: [/* { label: `iPad Pro`, width: 1024, height: 1366 } */],
+    // Additional screen sizes to test your application at
+    dimensions: [/* { label: `iPad Pro`, width: 1024, height: 1366 } */],
     // Custom links to display in the menu
     menu: [/* { label: `Cycosoft, LLC`, url: `cycosoft.com` } */]
   }

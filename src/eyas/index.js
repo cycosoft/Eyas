@@ -39,16 +39,16 @@
 	let clientWindow = null;
 	let expressLayer = null;
 	let testServer = null;
-	let currentResolution = null; // [width, height]
-	const defaultResolutions = [
+	let currentDimensions = null; // [width, height]
+	const appDimensions = [
+		...config.test.dimensions,
 		{ label: `Desktop`, width: 1366, height: 768 },
 		{ label: `Tablet`, width: 768, height: 1024 },
 		{ label: `Mobile`, width: 360, height: 640 }
 	];
-	const resolution = getResolution();
 	const windowConfig = {
-		width: resolution.width,
-		height: resolution.height,
+		width: appDimensions[0].width,
+		height: appDimensions[0].height,
 		title: getAppTitle(),
 		icon: paths.icon
 	};
@@ -186,32 +186,32 @@
 		// if there are any valid items THEN add the list to the menu
 		customLinkList.length && menuDefault.push({ label: `💼 Links`, submenu: customLinkList });
 
-		// build out the menu for selecting a resolution
-		const resolutionMenu = [];
+		// build out the menu for selecting a screen size
+		const dimensionsMenu = [];
 
-		// add the default resolutions to the list
-		defaultResolutions.forEach(res => {
-			resolutionMenu.push({
+		// add the dimensions to the list
+		appDimensions.forEach(res => {
+			dimensionsMenu.push({
 				label: `${res.label} (${res.width} x ${res.height})`,
 				click: () => clientWindow.setSize(res.width, res.height)
 			});
 		});
 
-		// Add the custom resolution menu item if it's not already in the list
+		// Add the custom dimension menu item if it's not already in the list
 		(() => {
-			// exit if there's no custom resolution set
-			if(!currentResolution){ return; }
+			// exit if there's no custom dimension set
+			if(!currentDimensions){ return; }
 
 			// setup
-			const [width, height] = currentResolution;
+			const [width, height] = currentDimensions;
 
-			// exit if the custom resolution is already in the list
-			const matchesExistingResolution = [...defaultResolutions, ...config.test.resolutions]
+			// exit if the custom dimensions is already in the list
+			const matchesExistingDimensions = appDimensions
 				.some(res => res.width === width && res.height === height);
-			if(matchesExistingResolution){ return; }
+			if(matchesExistingDimensions){ return; }
 
-			// add the resized resolution to the list
-			resolutionMenu.unshift(
+			// add the custom dimension to the list
+			dimensionsMenu.unshift(
 				{
 					label: `Current: (${width} x ${height})`,
 					click: () => clientWindow.setSize(width, height)
@@ -220,8 +220,8 @@
 			);
 		})();
 
-		// Add the resolution submenu to the application menu
-		menuDefault.push({ label: `📐 Resolution`, submenu: resolutionMenu });
+		// Add the dimensions submenu to the application menu
+		menuDefault.push({ label: `📐 Size`, submenu: dimensionsMenu });
 
 		// Set the modified menu as the application menu
 		Menu.setApplicationMenu(Menu.buildFromTemplate(menuDefault));
@@ -255,8 +255,8 @@
 
 		// listen for changes to the window size
 		clientWindow.on(`resize`, () => {
-			// update the resized resolution
-			currentResolution = clientWindow.getSize();
+			// update the current dimensions
+			currentDimensions = clientWindow.getSize();
 
 			// update the menu
 			setMenu();
@@ -338,16 +338,4 @@
 			process.exit(0);
 		});
 	});
-
-	// returns the requested resolution
-	function getResolution(index) {
-		// error check
-		if(!index){ index = 0; }
-
-		// config
-		const userResolutions = config.test.resolutions;
-
-
-		return defaultResolutions[0];
-	}
 })();

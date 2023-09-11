@@ -7,8 +7,8 @@ module.exports = {
 		routes: [{ from: `/REDIRECT`, to: `/demo/alt` }],
 		title: `Eyas App Demo`,
 		version: ``,
-		resolutions: [
-			{ label: `SD Desktop`, width: 1024, height: 768 },
+		dimensions: [
+			{ label: `Custom Desktop`, width: 1024, height: 768 },
 		],
 		menu: [
 			{ label: `Cycosoft.com (browser)`, url: `https://cycosoft.com`, external: true },
