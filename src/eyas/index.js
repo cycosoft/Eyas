@@ -190,10 +190,10 @@
 		const resolutionMenu = [];
 
 		// add the default resolutions to the list
-		defaultResolutions.forEach(resolution => {
+		defaultResolutions.forEach(res => {
 			resolutionMenu.push({
-				label: `${resolution.label} (${resolution.width} x ${resolution.height})`,
-				click: () => clientWindow.setSize(resolution.width, resolution.height)
+				label: `${res.label} (${res.width} x ${res.height})`,
+				click: () => clientWindow.setSize(res.width, res.height)
 			});
 		});
 
