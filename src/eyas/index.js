@@ -47,6 +47,7 @@
 	];
 	let currentDimensions = [appDimensions[0].width, appDimensions[0].height];
 	const windowConfig = {
+		useContentSize: true,
 		width: currentDimensions[0],
 		height: currentDimensions[1],
 		title: getAppTitle(),
