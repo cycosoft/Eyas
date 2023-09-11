@@ -39,8 +39,7 @@ const eyasConfig = {
 		routes: userConfig.test.routes || [],
 		title: (userConfig.test.title || `Eyas`).trim(),
 		version: (userConfig.test.version || getBranchName() || `Unspecified Version`).trim(),
-		// { label: ``, width: 0, height: 0 },
-		resolutions: userConfig.test.resolutions || [{ width: 1024, height: 768 }],
+		resolutions: userConfig.test.resolutions || [/* { label: ``, width: 0, height: 0 } */],
 		menu: userConfig.test.menu || [/* { label: ``, url: `` } */]
 	},
 

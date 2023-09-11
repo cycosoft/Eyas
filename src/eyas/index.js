@@ -39,9 +39,16 @@
 	let clientWindow = null;
 	let expressLayer = null;
 	let testServer = null;
+	let resizedResolution = null; // [width, height]
+	const defaultResolutions = [
+		{ label: `Desktop`, width: 1366, height: 768 },
+		{ label: `Tablet`, width: 768, height: 1024 },
+		{ label: `Mobile`, width: 360, height: 640 }
+	];
+	const resolution = getResolution();
 	const windowConfig = {
-		width: config.test.resolutions[0].width,
-		height: config.test.resolutions[0].height,
+		width: resolution.width,
+		height: resolution.height,
 		title: getAppTitle(),
 		icon: paths.icon
 	};
@@ -177,7 +184,30 @@
 		});
 
 		// if there are any valid items THEN add the list to the menu
-		customLinkList.length && menuDefault.push({ label: `💼 Custom`, submenu: customLinkList });
+		customLinkList.length && menuDefault.push({ label: `💼 Links`, submenu: customLinkList });
+
+		// build out the menu for selecting a resolution
+		const menuList = [];
+
+		// if there's a resized resolution
+		if(resizedResolution){
+			// add the resized resolution to the list
+			menuList.push({
+				label: `Custom (${resizedResolution[0]} x ${resizedResolution[1]})`,
+				click: () => clientWindow.setSize(resizedResolution[0], resizedResolution[1])
+			});
+		}
+
+		// add the default resolutions to the list
+		defaultResolutions.forEach(resolution => {
+			menuList.push({
+				label: `${resolution.label} (${resolution.width} x ${resolution.height})`,
+				click: () => clientWindow.setSize(resolution.width, resolution.height)
+			});
+		});
+
+		// if there are any valid items THEN add the list to the menu
+		menuDefault.push({ label: `📐 Resolution`, submenu: menuList });
 
 		// Set the modified menu as the application menu
 		Menu.setApplicationMenu(Menu.buildFromTemplate(menuDefault));
@@ -207,6 +237,11 @@
 
 			// set a custom title
 			clientWindow.setTitle(getAppTitle());
+		});
+
+		// listen for changes to the window size
+		clientWindow.on(`resize`, () => {
+			resizedResolution = clientWindow.getSize();
 		});
 
 		// Load the index.html of the app
@@ -285,4 +320,16 @@
 			process.exit(0);
 		});
 	});
+
+	// returns the requested resolution
+	function getResolution(index) {
+		// error check
+		if(!index){ index = 0; }
+
+		// config
+		const userResolutions = config.test.resolutions;
+
+
+		return defaultResolutions[0];
+	}
 })();
