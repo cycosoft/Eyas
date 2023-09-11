@@ -187,24 +187,30 @@
 		customLinkList.length && menuDefault.push({ label: `💼 Links`, submenu: customLinkList });
 
 		// build out the menu for selecting a resolution
-		const menuList = [];
+		const resolutionMenu = [];
 
-		// if there's a resized resolution THEN add the resized resolution to the list
-		resizedResolution && menuList.push({
-			label: `Custom (${resizedResolution[0]} x ${resizedResolution[1]})`,
-			click: () => clientWindow.setSize(resizedResolution[0], resizedResolution[1])
-		});
+		// if there's a resized resolution
+		if(resizedResolution){
+			// add the resized resolution to the list
+			resizedResolution && resolutionMenu.push({
+				label: `Custom: (${resizedResolution[0]} x ${resizedResolution[1]})`,
+				click: () => clientWindow.setSize(resizedResolution[0], resizedResolution[1])
+			});
+
+			// add a separator
+			resolutionMenu.push({ type: `separator` });
+		}
 
 		// add the default resolutions to the list
 		defaultResolutions.forEach(resolution => {
-			menuList.push({
+			resolutionMenu.push({
 				label: `${resolution.label} (${resolution.width} x ${resolution.height})`,
 				click: () => clientWindow.setSize(resolution.width, resolution.height)
 			});
 		});
 
 		// if there are any valid items THEN add the list to the menu
-		menuDefault.push({ label: `📐 Resolution`, submenu: menuList });
+		menuDefault.push({ label: `📐 Resolution`, submenu: resolutionMenu });
 
 		// Set the modified menu as the application menu
 		Menu.setApplicationMenu(Menu.buildFromTemplate(menuDefault));
