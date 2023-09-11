@@ -47,6 +47,7 @@
 	];
 	let currentDimensions = [appDimensions[0].width, appDimensions[0].height];
 	const windowConfig = {
+		useContentSize: true,
 		width: currentDimensions[0],
 		height: currentDimensions[1],
 		title: getAppTitle(),
@@ -207,7 +208,7 @@
 
 			dimensionsMenu.push({
 				label: `${isSizeMatch ? `🔘 ` : ``}${res.label} (${res.width} x ${res.height})`,
-				click: () => clientWindow.setSize(res.width, res.height)
+				click: () => clientWindow.setContentSize(res.width, res.height)
 			});
 		});
 
@@ -226,7 +227,7 @@
 			dimensionsMenu.unshift(
 				{
 					label: `🔘 Current (${width} x ${height})`,
-					click: () => clientWindow.setSize(width, height)
+					click: () => clientWindow.setContentSize(width, height)
 				},
 				{ type: `separator` }
 			);
@@ -267,8 +268,16 @@
 
 		// listen for changes to the window size
 		clientWindow.on(`resize`, () => {
+			// get the current dimensions
+			const [newWidth, newHeight] = clientWindow.getContentSize();
+
+			// if the dimensions have not changed
+			if(newWidth === currentDimensions[0] && newHeight === currentDimensions[1]){
+				return;
+			}
+
 			// update the current dimensions
-			currentDimensions = clientWindow.getSize();
+			currentDimensions = clientWindow.getContentSize();
 
 			// update the menu
 			setMenu();
