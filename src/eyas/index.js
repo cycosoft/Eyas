@@ -41,9 +41,9 @@
 	let testServer = null;
 	const appDimensions = [
 		...config.test.dimensions,
-		{ label: `Desktop`, width: 1366, height: 768 },
-		{ label: `Tablet`, width: 768, height: 1024 },
-		{ label: `Mobile`, width: 360, height: 640 }
+		{ isDefault: true, label: `Desktop`, width: 1366, height: 768 },
+		{ isDefault: true, label: `Tablet`, width: 768, height: 1024 },
+		{ isDefault: true, label: `Mobile`, width: 360, height: 640 }
 	];
 	let currentDimensions = [appDimensions[0].width, appDimensions[0].height];
 	const windowConfig = {
@@ -191,9 +191,19 @@
 		const tolerance = 2;
 
 		// add the dimensions to the list
+		let defaultsFound = false;
 		appDimensions.forEach(res => {
 			const [width, height] = currentDimensions || [];
 			const isSizeMatch = Math.abs(res.width - width) <= tolerance && Math.abs(res.height - height) <= tolerance;
+
+			// if this is the first default dimension
+			if(!defaultsFound && res.isDefault){
+				// add a separator
+				dimensionsMenu.push({ type: `separator` });
+
+				// mark that the first default has been found
+				defaultsFound = true;
+			}
 
 			dimensionsMenu.push({
 				label: `${isSizeMatch ? `🔘 ` : ``}${res.label} (${res.width} x ${res.height})`,
@@ -215,7 +225,7 @@
 			// add the custom dimension to the list
 			dimensionsMenu.unshift(
 				{
-					label: `🔘 Current: (${width} x ${height})`,
+					label: `🔘 Current (${width} x ${height})`,
 					click: () => clientWindow.setSize(width, height)
 				},
 				{ type: `separator` }

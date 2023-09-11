@@ -8,7 +8,7 @@ module.exports = {
 		title: `Eyas App Demo`,
 		version: ``,
 		dimensions: [
-			{ label: `Custom Desktop`, width: 1024, height: 768 },
+			{ label: `Custom Size`, width: 1024, height: 768 },
 		],
 		menu: [
 			{ label: `Cycosoft.com (browser)`, url: `https://cycosoft.com`, external: true },
