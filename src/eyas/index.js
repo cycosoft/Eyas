@@ -188,11 +188,15 @@
 
 		// build out the menu for selecting a screen size
 		const dimensionsMenu = [];
+		const tolerance = 2;
 
 		// add the dimensions to the list
 		appDimensions.forEach(res => {
+			const [width, height] = currentDimensions || [];
+			const isSizeMatch = Math.abs(res.width - width) <= tolerance && Math.abs(res.height - height) <= tolerance;
+
 			dimensionsMenu.push({
-				label: `${res.label} (${res.width} x ${res.height})`,
+				label: `${isSizeMatch ? `🔘 ` : ``}${res.label} (${res.width} x ${res.height})`,
 				click: () => clientWindow.setSize(res.width, res.height)
 			});
 		});
@@ -205,15 +209,13 @@
 			// setup
 			const [width, height] = currentDimensions;
 
-			// exit if the custom dimensions is already in the list
-			const matchesExistingDimensions = appDimensions
-				.some(res => res.width === width && res.height === height);
-			if(matchesExistingDimensions){ return; }
+			// exit if the custom dimensions are already in the list (within tolerance)
+			if(appDimensions.some(res => Math.abs(res.width - width) <= tolerance && Math.abs(res.height - height) <= tolerance)){ return; }
 
 			// add the custom dimension to the list
 			dimensionsMenu.unshift(
 				{
-					label: `Current: (${width} x ${height})`,
+					label: `🔘 Current: (${width} x ${height})`,
 					click: () => clientWindow.setSize(width, height)
 				},
 				{ type: `separator` }
