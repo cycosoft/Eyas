@@ -226,7 +226,7 @@
 			dimensionsMenu.unshift(
 				{
 					label: `🔘 Current (${width} x ${height})`,
-					click: () => clientWindow.setSize(width, height)
+					click: () => clientWindow.setContentSize(width, height)
 				},
 				{ type: `separator` }
 			);
