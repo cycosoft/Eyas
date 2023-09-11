@@ -207,7 +207,7 @@
 
 			dimensionsMenu.push({
 				label: `${isSizeMatch ? `🔘 ` : ``}${res.label} (${res.width} x ${res.height})`,
-				click: () => clientWindow.setSize(res.width, res.height)
+				click: () => clientWindow.setContentSize(res.width, res.height)
 			});
 		});
 
