@@ -267,8 +267,16 @@
 
 		// listen for changes to the window size
 		clientWindow.on(`resize`, () => {
+			// get the current dimensions
+			const [newWidth, newHeight] = clientWindow.getContentSize();
+
+			// if the dimensions have not changed
+			if(newWidth === currentDimensions[0] && newHeight === currentDimensions[1]){
+				return;
+			}
+
 			// update the current dimensions
-			currentDimensions = clientWindow.getSize();
+			currentDimensions = clientWindow.getContentSize();
 
 			// update the menu
 			setMenu();
