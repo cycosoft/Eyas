@@ -39,16 +39,16 @@
 	let clientWindow = null;
 	let expressLayer = null;
 	let testServer = null;
-	let currentDimensions = null; // [width, height]
 	const appDimensions = [
 		...config.test.dimensions,
 		{ label: `Desktop`, width: 1366, height: 768 },
 		{ label: `Tablet`, width: 768, height: 1024 },
 		{ label: `Mobile`, width: 360, height: 640 }
 	];
+	let currentDimensions = [appDimensions[0].width, appDimensions[0].height];
 	const windowConfig = {
-		width: appDimensions[0].width,
-		height: appDimensions[0].height,
+		width: currentDimensions[0],
+		height: currentDimensions[1],
 		title: getAppTitle(),
 		icon: paths.icon
 	};
