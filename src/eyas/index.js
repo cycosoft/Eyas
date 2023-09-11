@@ -39,7 +39,7 @@
 	let clientWindow = null;
 	let expressLayer = null;
 	let testServer = null;
-	let resizedResolution = null; // [width, height]
+	let currentResolution = null; // [width, height]
 	const defaultResolutions = [
 		{ label: `Desktop`, width: 1366, height: 768 },
 		{ label: `Tablet`, width: 768, height: 1024 },
@@ -200,10 +200,10 @@
 		// Add the custom resolution menu item if it's not already in the list
 		(() => {
 			// exit if there's no custom resolution set
-			if(!resizedResolution){ return; }
+			if(!currentResolution){ return; }
 
 			// setup
-			const [width, height] = resizedResolution;
+			const [width, height] = currentResolution;
 
 			// exit if the custom resolution is already in the list
 			const matchesExistingResolution = [...defaultResolutions, ...config.test.resolutions]
@@ -256,7 +256,7 @@
 		// listen for changes to the window size
 		clientWindow.on(`resize`, () => {
 			// update the resized resolution
-			resizedResolution = clientWindow.getSize();
+			currentResolution = clientWindow.getSize();
 
 			// update the menu
 			setMenu();
