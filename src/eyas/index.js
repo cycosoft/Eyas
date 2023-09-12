@@ -266,33 +266,33 @@
 		});
 
 		// listen for the window to close
-		const onAppClose = evt => {
-			// stop the window from closing
-			evt.preventDefault();
-
-			// ask the user to confirm closing the app
-			dialog.showMessageBox({
-				type: `question`,
-				buttons: [`Yes`, `No`],
-				title: `Exit Confirmation`,
-				message: `Close ${appName}?`
-			}).then(result => {
-				// if the user clicks the first option; here it is "Yes"
-				if (result.response === 0) {
-					// remove the close event listener so we don't get stuck in a loop
-					clientWindow.removeListener(`close`, onAppClose);
-
-					// Shut down the test server AND THEN exit the app
-					testServer.close(electronLayer.quit);
-				}
-			});
-		};
-
-		// listen for the window to close
 		clientWindow.on(`close`, onAppClose);
 
 		// Load the index.html of the app
 		navigate(appUrl);
+	}
+
+	// listen for the window to close
+	function onAppClose(evt) {
+		// stop the window from closing
+		evt.preventDefault();
+
+		// ask the user to confirm closing the app
+		dialog.showMessageBox({
+			type: `question`,
+			buttons: [`Yes`, `No`],
+			title: `Exit Confirmation`,
+			message: `Close ${appName}?`
+		}).then(result => {
+			// if the user clicks the first option; here it is "Yes"
+			if (result.response === 0) {
+				// remove the close event listener so we don't get stuck in a loop
+				clientWindow.removeListener(`close`, onAppClose);
+
+				// Shut down the test server AND THEN exit the app
+				testServer.close(electronLayer.quit);
+			}
+		});
 	}
 
 	// Get the app title
