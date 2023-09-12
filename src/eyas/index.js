@@ -111,14 +111,7 @@
 			});
 	}
 
-	// Quit when all windows are closed, except on macOS. There, it`s common for
-	// applications and their menu bar to stay active until the user quits
-	electronLayer.on(`window-all-closed`, () => {
-		if (process.platform !== `darwin`) {
-			electronLayer.quit();
-		}
-	});
-
+	// Set up the application menu
 	function setMenu () {
 		// build the default menu in MacOS style
 		const menuDefault = [
@@ -127,19 +120,8 @@
 				submenu: [
 					{
 						label: `🏃 Exit`,
-						click: () => {
-							dialog.showMessageBox({
-								type: `question`,
-								buttons: [`Yes`, `No`],
-								title: `Exit Confirmation`,
-								message: `Close ${appName}?`
-							}).then(result => {
-								// User clicked "Yes"
-								if (result.response === 0) {
-									electronLayer.quit();
-								}
-							});
-						}
+						accelerator: `CmdOrCtrl+Q`,
+						click: electronLayer.quit
 					}
 				]
 			},
@@ -159,12 +141,12 @@
 					{ type: `separator` },
 					{
 						label: `⚙️ DevTools`,
-						click: () => clientWindow.webContents.openDevTools()
+						click: clientWindow.webContents.openDevTools
 					},
 					{ type: `separator` },
 					{
 						label: `♻️ Reload Page`,
-						click: () => clientWindow.webContents.reloadIgnoringCache()
+						click: clientWindow.webContents.reloadIgnoringCache
 					}
 				]
 			}
@@ -283,16 +265,42 @@
 			setMenu();
 		});
 
+		// listen for the window to close
+		const onAppClose = evt => {
+			// stop the window from closing
+			evt.preventDefault();
+
+			// ask the user to confirm closing the app
+			dialog.showMessageBox({
+				type: `question`,
+				buttons: [`Yes`, `No`],
+				title: `Exit Confirmation`,
+				message: `Close ${appName}?`
+			}).then(result => {
+				// if the user clicks the first option; here it is "Yes"
+				if (result.response === 0) {
+					// remove the close event listener so we don't get stuck in a loop
+					clientWindow.removeListener(`close`, onAppClose);
+
+					// Shut down the test server AND THEN exit the app
+					testServer.close(electronLayer.quit);
+				}
+			});
+		};
+
+		// listen for the window to close
+		clientWindow.on(`close`, onAppClose);
+
 		// Load the index.html of the app
 		navigate(appUrl);
 	}
 
 	// Get the app title
 	function getAppTitle() {
-		// Always start with the app name
+		// Always start with the main app name
 		let output = `${appName}`;
 
-		// Add the app title
+		// Add the test app title
 		output += ` :: ${config.test.title}`;
 
 		// Add the build version
@@ -350,13 +358,4 @@
 			.createServer({ key: cert.key, cert: cert.cert }, expressLayer)
 			.listen(testServerPort, electronInit);
 	}
-
-	// Properly close the server when the app is closed
-	electronLayer.on(`before-quit`, () => {
-		// Shut down the HTTPS server
-		testServer.close(() => {
-			// Exit the Node.js process with a status code of 0
-			process.exit(0);
-		});
-	});
 })();
