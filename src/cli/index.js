@@ -152,10 +152,11 @@ async function runCommand_preview() {
 
 	// run the app
 	spawn(electron, [paths.eyasApp], {
-		stdio: `inherit`,
+		detached: true,
+		stdio: `ignore`,
 		windowsHide: false,
 		cwd: consumerRoot
-	});
+	}).unref(); // allow the command line to continue running
 
 	// log the end of the process
 	userLog(`Preview launched!`);
