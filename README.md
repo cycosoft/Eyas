@@ -102,3 +102,7 @@ Support is available via <support+eyas@cycosoft.com>
 This project includes code and assets from the following sources:
 
 - Project Logo [Freepik](https://www.freepik.com/free-vector/eagle-logo-design-template_45007164.htm)
+
+## License
+
+Eyas is licensed under the [MIT](LICENSE.TXT) license

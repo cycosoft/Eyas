@@ -20,7 +20,7 @@
   },
   "author": "Cycosoft, LLC (https://cycosoft.com)",
   "homepage": "https://cycosoft.com",
-  "license": "GPL-3.0",
+  "license": "MIT",
   "keywords": [
     "testing",
     "static",
@@ -30,7 +30,8 @@
     "eyas"
   ],
   "files": [
-    "dist"
+    "dist",
+    "LICENSE.TXT"
   ],
   "dependencies": {
     "bytenode": "^1.5.1",
