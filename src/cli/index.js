@@ -238,6 +238,7 @@ async function runCommand_compile() {
 			removePackageKeywords: true,
 			mac: {
 				target: `dmg`
+				// identity: `undefined` // disable code signing
 			},
 			win: {
 				target: `portable`
