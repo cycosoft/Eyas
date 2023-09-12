@@ -26,6 +26,7 @@
 - [Tips](#tips)
 - [Support](#support)
 - [Attribution](#attribution)
+- [License](#license)
 
 ## The Why
 
