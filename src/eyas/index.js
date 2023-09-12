@@ -148,13 +148,13 @@
 				label: `🧪 Testing`,
 				submenu: [
 					{
-						label: `📦 Test in App`,
+						label: `📦 Load Packaged App`,
 						click: () => navigate(appUrl)
 					},
 					{ type: `separator` },
 					{
-						label: `🖥️ Test in Browser`,
-						click: () => navigate(appUrl, true)
+						label: `🖥️ Open in Browser`,
+						click: () => shell.openExternal(clientWindow.webContents.getURL())
 					},
 					{ type: `separator` },
 					{
