@@ -46,7 +46,7 @@ const paths = {
 	dist: roots.eyasDist,
 	build: roots.eyasBuild,
 	configLoader: path.join(roots.dist, names.scripts, `get-config.js`),
-	configDest: path.join(roots.eyasBuild, `.eyasrc.js`),
+	configDest: path.join(roots.eyasBuild, `eyas.config.js`),
 	eyasApp: path.join(roots.eyasBuild, `index.js`),
 	eyasAssetsSrc: path.join(roots.dist, names.eyasAssets),
 	eyasAssetsDest: path.join(roots.eyasBuild, names.eyasAssets),

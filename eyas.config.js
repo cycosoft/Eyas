@@ -1,4 +1,4 @@
-//export the config for the project
+// export the config for the project
 module.exports = {
 	test: {
 		source: `demo`,

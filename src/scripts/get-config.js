@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 
 'use strict';
 
@@ -9,7 +10,7 @@ const roots = require(`./get-roots.js`);
 
 // setup
 let userConfig = {};
-const configPath = path.join(roots.config, `.eyasrc.js`);
+const configPath = path.join(roots.config, `eyas.config.js`);
 try {
 	// attempt to load the user's config
 	userConfig = require(configPath);
