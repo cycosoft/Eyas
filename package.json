@@ -1,7 +1,7 @@
 {
   "name": "@cycosoft/eyas",
   "version": "1.0.0-rc.0",
-  "description": "A \"shift-left\" serverless testing solution for static web applications",
+  "description": "A no-code serverless visual testing solution for static web applications",
   "main": "./index.js",
   "packageName": "Eyas",
   "publishConfig": {
@@ -36,7 +36,7 @@
   "dependencies": {
     "bytenode": "^1.5.1",
     "commander": "^11.0.0",
-    "electron": "^26.2.0",
+    "electron": "^26.2.1",
     "electron-builder": "^24.6.4",
     "express": "^4.18.2",
     "fs-extra": "^11.1.1",
