@@ -280,12 +280,16 @@
 		// ask the user to confirm closing the app
 		dialog.showMessageBox({
 			type: `question`,
-			buttons: [`Yes`, `No`],
+			buttons: [`Close ${appName}`, `Cancel`],
 			title: `Exit Confirmation`,
-			message: `Close ${appName}?`,
+			message: `
+			Get your brand seen on this screen by tens of people! 😂
+
+			Contact <support+eyas@cycosoft.com> for more information.
+			`,
 			icon: paths.icon
 		}).then(result => {
-			// if the user clicks the first option; here it is "Yes"
+			// if the user clicks the first option
 			if (result.response === 0) {
 				// remove the close event listener so we don't get stuck in a loop
 				clientWindow.removeListener(`close`, onAppClose);
