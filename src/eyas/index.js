@@ -282,7 +282,8 @@
 			type: `question`,
 			buttons: [`Yes`, `No`],
 			title: `Exit Confirmation`,
-			message: `Close ${appName}?`
+			message: `Close ${appName}?`,
+			icon: paths.icon
 		}).then(result => {
 			// if the user clicks the first option; here it is "Yes"
 			if (result.response === 0) {
