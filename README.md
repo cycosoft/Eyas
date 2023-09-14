@@ -95,6 +95,7 @@ module.exports = {
 - Add `eyas-*` to your `.gitignore` to prevent output from being committed to your repo
 - Windows executables can sometimes be slower to launch due to Microsoft Defender
 - This tool disables certain security features of the browser, **and should not be used in a production capacity.**
+- If your app is using a custom domain and you'd like to test it in your browser via Eyas, you will need to add the domain to your `etc/hosts` file. See [this guide](https://www.ephost.com/account/index.php/knowledgebase/232/How-to-edit-your-Host-file.html) (no affiliation) for more information.
 
 ## Support
 
