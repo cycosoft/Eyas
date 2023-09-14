@@ -7,7 +7,7 @@ module.exports = {
 		routes: [{ from: `/REDIRECT`, to: `/demo/alt` }],
 		title: `Eyas App Demo`,
 		version: ``,
-		dimensions: [
+		viewports: [
 			{ label: `Custom Size`, width: 1024, height: 768 }
 		],
 		menu: [

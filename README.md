@@ -68,7 +68,7 @@ module.exports = {
     // The version of your application that was built. Defaults to current branch name.
     version: `<current-branch>`,
     // Additional screen sizes to test your application at
-    dimensions: [/* { label: `iPad Pro`, width: 1024, height: 1366 } */],
+    viewports: [/* { label: `iPad Pro`, width: 1024, height: 1366 } */],
     // Custom links to display in the menu
     menu: [/* { label: `Cycosoft, LLC`, url: `cycosoft.com` } */]
   }
