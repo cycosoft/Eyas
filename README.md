@@ -94,7 +94,7 @@ module.exports = {
 
 - Add `eyas-*` to your `.gitignore` to prevent output from being committed to your repo
 - Windows executables can sometimes be slower to launch due to Microsoft Defender
-- This tool disables certain security features of the browser, **and should not be used in production environments.**
+- This tool disables certain security features of the browser, **and should not be used in a production capacity.**
 
 ## Support
 
@@ -102,9 +102,7 @@ Support is available via <support+eyas@cycosoft.com>
 
 ## Attribution
 
-This project includes code and assets from the following sources:
-
-- Project Logo [Freepik](https://www.freepik.com/free-vector/eagle-logo-design-template_45007164.htm)
+- Project Logo by [Freepik](https://www.freepik.com/free-vector/eagle-logo-design-template_45007164.htm)
 
 ## License
 
