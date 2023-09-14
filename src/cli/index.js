@@ -56,7 +56,8 @@ const paths = {
 	packageJsonDest: path.join(roots.eyasBuild, names.packageJson),
 	scriptsSrc: path.join(roots.dist, names.scripts),
 	scriptsDest: path.join(roots.eyasBuild, names.scripts),
-	testDest: path.join(roots.eyasBuild, `test`)
+	testDest: path.join(roots.eyasBuild, `test`),
+	icon: path.join(roots.eyasBuild, `eyas-assets`, `eyas-logo.png`)
 };
 // load the user's config
 const config = require(paths.configLoader);
@@ -238,11 +239,13 @@ async function runCommand_compile() {
 			removePackageScripts: true,
 			removePackageKeywords: true,
 			mac: {
-				target: `dmg`
+				target: `dmg`,
+				icon: paths.icon // linux also builds from this path
 				// identity: `undefined` // disable code signing
 			},
 			win: {
-				target: `portable`
+				target: `portable`,
+				icon: paths.icon
 			}
 		}
 	});

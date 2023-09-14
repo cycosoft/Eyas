@@ -39,17 +39,17 @@
 	let clientWindow = null;
 	let expressLayer = null;
 	let testServer = null;
-	const appDimensions = [
-		...config.test.dimensions,
+	const allViewports = [
+		...config.test.viewports,
 		{ isDefault: true, label: `Desktop`, width: 1366, height: 768 },
 		{ isDefault: true, label: `Tablet`, width: 768, height: 1024 },
 		{ isDefault: true, label: `Mobile`, width: 360, height: 640 }
 	];
-	let currentDimensions = [appDimensions[0].width, appDimensions[0].height];
+	let currentViewport = [allViewports[0].width, allViewports[0].height];
 	const windowConfig = {
 		useContentSize: true,
-		width: currentDimensions[0],
-		height: currentDimensions[1],
+		width: currentViewport[0],
+		height: currentViewport[1],
 		title: getAppTitle(),
 		icon: paths.icon
 	};
@@ -170,43 +170,43 @@
 		customLinkList.length && menuDefault.push({ label: `💼 Links`, submenu: customLinkList });
 
 		// build out the menu for selecting a screen size
-		const dimensionsMenu = [];
+		const viewportsMenu = [];
 		const tolerance = 2;
 
-		// add the dimensions to the list
+		// add the viewports to the list
 		let defaultsFound = false;
-		appDimensions.forEach(res => {
-			const [width, height] = currentDimensions || [];
+		allViewports.forEach(res => {
+			const [width, height] = currentViewport || [];
 			const isSizeMatch = Math.abs(res.width - width) <= tolerance && Math.abs(res.height - height) <= tolerance;
 
-			// if this is the first default dimension
+			// if this is the first default viewport
 			if(!defaultsFound && res.isDefault){
 				// add a separator
-				dimensionsMenu.push({ type: `separator` });
+				viewportsMenu.push({ type: `separator` });
 
 				// mark that the first default has been found
 				defaultsFound = true;
 			}
 
-			dimensionsMenu.push({
+			viewportsMenu.push({
 				label: `${isSizeMatch ? `🔘 ` : ``}${res.label} (${res.width} x ${res.height})`,
 				click: () => clientWindow.setContentSize(res.width, res.height)
 			});
 		});
 
-		// Add the custom dimension menu item if it's not already in the list
+		// Add the custom viewport menu item if it's not already in the list
 		(() => {
-			// exit if there's no custom dimension set
-			if(!currentDimensions){ return; }
+			// exit if there's no custom viewport set
+			if(!currentViewport){ return; }
 
 			// setup
-			const [width, height] = currentDimensions;
+			const [width, height] = currentViewport;
 
-			// exit if the custom dimensions are already in the list (within tolerance)
-			if(appDimensions.some(res => Math.abs(res.width - width) <= tolerance && Math.abs(res.height - height) <= tolerance)){ return; }
+			// exit if the custom viewports are already in the list (within tolerance)
+			if(allViewports.some(res => Math.abs(res.width - width) <= tolerance && Math.abs(res.height - height) <= tolerance)){ return; }
 
-			// add the custom dimension to the list
-			dimensionsMenu.unshift(
+			// add the custom viewport to the list
+			viewportsMenu.unshift(
 				{
 					label: `🔘 Current (${width} x ${height})`,
 					click: () => clientWindow.setContentSize(width, height)
@@ -215,8 +215,8 @@
 			);
 		})();
 
-		// Add the dimensions submenu to the application menu
-		menuDefault.push({ label: `📐 Size`, submenu: dimensionsMenu });
+		// Add the viewports submenu to the application menu
+		menuDefault.push({ label: `📐 Viewport`, submenu: viewportsMenu });
 
 		// Set the modified menu as the application menu
 		Menu.setApplicationMenu(Menu.buildFromTemplate(menuDefault));
@@ -250,16 +250,16 @@
 
 		// listen for changes to the window size
 		clientWindow.on(`resize`, () => {
-			// get the current dimensions
+			// get the current viewport dimensions
 			const [newWidth, newHeight] = clientWindow.getContentSize();
 
 			// if the dimensions have not changed
-			if(newWidth === currentDimensions[0] && newHeight === currentDimensions[1]){
+			if(newWidth === currentViewport[0] && newHeight === currentViewport[1]){
 				return;
 			}
 
 			// update the current dimensions
-			currentDimensions = clientWindow.getContentSize();
+			currentViewport = clientWindow.getContentSize();
 
 			// update the menu
 			setMenu();
