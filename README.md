@@ -1,6 +1,6 @@
 <p align="center">
 	<a href="https://cycosoft.com/">
-		<img src="./_design/eyas-logo.svg" alt="Eyas Logo" width="150px" height="150px">
+		<img src="./dist/eyas-assets/eyas-logo.png" alt="Eyas Logo" width="150px" height="150px">
 	</a>
 </p>
 
