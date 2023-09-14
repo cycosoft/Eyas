@@ -18,7 +18,7 @@
 
 ## Table of Contents
 
-- [The Why](#the-why)
+- [Who and Why](#who-and-why)
 - [Features](#features)
 - [Install](#install)
 - [Configuration](#configuration)
@@ -28,11 +28,13 @@
 - [Attribution](#attribution)
 - [License](#license)
 
-## The Why
+## Who and Why
+
+_If you've got HTML and someone who wants to see it, this is for you_.
 
 The best time to test your changes is _before_ you merge them, but setting up a development environment on everyone's computer doesn't scale. The standard solution is to merge the code, and test it down the line in a staging environment where a simple bug might block the entire team from shipping. An emerging trend is to deploy each branch to an ephemeral environment, but this can be costly and time consuming to set up for all but the largest companies.
 
-_Eyas_ leverages a packaged version of your application to provide a _simple_, shareable, and serverless testing solution. Regardless of your team size, you can now decrease the feedback loop for no extra cost. You can easily include PMs, designers, executives and customers in the testing process.
+_Eyas_ leverages a packaged version of your application to provide a _simple_, shareable, and serverless testing solution that's ready to share within minutes. Regardless of your team size, you can now decrease the feedback loop for no extra cost. You can easily include PMs, designers, executives and customers in the testing process.
 
 ## Features
 
