@@ -119,6 +119,34 @@
 				label: appName,
 				submenu: [
 					{
+						label: `📇 About`,
+						click: () => {
+							// setup
+							const startYear = 2023;
+							const currentYear = new Date().getFullYear();
+							const yearRange = startYear === currentYear
+								? startYear : `${startYear} - ${currentYear}`;
+
+							// show the about dialog
+							dialog.showMessageBox({
+								type: `info`,
+								buttons: [`OK`],
+								title: `About ${appName}`,
+								icon: paths.icon,
+								message: `
+								Testing: ${config.test.title}
+								Version: ${config.test.version}
+								Using: ${appName} v${process.env.npm_package_version}.
+
+
+								🏢 © ${yearRange} Cycosoft, LLC
+								🌐 https://cycosoft.com
+								✉️ support+eyas@cycosoft.com
+								`
+							});
+						}
+					},
+					{
 						label: `🏃 Exit`,
 						accelerator: `CmdOrCtrl+Q`,
 						click: electronLayer.quit
