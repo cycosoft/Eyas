@@ -27,7 +27,7 @@
 - [Tips](#tips)
 - [Support](#support)
 - [Attribution](#attribution)
-- [License](#license)
+- [License, Terms, Privacy](#license-terms-privacy)
 
 ## Features
 
@@ -128,8 +128,8 @@ Support is available via <support+eyas@cycosoft.com>
 
 - Project Logo by [Freepik](https://www.freepik.com/free-vector/eagle-logo-design-template_45007164.htm)
 
-## License
+## License, Terms, Privacy
 
-Eyas is licensed under the [MIT](LICENSE.TXT) license
+Eyas is licensed under the [MIT](LICENSE.TXT) license. See Cycosoft, LLC [TERMS](https://cycosoft.com/eyas/terms) and [PRIVACY](https://cycosoft.com/eyas/privacy) for more information.
 
 [[Back to Top](#table-of-contents)]
