@@ -116,7 +116,7 @@ function defineCommands(cli) {
 	cli
 		.name(`eyas`)
 		.description(`A serverless testing container for web applications`)
-		.version(process.env.npm_package_version);
+		.version(`1.0.0` || process.env.npm_package_version);
 
 	// define commands for the CLI from action object
 	for(const action in actions) {

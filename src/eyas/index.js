@@ -136,7 +136,7 @@
 								message: `
 								Testing: ${config.test.title}
 								Version: ${config.test.version}
-								Using: ${appName} v${process.env.npm_package_version}.
+								Using: ${appName} v${`1.0.0` || process.env.npm_package_version}.
 
 
 								🏢 © ${yearRange} Cycosoft, LLC
