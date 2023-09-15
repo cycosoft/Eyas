@@ -1,15 +1,15 @@
-<p align="center">
+<p style="text-align: center;">
 	<a href="https://cycosoft.com/">
 		<img src="https://cycosoft.com/eyas/logo.svg" alt="Eyas Logo" width="150px" height="150px">
 	</a>
 </p>
 
-<div align="center">
+<div style="text-align: center;">
   <h1>Eyas</h1>
 </div>
-<p align="center">A no-code serverless visual testing solution for static web applications by <a href="https://cycosoft.com">Cycosoft, LLC</a></p>
+<p style="text-align: center;">A no-code serverless visual testing solution for static web applications by <a href="https://cycosoft.com">Cycosoft, LLC</a></p>
 
-<p align="center">
+<p style="text-align: center;">
 <img src="https://img.shields.io/npm/v/@cycosoft/eyas?color=6988e6&label=version">
 </p>
 
