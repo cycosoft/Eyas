@@ -223,7 +223,13 @@ async function runCommand_compile() {
 	userLog();
 
 	// Build the executables
+	const targets = [];
+	if(config.outputs.windows) { targets.push(builder.Platform.WINDOWS); }
+	if(config.outputs.mac) { targets.push(builder.Platform.MAC); }
+	if(config.outputs.linux) { targets.push(builder.Platform.LINUX); }
+
 	await builder.build({
+		targets: targets.length ? builder.createTargets(targets) : null,
 		config: {
 			appId: `com.cycosoft.eyas`,
 			productName: `Eyas`,
@@ -240,11 +246,15 @@ async function runCommand_compile() {
 			removePackageKeywords: true,
 			mac: {
 				target: `dmg`,
-				icon: paths.icon // linux also builds from this path
+				icon: paths.icon
 				// identity: `undefined` // disable code signing
 			},
 			win: {
 				target: `portable`,
+				icon: paths.icon
+			},
+			linux: {
+				target: `AppImage`,
 				icon: paths.icon
 			}
 		}
