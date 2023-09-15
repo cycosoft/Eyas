@@ -255,7 +255,8 @@ async function runCommand_compile() {
 			},
 			linux: {
 				target: `AppImage`,
-				icon: paths.icon
+				icon: paths.icon,
+				category: `Utility`
 			}
 		}
 	});
