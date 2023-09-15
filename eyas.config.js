@@ -36,9 +36,9 @@ module.exports = {
 
 	// defaults to current platform
 	outputs: {
-		maxCompression: false, // false
-		windows: undefined, // undefined
-		mac: undefined, // undefined
-		linux: undefined // undefined
+		compression: `store`,
+		// windows: true,
+		// mac: true,
+		// linux: true
 	}
 };

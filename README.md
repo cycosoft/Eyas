@@ -73,6 +73,18 @@ module.exports = {
     viewports: [/* { label: `iPad Pro`, width: 1024, height: 1366 } */],
     // Custom links to display in the menu
     menu: [/* { label: `Cycosoft, LLC`, url: `cycosoft.com` } */]
+  },
+
+  // Defaults to building for the current platform if no platform is specified
+  outputs: {
+    // The level of compression applied to your distributable
+    compression: `normal`, // store, normal, maximum
+    // Force building a .exe
+    windows: false,
+    // Force building a .dmg
+    mac: false,
+    // Force building a .AppImage
+    linux: false
   }
 };
 ```
