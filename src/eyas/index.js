@@ -169,12 +169,12 @@
 					{ type: `separator` },
 					{
 						label: `⚙️ DevTools`,
-						click: clientWindow.webContents.openDevTools
+						click: () => clientWindow.webContents.openDevTools()
 					},
 					{ type: `separator` },
 					{
 						label: `♻️ Reload Page`,
-						click: clientWindow.webContents.reloadIgnoringCache
+						click: () => clientWindow.webContents.reloadIgnoringCache()
 					}
 				]
 			}
