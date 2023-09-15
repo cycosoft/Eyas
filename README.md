@@ -26,8 +26,7 @@
 - [Multiple Platforms](#multiple-platforms)
 - [Tips](#tips)
 - [Support](#support)
-- [Attribution](#attribution)
-- [License, Terms, Privacy](#license-terms-privacy)
+- [Legal](#legal)
 
 ## Features
 
@@ -119,17 +118,17 @@ Depending on your platform, you may be able to build for multiple platforms usin
 - Windows executables can sometimes be slower to launch due to Microsoft Defender
 - This tool disables certain security features of the browser, **and should not be used in a production capacity.**
 - If your app is using a custom domain and you'd like to test it in your browser via Eyas, you will need to add the domain to your `etc/hosts` file. See [this guide](https://www.ephost.com/account/index.php/knowledgebase/232/How-to-edit-your-Host-file.html) (no affiliation) for more information.
+- View documented changes at [CHANGELOG.md](CHANGELOG.md)
 
 ## Support
 
 Support is available via <support+eyas@cycosoft.com>
 
-## Attribution
+## Legal
 
-- Project Logo by [Freepik](https://www.freepik.com/free-vector/eagle-logo-design-template_45007164.htm)
-
-## License, Terms, Privacy
-
-Eyas is licensed under the [MIT](LICENSE.TXT) license. See Cycosoft, LLC [TERMS](https://cycosoft.com/eyas/terms) and [PRIVACY](https://cycosoft.com/eyas/privacy) for more information.
+- Licensed under the [MIT License](LICENSE.TXT)
+- View [terms of use](https://cycosoft.com/eyas/terms)
+- View [privacy policy](https://cycosoft.com/eyas/privacy)
+- Logo source design by [Freepik](https://www.freepik.com/free-vector/eagle-logo-design-template_45007164.htm)
 
 [[Back to Top](#table-of-contents)]
