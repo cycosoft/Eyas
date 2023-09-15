@@ -18,23 +18,16 @@
 
 ## Table of Contents
 
-- [Who and Why](#who-and-why)
 - [Features](#features)
+- [Who and Why](#who-and-why)
 - [Install](#install)
 - [Configuration](#configuration)
 - [Usage](#usage)
+- [Multiple Platforms](#multiple-platforms)
 - [Tips](#tips)
 - [Support](#support)
 - [Attribution](#attribution)
 - [License](#license)
-
-## Who and Why
-
-_If you've got HTML and someone who wants to see it, this is for you_.
-
-The best time to test your changes is _before_ you merge them, but setting up a development environment on everyone's computer doesn't scale. The standard solution is to merge the code, and test it down the line in a staging environment where a simple bug might block the entire team from shipping. An emerging trend is to deploy each branch to an ephemeral environment, but this can be costly and time consuming to set up for all but the largest companies.
-
-_Eyas_ leverages a packaged version of your application to provide a _simple_, shareable, and serverless testing solution that's ready to share within minutes. Regardless of your team size, you can now decrease the feedback loop for no extra cost. You can easily include PMs, designers, executives and customers in the testing process.
 
 ## Features
 
@@ -43,6 +36,14 @@ _Eyas_ leverages a packaged version of your application to provide a _simple_, s
 - 📦 **Serverless** - No need to manage a deployment server
 - 🔗 **Cross-platform** - Test your application in multiple environments
 - 💰 **Cost** - Free to implement
+
+## Who and Why
+
+_If you've got HTML and someone who wants to see it, this is for you_.
+
+The best time to test your changes is _before_ you merge them, but setting up a development environment on everyone's computer doesn't scale. The standard solution is to merge the code, and test it down the line in a staging environment where a simple bug might block the entire team from shipping. An emerging trend is to deploy each branch to an ephemeral environment, but this can be costly and time consuming to set up for all but the largest companies.
+
+_Eyas_ leverages a packaged version of your application to provide a _simple_, shareable, and serverless testing solution that's ready to share within minutes. Regardless of your team size, you can now decrease the feedback loop for no extra cost. You can easily include PMs, designers, executives and customers in the testing process.
 
 ## Install
 
@@ -54,7 +55,7 @@ npm install @cycosoft/eyas --save-dev
 ## Configuration
 
 ```js
-// <projectRoot>/eyas.config.js
+// <projectRoot>/.eyas.config.js
 module.exports = {
   test: {
     // The path to the directory containing your application files
@@ -73,6 +74,18 @@ module.exports = {
     viewports: [/* { label: `iPad Pro`, width: 1024, height: 1366 } */],
     // Custom links to display in the menu
     menu: [/* { label: `Cycosoft, LLC`, url: `cycosoft.com` } */]
+  },
+
+  // Defaults to building for the current platform if no platform is specified
+  outputs: {
+    // The level of compression applied to your distributable
+    compression: `normal`, // store, normal, maximum
+    // Force building a .exe
+    windows: false,
+    // Force building a .dmg
+    mac: false,
+    // Force building a .AppImage
+    linux: false
   }
 };
 ```
@@ -89,6 +102,16 @@ module.exports = {
   }
 }
 ```
+
+## Multiple Platforms
+
+Depending on your platform, you may be able to build for multiple platforms using the `electronuserland/builder:wine` docker image ([details](https://www.electron.build/multi-platform-build#provided-docker-images)). Here's a simple visualization of known possible configurations.
+
+| Platform | Win | Linux | Mac |
+| - | - | - | - |
+| Mac | ✅ | ✅ | ✅ |
+| Windows | ✅ | ✅ | |
+| Linux | ✅ | ✅ | |
 
 ## Tips
 

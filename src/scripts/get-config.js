@@ -10,19 +10,19 @@ const roots = require(`./get-roots.js`);
 
 // setup
 let userConfig = {};
-const configPath = path.join(roots.config, `eyas.config.js`);
+const configPath = path.join(roots.config, `.eyas.config.js`);
 try {
 	// attempt to load the user's config
 	userConfig = require(configPath);
 } catch (error) {
 	console.warn(``);
-	console.warn(`⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️`);
+	console.warn(`⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️`);
 	console.warn(`------ UNABLE TO LOAD USER SETTINGS ------`);
 	console.warn(`-------- proceeding with defaults --------`);
 	console.log(``);
 	console.error(error);
 	console.log(``);
-	console.warn(`⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️`);
+	console.warn(`⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️`);
 	console.log(``);
 	userConfig = {};
 }
@@ -46,10 +46,10 @@ const eyasConfig = {
 
 	// defaults to current platform
 	outputs: {
-		maxCompression: userConfig.outputs.maxCompression || false,
-		windows: parseBoolean(userConfig.outputs.windows),
-		mac: parseBoolean(userConfig.outputs.mac),
-		linux: parseBoolean(userConfig.outputs.linux)
+		compression: userConfig.outputs.compression || `normal`, // store, normal, maximum
+		windows: userConfig.outputs.windows || false,
+		mac: userConfig.outputs.mac || false,
+		linux: userConfig.outputs.linux || false
 	}
 };
 
@@ -65,18 +65,4 @@ function getBranchName() {
 		console.error(`Error getting branch name:`, error);
 		return null;
 	}
-}
-
-// return null if the value isn't true or false
-function parseBoolean(value) {
-	// config
-	let output = null;
-
-	// use passed value if set AND is a boolean
-	if(value === true || value === false){
-		output = value;
-	}
-
-	// return the output
-	return output;
 }

@@ -46,7 +46,7 @@ const paths = {
 	dist: roots.eyasDist,
 	build: roots.eyasBuild,
 	configLoader: path.join(roots.dist, names.scripts, `get-config.js`),
-	configDest: path.join(roots.eyasBuild, `eyas.config.js`),
+	configDest: path.join(roots.eyasBuild, `.eyas.config.js`),
 	eyasApp: path.join(roots.eyasBuild, `index.js`),
 	eyasAssetsSrc: path.join(roots.dist, names.eyasAssets),
 	eyasAssetsDest: path.join(roots.eyasBuild, names.eyasAssets),
@@ -223,7 +223,13 @@ async function runCommand_compile() {
 	userLog();
 
 	// Build the executables
+	const targets = [];
+	if(config.outputs.windows) { targets.push(builder.Platform.WINDOWS); }
+	if(config.outputs.mac) { targets.push(builder.Platform.MAC); }
+	if(config.outputs.linux) { targets.push(builder.Platform.LINUX); }
+
 	await builder.build({
+		targets: targets.length ? builder.createTargets(targets) : null,
 		config: {
 			appId: `com.cycosoft.eyas`,
 			productName: `Eyas`,
@@ -231,7 +237,7 @@ async function runCommand_compile() {
 			artifactName: `${config.test.title} - ${config.test.version}` + '.${ext}',
 			copyright: `Copyright © 2023 Cycosoft, LLC`,
 			asarUnpack: [`resources/**`],
-			compression: `normal`, // normal, maximum, store
+			compression: config.outputs.compression,
 			directories: {
 				app: paths.build,
 				output: paths.dist
@@ -240,12 +246,17 @@ async function runCommand_compile() {
 			removePackageKeywords: true,
 			mac: {
 				target: `dmg`,
-				icon: paths.icon // linux also builds from this path
+				icon: paths.icon
 				// identity: `undefined` // disable code signing
 			},
 			win: {
 				target: `portable`,
 				icon: paths.icon
+			},
+			linux: {
+				target: `AppImage`,
+				icon: paths.icon,
+				category: `Utility`
 			}
 		}
 	});
