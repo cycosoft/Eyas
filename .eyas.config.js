@@ -36,7 +36,7 @@ module.exports = {
 
 	// defaults to current platform
 	outputs: {
-		// compression: `store`,
+		compression: `store`,
 		// windows: true,
 		// mac: true,
 		// linux: true
