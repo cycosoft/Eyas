@@ -55,7 +55,7 @@ npm install @cycosoft/eyas --save-dev
 ## Configuration
 
 ```js
-// <projectRoot>/eyas.config.js
+// <projectRoot>/.eyas.config.js
 module.exports = {
   test: {
     // The path to the directory containing your application files

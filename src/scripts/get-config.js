@@ -10,7 +10,7 @@ const roots = require(`./get-roots.js`);
 
 // setup
 let userConfig = {};
-const configPath = path.join(roots.config, `eyas.config.js`);
+const configPath = path.join(roots.config, `.eyas.config.js`);
 try {
 	// attempt to load the user's config
 	userConfig = require(configPath);
