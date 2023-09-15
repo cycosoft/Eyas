@@ -1,4 +1,4 @@
-/* global __dirname */
+/* global __dirname, process */
 
 'use strict';
 
@@ -310,12 +310,12 @@
 			type: `question`,
 			buttons: [`Close ${appName}`, `Cancel`],
 			title: `Exit Confirmation`,
+			icon: paths.icon,
 			message: `
 			Get your brand seen on this screen by tens of people! 😂
 
 			Contact <support+eyas@cycosoft.com> for more information.
-			`,
-			icon: paths.icon
+			`
 		}).then(result => {
 			// if the user clicks the first option
 			if (result.response === 0) {
