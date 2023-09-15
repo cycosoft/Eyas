@@ -26,8 +26,7 @@
 - [Multiple Platforms](#multiple-platforms)
 - [Tips](#tips)
 - [Support](#support)
-- [Attribution](#attribution)
-- [License, Terms, Privacy](#license-terms-privacy)
+- [Legal](#legal)
 
 ## Features
 
@@ -124,12 +123,11 @@ Depending on your platform, you may be able to build for multiple platforms usin
 
 Support is available via <support+eyas@cycosoft.com>
 
-## Attribution
+## Legal
 
-- Project Logo by [Freepik](https://www.freepik.com/free-vector/eagle-logo-design-template_45007164.htm)
-
-## License, Terms, Privacy
-
-Eyas is licensed under the [MIT](LICENSE.TXT) license. See Cycosoft, LLC [TERMS](https://cycosoft.com/eyas/terms) and [PRIVACY](https://cycosoft.com/eyas/privacy) for more information.
+- Licensed under the [MIT License](LICENSE.TXT)
+- View [terms of use](https://cycosoft.com/eyas/terms)
+- View [privacy policy](https://cycosoft.com/eyas/privacy)
+- Logo source design by [Freepik](https://www.freepik.com/free-vector/eagle-logo-design-template_45007164.htm)
 
 [[Back to Top](#table-of-contents)]
