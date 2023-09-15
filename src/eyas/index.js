@@ -244,7 +244,7 @@
 		})();
 
 		// Add the viewports submenu to the application menu
-		menuDefault.push({ label: `📐 Viewport`, submenu: viewportsMenu });
+		menuDefault.push({ label: `📏 Viewport`, submenu: viewportsMenu });
 
 		// Set the modified menu as the application menu
 		Menu.setApplicationMenu(Menu.buildFromTemplate(menuDefault));
