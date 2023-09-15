@@ -131,3 +131,5 @@ Support is available via <support+eyas@cycosoft.com>
 ## License
 
 Eyas is licensed under the [MIT](LICENSE.TXT) license
+
+[[Back to Top](#table-of-contents)]
