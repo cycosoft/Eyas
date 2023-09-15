@@ -1,4 +1,4 @@
-/* global __dirname */
+/* global __dirname, process */
 
 'use strict';
 
@@ -119,6 +119,34 @@
 				label: appName,
 				submenu: [
 					{
+						label: `📇 About`,
+						click: () => {
+							// setup
+							const startYear = 2023;
+							const currentYear = new Date().getFullYear();
+							const yearRange = startYear === currentYear
+								? startYear : `${startYear} - ${currentYear}`;
+
+							// show the about dialog
+							dialog.showMessageBox({
+								type: `info`,
+								buttons: [`OK`],
+								title: `About ${appName}`,
+								icon: paths.icon,
+								message: `
+								Testing: ${config.test.title}
+								Version: ${config.test.version}
+								Using: ${appName} v${process.env.npm_package_version}.
+
+
+								🏢 © ${yearRange} Cycosoft, LLC
+								🌐 https://cycosoft.com
+								✉️ support+eyas@cycosoft.com
+								`
+							});
+						}
+					},
+					{
 						label: `🏃 Exit`,
 						accelerator: `CmdOrCtrl+Q`,
 						click: electronLayer.quit
@@ -216,7 +244,7 @@
 		})();
 
 		// Add the viewports submenu to the application menu
-		menuDefault.push({ label: `📐 Viewport`, submenu: viewportsMenu });
+		menuDefault.push({ label: `📏 Viewport`, submenu: viewportsMenu });
 
 		// Set the modified menu as the application menu
 		Menu.setApplicationMenu(Menu.buildFromTemplate(menuDefault));
@@ -282,12 +310,12 @@
 			type: `question`,
 			buttons: [`Close ${appName}`, `Cancel`],
 			title: `Exit Confirmation`,
+			icon: paths.icon,
 			message: `
 			Get your brand seen on this screen by tens of people! 😂
 
 			Contact <support+eyas@cycosoft.com> for more information.
-			`,
-			icon: paths.icon
+			`
 		}).then(result => {
 			// if the user clicks the first option
 			if (result.response === 0) {
