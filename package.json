@@ -34,7 +34,6 @@
     "CHANGELOG.md"
   ],
   "dependencies": {
-    "analytics": "^0.8.9",
     "bytenode": "^1.5.1",
     "commander": "^11.0.0",
     "electron": "^26.2.1",
