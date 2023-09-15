@@ -105,7 +105,7 @@ module.exports = {
 
 ## Multiple Platforms
 
-Depending on your platform, you may be able to build for multiple platforms using the `electronuserland/builder:wine` docker image ([details](https://www.electron.build/multi-platform-build#provided-docker-images)). Here's a simple visualization of possible configurations.
+Depending on your platform, you may be able to build for multiple platforms using the `electronuserland/builder:wine` docker image ([details](https://www.electron.build/multi-platform-build#provided-docker-images)). Here's a simple visualization of known possible configurations.
 
 | Platform | Win | Linux | Mac |
 | - | - | - | - |
