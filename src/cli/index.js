@@ -112,11 +112,14 @@ function askUser() {
 
 // setup the CLI arguments
 function defineCommands(cli) {
+	// get the version from the module's package.json
+	const { version } = require(paths.packageJsonSrc);
+
 	// define the details of the CLI
 	cli
 		.name(`eyas`)
 		.description(`A serverless testing container for web applications`)
-		.version(`1.0.0` || process.env.npm_package_version);
+		.version(version);
 
 	// define commands for the CLI from action object
 	for(const action in actions) {
