@@ -138,7 +138,7 @@
 								message: `
 								Testing: ${config.test.title}
 								Version: ${config.test.version}
-								Built With: ${appName} v${appVersion}.
+								Built With: ${appName} v${appVersion}
 
 
 								🏢 © ${yearRange} Cycosoft, LLC
