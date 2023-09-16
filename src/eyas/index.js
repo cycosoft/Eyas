@@ -24,7 +24,8 @@
 	const paths = {
 		configLoader: path.join(roots.eyas, `scripts`, `get-config.js`),
 		icon: path.join(roots.eyas, `eyas-assets`, `eyas-logo.png`),
-		testSrc: path.join(roots.eyas, `test`)
+		testSrc: path.join(roots.eyas, `test`),
+		packageJson: path.join(roots.eyas, `package.json`)
 	};
 
 	// load the users config
@@ -32,6 +33,7 @@
 
 	// config
 	const appName = `Eyas`;
+	const appVersion = require(paths.packageJson).version;
 	const testServerPort = config.test.port;
 	const testServerUrl = `https://localhost:${testServerPort}`;
 	const appUrlOverride = formatURL(config.test.domain);
@@ -136,7 +138,7 @@
 								message: `
 								Testing: ${config.test.title}
 								Version: ${config.test.version}
-								Using: ${appName} v${`1.0.0` || process.env.npm_package_version}.
+								Built With: ${appName} v${appVersion}
 
 
 								🏢 © ${yearRange} Cycosoft, LLC

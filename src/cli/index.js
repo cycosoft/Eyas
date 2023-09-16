@@ -112,11 +112,14 @@ function askUser() {
 
 // setup the CLI arguments
 function defineCommands(cli) {
+	// get the version from the module's package.json
+	const { version } = require(paths.packageJsonSrc);
+
 	// define the details of the CLI
 	cli
 		.name(`eyas`)
 		.description(`A serverless testing container for web applications`)
-		.version(`1.0.0` || process.env.npm_package_version);
+		.version(version);
 
 	// define commands for the CLI from action object
 	for(const action in actions) {
@@ -176,6 +179,10 @@ async function createBuildFolder() {
 	userLog(`Resetting build space...`);
 	await fs.emptyDir(paths.build);
 
+	// copy the package.json to the build folder
+	userLog(`Copying build assets...`);
+	await fs.copy(paths.packageJsonSrc, paths.packageJsonDest);
+
 	// copy eyas source to build folder
 	userLog(`Copying Eyas runtime files...`);
 	await fs.copy(paths.eyasSrc, paths.eyasDest);
@@ -205,10 +212,6 @@ async function runCommand_compile() {
 
 	// create the build folder to prep for usage
 	await createBuildFolder();
-
-	// copy the package.json to the build folder
-	userLog(`Copying build assets...`);
-	await fs.copy(paths.packageJsonSrc, paths.packageJsonDest);
 
 	// Install dependencies
 	userLog(`Installing dependencies...`);
