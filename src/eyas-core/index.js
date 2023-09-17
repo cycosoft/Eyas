@@ -1,4 +1,4 @@
-/* global __dirname, process */
+/* global __dirname */
 
 'use strict';
 
