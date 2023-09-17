@@ -262,7 +262,7 @@
 	// manage navigation
 	function navigate (url, external) {
 		// go to the requested url in electron
-		!external && externalLayer.webContents.loadURL(url);
+		!external && externalLayer?.webContents?.loadURL(url);
 
 		// open the requested url in the default browser
 		external && shell.openExternal(url);
@@ -277,13 +277,7 @@
 		setMenu();
 
 		// Prevent the title from changing
-		clientWindow.on(`page-title-updated`, evt => {
-			// Prevent the app from changing the title automatically
-			evt.preventDefault();
-
-			// set a custom title
-			clientWindow.setTitle(getAppTitle());
-		});
+		clientWindow.on(`page-title-updated`, onTitleUpdate);
 
 		// listen for changes to the window size
 		clientWindow.on(`resize`, () => {
@@ -316,12 +310,25 @@
 		externalLayer.setBackgroundColor(`#fff`);
 		externalLayer.webContents.loadURL(appUrl);
 
+		// Prevent the title from changing
+		externalLayer.webContents.on(`page-title-updated`, onTitleUpdate);
+
+		// NOTE: ensure this doesn't affect clientWindow.title
 		// Overlay the appLayer
 		// appLayer = new BrowserView();
 		// clientWindow.addBrowserView(appLayer);
 		// appLayer.setBounds({ x: 0, y: 0, width: currentViewport[0], height: currentViewport[1] });
 		// appLayer.setAutoResize({ width: true, height: true });
 		// appLayer.webContents.loadFile(paths.ui.app);
+	}
+
+	// Prevent the title from changing AND also update it based on the current URL
+	function onTitleUpdate(evt) {
+		// Prevent the app from changing the title automatically
+		evt.preventDefault();
+
+		// set a custom title
+		clientWindow.setTitle(getAppTitle());
 	}
 
 	// listen for the window to close
