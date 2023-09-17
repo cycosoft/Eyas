@@ -173,17 +173,17 @@
 					{ type: `separator` },
 					{
 						label: `🖥️ Open in Browser`,
-						click: () => shell.openExternal(clientWindow.webContents.getURL())
+						click: () => shell.openExternal(externalLayer.webContents.getURL())
 					},
 					{ type: `separator` },
 					{
 						label: `⚙️ DevTools`,
-						click: () => clientWindow.webContents.openDevTools()
+						click: () => externalLayer.webContents.openDevTools()
 					},
 					{ type: `separator` },
 					{
 						label: `♻️ Reload Page`,
-						click: () => clientWindow.webContents.reloadIgnoringCache()
+						click: () => externalLayer.webContents.reloadIgnoringCache()
 					}
 				]
 			}
@@ -262,7 +262,7 @@
 	// manage navigation
 	function navigate (url, external) {
 		// go to the requested url in electron
-		!external && clientWindow.loadURL(url);
+		!external && externalLayer.loadURL(url);
 
 		// open the requested url in the default browser
 		external && shell.openExternal(url);
@@ -365,7 +365,7 @@
 
 		// Add the current URL if it`s available
 		if (clientWindow){
-			output += ` ( ${clientWindow.webContents.getURL()} )`;
+			output += ` ( ${externalLayer.webContents.getURL()} )`;
 		}
 
 		// Return the built title
