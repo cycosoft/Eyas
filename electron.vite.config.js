@@ -27,11 +27,11 @@ export default {
 			rollupOptions: {
 				input: {
 					// update the path to the entry point
-					index: resolve(__dirname, `src/eyas/index.js`)
+					index: resolve(__dirname, `src/eyas-core/index.js`)
 				}
 			},
 
-			outDir: `dist/eyas`
+			outDir: `dist/eyas-core`
 		}
 	}
 };

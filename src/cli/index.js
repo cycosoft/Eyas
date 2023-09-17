@@ -50,7 +50,7 @@ const paths = {
 	eyasApp: path.join(roots.eyasBuild, `index.js`),
 	eyasAssetsSrc: path.join(roots.dist, names.eyasAssets),
 	eyasAssetsDest: path.join(roots.eyasBuild, names.eyasAssets),
-	eyasSrc: path.join(roots.dist, `eyas`),
+	eyasSrc: path.join(roots.dist, `eyas-core`),
 	eyasDest: roots.eyasBuild,
 	packageJsonSrc: path.join(roots.dist, `build-assets`, names.packageJson),
 	packageJsonDest: path.join(roots.eyasBuild, names.packageJson),
