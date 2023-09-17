@@ -25,7 +25,10 @@
 		configLoader: path.join(roots.eyas, `scripts`, `get-config.js`),
 		icon: path.join(roots.eyas, `eyas-assets`, `eyas-logo.png`),
 		testSrc: path.join(roots.eyas, `test`),
-		packageJson: path.join(roots.eyas, `package.json`)
+		packageJson: path.join(roots.eyas, `package.json`),
+		ui: {
+			analytics: path.join(roots.eyas, `eyas-interface`, `analytics`, `index.html`)
+		}
 	};
 
 	// load the users config
@@ -298,8 +301,8 @@
 		// listen for the window to close
 		clientWindow.on(`close`, onAppClose);
 
-		// Load the index.html of the app
-		navigate(appUrl);
+		// Load Eyas analytics
+		clientWindow.loadFile(paths.ui.analytics);
 	}
 
 	// listen for the window to close
