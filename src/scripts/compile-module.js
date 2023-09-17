@@ -12,6 +12,7 @@ const roots = require(`./get-roots`);
 const names = {
 	buildAssets: `build-assets`,
 	eyasAssets: `eyas-assets`,
+	eyasInterface: `eyas-interface`,
 	cli: `cli`,
 	scripts: `scripts`
 };
@@ -24,8 +25,6 @@ const paths = {
 	cliDestFile: path.join(roots.dist, names.cli, `index.jsc`),
 	eyasAssetsSrc: path.join(roots.src, names.eyasAssets),
 	eyasAssetsDest: path.join(roots.dist, names.eyasAssets),
-	scriptsSrc: path.join(roots.src, names.scripts),
-	scriptsDest: path.join(roots.dist, names.scripts),
 	packageJsonModule: path.join(roots.module, `package.json`),
 	packageJsonDist: path.join(roots.dist, names.buildAssets, `package.json`)
 };
@@ -38,7 +37,6 @@ const paths = {
 	// Copy asset directories
 	await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
 	await fs.copy(paths.buildAssetsSrc, paths.buildAssetsDest);
-	await fs.copy(paths.scriptsSrc, paths.scriptsDest);
 
 	// Update the package.json version numbers
 	await updatePackageJsonValues();

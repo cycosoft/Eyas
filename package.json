@@ -49,7 +49,8 @@
     "@rollup/plugin-terser": "^0.4.3",
     "electron-vite": "^1.0.27",
     "eslint": "^8.49.0",
-    "npm-check": "^6.0.1"
+    "npm-check": "^6.0.1",
+    "vite-plugin-minify": "^1.5.2"
   },
   "overrides": {
     "package-json": ">6.5.0 <8.0.0"

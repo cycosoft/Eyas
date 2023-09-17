@@ -1,4 +1,4 @@
-/* global __dirname, process */
+/* global __dirname */
 
 'use strict';
 
@@ -8,6 +8,7 @@
 	const {
 		app: electronLayer,
 		BrowserWindow,
+		BrowserView,
 		Menu,
 		dialog,
 		shell
@@ -25,7 +26,11 @@
 		configLoader: path.join(roots.eyas, `scripts`, `get-config.js`),
 		icon: path.join(roots.eyas, `eyas-assets`, `eyas-logo.png`),
 		testSrc: path.join(roots.eyas, `test`),
-		packageJson: path.join(roots.eyas, `package.json`)
+		packageJson: path.join(roots.eyas, `package.json`),
+		ui: {
+			analytics: path.join(roots.eyas, `eyas-interface`, `analytics`, `index.html`),
+			app: path.join(roots.eyas, `eyas-interface`, `app`, `index.html`)
+		}
 	};
 
 	// load the users config
@@ -40,6 +45,8 @@
 	const appUrl = appUrlOverride || testServerUrl;
 	let clientWindow = null;
 	let expressLayer = null;
+	let externalLayer = null;
+	let appLayer = null;
 	let testServer = null;
 	const allViewports = [
 		...config.test.viewports,
@@ -166,17 +173,17 @@
 					{ type: `separator` },
 					{
 						label: `🖥️ Open in Browser`,
-						click: () => shell.openExternal(clientWindow.webContents.getURL())
+						click: () => shell.openExternal(externalLayer.webContents.getURL())
 					},
 					{ type: `separator` },
 					{
 						label: `⚙️ DevTools`,
-						click: () => clientWindow.webContents.openDevTools()
+						click: () => externalLayer.webContents.openDevTools()
 					},
 					{ type: `separator` },
 					{
 						label: `♻️ Reload Page`,
-						click: () => clientWindow.webContents.reloadIgnoringCache()
+						click: () => externalLayer.webContents.reloadIgnoringCache()
 					}
 				]
 			}
@@ -255,7 +262,7 @@
 	// manage navigation
 	function navigate (url, external) {
 		// go to the requested url in electron
-		!external && clientWindow.loadURL(url);
+		!external && externalLayer?.webContents?.loadURL(url);
 
 		// open the requested url in the default browser
 		external && shell.openExternal(url);
@@ -270,13 +277,7 @@
 		setMenu();
 
 		// Prevent the title from changing
-		clientWindow.on(`page-title-updated`, evt => {
-			// Prevent the app from changing the title automatically
-			evt.preventDefault();
-
-			// set a custom title
-			clientWindow.setTitle(getAppTitle());
-		});
+		clientWindow.on(`page-title-updated`, onTitleUpdate);
 
 		// listen for changes to the window size
 		clientWindow.on(`resize`, () => {
@@ -298,8 +299,36 @@
 		// listen for the window to close
 		clientWindow.on(`close`, onAppClose);
 
-		// Load the index.html of the app
-		navigate(appUrl);
+		// Load Eyas analytics
+		clientWindow.loadFile(paths.ui.analytics);
+
+		// Create a layer for external content AND load the test server
+		externalLayer = new BrowserView();
+		clientWindow.addBrowserView(externalLayer);
+		externalLayer.setBounds({ x: 0, y: 0, width: currentViewport[0], height: currentViewport[1] });
+		externalLayer.setAutoResize({ width: true, height: true });
+		externalLayer.setBackgroundColor(`#fff`);
+		externalLayer.webContents.loadURL(appUrl);
+
+		// Prevent the title from changing
+		externalLayer.webContents.on(`page-title-updated`, onTitleUpdate);
+
+		// NOTE: ensure this doesn't affect clientWindow.title
+		// Overlay the appLayer
+		// appLayer = new BrowserView();
+		// clientWindow.addBrowserView(appLayer);
+		// appLayer.setBounds({ x: 0, y: 0, width: currentViewport[0], height: currentViewport[1] });
+		// appLayer.setAutoResize({ width: true, height: true });
+		// appLayer.webContents.loadFile(paths.ui.app);
+	}
+
+	// Prevent the title from changing AND also update it based on the current URL
+	function onTitleUpdate(evt) {
+		// Prevent the app from changing the title automatically
+		evt.preventDefault();
+
+		// set a custom title
+		clientWindow.setTitle(getAppTitle());
 	}
 
 	// listen for the window to close
@@ -343,7 +372,7 @@
 
 		// Add the current URL if it`s available
 		if (clientWindow){
-			output += ` ( ${clientWindow.webContents.getURL()} )`;
+			output += ` ( ${externalLayer.webContents.getURL()} )`;
 		}
 
 		// Return the built title

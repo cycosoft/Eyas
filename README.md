@@ -71,8 +71,8 @@ module.exports = {
     version: `<current-branch>`,
     // Additional screen sizes to test your application at
     viewports: [/* { label: `iPad Pro`, width: 1024, height: 1366 } */],
-    // Custom links to display in the menu
-    menu: [/* { label: `Cycosoft, LLC`, url: `cycosoft.com` } */]
+    // Custom links to display in the menu (external opens directly in browser)
+    menu: [/* { label: `Cycosoft, LLC`, url: `cycosoft.com`, external: true } */]
   },
 
   // Defaults to building for the current platform if no platform is specified
