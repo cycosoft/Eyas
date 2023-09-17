@@ -40,6 +40,7 @@ const roots = require(path.join(moduleRoot, `dist`, `scripts`, `get-roots.js`));
 const names = {
 	packageJson: `package.json`,
 	eyasAssets: `eyas-assets`,
+	eyasInterface: `eyas-interface`,
 	scripts: `scripts`
 };
 const paths = {
@@ -50,6 +51,8 @@ const paths = {
 	eyasApp: path.join(roots.eyasBuild, `index.js`),
 	eyasAssetsSrc: path.join(roots.dist, names.eyasAssets),
 	eyasAssetsDest: path.join(roots.eyasBuild, names.eyasAssets),
+	eyasInterfaceSrc: path.join(roots.dist, names.eyasInterface),
+	eyasInterfaceDest: path.join(roots.eyasBuild, names.eyasInterface),
 	eyasSrc: path.join(roots.dist, `eyas-core`),
 	eyasDest: roots.eyasBuild,
 	packageJsonSrc: path.join(roots.dist, `build-assets`, names.packageJson),
@@ -187,6 +190,7 @@ async function createBuildFolder() {
 	userLog(`Copying Eyas runtime files...`);
 	await fs.copy(paths.eyasSrc, paths.eyasDest);
 	await fs.copy(paths.scriptsSrc, paths.scriptsDest);
+	await fs.copy(paths.eyasInterfaceSrc, paths.eyasInterfaceDest);
 
 	// copy the users source files to the build folder
 	userLog(`Copying test source...`);
