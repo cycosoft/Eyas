@@ -36,7 +36,7 @@ export default {
 	},
 
 	renderer: {
-		root: `.`,
+		root: `src/eyas-interface`,
 		build: {
 			rollupOptions: {
 				input: {
