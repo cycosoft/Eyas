@@ -28,7 +28,8 @@
 		testSrc: path.join(roots.eyas, `test`),
 		packageJson: path.join(roots.eyas, `package.json`),
 		ui: {
-			analytics: path.join(roots.eyas, `eyas-interface`, `analytics`, `index.html`)
+			analytics: path.join(roots.eyas, `eyas-interface`, `analytics`, `index.html`),
+			app: path.join(roots.eyas, `eyas-interface`, `app`, `index.html`)
 		}
 	};
 
@@ -312,6 +313,13 @@
 		externalLayer.setAutoResize({ width: true, height: true });
 		externalLayer.setBackgroundColor(`#fff`);
 		externalLayer.webContents.loadURL(appUrl);
+
+		// Overlay the appLayer
+		// const appLayer = new BrowserView();
+		// clientWindow.addBrowserView(appLayer);
+		// appLayer.setBounds({ x: 0, y: 0, width: currentViewport[0], height: currentViewport[1] });
+		// appLayer.setAutoResize({ width: true, height: true });
+		// appLayer.webContents.loadFile(paths.ui.app);
 	}
 
 	// listen for the window to close
