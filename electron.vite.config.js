@@ -33,5 +33,19 @@ export default {
 
 			outDir: `dist/eyas-core`
 		}
+	},
+
+	renderer: {
+		root: `.`,
+		build: {
+			rollupOptions: {
+				input: {
+					// update the path to the entry point
+					interface: resolve(__dirname, `src/eyas-interface/analytics/index.html`)
+				}
+			},
+
+			outDir: `dist/eyas-interface`
+		}
 	}
 };
