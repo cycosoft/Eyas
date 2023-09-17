@@ -8,6 +8,7 @@
 	const {
 		app: electronLayer,
 		BrowserWindow,
+		BrowserView,
 		Menu,
 		dialog,
 		shell
@@ -303,6 +304,14 @@
 
 		// Load Eyas analytics
 		clientWindow.loadFile(paths.ui.analytics);
+
+		// Create a layer for external content AND load the test server
+		const externalLayer = new BrowserView();
+		clientWindow.setBrowserView(externalLayer);
+		externalLayer.setBounds({ x: 0, y: 0, width: currentViewport[0], height: currentViewport[1] });
+		externalLayer.setAutoResize({ width: true, height: true });
+		externalLayer.setBackgroundColor(`#fff`);
+		externalLayer.webContents.loadURL(appUrl);
 	}
 
 	// listen for the window to close
