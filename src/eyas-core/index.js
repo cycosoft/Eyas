@@ -45,6 +45,8 @@
 	const appUrl = appUrlOverride || testServerUrl;
 	let clientWindow = null;
 	let expressLayer = null;
+	let externalLayer = null;
+	let appLayer = null;
 	let testServer = null;
 	const allViewports = [
 		...config.test.viewports,
@@ -307,7 +309,7 @@
 		clientWindow.loadFile(paths.ui.analytics);
 
 		// Create a layer for external content AND load the test server
-		const externalLayer = new BrowserView();
+		externalLayer = new BrowserView();
 		clientWindow.addBrowserView(externalLayer);
 		externalLayer.setBounds({ x: 0, y: 0, width: currentViewport[0], height: currentViewport[1] });
 		externalLayer.setAutoResize({ width: true, height: true });
@@ -315,7 +317,7 @@
 		externalLayer.webContents.loadURL(appUrl);
 
 		// Overlay the appLayer
-		// const appLayer = new BrowserView();
+		// appLayer = new BrowserView();
 		// clientWindow.addBrowserView(appLayer);
 		// appLayer.setBounds({ x: 0, y: 0, width: currentViewport[0], height: currentViewport[1] });
 		// appLayer.setAutoResize({ width: true, height: true });
