@@ -262,7 +262,7 @@
 	// manage navigation
 	function navigate (url, external) {
 		// go to the requested url in electron
-		!external && externalLayer.loadURL(url);
+		!external && externalLayer.webContents.loadURL(url);
 
 		// open the requested url in the default browser
 		external && shell.openExternal(url);
