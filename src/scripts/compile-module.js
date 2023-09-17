@@ -25,10 +25,6 @@ const paths = {
 	cliDestFile: path.join(roots.dist, names.cli, `index.jsc`),
 	eyasAssetsSrc: path.join(roots.src, names.eyasAssets),
 	eyasAssetsDest: path.join(roots.dist, names.eyasAssets),
-	eyasInterfaceSrc: path.join(roots.src, names.eyasInterface),
-	eyasInterfaceDest: path.join(roots.dist, names.eyasInterface),
-	scriptsSrc: path.join(roots.src, names.scripts),
-	scriptsDest: path.join(roots.dist, names.scripts),
 	packageJsonModule: path.join(roots.module, `package.json`),
 	packageJsonDist: path.join(roots.dist, names.buildAssets, `package.json`)
 };
@@ -40,9 +36,7 @@ const paths = {
 
 	// Copy asset directories
 	await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
-	await fs.copy(paths.eyasInterfaceSrc, paths.eyasInterfaceDest);
 	await fs.copy(paths.buildAssetsSrc, paths.buildAssetsDest);
-	await fs.copy(paths.scriptsSrc, paths.scriptsDest);
 
 	// Update the package.json version numbers
 	await updatePackageJsonValues();
