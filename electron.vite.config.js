@@ -4,6 +4,7 @@
 import { resolve } from 'path';
 import { bytecodePlugin } from 'electron-vite';
 import terser from '@rollup/plugin-terser';
+import { ViteMinifyPlugin } from 'vite-plugin-minify';
 
 // export the configuration settings
 export default {
@@ -26,7 +27,6 @@ export default {
 		build: {
 			rollupOptions: {
 				input: {
-					// update the path to the entry point
 					index: resolve(__dirname, `src/eyas-core/index.js`)
 				}
 			},
@@ -37,10 +37,10 @@ export default {
 
 	renderer: {
 		root: `src/eyas-interface`,
+		plugins: [ViteMinifyPlugin()],
 		build: {
 			rollupOptions: {
 				input: {
-					// update the path to the entry point
 					interface: resolve(__dirname, `src/eyas-interface/analytics/index.html`)
 				}
 			},
