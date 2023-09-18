@@ -23,7 +23,7 @@
 - [Install](#install)
 - [Configuration](#configuration)
 - [Usage](#usage)
-- [Multiple Platforms](#multiple-platforms)
+- [Output](#output)
 - [Tips](#tips)
 - [Support](#support)
 - [Legal](#legal)
@@ -96,13 +96,16 @@ module.exports = {
 {
   "scripts": {
     "interactive": "eyas", // Select from a list of available commands
-    "quick": "eyas preview", // Preview the your app without compiling
+    "quick": "eyas preview", // Preview the your app without creating distributables
     "share": "eyas compile" // Compiles the configured app to a distributable
   }
 }
 ```
 
-## Multiple Platforms
+## Output
+
+- `preview`: builds and runs Eyas from `./.eyas-preview/`
+- `compile`: builds to _./.eyas-preview/_, compiles to `./.eyas-dist/`, and then deletes _./.eyas-preview/_
 
 Depending on your platform, you may be able to build for multiple platforms using the `electronuserland/builder:wine` docker image ([details](https://www.electron.build/multi-platform-build#provided-docker-images)). Here's a simple visualization of known possible configurations.
 
