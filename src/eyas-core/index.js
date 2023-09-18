@@ -30,7 +30,7 @@
 			exit: `App Exit`
 		},
 		ui: {
-			modalViewExit: `Modal View Exit`
+			modalExitViewed: `Modal Exit Viewed`
 		}
 	};
 
@@ -359,7 +359,7 @@
 		evt.preventDefault();
 
 		// track that the modal is being opened
-		analytics.track(EVENTS.ui.modalViewExit);
+		analytics.track(EVENTS.ui.modalExitViewed);
 
 		// ask the user to confirm closing the app
 		dialog.showMessageBox({
