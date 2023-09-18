@@ -302,7 +302,7 @@
 		// Create a menu template
 		setMenu();
 
-		// Prevent the title from changing
+		// Prevent the title from changing automatically
 		clientWindow.on(`page-title-updated`, onTitleUpdate);
 
 		// listen for changes to the window size
@@ -341,11 +341,11 @@
 
 		// NOTE: ensure this doesn't affect clientWindow.title
 		// Overlay the appLayer
-		// appLayer = new BrowserView();
-		// clientWindow.addBrowserView(appLayer);
-		// appLayer.setBounds({ x: 0, y: 0, width: currentViewport[0], height: currentViewport[1] });
-		// appLayer.setAutoResize({ width: true, height: true });
-		// appLayer.webContents.loadFile(paths.ui.app);
+		appLayer = new BrowserView();
+		clientWindow.addBrowserView(appLayer);
+		appLayer.setBounds({ x: 0, y: 0, width: currentViewport[0], height: currentViewport[1] });
+		appLayer.setAutoResize({ width: true, height: true });
+		appLayer.webContents.loadFile(paths.ui.app);
 	}
 
 	// Prevent the title from changing AND also update it based on the current URL
