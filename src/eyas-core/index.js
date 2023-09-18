@@ -343,7 +343,7 @@
 			title: `Exit Confirmation`,
 			icon: paths.icon,
 			message: `
-			Get your brand seen on this screen by tens of people! 😂
+			Get your brand seen here every time ${appName} is used!
 
 			Contact <support+eyas@cycosoft.com> for more information.
 			`
