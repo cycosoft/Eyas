@@ -2,8 +2,6 @@
 
 'use strict';
 
-const mixpanel = require("mixpanel");
-
 // wrapped in an async function to allow for "root" await calls
 (async () => {
 	// imports
