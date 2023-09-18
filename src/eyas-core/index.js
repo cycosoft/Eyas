@@ -20,15 +20,28 @@
 	const { isURL } = require(`validator`);
 	const parseURL = require(`url-parse`);
 	const Mixpanel = require(`mixpanel`);
+	const os = require(`os`);
 
 	// Set up analytics
 	const analytics = Mixpanel.init(`07f0475cb429f7de5ebf79a1c418dc5c`);
 	const EVENTS = {
-		appLaunch: `App Launch`,
-		appExit: `App Exit`,
-		modalExitDisplay: `Modal Exit Display`
+		cli: {
+			event: `CLI`
+		},
+		core: {
+			event: `Eyas Core`,
+			actions: {
+				launch: `Launch`,
+				exit: `Exit`
+			}
+		},
+		ui: {
+			event: `Eyas UI`,
+			actions: {
+				modalViewExit: `Modal View Exit`
+			}
+		}
 	};
-	analytics.track(EVENTS.appLaunch);
 
 	// setup
 	const roots = require(path.join(__dirname, `scripts`, `get-roots.js`));
@@ -43,12 +56,21 @@
 		}
 	};
 
+	// get the app version
+	const appVersion = require(paths.packageJson).version;
+
+	// track the app launch event
+	analytics.track(EVENTS.core.event, {
+		action: EVENTS.core.actions.launch,
+		$os: os.platform(),
+		$app_version_string: appVersion
+	});
+
 	// load the users config
 	const config = require(paths.configLoader);
 
 	// config
 	const appName = `Eyas`;
-	const appVersion = require(paths.packageJson).version;
 	const testServerPort = config.test.port;
 	const testServerUrl = `https://localhost:${testServerPort}`;
 	const appUrlOverride = formatURL(config.test.domain);
@@ -346,7 +368,10 @@
 		// stop the window from closing
 		evt.preventDefault();
 
-		analytics.track(EVENTS.modalExitDisplay);
+		// track that the modal is being opened
+		analytics.track(EVENTS.ui.event, {
+			action: EVENTS.ui.actions.modalViewExit
+		});
 
 		// ask the user to confirm closing the app
 		dialog.showMessageBox({
@@ -365,7 +390,10 @@
 				// remove the close event listener so we don't get stuck in a loop
 				clientWindow.removeListener(`close`, onAppClose);
 
-				analytics.track(EVENTS.appExit);
+				// track that the app is being closed
+				analytics.track(EVENTS.core.event, {
+					action: EVENTS.core.actions.exit
+				});
 
 				// Shut down the test server AND THEN exit the app
 				testServer.close(electronLayer.quit);
