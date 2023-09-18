@@ -21,9 +21,11 @@
 	const parseURL = require(`url-parse`);
 	const Mixpanel = require(`mixpanel`);
 	const os = require(`os`);
+	const crypto = require(`crypto`);
 
 	// Set up analytics
 	const analytics = Mixpanel.init(`07f0475cb429f7de5ebf79a1c418dc5c`);
+	const userId = crypto.randomUUID();
 	const EVENTS = {
 		core: {
 			launch: `App Launch`,
@@ -52,6 +54,7 @@
 
 	// track the app launch event
 	analytics.track(EVENTS.core.launch, {
+		distinct_id: userId,
 		$os: os.platform(),
 		$app_version_string: appVersion
 	});
@@ -359,7 +362,7 @@
 		evt.preventDefault();
 
 		// track that the modal is being opened
-		analytics.track(EVENTS.ui.modalExitViewed);
+		analytics.track(EVENTS.ui.modalExitViewed, { distinct_id: userId });
 
 		// ask the user to confirm closing the app
 		dialog.showMessageBox({
@@ -379,7 +382,7 @@
 				clientWindow.removeListener(`close`, onAppClose);
 
 				// track that the app is being closed
-				analytics.track(EVENTS.core.exit);
+				analytics.track(EVENTS.core.exit, { distinct_id: userId });
 
 				// Shut down the test server AND THEN exit the app
 				testServer.close(electronLayer.quit);
