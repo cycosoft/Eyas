@@ -25,21 +25,12 @@
 	// Set up analytics
 	const analytics = Mixpanel.init(`07f0475cb429f7de5ebf79a1c418dc5c`);
 	const EVENTS = {
-		cli: {
-			event: `CLI`
-		},
 		core: {
-			event: `Eyas Core`,
-			actions: {
-				launch: `Launch`,
-				exit: `Exit`
-			}
+			launch: `App Launch`,
+			exit: `App Exit`
 		},
 		ui: {
-			event: `Eyas UI`,
-			actions: {
-				modalViewExit: `Modal View Exit`
-			}
+			modalViewExit: `Modal View Exit`
 		}
 	};
 
@@ -60,8 +51,7 @@
 	const appVersion = require(paths.packageJson).version;
 
 	// track the app launch event
-	analytics.track(EVENTS.core.event, {
-		action: EVENTS.core.actions.launch,
+	analytics.track(EVENTS.core.launch, {
 		$os: os.platform(),
 		$app_version_string: appVersion
 	});
@@ -369,9 +359,7 @@
 		evt.preventDefault();
 
 		// track that the modal is being opened
-		analytics.track(EVENTS.ui.event, {
-			action: EVENTS.ui.actions.modalViewExit
-		});
+		analytics.track(EVENTS.ui.modalViewExit);
 
 		// ask the user to confirm closing the app
 		dialog.showMessageBox({
@@ -391,9 +379,7 @@
 				clientWindow.removeListener(`close`, onAppClose);
 
 				// track that the app is being closed
-				analytics.track(EVENTS.core.event, {
-					action: EVENTS.core.actions.exit
-				});
+				analytics.track(EVENTS.core.exit);
 
 				// Shut down the test server AND THEN exit the app
 				testServer.close(electronLayer.quit);
