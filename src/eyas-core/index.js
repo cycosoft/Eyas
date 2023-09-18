@@ -2,6 +2,8 @@
 
 'use strict';
 
+const mixpanel = require("mixpanel");
+
 // wrapped in an async function to allow for "root" await calls
 (async () => {
 	// imports
@@ -19,6 +21,16 @@
 	const mkcert = require(`mkcert`);
 	const { isURL } = require(`validator`);
 	const parseURL = require(`url-parse`);
+	const Mixpanel = require(`mixpanel`);
+
+	// Set up analytics
+	const analytics = Mixpanel.init(`07f0475cb429f7de5ebf79a1c418dc5c`);
+	const EVENTS = {
+		appLaunch: `App Launch`,
+		appExit: `App Exit`,
+		modalExitDisplay: `Modal Exit Display`
+	};
+	analytics.track(EVENTS.appLaunch);
 
 	// setup
 	const roots = require(path.join(__dirname, `scripts`, `get-roots.js`));
@@ -46,7 +58,7 @@
 	let clientWindow = null;
 	let expressLayer = null;
 	let externalLayer = null;
-	let appLayer = null;
+	const appLayer = null;
 	let testServer = null;
 	const allViewports = [
 		...config.test.viewports,
@@ -336,6 +348,8 @@
 		// stop the window from closing
 		evt.preventDefault();
 
+		analytics.track(EVENTS.modalExitDisplay);
+
 		// ask the user to confirm closing the app
 		dialog.showMessageBox({
 			type: `question`,
@@ -352,6 +366,8 @@
 			if (result.response === 0) {
 				// remove the close event listener so we don't get stuck in a loop
 				clientWindow.removeListener(`close`, onAppClose);
+
+				analytics.track(EVENTS.appExit);
 
 				// Shut down the test server AND THEN exit the app
 				testServer.close(electronLayer.quit);
