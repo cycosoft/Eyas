@@ -288,9 +288,7 @@
 	// manage navigation
 	function navigate(url, external) {
 		// go to the requested url in electron
-		!external && clientWindow?.webContents?.loadURL(url, {
-			extraHeaders: `Cache-Control: max-age=0'`
-		});
+		!external && clientWindow?.webContents?.loadURL(url);
 
 		// open the requested url in the default browser
 		external && shell.openExternal(url);
