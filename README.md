@@ -133,5 +133,12 @@ Support is available via <support+eyas@cycosoft.com>
 - View [terms of use](https://cycosoft.com/eyas/terms)
 - View [privacy policy](https://cycosoft.com/eyas/privacy)
 - Logo source design by [Freepik](https://www.freepik.com/free-vector/eagle-logo-design-template_45007164.htm)
+- Analytics data collected:
+  - Meta: Randomized ephemeral user id
+  - Meta: operating system
+  - Meta: Eyas version number
+  - Event: app launched
+  - Event: app exit modal was shown
+  - Event: app closed
 
 [[Back to Top](#table-of-contents)]
