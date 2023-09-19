@@ -289,7 +289,7 @@
 	function navigate(url, external) {
 		// go to the requested url in electron
 		!external && clientWindow?.webContents?.loadURL(url, {
-			extraHeaders: `pragma: no-cache\n`
+			extraHeaders: `Cache-Control: max-age=0'`
 		});
 
 		// open the requested url in the default browser
