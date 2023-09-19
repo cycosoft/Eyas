@@ -26,7 +26,7 @@
 - [Output](#output)
 - [Tips](#tips)
 - [Support](#support)
-- [Legal](#legal)
+- [The Fine Print](#the-fine-print)
 
 ## Features
 
@@ -127,7 +127,7 @@ Depending on your platform, you may be able to build for multiple platforms usin
 
 Support is available via <support+eyas@cycosoft.com>
 
-## Legal
+## The Fine Print
 
 - Licensed under the [MIT License](LICENSE.TXT)
 - View [terms of use](https://cycosoft.com/eyas/terms)
