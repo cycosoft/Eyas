@@ -1,3 +1,9 @@
+# v1.0.1
+
+> Summary: Fix CLI failure
+
+- Updated: Rebuilt CLI
+
 # v1.0.0
 
 > Summary: Initial release
