@@ -286,10 +286,10 @@
 	}
 
 	// manage navigation
-	function navigate (url, external) {
+	function navigate(url, external) {
 		// go to the requested url in electron
 		!external && clientWindow?.webContents?.loadURL(url, {
-			extraHeaders: `Cache-Control: no-cache`
+			extraHeaders: `pragma: no-cache\n`
 		});
 
 		// open the requested url in the default browser
