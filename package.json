@@ -16,7 +16,8 @@
     "_____________COMPILE_____________": "",
     "compile": "node src/scripts/compile-module.js && electron-vite build",
     "_____________SCRIPTS_____________": "",
-    "bundle": "npm ci && npm run compile && npm pack"
+    "bundle": "npm ci && npm run compile && npm pack",
+    "deploy": "npm ci && npm run compile && npm publish"
   },
   "author": "Cycosoft, LLC (https://cycosoft.com)",
   "homepage": "https://cycosoft.com",
