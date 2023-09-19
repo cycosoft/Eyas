@@ -5,6 +5,7 @@
   "author": "",
   "dependencies": {
     "express": "",
+    "mixpanel": "",
     "mkcert": "",
     "url-parse": "",
     "validator": ""
