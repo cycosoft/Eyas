@@ -47,7 +47,6 @@
 		testSrc: path.join(roots.eyas, `test`),
 		packageJson: path.join(roots.eyas, `package.json`),
 		ui: {
-			analytics: path.join(roots.eyas, `eyas-interface`, `analytics`, `index.html`),
 			app: path.join(roots.eyas, `eyas-interface`, `app`, `index.html`)
 		}
 	};
@@ -73,7 +72,6 @@
 	const appUrl = appUrlOverride || testServerUrl;
 	let clientWindow = null;
 	let expressLayer = null;
-	let externalLayer = null;
 	const appLayer = null;
 	let testServer = null;
 	const allViewports = [
@@ -201,17 +199,17 @@
 					{ type: `separator` },
 					{
 						label: `🖥️ Open in Browser`,
-						click: () => shell.openExternal(externalLayer.webContents.getURL())
+						click: () => shell.openExternal(clientWindow.webContents.getURL())
 					},
 					{ type: `separator` },
 					{
 						label: `⚙️ DevTools`,
-						click: () => externalLayer.webContents.openDevTools()
+						click: () => clientWindow.webContents.openDevTools()
 					},
 					{ type: `separator` },
 					{
 						label: `♻️ Reload Page`,
-						click: () => externalLayer.webContents.reloadIgnoringCache()
+						click: () => clientWindow.webContents.reloadIgnoringCache()
 					}
 				]
 			}
@@ -290,7 +288,7 @@
 	// manage navigation
 	function navigate (url, external) {
 		// go to the requested url in electron
-		!external && externalLayer?.webContents?.loadURL(url);
+		!external && clientWindow?.webContents?.loadURL(url);
 
 		// open the requested url in the default browser
 		external && shell.openExternal(url);
@@ -328,18 +326,18 @@
 		clientWindow.on(`close`, onAppClose);
 
 		// Load Eyas analytics
-		clientWindow.loadFile(paths.ui.analytics);
+		navigate(appUrl);
 
 		// Create a layer for external content AND load the test server
-		externalLayer = new BrowserView();
-		clientWindow.addBrowserView(externalLayer);
-		externalLayer.setBounds({ x: 0, y: 0, width: currentViewport[0], height: currentViewport[1] });
-		externalLayer.setAutoResize({ width: true, height: true });
-		externalLayer.setBackgroundColor(`#fff`);
-		externalLayer.webContents.loadURL(appUrl);
+		// externalLayer = new BrowserView();
+		// clientWindow.addBrowserView(externalLayer);
+		// externalLayer.setBounds({ x: 0, y: 0, width: currentViewport[0], height: currentViewport[1] });
+		// externalLayer.setAutoResize({ width: true, height: true });
+		// externalLayer.setBackgroundColor(`#fff`);
+		// externalLayer.webContents.loadURL(appUrl);
 
-		// Prevent the title from changing
-		externalLayer.webContents.on(`page-title-updated`, onTitleUpdate);
+		// // Prevent the title from changing
+		// externalLayer.webContents.on(`page-title-updated`, onTitleUpdate);
 
 		// NOTE: ensure this doesn't affect clientWindow.title
 		// Overlay the appLayer
@@ -406,7 +404,7 @@
 
 		// Add the current URL if it`s available
 		if (clientWindow){
-			output += ` ( ${externalLayer.webContents.getURL()} )`;
+			output += ` ( ${clientWindow.webContents.getURL()} )`;
 		}
 
 		// Return the built title

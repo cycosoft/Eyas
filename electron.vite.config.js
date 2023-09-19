@@ -41,8 +41,7 @@ export default {
 		build: {
 			rollupOptions: {
 				input: {
-					interface: resolve(__dirname, `src/eyas-interface/analytics/index.html`),
-					app: resolve(__dirname, `src/eyas-interface/app/index.html`)
+					'eyas-ui': resolve(__dirname, `src/eyas-interface/app/index.html`)
 				}
 			},
 
