@@ -1,6 +1,6 @@
 {
   "name": "@cycosoft/eyas",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A no-code serverless visual testing solution for static web applications",
   "main": "./index.js",
   "packageName": "Eyas",
