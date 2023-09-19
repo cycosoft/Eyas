@@ -5,3 +5,5 @@ node_modules/
 cycosoft-eyas-*.tgz
 .eyas-*
 dist/
+
+.DS_Store

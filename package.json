@@ -1,6 +1,6 @@
 {
   "name": "@cycosoft/eyas",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0",
   "description": "A no-code serverless visual testing solution for static web applications",
   "main": "./index.js",
   "packageName": "Eyas",
@@ -41,13 +41,14 @@
     "express": "^4.18.2",
     "fs-extra": "^11.1.1",
     "inquirer": "8.2.6",
+    "mixpanel": "^0.18.0",
     "mkcert": "^3.0.0",
     "url-parse": "^1.5.10",
     "validator": "^13.11.0"
   },
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.3",
-    "electron-vite": "^1.0.27",
+    "electron-vite": "^1.0.28",
     "eslint": "^8.49.0",
     "npm-check": "^6.0.1",
     "vite-plugin-minify": "^1.5.2"

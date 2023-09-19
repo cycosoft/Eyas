@@ -19,6 +19,25 @@
 	const mkcert = require(`mkcert`);
 	const { isURL } = require(`validator`);
 	const parseURL = require(`url-parse`);
+	const Mixpanel = require(`mixpanel`);
+	const os = require(`os`);
+	const crypto = require(`crypto`);
+
+	// change app behavior based on environment
+	const isDev = false;
+
+	// Set up analytics
+	const analytics = Mixpanel.init(`07f0475cb429f7de5ebf79a1c418dc5c`);
+	const userId = crypto.randomUUID();
+	const EVENTS = {
+		core: {
+			launch: `App Launch`,
+			exit: `App Exit`
+		},
+		ui: {
+			modalExitShown: `Modal Exit Shown`
+		}
+	};
 
 	// setup
 	const roots = require(path.join(__dirname, `scripts`, `get-roots.js`));
@@ -28,25 +47,32 @@
 		testSrc: path.join(roots.eyas, `test`),
 		packageJson: path.join(roots.eyas, `package.json`),
 		ui: {
-			analytics: path.join(roots.eyas, `eyas-interface`, `analytics`, `index.html`),
 			app: path.join(roots.eyas, `eyas-interface`, `app`, `index.html`)
 		}
 	};
+
+	// get the app version
+	const appVersion = require(paths.packageJson).version;
+
+	// track the app launch event
+	!isDev && analytics.track(EVENTS.core.launch, {
+		distinct_id: userId,
+		$os: os.platform(),
+		$app_version_string: appVersion
+	});
 
 	// load the users config
 	const config = require(paths.configLoader);
 
 	// config
 	const appName = `Eyas`;
-	const appVersion = require(paths.packageJson).version;
 	const testServerPort = config.test.port;
 	const testServerUrl = `https://localhost:${testServerPort}`;
 	const appUrlOverride = formatURL(config.test.domain);
 	const appUrl = appUrlOverride || testServerUrl;
 	let clientWindow = null;
 	let expressLayer = null;
-	let externalLayer = null;
-	let appLayer = null;
+	const appLayer = null;
 	let testServer = null;
 	const allViewports = [
 		...config.test.viewports,
@@ -173,17 +199,17 @@
 					{ type: `separator` },
 					{
 						label: `🖥️ Open in Browser`,
-						click: () => shell.openExternal(externalLayer.webContents.getURL())
+						click: () => shell.openExternal(clientWindow.webContents.getURL())
 					},
 					{ type: `separator` },
 					{
 						label: `⚙️ DevTools`,
-						click: () => externalLayer.webContents.openDevTools()
+						click: () => clientWindow.webContents.openDevTools()
 					},
 					{ type: `separator` },
 					{
 						label: `♻️ Reload Page`,
-						click: () => externalLayer.webContents.reloadIgnoringCache()
+						click: () => clientWindow.webContents.reloadIgnoringCache()
 					}
 				]
 			}
@@ -262,7 +288,7 @@
 	// manage navigation
 	function navigate (url, external) {
 		// go to the requested url in electron
-		!external && externalLayer?.webContents?.loadURL(url);
+		!external && clientWindow?.webContents?.loadURL(url);
 
 		// open the requested url in the default browser
 		external && shell.openExternal(url);
@@ -300,18 +326,18 @@
 		clientWindow.on(`close`, onAppClose);
 
 		// Load Eyas analytics
-		clientWindow.loadFile(paths.ui.analytics);
+		navigate(appUrl);
 
 		// Create a layer for external content AND load the test server
-		externalLayer = new BrowserView();
-		clientWindow.addBrowserView(externalLayer);
-		externalLayer.setBounds({ x: 0, y: 0, width: currentViewport[0], height: currentViewport[1] });
-		externalLayer.setAutoResize({ width: true, height: true });
-		externalLayer.setBackgroundColor(`#fff`);
-		externalLayer.webContents.loadURL(appUrl);
+		// externalLayer = new BrowserView();
+		// clientWindow.addBrowserView(externalLayer);
+		// externalLayer.setBounds({ x: 0, y: 0, width: currentViewport[0], height: currentViewport[1] });
+		// externalLayer.setAutoResize({ width: true, height: true });
+		// externalLayer.setBackgroundColor(`#fff`);
+		// externalLayer.webContents.loadURL(appUrl);
 
-		// Prevent the title from changing
-		externalLayer.webContents.on(`page-title-updated`, onTitleUpdate);
+		// // Prevent the title from changing
+		// externalLayer.webContents.on(`page-title-updated`, onTitleUpdate);
 
 		// NOTE: ensure this doesn't affect clientWindow.title
 		// Overlay the appLayer
@@ -336,6 +362,9 @@
 		// stop the window from closing
 		evt.preventDefault();
 
+		// track that the modal is being opened
+		!isDev && analytics.track(EVENTS.ui.modalExitShown, { distinct_id: userId });
+
 		// ask the user to confirm closing the app
 		dialog.showMessageBox({
 			type: `question`,
@@ -352,6 +381,9 @@
 			if (result.response === 0) {
 				// remove the close event listener so we don't get stuck in a loop
 				clientWindow.removeListener(`close`, onAppClose);
+
+				// track that the app is being closed
+				!isDev && analytics.track(EVENTS.core.exit, { distinct_id: userId });
 
 				// Shut down the test server AND THEN exit the app
 				testServer.close(electronLayer.quit);
@@ -372,7 +404,7 @@
 
 		// Add the current URL if it`s available
 		if (clientWindow){
-			output += ` ( ${externalLayer.webContents.getURL()} )`;
+			output += ` ( ${clientWindow.webContents.getURL()} )`;
 		}
 
 		// Return the built title
