@@ -91,6 +91,7 @@
 
 	// Configure Electron to ignore certificate errors
 	electronLayer.commandLine.appendSwitch(`ignore-certificate-errors`);
+	electronLayer.commandLine.appendSwitch(`disable-http-cache`);
 
 	// if a custom domain is provided
 	if(appUrlOverride){
