@@ -6,3 +6,6 @@
 - Added: CLI
 - Added: Ability to preview app without building distributables
 - Added: Ability to build platform specific distributables
+- Added: Custom viewports
+- Added: Custom menu item of associated URLs
+- Added: Open any link in external browser
