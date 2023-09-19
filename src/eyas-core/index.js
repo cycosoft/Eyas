@@ -91,7 +91,6 @@
 
 	// Configure Electron to ignore certificate errors
 	electronLayer.commandLine.appendSwitch(`ignore-certificate-errors`);
-	electronLayer.commandLine.appendSwitch(`disable-http-cache`);
 
 	// if a custom domain is provided
 	if(appUrlOverride){
@@ -289,7 +288,9 @@
 	// manage navigation
 	function navigate (url, external) {
 		// go to the requested url in electron
-		!external && clientWindow?.webContents?.loadURL(url);
+		!external && clientWindow?.webContents?.loadURL(url, {
+			extraHeaders: `Cache-Control: no-cache`
+		});
 
 		// open the requested url in the default browser
 		external && shell.openExternal(url);
