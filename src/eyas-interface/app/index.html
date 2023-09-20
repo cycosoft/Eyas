@@ -100,12 +100,30 @@
 	</style>
 </head>
 
-<body>
+<body id="app">
 	<!-- The modal for exiting the app -->
-	<div class="app-exit">
+	<div class="app-exit" @click="demo">
 		<div class="modal">
 			exit app
 		</div>
 	</div>
+
+	<script type="module">
+		import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js'
+
+		createApp({
+		  data() {
+			return {
+				message: `Hello Vue!`
+			}
+		  },
+
+		  methods: {
+			demo() {
+				console.log(`demo`);
+			}
+		  }
+		}).mount(`#app`)
+	  </script>
 </body>
 </html>
