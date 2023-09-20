@@ -72,7 +72,7 @@
 	const appUrl = appUrlOverride || testServerUrl;
 	let clientWindow = null;
 	let expressLayer = null;
-	const appLayer = null;
+	let appLayer = null;
 	let testServer = null;
 	const allViewports = [
 		...config.test.viewports,
