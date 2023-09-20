@@ -78,13 +78,19 @@
 			background-image: url('https://images.unsplash.com/photo-1694435833920-5578d935bc88?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=3087&q=80');
 		}
 
+		body {
+			height: 100vh;
+		}
+
 		/* add a class to the body element */
 		.app-exit {
-			background-color: white;
-			opacity: .5;
-			/* filter: grayscale(100%); */
-			width: 100%;
+			backdrop-filter: blur(10px);
 			height: 100%;
+		}
+
+		.modal {
+			background-color: purple;
+			color: white;
 		}
 	</style>
 </head>
@@ -92,7 +98,9 @@
 <body>
 	<!-- The modal for exiting the app -->
 	<div class="app-exit">
-
+		<div class="modal">
+			exit app
+		</div>
 	</div>
 </body>
 </html>
