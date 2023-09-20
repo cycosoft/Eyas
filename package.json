@@ -46,10 +46,12 @@
     "mixpanel": "^0.18.0",
     "mkcert": "^3.0.0",
     "url-parse": "^1.5.10",
-    "validator": "^13.11.0"
+    "validator": "^13.11.0",
+    "vue": "^3.3.4"
   },
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.3",
+    "@vitejs/plugin-vue": "^4.3.4",
     "electron-vite": "^1.0.28",
     "eslint": "^8.49.0",
     "npm-check": "^6.0.1",
