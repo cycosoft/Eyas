@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html>
-<body style="background-color: pink;">
-	<div id="app">
-		{{ message }}
-	</div>
-
-	<script type="module">
-	import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
-
-	createApp({
-		data() {
-			return {
-				message: 'Hello Vue!'
-			}
+<head>
+	<style>
+		/* demo */
+		body {
+			background-size: cover;
+			background-position: center;
+			background-image: url('https://images.unsplash.com/photo-1694435833920-5578d935bc88?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=3087&q=80');
 		}
-	}).mount('#app')
-	</script>
+	</style>
+</head>
+
+<body>
+	<!-- The modal for exiting the app -->
+	<div class="app-exit">
+
+	</div>
 </body>
 </html>
