@@ -91,6 +91,7 @@
 		}
 
 		.modal {
+			box-shadow: 10px 10px 23px -10px rgba(0,0,0,0.75);
 			background-color: #fff;
 			width: 50%;
 			margin: 0 auto;
@@ -104,7 +105,14 @@
 	<!-- The modal for exiting the app -->
 	<div class="app-exit" @click="demo">
 		<div class="modal">
-			exit app
+			<div class="content">
+				Exit Eyas
+			</div>
+
+			<div class="actions">
+				<button>Cancel</button>
+				<button>Exit</button>
+			</div>
 		</div>
 	</div>
 
