@@ -128,13 +128,14 @@
 	<style>
 		/* hide all scrollbars (doesn't work on Chrome mobile) */
 		::-webkit-scrollbar { display: none; }
+		.v-application { background-color: transparent !important; }
+		.v-overlay { backdrop-filter: blur(10px); }
 
 		@keyframes pulse {
 			0% { opacity: 0.25; }
 			50% { opacity: 1.0; }
 			100% { opacity: 0.25; }
 		}
-
 		#app .loader {
 			height: 100vh;
 			display: flex;
@@ -143,10 +144,7 @@
 			opacity: 0;
 			animation: pulse 1.5s 700ms ease-out infinite;
 		}
-
-		#app .loader .logo {
-			height: 12vh;
-		}
+		#app .loader .logo { height: 12vh; }
 	</style>
 </head>
 
