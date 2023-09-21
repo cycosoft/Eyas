@@ -13,8 +13,7 @@ const names = {
 	buildAssets: `build-assets`,
 	eyasAssets: `eyas-assets`,
 	eyasInterface: `eyas-interface`,
-	cli: `cli`,
-	scripts: `scripts`
+	cli: `cli`
 };
 const paths = {
 	dist: roots.dist,
