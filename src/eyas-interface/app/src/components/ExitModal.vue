@@ -1,25 +1,23 @@
 <template>
-    <div class="app-exit">
-        <div class="modal">
-            <div class="content">
+    <v-dialog v-model="visible" width="auto">
+        <v-card>
+            <v-card-text>
                 Would you like to exit the test?
-            </div>
+            </v-card-text>
 
-            <div class="actions">
-                <button @click="cancel">Cancel</button>
-                <button class="primary" @click="exit">Exit</button>
-            </div>
-        </div>
-    </div>
+            <v-card-actions>
+              <v-btn @click="visible = false">Cancel</v-btn>
+              <v-btn @click="visible = false">Exit</v-btn>
+            </v-card-actions>
+          </v-card>
+    </v-dialog>
 </template>
 
 <script>
 export default {
-    data() {
-        return {
-            message: `Hello Vue!`
-        }
-    },
+    data: () => ({
+        visible: true
+    }),
 
     methods: {
         exit() {
