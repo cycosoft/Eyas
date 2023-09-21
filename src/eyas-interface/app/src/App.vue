@@ -2,9 +2,10 @@
 	<v-app>
 		<v-main>
 			<v-container>
-				<ExitModal />
 			</v-container>
 		</v-main>
+
+		<ExitModal />
 	</v-app>
 </template>
 
