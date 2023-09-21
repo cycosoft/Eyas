@@ -5,7 +5,7 @@
                 Would you like to exit the test?
             </v-card-text>
 
-            <v-card-actions>
+            <v-card-actions class="mt-5">
               <v-btn @click="visible = false">Cancel</v-btn>
               <v-spacer />
               <v-btn color="error" variant="elevated" @click="visible = false">Exit</v-btn>
