@@ -35,17 +35,22 @@ export default {
 		}
 	},
 
-	renderer: {
-		root: `src/eyas-interface`,
-		plugins: [ViteMinifyPlugin()],
-		build: {
-			rollupOptions: {
-				input: {
-					'eyas-ui': resolve(__dirname, `src/eyas-interface/app/index.html`)
-				}
-			},
+	// renderer: {
+	// 	root: `src/eyas-interface/app/dist`,
+	// 	plugins: [ViteMinifyPlugin()],
+	// 	resolve: {
+	// 		alias: {
+	// 			'@': resolve(__dirname, `src/eyas-interface/app/src`)
+	// 		}
+	// 	},
+	// 	build: {
+	// 		rollupOptions: {
+	// 			input: {
+	// 				'eyas-ui': resolve(__dirname, `src/eyas-interface/app/index.html`)
+	// 			}
+	// 		},
 
-			outDir: `dist/eyas-interface`
-		}
-	}
+	// 		outDir: `dist/eyas-interface`
+	// 	}
+	// }
 };
