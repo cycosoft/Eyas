@@ -14,5 +14,5 @@ COPY package*.json ./
 COPY . .
 
 # Run the command to generate the electron-builder output
-CMD [ "npm", "run", "compile" ]
+CMD [ "npm", "run", "compile:module" ]
 CMD [ "node", "dist/cli/index.js", "compile" ]
