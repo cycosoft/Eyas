@@ -7,7 +7,8 @@
 
             <v-card-actions>
               <v-btn @click="visible = false">Cancel</v-btn>
-              <v-btn @click="visible = false">Exit</v-btn>
+              <v-spacer />
+              <v-btn color="error" variant="elevated" @click="visible = false">Exit</v-btn>
             </v-card-actions>
           </v-card>
     </v-dialog>
