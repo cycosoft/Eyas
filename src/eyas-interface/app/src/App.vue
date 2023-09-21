@@ -1,5 +1,11 @@
 <template>
-	<ExitModal />
+	<v-app>
+		<v-main>
+			<v-container>
+				<ExitModal />
+			</v-container>
+		</v-main>
+	</v-app>
 </template>
 
 <script>
@@ -11,3 +17,10 @@ export default {
 	}
 };
 </script>
+
+<style lang="scss">
+.v-application {
+	// allow seeing the eyas content
+	background-color: transparent !important;
+}
+</style>
