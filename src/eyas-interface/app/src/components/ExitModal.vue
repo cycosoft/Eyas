@@ -26,10 +26,17 @@
 </template>
 
 <script>
+import { ipcRenderer } from 'electron';
+
 export default {
 	data: () => ({
 		visible: true
 	}),
+
+	mounted() {
+		// @ts-ignore
+		ipcRenderer.on(`modal-exit-visible`, value => this.visible = value);
+	},
 
 	methods: {
 		exit() {

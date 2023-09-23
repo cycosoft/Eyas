@@ -47,7 +47,7 @@
 		testSrc: path.join(roots.eyas, `test`),
 		packageJson: path.join(roots.eyas, `package.json`),
 		ui: {
-			app: path.join(roots.eyas, `eyas-interface`, `app`, `index.html`)
+			app: path.join(roots.eyas, `eyas-interface`, `index.html`)
 		}
 	};
 
@@ -364,6 +364,9 @@
 
 		// track that the modal is being opened
 		!isDev && analytics.track(EVENTS.ui.modalExitShown, { distinct_id: userId });
+
+		// send a message to the UI to show the exit modal
+		appLayer.webContents.send(`modal-exit-visible`, true);
 
 		// ask the user to confirm closing the app
 		dialog.showMessageBox({
