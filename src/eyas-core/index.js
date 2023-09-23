@@ -202,10 +202,25 @@
 						click: () => shell.openExternal(clientWindow.webContents.getURL())
 					},
 					{ type: `separator` },
-					{
-						label: `⚙️ DevTools`,
-						click: () => clientWindow.webContents.openDevTools()
-					},
+					// populate with appropriate dev tools
+					...(() => {
+						const output = [
+							{
+								label: `⚙️ DevTools`,
+								click: () => clientWindow.webContents.openDevTools()
+							}
+						];
+
+						// add the dev tools for the app layer if in dev
+						isDev && output.push(
+							{
+								label: `⚙️ DevTools (App Layer)`,
+								click: () => appLayer.webContents.openDevTools()
+							}
+						);
+
+						return output;
+					})(),
 					{ type: `separator` },
 					{
 						label: `♻️ Reload Page`,
