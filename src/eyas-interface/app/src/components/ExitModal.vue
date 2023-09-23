@@ -1,16 +1,27 @@
 <template>
-	<v-dialog v-model="visible" width="auto">
+	<v-dialog
+		v-model="visible"
+		width="auto"
+	>
 		<v-card>
 			<v-card-text>
 				Would you like to exit the test?
 			</v-card-text>
 
 			<v-card-actions class="mt-5">
-			  <v-btn @click="visible = false">Cancel</v-btn>
-			  <v-spacer />
-			  <v-btn color="error" variant="elevated" @click="visible = false">Exit</v-btn>
+				<v-btn @click="visible = false">
+					Cancel
+				</v-btn>
+				<v-spacer />
+				<v-btn
+					color="error"
+					variant="elevated"
+					@click="visible = false"
+				>
+					Exit
+				</v-btn>
 			</v-card-actions>
-		  </v-card>
+		</v-card>
 	</v-dialog>
 </template>
 
