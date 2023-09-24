@@ -68,6 +68,7 @@ export default {
 		},
 
 		cancel() {
+			document.body.style.backgroundImage = ``;
 			this.visible = false;
 		}
 	}
