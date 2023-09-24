@@ -384,31 +384,6 @@
 
 		// send a message to the UI to show the exit modal
 		appLayer.webContents.send(`modal-exit-visible`, true);
-
-		// ask the user to confirm closing the app
-		dialog.showMessageBox({
-			type: `question`,
-			buttons: [`Close ${appName}`, `Cancel`],
-			title: `Exit Confirmation`,
-			icon: paths.icon,
-			message: `
-			Get your brand seen here every time ${appName} is used!
-
-			Contact <support+eyas@cycosoft.com> for more information.
-			`
-		}).then(result => {
-			// if the user clicks the first option
-			if (result.response === 0) {
-				// remove the close event listener so we don't get stuck in a loop
-				clientWindow.removeListener(`close`, onAppClose);
-
-				// track that the app is being closed
-				!isDev && analytics.track(EVENTS.core.exit, { distinct_id: userId });
-
-				// Shut down the test server AND THEN exit the app
-				testServer.close(electronLayer.quit);
-			}
-		});
 	}
 
 	// Get the app title
