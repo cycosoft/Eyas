@@ -8,6 +8,9 @@ module.exports = {
 		`eslint:recommended`,
 		`plugin:vue/vue3-recommended`
 	],
+	globals: {
+		eventBridge: `readonly`
+	},
 	overrides: [
 		{
 			env: {
