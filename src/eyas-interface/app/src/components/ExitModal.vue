@@ -1,9 +1,22 @@
 <template>
 	<v-overlay v-model="visible" class="text-white">
-		Cycosoft, LLC says thank you
+		<div>
+			<a
+				href="https://cycosoft.com"
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				<img
+					alt="Cycosoft, LLC logo"
+					src="@/assets/cycosoft-logo.svg"
+					width="175"
+				>
+			</a>
+		</div>
 
 		<v-dialog
 			v-model="visible"
+			persistent
 			width="auto"
 			:scrim="false"
 		>
@@ -30,7 +43,6 @@
 			</v-card>
 		</v-dialog>
 	</v-overlay>
-
 </template>
 
 <script>
