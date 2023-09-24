@@ -1,36 +1,42 @@
 <template>
-	<v-dialog
-		v-model="visible"
-		width="auto"
-	>
-		<v-card>
-			<v-card-text>
-				Would you like to exit the test?
-			</v-card-text>
+	<v-overlay v-model="visible" class="text-white">
+		Cycosoft, LLC says thank you
 
-			<v-card-actions class="mt-5">
-				<v-btn @click="cancel">
-					Cancel
-				</v-btn>
+		<v-dialog
+			v-model="visible"
+			width="auto"
+			:scrim="false"
+		>
+			<v-card>
+				<v-card-text>
+					Would you like to exit the test?
+				</v-card-text>
 
-				<div class="flex-grow-1" />
+				<v-card-actions class="mt-5">
+					<v-btn @click="cancel">
+						Cancel
+					</v-btn>
 
-				<v-btn
-					color="error"
-					variant="elevated"
-					@click="exit"
-				>
-					Exit
-				</v-btn>
-			</v-card-actions>
-		</v-card>
-	</v-dialog>
+					<div class="flex-grow-1" />
+
+					<v-btn
+						color="error"
+						variant="elevated"
+						@click="exit"
+					>
+						Exit
+					</v-btn>
+				</v-card-actions>
+			</v-card>
+		</v-dialog>
+	</v-overlay>
+
 </template>
 
 <script>
 export default {
 	data: () => ({
-		visible: false
+		visible: true
 	}),
 
 	mounted() {
