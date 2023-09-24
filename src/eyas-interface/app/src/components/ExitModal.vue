@@ -9,14 +9,14 @@
 			</v-card-text>
 
 			<v-card-actions class="mt-5">
-				<v-btn @click="visible = false">
+				<v-btn @click="cancel">
 					Cancel
 				</v-btn>
 				<v-spacer />
 				<v-btn
 					color="error"
 					variant="elevated"
-					@click="visible = false"
+					@click="exit"
 				>
 					Exit
 				</v-btn>
@@ -28,26 +28,25 @@
 <script>
 export default {
 	data: () => ({
-		visible: true
+		visible: false
 	}),
 
 	mounted() {
 		// Listen for messages from the main process
-		window.api.receive(`fromMain`, (event, value) => {
-			if(event === `modal-exit-visible`){
-				this.visible = value;
-			}
+		window.api?.receive(`modal-exit-visible`, value => {
+			this.visible = value;
 		});
 	},
 
 	methods: {
 		exit() {
 			console.log(`exit()`);
-			window.api.send(`toMain`, `app-exit`);
+			window.api?.send(`app-exit`);
 		},
 
 		cancel() {
 			console.log(`cancel()`);
+			this.visible = false;
 		}
 	}
 };

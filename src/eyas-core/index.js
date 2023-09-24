@@ -340,17 +340,15 @@
 		});
 
 		// listen for messages from the UI
-		ipcMain.on(`toMain`, (event, args) => {
-			if(event === `app-exit`){
-				// remove the close event listener so we don't get stuck in a loop
-				clientWindow.removeListener(`close`, onAppClose);
+		ipcMain.on(`app-exit`, () => {
+			// remove the close event listener so we don't get stuck in a loop
+			clientWindow.removeListener(`close`, onAppClose);
 
-				// track that the app is being closed
-				!isDev && analytics.track(EVENTS.core.exit, { distinct_id: userId });
+			// track that the app is being closed
+			!isDev && analytics.track(EVENTS.core.exit, { distinct_id: userId });
 
-				// Shut down the test server AND THEN exit the app
-				testServer.close(electronLayer.quit);
-			}
+			// Shut down the test server AND THEN exit the app
+			testServer.close(electronLayer.quit);
 		});
 
 		// listen for the window to close
