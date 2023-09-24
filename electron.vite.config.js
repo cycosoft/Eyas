@@ -14,7 +14,7 @@ export default {
 				input: {
 					'get-roots': resolve(__dirname, `src/scripts/get-roots.js`),
 					'get-config': resolve(__dirname, `src/scripts/get-config.js`),
-					preload: resolve(__dirname, `src/scripts/preload.js`)
+					'event-bridge': resolve(__dirname, `src/scripts/event-bridge.js`)
 				}
 			},
 

@@ -47,7 +47,7 @@
 		icon: path.join(roots.eyas, `eyas-assets`, `eyas-logo.png`),
 		testSrc: path.join(roots.eyas, `test`),
 		packageJson: path.join(roots.eyas, `package.json`),
-		preload: path.join(roots.eyas, `scripts`, `preload.js`),
+		eventBridge: path.join(roots.eyas, `scripts`, `event-bridge.js`),
 		ui: {
 			app: path.join(roots.eyas, `eyas-interface`, `index.html`)
 		}
@@ -358,7 +358,7 @@
 		navigate(appUrl);
 
 		// Overlay the appLayer
-		appLayer = new BrowserView({ webPreferences: { preload: paths.preload } });
+		appLayer = new BrowserView({ webPreferences: { preload: paths.eventBridge } });
 		clientWindow.addBrowserView(appLayer);
 		appLayer.setBounds({ x: 0, y: 0, width: currentViewport[0], height: currentViewport[1] });
 		appLayer.setAutoResize({ width: true, height: true });
