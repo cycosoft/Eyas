@@ -1,0 +1,11 @@
+{
+	"compilerOptions": {
+		"noEmit": true,
+		"skipLibCheck": true
+	},
+	"exclude": [
+		"node_modules",
+		"dist",
+		"src/**/*.spec.ts"
+	]
+}
