@@ -382,8 +382,11 @@
 		// track that the modal is being opened
 		!isDev && analytics.track(EVENTS.ui.modalExitShown, { distinct_id: userId });
 
-		// send a message to the UI to show the exit modal
-		appLayer.webContents.send(`modal-exit-visible`, true);
+		// capture the current page as an image
+		clientWindow.capturePage().then(image => {
+			// send a message to the UI to show the exit modal with the captured image
+			appLayer.webContents.send(`modal-exit-visible`, true, image.toDataURL());
+		});
 	}
 
 	// Get the app title

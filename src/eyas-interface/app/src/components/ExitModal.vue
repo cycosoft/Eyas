@@ -1,5 +1,9 @@
 <template>
-	<v-overlay v-model="visible" class="exit-modal text-white">
+	<v-overlay
+		v-model="visible"
+		class="exit-modal text-white"
+		:style="[ backdrop && `background-image: url(${backdrop})` ]"
+	>
 		<div class="ad-space">
 			<a
 				href="https://cycosoft.com"
@@ -48,13 +52,15 @@
 <script>
 export default {
 	data: () => ({
-		visible: false
+		visible: false,
+		backdrop: null
 	}),
 
 	mounted() {
 		// Listen for messages from the main process
-		window.eventBridge?.receive(`modal-exit-visible`, value => {
+		window.eventBridge?.receive(`modal-exit-visible`, (value, image) => {
 			this.visible = value;
+			this.backdrop = image;
 		});
 	},
 
