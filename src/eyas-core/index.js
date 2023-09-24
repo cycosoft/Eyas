@@ -88,10 +88,7 @@
 		width: currentViewport[0],
 		height: currentViewport[1],
 		title: getAppTitle(),
-		icon: paths.icon,
-		webPreferences: {
-			preload: paths.preload
-		}
+		icon: paths.icon
 	};
 
 	// Configure Electron to ignore certificate errors
@@ -375,7 +372,7 @@
 
 		// NOTE: ensure this doesn't affect clientWindow.title
 		// Overlay the appLayer
-		appLayer = new BrowserView();
+		appLayer = new BrowserView({ webPreferences: { preload: paths.preload } });
 		clientWindow.addBrowserView(appLayer);
 		appLayer.setBounds({ x: 0, y: 0, width: currentViewport[0], height: currentViewport[1] });
 		appLayer.setAutoResize({ width: true, height: true });
