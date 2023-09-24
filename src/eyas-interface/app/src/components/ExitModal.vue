@@ -1,6 +1,6 @@
 <template>
-	<v-overlay v-model="visible" class="text-white">
-		<div>
+	<v-overlay v-model="visible" class="exit-modal text-white">
+		<div class="ad-space">
 			<a
 				href="https://cycosoft.com"
 				target="_blank"
@@ -69,3 +69,17 @@ export default {
 	}
 };
 </script>
+
+<style scoped lang="scss">
+.exit-modal:deep(.v-overlay__content){
+	width: 100%;
+	height: 100%;
+
+	.ad-space {
+		display: flex;
+		height: 100%;
+		align-items: flex-end;
+		justify-content: flex-end;
+	}
+}
+</style>
