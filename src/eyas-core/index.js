@@ -11,7 +11,8 @@
 		BrowserView,
 		Menu,
 		dialog,
-		shell
+		shell,
+		ipcMain
 	} = require(`electron`);
 	const express = require(`express`);
 	const path = require(`path`);
@@ -46,6 +47,7 @@
 		icon: path.join(roots.eyas, `eyas-assets`, `eyas-logo.png`),
 		testSrc: path.join(roots.eyas, `test`),
 		packageJson: path.join(roots.eyas, `package.json`),
+		preload: path.join(roots.eyas, `eyas-core`, `preload.js`),
 		ui: {
 			app: path.join(roots.eyas, `eyas-interface`, `index.html`)
 		}
@@ -86,7 +88,8 @@
 		width: currentViewport[0],
 		height: currentViewport[1],
 		title: getAppTitle(),
-		icon: paths.icon
+		icon: paths.icon,
+		preload: paths.preload
 	};
 
 	// Configure Electron to ignore certificate errors
@@ -335,6 +338,20 @@
 
 			// update the menu
 			setMenu();
+		});
+
+		// listen for messages from the UI
+		ipcMain.on(`toMain`, (event, args) => {
+			if(event === `app-exit`){
+				// remove the close event listener so we don't get stuck in a loop
+				clientWindow.removeListener(`close`, onAppClose);
+
+				// track that the app is being closed
+				!isDev && analytics.track(EVENTS.core.exit, { distinct_id: userId });
+
+				// Shut down the test server AND THEN exit the app
+				testServer.close(electronLayer.quit);
+			}
 		});
 
 		// listen for the window to close

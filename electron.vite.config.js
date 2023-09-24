@@ -4,7 +4,6 @@
 import { resolve } from 'path';
 import { bytecodePlugin } from 'electron-vite';
 import terser from '@rollup/plugin-terser';
-import { ViteMinifyPlugin } from 'vite-plugin-minify';
 
 // export the configuration settings
 export default {

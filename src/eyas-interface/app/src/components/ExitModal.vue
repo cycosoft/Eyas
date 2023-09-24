@@ -26,21 +26,24 @@
 </template>
 
 <script>
-import { ipcRenderer } from 'electron';
-
 export default {
 	data: () => ({
 		visible: true
 	}),
 
 	mounted() {
-		// @ts-ignore
-		ipcRenderer.on(`modal-exit-visible`, value => this.visible = value);
+		// Listen for messages from the main process
+		window.api.receive(`fromMain`, (event, value) => {
+			if(event === `modal-exit-visible`){
+				this.visible = value;
+			}
+		});
 	},
 
 	methods: {
 		exit() {
 			console.log(`exit()`);
+			window.api.send(`toMain`, `app-exit`);
 		},
 
 		cancel() {
