@@ -47,7 +47,7 @@
 		icon: path.join(roots.eyas, `eyas-assets`, `eyas-logo.png`),
 		testSrc: path.join(roots.eyas, `test`),
 		packageJson: path.join(roots.eyas, `package.json`),
-		preload: path.join(roots.eyas, `eyas-core`, `preload.js`),
+		preload: path.join(roots.eyas, `scripts`, `preload.js`),
 		ui: {
 			app: path.join(roots.eyas, `eyas-interface`, `index.html`)
 		}
@@ -89,7 +89,9 @@
 		height: currentViewport[1],
 		title: getAppTitle(),
 		icon: paths.icon,
-		preload: paths.preload
+		webPreferences: {
+			preload: paths.preload
+		}
 	};
 
 	// Configure Electron to ignore certificate errors

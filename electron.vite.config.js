@@ -13,7 +13,8 @@ export default {
 			rollupOptions: {
 				input: {
 					'get-roots': resolve(__dirname, `src/scripts/get-roots.js`),
-					'get-config': resolve(__dirname, `src/scripts/get-config.js`)
+					'get-config': resolve(__dirname, `src/scripts/get-config.js`),
+					preload: resolve(__dirname, `src/scripts/preload.js`)
 				}
 			},
 
@@ -32,24 +33,5 @@ export default {
 
 			outDir: `dist/eyas-core`
 		}
-	},
-
-	// renderer: {
-	// 	root: `src/eyas-interface/app/dist`,
-	// 	plugins: [ViteMinifyPlugin()],
-	// 	resolve: {
-	// 		alias: {
-	// 			'@': resolve(__dirname, `src/eyas-interface/app/src`)
-	// 		}
-	// 	},
-	// 	build: {
-	// 		rollupOptions: {
-	// 			input: {
-	// 				'eyas-ui': resolve(__dirname, `src/eyas-interface/app/index.html`)
-	// 			}
-	// 		},
-
-	// 		outDir: `dist/eyas-interface`
-	// 	}
-	// }
+	}
 };

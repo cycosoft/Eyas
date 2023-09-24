@@ -35,7 +35,7 @@ const paths = {
 	// Prep the dist/ directory for module output
 	await fs.emptyDir(paths.dist);
 
-	// Copy asset directories
+	// Copy runtime files
 	await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
 	await fs.copy(paths.buildAssetsSrc, paths.buildAssetsDest);
 	await fs.copy(paths.eyasInterfaceAppSrc, paths.eyasInterfaceAppDest);
