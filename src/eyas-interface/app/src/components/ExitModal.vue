@@ -12,7 +12,9 @@
 				<v-btn @click="cancel">
 					Cancel
 				</v-btn>
-				<v-spacer />
+
+				<div class="flex-grow-1" />
+
 				<v-btn
 					color="error"
 					variant="elevated"
@@ -40,12 +42,10 @@ export default {
 
 	methods: {
 		exit() {
-			console.log(`exit()`);
 			window.api?.send(`app-exit`);
 		},
 
 		cancel() {
-			console.log(`cancel()`);
 			this.visible = false;
 		}
 	}
