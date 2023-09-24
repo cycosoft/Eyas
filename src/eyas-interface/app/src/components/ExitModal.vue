@@ -2,7 +2,6 @@
 	<v-overlay
 		v-model="visible"
 		class="exit-modal text-white"
-		:style="[ backdrop && `background-image: url(${backdrop})` ]"
 	>
 		<div class="ad-space">
 			<a
@@ -52,15 +51,14 @@
 <script>
 export default {
 	data: () => ({
-		visible: false,
-		backdrop: null
+		visible: false
 	}),
 
 	mounted() {
 		// Listen for messages from the main process
 		window.eventBridge?.receive(`modal-exit-visible`, (value, image) => {
 			this.visible = value;
-			this.backdrop = image;
+			document.body.style.backgroundImage = `url(${image})`;
 		});
 	},
 
