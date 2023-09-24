@@ -357,18 +357,6 @@
 		// Load Eyas analytics
 		navigate(appUrl);
 
-		// Create a layer for external content AND load the test server
-		// externalLayer = new BrowserView();
-		// clientWindow.addBrowserView(externalLayer);
-		// externalLayer.setBounds({ x: 0, y: 0, width: currentViewport[0], height: currentViewport[1] });
-		// externalLayer.setAutoResize({ width: true, height: true });
-		// externalLayer.setBackgroundColor(`#fff`);
-		// externalLayer.webContents.loadURL(appUrl);
-
-		// // Prevent the title from changing
-		// externalLayer.webContents.on(`page-title-updated`, onTitleUpdate);
-
-		// NOTE: ensure this doesn't affect clientWindow.title
 		// Overlay the appLayer
 		appLayer = new BrowserView({ webPreferences: { preload: paths.preload } });
 		clientWindow.addBrowserView(appLayer);
