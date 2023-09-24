@@ -41,9 +41,10 @@ module.exports = {
 		'arrow-parens': [`error`, `as-needed`],
 		'no-spaced-func': [`error`],
 		'no-trailing-spaces': [`error`],
-		"spaced-comment": [`error`, `always`],
-		"vue/html-indent": [`error`, `tab`, {
+		'spaced-comment': [`error`, `always`],
+		'vue/html-indent': [`error`, `tab`, {
 			alignAttributesVertically: false
-		}]
+		}],
+		'vue/max-attributes-per-line': `off`
 	}
 };
