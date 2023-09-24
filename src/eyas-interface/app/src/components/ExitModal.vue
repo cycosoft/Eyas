@@ -35,14 +35,14 @@ export default {
 
 	mounted() {
 		// Listen for messages from the main process
-		window.api?.receive(`modal-exit-visible`, value => {
+		window.eventBridge?.receive(`modal-exit-visible`, value => {
 			this.visible = value;
 		});
 	},
 
 	methods: {
 		exit() {
-			window.api?.send(`app-exit`);
+			window.eventBridge?.send(`app-exit`);
 		},
 
 		cancel() {
