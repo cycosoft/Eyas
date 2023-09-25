@@ -3,6 +3,8 @@
 		v-model="visible"
 		class="exit-modal text-white"
 	>
+		<img class="backing" v-if="backing" :src="backing">
+
 		<div class="ad-space">
 			<a
 				href="https://cycosoft.com"
@@ -51,14 +53,16 @@
 <script>
 export default {
 	data: () => ({
-		visible: false
+		visible: false,
+		backing: null
 	}),
 
 	mounted() {
 		// Listen for messages from the main process
 		window.eventBridge?.receive(`modal-exit-visible`, (value, image) => {
 			this.visible = value;
-			document.body.style.backgroundImage = `url(${image})`;
+			// document.body.style.backgroundImage = `url(${image})`;
+			// this.backing = image;
 		});
 	},
 
@@ -68,6 +72,7 @@ export default {
 		},
 
 		cancel() {
+			this.backing = null;
 			document.body.style.backgroundImage = ``;
 			this.visible = false;
 		}
@@ -85,6 +90,11 @@ export default {
 		height: 100%;
 		align-items: flex-end;
 		justify-content: flex-end;
+	}
+
+	.backing {
+		width: inherit;
+		height: inherit;
 	}
 }
 </style>
