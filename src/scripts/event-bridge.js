@@ -9,11 +9,12 @@ const {
 contextBridge.exposeInMainWorld(`eventBridge`, {
 	send: (channel, data) => {
 		// whitelist channels
-		const validChannels = [`app-exit`];
+		const validChannels = [`app-exit`, `open-in-browser`];
 		if (validChannels.includes(channel)) {
 			ipcRenderer.send(channel, data);
 		}
 	},
+
 	receive: (channel, func) => {
 		const validChannels = [`modal-exit-visible`];
 		if (validChannels.includes(channel)) {

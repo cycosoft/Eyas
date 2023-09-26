@@ -3,20 +3,16 @@
 		v-model="visible"
 		class="exit-modal text-white"
 	>
-		<img class="backing" v-if="backing" :src="backing">
+		<img v-if="backing" class="backing" :src="backing">
 
 		<div class="ad-space">
-			<a
-				href="https://cycosoft.com"
-				target="_blank"
-				rel="noopener noreferrer"
-			>
+			<span class="cursor-pointer" @click="openInBrowser(`https://cycosoft.com`)">
 				<img
 					alt="Cycosoft, LLC logo"
 					src="@/assets/cycosoft-logo.svg"
 					width="175"
 				>
-			</a>
+			</span>
 		</div>
 
 		<v-dialog
@@ -75,6 +71,10 @@ export default {
 			this.backing = null;
 			document.body.style.backgroundImage = ``;
 			this.visible = false;
+		},
+
+		openInBrowser(url) {
+			window.eventBridge?.send(`open-in-browser`, url);
 		}
 	}
 };
