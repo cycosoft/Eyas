@@ -1,7 +1,7 @@
 {
   "name": "@cycosoft/eyas",
   "version": "1.0.1",
-  "description": "A no-code serverless visual testing solution for static web applications",
+  "description": "Bundle your web code into an executable for fast serverless testing",
   "main": "./index.js",
   "packageName": "Eyas",
   "publishConfig": {
