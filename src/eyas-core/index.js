@@ -351,6 +351,12 @@
 			testServer.close(electronLayer.quit);
 		});
 
+		// open links in the browser when requested
+		ipcMain.on(`open-in-browser`, (event, url) => {
+			const validated = formatURL(url);
+			validated && navigate(validated, true);
+		});
+
 		// listen for the window to close
 		clientWindow.on(`close`, onAppClose);
 
