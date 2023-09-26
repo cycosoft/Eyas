@@ -55,11 +55,12 @@
 
 	// get the app version
 	const appVersion = require(paths.packageJson).version;
+	const operatingSystem = os.platform();
 
 	// track the app launch event
 	!isDev && analytics.track(EVENTS.core.launch, {
 		distinct_id: userId,
-		$os: os.platform(),
+		$os: operatingSystem,
 		$app_version_string: appVersion
 	});
 
@@ -383,7 +384,7 @@
 	}
 
 	// listen for the window to close
-	function onAppClose(evt) {
+	async function onAppClose(evt) {
 		// stop the window from closing
 		evt.preventDefault();
 
@@ -394,10 +395,15 @@
 		enableUI(true);
 
 		// capture the current page as an image
-		clientWindow.capturePage().then(image => {
-			// send a message to the UI to show the exit modal with the captured image
-			appLayer.webContents.send(`modal-exit-visible`, true, image.toDataURL());
-		});
+		let screenshot = null;
+		// disable the screenshot on windows as it isn't needed
+		if(operatingSystem !== `win32`) {
+			screenshot = await clientWindow.capturePage();
+			screenshot = screenshot.toDataURL();
+		}
+
+		// send a message to the UI to show the exit modal with the captured image
+		appLayer.webContents.send(`modal-exit-visible`, true, screenshot);
 	}
 
 	// sets the visibility of the UI so externalLayer can be interacted with
