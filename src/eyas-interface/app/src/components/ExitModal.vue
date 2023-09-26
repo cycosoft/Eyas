@@ -2,6 +2,7 @@
 	<v-overlay
 		v-model="visible"
 		class="exit-modal text-white"
+		@after-leave="hideUi"
 	>
 		<div class="ad-space">
 			<span class="cursor-pointer" @click="openInBrowser(`https://cycosoft.com`)">
@@ -52,8 +53,11 @@ export default {
 
 	mounted() {
 		// Listen for messages from the main process
-		window.eventBridge?.receive(`modal-exit-visible`, (value, image) => {
-			document.body.style.backgroundImage = `url(${image})`;
+		window.eventBridge?.receive(`modal-exit-visible`, (value, screenshot) => {
+			if(screenshot){
+				document.body.style.backgroundImage = `url(${screenshot})`;
+			}
+
 			this.visible = value;
 		});
 	},
@@ -66,6 +70,9 @@ export default {
 		cancel() {
 			document.body.style.backgroundImage = ``;
 			this.visible = false;
+		},
+
+		hideUi() {
 			window.eventBridge?.send(`hide-ui`);
 		},
 
