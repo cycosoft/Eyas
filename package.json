@@ -49,7 +49,7 @@
     "url-parse": "^1.5.10",
     "validator": "^13.11.0",
     "vue": "^3.3.4",
-    "vuetify": "^3.3.18"
+    "vuetify": "^3.3.19"
   },
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.3",
