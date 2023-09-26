@@ -357,6 +357,9 @@
 			validated && navigate(validated, true);
 		});
 
+		// hide the UI when requested
+		ipcMain.on(`hide-ui`, () => enableUI(false));
+
 		// listen for the window to close
 		clientWindow.on(`close`, onAppClose);
 
@@ -366,7 +369,6 @@
 		// Overlay the appLayer
 		appLayer = new BrowserView({ webPreferences: { preload: paths.eventBridge } });
 		clientWindow.addBrowserView(appLayer);
-		appLayer.setBounds({ x: 0, y: 0, width: currentViewport[0], height: currentViewport[1] });
 		appLayer.setAutoResize({ width: true, height: true });
 		appLayer.webContents.loadFile(paths.ui.app);
 	}
@@ -388,11 +390,23 @@
 		// track that the modal is being opened
 		!isDev && analytics.track(EVENTS.ui.modalExitShown, { distinct_id: userId });
 
+		// enable the UI layer
+		enableUI(true);
+
 		// capture the current page as an image
 		clientWindow.capturePage().then(image => {
 			// send a message to the UI to show the exit modal with the captured image
 			appLayer.webContents.send(`modal-exit-visible`, true, image.toDataURL());
 		});
+	}
+
+	// sets the visibility of the UI so externalLayer can be interacted with
+	function enableUI(enable) {
+		if(enable){
+			appLayer.setBounds({ x: 0, y: 0, width: currentViewport[0], height: currentViewport[1] });
+		}else{
+			appLayer.setBounds({ x: 0, y: 0, width: 0, height: 0 });
+		}
 	}
 
 	// Get the app title

@@ -66,6 +66,7 @@ export default {
 		cancel() {
 			document.body.style.backgroundImage = ``;
 			this.visible = false;
+			window.eventBridge?.send(`hide-ui`);
 		},
 
 		openInBrowser(url) {
