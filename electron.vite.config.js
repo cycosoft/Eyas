@@ -4,7 +4,6 @@
 import { resolve } from 'path';
 import { bytecodePlugin } from 'electron-vite';
 import terser from '@rollup/plugin-terser';
-import { ViteMinifyPlugin } from 'vite-plugin-minify';
 
 // export the configuration settings
 export default {
@@ -14,7 +13,8 @@ export default {
 			rollupOptions: {
 				input: {
 					'get-roots': resolve(__dirname, `src/scripts/get-roots.js`),
-					'get-config': resolve(__dirname, `src/scripts/get-config.js`)
+					'get-config': resolve(__dirname, `src/scripts/get-config.js`),
+					'event-bridge': resolve(__dirname, `src/scripts/event-bridge.js`)
 				}
 			},
 
@@ -32,20 +32,6 @@ export default {
 			},
 
 			outDir: `dist/eyas-core`
-		}
-	},
-
-	renderer: {
-		root: `src/eyas-interface`,
-		plugins: [ViteMinifyPlugin()],
-		build: {
-			rollupOptions: {
-				input: {
-					'eyas-ui': resolve(__dirname, `src/eyas-interface/app/index.html`)
-				}
-			},
-
-			outDir: `dist/eyas-interface`
 		}
 	}
 };

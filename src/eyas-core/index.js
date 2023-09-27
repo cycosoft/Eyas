@@ -11,7 +11,8 @@
 		BrowserView,
 		Menu,
 		dialog,
-		shell
+		shell,
+		ipcMain
 	} = require(`electron`);
 	const express = require(`express`);
 	const path = require(`path`);
@@ -46,18 +47,20 @@
 		icon: path.join(roots.eyas, `eyas-assets`, `eyas-logo.png`),
 		testSrc: path.join(roots.eyas, `test`),
 		packageJson: path.join(roots.eyas, `package.json`),
+		eventBridge: path.join(roots.eyas, `scripts`, `event-bridge.js`),
 		ui: {
-			app: path.join(roots.eyas, `eyas-interface`, `app`, `index.html`)
+			app: path.join(roots.eyas, `eyas-interface`, `index.html`)
 		}
 	};
 
 	// get the app version
 	const appVersion = require(paths.packageJson).version;
+	const operatingSystem = os.platform();
 
 	// track the app launch event
 	!isDev && analytics.track(EVENTS.core.launch, {
 		distinct_id: userId,
-		$os: os.platform(),
+		$os: operatingSystem,
 		$app_version_string: appVersion
 	});
 
@@ -72,7 +75,7 @@
 	const appUrl = appUrlOverride || testServerUrl;
 	let clientWindow = null;
 	let expressLayer = null;
-	const appLayer = null;
+	let appLayer = null;
 	let testServer = null;
 	const allViewports = [
 		...config.test.viewports,
@@ -202,10 +205,25 @@
 						click: () => shell.openExternal(clientWindow.webContents.getURL())
 					},
 					{ type: `separator` },
-					{
-						label: `⚙️ DevTools`,
-						click: () => clientWindow.webContents.openDevTools()
-					},
+					// populate with appropriate dev tools
+					...(() => {
+						const output = [
+							{
+								label: `⚙️ DevTools`,
+								click: () => clientWindow.webContents.openDevTools()
+							}
+						];
+
+						// add the dev tools for the app layer if in dev
+						isDev && output.push(
+							{
+								label: `⚙️ DevTools (App Layer)`,
+								click: () => appLayer.webContents.openDevTools()
+							}
+						);
+
+						return output;
+					})(),
 					{ type: `separator` },
 					{
 						label: `♻️ Reload Page`,
@@ -302,7 +320,7 @@
 		// Create a menu template
 		setMenu();
 
-		// Prevent the title from changing
+		// Prevent the title from changing automatically
 		clientWindow.on(`page-title-updated`, onTitleUpdate);
 
 		// listen for changes to the window size
@@ -322,30 +340,38 @@
 			setMenu();
 		});
 
+		// listen for messages from the UI
+		ipcMain.on(`app-exit`, () => {
+			// remove the close event listener so we don't get stuck in a loop
+			clientWindow.removeListener(`close`, onAppClose);
+
+			// track that the app is being closed
+			!isDev && analytics.track(EVENTS.core.exit, { distinct_id: userId });
+
+			// Shut down the test server AND THEN exit the app
+			testServer.close(electronLayer.quit);
+		});
+
+		// open links in the browser when requested
+		ipcMain.on(`open-in-browser`, (event, url) => {
+			const validated = formatURL(url);
+			validated && navigate(validated, true);
+		});
+
+		// hide the UI when requested
+		ipcMain.on(`hide-ui`, () => enableUI(false));
+
 		// listen for the window to close
 		clientWindow.on(`close`, onAppClose);
 
 		// Load Eyas analytics
 		navigate(appUrl);
 
-		// Create a layer for external content AND load the test server
-		// externalLayer = new BrowserView();
-		// clientWindow.addBrowserView(externalLayer);
-		// externalLayer.setBounds({ x: 0, y: 0, width: currentViewport[0], height: currentViewport[1] });
-		// externalLayer.setAutoResize({ width: true, height: true });
-		// externalLayer.setBackgroundColor(`#fff`);
-		// externalLayer.webContents.loadURL(appUrl);
-
-		// // Prevent the title from changing
-		// externalLayer.webContents.on(`page-title-updated`, onTitleUpdate);
-
-		// NOTE: ensure this doesn't affect clientWindow.title
 		// Overlay the appLayer
-		// appLayer = new BrowserView();
-		// clientWindow.addBrowserView(appLayer);
-		// appLayer.setBounds({ x: 0, y: 0, width: currentViewport[0], height: currentViewport[1] });
-		// appLayer.setAutoResize({ width: true, height: true });
-		// appLayer.webContents.loadFile(paths.ui.app);
+		appLayer = new BrowserView({ webPreferences: { preload: paths.eventBridge } });
+		clientWindow.addBrowserView(appLayer);
+		appLayer.setAutoResize({ width: true, height: true });
+		appLayer.webContents.loadFile(paths.ui.app);
 	}
 
 	// Prevent the title from changing AND also update it based on the current URL
@@ -358,37 +384,35 @@
 	}
 
 	// listen for the window to close
-	function onAppClose(evt) {
+	async function onAppClose(evt) {
 		// stop the window from closing
 		evt.preventDefault();
 
 		// track that the modal is being opened
 		!isDev && analytics.track(EVENTS.ui.modalExitShown, { distinct_id: userId });
 
-		// ask the user to confirm closing the app
-		dialog.showMessageBox({
-			type: `question`,
-			buttons: [`Close ${appName}`, `Cancel`],
-			title: `Exit Confirmation`,
-			icon: paths.icon,
-			message: `
-			Get your brand seen here every time ${appName} is used!
+		// enable the UI layer
+		enableUI(true);
 
-			Contact <support+eyas@cycosoft.com> for more information.
-			`
-		}).then(result => {
-			// if the user clicks the first option
-			if (result.response === 0) {
-				// remove the close event listener so we don't get stuck in a loop
-				clientWindow.removeListener(`close`, onAppClose);
+		// capture the current page as an image
+		let screenshot = null;
+		// disable the screenshot on windows as it isn't needed
+		if(operatingSystem !== `win32`) {
+			screenshot = await clientWindow.capturePage();
+			screenshot = screenshot.toDataURL();
+		}
 
-				// track that the app is being closed
-				!isDev && analytics.track(EVENTS.core.exit, { distinct_id: userId });
+		// send a message to the UI to show the exit modal with the captured image
+		appLayer.webContents.send(`modal-exit-visible`, true, screenshot);
+	}
 
-				// Shut down the test server AND THEN exit the app
-				testServer.close(electronLayer.quit);
-			}
-		});
+	// sets the visibility of the UI so externalLayer can be interacted with
+	function enableUI(enable) {
+		if(enable){
+			appLayer.setBounds({ x: 0, y: 0, width: currentViewport[0], height: currentViewport[1] });
+		}else{
+			appLayer.setBounds({ x: 0, y: 0, width: 0, height: 0 });
+		}
 	}
 
 	// Get the app title

@@ -1,7 +1,7 @@
 {
   "name": "@cycosoft/eyas",
   "version": "1.0.1",
-  "description": "A no-code serverless visual testing solution for static web applications",
+  "description": "Bundle your web code into an executable for fast serverless testing",
   "main": "./index.js",
   "packageName": "Eyas",
   "publishConfig": {
@@ -12,12 +12,14 @@
   },
   "scripts": {
     "_______________DEV_______________": "",
-    "dev": "npm i && npm-check -u -i inquirer && npm run compile && node dist/cli/index.js",
+    "dev": "npm i && npm-check -u -i inquirer && npm run compile:module && node dist/cli/index.js",
+    "dev:ui": "vite --config src/eyas-interface/app/.vite.config.ui.js --open",
     "_____________COMPILE_____________": "",
-    "compile": "node src/scripts/compile-module.js && electron-vite build",
+    "compile:module": "npm run compile:ui && node src/scripts/compile-module.js && electron-vite build",
+    "compile:ui": "vite build --config src/eyas-interface/app/.vite.config.ui.js",
     "_____________SCRIPTS_____________": "",
-    "bundle": "npm ci && npm run compile && npm pack",
-    "deploy": "npm ci && npm run compile && npm publish"
+    "bundle": "npm ci && npm run compile:module && npm pack",
+    "deploy": "npm ci && npm run compile:module && npm publish"
   },
   "author": "Cycosoft, LLC (https://cycosoft.com)",
   "homepage": "https://cycosoft.com",
@@ -37,7 +39,7 @@
   "dependencies": {
     "bytenode": "^1.5.1",
     "commander": "^11.0.0",
-    "electron": "^26.2.1",
+    "electron": "^26.2.2",
     "electron-builder": "^24.6.4",
     "express": "^4.18.2",
     "fs-extra": "^11.1.1",
@@ -45,14 +47,20 @@
     "mixpanel": "^0.18.0",
     "mkcert": "^3.0.0",
     "url-parse": "^1.5.10",
-    "validator": "^13.11.0"
+    "validator": "^13.11.0",
+    "vue": "^3.3.4",
+    "vuetify": "^3.3.19"
   },
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.3",
+    "@vitejs/plugin-vue": "^4.3.4",
     "electron-vite": "^1.0.28",
-    "eslint": "^8.49.0",
+    "eslint": "^8.50.0",
+    "eslint-plugin-vue": "^9.17.0",
     "npm-check": "^6.0.1",
-    "vite-plugin-minify": "^1.5.2"
+    "sass": "^1.68.0",
+    "vite": "^4.4.9",
+    "vite-plugin-vuetify": "^1.0.2"
   },
   "overrides": {
     "package-json": ">6.5.0 <8.0.0"

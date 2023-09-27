@@ -4,7 +4,13 @@ module.exports = {
 		commonjs: true,
 		es2021: true
 	},
-	extends: `eslint:recommended`,
+	extends: [
+		`eslint:recommended`,
+		`plugin:vue/vue3-recommended`
+	],
+	globals: {
+		eventBridge: `readonly`
+	},
 	overrides: [
 		{
 			env: {
@@ -35,6 +41,10 @@ module.exports = {
 		'arrow-parens': [`error`, `as-needed`],
 		'no-spaced-func': [`error`],
 		'no-trailing-spaces': [`error`],
-		"spaced-comment": [`error`, `always`]
+		'spaced-comment': [`error`, `always`],
+		'vue/html-indent': [`error`, `tab`, {
+			alignAttributesVertically: false
+		}],
+		'vue/max-attributes-per-line': `off`
 	}
 };
