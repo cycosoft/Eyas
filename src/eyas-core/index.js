@@ -1,4 +1,4 @@
-/* global __dirname */
+/* global __dirname, process */
 
 'use strict';
 
@@ -25,7 +25,8 @@
 	const crypto = require(`crypto`);
 
 	// change app behavior based on environment
-	const isDev = false;
+	const isDev = true;
+	const devTest = process.env.NODE_ENV === `development`;
 
 	// Set up analytics
 	const analytics = Mixpanel.init(`07f0475cb429f7de5ebf79a1c418dc5c`);
@@ -215,7 +216,7 @@
 						];
 
 						// add the dev tools for the app layer if in dev
-						isDev && output.push(
+						devTest && output.push(
 							{
 								label: `⚙️ DevTools (App Layer)`,
 								click: () => appLayer.webContents.openDevTools()
