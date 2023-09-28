@@ -25,8 +25,7 @@
 	const crypto = require(`crypto`);
 
 	// change app behavior based on environment
-	const isDev = true;
-	const devTest = process.env.NODE_ENV === `development`;
+	const isProd = __dirname.includes(`node_modules`);
 
 	// Set up analytics
 	const analytics = Mixpanel.init(`07f0475cb429f7de5ebf79a1c418dc5c`);
@@ -59,7 +58,7 @@
 	const operatingSystem = os.platform();
 
 	// track the app launch event
-	!isDev && analytics.track(EVENTS.core.launch, {
+	isProd && analytics.track(EVENTS.core.launch, {
 		distinct_id: userId,
 		$os: operatingSystem,
 		$app_version_string: appVersion
@@ -216,7 +215,7 @@
 						];
 
 						// add the dev tools for the app layer if in dev
-						devTest && output.push(
+						!isProd && output.push(
 							{
 								label: `⚙️ DevTools (App Layer)`,
 								click: () => appLayer.webContents.openDevTools()
@@ -347,7 +346,7 @@
 			clientWindow.removeListener(`close`, onAppClose);
 
 			// track that the app is being closed
-			!isDev && analytics.track(EVENTS.core.exit, { distinct_id: userId });
+			isProd && analytics.track(EVENTS.core.exit, { distinct_id: userId });
 
 			// Shut down the test server AND THEN exit the app
 			testServer.close(electronLayer.quit);
@@ -390,7 +389,7 @@
 		evt.preventDefault();
 
 		// track that the modal is being opened
-		!isDev && analytics.track(EVENTS.ui.modalExitShown, { distinct_id: userId });
+		isProd && analytics.track(EVENTS.ui.modalExitShown, { distinct_id: userId });
 
 		// enable the UI layer
 		enableUI(true);
