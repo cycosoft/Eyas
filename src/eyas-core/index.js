@@ -1,4 +1,4 @@
-/* global __dirname */
+/* global __dirname, process */
 
 'use strict';
 
@@ -24,8 +24,8 @@
 	const os = require(`os`);
 	const crypto = require(`crypto`);
 
-	// change app behavior based on environment
-	const isDev = false;
+	// set dev mode if flag is detected
+	const isDev = process.argv.includes(`--dev`);
 
 	// Set up analytics
 	const analytics = Mixpanel.init(`07f0475cb429f7de5ebf79a1c418dc5c`);
