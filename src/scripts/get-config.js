@@ -46,6 +46,7 @@ const eyasConfig = {
 
 	// defaults to current platform
 	outputs: {
+		expires: userConfig.outputs.expires || 7 * 24, // hours
 		compression: userConfig.outputs.compression || `normal`, // store, normal, maximum
 		windows: userConfig.outputs.windows || false,
 		mac: userConfig.outputs.mac || false,
