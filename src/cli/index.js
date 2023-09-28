@@ -13,6 +13,13 @@ const actions = {
 		command: `config`,
 		action: runCommand_config
 	},
+	previewDev: {
+		enabled: false,
+		label: `Preview (dev mode)`,
+		description: `Launch Eyas in development mode`,
+		command: `previewDev`,
+		action: () => runCommand_preview(true)
+	},
 	preview: {
 		enabled: true,
 		label: `Preview`,
@@ -62,6 +69,9 @@ const paths = {
 	testDest: path.join(roots.eyasBuild, `test`),
 	icon: path.join(roots.eyasBuild, `eyas-assets`, `eyas-logo.png`)
 };
+
+// set mode
+actions.previewDev.enabled = !isProd;
 
 // load the user's config
 const config = require(paths.configLoader);
@@ -148,7 +158,7 @@ async function runCommand_config() {
 }
 
 // launch a preview of the consumers application
-async function runCommand_preview() {
+async function runCommand_preview(devMode = false) {
 	const { spawn } = require(`child_process`);
 	const electron = require(`electron`);
 
@@ -159,7 +169,9 @@ async function runCommand_preview() {
 	userLog(`Launching preview...`);
 
 	// run the app
-	spawn(electron, [paths.eyasApp], {
+	const command = [paths.eyasApp];
+	if(devMode) { command.push(`--dev`); }
+	spawn(electron, command, {
 		detached: true,
 		stdio: `ignore`,
 		windowsHide: false,
