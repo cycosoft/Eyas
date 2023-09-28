@@ -24,7 +24,6 @@ try {
 	console.log(``);
 	console.warn(`⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️`);
 	console.log(``);
-	userConfig = {};
 }
 
 // error checking for config
