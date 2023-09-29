@@ -28,7 +28,7 @@ try {
 }
 
 // try loading the user's meta data (may not exist when CLI runs this)
-const metaPath = path.join(roots.eyasBuild, `.eyas.meta.json`);
+const metaPath = path.join(roots.meta, `.eyas.meta.json`);
 let metaData = {};
 try {
 	metaData = require(metaPath);

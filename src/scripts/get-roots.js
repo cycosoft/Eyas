@@ -18,6 +18,9 @@ const isPackaged = __dirname.includes(`app.asar`);
 const configRoot = isPackaged
 	? eyasRoot
 	: consumerRoot;
+const metaRoot = isPackaged
+	? eyasRoot
+	: path.join(consumerRoot, `.eyas-preview`);
 
 // base paths
 const roots = {
@@ -26,6 +29,7 @@ const roots = {
 	eyasBuild: path.join(consumerRoot, `.eyas-preview`),
 	eyasDist: path.join(consumerRoot, `.eyas-dist`),
 	config: configRoot,
+	meta: metaRoot,
 	eyas: eyasRoot,
 	module: moduleRoot
 };
