@@ -78,7 +78,7 @@ module.exports = {
   // Defaults to building for the current platform if no platform is specified
   outputs: {
     // The number of hours from build time until the distributable expires
-    expires: 7 * 24, // 7 days
+    expires: 168, // (range: 1-720 hours)
     // The level of compression applied to your distributable
     compression: `normal`, // store, normal, maximum
     // Force building a .exe

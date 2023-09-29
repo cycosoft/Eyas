@@ -45,7 +45,7 @@ const eyasConfig = {
 
 	// defaults to current platform
 	outputs: {
-		expires: userConfig.outputs.expires || 7 * 24, // hours
+		expires: validateExpiration(userConfig.outputs.expires), // hours
 		compression: userConfig.outputs.compression || `normal`, // store, normal, maximum
 		windows: userConfig.outputs.windows || false,
 		mac: userConfig.outputs.mac || false,
@@ -65,4 +65,43 @@ function getBranchName() {
 		console.error(`Error getting branch name:`, error);
 		return null;
 	}
+}
+
+// validate the user input for the expiration
+function validateExpiration(hours) {
+	// default
+	let output = hours;
+	const defaultHours = 7 * 24;
+	const minHours = 1;
+	const maxHours = 30 * 24;
+
+	// if not a number
+	if (isNaN(output)) {
+		console.log(`not a number`);
+		output = defaultHours;
+	}
+
+	// cast to a number
+	output = Number(output);
+	console.log(`cast to number:`, output);
+
+	// must be a whole number
+	if (!Number.isInteger(output)) {
+		console.log(`not a whole number`);
+		output = Math.ceil(output);
+	}
+
+	// must be above the minimum
+	if (output < minHours) {
+		console.log(`below minimum`);
+		output = minHours;
+	}
+
+	// must be below the maximum
+	if (output > maxHours) {
+		console.log(`above maximum`);
+		output = maxHours;
+	}
+
+	return output;
 }
