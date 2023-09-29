@@ -16,13 +16,13 @@ try {
 	userConfig = require(configPath);
 } catch (error) {
 	console.warn(``);
-	console.warn(`⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️`);
+	console.warn(`⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️`);
 	console.warn(`------ UNABLE TO LOAD USER SETTINGS ------`);
 	console.warn(`-------- proceeding with defaults --------`);
 	console.log(``);
 	console.error(error);
 	console.log(``);
-	console.warn(`⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️`);
+	console.warn(`⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️`);
 	console.log(``);
 }
 
