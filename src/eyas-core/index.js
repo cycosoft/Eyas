@@ -166,7 +166,7 @@
 							const expires = new Date(config.meta.expiration);
 							const dayCount = differenceInDays(expires, now);
 							const expirationFormatted = format(expires, `MMM do @ p`);
-							const relativeFormatted = dayCount ? `in ${dayCount} days` : `soon`;
+							const relativeFormatted = dayCount ? `~${dayCount} days` : `soon`;
 							const startYear = 2023;
 							const currentYear = now.getFullYear();
 							const yearRange = startYear === currentYear
