@@ -59,7 +59,8 @@ const eyasConfig = {
 		compression: userConfig.outputs.compression || `normal`, // store, normal, maximum
 		windows: userConfig.outputs.windows || false,
 		mac: userConfig.outputs.mac || false,
-		linux: userConfig.outputs.linux || false
+		linux: userConfig.outputs.linux || false,
+		zip: userConfig.outputs.zip || false
 	},
 
 	meta: metaData
