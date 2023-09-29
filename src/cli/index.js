@@ -222,6 +222,8 @@ async function createBuildFolder() {
 
 	// generate meta data for the build
 	userLog(`Generating meta data...`);
+	const now = new Date();
+	console.log(now);
 	const metaData = { expiration: Date.now() + (config.outputs.expires * 60 * 60 * 1000) };
 	await fs.outputFile(paths.metaDest, JSON.stringify(metaData));
 }
