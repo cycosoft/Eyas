@@ -263,7 +263,7 @@ async function runCommand_compile() {
 	await fs.emptyDir(paths.dist);
 
 	// Log that compilation is starting
-	userLog(`Creating executable(s)...`);
+	userLog(`Creating distributable(s)...`);
 	userLog();
 
 	// Build the executables
