@@ -158,32 +158,6 @@ async function runCommand_config() {
 	console.log(`config command disabled`);
 }
 
-// launch a preview of the consumers application
-async function runCommand_preview(devMode = false) {
-	const { spawn } = require(`child_process`);
-	const electron = require(`electron`);
-
-	// create the build folder to prep for usage
-	await createBuildFolder();
-
-	// Alert that preview is starting
-	userLog(`Launching preview...`);
-
-	// run the app
-	const command = [paths.eyasApp];
-	if(devMode) { command.push(`--dev`); }
-	spawn(electron, command, {
-		detached: true,
-		stdio: `ignore`,
-		windowsHide: false,
-		cwd: consumerRoot
-	}).unref(); // allow the command line to continue running
-
-	// log the end of the process
-	userLog(`Preview launched!`);
-	userLog();
-}
-
 // runs all the steps to create the build folder
 async function createBuildFolder() {
 	// imports
@@ -227,6 +201,32 @@ async function createBuildFolder() {
 	const expiration = addHours(new Date(), config.outputs.expires);
 	const metaData = { expiration };
 	await fs.outputFile(paths.metaDest, JSON.stringify(metaData));
+}
+
+// launch a preview of the consumers application
+async function runCommand_preview(devMode = false) {
+	const { spawn } = require(`child_process`);
+	const electron = require(`electron`);
+
+	// create the build folder to prep for usage
+	await createBuildFolder();
+
+	// Alert that preview is starting
+	userLog(`Launching preview...`);
+
+	// run the app
+	const command = [paths.eyasApp];
+	if(devMode) { command.push(`--dev`); }
+	spawn(electron, command, {
+		detached: true,
+		stdio: `ignore`,
+		windowsHide: false,
+		cwd: consumerRoot
+	}).unref(); // allow the command line to continue running
+
+	// log the end of the process
+	userLog(`Preview launched!`);
+	userLog();
 }
 
 // compile the consumers application for deployment
