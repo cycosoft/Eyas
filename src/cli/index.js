@@ -188,6 +188,8 @@ async function runCommand_preview(devMode = false) {
 async function createBuildFolder() {
 	// imports
 	const fs = require(`fs-extra`);
+	const addHours = require(`date-fns/addHours`);
+
 
 	// give space for the start of the process
 	userLog();
@@ -222,9 +224,8 @@ async function createBuildFolder() {
 
 	// generate meta data for the build
 	userLog(`Generating meta data...`);
-	const now = new Date();
-	console.log(now);
-	const metaData = { expiration: Date.now() + (config.outputs.expires * 60 * 60 * 1000) };
+	const expiration = addHours(new Date(), config.outputs.expires);
+	const metaData = { expiration };
 	await fs.outputFile(paths.metaDest, JSON.stringify(metaData));
 }
 
