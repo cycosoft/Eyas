@@ -12,7 +12,7 @@ const roots = require(`./get-roots.js`);
 let userConfig = {};
 let metaData = {};
 const configPath = path.join(roots.config, `.eyas.config.js`);
-const metaPath = path.join(roots.config, `.eyas.meta.json`);
+const metaPath = path.join(roots.eyasBuild, `.eyas.meta.json`);
 try {
 	// attempt to load the user's config
 	userConfig = require(configPath);
