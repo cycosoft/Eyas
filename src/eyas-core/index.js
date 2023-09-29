@@ -160,8 +160,15 @@
 						label: `📇 About`,
 						click: () => {
 							// setup
+							const format = require(`date-fns/format`);
+							const differenceInDays = require(`date-fns/differenceInDays`);
+							const now = new Date();
+							const expires = new Date(config.meta.expiration);
+							const dayCount = differenceInDays(expires, now);
+							const expirationFormatted = format(expires, `MMM do @ p`);
+							const relativeFormatted = dayCount ? `in ${dayCount} days` : `soon`;
 							const startYear = 2023;
-							const currentYear = new Date().getFullYear();
+							const currentYear = now.getFullYear();
 							const yearRange = startYear === currentYear
 								? startYear : `${startYear} - ${currentYear}`;
 
@@ -175,7 +182,7 @@
 								Testing: ${config.test.title}
 								Version: ${config.test.version}
 								Built With: ${appName} v${appVersion}
-								Expires: ${config.meta.expiration}
+								Expires: ${expirationFormatted} (${relativeFormatted})
 
 
 								🏢 © ${yearRange} Cycosoft, LLC
