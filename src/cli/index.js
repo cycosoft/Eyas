@@ -307,7 +307,7 @@ async function runCommand_compile() {
 
 	// let the user know where the output is
 	userLog();
-	builtFiles.forEach(file => userLog(`File created -> ${file}`));
+	!config.outputs.zip && builtFiles.forEach(file => userLog(`File created -> ${file}`));
 
 	// if the config says to create a zip file
 	const archiver = require(`archiver`);
@@ -322,6 +322,9 @@ async function runCommand_compile() {
 		const filename = file.split(`\\`).pop();
 		archive.file(file, { name: filename });
 		archive.finalize();
+
+		// remove the included file
+		fs.remove(file);
 
 		userLog(`File created -> ${file}.zip`);
 	});
