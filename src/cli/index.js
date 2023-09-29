@@ -312,12 +312,17 @@ async function runCommand_compile() {
 	// if the config says to create a zip file
 	const archiver = require(`archiver`);
 	config.outputs.zip && builtFiles.forEach(file => {
+		// if the file is .AppImage, skip the loop
+		if(file.endsWith(`.AppImage`)) { return; }
+
+		// create the zip file
 		const output = fs.createWriteStream(`${file}.zip`);
 		const archive = archiver(`zip`, { store: true });
 		archive.pipe(output);
 		const filename = file.split(`\\`).pop();
 		archive.file(file, { name: filename });
 		archive.finalize();
+
 		userLog(`File created -> ${file}.zip`);
 	});
 
