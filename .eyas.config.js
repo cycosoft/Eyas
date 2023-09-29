@@ -39,7 +39,7 @@ module.exports = {
 		compression: `store`,
 		// windows: true,
 		// mac: true,
-		// linux: true
-		zip: true
+		// linux: true,
+		// zip: true
 	}
 };
