@@ -272,7 +272,7 @@ async function runCommand_compile() {
 	if(config.outputs.mac) { targets.push(builder.Platform.MAC); }
 	if(config.outputs.linux) { targets.push(builder.Platform.LINUX); }
 
-	await builder.build({
+	const builtFiles = await builder.build({
 		targets: targets.length ? builder.createTargets(targets) : null,
 		config: {
 			appId: `com.cycosoft.eyas`,
@@ -307,9 +307,22 @@ async function runCommand_compile() {
 
 	// let the user know where the output is
 	userLog();
-	userLog(`Files created at: ${paths.dist}`);
+	builtFiles.forEach(file => userLog(`File created -> ${file}`));
+
+	// if the config says to create a zip file
+	const archiver = require(`archiver`);
+	config.outputs.zip && builtFiles.forEach(file => {
+		const output = fs.createWriteStream(`${file}.zip`);
+		const archive = archiver(`zip`, { store: true });
+		archive.pipe(output);
+		const filename = file.split(`\\`).pop();
+		archive.file(file, { name: filename });
+		archive.finalize();
+		userLog(`File created -> ${file}.zip`);
+	});
 
 	// delete the build folder
+	userLog();
 	userLog(`Removing build directory...`);
 	await fs.remove(paths.build);
 
