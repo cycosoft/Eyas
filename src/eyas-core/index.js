@@ -163,7 +163,7 @@
 							const format = require(`date-fns/format`);
 							const differenceInDays = require(`date-fns/differenceInDays`);
 							const now = new Date();
-							const expires = new Date(config.meta.expiration);
+							const expires = new Date(config.meta.expires);
 							const dayCount = differenceInDays(expires, now);
 							const expirationFormatted = format(expires, `MMM do @ p`);
 							const relativeFormatted = dayCount ? `~${dayCount} days` : `soon`;
@@ -173,16 +173,20 @@
 								? startYear : `${startYear} - ${currentYear}`;
 
 							// show the about dialog
-							dialog.showMessageBox({
+							dialog.showMessageBox(clientWindow, {
 								type: `info`,
 								buttons: [`OK`],
 								title: `About ${appName}`,
 								icon: paths.icon,
 								message: `
-								Testing: ${config.test.title}
-								Version: ${config.test.version}
-								Built With: ${appName} v${appVersion}
-								Expires: ${expirationFormatted} (${relativeFormatted})
+								Test name: ${config.test.title}
+								Test version: ${config.test.version}
+								Test expires: ${expirationFormatted} (${relativeFormatted})
+
+								Built from: ${config.meta.gitBranch} #${config.meta.gitHash}
+								Built by: ${config.meta.gitUser}
+								Built on: ${new Date(config.meta.compiled).toLocaleString()}
+								Build with: ${appName} v${appVersion}
 
 
 								🏢 © ${yearRange} Cycosoft, LLC
@@ -328,7 +332,7 @@
 		// stop the user here if the test is expired
 		const isPast = require(`date-fns/isPast`);
 		const format = require(`date-fns/format`);
-		const expiredAsDate = new Date(config.meta.expiration);
+		const expiredAsDate = new Date(config.meta.expires);
 		const isExpired = isPast(expiredAsDate);
 		if(isExpired){
 			dialog.showMessageBoxSync({
