@@ -40,5 +40,6 @@ module.exports = {
 		// windows: true,
 		// mac: true,
 		// linux: true
+		zip: true
 	}
 };

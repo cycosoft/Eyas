@@ -86,7 +86,9 @@ module.exports = {
     // Force building a .dmg
     mac: false,
     // Force building a .AppImage
-    linux: false
+    linux: false,
+    // Wraps the distributable in a .zip file (except .AppImage)
+    zip: false
   }
 };
 ```
