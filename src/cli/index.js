@@ -201,6 +201,9 @@ async function createBuildFolder() {
 	const expiration = addHours(new Date(), config.outputs.expires);
 	const metaData = { expiration };
 	await fs.outputFile(paths.metaDest, JSON.stringify(metaData));
+
+	// let the user know when this build expires
+	userLog(`  > Build expires ${expiration.toLocaleString()}`);
 }
 
 // launch a preview of the consumers application
