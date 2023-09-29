@@ -55,6 +55,7 @@ const paths = {
 	build: roots.eyasBuild,
 	configLoader: path.join(roots.dist, names.scripts, `get-config.js`),
 	configDest: path.join(roots.eyasBuild, `.eyas.config.js`),
+	metaDest: path.join(roots.eyasBuild, `.eyas.meta.json`),
 	eyasApp: path.join(roots.eyasBuild, `index.js`),
 	eyasAssetsSrc: path.join(roots.dist, names.eyasAssets),
 	eyasAssetsDest: path.join(roots.eyasBuild, names.eyasAssets),
@@ -218,6 +219,11 @@ async function createBuildFolder() {
 	// copy eyas assets to the build folder
 	userLog(`Copying Eyas assets...`);
 	await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
+
+	// generate meta data for the build
+	userLog(`Generating meta data...`);
+	const metaData = { expiration: Date.now() + (config.outputs.expires * 60 * 60 * 1000) };
+	await fs.outputFile(paths.metaDest, JSON.stringify(metaData));
 }
 
 // compile the consumers application for deployment
