@@ -77,29 +77,24 @@ function validateExpiration(hours) {
 
 	// if not a number
 	if (isNaN(output)) {
-		console.log(`not a number`);
 		output = defaultHours;
 	}
 
 	// cast to a number
 	output = Number(output);
-	console.log(`cast to number:`, output);
 
 	// must be a whole number
 	if (!Number.isInteger(output)) {
-		console.log(`not a whole number`);
 		output = Math.ceil(output);
 	}
 
 	// must be above the minimum
 	if (output < minHours) {
-		console.log(`below minimum`);
 		output = minHours;
 	}
 
 	// must be below the maximum
 	if (output > maxHours) {
-		console.log(`above maximum`);
 		output = maxHours;
 	}
 
