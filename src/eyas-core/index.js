@@ -325,6 +325,26 @@
 		// Create the browser window
 		clientWindow = new BrowserWindow(windowConfig);
 
+		// stop the user here if the test is expired
+		const isPast = require(`date-fns/isPast`);
+		const format = require(`date-fns/format`);
+		const expiredAsDate = new Date(config.meta.expiration);
+		const isExpired = isPast(expiredAsDate);
+		if(isExpired){
+			dialog.showMessageBoxSync({
+				title: `🚫 Test Expired`,
+				message: `This test expired on ${format(expiredAsDate, `PPP`)} and can no longer be used`,
+				buttons: [`Exit`],
+				noLink: true
+			});
+
+			// track that the app is being closed
+			!isDev && analytics.track(EVENTS.core.exit, { distinct_id: userId });
+
+			// Exit the app
+			electronLayer.quit();
+		}
+
 		// Create a menu template
 		setMenu();
 
