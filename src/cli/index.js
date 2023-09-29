@@ -198,12 +198,24 @@ async function createBuildFolder() {
 
 	// generate meta data for the build
 	userLog(`Generating meta data...`);
-	const expiration = addHours(new Date(), config.outputs.expires);
-	const metaData = { expiration };
+	const { execSync } = require(`child_process`);
+	const now = new Date();
+	const expires = addHours(now, config.outputs.expires);
+	let gitBranch = ``, gitHash = ``, gitUser = ``;
+	try { gitBranch = execSync(`git rev-parse --abbrev-ref HEAD`).toString().trim(); } catch (e) {/**/}
+	try { gitHash = execSync(`git rev-parse --short HEAD`).toString().trim(); } catch (e) {/**/}
+	try { gitUser = execSync(`git config user.name`).toString().trim(); } catch (e) {/**/}
+	const metaData = {
+		expires,
+		gitBranch,
+		gitHash,
+		gitUser,
+		compiled: now
+	};
 	await fs.outputFile(paths.metaDest, JSON.stringify(metaData));
 
 	// let the user know when this build expires
-	userLog(`  > Build expires ${expiration.toLocaleString()}`);
+	userLog(`  > Build expires ${expires.toLocaleString()}`);
 }
 
 // launch a preview of the consumers application
