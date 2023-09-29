@@ -10,21 +10,30 @@ const roots = require(`./get-roots.js`);
 
 // setup
 let userConfig = {};
+
+// attempt to load the user's config
 const configPath = path.join(roots.config, `.eyas.config.js`);
 try {
-	// attempt to load the user's config
 	userConfig = require(configPath);
 } catch (error) {
 	console.warn(``);
-	console.warn(`⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️`);
+	console.warn(`⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️`);
 	console.warn(`------ UNABLE TO LOAD USER SETTINGS ------`);
 	console.warn(`-------- proceeding with defaults --------`);
 	console.log(``);
 	console.error(error);
 	console.log(``);
-	console.warn(`⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️`);
+	console.warn(`⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️`);
 	console.log(``);
-	userConfig = {};
+}
+
+// try loading the user's meta data (may not exist when CLI runs this)
+const metaPath = path.join(roots.meta, `.eyas.meta.json`);
+let metaData = {};
+try {
+	metaData = require(metaPath);
+} catch (error) {
+	// this should be silent
 }
 
 // error checking for config
@@ -46,11 +55,14 @@ const eyasConfig = {
 
 	// defaults to current platform
 	outputs: {
+		expires: validateExpiration(userConfig.outputs.expires), // hours
 		compression: userConfig.outputs.compression || `normal`, // store, normal, maximum
 		windows: userConfig.outputs.windows || false,
 		mac: userConfig.outputs.mac || false,
 		linux: userConfig.outputs.linux || false
-	}
+	},
+
+	meta: metaData
 };
 
 // export the config for the project
@@ -65,4 +77,38 @@ function getBranchName() {
 		console.error(`Error getting branch name:`, error);
 		return null;
 	}
+}
+
+// validate the user input for the expiration
+function validateExpiration(hours) {
+	// default
+	let output = hours;
+	const defaultHours = 7 * 24;
+	const minHours = 1;
+	const maxHours = 30 * 24;
+
+	// if not a number
+	if (isNaN(output)) {
+		output = defaultHours;
+	}
+
+	// cast to a number
+	output = Number(output);
+
+	// must be a whole number
+	if (!Number.isInteger(output)) {
+		output = Math.ceil(output);
+	}
+
+	// must be above the minimum
+	if (output < minHours) {
+		output = minHours;
+	}
+
+	// must be below the maximum
+	if (output > maxHours) {
+		output = maxHours;
+	}
+
+	return output;
 }

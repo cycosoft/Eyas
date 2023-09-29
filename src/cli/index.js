@@ -55,6 +55,7 @@ const paths = {
 	build: roots.eyasBuild,
 	configLoader: path.join(roots.dist, names.scripts, `get-config.js`),
 	configDest: path.join(roots.eyasBuild, `.eyas.config.js`),
+	metaDest: path.join(roots.eyasBuild, `.eyas.meta.json`),
 	eyasApp: path.join(roots.eyasBuild, `index.js`),
 	eyasAssetsSrc: path.join(roots.dist, names.eyasAssets),
 	eyasAssetsDest: path.join(roots.eyasBuild, names.eyasAssets),
@@ -157,36 +158,12 @@ async function runCommand_config() {
 	console.log(`config command disabled`);
 }
 
-// launch a preview of the consumers application
-async function runCommand_preview(devMode = false) {
-	const { spawn } = require(`child_process`);
-	const electron = require(`electron`);
-
-	// create the build folder to prep for usage
-	await createBuildFolder();
-
-	// Alert that preview is starting
-	userLog(`Launching preview...`);
-
-	// run the app
-	const command = [paths.eyasApp];
-	if(devMode) { command.push(`--dev`); }
-	spawn(electron, command, {
-		detached: true,
-		stdio: `ignore`,
-		windowsHide: false,
-		cwd: consumerRoot
-	}).unref(); // allow the command line to continue running
-
-	// log the end of the process
-	userLog(`Preview launched!`);
-	userLog();
-}
-
 // runs all the steps to create the build folder
 async function createBuildFolder() {
 	// imports
 	const fs = require(`fs-extra`);
+	const addHours = require(`date-fns/addHours`);
+
 
 	// give space for the start of the process
 	userLog();
@@ -218,6 +195,41 @@ async function createBuildFolder() {
 	// copy eyas assets to the build folder
 	userLog(`Copying Eyas assets...`);
 	await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
+
+	// generate meta data for the build
+	userLog(`Generating meta data...`);
+	const expiration = addHours(new Date(), config.outputs.expires);
+	const metaData = { expiration };
+	await fs.outputFile(paths.metaDest, JSON.stringify(metaData));
+
+	// let the user know when this build expires
+	userLog(`  > Build expires ${expiration.toLocaleString()}`);
+}
+
+// launch a preview of the consumers application
+async function runCommand_preview(devMode = false) {
+	const { spawn } = require(`child_process`);
+	const electron = require(`electron`);
+
+	// create the build folder to prep for usage
+	await createBuildFolder();
+
+	// Alert that preview is starting
+	userLog(`Launching preview...`);
+
+	// run the app
+	const command = [paths.eyasApp];
+	if(devMode) { command.push(`--dev`); }
+	spawn(electron, command, {
+		detached: true,
+		stdio: `ignore`,
+		windowsHide: false,
+		cwd: consumerRoot
+	}).unref(); // allow the command line to continue running
+
+	// log the end of the process
+	userLog(`Preview launched!`);
+	userLog();
 }
 
 // compile the consumers application for deployment
