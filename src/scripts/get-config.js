@@ -10,10 +10,13 @@ const roots = require(`./get-roots.js`);
 
 // setup
 let userConfig = {};
+let metaData = {};
 const configPath = path.join(roots.config, `.eyas.config.js`);
+const metaPath = path.join(roots.config, `.eyas.meta.json`);
 try {
 	// attempt to load the user's config
 	userConfig = require(configPath);
+	metaData = require(metaPath);
 } catch (error) {
 	console.warn(``);
 	console.warn(`⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️`);
@@ -50,7 +53,9 @@ const eyasConfig = {
 		windows: userConfig.outputs.windows || false,
 		mac: userConfig.outputs.mac || false,
 		linux: userConfig.outputs.linux || false
-	}
+	},
+
+	meta: metaData
 };
 
 // export the config for the project

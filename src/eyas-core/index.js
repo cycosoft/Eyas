@@ -175,6 +175,7 @@
 								Testing: ${config.test.title}
 								Version: ${config.test.version}
 								Built With: ${appName} v${appVersion}
+								Expires: ${config.meta.expiration}
 
 
 								🏢 © ${yearRange} Cycosoft, LLC
