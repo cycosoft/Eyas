@@ -10,13 +10,11 @@ const roots = require(`./get-roots.js`);
 
 // setup
 let userConfig = {};
-let metaData = {};
+
+// attempt to load the user's config
 const configPath = path.join(roots.config, `.eyas.config.js`);
-const metaPath = path.join(roots.eyasBuild, `.eyas.meta.json`);
 try {
-	// attempt to load the user's config
 	userConfig = require(configPath);
-	metaData = require(metaPath);
 } catch (error) {
 	console.warn(``);
 	console.warn(`⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️`);
@@ -27,6 +25,15 @@ try {
 	console.log(``);
 	console.warn(`⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️`);
 	console.log(``);
+}
+
+// try loading the user's meta data (may not exist when CLI runs this)
+const metaPath = path.join(roots.eyasBuild, `.eyas.meta.json`);
+let metaData = {};
+try {
+	metaData = require(metaPath);
+} catch (error) {
+	// this should be silent
 }
 
 // error checking for config
