@@ -36,7 +36,6 @@ module.exports = {
 
 	// defaults to current platform
 	outputs: {
-		expires: 7 * 24, // hours
 		compression: `store`,
 		// windows: true,
 		// mac: true,
