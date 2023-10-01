@@ -9,7 +9,8 @@
     "mkcert": "",
     "url-parse": "",
     "validator": "",
-    "date-fns": ""
+    "date-fns": "",
+    "node": ""
   },
   "devDependencies": {
     "electron": ""
