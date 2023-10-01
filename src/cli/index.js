@@ -338,14 +338,21 @@ async function runCommand_compile() {
 	const archiver = require(`archiver`);
 	const output = fs.createWriteStream(paths.dist + `/node-demo.zip`);
 	const archive = archiver(`zip`, { store: true });
+	output.on(`close`, () => {
+		console.log(archive.pointer() + ` total bytes`);
+		userLog();
+		userLog(`Removing build data...`);
+		userLog(`Process complete!`);
+		userLog();
+	});
 	archive.pipe(output);
 	archive.directory(paths.build, false);
 	archive.finalize();
 
 
 	// delete the build folder
-	userLog();
-	userLog(`Removing build data...`);
+	// userLog();
+	// userLog(`Removing build data...`);
 	// await fs.remove(paths.build);
 
 	// delete directories in the build output. delete files that aren't .zip, .dmg, .exe, .AppImage
@@ -375,8 +382,8 @@ async function runCommand_compile() {
 	// }
 
 	// log the end of the process
-	userLog(`Process complete!`);
-	userLog();
+	// userLog(`Process complete!`);
+	// userLog();
 }
 
 // wrapper to differentiate user logs (allowed) from system logs (disallowed)
