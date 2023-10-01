@@ -272,62 +272,76 @@ async function runCommand_compile() {
 	if(config.outputs.mac) { targets.push(builder.Platform.MAC); }
 	if(config.outputs.linux) { targets.push(builder.Platform.LINUX); }
 
-	const builtFiles = await builder.build({
-		targets: targets.length ? builder.createTargets(targets) : null,
-		config: {
-			appId: `com.cycosoft.eyas`,
-			productName: `Eyas`,
-			// eslint-disable-next-line quotes
-			artifactName: `${config.test.title} - ${config.test.version}` + '.${ext}',
-			copyright: `Copyright © 2023 Cycosoft, LLC`,
-			asarUnpack: [`resources/**`],
-			compression: config.outputs.compression,
-			directories: {
-				app: paths.build,
-				output: paths.dist
-			},
-			removePackageScripts: true,
-			removePackageKeywords: true,
-			mac: {
-				target: `dmg`,
-				icon: paths.icon
-				// identity: `undefined` // disable code signing
-			},
-			win: {
-				target: `portable`,
-				icon: paths.icon
-			},
-			linux: {
-				target: `AppImage`,
-				icon: paths.icon,
-				category: `Utility`
+	// eslint-disable-next-line no-constant-condition
+	if(false){
+		const builtFiles = await builder.build({
+			targets: targets.length ? builder.createTargets(targets) : null,
+			config: {
+				appId: `com.cycosoft.eyas`,
+				productName: `Eyas`,
+				// eslint-disable-next-line quotes
+				artifactName: `${config.test.title} - ${config.test.version}` + '.${ext}',
+				copyright: `Copyright © 2023 Cycosoft, LLC`,
+				asarUnpack: [`resources/**`],
+				compression: config.outputs.compression,
+				directories: {
+					app: paths.build,
+					output: paths.dist
+				},
+				removePackageScripts: true,
+				removePackageKeywords: true,
+				mac: {
+					target: `dmg`,
+					icon: paths.icon
+					// identity: `undefined` // disable code signing
+				},
+				win: {
+					target: `portable`,
+					icon: paths.icon
+				},
+				linux: {
+					target: `AppImage`,
+					icon: paths.icon,
+					category: `Utility`
+				}
 			}
-		}
-	});
+		});
 
-	// let the user know where the output is
+		// let the user know where the output is
+		userLog();
+		!config.outputs.zip && builtFiles.forEach(file => userLog(`File created -> ${file}`));
+
+		// if the config says to create a zip file
+		const archiver = require(`archiver`);
+		config.outputs.zip && builtFiles.forEach(file => {
+			// if the file is .AppImage, skip the loop
+			if(file.endsWith(`.AppImage`)) { return; }
+
+			// create the zip file
+			const output = fs.createWriteStream(`${file}.zip`);
+			const archive = archiver(`zip`, { store: true });
+			archive.pipe(output);
+			const filename = file.split(`\\`).pop();
+			archive.file(file, { name: filename });
+			archive.finalize();
+
+			// remove the included file
+			fs.remove(file);
+
+			userLog(`File created -> ${file}.zip`);
+		});
+	}
+
+	// create the node runner version
 	userLog();
-	!config.outputs.zip && builtFiles.forEach(file => userLog(`File created -> ${file}`));
-
-	// if the config says to create a zip file
+	userLog(`Creating Node runner...`);
 	const archiver = require(`archiver`);
-	config.outputs.zip && builtFiles.forEach(file => {
-		// if the file is .AppImage, skip the loop
-		if(file.endsWith(`.AppImage`)) { return; }
+	const output = fs.createWriteStream(paths.dist + `/node-demo.zip`);
+	const archive = archiver(`zip`, { store: true });
+	archive.pipe(output);
+	archive.directory(paths.build, false);
+	archive.finalize();
 
-		// create the zip file
-		const output = fs.createWriteStream(`${file}.zip`);
-		const archive = archiver(`zip`, { store: true });
-		archive.pipe(output);
-		const filename = file.split(`\\`).pop();
-		archive.file(file, { name: filename });
-		archive.finalize();
-
-		// remove the included file
-		fs.remove(file);
-
-		userLog(`File created -> ${file}.zip`);
-	});
 
 	// delete the build folder
 	userLog();
