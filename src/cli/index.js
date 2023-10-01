@@ -346,7 +346,7 @@ async function runCommand_compile() {
 	// delete the build folder
 	userLog();
 	userLog(`Removing build data...`);
-	await fs.remove(paths.build);
+	// await fs.remove(paths.build);
 
 	// delete directories in the build output. delete files that aren't .zip, .dmg, .exe, .AppImage
 	const files = await fs.readdir(paths.dist);
