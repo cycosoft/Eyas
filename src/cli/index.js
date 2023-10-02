@@ -46,6 +46,7 @@ const moduleRoot = isProd
 const roots = require(path.join(moduleRoot, `dist`, `scripts`, `get-roots.js`));
 const names = {
 	macRunner: `eyas.command`,
+	winRunner: `eyas.cmd`,
 	packageJson: `package.json`,
 	eyasAssets: `eyas-assets`,
 	eyasInterface: `eyas-interface`,
@@ -67,6 +68,7 @@ const paths = {
 	packageJsonSrc: path.join(roots.dist, `build-assets`, names.packageJson),
 	packageJsonDest: path.join(roots.eyasBuild, names.packageJson),
 	macRunnerSrc: path.join(roots.dist, `build-assets`, names.macRunner),
+	winRunnerSrc: path.join(roots.dist, `build-assets`, names.winRunner),
 	scriptsSrc: path.join(roots.dist, names.scripts),
 	scriptsDest: path.join(roots.eyasBuild, names.scripts),
 	testDest: path.join(roots.eyasBuild, `test`),
@@ -389,8 +391,9 @@ async function runCommand_compile() {
 		// add common files
 		archive.directory(paths.build, false);
 
-		// add mac files
+		// add mac/win files
 		archive.file(paths.macRunnerSrc, { name: names.macRunner });
+		archive.file(paths.winRunnerSrc, { name: names.winRunner });
 
 		// complete the archive
 		archive.finalize();
