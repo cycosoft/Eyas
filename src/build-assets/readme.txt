@@ -1,2 +1,2 @@
 # Make this file executable with the following command:
-# chmod +x ./eyas.command
+# chmod u+x eyas.command
