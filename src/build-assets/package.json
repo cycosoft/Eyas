@@ -3,9 +3,6 @@
   "description": "",
   "version": "",
   "author": "",
-  "scripts": {
-    "start": "electron index.js --dev"
-  },
   "dependencies": {
     "express": "",
     "mixpanel": "",
