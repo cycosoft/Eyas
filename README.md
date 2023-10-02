@@ -81,13 +81,11 @@ module.exports = {
     expires: 168, // (range: 1-720 hours)
     // The level of compression applied to your distributable
     compression: `normal`, // store, normal, maximum
-    // Force building a .exe
-    windows: false,
-    // Force building a .dmg
-    mac: false,
-    // Force building a .AppImage
-    linux: false,
-    // Wraps the distributable in a .zip file (except .AppImage)
+    // Build an executable for the current platform (.exe, .dmg, .AppImage)
+    executable: false,
+    // Builds a zipped file containing your application and a runner for the building platform
+    node: true,
+    // Wraps .exe and .dmg outputs in a .zip file
     zip: false
   }
 };
