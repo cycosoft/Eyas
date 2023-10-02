@@ -339,7 +339,6 @@ async function runCommand_compile() {
 	const output = fs.createWriteStream(paths.dist + `/node-demo.zip`);
 	const archive = archiver(`zip`, { store: true });
 	output.on(`close`, () => {
-		console.log(archive.pointer() + ` total bytes`);
 		userLog();
 		userLog(`Removing build data...`);
 		userLog(`Process complete!`);
