@@ -45,6 +45,7 @@ const moduleRoot = isProd
 	: consumerRoot;
 const roots = require(path.join(moduleRoot, `dist`, `scripts`, `get-roots.js`));
 const names = {
+	macRunner: `runner.sh`,
 	packageJson: `package.json`,
 	eyasAssets: `eyas-assets`,
 	eyasInterface: `eyas-interface`,
@@ -65,6 +66,7 @@ const paths = {
 	eyasDest: roots.eyasBuild,
 	packageJsonSrc: path.join(roots.dist, `build-assets`, names.packageJson),
 	packageJsonDest: path.join(roots.eyasBuild, names.packageJson),
+	macRunnerSrc: path.join(roots.dist, `build-assets`, names.macRunner),
 	scriptsSrc: path.join(roots.dist, names.scripts),
 	scriptsDest: path.join(roots.eyasBuild, names.scripts),
 	testDest: path.join(roots.eyasBuild, `test`),
@@ -345,7 +347,14 @@ async function runCommand_compile() {
 		userLog();
 	});
 	archive.pipe(output);
+
+	// add common files
 	archive.directory(paths.build, false);
+
+	// add mac files
+	archive.file(paths.macRunnerSrc, { name: names.macRunner });
+
+	// complete the archive
 	archive.finalize();
 
 
