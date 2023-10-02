@@ -269,15 +269,16 @@ async function runCommand_compile() {
 	userLog();
 
 	// Build the executables
-	const targets = [];
-	if(config.outputs.windows) { targets.push(builder.Platform.WINDOWS); }
-	if(config.outputs.mac) { targets.push(builder.Platform.MAC); }
-	if(config.outputs.linux) { targets.push(builder.Platform.LINUX); }
+	// const targets = [];
+	// if(config.outputs.windows) { targets.push(builder.Platform.WINDOWS); }
+	// if(config.outputs.mac) { targets.push(builder.Platform.MAC); }
+	// if(config.outputs.linux) { targets.push(builder.Platform.LINUX); }
+	// if(config.outputs.executable) { targets.push(builder.Platform.current()); }
 
 	// eslint-disable-next-line no-constant-condition
-	if(false){
+	if(config.outputs.executable){
 		const builtFiles = await builder.build({
-			targets: targets.length ? builder.createTargets(targets) : null,
+			// targets: targets.length ? builder.createTargets(targets) : null,
 			config: {
 				appId: `com.cycosoft.eyas`,
 				productName: `Eyas`,
@@ -332,66 +333,68 @@ async function runCommand_compile() {
 
 			userLog(`File created -> ${file}.zip`);
 		});
+
+		// delete the build folder
+		// userLog();
+		// userLog(`Removing build data...`);
+		// await fs.remove(paths.build);
+
+		// delete directories in the build output. delete files that aren't .zip, .dmg, .exe, .AppImage
+		// const files = await fs.readdir(paths.dist);
+		// for(const file of files) {
+		// 	// skip file if it's in the skip list
+		// 	let shouldSkip = false;
+		// 	const skipList = [`.zip`, `.dmg`, `.exe`, `.AppImage`];
+		// 	skipList.forEach(skip => {
+		// 		if(file.endsWith(skip)) { shouldSkip = true; }
+		// 	});
+
+		// 	// exit this loop if the file should be skipped
+		// 	if(shouldSkip) { continue; }
+
+		// 	// get the full path to the file
+		// 	const filePath = path.join(paths.dist, file);
+
+		// 	// if it's a directory, delete it
+		// 	if((await fs.stat(filePath)).isDirectory()) {
+		// 		await fs.remove(filePath);
+		// 		continue;
+		// 	}
+
+		// 	// delete the file
+		// 	await fs.remove(filePath);
+		// }
+
+		// log the end of the process
+		// userLog(`Process complete!`);
+		// userLog();
 	}
 
-	// create the node runner version
-	userLog();
-	userLog(`Creating Node runner...`);
-	const archiver = require(`archiver`);
-	const output = fs.createWriteStream(paths.dist + `/node-demo.zip`);
-	const archive = archiver(`zip`, { store: true });
-	output.on(`close`, () => {
+	// create the node runner
+	if(config.outputs.node) {
+		// create the node runner version
 		userLog();
-		userLog(`Removing build data...`);
-		userLog(`Process complete!`);
-		userLog();
-	});
-	archive.pipe(output);
+		userLog(`Creating Node runner...`);
+		const archiver = require(`archiver`);
+		const output = fs.createWriteStream(paths.dist + `/node-demo.zip`);
+		const archive = archiver(`zip`, { store: true });
+		output.on(`close`, () => {
+			userLog();
+			userLog(`Removing build data...`);
+			userLog(`Process complete!`);
+			userLog();
+		});
+		archive.pipe(output);
 
-	// add common files
-	archive.directory(paths.build, false);
+		// add common files
+		archive.directory(paths.build, false);
 
-	// add mac files
-	archive.file(paths.macRunnerSrc, { name: names.macRunner });
+		// add mac files
+		archive.file(paths.macRunnerSrc, { name: names.macRunner });
 
-	// complete the archive
-	archive.finalize();
-
-
-	// delete the build folder
-	// userLog();
-	// userLog(`Removing build data...`);
-	// await fs.remove(paths.build);
-
-	// delete directories in the build output. delete files that aren't .zip, .dmg, .exe, .AppImage
-	// const files = await fs.readdir(paths.dist);
-	// for(const file of files) {
-	// 	// skip file if it's in the skip list
-	// 	let shouldSkip = false;
-	// 	const skipList = [`.zip`, `.dmg`, `.exe`, `.AppImage`];
-	// 	skipList.forEach(skip => {
-	// 		if(file.endsWith(skip)) { shouldSkip = true; }
-	// 	});
-
-	// 	// exit this loop if the file should be skipped
-	// 	if(shouldSkip) { continue; }
-
-	// 	// get the full path to the file
-	// 	const filePath = path.join(paths.dist, file);
-
-	// 	// if it's a directory, delete it
-	// 	if((await fs.stat(filePath)).isDirectory()) {
-	// 		await fs.remove(filePath);
-	// 		continue;
-	// 	}
-
-	// 	// delete the file
-	// 	await fs.remove(filePath);
-	// }
-
-	// log the end of the process
-	// userLog(`Process complete!`);
-	// userLog();
+		// complete the archive
+		archive.finalize();
+	}
 }
 
 // wrapper to differentiate user logs (allowed) from system logs (disallowed)

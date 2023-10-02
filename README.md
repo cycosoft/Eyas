@@ -81,7 +81,7 @@ module.exports = {
     expires: 168, // (range: 1-720 hours)
     // The level of compression applied to your distributable
     compression: `normal`, // store, normal, maximum
-    // Build an executable for the current platform (.exe, .dmg, .AppImage)
+    // Build an unsigned executable for the current platform (.exe, .dmg, .AppImage)
     executable: false,
     // Builds a zipped file containing your application and a runner for the building platform
     node: true,
