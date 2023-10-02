@@ -45,7 +45,7 @@ const moduleRoot = isProd
 	: consumerRoot;
 const roots = require(path.join(moduleRoot, `dist`, `scripts`, `get-roots.js`));
 const names = {
-	macRunner: `runner.sh`,
+	macRunner: `eyas.command`,
 	packageJson: `package.json`,
 	eyasAssets: `eyas-assets`,
 	eyasInterface: `eyas-interface`,
