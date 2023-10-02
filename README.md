@@ -111,13 +111,13 @@ module.exports = {
 - `preview`: builds and runs Eyas from `./.eyas-preview/`
 - `compile`: builds to _./.eyas-preview/_, compiles to `./.eyas-dist/`, and then deletes _./.eyas-preview/_
 
-Depending on your platform, you may be able to build for multiple platforms using the `electronuserland/builder:wine` docker image ([details](https://www.electron.build/multi-platform-build#provided-docker-images)). Here's a simple visualization of known possible configurations.
+Depending on your OS, you may be able to build for multiple platforms on a single machine using the  `electronuserland/builder` and `electronuserland/builder:wine` docker images. See more information ([here](https://www.electron.build/multi-platform-build#provided-docker-images)). Here's a simple visualization of known possible configurations.
 
-| Platform | Win | Linux | Mac |
-| - | - | - | - |
-| Mac | ✅ | ✅ | ✅ |
-| Windows | ✅ | ✅ | |
-| Linux | ✅ | ✅ | |
+| Outputs -> | Win | Linux | Mac | Node |
+| - | - | - | - | - |
+| Mac | ✅ | ✅ | ✅ | ✅ |
+| Windows | ✅ | ✅ | | ✅ |
+| Linux | ✅ | ✅ | | ✅ |
 
 ## Tips
 
