@@ -47,6 +47,8 @@ const roots = require(path.join(moduleRoot, `dist`, `scripts`, `get-roots.js`));
 const names = {
 	macRunner: `eyas.command`,
 	winRunner: `eyas.cmd`,
+	packageJsonCore: `package.json`,
+	packageJsonInstaller: `package.installer.json`,
 	packageJson: `package.json`,
 	eyasAssets: `eyas-assets`,
 	eyasInterface: `eyas-interface`,
@@ -65,7 +67,8 @@ const paths = {
 	eyasInterfaceDest: path.join(roots.eyasBuild, names.eyasInterface),
 	eyasSrc: path.join(roots.dist, `eyas-core`),
 	eyasDest: roots.eyasBuild,
-	packageJsonSrc: path.join(roots.dist, `build-assets`, names.packageJson),
+	packageJsonCoreSrc: path.join(roots.dist, `build-assets`, names.packageJsonCore),
+	packageJsonInstallerSrc: path.join(roots.dist, `build-assets`, names.packageJsonInstaller),
 	packageJsonDest: path.join(roots.eyasBuild, names.packageJson),
 	macRunnerSrc: path.join(roots.dist, `build-assets`, names.macRunner),
 	winRunnerSrc: path.join(roots.dist, `build-assets`, names.winRunner),
@@ -132,7 +135,7 @@ function askUser() {
 // setup the CLI arguments
 function defineCommands(cli) {
 	// get the version from the module's package.json
-	const { version } = require(paths.packageJsonSrc);
+	const { version } = require(paths.packageJsonCoreSrc);
 
 	// define the details of the CLI
 	cli
@@ -168,7 +171,6 @@ async function createBuildFolder() {
 	const fs = require(`fs-extra`);
 	const addHours = require(`date-fns/addHours`);
 
-
 	// give space for the start of the process
 	userLog();
 
@@ -176,15 +178,12 @@ async function createBuildFolder() {
 	userLog(`Resetting build space...`);
 	await fs.emptyDir(paths.build);
 
-	// copy the package.json to the build folder
-	userLog(`Copying build assets...`);
-	await fs.copy(paths.packageJsonSrc, paths.packageJsonDest);
-
 	// copy eyas source to build folder
 	userLog(`Copying Eyas runtime files...`);
 	await fs.copy(paths.eyasSrc, paths.eyasDest);
 	await fs.copy(paths.scriptsSrc, paths.scriptsDest);
 	await fs.copy(paths.eyasInterfaceSrc, paths.eyasInterfaceDest);
+	await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
 
 	// copy the users source files to the build folder
 	userLog(`Copying test source...`);
@@ -196,12 +195,8 @@ async function createBuildFolder() {
 	const data = `module.exports = ${JSON.stringify(config)}`;
 	await fs.outputFile(paths.configDest, data);
 
-	// copy eyas assets to the build folder
-	userLog(`Copying Eyas assets...`);
-	await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
-
 	// generate meta data for the build
-	userLog(`Generating meta data...`);
+	userLog(`Generating build meta data...`);
 	const { execSync } = require(`child_process`);
 	const now = new Date();
 	const expires = addHours(now, config.outputs.expires);
@@ -224,11 +219,16 @@ async function createBuildFolder() {
 
 // launch a preview of the consumers application
 async function runCommand_preview(devMode = false) {
+	const fs = require(`fs-extra`);
 	const { spawn } = require(`child_process`);
 	const electron = require(`electron`);
 
 	// create the build folder to prep for usage
 	await createBuildFolder();
+
+	// copy the package.json to the build folder
+	userLog(`Copying dependency manifest...`);
+	await fs.copy(paths.packageJsonCoreSrc, paths.packageJsonDest);
 
 	// Alert that preview is starting
 	userLog(`Launching preview...`);
@@ -258,30 +258,44 @@ async function runCommand_compile() {
 	// create the build folder to prep for usage
 	await createBuildFolder();
 
-	// Install dependencies
-	// userLog(`Installing dependencies...`);
-	// child_process.execSync(`npm i`, { cwd: paths.build });
-
-	userLog(`Installing NPM...`);
-	child_process.execSync(`npm i npm`, { cwd: paths.build });
-
 	// Clear out the output directory
-	userLog(`Resetting output directory...`);
+	userLog(`Prepare output directory...`);
 	await fs.emptyDir(paths.dist);
 
 	// Log that compilation is starting
 	userLog(`Building distributable(s)...`);
 	userLog();
 
-	// Build the executables
-	// const targets = [];
-	// if(config.outputs.windows) { targets.push(builder.Platform.WINDOWS); }
-	// if(config.outputs.mac) { targets.push(builder.Platform.MAC); }
-	// if(config.outputs.linux) { targets.push(builder.Platform.LINUX); }
-	// if(config.outputs.executable) { targets.push(builder.Platform.current()); }
-
-	// eslint-disable-next-line no-constant-condition
+	// create the executable versions
 	if(config.outputs.executable){
+		await build_executables();
+	}
+
+	// create the portable versions
+	if(config.outputs.node) {
+		await build_portables();
+	}
+
+	// log the end of the process
+	userLog(`Process complete!`);
+	userLog();
+
+	async function build_executables() {
+		// copy the package.json to the build folder
+		userLog(`Copying dependency manifest...`);
+		await fs.copy(paths.packageJsonCoreSrc, paths.packageJsonDest);
+
+		// Install dependencies
+		userLog(`Installing dependencies...`);
+		child_process.execSync(`npm i`, { cwd: paths.build });
+
+		// Build the executables
+		const targets = [];
+		if(config.outputs.windows) { targets.push(builder.Platform.WINDOWS); }
+		if(config.outputs.mac) { targets.push(builder.Platform.MAC); }
+		if(config.outputs.linux) { targets.push(builder.Platform.LINUX); }
+		if(config.outputs.executable) { targets.push(builder.Platform.current()); }
+
 		const builtFiles = await builder.build({
 			// targets: targets.length ? builder.createTargets(targets) : null,
 			config: {
@@ -340,49 +354,53 @@ async function runCommand_compile() {
 		});
 
 		// delete the build folder
-		// userLog();
-		// userLog(`Removing build data...`);
-		// await fs.remove(paths.build);
+		userLog();
+		userLog(`Removing build data...`);
+		await fs.remove(paths.build);
 
 		// delete directories in the build output. delete files that aren't .zip, .dmg, .exe, .AppImage
-		// const files = await fs.readdir(paths.dist);
-		// for(const file of files) {
-		// 	// skip file if it's in the skip list
-		// 	let shouldSkip = false;
-		// 	const skipList = [`.zip`, `.dmg`, `.exe`, `.AppImage`];
-		// 	skipList.forEach(skip => {
-		// 		if(file.endsWith(skip)) { shouldSkip = true; }
-		// 	});
+		const files = await fs.readdir(paths.dist);
+		for(const file of files) {
+			// skip file if it's in the skip list
+			let shouldSkip = false;
+			const skipList = [`.zip`, `.dmg`, `.exe`, `.AppImage`];
+			skipList.forEach(skip => {
+				if(file.endsWith(skip)) { shouldSkip = true; }
+			});
 
-		// 	// exit this loop if the file should be skipped
-		// 	if(shouldSkip) { continue; }
+			// exit this loop if the file should be skipped
+			if(shouldSkip) { continue; }
 
-		// 	// get the full path to the file
-		// 	const filePath = path.join(paths.dist, file);
+			// get the full path to the file
+			const filePath = path.join(paths.dist, file);
 
-		// 	// if it's a directory, delete it
-		// 	if((await fs.stat(filePath)).isDirectory()) {
-		// 		await fs.remove(filePath);
-		// 		continue;
-		// 	}
+			// if it's a directory, delete it
+			if((await fs.stat(filePath)).isDirectory()) {
+				await fs.remove(filePath);
+				continue;
+			}
 
-		// 	// delete the file
-		// 	await fs.remove(filePath);
-		// }
-
-		// log the end of the process
-		// userLog(`Process complete!`);
-		// userLog();
+			// delete the file
+			await fs.remove(filePath);
+		}
 	}
 
-	// create the node runner
-	if(config.outputs.node) {
+	async function build_portables() {
+		// copy the installer-only package.json version to the build folder
+		userLog(`Setting up installer...`);
+		await fs.copy(paths.packageJsonInstallerSrc, paths.packageJsonDest);
+		child_process.execSync(`npm i`, { cwd: paths.build });
+
+		// overwrite the installer manifest with the runner manifest
+		userLog(`Copying dependency manifest...`);
+		await fs.copy(paths.packageJsonCoreSrc, paths.packageJsonDest);
+
 		// create the node runner version
 		userLog();
 		userLog(`Creating Node runner...`);
 		const archiver = require(`archiver`);
 		const output = fs.createWriteStream(paths.dist + `/node-demo.zip`);
-		const archive = archiver(`zip`, { store: true });
+		const archive = archiver(`zip`, { zlib: 9 });
 		output.on(`close`, () => {
 			userLog();
 			userLog(`Removing build data...`);
