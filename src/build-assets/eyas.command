@@ -7,4 +7,4 @@ cd "$(dirname "$0")"
 export PATH=./node_modules/.bin:$PATH
 
 # Run the node and electron commands
-electron . --dev
+npm i && electron . --dev

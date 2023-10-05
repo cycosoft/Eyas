@@ -259,8 +259,11 @@ async function runCommand_compile() {
 	await createBuildFolder();
 
 	// Install dependencies
-	userLog(`Installing dependencies...`);
-	child_process.execSync(`npm i`, { cwd: paths.build });
+	// userLog(`Installing dependencies...`);
+	// child_process.execSync(`npm i`, { cwd: paths.build });
+
+	userLog(`Installing NPM...`);
+	child_process.execSync(`npm i npm`, { cwd: paths.build });
 
 	// Clear out the output directory
 	userLog(`Resetting output directory...`);
