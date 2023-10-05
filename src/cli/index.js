@@ -276,10 +276,6 @@ async function runCommand_compile() {
 		await build_portables();
 	}
 
-	// log the end of the process
-	userLog(`Process complete!`);
-	userLog();
-
 	async function build_executables() {
 		// copy the package.json to the build folder
 		userLog(`Copying dependency manifest...`);
@@ -383,6 +379,10 @@ async function runCommand_compile() {
 			// delete the file
 			await fs.remove(filePath);
 		}
+
+		// log the end of the process
+		userLog(`Process complete!`);
+		userLog();
 	}
 
 	async function build_portables() {
