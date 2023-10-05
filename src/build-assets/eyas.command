@@ -3,5 +3,8 @@
 # Set the working directory to the directory of the script
 cd "$(dirname "$0")"
 
+# temporarily set the PATH to the local installation of node
+export PATH=./node_modules/.bin:$PATH
+
 # Run the node and electron commands
-./node_modules/.bin/node ./node_modules/.bin/electron index.js --dev
+electron . --dev
