@@ -1,12 +1,10 @@
-@ECHO off
-SET dp0=%~dp0
-@REM ECHO "%dp0%node_modules\.bin\node"
-@REM ECHO "%dp0%node_modules\.bin\electron"
-@REM SET NODE_PATH="%dp0%node_modules"
-SET PATH=%dp0%node_modules\.bin;%PATH%
-ECHO "NODE Path:"
-WHERE NODE
-ECHO ************
-set ELECTRON_RUN_AS_NODE=true
-CALL "%dp0%node_modules\.bin\electron" test/index.html
-PAUSE
+@echo off
+
+REM Set the working directory to the directory of the script
+cd /d "%~dp0"
+
+REM temporarily set the PATH to the local installation of node
+set PATH=%cd%\node_modules\.bin;%PATH%
+
+REM Run the node and electron commands
+npm i && electron . --dev
