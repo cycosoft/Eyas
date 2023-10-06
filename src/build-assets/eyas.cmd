@@ -7,4 +7,4 @@ REM temporarily set the PATH to the local installation of node
 set PATH=%cd%\node_modules\.bin;%PATH%
 
 REM Run the node and electron commands
-npm i && electron . --dev
+npm start
