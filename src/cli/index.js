@@ -47,6 +47,7 @@ const roots = require(path.join(moduleRoot, `dist`, `scripts`, `get-roots.js`));
 const names = {
 	macRunner: `eyas.command`,
 	winRunner: `eyas.cmd`,
+	winRunnerInstaller: `installModule.cmd`,
 	winRunnerShortcut: `Start The App.lnk`,
 	packageJsonCore: `package.json`,
 	packageJsonInstaller: `package.installer.json`,
@@ -72,7 +73,8 @@ const paths = {
 	packageJsonInstallerSrc: path.join(roots.dist, `build-assets`, names.packageJsonInstaller),
 	packageJsonDest: path.join(roots.eyasBuild, names.packageJson),
 	macRunnerSrc: path.join(roots.dist, `build-assets`, names.macRunner),
-	winRunnerSrc: path.join(roots.dist, `build-assets`, names.winRunner),
+	winRunnerSrc: path.join(roots.dist, `build-assets`, names.winRunnerInstaller),
+	winRunnerInstallerSrc: path.join(roots.dist, `build-assets`, names.winRunner),
 	winRunnerShortcutSrc: path.join(roots.dist, `build-assets`, names.winRunnerShortcut),
 	scriptsSrc: path.join(roots.dist, names.scripts),
 	scriptsDest: path.join(roots.eyasBuild, names.scripts),
@@ -389,9 +391,9 @@ async function runCommand_compile() {
 
 	async function build_portables() {
 		// copy the installer-only package.json version to the build folder
-		userLog(`Setting up installer...`);
-		await fs.copy(paths.packageJsonInstallerSrc, paths.packageJsonDest);
-		child_process.execSync(`npm i`, { cwd: paths.build });
+		// userLog(`Setting up installer...`);
+		// await fs.copy(paths.packageJsonInstallerSrc, paths.packageJsonDest);
+		// child_process.execSync(`npm i`, { cwd: paths.build });
 
 		// overwrite the installer manifest with the runner manifest
 		userLog(`Copying dependency manifest...`);
@@ -417,6 +419,7 @@ async function runCommand_compile() {
 		// add mac/win files
 		archive.file(paths.macRunnerSrc, { name: names.macRunner });
 		archive.file(paths.winRunnerSrc, { name: names.winRunner });
+		archive.file(paths.winRunnerInstallerSrc, { name: names.winRunnerInstaller });
 		archive.file(paths.winRunnerShortcutSrc, { name: names.winRunnerShortcut });
 
 		// complete the archive
