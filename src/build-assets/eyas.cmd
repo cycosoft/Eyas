@@ -28,12 +28,15 @@ if not exist node_modules\%nodeWinx64Name% CALL installModule.cmd %nodeWinx64Nam
 rmdir /s /q node_modules\.downloads
 
 :: Set the working directory to the directory of the script
-@REM cd /d "%~dp0"
+cd /d "%~dp0"
 
 :: temporarily set the PATH to the local installation of node
-@REM set PATH=%cd%\node_modules\.bin;%PATH%
+set PATH=%cd%\node_modules\.bin;%PATH%
 
-:: Run the node and electron commands
-@REM CALL "%dp0%node_modules\.bin\node" "%dp0%node_modules\.bin\npm" -v
+:: get the version of node
+CALL node -v
+
+:: use node to run npm
+CALL node node_modules\npm\bin\npm-cli.js %* start
 
 PAUSE
