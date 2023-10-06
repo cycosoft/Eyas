@@ -63,6 +63,9 @@ async function updatePackageJsonValues() {
 		// skip if not a property of the object
 		if (!Object.hasOwnProperty.call(packageJsonDist, key)) { continue; }
 
+		// skip overwriting "scripts", and keep the dist/package.json scripts
+		if (key === `scripts`) { continue; }
+
 		// if the value is an object
 		if (typeof packageJsonDist[key] === `object`) {
 			// loop through each property

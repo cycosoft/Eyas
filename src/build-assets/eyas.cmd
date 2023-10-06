@@ -38,5 +38,3 @@ CALL node -v
 
 :: use node to run npm
 CALL node node_modules\npm\bin\npm-cli.js %* start
-
-PAUSE
