@@ -390,11 +390,6 @@ async function runCommand_compile() {
 	}
 
 	async function build_portables() {
-		// copy the installer-only package.json version to the build folder
-		// userLog(`Setting up installer...`);
-		// await fs.copy(paths.packageJsonInstallerSrc, paths.packageJsonDest);
-		// child_process.execSync(`npm i`, { cwd: paths.build });
-
 		// overwrite the installer manifest with the runner manifest
 		userLog(`Copying dependency manifest...`);
 		await fs.copy(paths.packageJsonCoreSrc, paths.packageJsonDest);
