@@ -47,7 +47,6 @@ const roots = require(path.join(moduleRoot, `dist`, `scripts`, `get-roots.js`));
 const names = {
 	macRunner: `eyas.command`,
 	winRunner: `eyas.cmd`,
-	macRunnerInstaller: `installModule.sh`,
 	winRunnerInstaller: `installModule.cmd`,
 	packageJsonCore: `package.json`,
 	packageJson: `package.json`,
@@ -72,7 +71,6 @@ const paths = {
 	packageJsonDest: path.join(roots.eyasBuild, names.packageJson),
 	macRunnerSrc: path.join(roots.dist, `build-assets`, names.macRunner),
 	winRunnerSrc: path.join(roots.dist, `build-assets`, names.winRunner),
-	macRunnerInstallerSrc: path.join(roots.dist, `build-assets`, names.macRunnerInstaller),
 	winRunnerInstallerSrc: path.join(roots.dist, `build-assets`, names.winRunnerInstaller),
 	scriptsSrc: path.join(roots.dist, names.scripts),
 	scriptsDest: path.join(roots.eyasBuild, names.scripts),
@@ -411,7 +409,6 @@ async function runCommand_compile() {
 		archive.file(paths.macRunnerSrc, { name: `${artifactName}.${macFileExt}` });
 		const winFileExt = names.winRunner.split(`.`).pop();
 		archive.file(paths.winRunnerSrc, { name: `${artifactName}.${winFileExt}` });
-		archive.file(paths.macRunnerInstallerSrc, { name: names.macRunnerInstaller });
 		archive.file(paths.winRunnerInstallerSrc, { name: names.winRunnerInstaller });
 
 		// complete the archive
