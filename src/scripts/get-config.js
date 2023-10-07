@@ -55,10 +55,18 @@ const eyasConfig = {
 
 	// defaults to current platform
 	outputs: {
-		expires: validateExpiration(userConfig.outputs.expires), // hours
-		compression: userConfig.outputs.compression || `normal`, // store, normal, maximum
+		// platform
+		windows: userConfig.outputs.windows || false,
+		mac: userConfig.outputs.mac || false,
+		linux: userConfig.outputs.linux || false,
+
+		// type
 		executable: userConfig.outputs.executable || false,
 		node: userConfig.outputs.node || true,
+
+		// options
+		expires: validateExpiration(userConfig.outputs.expires), // hours
+		compression: userConfig.outputs.compression || `normal`, // store, normal, maximum
 		zip: userConfig.outputs.zip || false
 	},
 
