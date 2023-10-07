@@ -77,12 +77,18 @@ module.exports = {
 
   // Defaults to building for the current platform if no platform is specified
   outputs: {
+    // Force building a .exe
+    windows: false,
+    // Force building a .dmg
+    mac: false,
+    // Force building a .AppImage
+    linux: false,
     // The number of hours from build time until the distributable expires
     expires: 168, // (range: 1-720 hours)
     // Build an unsigned executable for the current platform (.exe.zip, .dmg.zip, .AppImage)
     executable: false,
-    // Builds a zipped file containing your application and a runner for the built platform
-    portable: true
+    // Builds a zipped file containing your application and a runner for the built platform (default)
+    portable: false
   }
 };
 ```

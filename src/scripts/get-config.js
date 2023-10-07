@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
+/* global process */
 
 'use strict';
 
@@ -53,7 +54,6 @@ const eyasConfig = {
 		menu: userConfig.test.menu || [/* { label: ``, url: `` } */]
 	},
 
-	// defaults to current platform
 	outputs: {
 		// platform
 		windows: userConfig.outputs.windows || false,
@@ -62,7 +62,7 @@ const eyasConfig = {
 
 		// type
 		executable: userConfig.outputs.executable || false,
-		portable: userConfig.outputs.portable || true,
+		portable: userConfig.outputs.portable || false,
 
 		// options
 		expires: validateExpiration(userConfig.outputs.expires) // hours
@@ -70,6 +70,18 @@ const eyasConfig = {
 
 	meta: metaData
 };
+
+// set the default platform if none are specified
+if (!eyasConfig.outputs.windows && !eyasConfig.outputs.mac && !eyasConfig.outputs.linux) {
+	if(process.platform === `win32`) { eyasConfig.outputs.windows = true; }
+	if(process.platform === `darwin`) { eyasConfig.outputs.mac = true; }
+	if(process.platform === `linux`) { eyasConfig.outputs.linux = true; }
+}
+
+// set the default output type if none are specified
+if (!eyasConfig.outputs.executable && !eyasConfig.outputs.portable) {
+	eyasConfig.outputs.portable = true;
+}
 
 // export the config for the project
 module.exports = eyasConfig;

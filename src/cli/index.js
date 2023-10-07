@@ -292,7 +292,6 @@ async function runCommand_compile() {
 		if(config.outputs.windows) { targets.push(builder.Platform.WINDOWS); }
 		if(config.outputs.mac) { targets.push(builder.Platform.MAC); }
 		if(config.outputs.linux) { targets.push(builder.Platform.LINUX); }
-		// if(config.outputs.executable) { targets.push(builder.Platform.current()); }
 
 		const builtFiles = await builder.build({
 			targets: targets.length ? builder.createTargets(targets) : null,

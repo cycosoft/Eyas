@@ -36,7 +36,7 @@ module.exports = {
 
 	// defaults to current platform
 	outputs: {
-		executable: false,
-		portable: true
+		// executable: true,
+		// portable: true
 	}
 };
