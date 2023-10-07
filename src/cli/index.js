@@ -303,7 +303,6 @@ async function runCommand_compile() {
 				artifactName: `${artifactName}` + '.${ext}',
 				copyright: `Copyright © 2023 Cycosoft, LLC`,
 				asarUnpack: [`resources/**`],
-				compression: config.outputs.compression,
 				directories: {
 					app: paths.build,
 					output: paths.dist

@@ -65,8 +65,7 @@ const eyasConfig = {
 		portable: userConfig.outputs.portable || true,
 
 		// options
-		expires: validateExpiration(userConfig.outputs.expires), // hours
-		compression: userConfig.outputs.compression || `normal` // store, normal, maximum
+		expires: validateExpiration(userConfig.outputs.expires) // hours
 	},
 
 	meta: metaData

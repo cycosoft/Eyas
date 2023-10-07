@@ -79,8 +79,6 @@ module.exports = {
   outputs: {
     // The number of hours from build time until the distributable expires
     expires: 168, // (range: 1-720 hours)
-    // The level of compression applied to your distributable
-    compression: `normal`, // store, normal, maximum
     // Build an unsigned executable for the current platform (.exe.zip, .dmg.zip, .AppImage)
     executable: false,
     // Builds a zipped file containing your application and a runner for the built platform
