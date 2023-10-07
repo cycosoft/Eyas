@@ -280,6 +280,9 @@ async function runCommand_compile() {
 		await build_portables();
 	}
 
+	// set the name of the output files
+	const artifactName = `${config.test.title} - ${config.test.version}`;
+
 	async function build_executables() {
 		// copy the package.json to the build folder
 		userLog(`Copying dependency manifest...`);
@@ -302,7 +305,7 @@ async function runCommand_compile() {
 				appId: `com.cycosoft.eyas`,
 				productName: `Eyas`,
 				// eslint-disable-next-line quotes
-				artifactName: `${config.test.title} - ${config.test.version}` + '.${ext}',
+				artifactName: `${artifactName}` + '.${ext}',
 				copyright: `Copyright © 2023 Cycosoft, LLC`,
 				asarUnpack: [`resources/**`],
 				compression: config.outputs.compression,
@@ -398,7 +401,7 @@ async function runCommand_compile() {
 		userLog();
 		userLog(`Creating Node runner...`);
 		const archiver = require(`archiver`);
-		const output = fs.createWriteStream(paths.dist + `/node-demo.zip`);
+		const output = fs.createWriteStream(paths.dist + `/${artifactName}.zip`);
 		const archive = archiver(`zip`, { zlib: 9 });
 		output.on(`close`, () => {
 			userLog();
