@@ -3,13 +3,6 @@
 :: module definitions
 set npmName=npm
 set npmVersion=10.2.0
-
-set nodeName=node
-set nodeVersion=20.7.0
-
-set nodeBinSetupName=node-bin-setup
-set nodeBinSetupVersion=1.1.3
-
 set nodeWinx64Name=node-win-x64
 set nodeWinx64Version=20.7.0
 
@@ -20,8 +13,6 @@ if not exist node_modules\.downloads mkdir node_modules\.downloads
 
 :: only download if the packages doesn't exist
 if not exist node_modules\%npmName% CALL installModule.cmd %npmName% %npmVersion%
-@REM if not exist node_modules\%nodeName% CALL installModule.cmd %nodeName% %nodeVersion%
-@REM if not exist node_modules\%nodeBinSetupName% CALL installModule.cmd %nodeBinSetupName% %nodeBinSetupVersion%
 if not exist node_modules\%nodeWinx64Name% CALL installModule.cmd %nodeWinx64Name% %nodeWinx64Version%
 
 :: remove the downloads directory
