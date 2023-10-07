@@ -270,6 +270,9 @@ async function runCommand_compile() {
 	userLog(`Building distributable(s)...`);
 	userLog();
 
+	// set the name of the output files
+	const artifactName = `${config.test.title} - ${config.test.version}`;
+
 	// create the executable versions
 	if(config.outputs.executable){
 		await build_executables();
@@ -279,9 +282,6 @@ async function runCommand_compile() {
 	if(config.outputs.node) {
 		await build_portables();
 	}
-
-	// set the name of the output files
-	const artifactName = `${config.test.title} - ${config.test.version}`;
 
 	async function build_executables() {
 		// copy the package.json to the build folder
