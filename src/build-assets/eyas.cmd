@@ -11,7 +11,7 @@ if not exist node_modules mkdir node_modules
 if not exist node_modules\.bin mkdir node_modules\.bin
 if not exist node_modules\.downloads mkdir node_modules\.downloads
 
-:: only download if the packages doesn't exist
+:: only download if the packages don't exist
 if not exist node_modules\%npmName% CALL installModule.cmd %npmName% %npmVersion%
 if not exist node_modules\%nodeWinx64Name% CALL installModule.cmd %nodeWinx64Name% %nodeWinx64Version%
 
