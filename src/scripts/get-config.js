@@ -62,7 +62,7 @@ const eyasConfig = {
 
 		// type
 		executable: userConfig.outputs.executable || false,
-		node: userConfig.outputs.node || true,
+		portable: userConfig.outputs.portable || true,
 
 		// options
 		expires: validateExpiration(userConfig.outputs.expires), // hours

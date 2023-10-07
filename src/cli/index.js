@@ -265,8 +265,8 @@ async function runCommand_compile() {
 	const artifactName = `${config.test.title} - ${config.test.version}`;
 
 	// create the portable versions
-	// NOTE: this must come first so installed dependencies aren't included
-	if(config.outputs.node) {
+	// NOTE: this must come first so installed dependencies for executable aren't included
+	if(config.outputs.portable) {
 		await build_portables();
 	}
 

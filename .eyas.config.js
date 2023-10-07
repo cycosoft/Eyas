@@ -38,7 +38,7 @@ module.exports = {
 	outputs: {
 		compression: `store`,
 		// executable: true,
-		node: true,
+		portable: true,
 		zip: true
 	}
 };

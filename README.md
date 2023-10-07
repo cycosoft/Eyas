@@ -83,8 +83,8 @@ module.exports = {
     compression: `normal`, // store, normal, maximum
     // Build an unsigned executable for the current platform (.exe, .dmg, .AppImage)
     executable: false,
-    // Builds a zipped file containing your application and a runner for the building platform
-    node: true,
+    // Builds a zipped file containing your application and a runner for the built platform
+    portable: true,
     // Wraps .exe and .dmg outputs in a .zip file
     zip: false
   }
@@ -107,15 +107,15 @@ module.exports = {
 ## Output
 
 - `preview`: builds and runs Eyas from `./.eyas-preview/`
-- `compile`: builds to _./.eyas-preview/_, compiles to `./.eyas-dist/`, and then deletes _./.eyas-preview/_
+- `compile`: builds to _./.eyas-preview/_ and compiles to `./.eyas-dist/`
 
 Depending on your OS, you may be able to build for multiple platforms on a single machine using the  `electronuserland/builder` and `electronuserland/builder:wine` docker images. See more information ([here](https://www.electron.build/multi-platform-build#provided-docker-images)). Here's a simple visualization of known possible configurations.
 
-| Outputs -> | Win | Linux | Mac | Node |
+| | Portable | .exe | .AppImage | .dmg |
 | - | - | - | - | - |
 | Mac | ✅ | ✅ | ✅ | ✅ |
-| Windows | ✅ | ✅ | | ✅ |
-| Linux | ✅ | ✅ | | ✅ |
+| Windows | ✅ | ✅ | ✅ | |
+| Linux | ✅ | ✅ | ✅ | |
 
 ## Tips
 
