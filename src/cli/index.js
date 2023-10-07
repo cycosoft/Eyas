@@ -396,6 +396,7 @@ async function runCommand_compile() {
 		const output = fs.createWriteStream(paths.dist + `/${artifactName}.zip`);
 		const archive = archiver(`zip`, { zlib: 9 });
 		output.on(`close`, () => {
+			userLog();
 			userLog(`Portable compilation complete!`);
 			userLog();
 		});
