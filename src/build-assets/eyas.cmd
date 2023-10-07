@@ -24,8 +24,5 @@ cd /d "%~dp0"
 :: temporarily set the PATH to the local installation of node
 set PATH=%cd%\node_modules\.bin;%PATH%
 
-:: get the version of node
-CALL node -v
-
 :: use node to run npm
 CALL node node_modules\npm\bin\npm-cli.js %* start
