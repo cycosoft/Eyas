@@ -200,7 +200,6 @@ async function createBuildFolder() {
 	await fs.outputFile(paths.configDest, data);
 
 	// generate meta data for the build
-	userLog(`Generating build meta data...`);
 	const { execSync } = require(`child_process`);
 	const now = new Date();
 	const expires = addHours(now, config.outputs.expires);
@@ -218,7 +217,7 @@ async function createBuildFolder() {
 	await fs.outputFile(paths.metaDest, JSON.stringify(metaData));
 
 	// let the user know when this build expires
-	userLog(`  > Build expires ${expires.toLocaleString()}`);
+	userLog(`Set build expirations to: ${expires.toLocaleString()}`);
 }
 
 // launch a preview of the consumers application
@@ -266,10 +265,6 @@ async function runCommand_compile() {
 	userLog(`Prepare output directory...`);
 	await fs.emptyDir(paths.dist);
 
-	// Log that compilation is starting
-	userLog(`Building distributable(s)...`);
-	userLog();
-
 	// set the name of the output files
 	const artifactName = `${config.test.title} - ${config.test.version}`;
 
@@ -285,22 +280,25 @@ async function runCommand_compile() {
 
 	async function build_executables() {
 		// copy the package.json to the build folder
-		userLog(`Copying dependency manifest...`);
+		userLog();
 		await fs.copy(paths.packageJsonCoreSrc, paths.packageJsonDest);
 
 		// Install dependencies
 		userLog(`Installing dependencies...`);
 		child_process.execSync(`npm i`, { cwd: paths.build });
 
+		userLog(`Creating "executable" distributable(s)...`);
+		userLog();
+
 		// Build the executables
 		const targets = [];
 		if(config.outputs.windows) { targets.push(builder.Platform.WINDOWS); }
 		if(config.outputs.mac) { targets.push(builder.Platform.MAC); }
 		if(config.outputs.linux) { targets.push(builder.Platform.LINUX); }
-		if(config.outputs.executable) { targets.push(builder.Platform.current()); }
+		// if(config.outputs.executable) { targets.push(builder.Platform.current()); }
 
 		const builtFiles = await builder.build({
-			// targets: targets.length ? builder.createTargets(targets) : null,
+			targets: targets.length ? builder.createTargets(targets) : null,
 			config: {
 				appId: `com.cycosoft.eyas`,
 				productName: `Eyas`,
@@ -357,11 +355,13 @@ async function runCommand_compile() {
 		});
 
 		// delete the build folder
-		userLog();
-		userLog(`Removing build data...`);
-		await fs.remove(paths.build);
+		// userLog();
+		// userLog(`Removing build data...`);
+		// await fs.remove(paths.build);
 
-		// delete directories in the build output. delete files that aren't .zip, .dmg, .exe, .AppImage
+		// delete directories in the build output
+		// delete files that aren't .zip, .dmg, .exe, .AppImage
+		userLog(`Performing cleanup...`);
 		const files = await fs.readdir(paths.dist);
 		for(const file of files) {
 			// skip file if it's in the skip list
@@ -388,7 +388,7 @@ async function runCommand_compile() {
 		}
 
 		// log the end of the process
-		userLog(`Process complete!`);
+		userLog(`Executable compilation complete!`);
 		userLog();
 	}
 
@@ -398,15 +398,12 @@ async function runCommand_compile() {
 		await fs.copy(paths.packageJsonCoreSrc, paths.packageJsonDest);
 
 		// create the node runner version
-		userLog();
-		userLog(`Creating Node runner...`);
+		userLog(`Creating "portable" distributable(s)...`);
 		const archiver = require(`archiver`);
 		const output = fs.createWriteStream(paths.dist + `/${artifactName}.zip`);
 		const archive = archiver(`zip`, { zlib: 9 });
 		output.on(`close`, () => {
-			userLog();
-			userLog(`Removing build data...`);
-			userLog(`Process complete!`);
+			userLog(`Portable compilation complete!`);
 			userLog();
 		});
 		archive.pipe(output);
