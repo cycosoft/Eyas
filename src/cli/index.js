@@ -405,8 +405,10 @@ async function runCommand_compile() {
 		archive.directory(paths.build, false);
 
 		// add mac/win files
-		archive.file(paths.macRunnerSrc, { name: names.macRunner });
-		archive.file(paths.winRunnerSrc, { name: names.winRunner });
+		const macFileExt = names.macRunner.split(`.`).pop();
+		archive.file(paths.macRunnerSrc, { name: `${artifactName}.${macFileExt}` });
+		const winFileExt = names.winRunner.split(`.`).pop();
+		archive.file(paths.winRunnerSrc, { name: `${artifactName}.${winFileExt}` });
 		archive.file(paths.winRunnerInstallerSrc, { name: names.winRunnerInstaller });
 
 		// complete the archive
