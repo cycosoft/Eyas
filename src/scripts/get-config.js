@@ -66,8 +66,7 @@ const eyasConfig = {
 
 		// options
 		expires: validateExpiration(userConfig.outputs.expires), // hours
-		compression: userConfig.outputs.compression || `normal`, // store, normal, maximum
-		zip: userConfig.outputs.zip || false
+		compression: userConfig.outputs.compression || `normal` // store, normal, maximum
 	},
 
 	meta: metaData

@@ -37,8 +37,7 @@ module.exports = {
 	// defaults to current platform
 	outputs: {
 		compression: `store`,
-		// executable: true,
-		portable: true,
-		zip: true
+		executable: true,
+		portable: true
 	}
 };

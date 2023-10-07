@@ -81,12 +81,10 @@ module.exports = {
     expires: 168, // (range: 1-720 hours)
     // The level of compression applied to your distributable
     compression: `normal`, // store, normal, maximum
-    // Build an unsigned executable for the current platform (.exe, .dmg, .AppImage)
+    // Build an unsigned executable for the current platform (.exe.zip, .dmg.zip, .AppImage)
     executable: false,
     // Builds a zipped file containing your application and a runner for the built platform
-    portable: true,
-    // Wraps .exe and .dmg outputs in a .zip file
-    zip: false
+    portable: true
   }
 };
 ```

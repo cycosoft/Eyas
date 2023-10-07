@@ -327,15 +327,15 @@ async function runCommand_compile() {
 			}
 		});
 
-		// let the user know where the output is
+		// wrap the executables in a zip file
 		userLog();
-		!config.outputs.zip && builtFiles.forEach(file => userLog(`File created -> ${file}`));
-
-		// if the config says to create a zip file
 		const archiver = require(`archiver`);
-		config.outputs.zip && builtFiles.forEach(file => {
+		builtFiles.forEach(file => {
 			// if the file is .AppImage, skip the loop
-			if(file.endsWith(`.AppImage`)) { return; }
+			if(file.endsWith(`.AppImage`)) {
+				userLog(`File created -> ${file}`);
+				return;
+			}
 
 			// create the zip file
 			const output = fs.createWriteStream(`${file}.zip`);
@@ -352,13 +352,13 @@ async function runCommand_compile() {
 		});
 
 		// delete directories in the build output
-		// delete files that aren't .zip, .dmg, .exe, .AppImage
+		// delete files that aren't .zip, .AppImage
 		userLog(`Performing cleanup...`);
 		const files = await fs.readdir(paths.dist);
 		for(const file of files) {
 			// skip file if it's in the skip list
 			let shouldSkip = false;
-			const skipList = [`.zip`, `.dmg`, `.exe`, `.AppImage`];
+			const skipList = [`.zip`, `.AppImage`];
 			skipList.forEach(skip => {
 				if(file.endsWith(skip)) { shouldSkip = true; }
 			});
