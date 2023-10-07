@@ -268,14 +268,15 @@ async function runCommand_compile() {
 	// set the name of the output files
 	const artifactName = `${config.test.title} - ${config.test.version}`;
 
+	// create the portable versions
+	// NOTE: this must come first so installed dependencies aren't included
+	if(config.outputs.node) {
+		await build_portables();
+	}
+
 	// create the executable versions
 	if(config.outputs.executable){
 		await build_executables();
-	}
-
-	// create the portable versions
-	if(config.outputs.node) {
-		await build_portables();
 	}
 
 	async function build_executables() {
@@ -354,11 +355,6 @@ async function runCommand_compile() {
 			userLog(`File created -> ${file}.zip`);
 		});
 
-		// delete the build folder
-		// userLog();
-		// userLog(`Removing build data...`);
-		// await fs.remove(paths.build);
-
 		// delete directories in the build output
 		// delete files that aren't .zip, .dmg, .exe, .AppImage
 		userLog(`Performing cleanup...`);
@@ -394,6 +390,7 @@ async function runCommand_compile() {
 
 	async function build_portables() {
 		// overwrite the installer manifest with the runner manifest
+		userLog();
 		userLog(`Copying dependency manifest...`);
 		await fs.copy(paths.packageJsonCoreSrc, paths.packageJsonDest);
 
