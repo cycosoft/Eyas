@@ -52,4 +52,5 @@ cd "$(dirname "$0")"
 export PATH="$(pwd)/node_modules/.bin:$PATH"
 
 # use node to run npm
-node node_modules/npm/bin/npm-cli.js "$@" start
+# node node_modules/npm/bin/npm-cli.js "$@" start
+electron . --dev
