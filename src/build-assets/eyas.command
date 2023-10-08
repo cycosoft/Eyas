@@ -3,8 +3,8 @@
 # module definitions
 npmName=npm
 npmVersion=10.2.0
-nodeWinx64Name=node-bin-darwin-arm64
-nodeWinx64Version=20.7.0
+nodeName=node-bin-darwin-arm64
+nodeVersion=20.7.0
 
 installModule(){
     # $1 is the name of the npm package
@@ -33,13 +33,14 @@ mkdir -p node_modules
 mkdir -p node_modules/.bin
 mkdir -p node_modules/.downloads
 
-# only download if the packages don't exist
+# download NPM if it doesn't exist yet
 if [ ! -d "node_modules/$npmName" ]; then
     installModule $npmName $npmVersion
 fi
 
-if [ ! -d "node_modules/$nodeWinx64Name" ]; then
-    installModule $nodeWinx64Name $nodeWinx64Version
+# download Node if the initial runner doesn't exist AND if `npm i` hasn't run
+if [ ! -d "node_modules/$nodeName" ] && [ ! -d "node_modules/node" ]; then
+    installModule $nodeName $nodeVersion
 fi
 
 # remove the downloads directory
@@ -51,6 +52,10 @@ cd "$(dirname "$0")"
 # temporarily set the PATH to the local installation of node
 export PATH="$(pwd)/node_modules/.bin:$PATH"
 
-# use node to run npm
-# node node_modules/npm/bin/npm-cli.js "$@" start
-electron . --dev
+# Install npm and node properly if `npm i` hasn't been run yet
+if [ ! -d "node_modules/node" ]; then
+    node node_modules/npm/bin/npm-cli.js i npm@$npmVersion node@$nodeVersion
+fi
+
+# Run Eyas
+npm start
