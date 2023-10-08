@@ -46,16 +46,16 @@ fi
 # remove the downloads directory
 rm -rf node_modules/.downloads
 
-# Set the working directory to the directory of the script
-cd "$(dirname "$0")"
-
-# temporarily set the PATH to the local installation of node
-export PATH="$(pwd)/node_modules/.bin:$PATH"
-
 # Install npm and node properly if `npm i` hasn't been run yet
 if [ ! -d "node_modules/node" ]; then
     node node_modules/npm/bin/npm-cli.js i npm@$npmVersion node@$nodeVersion
 fi
+
+# temporarily set the PATH to the local installation of node
+export PATH="$(pwd)/node_modules/.bin:$PATH"
+
+# Set the working directory to the directory of the script
+cd "$(dirname "$0")"
 
 # Run Eyas
 npm start
