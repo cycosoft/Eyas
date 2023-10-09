@@ -404,12 +404,18 @@ async function runCommand_compile() {
 		// add common files
 		archive.directory(paths.build, false);
 
-		// add mac/win files
-		const macFileExt = names.macRunner.split(`.`).pop();
-		archive.file(paths.macRunnerSrc, { name: `${artifactName}.${macFileExt}` });
-		const winFileExt = names.winRunner.split(`.`).pop();
-		archive.file(paths.winRunnerSrc, { name: `${artifactName}.${winFileExt}` });
-		archive.file(paths.winRunnerInstallerSrc, { name: names.winRunnerInstaller });
+		// add mac files
+		if (config.outputs.mac) {
+			const macFileExt = names.macRunner.split(`.`).pop();
+			archive.file(paths.macRunnerSrc, { name: `${artifactName}.${macFileExt}` });
+		}
+
+		// add win files
+		if (config.outputs.windows) {
+			const winFileExt = names.winRunner.split(`.`).pop();
+			archive.file(paths.winRunnerSrc, { name: `${artifactName}.${winFileExt}` });
+			archive.file(paths.winRunnerInstallerSrc, { name: names.winRunnerInstaller });
+		}
 
 		// complete the archive
 		archive.finalize();

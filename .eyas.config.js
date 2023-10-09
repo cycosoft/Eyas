@@ -36,6 +36,9 @@ module.exports = {
 
 	// defaults to current platform
 	outputs: {
+		// windows: true,
+		// mac: true,
+		// linux: true,
 		// executable: true,
 		// portable: true
 	}
