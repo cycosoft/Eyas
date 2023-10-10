@@ -3,7 +3,14 @@
 # module definitions
 npmName=npm
 npmVersion=10.2.0
-nodeName=node-linux-x64
+
+# set the node name based on the system architecture
+arch=$(uname -m)
+if [ "$arch" = "x86_64" ]; then
+    nodeName=node-linux-x64
+else
+    nodeName=node-linux-$arch
+fi
 nodeVersion=20.7.0
 
 installModule(){
