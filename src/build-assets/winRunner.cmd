@@ -7,6 +7,7 @@ set npmVersion=10.2.0
 :: set the node download based on the processor architecture
 if "%PROCESSOR_ARCHITECTURE%"=="AMD64" set nodeName=node-win-x64
 if "%PROCESSOR_ARCHITECTURE%"=="x86" set nodeName=node-win-x86
+if "%PROCESSOR_ARCHITECTURE%"=="ia32" set nodeName=node-win-x86
 set nodeVersion=20.7.0
 
 :: create node_modules folder if it doesn't exist
