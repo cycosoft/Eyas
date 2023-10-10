@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # module definitions
 npmName=npm
@@ -17,10 +17,10 @@ installModule(){
     mkdir node_modules/$1
 
     # download the package
-    curl -L https://registry.npmjs.org/$1/-/$1-$2.tgz -o node_modules/.downloads/$1.tgz
+    curl -JL https://registry.npmjs.org/$1/-/$1-$2.tgz -o node_modules/.downloads/$1.tgz
 
     # extract the package
-    tar -xzf node_modules/.downloads/$1.tgz -C node_modules/$1 --strip-components=1
+    tar -xJf node_modules/.downloads/$1.tgz -C node_modules/$1 --strip-components=1
 
     # if there's a package bin folder, copy its contents to the parent .bin folder
     if [ -d "node_modules/$1/bin" ]; then
