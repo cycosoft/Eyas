@@ -214,6 +214,13 @@ async function createBuildFolder() {
 
 	// let the user know when this build expires
 	userLog(`Set build expirations to: ${expires.toLocaleString()}`);
+
+	const asar = require(`@electron/asar`);
+
+	const dest = `test.asar`;
+
+	await asar.createPackage(paths.build, path.join(paths.build, dest));
+	userLog(`Created asar file!`);
 }
 
 // launch a preview of the consumers application
@@ -224,6 +231,8 @@ async function runCommand_preview(devMode = false) {
 
 	// create the build folder to prep for usage
 	await createBuildFolder();
+
+	return;
 
 	// copy the package.json to the build folder
 	userLog(`Copying dependency manifest...`);
