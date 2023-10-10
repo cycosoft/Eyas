@@ -402,10 +402,7 @@ async function runCommand_compile() {
 			const output = fs.createWriteStream(paths.dist + `/${filename}`);
 			const archive = archiver(`zip`, { zlib: 9 });
 			output.on(`close`, () => {
-				userLog();
 				userLog(`File created -> ${path.join(paths.dist, filename)}`);
-				userLog(`Portable compilation complete!`);
-				userLog();
 			});
 			archive.pipe(output);
 
