@@ -3,7 +3,7 @@
 # module definitions
 npmName=npm
 npmVersion=10.2.0
-nodeName=node-bin-darwin-arm64
+nodeName=node-linux-x64
 nodeVersion=20.7.0
 
 installModule(){
