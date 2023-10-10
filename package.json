@@ -62,7 +62,7 @@
     "eslint": "^8.51.0",
     "eslint-plugin-vue": "^9.17.0",
     "npm-check": "^6.0.1",
-    "sass": "^1.69.0",
+    "sass": "^1.69.1",
     "vite": "^4.4.11",
     "vite-plugin-vuetify": "^1.0.2"
   },
