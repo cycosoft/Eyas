@@ -388,37 +388,45 @@ async function runCommand_compile() {
 		userLog(`Copying dependency manifest...`);
 		await fs.copy(paths.packageJsonCoreSrc, paths.packageJsonDest);
 
-		// create the node runner version
-		userLog(`Creating "portable" distributable(s)...`);
-		const archiver = require(`archiver`);
-		const output = fs.createWriteStream(paths.dist + `/${artifactName}.zip`);
-		const archive = archiver(`zip`, { zlib: 9 });
-		output.on(`close`, () => {
-			userLog();
-			userLog(`File created -> ${path.join(paths.dist, `${artifactName}.zip`)}`);
-			userLog(`Portable compilation complete!`);
-			userLog();
+		// for each OS, create the runner file
+		[`mac`, `windows`, `linux`].forEach(os => {
+			// exit if the OS isn't enabled
+			if(!config.outputs[os]) { return; }
+
+			// create the node runner version
+			userLog(`Creating ${os.toUpperCase()} "portable" distributable...`);
+			const filename = `${artifactName}.${os}.zip`;
+			const archiver = require(`archiver`);
+			const output = fs.createWriteStream(paths.dist + `/${filename}`);
+			const archive = archiver(`zip`, { zlib: 9 });
+			output.on(`close`, () => {
+				userLog();
+				userLog(`File created -> ${path.join(paths.dist, filename)}`);
+				userLog(`Portable compilation complete!`);
+				userLog();
+			});
+			archive.pipe(output);
+
+			// add common files
+			archive.directory(paths.build, false);
+
+			// add mac files
+			if (config.outputs.mac || config.outputs.linux) {
+				const macFileExt = names.macRunner.split(`.`).pop();
+				archive.file(paths.macRunnerSrc, { name: `${artifactName}.${macFileExt}` });
+			}
+
+			// add win files
+			if (config.outputs.windows) {
+				const winFileExt = names.winRunner.split(`.`).pop();
+				archive.file(paths.winRunnerSrc, { name: `${artifactName}.${winFileExt}` });
+				archive.file(paths.winRunnerInstallerSrc, { name: names.winRunnerInstaller });
+			}
+
+			// complete the archive
+			archive.finalize();
 		});
-		archive.pipe(output);
 
-		// add common files
-		archive.directory(paths.build, false);
-
-		// add mac files
-		if (config.outputs.mac) {
-			const macFileExt = names.macRunner.split(`.`).pop();
-			archive.file(paths.macRunnerSrc, { name: `${artifactName}.${macFileExt}` });
-		}
-
-		// add win files
-		if (config.outputs.windows) {
-			const winFileExt = names.winRunner.split(`.`).pop();
-			archive.file(paths.winRunnerSrc, { name: `${artifactName}.${winFileExt}` });
-			archive.file(paths.winRunnerInstallerSrc, { name: names.winRunnerInstaller });
-		}
-
-		// complete the archive
-		archive.finalize();
 	}
 }
 
