@@ -10,6 +10,9 @@ installModule(){
     # $1 is the name of the npm package
     # $2 is the version of the npm package
 
+    # output a blank line
+    echo
+
     # let the user know what's downloading
     echo Downloading $1 $2
 
