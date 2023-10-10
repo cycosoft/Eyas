@@ -411,13 +411,13 @@ async function runCommand_compile() {
 			archive.directory(paths.build, false);
 
 			// add mac files
-			if (config.outputs.mac || config.outputs.linux) {
+			if (os === `mac` || os === `linux`) {
 				const macFileExt = names.macRunner.split(`.`).pop();
 				archive.file(paths.macRunnerSrc, { name: `${artifactName}.${macFileExt}` });
 			}
 
 			// add win files
-			if (config.outputs.windows) {
+			if (os === `windows`) {
 				const winFileExt = names.winRunner.split(`.`).pop();
 				archive.file(paths.winRunnerSrc, { name: `${artifactName}.${winFileExt}` });
 				archive.file(paths.winRunnerInstallerSrc, { name: names.winRunnerInstaller });
