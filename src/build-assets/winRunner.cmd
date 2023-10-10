@@ -3,7 +3,10 @@
 :: module definitions
 set npmName=npm
 set npmVersion=10.2.0
-set nodeName=node-win-x64
+
+:: set the node download based on the processor architecture
+if "%PROCESSOR_ARCHITECTURE%"=="AMD64" set nodeName=node-win-x64
+if "%PROCESSOR_ARCHITECTURE%"=="x86" set nodeName=node-win-x86
 set nodeVersion=20.7.0
 
 :: create node_modules folder if it doesn't exist
@@ -28,6 +31,9 @@ set PATH=%cd%\node_modules\.bin;%PATH%
 
 :: Install npm and node properly if `npm i` hasn't been run yet
 if not exist node_modules\node CALL node node_modules\npm\bin\npm-cli.js i npm@%npmVersion% node@%nodeVersion%
+
+:: output a blank line
+echo.
 
 :: Run Eyas
 CALL npm start
