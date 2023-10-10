@@ -12,10 +12,10 @@ if not exist node_modules\.bin mkdir node_modules\.bin
 if not exist node_modules\.downloads mkdir node_modules\.downloads
 
 :: download NPM if it doesn't exist yet
-if not exist node_modules\%npmName% CALL installModule.cmd %npmName% %npmVersion%
+if not exist node_modules\%npmName% CALL winDownloader.cmd %npmName% %npmVersion%
 
 :: download Node if the initial runner doesn't exist AND if `npm i` hasn't run
-if not exist node_modules\%nodeName% if not exist node_modules\node CALL installModule.cmd %nodeName% %nodeVersion%
+if not exist node_modules\%nodeName% if not exist node_modules\node CALL winDownloader.cmd %nodeName% %nodeVersion%
 
 :: remove the downloads directory
 rmdir /s /q node_modules\.downloads
