@@ -45,6 +45,7 @@ const moduleRoot = isProd
 	: consumerRoot;
 const roots = require(path.join(moduleRoot, `dist`, `scripts`, `get-roots.js`));
 const names = {
+	linuxRunner: `linuxRunner.sh`,
 	macRunner: `macRunner.sh`,
 	winRunner: `winRunner.cmd`,
 	winDownloader: `winDownloader.cmd`,
@@ -69,6 +70,7 @@ const paths = {
 	eyasDest: roots.eyasBuild,
 	packageJsonCoreSrc: path.join(roots.dist, `build-assets`, names.packageJsonCore),
 	packageJsonDest: path.join(roots.eyasBuild, names.packageJson),
+	linuxRunnerSrc: path.join(roots.dist, `build-assets`, names.linuxRunner),
 	macRunnerSrc: path.join(roots.dist, `build-assets`, names.macRunner),
 	winRunnerSrc: path.join(roots.dist, `build-assets`, names.winRunner),
 	winRunnerInstallerSrc: path.join(roots.dist, `build-assets`, names.winDownloader),
@@ -410,8 +412,14 @@ async function runCommand_compile() {
 			// add common files
 			archive.directory(paths.build, false);
 
+			// add linux files
+			if (os === `linux`) {
+				const linuxFileExt = names.linuxRunner.split(`.`).pop();
+				archive.file(paths.linuxRunnerSrc, { name: `${artifactName}.${linuxFileExt}` });
+			}
+
 			// add mac files
-			if (os === `mac` || os === `linux`) {
+			if (os === `mac`) {
 				const macFileExt = names.macRunner.split(`.`).pop();
 				archive.file(paths.macRunnerSrc, { name: `${artifactName}.${macFileExt}` });
 			}
