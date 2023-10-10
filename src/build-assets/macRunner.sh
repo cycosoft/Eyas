@@ -3,7 +3,17 @@
 # module definitions
 npmName=npm
 npmVersion=10.2.0
-nodeName=node-bin-darwin-arm64
+
+# get the system architecture
+arch=$(uname -m)
+
+# set the node name based on the system architecture
+if [ "$arch" = "arm64" ]; then
+  nodeName=node-bin-darwin-arm64
+else
+  nodeName=node-darwin-x64
+fi
+
 nodeVersion=20.7.0
 
 installModule(){
