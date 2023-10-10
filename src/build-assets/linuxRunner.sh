@@ -60,5 +60,8 @@ export PATH="$(pwd)/node_modules/.bin:$PATH"
 # Set the working directory to the directory of the script
 cd "$(dirname "$0")"
 
+# output a blank line
+echo
+
 # Run Eyas
 npm start
