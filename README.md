@@ -86,8 +86,10 @@ module.exports = {
     // The number of hours from build time until the distributable expires
     expires: 168, // (range: 1-720 hours)
     // Build an unsigned executable for the current platform (.exe.zip, .dmg.zip, .AppImage)
+    // 60 - 100 MB
     executable: false,
     // Builds a zipped file containing your application and a runner for the built platform (default)
+    // ~275kb
     portable: false
   }
 };
