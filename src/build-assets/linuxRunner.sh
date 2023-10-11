@@ -13,6 +13,9 @@ else
 fi
 nodeVersion=20.7.0
 
+# Set the working directory to the app folder
+cd app
+
 installModule(){
     # $1 is the name of the npm package
     # $2 is the version of the npm package
@@ -63,9 +66,6 @@ fi
 
 # temporarily set the PATH to the local installation of node
 export PATH="$(pwd)/node_modules/.bin:$PATH"
-
-# Set the working directory to the directory of the script
-cd "$(dirname "$0")"
 
 # output a blank line
 echo
