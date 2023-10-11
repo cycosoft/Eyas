@@ -48,7 +48,7 @@ const names = {
 	linuxRunner: `linuxRunner.sh`,
 	macRunner: `macRunner.command`,
 	winRunner: `winRunner.cmd`,
-	winDownloader: `winDownloader.cmd`,
+	winDownloader: `getDependency.cmd`,
 	packageJsonCore: `package.json`,
 	packageJson: `package.json`,
 	eyasAssets: `eyas-assets`,
