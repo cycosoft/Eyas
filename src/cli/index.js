@@ -421,22 +421,25 @@ async function runCommand_compile() {
 			// add common files
 			archive.directory(paths.build, false);
 
+			// name of the file that runs Eyas
+			const runnerName = `Run Test`;
+
 			// add linux files
 			if (os === `linux`) {
 				const linuxFileExt = names.linuxRunner.split(`.`).pop();
-				archive.file(paths.linuxRunnerSrc, { name: `${artifactName}.${linuxFileExt}` });
+				archive.file(paths.linuxRunnerSrc, { name: `${runnerName}.${linuxFileExt}` });
 			}
 
 			// add mac files
 			if (os === `mac`) {
 				const macFileExt = names.macRunner.split(`.`).pop();
-				archive.file(paths.macRunnerSrc, { name: `${artifactName}.${macFileExt}` });
+				archive.file(paths.macRunnerSrc, { name: `${runnerName}.${macFileExt}` });
 			}
 
 			// add win files
 			if (os === `windows`) {
 				const winFileExt = names.winRunner.split(`.`).pop();
-				archive.file(paths.winRunnerSrc, { name: `${artifactName}.${winFileExt}` });
+				archive.file(paths.winRunnerSrc, { name: `${runnerName}.${winFileExt}` });
 				archive.file(paths.winRunnerInstallerSrc, { name: names.winDownloader });
 			}
 
