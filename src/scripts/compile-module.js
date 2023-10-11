@@ -65,22 +65,18 @@ async function updateRunnerVersions() {
 
 	// for each runner
 	for (const filename of runners) {
+		const runnerPath = path.join(paths.buildAssetsDest, filename);
+
 		// read the contents of the runner
-		let script = fs.readFileSync(path.join(paths.buildAssetsDest, filename), `utf8`);
+		let script = fs.readFileSync(runnerPath, `utf8`);
 
 		// modify the nodeVersion variable
 		script = script
 			.replace(/nodeVersion=0.0.0/, `nodeVersion=${nodeVersion}`)
 			.replace(/npmVersion=0.0.0/, `npmVersion=${npmVersion}`);
 
-		console.log(script);
-
-		// set the npm and node dependency version numbers
-		// packageJsonRunner.dependencies.npm = packageJson.dependencies.npm;
-		// packageJsonRunner.dependencies.node = packageJson.dependencies.node;
-
-		// // save the updated package.json
-		// await fs.outputFile(path.join(roots.dist, names[runner], `package.json`), JSON.stringify(packageJsonRunner));
+		// save the modified runner
+		await fs.outputFile(runnerPath, script);
 	}
 }
 
