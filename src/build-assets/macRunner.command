@@ -2,7 +2,7 @@
 
 # module definitions
 npmName=npm
-npmVersion=10.2.0
+npmVersion=0.0.0
 
 # set the node name based on the system architecture
 arch=$(uname -m)
@@ -11,7 +11,7 @@ if [ "$arch" = "arm64" ]; then
 else
     nodeName=node-darwin-x64
 fi
-nodeVersion=20.7.0
+nodeVersion=0.0.0
 
 # Set the working directory to the app folder
 cd app
