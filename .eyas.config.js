@@ -39,7 +39,7 @@ module.exports = {
 		windows: true,
 		mac: true,
 		linux: true,
-		// executable: true,
+		executable: true,
 		// portable: false
 	}
 };

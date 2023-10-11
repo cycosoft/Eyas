@@ -328,60 +328,72 @@ async function runCommand_compile() {
 		});
 
 		// wrap the executables in a zip file
-		userLog();
 		const archiver = require(`archiver`);
+		let completedZipCount = 0;
 		builtFiles.forEach(file => {
-			// if the file is .AppImage, skip the loop
+			// skip if the file is a blockmap
+			if(file.endsWith(`.blockmap`)) {
+				completedZipCount++;
+				return;
+			}
+
+			// if the file is .AppImage, do not archive but let the user know it was created
 			if(file.endsWith(`.AppImage`)) {
+				completedZipCount++;
 				userLog(`File created -> ${file}`);
 				return;
 			}
 
 			// create the zip file
 			const output = fs.createWriteStream(`${file}.zip`);
+			output.on(`close`, () => {
+				completedZipCount++;
+				userLog(`File created -> ${file}.zip`);
+
+				if(completedZipCount === builtFiles.length) {
+					performCleanup();
+				}
+			});
 			const archive = archiver(`zip`, { store: true });
 			archive.pipe(output);
 			const filename = file.split(`\\`).pop();
 			archive.file(file, { name: filename });
 			archive.finalize();
-
-			// remove the included file
-			fs.remove(file);
-
-			userLog(`File created -> ${file}.zip`);
 		});
 
-		// delete directories in the build output
-		// delete files that aren't .zip, .AppImage
-		userLog(`Performing cleanup...`);
-		const files = await fs.readdir(paths.dist);
-		for(const file of files) {
-			// skip file if it's in the skip list
-			let shouldSkip = false;
-			const skipList = [`.zip`, `.AppImage`];
-			skipList.forEach(skip => {
-				if(file.endsWith(skip)) { shouldSkip = true; }
-			});
+		async function performCleanup() {
+			// delete directories in the build output
+			// delete files that aren't .zip, .AppImage
+			userLog(`Performing cleanup...`);
+			const files = await fs.readdir(paths.dist);
+			for(const file of files) {
+				// skip file if it's in the skip list
+				let shouldSkip = false;
+				const skipList = [`.zip`, `.AppImage`];
+				skipList.forEach(skip => {
+					if(file.endsWith(skip)) { shouldSkip = true; }
+				});
 
-			// exit this loop if the file should be skipped
-			if(shouldSkip) { continue; }
+				// exit this loop if the file should be skipped
+				if(shouldSkip) { continue; }
 
-			// get the full path to the file
-			const filePath = path.join(paths.dist, file);
+				// get the full path to the file
+				const filePath = path.join(paths.dist, file);
 
-			// if it's a directory, delete it
-			if((await fs.stat(filePath)).isDirectory()) {
+				// if it's a directory, delete it
+				if((await fs.stat(filePath)).isDirectory()) {
+					await fs.remove(filePath);
+					continue;
+				}
+
+				// delete the file
 				await fs.remove(filePath);
-				continue;
 			}
 
-			// delete the file
-			await fs.remove(filePath);
+			// log the end of the process
+			userLog(`Executable compilation complete!`);
+			userLog();
 		}
-
-		// log the end of the process
-		userLog(`Executable compilation complete!`);
-		userLog();
 	}
 
 	async function build_portables() {
