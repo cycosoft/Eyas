@@ -61,7 +61,7 @@ rm -rf node_modules/.downloads
 
 # Install npm and node properly if `npm i` hasn't been run yet
 if [ ! -d "node_modules/node" ]; then
-    node node_modules/npm/bin/npm-cli.js i npm@$npmVersion node@$nodeVersion
+    node node_modules/npm/bin/npm-cli.js i --no-audit npm@$npmVersion node@$nodeVersion
 fi
 
 # temporarily set the PATH to the local installation of node

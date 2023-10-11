@@ -31,7 +31,7 @@ rmdir /s /q node_modules\.downloads
 set PATH=%cd%\node_modules\.bin;%PATH%
 
 :: Install npm and node properly if `npm i` hasn't been run yet
-if not exist node_modules\node CALL node node_modules\npm\bin\npm-cli.js i npm@%npmVersion% node@%nodeVersion%
+if not exist node_modules\node CALL node node_modules\npm\bin\npm-cli.js i --no-audit npm@%npmVersion% node@%nodeVersion%
 
 :: output a blank line
 echo.
