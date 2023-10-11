@@ -397,7 +397,7 @@ async function runCommand_compile() {
 
 			// create the node runner version
 			userLog(`Creating ${os.toUpperCase()} "portable" distributable...`);
-			const filename = `${artifactName}.${os}.${process.arch}.zip`;
+			const filename = `${artifactName}.${os}.zip`;
 			const archiver = require(`archiver`);
 			const output = fs.createWriteStream(paths.dist + `/${filename}`);
 			const archive = archiver(`zip`, { zlib: 9 });
