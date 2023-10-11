@@ -46,7 +46,7 @@ const moduleRoot = isProd
 const roots = require(path.join(moduleRoot, `dist`, `scripts`, `get-roots.js`));
 const names = {
 	linuxRunner: `linuxRunner.sh`,
-	macRunner: `macRunner.sh`,
+	macRunner: `macRunner.command`,
 	winRunner: `winRunner.cmd`,
 	winDownloader: `winDownloader.cmd`,
 	packageJsonCore: `package.json`,
