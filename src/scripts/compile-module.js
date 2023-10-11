@@ -58,12 +58,10 @@ const paths = {
 // set the npm and node dependency version numbers for each runner
 async function updateRunnerVersions() {
 	// read the package.json
-	const semver = require(`semver`);
 	const packageJson = require(paths.packageJsonModule);
-	const nodeVersion = semver.clean(packageJson.devDependencies.node);
-	const npmVersion = semver.clean(packageJson.devDependencies.npm);
+	const nodeVersion = packageJson.devDependencies.node.match(/\d+\.\d+\.\d+/)[0];
+	const npmVersion = packageJson.devDependencies.npm.match(/\d+\.\d+\.\d+/)[0];
 	const runners = [`winRunner.cmd`, `macRunner.command`, `linuxRunner.sh`];
-	console.log({nodeVersion, npmVersion});
 
 	// for each runner
 	for (const filename of runners) {
