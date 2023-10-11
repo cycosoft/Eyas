@@ -419,7 +419,7 @@ async function runCommand_compile() {
 			archive.pipe(output);
 
 			// add common files
-			archive.directory(paths.build, false);
+			archive.directory(paths.build, `app`);
 
 			// name of the file that runs Eyas
 			const runnerName = `Run Test`;
