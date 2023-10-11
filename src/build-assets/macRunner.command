@@ -14,7 +14,7 @@ fi
 nodeVersion=0.0.0
 
 # Set the working directory to the app folder
-cd app
+cd "$(dirname "$0")"/app
 
 installModule(){
     # $1 is the name of the npm package
