@@ -40,6 +40,9 @@ const paths = {
 	await fs.copy(paths.buildAssetsSrc, paths.buildAssetsDest);
 	await fs.copy(paths.eyasInterfaceAppSrc, paths.eyasInterfaceAppDest);
 
+	// set the npm and node dependency version numbers based on package.json
+	await updateRunnerVersions();
+
 	// Update the package.json version numbers
 	await updatePackageJsonValues();
 
@@ -51,6 +54,37 @@ const paths = {
 		output: paths.cliDestFile
 	});
 })();
+
+// set the npm and node dependency version numbers for each runner
+async function updateRunnerVersions() {
+	// read the package.json
+	const semver = require(`semver`);
+	const packageJson = require(paths.packageJsonModule);
+	const nodeVersion = semver.clean(packageJson.devDependencies.node);
+	const npmVersion = semver.clean(packageJson.devDependencies.npm);
+	const runners = [`winRunner.cmd`, `macRunner.command`, `linuxRunner.sh`];
+	console.log({nodeVersion, npmVersion});
+
+	// for each runner
+	for (const filename of runners) {
+		// read the contents of the runner
+		let script = fs.readFileSync(path.join(paths.buildAssetsDest, filename), `utf8`);
+
+		// modify the nodeVersion variable
+		script = script
+			.replace(/nodeVersion=0.0.0/, `nodeVersion=${nodeVersion}`)
+			.replace(/npmVersion=0.0.0/, `npmVersion=${npmVersion}`);
+
+		console.log(script);
+
+		// set the npm and node dependency version numbers
+		// packageJsonRunner.dependencies.npm = packageJson.dependencies.npm;
+		// packageJsonRunner.dependencies.node = packageJson.dependencies.node;
+
+		// // save the updated package.json
+		// await fs.outputFile(path.join(roots.dist, names[runner], `package.json`), JSON.stringify(packageJsonRunner));
+	}
+}
 
 // update all the versions in the distributed package.json from the module package.json
 async function updatePackageJsonValues() {
