@@ -10,22 +10,22 @@ if "%PROCESSOR_ARCHITECTURE%"=="x86" set nodeName=node-win-x86
 if "%PROCESSOR_ARCHITECTURE%"=="ia32" set nodeName=node-win-x86
 set nodeVersion=20.7.0
 
+:: Set the working directory to the app folder
+cd /d app
+
 :: create node_modules folder if it doesn't exist
 if not exist node_modules mkdir node_modules
 if not exist node_modules\.bin mkdir node_modules\.bin
 if not exist node_modules\.downloads mkdir node_modules\.downloads
 
 :: download NPM if it doesn't exist yet
-if not exist node_modules\%npmName% CALL getDependency.cmd %npmName% %npmVersion%
+if not exist node_modules\%npmName% CALL ..\getDependency.cmd %npmName% %npmVersion%
 
 :: download Node if the initial runner doesn't exist AND if `npm i` hasn't run
-if not exist node_modules\%nodeName% if not exist node_modules\node CALL getDependency.cmd %nodeName% %nodeVersion%
+if not exist node_modules\%nodeName% if not exist node_modules\node CALL ..\getDependency.cmd %nodeName% %nodeVersion%
 
 :: remove the downloads directory
 rmdir /s /q node_modules\.downloads
-
-:: Set the working directory to the directory of the script
-cd /d "%~dp0"
 
 :: temporarily set the PATH to the local installation of node
 set PATH=%cd%\node_modules\.bin;%PATH%
