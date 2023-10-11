@@ -89,7 +89,7 @@ module.exports = {
     // 60 - 100 MB
     executable: false,
     // Builds a zipped file containing your application and a runner for the built platform (default)
-    // ~275kb
+    // ~275kb before downloads
     portable: false
   }
 };
