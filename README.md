@@ -18,6 +18,7 @@
 
 ## Table of Contents
 
+- [Features](#features)
 - [Benefits](#benefits)
 - [Who and Why](#who-and-why)
 - [Install](#install)
@@ -27,6 +28,13 @@
 - [Tips](#tips)
 - [Support](#support)
 - [The Fine Print](#the-fine-print)
+
+## Features
+
+- 📦 Package your app as a portable runner or executable for Windows, Mac, or Linux
+- 🔗 Simulate running your app from any domain
+- 📏 Supports custom screen size testing (mobile, tablet, desktop)
+- 🕜 Custom build expiration between 1 hour and 30 days
 
 ## Benefits
 
