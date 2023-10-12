@@ -108,7 +108,7 @@ module.exports = {
 - `preview`: builds and runs Eyas from `./.eyas-preview/`
 - `compile`: builds to _./.eyas-preview/_ and compiles to `./.eyas-dist/`
 
-Depending on your OS, you may be able to build for multiple platforms on a single machine using the  `electronuserland/builder` and `electronuserland/builder:wine` docker images. See more information ([here](https://www.electron.build/multi-platform-build#provided-docker-images)). Here's a simple visualization of known possible configurations.
+Depending on your OS, you may be able to build executables for multiple platforms on a single machine using the  `electronuserland/builder` and `electronuserland/builder:wine` docker images. See more information ([here](https://www.electron.build/multi-platform-build#provided-docker-images)). Here's a simple visualization of known possible configurations.
 
 | | Portable | .exe | .AppImage | .dmg |
 | - | - | - | - | - |
@@ -116,11 +116,12 @@ Depending on your OS, you may be able to build for multiple platforms on a singl
 | Windows | ✅ | ✅ | ✅ | |
 | Linux | ✅ | ✅ | ✅ | |
 
+All outputs are zipped. Portable builds will add ~250kb overhead to your distributable, and executables can range between 60-100mb depending on the platform. Portable builds are recommended for most use cases. They download dependencies in-place on the client machine, and avoid many of the security warnings that come with executables.
+
 ## Tips
 
 - Add `eyas-*` to your `.gitignore` to prevent output from being committed to your repo
 - Windows executables can sometimes be slower to launch due to Microsoft Defender
-- This tool disables certain security features of the browser, **and should not be used in a production capacity.**
 - If your app is using a custom domain and you'd like to test it in your browser via Eyas, you will need to add the domain to your `etc/hosts` file. See [this guide](https://www.ephost.com/account/index.php/knowledgebase/232/How-to-edit-your-Host-file.html) (no affiliation) for more information.
 - View documented changes at [CHANGELOG.md](CHANGELOG.md)
 
