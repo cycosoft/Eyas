@@ -340,7 +340,7 @@ async function runCommand_compile() {
 			// if the file is .AppImage, do not archive but let the user know it was created
 			if(file.endsWith(`.AppImage`)) {
 				completedZipCount++;
-				userLog(`File created -> ${file}`);
+				userLog(`🎉 File created -> ${file}`);
 				return;
 			}
 
@@ -348,7 +348,7 @@ async function runCommand_compile() {
 			const output = fs.createWriteStream(`${file}.zip`);
 			output.on(`close`, () => {
 				completedZipCount++;
-				userLog(`File created -> ${file}.zip`);
+				userLog(`🎉 File created -> ${file}.zip`);
 
 				if(completedZipCount === builtFiles.length) {
 					performCleanup();
@@ -414,7 +414,7 @@ async function runCommand_compile() {
 			const output = fs.createWriteStream(paths.dist + `/${filename}`);
 			const archive = archiver(`zip`, { zlib: 9 });
 			output.on(`close`, () => {
-				userLog(`File created -> ${path.join(paths.dist, filename)}`);
+				userLog(`🎉 File created -> ${path.join(paths.dist, filename)}`);
 			});
 			archive.pipe(output);
 
