@@ -25,7 +25,6 @@
 - [Usage](#usage)
 - [Outputs](#outputs)
 - [Tips](#tips)
-- [Support](#support)
 - [The Fine Print](#the-fine-print)
 
 ## Features
@@ -125,11 +124,9 @@ All outputs are zipped. Portable builds will add ~250kb overhead to your distrib
 - If your app is using a custom domain and you'd like to test it in your browser via Eyas, you will need to add the domain to your `etc/hosts` file. See [this guide](https://www.ephost.com/account/index.php/knowledgebase/232/How-to-edit-your-Host-file.html) (no affiliation) for more information.
 - View documented changes at [CHANGELOG.md](CHANGELOG.md)
 
-## Support
+## The Fine Print
 
 Support is available via <support+eyas@cycosoft.com>
-
-## The Fine Print
 
 - Licensed under the [MIT License](LICENSE.TXT)
 - View [terms of use](https://cycosoft.com/eyas/terms)
