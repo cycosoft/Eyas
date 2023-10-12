@@ -61,11 +61,11 @@ const eyasConfig = {
 	},
 
 	meta: {
-		expires: userConfig.meta.expires || null,
-		gitBranch: userConfig.meta.gitBranch || null,
-		gitHash: userConfig.meta.gitHash || null,
-		gitUser: userConfig.meta.gitUser || null,
-		compiled: userConfig.meta.compiled || null
+		expires: userConfig.meta.expires || getPreviewExpiration(),
+		gitBranch: userConfig.meta.gitBranch || `Preview`,
+		gitHash: userConfig.meta.gitHash || `Preview`,
+		gitUser: userConfig.meta.gitUser || `Preview`,
+		compiled: userConfig.meta.compiled || new Date()
 	}
 };
 
@@ -127,4 +127,11 @@ function validateExpiration(hours) {
 	}
 
 	return output;
+}
+
+// get the default preview expiration
+function getPreviewExpiration() {
+	const addHours = require(`date-fns/addHours`);
+	const now = new Date();
+	return addHours(now, 1);
 }
