@@ -1,7 +1,5 @@
 # v1.1.0
 
-> Summary:
-
 - Added: "Portable" output type
 - Added: Build expiration for every build with optional override
 - Added: Build metadata to the about dialog
@@ -11,13 +9,9 @@
 
 # v1.0.1
 
-> Summary: Fix CLI failure
-
 - Updated: Rebuilt CLI
 
 # v1.0.0
-
-> Summary: Initial release
 
 - Added: User configuration. See [README.md](README.md)
 - Added: CLI
