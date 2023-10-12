@@ -18,8 +18,8 @@
     "compile:module": "npm run compile:ui && node src/scripts/compile-module.js && electron-vite build",
     "compile:ui": "vite build --config src/eyas-interface/app/.vite.config.ui.js",
     "_____________SCRIPTS_____________": "",
-    "bundle": "npm ci && npm run compile:module && npm pack",
-    "deploy": "npm ci && npm run compile:module && npm publish",
+    "bundle": "npm i --no-audit && npm run compile:module && npm pack",
+    "deploy": "npm i --no-audit && npm run compile:module && npm publish",
     "bump:patch": "npm version patch && git push && git push --tags",
     "bump:minor": "npm version minor && git push && git push --tags"
   },
