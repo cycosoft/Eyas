@@ -19,8 +19,7 @@
 ## Table of Contents
 
 - [Features](#features)
-- [Benefits](#benefits)
-- [Who and Why](#who-and-why)
+- [About](#about)
 - [Install](#install)
 - [Configuration](#configuration)
 - [Usage](#usage)
@@ -36,21 +35,9 @@
 - 📏 Supports custom screen size testing (mobile, tablet, desktop)
 - 🕜 Custom build expiration between 1 hour and 30 days
 
-## Benefits
+## About
 
-- 📈 **Speed & Stability** - Ship faster and increase confidence in your application by testing _before merge_
-- 🤝 **Shareability** - No special tools or configuration needed on your target machines. Share your demo with your team, company or even customers as a simple executable file.
-- 📦 **Serverless** - No need to manage a deployment server
-- 🔗 **Cross-platform** - Test your application in multiple environments
-- 💰 **Cost** - Free to implement
-
-## Who and Why
-
-_If you've got HTML and someone who wants to see it, this is for you_.
-
-The best time to test your changes is _before_ you merge them, but setting up a development environment on everyone's computer doesn't scale. The standard solution is to merge the code, and test it down the line in a staging environment where a simple bug might block the entire team from shipping. An emerging trend is to deploy each branch to an ephemeral environment, but this can be costly and time consuming to set up for all but the largest companies.
-
-_Eyas_ leverages a packaged version of your application to provide a _simple_, shareable, and serverless testing solution that's ready to share within minutes. Regardless of your team size, you can now decrease the feedback loop for no extra cost. You can easily include PMs, designers, executives and customers in the testing process.
+_Eyas_ leverages a packaged version of your application to provide a simple and shareable testing solution without the need to set up an entire server. Regardless of your team size, you can now decrease the feedback loop for no extra cost. You can easily include PMs, designers, executives and customers in the testing process.
 
 ## Install
 
