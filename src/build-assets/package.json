@@ -4,7 +4,7 @@
   "version": "",
   "author": "",
   "scripts": {
-    "start": "npm i --no-audit && electron . --dev"
+    "start": "npm i --no-audit && electron ."
   },
   "dependencies": {
     "express": "",
