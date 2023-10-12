@@ -7,7 +7,7 @@
 <div align="center">
   <h1>Eyas</h1>
 </div>
-<p align="center">Bundle your web code into an executable for fast serverless testing</p>
+<p align="center">Feature Branch Testing Without a Server</p>
 
 <p align="center">
 <img src="https://img.shields.io/npm/v/@cycosoft/eyas?color=6988e6&label=version">
@@ -19,7 +19,7 @@
 ## Table of Contents
 
 - [Features](#features)
-- [Who and Why](#who-and-why)
+- [About](#about)
 - [Install](#install)
 - [Configuration](#configuration)
 - [Usage](#usage)
@@ -30,19 +30,14 @@
 
 ## Features
 
-- 📈 **Speed & Stability** - Ship faster and increase confidence in your application by testing _before merge_
-- 🤝 **Shareability** - No special tools or configuration needed on your target machines. Share your demo with your team, company or even customers as a simple executable file.
-- 📦 **Serverless** - No need to manage a deployment server
-- 🔗 **Cross-platform** - Test your application in multiple environments
-- 💰 **Cost** - Free to implement
+- 📦 Package your app as a portable runner or executable for Windows, Mac, or Linux
+- 🔗 Simulate running your app from any domain
+- 📏 Supports custom screen size testing (mobile, tablet, desktop)
+- 🕜 Custom build expiration between 1 hour and 30 days
 
-## Who and Why
+## About
 
-_If you've got HTML and someone who wants to see it, this is for you_.
-
-The best time to test your changes is _before_ you merge them, but setting up a development environment on everyone's computer doesn't scale. The standard solution is to merge the code, and test it down the line in a staging environment where a simple bug might block the entire team from shipping. An emerging trend is to deploy each branch to an ephemeral environment, but this can be costly and time consuming to set up for all but the largest companies.
-
-_Eyas_ leverages a packaged version of your application to provide a _simple_, shareable, and serverless testing solution that's ready to share within minutes. Regardless of your team size, you can now decrease the feedback loop for no extra cost. You can easily include PMs, designers, executives and customers in the testing process.
+_Eyas_ leverages a packaged version of your application to provide a simple and shareable testing solution without the need to set up an entire server. Regardless of your team size, you can now decrease the feedback loop for no extra cost. You can easily include PMs, designers, executives and customers in the testing process.
 
 ## Install
 
@@ -113,7 +108,7 @@ module.exports = {
 - `preview`: builds and runs Eyas from `./.eyas-preview/`
 - `compile`: builds to _./.eyas-preview/_ and compiles to `./.eyas-dist/`
 
-Depending on your OS, you may be able to build for multiple platforms on a single machine using the  `electronuserland/builder` and `electronuserland/builder:wine` docker images. See more information ([here](https://www.electron.build/multi-platform-build#provided-docker-images)). Here's a simple visualization of known possible configurations.
+Depending on your OS, you may be able to build executables for multiple platforms on a single machine using the  `electronuserland/builder` and `electronuserland/builder:wine` docker images. See more information ([here](https://www.electron.build/multi-platform-build#provided-docker-images)). Here's a simple visualization of known possible configurations.
 
 | | Portable | .exe | .AppImage | .dmg |
 | - | - | - | - | - |
@@ -121,11 +116,12 @@ Depending on your OS, you may be able to build for multiple platforms on a singl
 | Windows | ✅ | ✅ | ✅ | |
 | Linux | ✅ | ✅ | ✅ | |
 
+All outputs are zipped. Portable builds will add ~250kb overhead to your distributable, and executables can range between 60-100mb depending on the platform. Portable builds are recommended for most use cases. They download dependencies in-place on the client machine, and avoid many of the security warnings that come with executables.
+
 ## Tips
 
 - Add `eyas-*` to your `.gitignore` to prevent output from being committed to your repo
 - Windows executables can sometimes be slower to launch due to Microsoft Defender
-- This tool disables certain security features of the browser, **and should not be used in a production capacity.**
 - If your app is using a custom domain and you'd like to test it in your browser via Eyas, you will need to add the domain to your `etc/hosts` file. See [this guide](https://www.ephost.com/account/index.php/knowledgebase/232/How-to-edit-your-Host-file.html) (no affiliation) for more information.
 - View documented changes at [CHANGELOG.md](CHANGELOG.md)
 
