@@ -23,7 +23,7 @@
 - [Install](#install)
 - [Configuration](#configuration)
 - [Usage](#usage)
-- [Output](#output)
+- [Outputs](#outputs)
 - [Tips](#tips)
 - [Support](#support)
 - [The Fine Print](#the-fine-print)
@@ -103,7 +103,7 @@ module.exports = {
 }
 ```
 
-## Output
+## Outputs
 
 - `preview`: builds and runs Eyas from `./.eyas-preview/`
 - `compile`: builds to _./.eyas-preview/_ and compiles to `./.eyas-dist/`
