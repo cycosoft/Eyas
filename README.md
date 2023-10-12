@@ -18,7 +18,7 @@
 
 ## Table of Contents
 
-- [Features](#features)
+- [Benefits](#benefits)
 - [Who and Why](#who-and-why)
 - [Install](#install)
 - [Configuration](#configuration)
@@ -28,7 +28,7 @@
 - [Support](#support)
 - [The Fine Print](#the-fine-print)
 
-## Features
+## Benefits
 
 - 📈 **Speed & Stability** - Ship faster and increase confidence in your application by testing _before merge_
 - 🤝 **Shareability** - No special tools or configuration needed on your target machines. Share your demo with your team, company or even customers as a simple executable file.
