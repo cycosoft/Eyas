@@ -7,7 +7,7 @@
 <div align="center">
   <h1>Eyas</h1>
 </div>
-<p align="center">Bundle your web code into an executable for fast serverless testing</p>
+<p align="center">Feature Branch Testing Without a Server</p>
 
 <p align="center">
 <img src="https://img.shields.io/npm/v/@cycosoft/eyas?color=6988e6&label=version">
