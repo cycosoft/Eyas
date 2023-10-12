@@ -28,15 +28,6 @@ try {
 	console.log(``);
 }
 
-// try loading the user's meta data (may not exist when CLI runs this)
-const metaPath = path.join(roots.meta, `.eyas.meta.json`);
-let metaData = {};
-try {
-	metaData = require(metaPath);
-} catch (error) {
-	// this should be silent
-}
-
 // error checking for config
 userConfig.test = userConfig.test || {};
 userConfig.outputs = userConfig.outputs || {};
@@ -68,7 +59,13 @@ const eyasConfig = {
 		expires: validateExpiration(userConfig.outputs.expires) // hours
 	},
 
-	meta: metaData
+	meta: {
+		expires: userConfig.meta.expires || null,
+		gitBranch: userConfig.meta.gitBranch || null,
+		gitHash: userConfig.meta.gitHash || null,
+		gitUser: userConfig.meta.gitUser || null,
+		compiled: userConfig.meta.compiled || null
+	}
 };
 
 // set the default platform if none are specified
