@@ -47,16 +47,21 @@ const paths = {
 	await updatePackageJsonValues();
 
 	// Compile the CLI
+	console.log(`🕜 compile-module.js emptying ${paths.cliDest}`);
 	await fs.emptyDir(paths.cliDest);
+	console.log(`🕜 compile-module.js compiling ${paths.cliSrcFile}`);
 	await bytenode.compileFile({
 		loaderFilename: `%.js`,
 		filename: paths.cliSrcFile,
 		output: paths.cliDestFile
 	});
+
+	console.log(`🎉 compile-module.js complete`);
 })();
 
 // set the npm and node dependency version numbers for each runner
 async function updateRunnerVersions() {
+	console.log(`🕜 updateRunnerVersions() start`);
 	// read the package.json
 	const packageJson = require(paths.packageJsonModule);
 	const nodeVersion = packageJson.devDependencies.node.match(/\d+\.\d+\.\d+/)[0];
@@ -76,12 +81,16 @@ async function updateRunnerVersions() {
 			.replace(/npmVersion=0.0.0/, `npmVersion=${npmVersion}`);
 
 		// save the modified runner
+		console.log(`📝 updateRunnerVersions() writing ${filename}`);
 		await fs.outputFile(runnerPath, script);
 	}
+
+	console.log(`🕜 updateRunnerVersions() end`);
 }
 
 // update all the versions in the distributed package.json from the module package.json
 async function updatePackageJsonValues() {
+	console.log(`🕜 updatePackageJsonValues() start`);
 	// read both package.json
 	const packageJsonModule = require(paths.packageJsonModule);
 	const packageJsonDist = require(paths.packageJsonDist);
@@ -117,5 +126,8 @@ async function updatePackageJsonValues() {
 	packageJsonDist.devDependencies.electron = packageJsonModule.dependencies.electron;
 
 	// save the updated dist/package.json
+	console.log(`📝 updatePackageJsonValues() writing package.json`);
 	await fs.outputFile(paths.packageJsonDist, JSON.stringify(packageJsonDist));
+
+	console.log(`🕜 updatePackageJsonValues() end`);
 }
