@@ -31,6 +31,7 @@ try {
 // error checking for config
 userConfig.test = userConfig.test || {};
 userConfig.outputs = userConfig.outputs || {};
+userConfig.meta = userConfig.meta || {};
 
 // configuration merge and validation step
 const eyasConfig = {
