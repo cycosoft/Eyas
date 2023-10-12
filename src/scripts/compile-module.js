@@ -40,6 +40,9 @@ const paths = {
 	await fs.copy(paths.buildAssetsSrc, paths.buildAssetsDest);
 	await fs.copy(paths.eyasInterfaceAppSrc, paths.eyasInterfaceAppDest);
 
+	// set the npm and node dependency version numbers based on package.json
+	await updateRunnerVersions();
+
 	// Update the package.json version numbers
 	await updatePackageJsonValues();
 
@@ -52,6 +55,31 @@ const paths = {
 	});
 })();
 
+// set the npm and node dependency version numbers for each runner
+async function updateRunnerVersions() {
+	// read the package.json
+	const packageJson = require(paths.packageJsonModule);
+	const nodeVersion = packageJson.devDependencies.node.match(/\d+\.\d+\.\d+/)[0];
+	const npmVersion = packageJson.devDependencies.npm.match(/\d+\.\d+\.\d+/)[0];
+	const runners = [`winRunner.cmd`, `macRunner.command`, `linuxRunner.sh`];
+
+	// for each runner
+	for (const filename of runners) {
+		const runnerPath = path.join(paths.buildAssetsDest, filename);
+
+		// read the contents of the runner
+		let script = fs.readFileSync(runnerPath, `utf8`);
+
+		// modify the nodeVersion variable
+		script = script
+			.replace(/nodeVersion=0.0.0/, `nodeVersion=${nodeVersion}`)
+			.replace(/npmVersion=0.0.0/, `npmVersion=${npmVersion}`);
+
+		// save the modified runner
+		await fs.outputFile(runnerPath, script);
+	}
+}
+
 // update all the versions in the distributed package.json from the module package.json
 async function updatePackageJsonValues() {
 	// read both package.json
@@ -62,6 +90,9 @@ async function updatePackageJsonValues() {
 	for (const key in packageJsonDist) {
 		// skip if not a property of the object
 		if (!Object.hasOwnProperty.call(packageJsonDist, key)) { continue; }
+
+		// skip overwriting "scripts", and keep the dist/package.json scripts
+		if (key === `scripts`) { continue; }
 
 		// if the value is an object
 		if (typeof packageJsonDist[key] === `object`) {

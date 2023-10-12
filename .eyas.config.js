@@ -36,10 +36,10 @@ module.exports = {
 
 	// defaults to current platform
 	outputs: {
-		compression: `store`,
-		// windows: true,
-		// mac: true,
-		// linux: true,
-		// zip: true
+		windows: true,
+		mac: true,
+		linux: true,
+		// executable: true,
+		portable: true
 	}
 };

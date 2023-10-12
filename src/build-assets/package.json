@@ -3,6 +3,9 @@
   "description": "",
   "version": "",
   "author": "",
+  "scripts": {
+    "start": "npm i --no-audit && electron ."
+  },
   "dependencies": {
     "express": "",
     "mixpanel": "",

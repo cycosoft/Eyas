@@ -77,18 +77,20 @@ module.exports = {
 
   // Defaults to building for the current platform if no platform is specified
   outputs: {
-    // The number of hours from build time until the distributable expires
-    expires: 168, // (range: 1-720 hours)
-    // The level of compression applied to your distributable
-    compression: `normal`, // store, normal, maximum
     // Force building a .exe
     windows: false,
     // Force building a .dmg
     mac: false,
     // Force building a .AppImage
     linux: false,
-    // Wraps the distributable in a .zip file (except .AppImage)
-    zip: false
+    // The number of hours from build time until the distributable expires
+    expires: 168, // (range: 1-720 hours)
+    // Build an unsigned executable for the current platform (.exe.zip, .dmg.zip, .AppImage)
+    // 60 - 100 MB
+    executable: false,
+    // Builds a zipped file containing your application and a runner for the built platform (default)
+    // ~275kb before downloads
+    portable: false
   }
 };
 ```
@@ -109,15 +111,15 @@ module.exports = {
 ## Output
 
 - `preview`: builds and runs Eyas from `./.eyas-preview/`
-- `compile`: builds to _./.eyas-preview/_, compiles to `./.eyas-dist/`, and then deletes _./.eyas-preview/_
+- `compile`: builds to _./.eyas-preview/_ and compiles to `./.eyas-dist/`
 
-Depending on your platform, you may be able to build for multiple platforms using the `electronuserland/builder:wine` docker image ([details](https://www.electron.build/multi-platform-build#provided-docker-images)). Here's a simple visualization of known possible configurations.
+Depending on your OS, you may be able to build for multiple platforms on a single machine using the  `electronuserland/builder` and `electronuserland/builder:wine` docker images. See more information ([here](https://www.electron.build/multi-platform-build#provided-docker-images)). Here's a simple visualization of known possible configurations.
 
-| Platform | Win | Linux | Mac |
-| - | - | - | - |
-| Mac | ✅ | ✅ | ✅ |
-| Windows | ✅ | ✅ | |
-| Linux | ✅ | ✅ | |
+| | Portable | .exe | .AppImage | .dmg |
+| - | - | - | - | - |
+| Mac | ✅ | ✅ | ✅ | ✅ |
+| Windows | ✅ | ✅ | ✅ | |
+| Linux | ✅ | ✅ | ✅ | |
 
 ## Tips
 

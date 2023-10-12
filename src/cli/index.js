@@ -45,6 +45,11 @@ const moduleRoot = isProd
 	: consumerRoot;
 const roots = require(path.join(moduleRoot, `dist`, `scripts`, `get-roots.js`));
 const names = {
+	linuxRunner: `linuxRunner.sh`,
+	macRunner: `macRunner.command`,
+	winRunner: `winRunner.cmd`,
+	winDownloader: `getDependency.cmd`,
+	packageJsonCore: `package.json`,
 	packageJson: `package.json`,
 	eyasAssets: `eyas-assets`,
 	eyasInterface: `eyas-interface`,
@@ -63,8 +68,12 @@ const paths = {
 	eyasInterfaceDest: path.join(roots.eyasBuild, names.eyasInterface),
 	eyasSrc: path.join(roots.dist, `eyas-core`),
 	eyasDest: roots.eyasBuild,
-	packageJsonSrc: path.join(roots.dist, `build-assets`, names.packageJson),
+	packageJsonCoreSrc: path.join(roots.dist, `build-assets`, names.packageJsonCore),
 	packageJsonDest: path.join(roots.eyasBuild, names.packageJson),
+	linuxRunnerSrc: path.join(roots.dist, `build-assets`, names.linuxRunner),
+	macRunnerSrc: path.join(roots.dist, `build-assets`, names.macRunner),
+	winRunnerSrc: path.join(roots.dist, `build-assets`, names.winRunner),
+	winRunnerInstallerSrc: path.join(roots.dist, `build-assets`, names.winDownloader),
 	scriptsSrc: path.join(roots.dist, names.scripts),
 	scriptsDest: path.join(roots.eyasBuild, names.scripts),
 	testDest: path.join(roots.eyasBuild, `test`),
@@ -128,7 +137,7 @@ function askUser() {
 // setup the CLI arguments
 function defineCommands(cli) {
 	// get the version from the module's package.json
-	const { version } = require(paths.packageJsonSrc);
+	const { version } = require(paths.packageJsonCoreSrc);
 
 	// define the details of the CLI
 	cli
@@ -164,7 +173,6 @@ async function createBuildFolder() {
 	const fs = require(`fs-extra`);
 	const addHours = require(`date-fns/addHours`);
 
-
 	// give space for the start of the process
 	userLog();
 
@@ -172,15 +180,12 @@ async function createBuildFolder() {
 	userLog(`Resetting build space...`);
 	await fs.emptyDir(paths.build);
 
-	// copy the package.json to the build folder
-	userLog(`Copying build assets...`);
-	await fs.copy(paths.packageJsonSrc, paths.packageJsonDest);
-
 	// copy eyas source to build folder
 	userLog(`Copying Eyas runtime files...`);
 	await fs.copy(paths.eyasSrc, paths.eyasDest);
 	await fs.copy(paths.scriptsSrc, paths.scriptsDest);
 	await fs.copy(paths.eyasInterfaceSrc, paths.eyasInterfaceDest);
+	await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
 
 	// copy the users source files to the build folder
 	userLog(`Copying test source...`);
@@ -192,12 +197,7 @@ async function createBuildFolder() {
 	const data = `module.exports = ${JSON.stringify(config)}`;
 	await fs.outputFile(paths.configDest, data);
 
-	// copy eyas assets to the build folder
-	userLog(`Copying Eyas assets...`);
-	await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
-
 	// generate meta data for the build
-	userLog(`Generating meta data...`);
 	const { execSync } = require(`child_process`);
 	const now = new Date();
 	const expires = addHours(now, config.outputs.expires);
@@ -215,16 +215,21 @@ async function createBuildFolder() {
 	await fs.outputFile(paths.metaDest, JSON.stringify(metaData));
 
 	// let the user know when this build expires
-	userLog(`  > Build expires ${expires.toLocaleString()}`);
+	userLog(`Set build expirations to: ${expires.toLocaleString()}`);
 }
 
 // launch a preview of the consumers application
 async function runCommand_preview(devMode = false) {
+	const fs = require(`fs-extra`);
 	const { spawn } = require(`child_process`);
 	const electron = require(`electron`);
 
 	// create the build folder to prep for usage
 	await createBuildFolder();
+
+	// copy the package.json to the build folder
+	userLog(`Copying dependency manifest...`);
+	await fs.copy(paths.packageJsonCoreSrc, paths.packageJsonDest);
 
 	// Alert that preview is starting
 	userLog(`Launching preview...`);
@@ -254,115 +259,195 @@ async function runCommand_compile() {
 	// create the build folder to prep for usage
 	await createBuildFolder();
 
-	// Install dependencies
-	userLog(`Installing dependencies...`);
-	child_process.execSync(`npm i`, { cwd: paths.build });
-
 	// Clear out the output directory
-	userLog(`Resetting output directory...`);
+	userLog(`Prepare output directory...`);
 	await fs.emptyDir(paths.dist);
 
-	// Log that compilation is starting
-	userLog(`Building distributable(s)...`);
-	userLog();
+	// set the name of the output files
+	const artifactName = `${config.test.title} - ${config.test.version}`;
 
-	// Build the executables
-	const targets = [];
-	if(config.outputs.windows) { targets.push(builder.Platform.WINDOWS); }
-	if(config.outputs.mac) { targets.push(builder.Platform.MAC); }
-	if(config.outputs.linux) { targets.push(builder.Platform.LINUX); }
-
-	const builtFiles = await builder.build({
-		targets: targets.length ? builder.createTargets(targets) : null,
-		config: {
-			appId: `com.cycosoft.eyas`,
-			productName: `Eyas`,
-			// eslint-disable-next-line quotes
-			artifactName: `${config.test.title} - ${config.test.version}` + '.${ext}',
-			copyright: `Copyright © 2023 Cycosoft, LLC`,
-			asarUnpack: [`resources/**`],
-			compression: config.outputs.compression,
-			directories: {
-				app: paths.build,
-				output: paths.dist
-			},
-			removePackageScripts: true,
-			removePackageKeywords: true,
-			mac: {
-				target: `dmg`,
-				icon: paths.icon
-				// identity: `undefined` // disable code signing
-			},
-			win: {
-				target: `portable`,
-				icon: paths.icon
-			},
-			linux: {
-				target: `AppImage`,
-				icon: paths.icon,
-				category: `Utility`
-			}
-		}
-	});
-
-	// let the user know where the output is
-	userLog();
-	!config.outputs.zip && builtFiles.forEach(file => userLog(`File created -> ${file}`));
-
-	// if the config says to create a zip file
-	const archiver = require(`archiver`);
-	config.outputs.zip && builtFiles.forEach(file => {
-		// if the file is .AppImage, skip the loop
-		if(file.endsWith(`.AppImage`)) { return; }
-
-		// create the zip file
-		const output = fs.createWriteStream(`${file}.zip`);
-		const archive = archiver(`zip`, { store: true });
-		archive.pipe(output);
-		const filename = file.split(`\\`).pop();
-		archive.file(file, { name: filename });
-		archive.finalize();
-
-		// remove the included file
-		fs.remove(file);
-
-		userLog(`File created -> ${file}.zip`);
-	});
-
-	// delete the build folder
-	userLog();
-	userLog(`Removing build data...`);
-	await fs.remove(paths.build);
-
-	// delete directories in the build output. delete files that aren't .zip, .dmg, .exe, .AppImage
-	const files = await fs.readdir(paths.dist);
-	for(const file of files) {
-		// skip file if it's in the skip list
-		let shouldSkip = false;
-		const skipList = [`.zip`, `.dmg`, `.exe`, `.AppImage`];
-		skipList.forEach(skip => {
-			if(file.endsWith(skip)) { shouldSkip = true; }
-		});
-
-		// exit this loop if the file should be skipped
-		if(shouldSkip) { continue; }
-
-		// get the full path to the file
-		const filePath = path.join(paths.dist, file);
-
-		// if it's a directory, delete it
-		if((await fs.stat(filePath)).isDirectory()) {
-			await fs.remove(filePath);
-			continue;
-		}
-
-		// delete the file
-		await fs.remove(filePath);
+	// create the portable versions
+	// NOTE: this must come first so installed dependencies for executable aren't included
+	if(config.outputs.portable) {
+		await build_portables();
 	}
 
-	// log the end of the process
-	userLog(`Process complete!`);
-	userLog();
+	// create the executable versions
+	if(config.outputs.executable){
+		await build_executables();
+	}
+
+	async function build_executables() {
+		// copy the package.json to the build folder
+		userLog();
+		await fs.copy(paths.packageJsonCoreSrc, paths.packageJsonDest);
+
+		// Install dependencies
+		userLog(`Installing dependencies...`);
+		child_process.execSync(`npm i`, { cwd: paths.build });
+
+		userLog(`Creating "executable" distributable(s)...`);
+		userLog();
+
+		// Build the executables
+		const targets = [];
+		if(config.outputs.windows) { targets.push(builder.Platform.WINDOWS); }
+		if(config.outputs.mac) { targets.push(builder.Platform.MAC); }
+		if(config.outputs.linux) { targets.push(builder.Platform.LINUX); }
+
+		const builtFiles = await builder.build({
+			targets: targets.length ? builder.createTargets(targets) : null,
+			config: {
+				appId: `com.cycosoft.eyas`,
+				productName: `Eyas`,
+				// eslint-disable-next-line quotes
+				artifactName: `${artifactName}` + '.${ext}',
+				copyright: `Copyright © 2023 Cycosoft, LLC`,
+				asarUnpack: [`resources/**`],
+				directories: {
+					app: paths.build,
+					output: paths.dist
+				},
+				removePackageScripts: true,
+				removePackageKeywords: true,
+				mac: {
+					target: `dmg`,
+					icon: paths.icon
+					// identity: `undefined` // disable code signing
+				},
+				win: {
+					target: `portable`,
+					icon: paths.icon
+				},
+				linux: {
+					target: `AppImage`,
+					icon: paths.icon,
+					category: `Utility`
+				}
+			}
+		});
+
+		// wrap the executables in a zip file
+		const archiver = require(`archiver`);
+		let completedZipCount = 0;
+		builtFiles.forEach(file => {
+			// skip if the file is a blockmap
+			if(file.endsWith(`.blockmap`)) {
+				completedZipCount++;
+				return;
+			}
+
+			// if the file is .AppImage, do not archive but let the user know it was created
+			if(file.endsWith(`.AppImage`)) {
+				completedZipCount++;
+				userLog(`File created -> ${file}`);
+				return;
+			}
+
+			// create the zip file
+			const output = fs.createWriteStream(`${file}.zip`);
+			output.on(`close`, () => {
+				completedZipCount++;
+				userLog(`File created -> ${file}.zip`);
+
+				if(completedZipCount === builtFiles.length) {
+					performCleanup();
+				}
+			});
+			const archive = archiver(`zip`, { store: true });
+			archive.pipe(output);
+			const filename = file.split(`\\`).pop();
+			archive.file(file, { name: filename });
+			archive.finalize();
+		});
+
+		async function performCleanup() {
+			// delete directories in the build output
+			// delete files that aren't .zip, .AppImage
+			userLog(`Performing cleanup...`);
+			const files = await fs.readdir(paths.dist);
+			for(const file of files) {
+				// skip file if it's in the skip list
+				let shouldSkip = false;
+				const skipList = [`.zip`, `.AppImage`];
+				skipList.forEach(skip => {
+					if(file.endsWith(skip)) { shouldSkip = true; }
+				});
+
+				// exit this loop if the file should be skipped
+				if(shouldSkip) { continue; }
+
+				// get the full path to the file
+				const filePath = path.join(paths.dist, file);
+
+				// if it's a directory, delete it
+				if((await fs.stat(filePath)).isDirectory()) {
+					await fs.remove(filePath);
+					continue;
+				}
+
+				// delete the file
+				await fs.remove(filePath);
+			}
+
+			// log the end of the process
+			userLog(`Executable compilation complete!`);
+			userLog();
+		}
+	}
+
+	async function build_portables() {
+		// overwrite the installer manifest with the runner manifest
+		userLog();
+		userLog(`Copying dependency manifest...`);
+		await fs.copy(paths.packageJsonCoreSrc, paths.packageJsonDest);
+
+		// for each OS, create the runner file
+		[`mac`, `windows`, `linux`].forEach(os => {
+			// exit if the OS isn't enabled
+			if(!config.outputs[os]) { return; }
+
+			// create the node runner version
+			userLog(`Creating ${os.toUpperCase()} "portable" distributable...`);
+			const filename = `${artifactName}.${os}.zip`;
+			const archiver = require(`archiver`);
+			const output = fs.createWriteStream(paths.dist + `/${filename}`);
+			const archive = archiver(`zip`, { zlib: 9 });
+			output.on(`close`, () => {
+				userLog(`File created -> ${path.join(paths.dist, filename)}`);
+			});
+			archive.pipe(output);
+
+			// add common files
+			archive.directory(paths.build, `app`);
+
+			// name of the file that runs Eyas
+			const runnerName = `Run Test`;
+
+			// add linux files
+			if (os === `linux`) {
+				const linuxFileExt = names.linuxRunner.split(`.`).pop();
+				archive.file(paths.linuxRunnerSrc, { name: `${runnerName}.${linuxFileExt}` });
+			}
+
+			// add mac files
+			if (os === `mac`) {
+				const macFileExt = names.macRunner.split(`.`).pop();
+				archive.file(paths.macRunnerSrc, { name: `${runnerName}.${macFileExt}` });
+			}
+
+			// add win files
+			if (os === `windows`) {
+				const winFileExt = names.winRunner.split(`.`).pop();
+				archive.file(paths.winRunnerSrc, { name: `${runnerName}.${winFileExt}` });
+				archive.file(paths.winRunnerInstallerSrc, { name: names.winDownloader });
+			}
+
+			// complete the archive
+			archive.finalize();
+		});
+
+	}
 }
 
 // wrapper to differentiate user logs (allowed) from system logs (disallowed)
