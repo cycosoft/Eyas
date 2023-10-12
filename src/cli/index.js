@@ -60,7 +60,6 @@ const paths = {
 	build: roots.eyasBuild,
 	configLoader: path.join(roots.dist, names.scripts, `get-config.js`),
 	configDest: path.join(roots.eyasBuild, `.eyas.config.js`),
-	metaDest: path.join(roots.eyasBuild, `.eyas.meta.json`),
 	eyasApp: path.join(roots.eyasBuild, `index.js`),
 	eyasAssetsSrc: path.join(roots.dist, names.eyasAssets),
 	eyasAssetsDest: path.join(roots.eyasBuild, names.eyasAssets),
@@ -194,8 +193,6 @@ async function createBuildFolder() {
 	// create a new config file with the updated values in the build folder
 	userLog(`Creating snapshot of config...`);
 	delete config.test.source; // isn't used past this point
-	const data = `module.exports = ${JSON.stringify(config)}`;
-	await fs.outputFile(paths.configDest, data);
 
 	// generate meta data for the build
 	const { execSync } = require(`child_process`);
@@ -205,14 +202,17 @@ async function createBuildFolder() {
 	try { gitBranch = execSync(`git rev-parse --abbrev-ref HEAD`).toString().trim(); } catch (e) {/**/}
 	try { gitHash = execSync(`git rev-parse --short HEAD`).toString().trim(); } catch (e) {/**/}
 	try { gitUser = execSync(`git config user.name`).toString().trim(); } catch (e) {/**/}
-	const metaData = {
+	config.meta = {
 		expires,
 		gitBranch,
 		gitHash,
 		gitUser,
 		compiled: now
 	};
-	await fs.outputFile(paths.metaDest, JSON.stringify(metaData));
+
+	// write the config file
+	const data = `module.exports = ${JSON.stringify(config)}`;
+	await fs.outputFile(paths.configDest, data);
 
 	// let the user know when this build expires
 	userLog(`Set build expirations to: ${expires.toLocaleString()}`);
@@ -340,7 +340,7 @@ async function runCommand_compile() {
 			// if the file is .AppImage, do not archive but let the user know it was created
 			if(file.endsWith(`.AppImage`)) {
 				completedZipCount++;
-				userLog(`File created -> ${file}`);
+				userLog(`🎉 File created -> ${file}`);
 				return;
 			}
 
@@ -348,7 +348,7 @@ async function runCommand_compile() {
 			const output = fs.createWriteStream(`${file}.zip`);
 			output.on(`close`, () => {
 				completedZipCount++;
-				userLog(`File created -> ${file}.zip`);
+				userLog(`🎉 File created -> ${file}.zip`);
 
 				if(completedZipCount === builtFiles.length) {
 					performCleanup();
@@ -414,7 +414,7 @@ async function runCommand_compile() {
 			const output = fs.createWriteStream(paths.dist + `/${filename}`);
 			const archive = archiver(`zip`, { zlib: 9 });
 			output.on(`close`, () => {
-				userLog(`File created -> ${path.join(paths.dist, filename)}`);
+				userLog(`🎉 File created -> ${path.join(paths.dist, filename)}`);
 			});
 			archive.pipe(output);
 

@@ -28,18 +28,10 @@ try {
 	console.log(``);
 }
 
-// try loading the user's meta data (may not exist when CLI runs this)
-const metaPath = path.join(roots.meta, `.eyas.meta.json`);
-let metaData = {};
-try {
-	metaData = require(metaPath);
-} catch (error) {
-	// this should be silent
-}
-
 // error checking for config
 userConfig.test = userConfig.test || {};
 userConfig.outputs = userConfig.outputs || {};
+userConfig.meta = userConfig.meta || {};
 
 // configuration merge and validation step
 const eyasConfig = {
@@ -68,7 +60,13 @@ const eyasConfig = {
 		expires: validateExpiration(userConfig.outputs.expires) // hours
 	},
 
-	meta: metaData
+	meta: {
+		expires: userConfig.meta.expires || getPreviewExpiration(),
+		gitBranch: userConfig.meta.gitBranch || `Preview`,
+		gitHash: userConfig.meta.gitHash || `Preview`,
+		gitUser: userConfig.meta.gitUser || `Preview`,
+		compiled: userConfig.meta.compiled || new Date()
+	}
 };
 
 // set the default platform if none are specified
@@ -129,4 +127,11 @@ function validateExpiration(hours) {
 	}
 
 	return output;
+}
+
+// get the default preview expiration
+function getPreviewExpiration() {
+	const addHours = require(`date-fns/addHours`);
+	const now = new Date();
+	return addHours(now, 1);
 }
