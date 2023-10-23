@@ -2,7 +2,6 @@
 
 // imports
 import { resolve } from 'path';
-import { bytecodePlugin } from 'electron-vite';
 import terser from '@rollup/plugin-terser';
 
 // export the configuration settings
@@ -23,7 +22,7 @@ export default {
 	},
 
 	main: {
-		plugins: [bytecodePlugin()],
+		plugins: [terser()],
 		build: {
 			rollupOptions: {
 				input: {
