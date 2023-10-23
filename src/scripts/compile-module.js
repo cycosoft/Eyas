@@ -4,7 +4,6 @@
 
 // Import dependencies
 const fs = require(`fs-extra`);
-const bytenode = require(`bytenode`);
 
 // setup paths
 const path = require(`path`);
@@ -21,7 +20,7 @@ const paths = {
 	buildAssetsDest: path.join(roots.dist, names.buildAssets),
 	cliDest: path.join(roots.dist, names.cli),
 	cliSrcFile: path.join(roots.src, names.cli, `index.js`),
-	cliDestFile: path.join(roots.dist, names.cli, `index.jsc`),
+	cliDestFile: path.join(roots.dist, names.cli, `index.js`),
 	eyasAssetsSrc: path.join(roots.src, names.eyasAssets),
 	eyasAssetsDest: path.join(roots.dist, names.eyasAssets),
 	eyasInterfaceAppSrc: path.join(roots.src, names.eyasInterfaceApp, `app`, `dist`),
@@ -50,12 +49,7 @@ const paths = {
 	console.log(`🕜 compile-module.js emptying ${paths.cliDest}`);
 	await fs.emptyDir(paths.cliDest);
 	console.log(`🕜 compile-module.js compiling ${paths.cliSrcFile}`);
-	await bytenode.compileFile({
-		loaderFilename: `%.js`,
-		filename: paths.cliSrcFile,
-		output: paths.cliDestFile
-	});
-
+	await fs.copy(paths.cliSrcFile, paths.cliDestFile);
 	console.log(`🎉 compile-module.js complete`);
 })();
 
