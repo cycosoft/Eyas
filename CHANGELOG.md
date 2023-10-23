@@ -1,3 +1,9 @@
+# v1.1.1
+
+- Updated: Dependencies
+- Updated: Readme clarification
+- Removed: `bytenode` dependency and usage of
+
 # v1.1.0
 
 - Added: "Portable" output type
