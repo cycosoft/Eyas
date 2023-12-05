@@ -10,6 +10,10 @@
   "bin": {
     "eyas": "./dist/cli/index.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cycosoft/Eyas.git"
+  },
   "scripts": {
     "_______________DEV_______________": "",
     "dev": "npm i && npm-check -u -i '\"{vite,inquirer}\"' && npm run compile:module && node dist/cli/index.js",
