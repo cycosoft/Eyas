@@ -1,3 +1,9 @@
+# v1.1.2
+
+- Updated: Dependencies
+- Link package.json to GitHub repo
+
+
 # v1.1.1
 
 - Updated: Dependencies
