@@ -21,7 +21,7 @@
     "_____________COMPILE_____________": "",
     "compile:ui": "vite build --config src/eyas-interface/app/.vite.config.ui.js",
     "compile:module": "npm run compile:ui && node src/scripts/compile-module.js && electron-vite build",
-    "compile:runners": "",
+    "compile:runners": "node src/scripts/compile-runners.js",
     "_____________SCRIPTS_____________": "",
     "bundle": "npm i --no-audit && npm run compile:module && npm pack",
     "deploy": "npm i --no-audit && npm run compile:module && npm publish",
