@@ -48,10 +48,24 @@ const paths = {
 
 // Entry Point
 (async () => {
+	const fs = require(`fs-extra`);
 	const builder = require(`electron-builder`);
+	const child_process = require(`child_process`);
 
 	// load the user's config
 	const config = require(paths.configLoader);
+
+	// create the build folder to prep for usage
+	await createBuildFolder();
+
+	await fs.emptyDir(paths.dist);
+
+	// copy the package.json to the build folder
+	// userLog(`Copying dependency manifest...`);
+	await fs.copy(paths.packageJsonCoreSrc, paths.packageJsonDest);
+
+	console.log(`Installing dependencies...`);
+	child_process.execSync(`npm i`, { cwd: paths.build });
 
 	// Determine the executables to build
 	const targets = [];
@@ -95,4 +109,55 @@ const paths = {
 	});
 
 	console.log(builtFiles);
+
+	async function createBuildFolder() {
+		// imports
+		const fs = require(`fs-extra`);
+		const addHours = require(`date-fns/addHours`);
+
+		// give space for the start of the process
+		// userLog();
+
+		// delete any existing build folders
+		// userLog(`Resetting build space...`);
+		await fs.emptyDir(paths.build);
+
+		// copy eyas source to build folder
+		// userLog(`Copying Eyas runtime files...`);
+		await fs.copy(paths.eyasSrc, paths.eyasDest);
+		await fs.copy(paths.scriptsSrc, paths.scriptsDest);
+		await fs.copy(paths.eyasInterfaceSrc, paths.eyasInterfaceDest);
+		await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
+
+		// copy the users source files to the build folder
+		// userLog(`Copying test source...`);
+		await fs.copy(path.join(consumerRoot, config.test.source), paths.testDest);
+
+		// create a new config file with the updated values in the build folder
+		// userLog(`Creating snapshot of config...`);
+		delete config.test.source; // isn't used past this point
+
+		// generate meta data for the build
+		const { execSync } = require(`child_process`);
+		const now = new Date();
+		const expires = addHours(now, config.outputs.expires);
+		let gitBranch = ``, gitHash = ``, gitUser = ``;
+		try { gitBranch = execSync(`git rev-parse --abbrev-ref HEAD`).toString().trim(); } catch (e) {/**/}
+		try { gitHash = execSync(`git rev-parse --short HEAD`).toString().trim(); } catch (e) {/**/}
+		try { gitUser = execSync(`git config user.name`).toString().trim(); } catch (e) {/**/}
+		config.meta = {
+			expires,
+			gitBranch,
+			gitHash,
+			gitUser,
+			compiled: now
+		};
+
+		// write the config file
+		const data = `module.exports = ${JSON.stringify(config)}`;
+		await fs.outputFile(paths.configDest, data);
+
+		// let the user know when this build expires
+		// userLog(`Set build expirations to: ${expires.toLocaleString()}`);
+	}
 })();
