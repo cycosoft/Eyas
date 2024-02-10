@@ -74,7 +74,8 @@ const paths = {
 	if(config.outputs.linux) { targets.push(builder.Platform.LINUX); }
 
 	// set the name of the output files
-	const artifactName = `${config.test.title} - ${config.test.version}`;
+	const runnerName = `eyas`;
+	const zipName = `${config.test.title} - ${config.test.version}`;
 
 	const builtFiles = await builder.build({
 		targets: targets.length ? builder.createTargets(targets) : null,
@@ -82,7 +83,7 @@ const paths = {
 			appId: `com.cycosoft.eyas`,
 			productName: `Eyas`,
 			// eslint-disable-next-line quotes
-			artifactName: `${artifactName}` + '.${ext}',
+			artifactName: `${runnerName}` + '.${ext}',
 			copyright: `Copyright © 2023 Cycosoft, LLC`,
 			asarUnpack: [`resources/**`],
 			directories: {
