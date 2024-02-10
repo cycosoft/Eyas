@@ -83,7 +83,7 @@ const paths = {
 			appId: `com.cycosoft.eyas`,
 			productName: `Eyas`,
 			// eslint-disable-next-line quotes
-			artifactName: `${runnerName}` + '.${ext}',
+			artifactName: runnerName + '.${ext}',
 			copyright: `Copyright © 2023 Cycosoft, LLC`,
 			asarUnpack: [`resources/**`],
 			directories: {
