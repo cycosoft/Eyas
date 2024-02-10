@@ -132,7 +132,7 @@ const paths = {
 
 		// copy the users source files to the build folder
 		// userLog(`Copying test source...`);
-		await fs.copy(path.join(consumerRoot, config.test.source), paths.testDest);
+		// await fs.copy(path.join(consumerRoot, config.test.source), paths.testDest);
 
 		// create a new config file with the updated values in the build folder
 		// userLog(`Creating snapshot of config...`);
