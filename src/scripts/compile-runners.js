@@ -90,6 +90,7 @@ const paths = {
 				app: paths.build,
 				output: paths.dist
 			},
+			// compression: `store`, // debug purposes
 			removePackageScripts: true,
 			removePackageKeywords: true,
 			mac: {
