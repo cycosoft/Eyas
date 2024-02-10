@@ -114,7 +114,7 @@ const paths = {
 	async function createBuildFolder() {
 		// imports
 		const fs = require(`fs-extra`);
-		const addHours = require(`date-fns/addHours`);
+		// const addHours = require(`date-fns/addHours`);
 
 		// give space for the start of the process
 		// userLog();
@@ -136,27 +136,27 @@ const paths = {
 
 		// create a new config file with the updated values in the build folder
 		// userLog(`Creating snapshot of config...`);
-		delete config.test.source; // isn't used past this point
+		// delete config.test.source; // isn't used past this point
 
 		// generate meta data for the build
-		const { execSync } = require(`child_process`);
-		const now = new Date();
-		const expires = addHours(now, config.outputs.expires);
-		let gitBranch = ``, gitHash = ``, gitUser = ``;
-		try { gitBranch = execSync(`git rev-parse --abbrev-ref HEAD`).toString().trim(); } catch (e) {/**/}
-		try { gitHash = execSync(`git rev-parse --short HEAD`).toString().trim(); } catch (e) {/**/}
-		try { gitUser = execSync(`git config user.name`).toString().trim(); } catch (e) {/**/}
-		config.meta = {
-			expires,
-			gitBranch,
-			gitHash,
-			gitUser,
-			compiled: now
-		};
+		// const { execSync } = require(`child_process`);
+		// const now = new Date();
+		// const expires = addHours(now, config.outputs.expires);
+		// let gitBranch = ``, gitHash = ``, gitUser = ``;
+		// try { gitBranch = execSync(`git rev-parse --abbrev-ref HEAD`).toString().trim(); } catch (e) {/**/}
+		// try { gitHash = execSync(`git rev-parse --short HEAD`).toString().trim(); } catch (e) {/**/}
+		// try { gitUser = execSync(`git config user.name`).toString().trim(); } catch (e) {/**/}
+		// config.meta = {
+		// 	expires,
+		// 	gitBranch,
+		// 	gitHash,
+		// 	gitUser,
+		// 	compiled: now
+		// };
 
 		// write the config file
-		const data = `module.exports = ${JSON.stringify(config)}`;
-		await fs.outputFile(paths.configDest, data);
+		// const data = `module.exports = ${JSON.stringify(config)}`;
+		// await fs.outputFile(paths.configDest, data);
 
 		// let the user know when this build expires
 		// userLog(`Set build expirations to: ${expires.toLocaleString()}`);
