@@ -179,6 +179,8 @@
 								title: `About ${appName}`,
 								icon: paths.icon,
 								message: `
+								Running From: ${process.env.PORTABLE_EXECUTABLE_DIR || process.cwd()}
+
 								Test name: ${config.test.title}
 								Test version: ${config.test.version}
 								Test expires: ${expirationFormatted} (${relativeFormatted})
