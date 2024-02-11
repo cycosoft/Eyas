@@ -75,7 +75,7 @@ const paths = {
 
 	// set the name of the output files
 	const runnerName = `eyas`;
-	const zipName = `${config.test.title} - ${config.test.version}`;
+	// const zipName = `${config.test.title} - ${config.test.version}`;
 
 	const builtFiles = await builder.build({
 		targets: targets.length ? builder.createTargets(targets) : null,
