@@ -45,7 +45,7 @@
 	const paths = {
 		configLoader: path.join(roots.eyas, `scripts`, `get-config.js`),
 		icon: path.join(roots.eyas, `eyas-assets`, `eyas-logo.png`),
-		testSrc: path.join(roots.eyas, `test`),
+		testSrc: path.join(roots.config, `test`),
 		packageJson: path.join(roots.eyas, `package.json`),
 		eventBridge: path.join(roots.eyas, `scripts`, `event-bridge.js`),
 		ui: {
