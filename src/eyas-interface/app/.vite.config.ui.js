@@ -9,6 +9,9 @@ export default {
         vuetify({ autoImport: true })
     ],
     root: resolve(__dirname),
+    build: {
+        outDir: resolve(process.cwd(), `.build`),
+    },
     resolve: {
         alias: {
             'vue': 'vue/dist/vue.esm-bundler.js',
