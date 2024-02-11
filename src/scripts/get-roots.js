@@ -16,7 +16,7 @@ const moduleRoot = isProd
 const eyasRoot = path.join(__dirname, `..`);
 const isPackaged = __dirname.includes(`app.asar`);
 const configRoot = isPackaged
-	? eyasRoot
+	? process.env.PORTABLE_EXECUTABLE_DIR
 	: consumerRoot;
 
 // base paths
