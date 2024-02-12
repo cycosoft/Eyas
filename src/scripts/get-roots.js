@@ -21,10 +21,12 @@ const configRoot = isPackaged
 
 // base paths
 const roots = {
+	moduleBuild: path.join(moduleRoot, `.build`),
 	dist: path.join(moduleRoot, `dist`),
 	src: path.join(moduleRoot, `src`),
 	eyasBuild: path.join(consumerRoot, `.eyas-preview`),
 	eyasDist: path.join(consumerRoot, `.eyas-dist`),
+	runners: path.join(consumerRoot, `.eyas-runners`),
 	config: configRoot,
 	eyas: eyasRoot,
 	module: moduleRoot

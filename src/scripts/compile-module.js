@@ -17,22 +17,23 @@ const names = {
 const paths = {
 	dist: roots.dist,
 	buildAssetsSrc: path.join(roots.src, names.buildAssets),
-	buildAssetsDest: path.join(roots.dist, names.buildAssets),
+	buildAssetsDest: path.join(roots.moduleBuild, names.buildAssets),
 	cliDest: path.join(roots.dist, names.cli),
 	cliSrcFile: path.join(roots.src, names.cli, `index.js`),
 	cliDestFile: path.join(roots.dist, names.cli, `index.js`),
 	eyasAssetsSrc: path.join(roots.src, names.eyasAssets),
-	eyasAssetsDest: path.join(roots.dist, names.eyasAssets),
+	eyasAssetsDest: path.join(roots.moduleBuild, names.eyasAssets),
 	eyasInterfaceAppSrc: path.join(roots.src, names.eyasInterfaceApp, `app`, `dist`),
-	eyasInterfaceAppDest: path.join(roots.dist, names.eyasInterfaceApp),
+	eyasInterfaceAppDest: path.join(roots.moduleBuild, names.eyasInterfaceApp),
 	packageJsonModule: path.join(roots.module, `package.json`),
-	packageJsonDist: path.join(roots.dist, names.buildAssets, `package.json`)
+	packageJsonDist: path.join(roots.moduleBuild, names.buildAssets, `package.json`)
 };
 
 // Allow for "root" await calls
 (async () => {
-	// Prep the dist/ directory for module output
-	await fs.emptyDir(paths.dist);
+	// Prep the .build/ & dist/ directories for module output
+	await fs.emptyDir(roots.moduleBuild);
+	await fs.emptyDir(roots.dist);
 
 	// Copy runtime files
 	await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
@@ -40,7 +41,7 @@ const paths = {
 	await fs.copy(paths.eyasInterfaceAppSrc, paths.eyasInterfaceAppDest);
 
 	// set the npm and node dependency version numbers based on package.json
-	await updateRunnerVersions();
+	// await updateRunnerVersions();
 
 	// Update the package.json version numbers
 	await updatePackageJsonValues();
@@ -54,33 +55,33 @@ const paths = {
 })();
 
 // set the npm and node dependency version numbers for each runner
-async function updateRunnerVersions() {
-	console.log(`🕜 updateRunnerVersions() start`);
-	// read the package.json
-	const packageJson = require(paths.packageJsonModule);
-	const nodeVersion = packageJson.devDependencies.node.match(/\d+\.\d+\.\d+/)[0];
-	const npmVersion = packageJson.devDependencies.npm.match(/\d+\.\d+\.\d+/)[0];
-	const runners = [`winRunner.cmd`, `macRunner.command`, `linuxRunner.sh`];
+// async function updateRunnerVersions() {
+// 	console.log(`🕜 updateRunnerVersions() start`);
+// 	// read the package.json
+// 	const packageJson = require(paths.packageJsonModule);
+// 	const nodeVersion = packageJson.devDependencies.node.match(/\d+\.\d+\.\d+/)[0];
+// 	const npmVersion = packageJson.devDependencies.npm.match(/\d+\.\d+\.\d+/)[0];
+// 	const runners = [`winRunner.cmd`, `macRunner.command`, `linuxRunner.sh`];
 
-	// for each runner
-	for (const filename of runners) {
-		const runnerPath = path.join(paths.buildAssetsDest, filename);
+// 	// for each runner
+// 	for (const filename of runners) {
+// 		const runnerPath = path.join(paths.buildAssetsDest, filename);
 
-		// read the contents of the runner
-		let script = fs.readFileSync(runnerPath, `utf8`);
+// 		// read the contents of the runner
+// 		let script = fs.readFileSync(runnerPath, `utf8`);
 
-		// modify the nodeVersion variable
-		script = script
-			.replace(/nodeVersion=0.0.0/, `nodeVersion=${nodeVersion}`)
-			.replace(/npmVersion=0.0.0/, `npmVersion=${npmVersion}`);
+// 		// modify the nodeVersion variable
+// 		script = script
+// 			.replace(/nodeVersion=0.0.0/, `nodeVersion=${nodeVersion}`)
+// 			.replace(/npmVersion=0.0.0/, `npmVersion=${npmVersion}`);
 
-		// save the modified runner
-		console.log(`📝 updateRunnerVersions() writing ${filename}`);
-		await fs.outputFile(runnerPath, script);
-	}
+// 		// save the modified runner
+// 		console.log(`📝 updateRunnerVersions() writing ${filename}`);
+// 		await fs.outputFile(runnerPath, script);
+// 	}
 
-	console.log(`🕜 updateRunnerVersions() end`);
-}
+// 	console.log(`🕜 updateRunnerVersions() end`);
+// }
 
 // update all the versions in the distributed package.json from the module package.json
 async function updatePackageJsonValues() {

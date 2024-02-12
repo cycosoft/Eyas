@@ -10,7 +10,7 @@ const consumerRoot = process.cwd();
 const moduleRoot = isProd
 	? path.join(consumerRoot, `node_modules`, `@cycosoft`, `eyas`)
 	: consumerRoot;
-const roots = require(path.join(moduleRoot, `dist`, `scripts`, `get-roots.js`));
+const roots = require(path.join(moduleRoot, `.build`, `scripts`, `get-roots.js`));
 const names = {
 	linuxRunner: `linuxRunner.sh`,
 	macRunner: `macRunner.command`,
@@ -25,7 +25,7 @@ const names = {
 const paths = {
 	dist: roots.eyasDist,
 	build: roots.eyasBuild,
-	configLoader: path.join(roots.dist, names.scripts, `get-config.js`),
+	configLoader: path.join(roots.moduleBuild, names.scripts, `get-config.js`),
 	configDest: path.join(roots.eyasBuild, `.eyas.config.js`),
 	eyasApp: path.join(roots.eyasBuild, `index.js`),
 	eyasAssetsSrc: path.join(roots.dist, names.eyasAssets),
@@ -87,7 +87,7 @@ const paths = {
 			copyright: `Copyright © 2023 Cycosoft, LLC`,
 			asarUnpack: [`resources/**`],
 			directories: {
-				app: paths.build,
+				app: roots.moduleBuild,
 				output: paths.dist
 			},
 			// compression: `store`, // debug purposes
