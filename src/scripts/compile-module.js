@@ -38,7 +38,7 @@ const paths = {
 	// Copy runtime files
 	await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
 	await fs.copy(paths.buildAssetsSrc, paths.buildAssetsDest);
-	await fs.copy(paths.eyasInterfaceAppSrc, paths.eyasInterfaceAppDest);
+	// await fs.copy(paths.eyasInterfaceAppSrc, paths.eyasInterfaceAppDest);
 
 	// set the npm and node dependency version numbers based on package.json
 	// await updateRunnerVersions();
