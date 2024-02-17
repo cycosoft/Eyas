@@ -30,7 +30,7 @@ export default {
 				}
 			},
 
-			outDir: `.build`
+			outDir: `.pre-build/eyas-core`
 		}
 	}
 };

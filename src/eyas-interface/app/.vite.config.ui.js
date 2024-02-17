@@ -16,6 +16,6 @@ export default {
         }
     },
     build: {
-        outDir: resolve(process.cwd(), './.build/eyas-interface')
+        outDir: resolve(process.cwd(), './.pre-build/eyas-interface')
     }
 }

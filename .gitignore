@@ -6,5 +6,6 @@ cycosoft-eyas-*.tgz
 .eyas-*
 dist/
 .build
+.pre-build
 
 .DS_Store
