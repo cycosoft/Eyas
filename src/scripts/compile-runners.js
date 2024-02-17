@@ -53,7 +53,8 @@ const paths = {
 	const child_process = require(`child_process`);
 
 	// load the user's config
-	const config = require(paths.configLoader);
+	// console.log(`Loading configuration...`);
+	// const config = require(paths.configLoader);
 
 	// create the build folder to prep for usage
 	// console.log(`Creating build folder...`);
@@ -70,9 +71,9 @@ const paths = {
 
 	// Determine the executables to build
 	const targets = [];
-	if(config.outputs.windows) { targets.push(builder.Platform.WINDOWS); }
-	if(config.outputs.mac) { targets.push(builder.Platform.MAC); }
-	if(config.outputs.linux) { targets.push(builder.Platform.LINUX); }
+	// if(config.outputs.windows) { targets.push(builder.Platform.WINDOWS); }
+	// if(config.outputs.mac) { targets.push(builder.Platform.MAC); }
+	// if(config.outputs.linux) { targets.push(builder.Platform.LINUX); }
 
 	// set the name of the output files
 	const runnerName = `eyas`;
