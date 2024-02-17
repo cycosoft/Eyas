@@ -88,7 +88,7 @@ const paths = {
 			asarUnpack: [`resources/**`],
 			directories: {
 				app: roots.moduleBuild,
-				output: paths.runners
+				output: roots.runners
 			},
 			// compression: `store`, // debug purposes
 			removePackageScripts: true,
