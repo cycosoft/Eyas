@@ -7,5 +7,6 @@ cycosoft-eyas-*.tgz
 dist/
 .build
 .pre-build
+.runners
 
 .DS_Store
