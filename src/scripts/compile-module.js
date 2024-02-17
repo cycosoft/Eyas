@@ -47,6 +47,10 @@ const paths = {
 	await fs.copy(paths.eyasCoreSrc, paths.eyasCoreDest);
 	await fs.copy(paths.scriptsSrc, paths.scriptsDest);
 
+	// remove the prebuild folder
+	console.log(`clean up: removing ${roots.preBuild}`);
+	await fs.remove(roots.preBuild);
+
 	// set the npm and node dependency version numbers based on package.json
 	// await updateRunnerVersions();
 
