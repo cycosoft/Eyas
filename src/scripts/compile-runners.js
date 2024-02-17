@@ -43,7 +43,7 @@ const paths = {
 	scriptsSrc: path.join(roots.dist, names.scripts),
 	scriptsDest: path.join(roots.eyasBuild, names.scripts),
 	testDest: path.join(roots.eyasBuild, `test`),
-	icon: path.join(roots.eyasBuild, `eyas-assets`, `eyas-logo.png`)
+	icon: path.join(roots.moduleBuild, `eyas-assets`, `eyas-logo.png`)
 };
 
 // Entry Point
