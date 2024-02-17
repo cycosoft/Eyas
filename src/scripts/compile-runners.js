@@ -69,7 +69,7 @@ const paths = {
 	// await fs.copy(paths.packageJsonCoreSrc, paths.packageJsonDest);
 
 	console.log(`Installing dependencies...`);
-	child_process.execSync(`npm i`, { cwd: paths.build });
+	child_process.execSync(`npm i`, { cwd: paths.moduleBuild });
 
 	// Determine the executables to build
 	const targets = [];
