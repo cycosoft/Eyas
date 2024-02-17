@@ -14,5 +14,8 @@ export default {
             'vue': `vue/dist/vue.esm-bundler.js`,
             '@': resolve(__dirname, `src`)
         }
+    },
+    build: {
+        outDir: resolve(process.cwd(), './.build/eyas-interface')
     }
 }
