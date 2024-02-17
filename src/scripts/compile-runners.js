@@ -50,7 +50,6 @@ const paths = {
 (async () => {
 	const fs = require(`fs-extra`);
 	const builder = require(`electron-builder`);
-	const child_process = require(`child_process`);
 
 	// load the user's config
 	// console.log(`Loading configuration...`);
@@ -67,9 +66,6 @@ const paths = {
 	// userLog(`Copying dependency manifest...`);
 	// console.log(`Copying package.json...`);
 	// await fs.copy(paths.packageJsonCoreSrc, paths.packageJsonDest);
-
-	console.log(`Installing dependencies...`);
-	child_process.execSync(`npm i`, { cwd: paths.moduleBuild });
 
 	// Determine the executables to build
 	const targets = [];
