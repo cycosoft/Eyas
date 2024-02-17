@@ -53,12 +53,10 @@ const paths = {
 	// Update the package.json version numbers
 	await updatePackageJsonValues();
 
-	// Compile the CLI
-	console.log(`🕜 compile-module.js emptying ${paths.cliDest}`);
-	await fs.emptyDir(paths.cliDest);
-	console.log(`🕜 compile-module.js compiling ${paths.cliSrcFile}`);
+	// Copy the CLI
+	console.log(`copying ${paths.cliSrcFile}`);
 	await fs.copy(paths.cliSrcFile, paths.cliDestFile);
-	console.log(`🎉 compile-module.js complete`);
+	console.log(`🎉 complete`);
 })();
 
 // set the npm and node dependency version numbers for each runner
