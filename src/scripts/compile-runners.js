@@ -56,7 +56,8 @@ const paths = {
 	const config = require(paths.configLoader);
 
 	// create the build folder to prep for usage
-	await createBuildFolder();
+	// console.log(`Creating build folder...`);
+	// await createBuildFolder();
 
 	await fs.emptyDir(paths.dist);
 

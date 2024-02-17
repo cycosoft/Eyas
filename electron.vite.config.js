@@ -17,7 +17,7 @@ export default {
 				}
 			},
 
-			outDir: `.build/scripts`
+			outDir: `.pre-build/scripts`
 		}
 	},
 

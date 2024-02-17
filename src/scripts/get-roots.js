@@ -21,6 +21,7 @@ const configRoot = isPackaged
 
 // base paths
 const roots = {
+	preBuild: path.join(moduleRoot, `.pre-build`),
 	moduleBuild: path.join(moduleRoot, `.build`),
 	dist: path.join(moduleRoot, `dist`),
 	src: path.join(moduleRoot, `src`),

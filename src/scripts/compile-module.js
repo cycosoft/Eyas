@@ -12,21 +12,26 @@ const names = {
 	buildAssets: `build-assets`,
 	eyasAssets: `eyas-assets`,
 	eyasInterfaceApp: `eyas-interface`,
+	packageJson: `package.json`,
 	cli: `cli`
 };
 const paths = {
 	dist: roots.dist,
-	buildAssetsSrc: path.join(roots.src, names.buildAssets),
-	buildAssetsDest: path.join(roots.moduleBuild, names.buildAssets),
+	buildAssetsSrc: path.join(roots.src, names.buildAssets, names.packageJson),
+	buildAssetsDest: path.join(roots.moduleBuild, names.packageJson),
 	cliDest: path.join(roots.dist, names.cli),
 	cliSrcFile: path.join(roots.src, names.cli, `index.js`),
 	cliDestFile: path.join(roots.dist, names.cli, `index.js`),
+	eyasCoreSrc: path.join(roots.preBuild, `eyas-core/index.js`),
+	eyasCoreDest: path.join(roots.moduleBuild, `index.js`),
 	eyasAssetsSrc: path.join(roots.src, names.eyasAssets),
 	eyasAssetsDest: path.join(roots.moduleBuild, names.eyasAssets),
-	eyasInterfaceAppSrc: path.join(roots.src, names.eyasInterfaceApp, `app`, `dist`),
+	eyasInterfaceAppSrc: path.join(roots.preBuild, names.eyasInterfaceApp),
 	eyasInterfaceAppDest: path.join(roots.moduleBuild, names.eyasInterfaceApp),
-	packageJsonModule: path.join(roots.module, `package.json`),
-	packageJsonDist: path.join(roots.moduleBuild, names.buildAssets, `package.json`)
+	packageJsonModule: path.join(roots.module, names.packageJson),
+	packageJsonDist: path.join(roots.moduleBuild, names.packageJson),
+	scriptsSrc: path.join(roots.preBuild, `scripts`),
+	scriptsDest: path.join(roots.moduleBuild, `scripts`)
 };
 
 // Allow for "root" await calls
@@ -38,7 +43,9 @@ const paths = {
 	// Copy runtime files
 	await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
 	await fs.copy(paths.buildAssetsSrc, paths.buildAssetsDest);
-	// await fs.copy(paths.eyasInterfaceAppSrc, paths.eyasInterfaceAppDest);
+	await fs.copy(paths.eyasInterfaceAppSrc, paths.eyasInterfaceAppDest);
+	await fs.copy(paths.eyasCoreSrc, paths.eyasCoreDest);
+	await fs.copy(paths.scriptsSrc, paths.scriptsDest);
 
 	// set the npm and node dependency version numbers based on package.json
 	// await updateRunnerVersions();

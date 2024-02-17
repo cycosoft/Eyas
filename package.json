@@ -20,7 +20,7 @@
     "dev:ui": "vite --config src/eyas-interface/app/.vite.config.ui.js --open",
     "_____________COMPILE_____________": "",
     "compile:ui": "vite build --config src/eyas-interface/app/.vite.config.ui.js",
-    "compile:module": "node src/scripts/compile-module.js && electron-vite build",
+    "compile:module": " electron-vite build && node src/scripts/compile-module.js",
     "compile:runners": "node src/scripts/compile-runners.js",
     "compile": "npm run compile:ui && npm run compile:module && npm run compile:runners",
     "_____________SCRIPTS_____________": "",
