@@ -60,11 +60,13 @@ const paths = {
 	// console.log(`Creating build folder...`);
 	// await createBuildFolder();
 
-	await fs.emptyDir(paths.dist);
+	// console.log(`Empty directory...`);
+	// await fs.emptyDir(paths.dist);
 
 	// copy the package.json to the build folder
 	// userLog(`Copying dependency manifest...`);
-	await fs.copy(paths.packageJsonCoreSrc, paths.packageJsonDest);
+	// console.log(`Copying package.json...`);
+	// await fs.copy(paths.packageJsonCoreSrc, paths.packageJsonDest);
 
 	console.log(`Installing dependencies...`);
 	child_process.execSync(`npm i`, { cwd: paths.build });
