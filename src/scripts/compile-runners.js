@@ -117,6 +117,11 @@ const paths = {
 		fs.copy(file, dest);
 	});
 
+	// cleanup
+	console.log(`Cleaning up...`);
+	await fs.remove(roots.moduleBuild);
+	await fs.remove(roots.runners);
+
 	async function createBuildFolder() {
 		// imports
 		const fs = require(`fs-extra`);
