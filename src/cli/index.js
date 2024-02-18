@@ -28,7 +28,7 @@ const actions = {
 		action: runCommand_preview
 	},
 	compile: {
-		enabled: true,
+		enabled: false,
 		label: `Compile`,
 		description: `Bundle and compile Eyas with the current configuration for deployment`,
 		command: `compile`,
