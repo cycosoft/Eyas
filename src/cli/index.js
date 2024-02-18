@@ -84,7 +84,9 @@ const paths = {
 	scriptsSrc: path.join(roots.dist, names.scripts),
 	scriptsDest: path.join(roots.eyasBuild, names.scripts),
 	testDest: path.join(roots.eyasBuild, `test`),
-	icon: path.join(roots.eyasBuild, `eyas-assets`, `eyas-logo.png`)
+	icon: path.join(roots.eyasBuild, `eyas-assets`, `eyas-logo.png`),
+	eyasRunnerWinSrc: path.join(roots.dist, `runners`, `eyas.exe`),
+	eyasRunnerWinDest: path.join(roots.eyasBuild, `eyas.exe`)
 };
 
 // set mode
@@ -189,10 +191,11 @@ async function createBuildFolder() {
 
 	// copy eyas source to build folder
 	userLog(`Copying Eyas runtime files...`);
-	await fs.copy(paths.eyasSrc, paths.eyasDest);
-	await fs.copy(paths.scriptsSrc, paths.scriptsDest);
-	await fs.copy(paths.eyasInterfaceSrc, paths.eyasInterfaceDest);
-	await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
+	// await fs.copy(paths.eyasSrc, paths.eyasDest);
+	// await fs.copy(paths.scriptsSrc, paths.scriptsDest);
+	// await fs.copy(paths.eyasInterfaceSrc, paths.eyasInterfaceDest);
+	// await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
+	await fs.copy(paths.eyasRunnerWinSrc, paths.eyasRunnerWinDest);
 
 	// copy the users source files to the build folder
 	userLog(`Copying test source...`);
@@ -260,6 +263,12 @@ async function runCommand_preview(devMode = false) {
 // generate a zipped output for distribution
 async function runCommand_bundle() {
 	console.log(`bundle command in progress...`);
+
+	// create the build folder to prep for usage
+	await createBuildFolder();
+
+	// zip the user folder, eyas config, and eyas runner together
+	// output to .eyas-dist
 }
 
 // compile the consumers application for deployment
