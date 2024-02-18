@@ -31,7 +31,8 @@ const paths = {
 	packageJsonModule: path.join(roots.module, names.packageJson),
 	packageJsonDist: path.join(roots.moduleBuild, names.packageJson),
 	scriptsSrc: path.join(roots.preBuild, `scripts`),
-	scriptsDest: path.join(roots.moduleBuild, `scripts`)
+	scriptsBuild: path.join(roots.moduleBuild, `scripts`),
+	scriptsDist: path.join(roots.dist, `scripts`)
 };
 
 // Allow for "root" await calls
@@ -45,7 +46,17 @@ const paths = {
 	await fs.copy(paths.buildAssetsSrc, paths.buildAssetsDest);
 	await fs.copy(paths.eyasInterfaceAppSrc, paths.eyasInterfaceAppDest);
 	await fs.copy(paths.eyasCoreSrc, paths.eyasCoreDest);
-	await fs.copy(paths.scriptsSrc, paths.scriptsDest);
+	await fs.copy(paths.scriptsSrc, paths.scriptsBuild);
+
+	await fs.copy(
+		path.join(paths.scriptsSrc, `get-config.js`),
+		path.join(paths.scriptsDist, `get-config.js`)
+	);
+
+	await fs.copy(
+		path.join(paths.scriptsSrc, `get-roots.js`),
+		path.join(paths.scriptsDist, `get-roots.js`)
+	);
 
 	// remove the prebuild folder
 	console.log(`clean up: removing ${roots.preBuild}`);

@@ -33,6 +33,13 @@ const actions = {
 		description: `Bundle and compile Eyas with the current configuration for deployment`,
 		command: `compile`,
 		action: runCommand_compile
+	},
+	bundle: {
+		enabled: true,
+		label: `Bundle`,
+		description: `Generate a zipped output for distribution`,
+		command: `bundle`,
+		action: runCommand_bundle
 	}
 };
 
@@ -67,6 +74,7 @@ const paths = {
 	eyasInterfaceDest: path.join(roots.eyasBuild, names.eyasInterface),
 	eyasSrc: path.join(roots.dist, `eyas-core`),
 	eyasDest: roots.eyasBuild,
+	packageJsonModuleSrc: path.join(roots.module, names.packageJson),
 	packageJsonCoreSrc: path.join(roots.dist, `build-assets`, names.packageJsonCore),
 	packageJsonDest: path.join(roots.eyasBuild, names.packageJson),
 	linuxRunnerSrc: path.join(roots.dist, `build-assets`, names.linuxRunner),
@@ -136,7 +144,7 @@ function askUser() {
 // setup the CLI arguments
 function defineCommands(cli) {
 	// get the version from the module's package.json
-	const { version } = require(paths.packageJsonCoreSrc);
+	const { version } = require(paths.packageJsonModuleSrc);
 
 	// define the details of the CLI
 	cli
@@ -247,6 +255,11 @@ async function runCommand_preview(devMode = false) {
 	// log the end of the process
 	userLog(`Preview launched!`);
 	userLog();
+}
+
+// generate a zipped output for distribution
+async function runCommand_bundle() {
+	console.log(`bundle command in progress...`);
 }
 
 // compile the consumers application for deployment
