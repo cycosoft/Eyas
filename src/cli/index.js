@@ -269,6 +269,24 @@ async function runCommand_bundle() {
 
 	// zip the user folder, eyas config, and eyas runner together
 	// output to .eyas-dist
+
+	// wrap the executables in a zip file
+	const fs = require(`fs-extra`);
+	const archiver = require(`archiver`);
+	// create the zip file
+	const output = fs.createWriteStream(`demo.zip`);
+	output.on(`close`, () => {
+		userLog(`🎉 File created -> demo.zip`);
+
+		// delete the preview directory
+	});
+	const archive = archiver(`zip`, { store: true });
+	// const archive = archiver(`zip`, { zlib: { level: 9 } });
+	archive.pipe(output);
+	// const filename = file.split(`\\`).pop();
+	// archive.file(file, { name: filename });
+	archive.directory(roots.eyasBuild, false);
+	archive.finalize();
 }
 
 // compile the consumers application for deployment
