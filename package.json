@@ -16,7 +16,7 @@
   },
   "scripts": {
     "_______________DEV_______________": "",
-    "dev": "npm i && npm-check -u -i '\"{inquirer}\"' && npm run compile:ui && npm run compile:module && node dist/cli/index.js",
+    "dev": "npm i && npm-check -u -i '\"{inquirer}\"' && npm run compile && node dist/cli/index.js",
     "dev:ui": "vite --config src/eyas-interface/app/.vite.config.ui.js --open",
     "_____________COMPILE_____________": "",
     "compile:ui": "vite build --config src/eyas-interface/app/.vite.config.ui.js",
