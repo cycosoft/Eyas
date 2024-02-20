@@ -21,11 +21,18 @@ const actions = {
 		action: () => runCommand_preview(true)
 	},
 	preview: {
-		enabled: true,
+		enabled: false,
 		label: `Preview`,
 		description: `Launch Eyas with the current configuration`,
 		command: `preview`,
 		action: runCommand_preview
+	},
+	previewNew: {
+		enabled: true,
+		label: `Preview`,
+		description: `Launch Eyas with the current configuration`,
+		command: `preview`,
+		action: runCommand_previewNew
 	},
 	compile: {
 		enabled: false,
@@ -262,8 +269,6 @@ async function runCommand_preview(devMode = false) {
 
 // generate a zipped output for distribution
 async function runCommand_bundle() {
-	console.log(`bundle command in progress...`);
-
 	// create the build folder to prep for usage
 	await createBuildFolder();
 
@@ -287,6 +292,39 @@ async function runCommand_bundle() {
 	// archive.file(file, { name: filename });
 	archive.directory(roots.eyasBuild, false);
 	archive.finalize();
+}
+
+// creates a local preview of the consumers application
+async function runCommand_previewNew() {
+	userLog(`generating new preview...`);
+
+	// imports
+	const fs = require(`fs-extra`);
+	const { spawn } = require(`child_process`);
+	const electron = require(`electron`);
+
+	// create the build folder to prep for usage
+	await createBuildFolder();
+
+	// copy the package.json to the build folder
+	// userLog(`Copying dependency manifest...`);
+	// await fs.copy(paths.packageJsonCoreSrc, paths.packageJsonDest);
+
+	// // Alert that preview is starting
+	// userLog(`Launching preview...`);
+
+	// // run the app
+	// const command = [paths.eyasApp];
+	// spawn(electron, command, {
+	// 	detached: true,
+	// 	stdio: `ignore`,
+	// 	windowsHide: false,
+	// 	cwd: consumerRoot
+	// }).unref(); // allow the command line to continue running
+
+	// // log the end of the process
+	// userLog(`Preview launched!`);
+	// userLog();
 }
 
 // compile the consumers application for deployment
