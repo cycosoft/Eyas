@@ -31,7 +31,7 @@ const actions = {
 		enabled: true,
 		label: `Preview (New)`,
 		description: `Launch Eyas with the current configuration`,
-		command: `preview`,
+		command: `previewNew`,
 		action: runCommand_previewNew
 	},
 	compile: {
