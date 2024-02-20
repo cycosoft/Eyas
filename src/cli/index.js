@@ -29,7 +29,7 @@ const actions = {
 	},
 	previewNew: {
 		enabled: true,
-		label: `Preview`,
+		label: `Preview (New)`,
 		description: `Launch Eyas with the current configuration`,
 		command: `preview`,
 		action: runCommand_previewNew
@@ -84,16 +84,20 @@ const paths = {
 	packageJsonModuleSrc: path.join(roots.module, names.packageJson),
 	packageJsonCoreSrc: path.join(roots.dist, `build-assets`, names.packageJsonCore),
 	packageJsonDest: path.join(roots.eyasBuild, names.packageJson),
-	linuxRunnerSrc: path.join(roots.dist, `build-assets`, names.linuxRunner),
-	macRunnerSrc: path.join(roots.dist, `build-assets`, names.macRunner),
-	winRunnerSrc: path.join(roots.dist, `build-assets`, names.winRunner),
-	winRunnerInstallerSrc: path.join(roots.dist, `build-assets`, names.winDownloader),
+	// linuxRunnerSrc: path.join(roots.dist, `build-assets`, names.linuxRunner),
+	// macRunnerSrc: path.join(roots.dist, `build-assets`, names.macRunner),
+	// winRunnerSrc: path.join(roots.dist, `build-assets`, names.winRunner),
+	// winRunnerInstallerSrc: path.join(roots.dist, `build-assets`, names.winDownloader),
 	scriptsSrc: path.join(roots.dist, names.scripts),
 	scriptsDest: path.join(roots.eyasBuild, names.scripts),
 	testDest: path.join(roots.eyasBuild, `test`),
 	icon: path.join(roots.eyasBuild, `eyas-assets`, `eyas-logo.png`),
 	eyasRunnerWinSrc: path.join(roots.dist, `runners`, `eyas.exe`),
-	eyasRunnerWinDest: path.join(roots.eyasBuild, `eyas.exe`)
+	eyasRunnerWinDest: path.join(roots.eyasBuild, `eyas.exe`),
+	macRunnerSrc: path.join(roots.dist, `runners`, `eyas.dmg`),
+	macRunnerDest: path.join(roots.eyasBuild, `eyas.dmg`),
+	linuxRunnerSrc: path.join(roots.dist, `runners`, `eyas.AppImage`),
+	linuxRunnerDest: path.join(roots.eyasBuild, `eyas.AppImage`)
 };
 
 // set mode
@@ -202,7 +206,21 @@ async function createBuildFolder() {
 	// await fs.copy(paths.scriptsSrc, paths.scriptsDest);
 	// await fs.copy(paths.eyasInterfaceSrc, paths.eyasInterfaceDest);
 	// await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
-	await fs.copy(paths.eyasRunnerWinSrc, paths.eyasRunnerWinDest);
+
+	// if on Windows, copy the eyas runner to the build folder
+	if(process.platform === `win32`){
+		await fs.copy(paths.eyasRunnerWinSrc, paths.eyasRunnerWinDest);
+	}
+
+	// if on Mac, copy the eyas runner to the build folder
+	if(process.platform === `darwin`){
+		await fs.copy(paths.macRunnerSrc, paths.eyasRunnerWinDest);
+	}
+
+	// if on Linux, copy the eyas runner to the build folder
+	if(process.platform === `linux`){
+		await fs.copy(paths.linuxRunnerSrc, paths.eyasRunnerWinDest);
+	}
 
 	// copy the users source files to the build folder
 	userLog(`Copying test source...`);
