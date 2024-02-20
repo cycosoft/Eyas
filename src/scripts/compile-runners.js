@@ -112,6 +112,9 @@ const paths = {
 
 	// copy just the final executables to the dist folder
 	builtFiles.forEach(file => {
+		// skip .blockmap files
+		if (file.endsWith(`.blockmap`)) { return; }
+
 		const dest = path.join(roots.dist, `runners`, path.basename(file));
 		console.log(`copying ${file} to ${dest}`);
 		fs.copy(file, dest);
