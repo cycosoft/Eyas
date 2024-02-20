@@ -214,12 +214,12 @@ async function createBuildFolder() {
 
 	// if on Mac, copy the eyas runner to the build folder
 	if(process.platform === `darwin`){
-		await fs.copy(paths.macRunnerSrc, paths.eyasRunnerWinDest);
+		await fs.copy(paths.macRunnerSrc, paths.macRunnerDest);
 	}
 
 	// if on Linux, copy the eyas runner to the build folder
 	if(process.platform === `linux`){
-		await fs.copy(paths.linuxRunnerSrc, paths.eyasRunnerWinDest);
+		await fs.copy(paths.linuxRunnerSrc, paths.linuxRunnerDest);
 	}
 
 	// copy the users source files to the build folder
