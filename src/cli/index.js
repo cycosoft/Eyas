@@ -293,15 +293,19 @@ async function runCommand_bundle() {
 	// zip the user folder, eyas config, and eyas runner together
 	// output to .eyas-dist
 
+	// set the name of the output files
+	const artifactName = `${config.test.title} - ${config.test.version}`;
+
 	// wrap the executables in a zip file
 	const fs = require(`fs-extra`);
 	const archiver = require(`archiver`);
 	// create the zip file
-	const output = fs.createWriteStream(`demo.zip`);
-	output.on(`close`, () => {
-		userLog(`🎉 File created -> demo.zip`);
-
+	const output = fs.createWriteStream(`${artifactName}.zip`);
+	output.on(`close`, async () => {
 		// delete the preview directory
+		await fs.remove(paths.build);
+
+		userLog(`🎉 File created -> ${artifactName}.zip`);
 	});
 	const archive = archiver(`zip`, { store: true });
 	// const archive = archiver(`zip`, { zlib: { level: 9 } });
