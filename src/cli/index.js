@@ -287,6 +287,9 @@ async function runCommand_preview(devMode = false) {
 
 // generate a zipped output for distribution
 async function runCommand_bundle() {
+	const fs = require(`fs-extra`);
+	const archiver = require(`archiver`);
+
 	// create the build folder to prep for usage
 	await createBuildFolder();
 
@@ -296,16 +299,17 @@ async function runCommand_bundle() {
 	// set the name of the output files
 	const artifactName = `${config.test.title} - ${config.test.version}`;
 
+	// reset the output directory
+	await fs.emptyDir(roots.eyasDist);
+
 	// wrap the executables in a zip file
-	const fs = require(`fs-extra`);
-	const archiver = require(`archiver`);
 	// create the zip file
-	const output = fs.createWriteStream(`${artifactName}.zip`);
+	const output = fs.createWriteStream(path.join(roots.eyasDist, `${artifactName}.win.zip`));
 	output.on(`close`, async () => {
 		// delete the preview directory
 		await fs.remove(paths.build);
 
-		userLog(`🎉 File created -> ${artifactName}.zip`);
+		userLog(`🎉 File created -> ${artifactName}.win.zip`);
 	});
 	const archive = archiver(`zip`, { store: true });
 	// const archive = archiver(`zip`, { zlib: { level: 9 } });
