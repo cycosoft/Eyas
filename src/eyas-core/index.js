@@ -188,7 +188,8 @@
 								Built from: ${config.meta.gitBranch} #${config.meta.gitHash}
 								Built by: ${config.meta.gitUser}
 								Built on: ${new Date(config.meta.compiled).toLocaleString()}
-								Build with: ${appName} v${appVersion}
+
+								Runner: ${appName} v${appVersion}
 
 
 								🏢 © ${yearRange} Cycosoft, LLC
