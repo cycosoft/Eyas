@@ -317,9 +317,9 @@ async function runCommand_previewNew() {
 	userLog(`generating new preview...`);
 
 	// imports
-	const fs = require(`fs-extra`);
-	const { spawn } = require(`child_process`);
-	const electron = require(`electron`);
+	// const fs = require(`fs-extra`);
+	// const { spawn } = require(`child_process`);
+	// const electron = require(`electron`);
 
 	// create the build folder to prep for usage
 	await createBuildFolder();
