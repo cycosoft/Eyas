@@ -180,6 +180,8 @@
 								icon: paths.icon,
 								message: `
 								Running From: ${roots.config}
+								process.env.PORTABLE_EXECUTABLE_DIR: ${process?.env?.PORTABLE_EXECUTABLE_DIR}
+								__dirname: ${__dirname}
 
 								Test name: ${config.test.title}
 								Test version: ${config.test.version}
