@@ -12,10 +12,6 @@ const moduleRoot = isProd
 	: consumerRoot;
 const roots = require(path.join(moduleRoot, `.build`, `scripts`, `get-roots.js`));
 const names = {
-	linuxRunner: `linuxRunner.sh`,
-	macRunner: `macRunner.command`,
-	winRunner: `winRunner.cmd`,
-	winDownloader: `getDependency.cmd`,
 	packageJsonCore: `package.json`,
 	packageJson: `package.json`,
 	eyasAssets: `eyas-assets`,
@@ -36,10 +32,6 @@ const paths = {
 	eyasDest: roots.eyasBuild,
 	packageJsonCoreSrc: path.join(roots.dist, `build-assets`, names.packageJsonCore),
 	packageJsonDest: path.join(roots.eyasBuild, names.packageJson),
-	linuxRunnerSrc: path.join(roots.dist, `build-assets`, names.linuxRunner),
-	macRunnerSrc: path.join(roots.dist, `build-assets`, names.macRunner),
-	winRunnerSrc: path.join(roots.dist, `build-assets`, names.winRunner),
-	winRunnerInstallerSrc: path.join(roots.dist, `build-assets`, names.winDownloader),
 	scriptsSrc: path.join(roots.dist, names.scripts),
 	scriptsDest: path.join(roots.eyasBuild, names.scripts),
 	testDest: path.join(roots.eyasBuild, `test`),

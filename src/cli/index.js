@@ -59,10 +59,6 @@ const moduleRoot = isProd
 	: consumerRoot;
 const roots = require(path.join(moduleRoot, `dist`, `scripts`, `get-roots.js`));
 const names = {
-	linuxRunner: `linuxRunner.sh`,
-	macRunner: `macRunner.command`,
-	winRunner: `winRunner.cmd`,
-	winDownloader: `getDependency.cmd`,
 	packageJsonCore: `package.json`,
 	packageJson: `package.json`,
 	eyasAssets: `eyas-assets`,
@@ -84,10 +80,6 @@ const paths = {
 	packageJsonModuleSrc: path.join(roots.module, names.packageJson),
 	packageJsonCoreSrc: path.join(roots.dist, `build-assets`, names.packageJsonCore),
 	packageJsonDest: path.join(roots.eyasBuild, names.packageJson),
-	// linuxRunnerSrc: path.join(roots.dist, `build-assets`, names.linuxRunner),
-	// macRunnerSrc: path.join(roots.dist, `build-assets`, names.macRunner),
-	// winRunnerSrc: path.join(roots.dist, `build-assets`, names.winRunner),
-	// winRunnerInstallerSrc: path.join(roots.dist, `build-assets`, names.winDownloader),
 	scriptsSrc: path.join(roots.dist, names.scripts),
 	scriptsDest: path.join(roots.eyasBuild, names.scripts),
 	testDest: path.join(roots.eyasBuild, `test`),
@@ -365,12 +357,6 @@ async function runCommand_compile() {
 	// set the name of the output files
 	const artifactName = `${config.test.title} - ${config.test.version}`;
 
-	// create the portable versions
-	// NOTE: this must come first so installed dependencies for executable aren't included
-	if(config.outputs.portable) {
-		await build_portables();
-	}
-
 	// create the executable versions
 	if(config.outputs.executable){
 		await build_executables();
@@ -493,59 +479,6 @@ async function runCommand_compile() {
 			userLog(`Executable compilation complete!`);
 			userLog();
 		}
-	}
-
-	async function build_portables() {
-		// overwrite the installer manifest with the runner manifest
-		userLog();
-		userLog(`Copying dependency manifest...`);
-		await fs.copy(paths.packageJsonCoreSrc, paths.packageJsonDest);
-
-		// for each OS, create the runner file
-		[`mac`, `windows`, `linux`].forEach(os => {
-			// exit if the OS isn't enabled
-			if(!config.outputs[os]) { return; }
-
-			// create the node runner version
-			userLog(`Creating ${os.toUpperCase()} "portable" distributable...`);
-			const filename = `${artifactName}.${os}.zip`;
-			const archiver = require(`archiver`);
-			const output = fs.createWriteStream(paths.dist + `/${filename}`);
-			const archive = archiver(`zip`, { zlib: 9 });
-			output.on(`close`, () => {
-				userLog(`🎉 File created -> ${path.join(paths.dist, filename)}`);
-			});
-			archive.pipe(output);
-
-			// add common files
-			archive.directory(paths.build, `app`);
-
-			// name of the file that runs Eyas
-			const runnerName = `Run Test`;
-
-			// add linux files
-			if (os === `linux`) {
-				const linuxFileExt = names.linuxRunner.split(`.`).pop();
-				archive.file(paths.linuxRunnerSrc, { name: `${runnerName}.${linuxFileExt}` });
-			}
-
-			// add mac files
-			if (os === `mac`) {
-				const macFileExt = names.macRunner.split(`.`).pop();
-				archive.file(paths.macRunnerSrc, { name: `${runnerName}.${macFileExt}` });
-			}
-
-			// add win files
-			if (os === `windows`) {
-				const winFileExt = names.winRunner.split(`.`).pop();
-				archive.file(paths.winRunnerSrc, { name: `${runnerName}.${winFileExt}` });
-				archive.file(paths.winRunnerInstallerSrc, { name: names.winDownloader });
-			}
-
-			// complete the archive
-			archive.finalize();
-		});
-
 	}
 }
 

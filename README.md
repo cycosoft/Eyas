@@ -29,7 +29,7 @@
 
 ## Features
 
-- 📦 Package your app as a portable runner or executable for Windows, Mac, or Linux
+- 📦 Package your app as a shareable file for Windows, Mac, or Linux
 - 🔗 Simulate running your app from any domain
 - 📏 Supports custom screen size testing (mobile, tablet, desktop)
 - 🕜 Custom build expiration between 1 hour and 30 days
@@ -81,10 +81,7 @@ module.exports = {
     expires: 168, // (range: 1-720 hours)
     // Build an unsigned executable for the current platform (.exe.zip, .dmg.zip, .AppImage)
     // 60 - 100 MB
-    executable: false,
-    // Builds a zipped file containing your application and a runner for the built platform (default)
-    // ~275kb before downloads
-    portable: false
+    executable: false
   }
 };
 ```
@@ -107,15 +104,15 @@ module.exports = {
 - `preview`: builds and runs Eyas from `./.eyas-preview/`
 - `compile`: builds to _./.eyas-preview/_ and compiles to `./.eyas-dist/`
 
-Depending on your OS, you may be able to build executables for multiple platforms on a single machine using the  `electronuserland/builder` and `electronuserland/builder:wine` docker images. See more information ([here](https://www.electron.build/multi-platform-build#provided-docker-images)). Here's a simple visualization of known possible configurations.
+Depending on your OS, you may be able to build executables for multiple platforms on a single machine using the `electronuserland/builder` and `electronuserland/builder:wine` docker images. See more information ([here](https://www.electron.build/multi-platform-build#provided-docker-images)). Here's a simple visualization of known possible configurations.
 
-| | Portable | .exe | .AppImage | .dmg |
-| - | - | - | - | - |
-| Mac | ✅ | ✅ | ✅ | ✅ |
-| Windows | ✅ | ✅ | ✅ | |
-| Linux | ✅ | ✅ | ✅ | |
+| | .exe | .AppImage | .dmg |
+| - | - | - | - |
+| Mac | ✅ | ✅ | ✅ |
+| Windows | ✅ | ✅ | |
+| Linux | ✅ | ✅ | |
 
-All outputs are zipped. Portable builds will add ~250kb overhead to your distributable, and executables can range between 60-100mb depending on the platform. Portable builds are recommended for most use cases. They download dependencies in-place on the client machine, and avoid many of the security warnings that come with executables.
+All outputs are zipped. Executables can range between 60-100mb depending on the platform.
 
 ## Tips
 

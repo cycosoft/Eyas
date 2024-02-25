@@ -54,7 +54,6 @@ const eyasConfig = {
 
 		// type
 		executable: userConfig.outputs.executable || false,
-		portable: userConfig.outputs.portable || false,
 
 		// options
 		expires: validateExpiration(userConfig.outputs.expires) // hours
@@ -74,11 +73,6 @@ if (!eyasConfig.outputs.windows && !eyasConfig.outputs.mac && !eyasConfig.output
 	if(process.platform === `win32`) { eyasConfig.outputs.windows = true; }
 	if(process.platform === `darwin`) { eyasConfig.outputs.mac = true; }
 	if(process.platform === `linux`) { eyasConfig.outputs.linux = true; }
-}
-
-// set the default output type if none are specified
-if (!eyasConfig.outputs.executable && !eyasConfig.outputs.portable) {
-	eyasConfig.outputs.portable = true;
 }
 
 // export the config for the project
