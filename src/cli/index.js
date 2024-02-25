@@ -305,8 +305,7 @@ async function runCommand_bundle() {
 		});
 
 		// prepare a new archive
-		// const archive = archiver(`zip`, { store: true }); // debug
-		const archive = archiver(`zip`, { zlib: { level: 9 } });
+		const archive = archiver(`zip`, { store: false, zlib: { level: 9 } });
 
 		// push content to the archive
 		archive.pipe(output);
