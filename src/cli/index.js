@@ -331,8 +331,8 @@ async function runCommand_bundle() {
 	if(process.platform === `darwin`){ archive.file(paths.macRunnerSrc, { name: `eyas.dmg` });
 	if(process.platform === `linux`){ archive.file(paths.linuxRunnerSrc, { name: `eyas.AppImage` });
 
-	// add the config
-	// archive.file(paths.configDest, { name: `.eyas.config.js` });
+	// add the updated config
+	archive.append(getModifiedConfig(), { name: `.eyas.config.js` });
 
 	// add the user's test
 	archive.directory(path.join(consumerRoot, config.test.source), `test`);
