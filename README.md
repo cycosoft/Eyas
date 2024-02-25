@@ -78,10 +78,7 @@ module.exports = {
     // Force building a .AppImage
     linux: false,
     // The number of hours from build time until the distributable expires
-    expires: 168, // (range: 1-720 hours)
-    // Build an unsigned executable for the current platform (.exe.zip, .dmg.zip, .AppImage)
-    // 60 - 100 MB
-    executable: false
+    expires: 168 // (range: 1-720 hours)
   }
 };
 ```
@@ -94,7 +91,7 @@ module.exports = {
   "scripts": {
     "interactive": "eyas", // Select from a list of available commands
     "quick": "eyas preview", // Preview the your app without creating distributables
-    "share": "eyas compile" // Compiles the configured app to a distributable
+    "share": "eyas bundle" // packages the configured app to a distributable
   }
 }
 ```
@@ -102,17 +99,9 @@ module.exports = {
 ## Outputs
 
 - `preview`: builds and runs Eyas from `./.eyas-preview/`
-- `compile`: builds to _./.eyas-preview/_ and compiles to `./.eyas-dist/`
+- `bundle`: Packages consumer source code for each enabled platform to `./.eyas-dist/`
 
-Depending on your OS, you may be able to build executables for multiple platforms on a single machine using the `electronuserland/builder` and `electronuserland/builder:wine` docker images. See more information ([here](https://www.electron.build/multi-platform-build#provided-docker-images)). Here's a simple visualization of known possible configurations.
-
-| | .exe | .AppImage | .dmg |
-| - | - | - | - |
-| Mac | ✅ | ✅ | ✅ |
-| Windows | ✅ | ✅ | |
-| Linux | ✅ | ✅ | |
-
-All outputs are zipped. Executables can range between 60-100mb depending on the platform.
+All outputs are zipped, and can range between 60-100mb depending on the platform.
 
 ## Tips
 

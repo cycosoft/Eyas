@@ -62,7 +62,7 @@ const paths = {
 				app: roots.moduleBuild,
 				output: roots.runners
 			},
-			// compression: `store`, // debug purposes
+			compression: `maximum`, // `store` | `normal` | `maximum`
 			removePackageScripts: true,
 			removePackageKeywords: true,
 			mac: {

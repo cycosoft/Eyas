@@ -52,9 +52,6 @@ const eyasConfig = {
 		mac: userConfig.outputs.mac || false,
 		linux: userConfig.outputs.linux || false,
 
-		// type
-		executable: userConfig.outputs.executable || false,
-
 		// options
 		expires: validateExpiration(userConfig.outputs.expires) // hours
 	},
