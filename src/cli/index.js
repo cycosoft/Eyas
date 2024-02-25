@@ -306,39 +306,53 @@ async function runCommand_bundle() {
 	// output to .eyas-dist
 
 	// set the name of the output files
-	const artifactName = `${config.test.title} - ${config.test.version}`;
+
+	// setup the platform output
+	const modifiedConfig = getModifiedConfig();
+	const platforms = [
+		{ enabled: config.outputs.windows, ext: `exe`, runner: paths.eyasRunnerWinSrc, tag: `win` },
+		{ enabled: config.outputs.mac, ext: `dmg`, runner: paths.macRunnerSrc, tag: `mac` },
+		{ enabled: config.outputs.linux, ext: `AppImage`, runner: paths.linuxRunnerSrc, tag: `linux` }
+	];
 
 	// reset the output directory
 	await fs.emptyDir(roots.eyasDist);
 
-	// wrap the executables in a zip file
-	// create the zip file
-	const output = fs.createWriteStream(path.join(roots.eyasDist, `${artifactName}.win.zip`));
-	output.on(`close`, async () => {
-		// delete the preview directory
-		await fs.remove(paths.build);
+	// loop through the platforms and create the zipped files if enabled
+	platforms.forEach(platform => {
+		// skip if the platform isn't enabled
+		if(!platform.enabled) { return; }
 
-		userLog(`🎉 File created -> ${artifactName}.win.zip`);
+		const artifactName = `${config.test.title} - ${config.test.version}.${platform.tag}.zip`;
+
+		// create the zip file
+		const output = fs.createWriteStream(path.join(roots.eyasDist, artifactName));
+
+		// when the process has completed (Note: listener must be added before the archive is finalized)
+		output.on(`close`, () => {
+			// alert the user
+			userLog(`🎉 File created -> ${artifactName}`);
+		});
+
+		// prepare a new archive
+		const archive = archiver(`zip`, { store: true });
+		// const archive = archiver(`zip`, { zlib: { level: 9 } });
+
+		// push content to the archive
+		archive.pipe(output);
+
+		// add the appropriate runner
+		archive.file(platform.runner, { name: `eyas.${platform.ext}` });
+
+		// add the updated config
+		archive.append(modifiedConfig, { name: `.eyas.config.js` });
+
+		// add the user's test
+		archive.directory(path.join(consumerRoot, config.test.source), `test`);
+
+		// close the archive
+		archive.finalize();
 	});
-	const archive = archiver(`zip`, { store: true });
-	// const archive = archiver(`zip`, { zlib: { level: 9 } });
-	archive.pipe(output);
-	// const filename = file.split(`\\`).pop();
-	// archive.file(file, { name: filename });
-	// archive.directory(roots.eyasBuild, false);
-
-	// add the appropriate runner
-	if(process.platform === `win32`){ archive.file(paths.eyasRunnerWinSrc, { name: `eyas.exe` }); }
-	if(process.platform === `darwin`){ archive.file(paths.macRunnerSrc, { name: `eyas.dmg` }); }
-	if(process.platform === `linux`){ archive.file(paths.linuxRunnerSrc, { name: `eyas.AppImage` }); }
-
-	// add the updated config
-	archive.append(getModifiedConfig(), { name: `.eyas.config.js` });
-
-	// add the user's test
-	archive.directory(path.join(consumerRoot, config.test.source), `test`);
-
-	archive.finalize();
 }
 
 // creates a local preview of the consumers application
