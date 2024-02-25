@@ -199,13 +199,6 @@ async function createBuildFolder() {
 	userLog(`Resetting build space...`);
 	await fs.emptyDir(paths.build);
 
-	// copy eyas source to build folder
-	userLog(`Copying Eyas runtime files...`);
-	// await fs.copy(paths.eyasSrc, paths.eyasDest);
-	// await fs.copy(paths.scriptsSrc, paths.scriptsDest);
-	// await fs.copy(paths.eyasInterfaceSrc, paths.eyasInterfaceDest);
-	// await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
-
 	// if on Windows, copy the eyas runner to the build folder
 	if(process.platform === `win32`){
 		await fs.copy(paths.eyasRunnerWinSrc, paths.eyasRunnerWinDest);
@@ -299,14 +292,6 @@ async function runCommand_bundle() {
 	const fs = require(`fs-extra`);
 	const archiver = require(`archiver`);
 
-	// create the build folder to prep for usage
-	// await createBuildFolder();
-
-	// zip the user folder, eyas config, and eyas runner together
-	// output to .eyas-dist
-
-	// set the name of the output files
-
 	// setup the platform output
 	const modifiedConfig = getModifiedConfig();
 	const platforms = [
@@ -359,33 +344,8 @@ async function runCommand_bundle() {
 async function runCommand_previewNew() {
 	userLog(`generating new preview...`);
 
-	// imports
-	// const fs = require(`fs-extra`);
-	// const { spawn } = require(`child_process`);
-	// const electron = require(`electron`);
-
 	// create the build folder to prep for usage
 	await createBuildFolder();
-
-	// copy the package.json to the build folder
-	// userLog(`Copying dependency manifest...`);
-	// await fs.copy(paths.packageJsonCoreSrc, paths.packageJsonDest);
-
-	// // Alert that preview is starting
-	// userLog(`Launching preview...`);
-
-	// // run the app
-	// const command = [paths.eyasApp];
-	// spawn(electron, command, {
-	// 	detached: true,
-	// 	stdio: `ignore`,
-	// 	windowsHide: false,
-	// 	cwd: consumerRoot
-	// }).unref(); // allow the command line to continue running
-
-	// // log the end of the process
-	// userLog(`Preview launched!`);
-	// userLog();
 }
 
 // compile the consumers application for deployment

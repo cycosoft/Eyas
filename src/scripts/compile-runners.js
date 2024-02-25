@@ -51,31 +51,11 @@ const paths = {
 	const fs = require(`fs-extra`);
 	const builder = require(`electron-builder`);
 
-	// load the user's config
-	// console.log(`Loading configuration...`);
-	// const config = require(paths.configLoader);
-
-	// create the build folder to prep for usage
-	// console.log(`Creating build folder...`);
-	// await createBuildFolder();
-
-	// console.log(`Empty directory...`);
-	// await fs.emptyDir(paths.dist);
-
-	// copy the package.json to the build folder
-	// userLog(`Copying dependency manifest...`);
-	// console.log(`Copying package.json...`);
-	// await fs.copy(paths.packageJsonCoreSrc, paths.packageJsonDest);
-
 	// Determine the executables to build
 	const targets = [];
-	// if(config.outputs.windows) { targets.push(builder.Platform.WINDOWS); }
-	// if(config.outputs.mac) { targets.push(builder.Platform.MAC); }
-	// if(config.outputs.linux) { targets.push(builder.Platform.LINUX); }
 
 	// set the name of the output files
 	const runnerName = `eyas`;
-	// const zipName = `${config.test.title} - ${config.test.version}`;
 
 	const builtFiles = await builder.build({
 		targets: targets.length ? builder.createTargets(targets) : null,
@@ -121,58 +101,8 @@ const paths = {
 	});
 
 	// cleanup
+	console.log(``);
 	console.log(`Cleaning up...`);
 	await fs.remove(roots.moduleBuild);
 	await fs.remove(roots.runners);
-
-	async function createBuildFolder() {
-		// imports
-		const fs = require(`fs-extra`);
-		// const addHours = require(`date-fns/addHours`);
-
-		// give space for the start of the process
-		// userLog();
-
-		// delete any existing build folders
-		// userLog(`Resetting build space...`);
-		await fs.emptyDir(paths.build);
-
-		// copy eyas source to build folder
-		// userLog(`Copying Eyas runtime files...`);
-		await fs.copy(paths.eyasSrc, paths.eyasDest);
-		await fs.copy(paths.scriptsSrc, paths.scriptsDest);
-		await fs.copy(paths.eyasInterfaceSrc, paths.eyasInterfaceDest);
-		await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
-
-		// copy the users source files to the build folder
-		// userLog(`Copying test source...`);
-		// await fs.copy(path.join(consumerRoot, config.test.source), paths.testDest);
-
-		// create a new config file with the updated values in the build folder
-		// userLog(`Creating snapshot of config...`);
-		// delete config.test.source; // isn't used past this point
-
-		// generate meta data for the build
-		// const { execSync } = require(`child_process`);
-		// const now = new Date();
-		// const expires = addHours(now, config.outputs.expires);
-		// let gitBranch = ``, gitHash = ``, gitUser = ``;
-		// try { gitBranch = execSync(`git rev-parse --abbrev-ref HEAD`).toString().trim(); } catch (e) {/**/}
-		// try { gitHash = execSync(`git rev-parse --short HEAD`).toString().trim(); } catch (e) {/**/}
-		// try { gitUser = execSync(`git config user.name`).toString().trim(); } catch (e) {/**/}
-		// config.meta = {
-		// 	expires,
-		// 	gitBranch,
-		// 	gitHash,
-		// 	gitUser,
-		// 	compiled: now
-		// };
-
-		// write the config file
-		// const data = `module.exports = ${JSON.stringify(config)}`;
-		// await fs.outputFile(paths.configDest, data);
-
-		// let the user know when this build expires
-		// userLog(`Set build expirations to: ${expires.toLocaleString()}`);
-	}
 })();

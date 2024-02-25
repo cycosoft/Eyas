@@ -62,9 +62,6 @@ const paths = {
 	console.log(`clean up: removing ${roots.preBuild}`);
 	await fs.remove(roots.preBuild);
 
-	// set the npm and node dependency version numbers based on package.json
-	// await updateRunnerVersions();
-
 	// Update the package.json version numbers
 	await updatePackageJsonValues();
 
@@ -74,38 +71,9 @@ const paths = {
 	console.log(`🎉 complete`);
 })();
 
-// set the npm and node dependency version numbers for each runner
-// async function updateRunnerVersions() {
-// 	console.log(`🕜 updateRunnerVersions() start`);
-// 	// read the package.json
-// 	const packageJson = require(paths.packageJsonModule);
-// 	const nodeVersion = packageJson.devDependencies.node.match(/\d+\.\d+\.\d+/)[0];
-// 	const npmVersion = packageJson.devDependencies.npm.match(/\d+\.\d+\.\d+/)[0];
-// 	const runners = [`winRunner.cmd`, `macRunner.command`, `linuxRunner.sh`];
-
-// 	// for each runner
-// 	for (const filename of runners) {
-// 		const runnerPath = path.join(paths.buildAssetsDest, filename);
-
-// 		// read the contents of the runner
-// 		let script = fs.readFileSync(runnerPath, `utf8`);
-
-// 		// modify the nodeVersion variable
-// 		script = script
-// 			.replace(/nodeVersion=0.0.0/, `nodeVersion=${nodeVersion}`)
-// 			.replace(/npmVersion=0.0.0/, `npmVersion=${npmVersion}`);
-
-// 		// save the modified runner
-// 		console.log(`📝 updateRunnerVersions() writing ${filename}`);
-// 		await fs.outputFile(runnerPath, script);
-// 	}
-
-// 	console.log(`🕜 updateRunnerVersions() end`);
-// }
-
 // update all the versions in the distributed package.json from the module package.json
 async function updatePackageJsonValues() {
-	console.log(`🕜 updatePackageJsonValues() start`);
+	console.log(`🕜 updatePackageJsonValues()`);
 	// read both package.json
 	const packageJsonModule = require(paths.packageJsonModule);
 	const packageJsonDist = require(paths.packageJsonDist);
@@ -141,8 +109,5 @@ async function updatePackageJsonValues() {
 	packageJsonDist.devDependencies.electron = packageJsonModule.dependencies.electron;
 
 	// save the updated dist/package.json
-	console.log(`📝 updatePackageJsonValues() writing package.json`);
 	await fs.outputFile(paths.packageJsonDist, JSON.stringify(packageJsonDist));
-
-	console.log(`🕜 updatePackageJsonValues() end`);
 }
