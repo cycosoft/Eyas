@@ -327,9 +327,9 @@ async function runCommand_bundle() {
 	// archive.directory(roots.eyasBuild, false);
 
 	// add the appropriate runner
-	if(process.platform === `win32`){ archive.file(paths.eyasRunnerWinSrc, { name: `eyas.exe` });
-	if(process.platform === `darwin`){ archive.file(paths.macRunnerSrc, { name: `eyas.dmg` });
-	if(process.platform === `linux`){ archive.file(paths.linuxRunnerSrc, { name: `eyas.AppImage` });
+	if(process.platform === `win32`){ archive.file(paths.eyasRunnerWinSrc, { name: `eyas.exe` }); }
+	if(process.platform === `darwin`){ archive.file(paths.macRunnerSrc, { name: `eyas.dmg` }); }
+	if(process.platform === `linux`){ archive.file(paths.linuxRunnerSrc, { name: `eyas.AppImage` }); }
 
 	// add the updated config
 	archive.append(getModifiedConfig(), { name: `.eyas.config.js` });
