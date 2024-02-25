@@ -226,6 +226,12 @@ async function createBuildFolder() {
 	userLog(`Copying test source...`);
 	await fs.copy(path.join(consumerRoot, config.test.source), paths.testDest);
 
+	// write the config file
+	const data = getModifiedConfig();
+	await fs.outputFile(paths.configDest, data);
+}
+
+function getModifiedConfig() {
 	// create a new config file with the updated values in the build folder
 	userLog(`Creating snapshot of config...`);
 	delete config.test.source; // isn't used past this point
@@ -246,12 +252,14 @@ async function createBuildFolder() {
 		compiled: now
 	};
 
-	// write the config file
+	// wrap the config in a module export
 	const data = `module.exports = ${JSON.stringify(config)}`;
-	await fs.outputFile(paths.configDest, data);
 
 	// let the user know when this build expires
 	userLog(`Set build expirations to: ${expires.toLocaleString()}`);
+
+	// return the updated config data
+	return data;
 }
 
 // launch a preview of the consumers application
