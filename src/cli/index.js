@@ -291,7 +291,7 @@ async function runCommand_bundle() {
 	const archiver = require(`archiver`);
 
 	// create the build folder to prep for usage
-	await createBuildFolder();
+	// await createBuildFolder();
 
 	// zip the user folder, eyas config, and eyas runner together
 	// output to .eyas-dist
@@ -316,7 +316,19 @@ async function runCommand_bundle() {
 	archive.pipe(output);
 	// const filename = file.split(`\\`).pop();
 	// archive.file(file, { name: filename });
-	archive.directory(roots.eyasBuild, false);
+	// archive.directory(roots.eyasBuild, false);
+
+	// add the appropriate runner
+	if(process.platform === `win32`){ archive.file(paths.eyasRunnerWinSrc, { name: `eyas.exe` });
+	if(process.platform === `darwin`){ archive.file(paths.macRunnerSrc, { name: `eyas.dmg` });
+	if(process.platform === `linux`){ archive.file(paths.linuxRunnerSrc, { name: `eyas.AppImage` });
+
+	// add the config
+	// archive.file(paths.configDest, { name: `.eyas.config.js` });
+
+	// add the user's test
+	archive.directory(path.join(consumerRoot, config.test.source), `test`);
+
 	archive.finalize();
 }
 
