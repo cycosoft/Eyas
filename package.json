@@ -19,6 +19,7 @@
     "direct": "npm run compile:ui && npm run compile:module && npx electron .build/index.js",
     "dev": "npm i && npm-check -u -i '\"{inquirer}\"' && npm run compile && node dist/cli/index.js",
     "dev:ui": "vite --config src/eyas-interface/app/.vite.config.ui.js --open",
+    "dev:cli": "npm run compile:module && node dist/cli/index.js",
     "_____________COMPILE_____________": "",
     "compile:ui": "vite build --config src/eyas-interface/app/.vite.config.ui.js",
     "compile:module": "electron-vite build && node src/scripts/compile-module.js",
