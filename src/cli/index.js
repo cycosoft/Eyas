@@ -191,7 +191,6 @@ async function runCommand_config() {
 async function createBuildFolder() {
 	// imports
 	const fs = require(`fs-extra`);
-	const addHours = require(`date-fns/addHours`);
 
 	// give space for the start of the process
 	userLog();
@@ -238,6 +237,7 @@ function getModifiedConfig() {
 
 	// generate meta data for the build
 	const { execSync } = require(`child_process`);
+	const addHours = require(`date-fns/addHours`);
 	const now = new Date();
 	const expires = addHours(now, config.outputs.expires);
 	let gitBranch = ``, gitHash = ``, gitUser = ``;
