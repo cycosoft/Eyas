@@ -182,6 +182,8 @@
 								Running From: ${roots.config}
 								process.env.PORTABLE_EXECUTABLE_DIR: ${process?.env?.PORTABLE_EXECUTABLE_DIR}
 								__dirname: ${__dirname}
+								process.cwd(): ${process?.cwd()}
+								process.env.PWD: ${process?.env?.PWD}
 
 								Test name: ${config.test.title}
 								Test version: ${config.test.version}
