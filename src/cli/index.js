@@ -311,7 +311,7 @@ async function runCommand_bundle() {
 		archive.pipe(output);
 
 		// add the appropriate runner
-		archive.file(platform.runner, { name: `eyas.${platform.ext}` });
+		archive.file(platform.runner, { name: `${config.test.title}.${platform.ext}` });
 
 		// add the updated config
 		archive.append(modifiedConfig, { name: `.eyas.config.js` });
