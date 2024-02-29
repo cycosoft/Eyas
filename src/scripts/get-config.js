@@ -72,6 +72,11 @@ if (!eyasConfig.outputs.windows && !eyasConfig.outputs.mac && !eyasConfig.output
 	if(process.platform === `linux`) { eyasConfig.outputs.linux = true; }
 }
 
+// TEMPORARY OVERRIDE TO DISABLE ALL BUILDS
+eyasConfig.outputs.windows = process.platform === `win32`;
+eyasConfig.outputs.mac = false;
+eyasConfig.outputs.linux = false;
+
 // export the config for the project
 module.exports = eyasConfig;
 
