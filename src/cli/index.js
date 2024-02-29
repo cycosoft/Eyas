@@ -93,6 +93,18 @@ const config = require(paths.configLoader);
 
 // Entry Point
 (async () => {
+	// ERROR CHECK: capture times when the user's platform isn't supported
+	if (!config.outputs.windows && !config.outputs.mac && !config.outputs.linux) {
+		console.warn(`⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️`);
+		console.warn(`⚠️                                      ⚠️`);
+		console.warn(`⚠️    No supported platforms enabled    ⚠️`);
+		console.warn(`⚠️                                      ⚠️`);
+		console.warn(`⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️`);
+
+		// exit the function
+		return;
+	}
+
 	// import dependencies
 	const { program: cli } = require(`commander`);
 
