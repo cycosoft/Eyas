@@ -63,14 +63,14 @@
   },
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.4",
-    "@vitejs/plugin-vue": "^4.5.2",
-    "electron-vite": "^1.0.29",
+    "@vitejs/plugin-vue": "^5.0.4",
+    "electron-vite": "^2.0.0",
     "eslint": "^8.57.0",
     "eslint-plugin-vue": "^9.22.0",
     "npm-check": "^6.0.1",
     "sass": "^1.71.1",
     "vite": "^5.1.4",
-    "vite-plugin-vuetify": "^1.0.2"
+    "vite-plugin-vuetify": "^2.0.2"
   },
   "overrides": {
     "package-json": ">6.5.0 <8.0.0"
