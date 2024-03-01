@@ -221,7 +221,7 @@ function getModifiedConfig() {
 
 	// generate meta data for the build
 	const { execSync } = require(`child_process`);
-	const addHours = require(`date-fns/addHours`);
+	const { addHours } = require(`date-fns/addHours`);
 	const now = new Date();
 	const expires = addHours(now, configCopy.outputs.expires);
 	let gitBranch = ``, gitHash = ``, gitUser = ``;

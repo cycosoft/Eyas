@@ -127,7 +127,7 @@ function validateExpiration(hours) {
 
 // get the default preview expiration
 function getPreviewExpiration() {
-	const addHours = require(`date-fns/addHours`);
+	const { addHours } = require(`date-fns/addHours`);
 	const now = new Date();
 	return addHours(now, 1);
 }

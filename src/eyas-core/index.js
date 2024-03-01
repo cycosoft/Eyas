@@ -160,8 +160,8 @@
 						label: `📇 About`,
 						click: () => {
 							// setup
-							const format = require(`date-fns/format`);
-							const differenceInDays = require(`date-fns/differenceInDays`);
+							const { format } = require(`date-fns/format`);
+							const { differenceInDays } = require(`date-fns/differenceInDays`);
 							const now = new Date();
 							const expires = new Date(config.meta.expires);
 							const dayCount = differenceInDays(expires, now);
@@ -331,8 +331,8 @@
 		clientWindow = new BrowserWindow(windowConfig);
 
 		// stop the user here if the test is expired
-		const isPast = require(`date-fns/isPast`);
-		const format = require(`date-fns/format`);
+		const { isPast } = require(`date-fns/isPast`);
+		const { format } = require(`date-fns/format`);
 		const expiredAsDate = new Date(config.meta.expires);
 		const isExpired = isPast(expiredAsDate);
 		if(isExpired){
