@@ -27,13 +27,6 @@ const actions = {
 		command: `preview`,
 		action: runCommand_preview
 	},
-	previewNew: {
-		enabled: true,
-		label: `Preview (New)`,
-		description: `Launch Eyas with the current configuration`,
-		command: `previewNew`,
-		action: runCommand_previewNew
-	},
 	bundle: {
 		enabled: true,
 		label: `Bundle`,
@@ -328,14 +321,6 @@ async function runCommand_bundle() {
 		// close the archive
 		archive.finalize();
 	});
-}
-
-// creates a local preview of the consumers application
-async function runCommand_previewNew() {
-	userLog(`generating new preview...`);
-
-	// create the build folder to prep for usage
-	await createBuildFolder();
 }
 
 // wrapper to differentiate user logs (allowed) from system logs (disallowed)
