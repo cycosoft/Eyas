@@ -255,24 +255,18 @@ function getModifiedConfig() {
 
 // launch a preview of the consumers application
 async function runCommand_preview(devMode = false) {
-	const fs = require(`fs-extra`);
 	const { spawn } = require(`child_process`);
-	const electron = require(`electron`);
 
 	// create the build folder to prep for usage
 	await createBuildFolder();
-
-	// copy the package.json to the build folder
-	userLog(`Copying dependency manifest...`);
-	await fs.copy(paths.packageJsonCoreSrc, paths.packageJsonDest);
 
 	// Alert that preview is starting
 	userLog(`Launching preview...`);
 
 	// run the app
-	const command = [paths.eyasApp];
+	const command = [];
 	if(devMode) { command.push(`--dev`); }
-	spawn(electron, command, {
+	spawn(paths.eyasRunnerWinDest, command, {
 		detached: true,
 		stdio: `ignore`,
 		windowsHide: false,
