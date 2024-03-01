@@ -95,11 +95,11 @@ const config = require(paths.configLoader);
 (async () => {
 	// ERROR CHECK: capture times when the user's platform isn't supported
 	if (!config.outputs.windows && !config.outputs.mac && !config.outputs.linux) {
-		console.warn(`⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️`);
-		console.warn(`⚠️                                      ⚠️`);
-		console.warn(`⚠️    No supported platforms enabled    ⚠️`);
-		console.warn(`⚠️                                      ⚠️`);
-		console.warn(`⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️`);
+		userWarn(`⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️`);
+		userWarn(`⚠️                                      ⚠️`);
+		userWarn(`⚠️    No supported platforms enabled    ⚠️`);
+		userWarn(`⚠️                                      ⚠️`);
+		userWarn(`⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️`);
 
 		// exit the function
 		return;
@@ -351,4 +351,10 @@ function userLog(string) {
 
 	// eslint-disable-next-line no-console
 	console.log(output);
+}
+
+// wrapper to avoid linting errors
+function userWarn(input) {
+	// eslint-disable-next-line no-console
+	console.warn(input);
 }
