@@ -29,7 +29,7 @@
 
 ## Features
 
-- 📦 Package your app as a shareable file for Windows, Mac, or Linux
+- 📦 Package your app as a shareable file for Windows (MacOS support planned)
 - 🔗 Simulate running your app from any domain
 - 📏 Supports custom screen size testing (mobile, tablet, desktop)
 - 🕜 Custom build expiration between 1 hour and 30 days
