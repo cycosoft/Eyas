@@ -32,7 +32,7 @@
 - 📦 Package your app as a shareable file for Windows (MacOS support planned)
 - 🔗 Simulate running your app from any domain
 - 📏 Supports custom screen size testing (mobile, tablet, desktop)
-- 🕜 Custom build expiration between 1 hour and 30 days
+- 🕜 Custom test expiration between 1 hour and 30 days
 
 ## About
 
@@ -69,14 +69,7 @@ module.exports = {
     menu: [/* { label: `Cycosoft, LLC`, url: `cycosoft.com`, external: true } */]
   },
 
-  // Defaults to building for the current platform if no platform is specified
   outputs: {
-    // Force building a .exe
-    windows: false,
-    // Force building a .dmg
-    mac: false,
-    // Force building a .AppImage
-    linux: false,
     // The number of hours from build time until the distributable expires
     expires: 168 // (range: 1-720 hours)
   }
@@ -90,7 +83,7 @@ module.exports = {
 {
   "scripts": {
     "interactive": "eyas", // Select from a list of available commands
-    "quick": "eyas preview", // Preview the your app without creating distributables
+    "local": "eyas preview", // Preview the your app without creating distributables
     "share": "eyas bundle" // packages the configured app to a distributable
   }
 }
