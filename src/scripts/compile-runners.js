@@ -42,9 +42,13 @@ const paths = {
 (async () => {
 	const fs = require(`fs-extra`);
 	const builder = require(`electron-builder`);
+	const config = require(paths.configLoader);
 
 	// Determine the executables to build
 	const targets = [];
+	if(config.outputs.windows) { targets.push(builder.Platform.WINDOWS); }
+	if(config.outputs.mac) { targets.push(builder.Platform.MAC); }
+	if(config.outputs.linux) { targets.push(builder.Platform.LINUX); }
 
 	// set the name of the output files
 	const runnerName = `eyas`;
