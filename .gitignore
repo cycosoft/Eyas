@@ -9,4 +9,7 @@ dist/
 .pre-build
 .runners
 
+# generated via Conveyor
+output
+
 .DS_Store
