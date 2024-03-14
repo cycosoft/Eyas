@@ -62,7 +62,6 @@
     "vuetify": "^3.5.9"
   },
   "devDependencies": {
-    "@hydraulic/conveyor": "^13.1.0",
     "@rollup/plugin-terser": "^0.4.4",
     "@vitejs/plugin-vue": "^5.0.4",
     "electron-vite": "^2.1.0",
