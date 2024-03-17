@@ -6,5 +6,11 @@
 
 // Entry Point
 (async () => {
-	console.log(`This script is not yet implemented`);
+	const packager = require(`electron-packager`);
+
+	const appPaths = await packager({
+		dir: `./build`
+	});
+
+	console.log(`Electron app bundles created:\n${appPaths.join(`\n`)}`);
 })();
