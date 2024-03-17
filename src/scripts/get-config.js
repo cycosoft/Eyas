@@ -74,7 +74,7 @@ if (!eyasConfig.outputs.windows && !eyasConfig.outputs.mac && !eyasConfig.output
 
 // TEMPORARY OVERRIDE TO DISABLE ALL BUILDS
 eyasConfig.outputs.windows = process.platform === `win32`;
-eyasConfig.outputs.mac = false;
+// eyasConfig.outputs.mac = false;
 eyasConfig.outputs.linux = false;
 
 // export the config for the project
