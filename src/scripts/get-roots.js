@@ -16,7 +16,9 @@ const moduleRoot = isProd
 const eyasRoot = path.join(__dirname, `..`);
 const isPackaged = __dirname.includes(`app.asar`);
 const macExecutable = `.app/`;
-const configRoot = path.join(__dirname.slice(0, __dirname.indexOf(macExecutable) + macExecutable.length), `..`);
+const configRoot = process.platform === `win32`
+	? process.env.PORTABLE_EXECUTABLE_DIR
+	: path.join(__dirname.slice(0, __dirname.indexOf(macExecutable) + macExecutable.length), `..`);
 
 // base paths
 const roots = {
