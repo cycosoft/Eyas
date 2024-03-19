@@ -280,7 +280,7 @@ async function runCommand_bundle() {
 	const modifiedConfig = getModifiedConfig();
 	const platforms = [
 		{ enabled: config.outputs.windows, ext: `exe`, runner: paths.eyasRunnerWinSrc, tag: `win` },
-		{ enabled: config.outputs.mac, ext: `dmg`, runner: paths.macRunnerSrc, tag: `mac` },
+		{ enabled: config.outputs.mac, ext: `app`, runner: paths.macRunnerSrc, tag: `mac` },
 		{ enabled: config.outputs.linux, ext: `AppImage`, runner: paths.linuxRunnerSrc, tag: `linux` }
 	];
 
