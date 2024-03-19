@@ -89,12 +89,20 @@ const paths = {
 	// copy just the final executables to the dist folder
 	builtFiles.forEach(file => {
 		// skip .blockmap files
-		if (file.endsWith(`.blockmap`)) { return; }
+		if (file.endsWith(`.blockmap`) || file.endsWith(`.dmg`)) { return; }
 
 		const dest = path.join(roots.dist, `runners`, path.basename(file));
 		console.log(`copying ${file} to ${dest}`);
 		fs.copy(file, dest);
 	});
+
+	// copy mac .app to dist folder
+	if(config.outputs.mac) {
+		const file = path.join(roots.runners, `mac-arm64`, `Eyas.app`);
+		const dest = path.join(roots.dist, `runners`, `Eyas.app`);
+		console.log(`copying ${file} to ${dest}`);
+		fs.copy(file, dest);
+	}
 
 	// cleanup
 	console.log(``);
