@@ -14,7 +14,6 @@ const moduleRoot = isProd
 	? path.join(consumerRoot, `node_modules`, `@cycosoft`, `eyas`)
 	: consumerRoot;
 const eyasRoot = path.join(__dirname, `..`);
-const isPackaged = __dirname.includes(`app.asar`);
 const macExecutable = `.app/`;
 const configRoot = process.platform === `win32`
 	? process.env.PORTABLE_EXECUTABLE_DIR
