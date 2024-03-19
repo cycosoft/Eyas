@@ -40,9 +40,9 @@ const actions = {
 const path = require(`path`);
 const isDev = process.env.NODE_ENV === `dev`;
 const consumerRoot = process.cwd();
-const moduleRoot = !isDev
-	? path.join(consumerRoot, `node_modules`, `@cycosoft`, `eyas`)
-	: consumerRoot;
+const moduleRoot = isDev
+	? consumerRoot
+	: path.join(consumerRoot, `node_modules`, `@cycosoft`, `eyas`);
 const roots = require(path.join(moduleRoot, `dist`, `scripts`, `get-roots.js`));
 const names = {
 	packageJsonCore: `package.json`,
