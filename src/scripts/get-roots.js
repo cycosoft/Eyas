@@ -16,7 +16,7 @@ const moduleRoot = isProd
 const eyasRoot = path.join(__dirname, `..`);
 const macExecutable = `.app/`;
 const configRoot = process.platform === `win32`
-	? process.env.PORTABLE_EXECUTABLE_DIR
+	? process.env.PORTABLE_EXECUTABLE_DIR || moduleRoot
 	: path.join(__dirname.slice(0, __dirname.indexOf(macExecutable) + macExecutable.length), `..`);
 
 // base paths
