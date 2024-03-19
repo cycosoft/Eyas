@@ -42,13 +42,12 @@ const paths = {
 (async () => {
 	const fs = require(`fs-extra`);
 	const builder = require(`electron-builder`);
-	const config = require(paths.configLoader);
 
 	// Determine the executables to build
 	const targets = [];
-	if(config.outputs.windows) { targets.push(builder.Platform.WINDOWS); }
-	if(config.outputs.mac) { targets.push(builder.Platform.MAC); }
-	if(config.outputs.linux) { targets.push(builder.Platform.LINUX); }
+	if(process.platform === `win32`) { targets.push(builder.Platform.WINDOWS); }
+	if(process.platform === `darwin`) { targets.push(builder.Platform.MAC); }
+	// if(config.outputs.linux) { targets.push(builder.Platform.LINUX); }
 
 	// set the name of the output files
 	const runnerName = `eyas`;
@@ -97,7 +96,7 @@ const paths = {
 	});
 
 	// copy mac .app to dist folder
-	if(config.outputs.mac) {
+	if(process.platform === `darwin`) {
 		const file = path.join(roots.runners, `mac-arm64`, `Eyas.app`);
 		const dest = path.join(roots.dist, `runners`, `Eyas.app`);
 		console.log(`copying ${file} to ${dest}`);
