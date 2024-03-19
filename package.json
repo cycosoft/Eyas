@@ -17,7 +17,7 @@
   "scripts": {
     "_______________DEV_______________": "",
     "direct": "npm run compile:ui && npm run compile:module && npx electron .build/index.js",
-    "dev": "npm i && npm-check -u -i '\"inquirer\"' && npm run compile && node dist/cli/index.js",
+    "dev": "npm i && npm-check -u -i '\"inquirer\"' && cross-env NODE_ENV=dev npm run compile && node dist/cli/index.js",
     "dev:ui": "vite --config src/eyas-interface/app/.vite.config.ui.js --open",
     "_____________COMPILE_____________": "",
     "compile:ui": "vite build --config src/eyas-interface/app/.vite.config.ui.js",
@@ -64,6 +64,7 @@
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.4",
     "@vitejs/plugin-vue": "^5.0.4",
+    "cross-env": "^7.0.3",
     "electron-vite": "^2.1.0",
     "eslint": "^8.57.0",
     "eslint-plugin-vue": "^9.23.0",

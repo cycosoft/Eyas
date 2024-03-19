@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
-/* global process, __dirname */
+/* global process */
 
 'use strict';
 
 const path = require(`path`);
-const isProd = __dirname.includes(`node_modules`);
+const isDev = process.env.NODE_ENV === `dev`;
 const consumerRoot = process.cwd();
-const moduleRoot = isProd
+const moduleRoot = !isDev
 	? path.join(consumerRoot, `node_modules`, `@cycosoft`, `eyas`)
 	: consumerRoot;
 const roots = require(path.join(moduleRoot, `.build`, `scripts`, `get-roots.js`));
@@ -66,7 +66,7 @@ const paths = {
 				app: roots.moduleBuild,
 				output: roots.runners
 			},
-			compression: `maximum`, // `store` | `normal` | `maximum`
+			compression: isDev ? `store` : `maximum`, // `store` | `normal` | `maximum`
 			removePackageScripts: true,
 			removePackageKeywords: true,
 			mac: {

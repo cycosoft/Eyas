@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-/* global process, __dirname */
+/* global process */
 
 'use strict';
 
@@ -38,9 +38,9 @@ const actions = {
 
 // setup
 const path = require(`path`);
-const isProd = __dirname.includes(`node_modules`);
+const isDev = process.env.NODE_ENV === `dev`;
 const consumerRoot = process.cwd();
-const moduleRoot = isProd
+const moduleRoot = !isDev
 	? path.join(consumerRoot, `node_modules`, `@cycosoft`, `eyas`)
 	: consumerRoot;
 const roots = require(path.join(moduleRoot, `dist`, `scripts`, `get-roots.js`));
@@ -79,7 +79,7 @@ const paths = {
 };
 
 // set mode
-actions.previewDev.enabled = !isProd;
+actions.previewDev.enabled = isDev;
 
 // load the user's config
 const config = require(paths.configLoader);
@@ -304,7 +304,7 @@ async function runCommand_bundle() {
 		});
 
 		// prepare a new archive
-		const archive = archiver(`zip`, { store: !isProd, zlib: { level: 9 } });
+		const archive = archiver(`zip`, { store: isDev, zlib: { level: 9 } });
 
 		// push content to the archive
 		archive.pipe(output);
