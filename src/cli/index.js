@@ -72,8 +72,8 @@ const paths = {
 	icon: path.join(roots.eyasBuild, `eyas-assets`, `eyas-logo.png`),
 	eyasRunnerWinSrc: path.join(roots.dist, `runners`, `eyas.exe`),
 	eyasRunnerWinDest: path.join(roots.eyasBuild, `eyas.exe`),
-	macRunnerSrc: path.join(roots.dist, `runners`, `eyas.dmg`),
-	macRunnerDest: path.join(roots.eyasBuild, `eyas.dmg`),
+	macRunnerSrc: path.join(roots.dist, `runners`, `eyas.app`),
+	macRunnerDest: path.join(roots.eyasBuild, `eyas.app`),
 	linuxRunnerSrc: path.join(roots.dist, `runners`, `eyas.AppImage`),
 	linuxRunnerDest: path.join(roots.eyasBuild, `eyas.AppImage`)
 };
