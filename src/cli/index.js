@@ -257,14 +257,26 @@ async function runCommand_preview(devMode = false) {
 	userLog(`Launching preview...`);
 
 	// run the app
-	const command = [];
-	if(devMode) { command.push(`--dev`); }
-	spawn(paths.eyasRunnerWinDest, command, {
-		detached: true,
-		stdio: `ignore`,
-		windowsHide: false,
-		cwd: consumerRoot
-	}).unref(); // allow the command line to continue running
+	if(process.platform === `win32`){
+		const command = [];
+		if(devMode) { command.push(`--dev`); }
+		spawn(paths.eyasRunnerWinDest, command, {
+			detached: true,
+			stdio: `ignore`,
+			windowsHide: false,
+			cwd: consumerRoot
+		}).unref(); // allow the command line to continue running
+	} else {
+		const command = [paths.macRunnerDest];
+		// if(devMode) { command.push(`--dev`); }
+		spawn(`open`, command, {
+			detached: true,
+			stdio: `ignore`,
+			windowsHide: false,
+			cwd: consumerRoot
+		}).unref(); // allow the command line to continue running
+
+	}
 
 	// log the end of the process
 	userLog(`Preview launched!`);
