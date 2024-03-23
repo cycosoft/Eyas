@@ -7,33 +7,11 @@
 const path = require(`path`);
 const isDev = process.env.NODE_ENV === `dev`;
 const consumerRoot = process.cwd();
-const moduleRoot = !isDev
-	? path.join(consumerRoot, `node_modules`, `@cycosoft`, `eyas`)
-	: consumerRoot;
-const roots = require(path.join(moduleRoot, `.build`, `scripts`, `get-roots.js`));
-// const names = {
-// 	packageJsonCore: `package.json`,
-// 	packageJson: `package.json`,
-// 	eyasAssets: `eyas-assets`,
-// 	eyasInterface: `eyas-interface`,
-// 	scripts: `scripts`
-// };
+const buildRoot = path.join(consumerRoot, `.build`);
+const runnersRoot = path.join(consumerRoot, `.runners`);
+const distRoot = path.join(consumerRoot, `dist`);
 const paths = {
-	// dist: roots.eyasDist,
-	// build: roots.eyasBuild,
-	// eyasApp: path.join(roots.eyasBuild, `index.js`),
-	// eyasAssetsSrc: path.join(roots.dist, names.eyasAssets),
-	// eyasAssetsDest: path.join(roots.eyasBuild, names.eyasAssets),
-	// eyasInterfaceSrc: path.join(roots.dist, names.eyasInterface),
-	// eyasInterfaceDest: path.join(roots.eyasBuild, names.eyasInterface),
-	// eyasSrc: path.join(roots.dist, `eyas-core`),
-	// eyasDest: roots.eyasBuild,
-	// packageJsonCoreSrc: path.join(roots.dist, `build-assets`, names.packageJsonCore),
-	// packageJsonDest: path.join(roots.eyasBuild, names.packageJson),
-	// scriptsSrc: path.join(roots.dist, names.scripts),
-	// scriptsDest: path.join(roots.eyasBuild, names.scripts),
-	// testDest: path.join(roots.eyasBuild, `test`),
-	icon: path.join(roots.moduleBuild, `eyas-assets`, `eyas-logo.png`)
+	icon: path.join(buildRoot, `eyas-assets`, `eyas-logo.png`)
 };
 
 // Entry Point
@@ -60,8 +38,8 @@ const paths = {
 			copyright: `Copyright © 2023 Cycosoft, LLC`,
 			asarUnpack: [`resources/**`],
 			directories: {
-				app: roots.moduleBuild,
-				output: roots.runners
+				app: buildRoot,
+				output: runnersRoot
 			},
 			compression: isDev ? `store` : `maximum`, // `store` | `normal` | `maximum`
 			removePackageScripts: true,
@@ -88,15 +66,15 @@ const paths = {
 		// skip .blockmap files
 		if (file.endsWith(`.blockmap`) || file.endsWith(`.dmg`)) { return; }
 
-		const dest = path.join(roots.dist, `runners`, path.basename(file));
+		const dest = path.join(distRoot, `runners`, path.basename(file));
 		console.log(`copying ${file} to ${dest}`);
 		fs.copy(file, dest);
 	});
 
 	// copy mac .app to dist folder
 	if(process.platform === `darwin`) {
-		const from = path.join(roots.runners, `mac-arm64`, `Eyas.app`);
-		const to = path.join(roots.dist, `runners`, `Eyas.app`);
+		const from = path.join(runnersRoot, `mac-arm64`, `Eyas.app`);
+		const to = path.join(distRoot, `runners`, `Eyas.app`);
 		console.log(`copying ${from} to ${to}`);
 		fs.copy(from, to);
 	}
@@ -104,6 +82,6 @@ const paths = {
 	// cleanup
 	console.log(``);
 	console.log(`Cleaning up...`);
-	await fs.remove(roots.moduleBuild);
-	await fs.remove(roots.runners);
+	await fs.remove(buildRoot);
+	await fs.remove(runnersRoot);
 })();
