@@ -11,30 +11,28 @@ const moduleRoot = !isDev
 	? path.join(consumerRoot, `node_modules`, `@cycosoft`, `eyas`)
 	: consumerRoot;
 const roots = require(path.join(moduleRoot, `.build`, `scripts`, `get-roots.js`));
-const names = {
-	packageJsonCore: `package.json`,
-	packageJson: `package.json`,
-	eyasAssets: `eyas-assets`,
-	eyasInterface: `eyas-interface`,
-	scripts: `scripts`
-};
+// const names = {
+// 	packageJsonCore: `package.json`,
+// 	packageJson: `package.json`,
+// 	eyasAssets: `eyas-assets`,
+// 	eyasInterface: `eyas-interface`,
+// 	scripts: `scripts`
+// };
 const paths = {
-	dist: roots.eyasDist,
-	build: roots.eyasBuild,
-	configLoader: path.join(roots.moduleBuild, names.scripts, `get-config.js`),
-	configDest: path.join(roots.eyasBuild, `.eyas.config.js`),
-	eyasApp: path.join(roots.eyasBuild, `index.js`),
-	eyasAssetsSrc: path.join(roots.dist, names.eyasAssets),
-	eyasAssetsDest: path.join(roots.eyasBuild, names.eyasAssets),
-	eyasInterfaceSrc: path.join(roots.dist, names.eyasInterface),
-	eyasInterfaceDest: path.join(roots.eyasBuild, names.eyasInterface),
-	eyasSrc: path.join(roots.dist, `eyas-core`),
-	eyasDest: roots.eyasBuild,
-	packageJsonCoreSrc: path.join(roots.dist, `build-assets`, names.packageJsonCore),
-	packageJsonDest: path.join(roots.eyasBuild, names.packageJson),
-	scriptsSrc: path.join(roots.dist, names.scripts),
-	scriptsDest: path.join(roots.eyasBuild, names.scripts),
-	testDest: path.join(roots.eyasBuild, `test`),
+	// dist: roots.eyasDist,
+	// build: roots.eyasBuild,
+	// eyasApp: path.join(roots.eyasBuild, `index.js`),
+	// eyasAssetsSrc: path.join(roots.dist, names.eyasAssets),
+	// eyasAssetsDest: path.join(roots.eyasBuild, names.eyasAssets),
+	// eyasInterfaceSrc: path.join(roots.dist, names.eyasInterface),
+	// eyasInterfaceDest: path.join(roots.eyasBuild, names.eyasInterface),
+	// eyasSrc: path.join(roots.dist, `eyas-core`),
+	// eyasDest: roots.eyasBuild,
+	// packageJsonCoreSrc: path.join(roots.dist, `build-assets`, names.packageJsonCore),
+	// packageJsonDest: path.join(roots.eyasBuild, names.packageJson),
+	// scriptsSrc: path.join(roots.dist, names.scripts),
+	// scriptsDest: path.join(roots.eyasBuild, names.scripts),
+	// testDest: path.join(roots.eyasBuild, `test`),
 	icon: path.join(roots.moduleBuild, `eyas-assets`, `eyas-logo.png`)
 };
 
@@ -97,10 +95,10 @@ const paths = {
 
 	// copy mac .app to dist folder
 	if(process.platform === `darwin`) {
-		const file = path.join(roots.runners, `mac-arm64`, `Eyas.app`);
-		const dest = path.join(roots.dist, `runners`, `Eyas.app`);
-		console.log(`copying ${file} to ${dest}`);
-		fs.copy(file, dest);
+		const from = path.join(roots.runners, `mac-arm64`, `Eyas.app`);
+		const to = path.join(roots.dist, `runners`, `Eyas.app`);
+		console.log(`copying ${from} to ${to}`);
+		fs.copy(from, to);
 	}
 
 	// cleanup
