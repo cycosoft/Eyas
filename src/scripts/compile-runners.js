@@ -21,7 +21,10 @@ const paths = {
 
 	// Determine the executables to build
 	const targets = [];
-	if(process.platform === `win32`) { targets.push(builder.Platform.WINDOWS); }
+	if(process.platform === `win32` || process.env.FORCE_BUILD === `win32`) {
+		targets.push(builder.Platform.WINDOWS);
+	}
+
 	if(process.platform === `darwin`) { targets.push(builder.Platform.MAC); }
 	// if(config.outputs.linux) { targets.push(builder.Platform.LINUX); }
 

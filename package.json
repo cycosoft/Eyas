@@ -24,7 +24,7 @@
     "compile:module": "electron-vite build && node src/scripts/compile-module.js",
     "compile:runners": "node src/scripts/compile-runners.js",
     "compile": "npm run compile:ui && npm run compile:module && npm run compile:runners",
-    "compile:docker": "npm i && npm run compile",
+    "compile:docker": "npm i && cross-env FORCE_BUILD=win32 npm run compile",
     "_____________SCRIPTS_____________": "",
     "docker:run": "docker build -t eyas . && docker run -it --rm eyas",
     "bundle": "npm i --no-audit && npm run compile && npm pack",
