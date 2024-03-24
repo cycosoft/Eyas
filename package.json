@@ -26,7 +26,7 @@
     "compile": "npm run compile:ui && npm run compile:module && npm run compile:runners",
     "compile:docker": "npm i && cross-env FORCE_BUILD=win32 npm run compile",
     "_____________SCRIPTS_____________": "",
-    "docker:run": "docker build -t eyas . && docker run -it --rm eyas",
+    "docker:run": "docker build -t eyas . && docker run -v ./dist/runners:/usr/src/app/dist/runners -it --rm eyas",
     "bundle": "npm i --no-audit && npm run compile && npm pack",
     "deploy": "npm i --no-audit && npm run compile && npm publish",
     "bump:patch": "npm version patch && git push && git push --tags",
