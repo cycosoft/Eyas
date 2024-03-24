@@ -54,7 +54,8 @@ const paths = {
 			},
 			win: {
 				target: `portable`,
-				icon: paths.icon
+				icon: paths.icon,
+				signAndEditExecutable: false
 			},
 			linux: {
 				target: `AppImage`,
