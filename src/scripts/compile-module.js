@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+/* global process */
+
 'use strict';
 
 // Import dependencies
@@ -39,7 +41,10 @@ const paths = {
 (async () => {
 	// Prep the .build/ & dist/ directories for module output
 	await fs.emptyDir(roots.moduleBuild);
-	await fs.emptyDir(roots.dist);
+
+	if(process.env.FORCE_BUILD !== `win32`) {
+		await fs.emptyDir(roots.dist);
+	}
 
 	// Copy runtime files
 	await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);

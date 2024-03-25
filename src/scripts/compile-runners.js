@@ -84,8 +84,10 @@ const paths = {
 	}
 
 	// cleanup
-	console.log(``);
-	console.log(`Cleaning up...`);
-	await fs.remove(buildRoot);
-	await fs.remove(runnersRoot);
+	if(process.env.FORCE_BUILD !== `win32`) {
+		console.log(``);
+		console.log(`Cleaning up...`);
+		await fs.remove(buildRoot);
+		await fs.remove(runnersRoot);
+	}
 })();
