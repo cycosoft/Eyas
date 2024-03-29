@@ -24,7 +24,7 @@
     "compile:ui": "vite build --config src/eyas-interface/app/.vite.config.ui.js",
     "compile:module": "electron-vite build && node src/scripts/compile-module.js",
     "compile:runner": "node src/scripts/compile-runners.js",
-    "compile:docker-win32": "npm i && cross-env FORCE_BUILD=win32 NODE_ENV=dev npm run compile",
+    "compile:win32": "npm i && cross-env FORCE_BUILD=win32 NODE_ENV=dev npm run compile",
     "compile:cleanup": "node src/scripts/compile-cleanup.js",
     "compile": "npm run compile:prep && npm run compile:ui && npm run compile:module && npm run compile:runner && npm run docker:run && npm run compile:cleanup",
     "_____________SCRIPTS_____________": "",
