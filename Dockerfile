@@ -15,4 +15,4 @@ COPY package*.json ./
 COPY . .
 
 # Run the command to generate the electron-builder output
-CMD [ "npm", "run", "compile:docker" ]
+CMD [ "npm", "run", "compile:docker-win32" ]
