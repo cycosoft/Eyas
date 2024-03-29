@@ -40,11 +40,11 @@ const paths = {
 // Allow for "root" await calls
 (async () => {
 	// Prep the .build/ & dist/ directories for module output
-	await fs.emptyDir(roots.moduleBuild);
+	// await fs.emptyDir(roots.moduleBuild);
 
-	if(process.env.FORCE_BUILD !== `win32`) {
-		await fs.emptyDir(roots.dist);
-	}
+	// if(process.env.FORCE_BUILD !== `win32`) {
+	// 	await fs.emptyDir(roots.dist);
+	// }
 
 	// Copy runtime files
 	await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
@@ -64,8 +64,8 @@ const paths = {
 	);
 
 	// remove the prebuild folder
-	console.log(`clean up: removing ${roots.preBuild}`);
-	await fs.remove(roots.preBuild);
+	// console.log(`clean up: removing ${roots.preBuild}`);
+	// await fs.remove(roots.preBuild);
 
 	// Update the package.json version numbers
 	await updatePackageJsonValues();
