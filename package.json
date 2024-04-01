@@ -27,6 +27,7 @@
     "compile:win32": "npm i && cross-env FORCE_BUILD=win32 NODE_ENV=dev npm run compile:runner",
     "compile:cleanup": "node src/scripts/compile-cleanup.js",
     "compile": "npm run compile:prep && npm run compile:ui && npm run compile:module && npm run compile:runner && npm run docker:run && npm run compile:cleanup",
+    "sign:mac": "codesign --verify --verbose --deep --strict - ./dist/runners/mac/Eyas.app",
     "_____________SCRIPTS_____________": "",
     "docker:run": "docker build -t eyas . && docker run -v ./dist/runners:/usr/src/app/dist/runners -it --rm eyas",
     "bundle": "npm i --no-audit && npm run compile && npm pack",
