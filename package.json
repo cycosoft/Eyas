@@ -33,6 +33,7 @@
     "notarize": "xcrun notarytool submit ./dist/runners/Eyas.zip --keychain-profile \"Eyas\" --wait",
     "notarize:staple": "xcrun stapler staple ./dist/runners/Eyas.app",
     "notarize:verify": "spctl --assess -vv --type install ./dist/runners/Eyas.app",
+    "notarize:log": "xcrun notarytool log PASTE_LOG_ID_HERE --keychain-profile \"Eyas\"",
     "_____________SCRIPTS_____________": "",
     "docker:run": "docker build -t eyas . && docker run -v ./dist/runners:/usr/src/app/dist/runners -it --rm eyas",
     "bundle": "npm i --no-audit && npm run compile && npm pack",
