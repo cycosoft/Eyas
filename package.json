@@ -28,6 +28,7 @@
     "compile:cleanup": "node src/scripts/compile-cleanup.js",
     "compile": "npm run compile:prep && npm run compile:ui && npm run compile:module && npm run compile:runner && npm run docker:run && npm run compile:cleanup && npm run sign:mac",
     "sign:mac": "electron-osx-sign ./dist/runners/Eyas.app",
+    "sign:mac:verify": "codesign -dvvv ./dist/runners/Eyas.app",
     "_____________SCRIPTS_____________": "",
     "docker:run": "docker build -t eyas . && docker run -v ./dist/runners:/usr/src/app/dist/runners -it --rm eyas",
     "bundle": "npm i --no-audit && npm run compile && npm pack",
