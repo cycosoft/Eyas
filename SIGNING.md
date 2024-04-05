@@ -1,0 +1,1 @@
+MacOS Guide: https://www.rocketride.io/blog/macos-code-sign-notarize-electron-app
