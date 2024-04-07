@@ -48,7 +48,7 @@ const paths = {
 			removePackageScripts: true,
 			removePackageKeywords: true,
 			mac: {
-				target: `dmg`,
+				target: `dir`,
 				icon: paths.icon
 				// identity: `undefined` // disable code signing
 			},
