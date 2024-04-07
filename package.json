@@ -29,7 +29,7 @@
     "compile": "npm run compile:prep && npm run compile:ui && npm run compile:module && npm run compile:runner && npm run docker:run && npm run compile:cleanup && npm run sign:mac && npm run notarize:zip && npm run notarize && npm run notarize:staple",
     "sign:mac": "electron-osx-sign ./dist/runners/Eyas.app",
     "sign:mac:verify": "codesign -dvvv ./dist/runners/Eyas.app",
-    "notarize:zip": "zip -r ./dist/runners/Eyas.zip ./dist/runners/Eyas.app",
+    "notarize:zip": "ditto -c -k --sequesterRsrc --keepParent ./dist/runners/Eyas.app ./dist/runners/Eyas.zip",
     "notarize": "xcrun notarytool submit ./dist/runners/Eyas.zip --keychain-profile \"Eyas\" --wait",
     "notarize:staple": "xcrun stapler staple ./dist/runners/Eyas.app",
     "notarize:verify": "spctl --assess -vv --type install ./dist/runners/Eyas.app",
