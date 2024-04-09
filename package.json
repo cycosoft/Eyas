@@ -28,6 +28,7 @@
     "compile:win32": "npm i && cross-env FORCE_BUILD=win32 NODE_ENV=dev npm run compile:runner",
     "compile:cleanup": "node src/scripts/compile-cleanup.js",
     "compile:mac": "npm run compile:prep && npm run compile:ui && npm run compile:module && npm run compile:runner && npm run notarize:zip && npm run notarize && npm run notarize:staple && npm run compile:copy && npm run compile:cleanup",
+    "compile:docker": "npm run compile:prep && npm run compile:ui && npm run compile:module && npm run docker:run && npm run compile:cleanup",
     "compile": "npm run compile:prep && npm run compile:ui && npm run compile:module && npm run compile:runner && npm run docker:run && npm run compile:cleanup && npm run sign:mac && npm run notarize:zip && npm run notarize && npm run notarize:staple",
     "sign:mac:verify": "codesign -dvvv ./dist/.runners/Eyas.app",
     "notarize:zip": "ditto -c -k --sequesterRsrc --keepParent ./.runners/mac-arm64/Eyas.app ./.runners/mac-arm64/Eyas-for-notary.zip",
