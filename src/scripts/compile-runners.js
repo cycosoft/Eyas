@@ -70,20 +70,12 @@ const paths = {
 	});
 
 	// copy just the final executables to the dist folder
-	builtFiles.forEach(file => {
-		// skip .blockmap files
-		if (file.endsWith(`.blockmap`) || file.endsWith(`.dmg`)) { return; }
+	// builtFiles.forEach(file => {
+	// 	// skip .blockmap files
+	// 	if (file.endsWith(`.blockmap`) || file.endsWith(`.dmg`)) { return; }
 
-		const dest = path.join(distRoot, `runners`, path.basename(file));
-		console.log(`copying ${file} to ${dest}`);
-		fs.copy(file, dest);
-	});
-
-	// copy mac .app to dist folder
-	if(process.platform === `darwin`) {
-		const from = path.join(runnersRoot, `mac-arm64`, `Eyas.app`);
-		const to = path.join(distRoot, `runners`, `Eyas.app`);
-		console.log(`copying ${from} to ${to}`);
-		fs.copy(from, to);
-	}
+	// 	const dest = path.join(distRoot, `runners`, path.basename(file));
+	// 	console.log(`copying ${file} to ${dest}`);
+	// 	fs.copy(file, dest);
+	// });
 })();
