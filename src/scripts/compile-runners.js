@@ -4,6 +4,7 @@
 
 'use strict';
 
+require(`dotenv`).config();
 const path = require(`path`);
 const isDev = process.env.NODE_ENV === `dev`;
 const consumerRoot = process.cwd();
