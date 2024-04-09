@@ -179,7 +179,6 @@
 								title: `About ${appName}`,
 								icon: paths.icon,
 								message: `
-								roots.config: ${roots.config}
 								Test name: ${config.test.title}
 								Test version: ${config.test.version}
 								Test expires: ${expirationFormatted} (${relativeFormatted})
