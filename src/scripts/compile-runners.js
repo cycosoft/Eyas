@@ -49,8 +49,11 @@ const paths = {
 			removePackageKeywords: true,
 			mac: {
 				target: `dir`,
-				icon: paths.icon
-				// identity: `undefined` // disable code signing
+				icon: paths.icon,
+				provisioningProfile: process.env.PROVISIONING_PROFILE_PATH,
+				notarize: {
+					teamId: process.env.APPLE_TEAM_ID
+				}
 			},
 			win: {
 				target: `portable`,
