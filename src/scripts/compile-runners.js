@@ -69,13 +69,13 @@ const paths = {
 		}
 	});
 
-	// copy just the final executables to the dist folder
-	// builtFiles.forEach(file => {
-	// 	// skip .blockmap files
-	// 	if (file.endsWith(`.blockmap`) || file.endsWith(`.dmg`)) { return; }
+	// copy just the final windows executables to the dist folder
+	builtFiles.forEach(file => {
+		// skip anything not an exe
+		if (!file.endsWith(`.exe`)) { return; }
 
-	// 	const dest = path.join(distRoot, `runners`, path.basename(file));
-	// 	console.log(`copying ${file} to ${dest}`);
-	// 	fs.copy(file, dest);
-	// });
+		const dest = path.join(distRoot, `runners`, path.basename(file));
+		console.log(`copying ${file} to ${dest}`);
+		fs.copy(file, dest);
+	});
 })();
