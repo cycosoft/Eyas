@@ -72,7 +72,7 @@
     "url-parse": "^1.5.10",
     "validator": "^13.11.0",
     "vue": "^3.4.21",
-    "vuetify": "^3.5.14"
+    "vuetify": "^3.5.15"
   },
   "devDependencies": {
     "@electron/osx-sign": "^1.1.0",
