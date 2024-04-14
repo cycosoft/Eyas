@@ -29,10 +29,10 @@
 
 ## Features
 
-- 📦 Package your app as a shareable file for Windows (MacOS support planned)
-- 🔗 Simulate running your app from any domain
-- 📏 Supports custom screen size testing (mobile, tablet, desktop)
-- 🕜 Custom test expiration between 1 hour and 30 days
+- 📦 Shareable: Bundle your app with a runner for Windows & MacOS. No server needed.
+- 🔗 Dynamic: Simulate running your app from any domain.
+- 📏 Supports standard & custom screen sizes (mobile, tablet, desktop).
+- 🕜 Time-limited: Set test expiration dates between 1 hour and 30 days.
 
 ## About
 
