@@ -42,7 +42,7 @@
     "deploy": "npm i --no-audit && npm run compile && npm publish",
     "bump:patch": "npm version patch && git push && git push --tags",
     "bump:minor": "npm version minor && git push && git push --tags",
-    "bump:beta": "npm version premajor --preid beta && git push && git push --tags"
+    "bump:beta": "npm version preversion --preid beta && git push && git push --tags"
   },
   "author": "Cycosoft, LLC (https://cycosoft.com)",
   "homepage": "https://cycosoft.com",
