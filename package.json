@@ -1,6 +1,6 @@
 {
   "name": "@cycosoft/eyas",
-  "version": "2.0.0",
+  "version": "1.1.2",
   "description": "Feature Branch Testing Without a Server",
   "main": "./index.js",
   "packageName": "Eyas",
@@ -41,7 +41,8 @@
     "bundle": "npm i --no-audit && npm run compile && npm pack",
     "deploy": "npm i --no-audit && npm run compile && npm publish",
     "bump:patch": "npm version patch && git push && git push --tags",
-    "bump:minor": "npm version minor && git push && git push --tags"
+    "bump:minor": "npm version minor && git push && git push --tags",
+    "bump:beta": "npm version premajor && git push && git push --tags"
   },
   "author": "Cycosoft, LLC (https://cycosoft.com)",
   "homepage": "https://cycosoft.com",
