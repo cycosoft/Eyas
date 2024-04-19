@@ -78,20 +78,13 @@ module.exports = {
 
 ## Usage
 
-```json
-// package.json
-{
-  "scripts": {
-    "interactive": "eyas", // Select from a list of available commands
-    "local": "eyas preview", // Preview the your app without creating distributables
-    "share": "eyas bundle" // packages the configured app to a distributable
-  }
-}
+```bash
+# ackages the configured app to a distributable
+npm run build-my-project && npx eyas bundle
 ```
 
 ## Outputs
 
-- `preview`: builds and runs Eyas from `./.eyas-preview/`
 - `bundle`: Packages consumer source code for each enabled platform to `./.eyas-dist/`
 
 All outputs are zipped, and can range between 60-100mb depending on the platform.

@@ -4,7 +4,8 @@
 - Removed Linux support
 - Removed config settings for "executable" and "portable" builds
 - Changed CLI command from `compile` to `bundle`
-- Updated all dependencies
+- Removed CLI command `preview`
+- Updated dependencies
 
 # v1.1.2
 
