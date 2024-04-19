@@ -70,12 +70,12 @@ const paths = {
 	scriptsDest: path.join(roots.eyasBuild, names.scripts),
 	testDest: path.join(roots.eyasBuild, `test`),
 	icon: path.join(roots.eyasBuild, `eyas-assets`, `eyas-logo.png`),
-	eyasRunnerWinSrc: path.join(roots.dist, `runners`, `eyas.exe`),
-	eyasRunnerWinDest: path.join(roots.eyasBuild, `eyas.exe`),
-	macRunnerSrc: path.join(roots.dist, `runners`, `eyas.app`),
-	macRunnerDest: path.join(roots.eyasBuild, `eyas.app`),
-	linuxRunnerSrc: path.join(roots.dist, `runners`, `eyas.AppImage`),
-	linuxRunnerDest: path.join(roots.eyasBuild, `eyas.AppImage`)
+	eyasRunnerWinSrc: path.join(roots.dist, `runners`, `Eyas.exe`),
+	eyasRunnerWinDest: path.join(roots.eyasBuild, `Eyas.exe`),
+	macRunnerSrc: path.join(roots.dist, `runners`, `Eyas.app`),
+	macRunnerDest: path.join(roots.eyasBuild, `Eyas.app`),
+	linuxRunnerSrc: path.join(roots.dist, `runners`, `Eyas.AppImage`),
+	linuxRunnerDest: path.join(roots.eyasBuild, `Eyas.AppImage`)
 };
 
 // set mode
@@ -191,21 +191,24 @@ async function createBuildFolder() {
 
 	// if on Windows, copy the eyas runner to the build folder
 	if(process.platform === `win32`){
+		userLog(`Copying Eyas from ${paths.eyasRunnerWinSrc} to ${paths.eyasRunnerWinDest}...`);
 		await fs.copy(paths.eyasRunnerWinSrc, paths.eyasRunnerWinDest);
 	}
 
 	// if on Mac, copy the eyas runner to the build folder
 	if(process.platform === `darwin`){
+		userLog(`Copying Eyas from ${paths.macRunnerSrc} to ${paths.macRunnerDest}...`);
 		await fs.copy(paths.macRunnerSrc, paths.macRunnerDest);
 	}
 
 	// if on Linux, copy the eyas runner to the build folder
 	if(process.platform === `linux`){
+		userLog(`Copying Eyas from ${paths.linuxRunnerSrc} to ${paths.linuxRunnerDest}...`);
 		await fs.copy(paths.linuxRunnerSrc, paths.linuxRunnerDest);
 	}
 
 	// copy the users source files to the build folder
-	userLog(`Copying test source...`);
+	userLog(`Copying user test from ${path.join(consumerRoot, config.test.source)} to ${paths.testDest}...`);
 	await fs.copy(path.join(consumerRoot, config.test.source), paths.testDest);
 
 	// write the config file
