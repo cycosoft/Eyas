@@ -28,7 +28,7 @@ const roots = {
 	eyasBuild: path.join(consumerRoot, `.eyas-preview`),
 	eyasDist: path.join(consumerRoot, `.eyas-dist`),
 	runners: path.join(consumerRoot, `.runners`),
-	config: configRoot === `/` ? moduleRoot : consumerRoot,
+	config: configRoot === `/` ? consumerRoot : configRoot,
 	eyas: eyasRoot,
 	module: moduleRoot
 };
