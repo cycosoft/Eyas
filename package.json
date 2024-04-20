@@ -31,6 +31,7 @@
     "compile:docker": "npm run compile:prep && npm run compile:ui && npm run compile:module && npm run docker:run && npm run compile:cleanup",
     "compile": "npm run compile:prep && npm run compile:ui && npm run compile:module && npm run docker:run && npm run compile:runner && npm run notarize:zip && npm run notarize && npm run notarize:staple && npm run compile:copy && npm run compile:cleanup",
     "compile:win": "npm run compile:prep && npm run compile:ui && npm run compile:module && npm run compile:runner && npm run compile:copy && npm run compile:cleanup",
+    "compile:platform:no-sign": "npm run compile:prep && npm run compile:ui && npm run compile:module && npm run compile:runner && npm run compile:copy && npm run compile:cleanup",
     "compile:no-sign": "npm run compile:prep && npm run compile:ui && npm run compile:module && npm run docker:run && npm run compile:runner && npm run compile:copy && npm run compile:cleanup",
     "_____________SIGNING_____________": "",
     "sign:win": "signtool sign /debug /n \"Open Source Developer, Eric Higginson\" /t http://time.certum.pl/ /fd sha256 /v ./dist/runners/eyas.exe",
