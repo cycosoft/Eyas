@@ -294,9 +294,9 @@ async function runCommand_bundle() {
 	// setup the platform output
 	const modifiedConfig = getModifiedConfig();
 	const platforms = [
-		{ enabled: config.outputs.windows, ext: `exe`, runner: paths.eyasRunnerWinSrc, tag: `win` },
-		{ enabled: config.outputs.mac, ext: `app`, runner: paths.macRunnerSrc, tag: `mac` },
-		{ enabled: config.outputs.linux, ext: `AppImage`, runner: paths.linuxRunnerSrc, tag: `linux` }
+		{ enabled: config.outputs.windows, ext: `exe`, runner: paths.eyasRunnerWinSrc, tag: `win`, archiveFn: `file` },
+		{ enabled: config.outputs.mac, ext: `app`, runner: paths.macRunnerSrc, tag: `mac`, archiveFn: `directory` },
+		{ enabled: config.outputs.linux, ext: `AppImage`, runner: paths.linuxRunnerSrc, tag: `linux`, archiveFn: `file` }
 	];
 
 	// reset the output directory
@@ -325,7 +325,7 @@ async function runCommand_bundle() {
 		archive.pipe(output);
 
 		// add the appropriate runner
-		archive.file(platform.runner, { name: `Eyas.${platform.ext}` });
+		archive[platform.archiveFn](platform.runner, { name: `Eyas.${platform.ext}` });
 
 		// add the updated config
 		archive.append(modifiedConfig, { name: `.eyas.config.js` });
