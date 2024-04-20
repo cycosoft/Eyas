@@ -43,6 +43,7 @@
     "notarize:verify": "spctl --assess -vv --type install ./.runners/mac-arm64/Eyas.app",
     "notarize:log": "xcrun notarytool log PASTE_LOG_ID_HERE --keychain-profile \"Eyas\"",
     "_____________SCRIPTS_____________": "",
+    "mac:prep-pkg": "ditto -c -k --sequesterRsrc --keepParent ./dist/runners/Eyas.app ./dist/runners/Eyas.app.zip",
     "docker:run": "docker build -t eyas . && docker run -v ./dist/runners:/usr/src/app/dist/runners -it --rm eyas",
     "bundle": "npm i --no-audit && npm run compile && npm pack",
     "bundle:test": "npm i --no-audit && cross-env NODE_ENV=dev npm run compile:no-sign && npm pack",
