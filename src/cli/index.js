@@ -72,6 +72,7 @@ const paths = {
 	icon: path.join(roots.eyasBuild, `eyas-assets`, `eyas-logo.png`),
 	eyasRunnerWinSrc: path.join(roots.dist, `runners`, `Eyas.exe`),
 	eyasRunnerWinDest: path.join(roots.eyasBuild, `Eyas.exe`),
+	macRunnerSrcZip: path.join(roots.dist, `runners`, `Eyas.app.zip`),
 	macRunnerSrc: path.join(roots.dist, `runners`, `Eyas.app`),
 	macRunnerDest: path.join(roots.eyasBuild, `Eyas.app`),
 	linuxRunnerSrc: path.join(roots.dist, `runners`, `Eyas.AppImage`),
@@ -290,6 +291,10 @@ async function runCommand_preview(devMode = false) {
 async function runCommand_bundle() {
 	const fs = require(`fs-extra`);
 	const archiver = require(`archiver`);
+	const extract = require('extract-zip');
+
+	// unzip the mac runner
+	await extract(paths.macRunnerSrcZip, { dir: path.join(roots.dist, `runners`) });
 
 	// setup the platform output
 	const modifiedConfig = getModifiedConfig();
