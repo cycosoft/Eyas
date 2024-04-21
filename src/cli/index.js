@@ -293,8 +293,11 @@ async function runCommand_bundle() {
 	const archiver = require(`archiver`);
 	const extract = require('extract-zip');
 
-	// unzip the mac runner
-	await extract(paths.macRunnerSrcZip, { dir: path.join(roots.dist, `runners`) });
+	// check if the mac runner exists
+	if(fs.existsSync(paths.macRunnerSrcZip)) {
+		// unzip the mac runner
+		await extract(paths.macRunnerSrcZip, { dir: path.join(roots.dist, `runners`) });
+	}
 
 	// setup the platform output
 	const modifiedConfig = getModifiedConfig();
