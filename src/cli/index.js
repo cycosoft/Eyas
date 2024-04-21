@@ -293,8 +293,8 @@ async function runCommand_bundle() {
 	const archiver = require(`archiver`);
 	const extract = require('extract-zip');
 
-	// check if the mac runner exists
-	if(fs.existsSync(paths.macRunnerSrcZip)) {
+	// if the mac runner exists AND it wasn't already extracted
+	if(fs.existsSync(paths.macRunnerSrcZip) && !fs.existsSync(paths.macRunnerSrc)) {
 		// unzip the mac runner
 		await extract(paths.macRunnerSrcZip, { dir: path.join(roots.dist, `runners`) });
 	}
