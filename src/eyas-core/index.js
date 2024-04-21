@@ -45,7 +45,7 @@
 	const paths = {
 		configLoader: path.join(roots.eyas, `scripts`, `get-config.js`),
 		icon: path.join(roots.eyas, `eyas-assets`, `eyas-logo.png`),
-		testSrc: path.join(roots.eyas, `test`),
+		testSrc: path.join(roots.config, `test`),
 		packageJson: path.join(roots.eyas, `package.json`),
 		eventBridge: path.join(roots.eyas, `scripts`, `event-bridge.js`),
 		ui: {
@@ -160,8 +160,8 @@
 						label: `📇 About`,
 						click: () => {
 							// setup
-							const format = require(`date-fns/format`);
-							const differenceInDays = require(`date-fns/differenceInDays`);
+							const { format } = require(`date-fns/format`);
+							const { differenceInDays } = require(`date-fns/differenceInDays`);
 							const now = new Date();
 							const expires = new Date(config.meta.expires);
 							const dayCount = differenceInDays(expires, now);
@@ -186,7 +186,8 @@
 								Built from: ${config.meta.gitBranch} #${config.meta.gitHash}
 								Built by: ${config.meta.gitUser}
 								Built on: ${new Date(config.meta.compiled).toLocaleString()}
-								Build with: ${appName} v${appVersion}
+
+								Runner: ${appName} v${appVersion}
 
 
 								🏢 © ${yearRange} Cycosoft, LLC
@@ -330,8 +331,8 @@
 		clientWindow = new BrowserWindow(windowConfig);
 
 		// stop the user here if the test is expired
-		const isPast = require(`date-fns/isPast`);
-		const format = require(`date-fns/format`);
+		const { isPast } = require(`date-fns/isPast`);
+		const { format } = require(`date-fns/format`);
 		const expiredAsDate = new Date(config.meta.expires);
 		const isExpired = isPast(expiredAsDate);
 		if(isExpired){

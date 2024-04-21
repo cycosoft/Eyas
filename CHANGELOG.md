@@ -1,3 +1,18 @@
+# v2.0.0
+
+- Eyas now ships with a pre-built executable, rather than requiring the user to build it. Bundling your app is now a much faster and simpler process.
+- Removed Linux support
+- Removed config settings for "executable" and "portable" builds
+- Changed CLI command from `compile` to `bundle`
+- Removed CLI command `preview`
+- Updated dependencies
+
+# v1.1.2
+
+- Updated: Dependencies
+- Link package.json to GitHub repo
+
+
 # v1.1.1
 
 - Updated: Dependencies

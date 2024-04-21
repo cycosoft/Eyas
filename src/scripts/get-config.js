@@ -52,10 +52,6 @@ const eyasConfig = {
 		mac: userConfig.outputs.mac || false,
 		linux: userConfig.outputs.linux || false,
 
-		// type
-		executable: userConfig.outputs.executable || false,
-		portable: userConfig.outputs.portable || false,
-
 		// options
 		expires: validateExpiration(userConfig.outputs.expires) // hours
 	},
@@ -76,10 +72,8 @@ if (!eyasConfig.outputs.windows && !eyasConfig.outputs.mac && !eyasConfig.output
 	if(process.platform === `linux`) { eyasConfig.outputs.linux = true; }
 }
 
-// set the default output type if none are specified
-if (!eyasConfig.outputs.executable && !eyasConfig.outputs.portable) {
-	eyasConfig.outputs.portable = true;
-}
+// TEMPORARY OVERRIDE - never allow linux
+eyasConfig.outputs.linux = false;
 
 // export the config for the project
 module.exports = eyasConfig;
@@ -131,7 +125,7 @@ function validateExpiration(hours) {
 
 // get the default preview expiration
 function getPreviewExpiration() {
-	const addHours = require(`date-fns/addHours`);
+	const { addHours } = require(`date-fns/addHours`);
 	const now = new Date();
 	return addHours(now, 1);
 }

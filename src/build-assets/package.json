@@ -3,6 +3,7 @@
   "description": "",
   "version": "",
   "author": "",
+  "main": "./index.js",
   "scripts": {
     "start": "npm i --no-audit && electron ."
   },

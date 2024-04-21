@@ -29,10 +29,10 @@
 
 ## Features
 
-- 📦 Package your app as a portable runner or executable for Windows, Mac, or Linux
-- 🔗 Simulate running your app from any domain
-- 📏 Supports custom screen size testing (mobile, tablet, desktop)
-- 🕜 Custom build expiration between 1 hour and 30 days
+- 📦 Shareable: Bundle your app with a runner for Windows & MacOS. No server needed.
+- 🔗 Dynamic: Simulate running your app from any domain.
+- 📏 Supports standard & custom screen sizes (mobile, tablet, desktop).
+- 🕜 Time-limited: Set test expiration dates between 1 hour and 30 days.
 
 ## About
 
@@ -69,53 +69,25 @@ module.exports = {
     menu: [/* { label: `Cycosoft, LLC`, url: `cycosoft.com`, external: true } */]
   },
 
-  // Defaults to building for the current platform if no platform is specified
   outputs: {
-    // Force building a .exe
-    windows: false,
-    // Force building a .dmg
-    mac: false,
-    // Force building a .AppImage
-    linux: false,
     // The number of hours from build time until the distributable expires
-    expires: 168, // (range: 1-720 hours)
-    // Build an unsigned executable for the current platform (.exe.zip, .dmg.zip, .AppImage)
-    // 60 - 100 MB
-    executable: false,
-    // Builds a zipped file containing your application and a runner for the built platform (default)
-    // ~275kb before downloads
-    portable: false
+    expires: 168 // (range: 1-720 hours)
   }
 };
 ```
 
 ## Usage
 
-```json
-// package.json
-{
-  "scripts": {
-    "interactive": "eyas", // Select from a list of available commands
-    "quick": "eyas preview", // Preview the your app without creating distributables
-    "share": "eyas compile" // Compiles the configured app to a distributable
-  }
-}
+```bash
+# ackages the configured app to a distributable
+npm run build-my-project && npx eyas bundle
 ```
 
 ## Outputs
 
-- `preview`: builds and runs Eyas from `./.eyas-preview/`
-- `compile`: builds to _./.eyas-preview/_ and compiles to `./.eyas-dist/`
+- `bundle`: Packages consumer source code for each enabled platform to `./.eyas-dist/`
 
-Depending on your OS, you may be able to build executables for multiple platforms on a single machine using the  `electronuserland/builder` and `electronuserland/builder:wine` docker images. See more information ([here](https://www.electron.build/multi-platform-build#provided-docker-images)). Here's a simple visualization of known possible configurations.
-
-| | Portable | .exe | .AppImage | .dmg |
-| - | - | - | - | - |
-| Mac | ✅ | ✅ | ✅ | ✅ |
-| Windows | ✅ | ✅ | ✅ | |
-| Linux | ✅ | ✅ | ✅ | |
-
-All outputs are zipped. Portable builds will add ~250kb overhead to your distributable, and executables can range between 60-100mb depending on the platform. Portable builds are recommended for most use cases. They download dependencies in-place on the client machine, and avoid many of the security warnings that come with executables.
+All outputs are zipped, and can range between 60-100mb depending on the platform.
 
 ## Tips
 

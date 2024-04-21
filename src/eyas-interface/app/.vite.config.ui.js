@@ -3,7 +3,7 @@ import vue from '@vitejs/plugin-vue';
 import vuetify from 'vite-plugin-vuetify';
 
 export default {
-    base: './',
+    base: `./`,
     plugins: [
         vue(),
         vuetify({ autoImport: true })
@@ -11,8 +11,11 @@ export default {
     root: resolve(__dirname),
     resolve: {
         alias: {
-            'vue': 'vue/dist/vue.esm-bundler.js',
-            '@': resolve(__dirname, 'src')
+            'vue': `vue/dist/vue.esm-bundler.js`,
+            '@': resolve(__dirname, `src`)
         }
+    },
+    build: {
+        outDir: resolve(process.cwd(), './.pre-build/eyas-interface')
     }
 }

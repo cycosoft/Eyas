@@ -17,7 +17,7 @@ export default {
 				}
 			},
 
-			outDir: `dist/scripts`
+			outDir: `.pre-build/scripts`
 		}
 	},
 
@@ -30,7 +30,7 @@ export default {
 				}
 			},
 
-			outDir: `dist/eyas-core`
+			outDir: `.pre-build/eyas-core`
 		}
 	}
 };

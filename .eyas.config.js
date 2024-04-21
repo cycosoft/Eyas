@@ -39,7 +39,6 @@ module.exports = {
 		// windows: true,
 		// mac: true,
 		// linux: true,
-		// executable: true,
-		// portable: true
+		// expires: 720
 	}
 };
