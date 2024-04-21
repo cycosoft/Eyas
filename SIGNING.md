@@ -5,3 +5,9 @@ MacOS Guide 2: https://www.peterkoraca.com/blog/how-to-package-code-sign-notariz
 MacOS Guide 3: https://christarnowski.com/making-notarization-work-on-macos-for-electron-apps-built-with-electron-builder/
 
 Windows Guide: https://blog.inkdrop.app/code-signing-certificate-for-indie-developers-564f86492957
+
+Set signtool path
+
+```
+set PATH="C:\Program Files (x86)\Windows Kits\10\App Certification Kit";%PATH%
+```
