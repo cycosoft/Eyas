@@ -68,7 +68,6 @@ const paths = {
 	packageJsonDest: path.join(roots.eyasBuild, names.packageJson),
 	scriptsSrc: path.join(roots.dist, names.scripts),
 	scriptsDest: path.join(roots.eyasBuild, names.scripts),
-	testDest: path.join(roots.eyasBuild, `test`),
 	icon: path.join(roots.eyasBuild, `eyas-assets`, `eyas-logo.png`),
 	eyasRunnerWinSrc: path.join(roots.dist, `runners`, `Eyas.exe`),
 	eyasRunnerWinDest: path.join(roots.eyasBuild, `Eyas.exe`),
@@ -84,6 +83,8 @@ actions.previewDev.enabled = isDev;
 
 // load the user's config
 const config = require(paths.configLoader);
+const testFolderName = path.basename(config.test.source);
+paths.testDest = path.join(roots.eyasBuild, testFolderName);
 
 // Entry Point
 (async () => {
@@ -343,7 +344,7 @@ async function runCommand_bundle() {
 		archive.append(modifiedConfig, { name: `.eyas.config.js` });
 
 		// add the user's test
-		archive.directory(path.join(consumerRoot, config.test.source), `test`);
+		archive.directory(path.join(consumerRoot, config.test.source), testFolderName);
 
 		// close the archive
 		archive.finalize();
