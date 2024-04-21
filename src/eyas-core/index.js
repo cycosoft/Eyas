@@ -45,7 +45,6 @@
 	const paths = {
 		configLoader: path.join(roots.eyas, `scripts`, `get-config.js`),
 		icon: path.join(roots.eyas, `eyas-assets`, `eyas-logo.png`),
-		testSrc: path.join(roots.config, `test`),
 		packageJson: path.join(roots.eyas, `package.json`),
 		eventBridge: path.join(roots.eyas, `scripts`, `event-bridge.js`),
 		ui: {
@@ -66,6 +65,8 @@
 
 	// load the users config
 	const config = require(paths.configLoader);
+	const testFolderName = path.basename(config.test.source);
+	paths.testSrc = path.join(roots.config, testFolderName);
 
 	// config
 	const appName = `Eyas`;
