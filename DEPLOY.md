@@ -2,7 +2,7 @@
 * compile .app
 * notarize .app
 * switch to windows
-* compile .exe
+* compile .exe `npm run compile:win`
 * sign .exe
 * send .exe to mac
 * switch to mac
