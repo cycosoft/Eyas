@@ -87,12 +87,11 @@ npm run build-my-project && npx eyas bundle
 
 - `bundle`: Packages consumer source code for each enabled platform to `./.eyas-dist/`
 
-All outputs are zipped, and can range between 60-100mb depending on the platform.
+All outputs are zipped, and can have a base range between 60-100mb depending on the platform.
 
 ## Tips
 
-- Add `eyas-*` to your `.gitignore` to prevent output from being committed to your repo
-- Windows executables can sometimes be slower to launch due to Microsoft Defender
+- Add `eyas-*` to your `.gitignore` to prevent outputs from being committed to your repo
 - If your app is using a custom domain and you'd like to test it in your browser via Eyas, you will need to add the domain to your `etc/hosts` file. See [this guide](https://www.ephost.com/account/index.php/knowledgebase/232/How-to-edit-your-Host-file.html) (no affiliation) for more information.
 - View documented changes at [CHANGELOG.md](CHANGELOG.md)
 
