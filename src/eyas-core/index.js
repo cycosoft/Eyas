@@ -477,7 +477,7 @@
 		expressLayer.use(express.static(paths.testSrc));
 
 		// For each provided route from the user
-		config.test.routes.forEach(route => {
+		config.test.redirects.forEach(route => {
 			// Add a redirect to the test server
 			expressLayer.get(route.from, function (req, res) {
 				// Redirect to the provided route

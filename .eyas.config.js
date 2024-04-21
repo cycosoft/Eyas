@@ -4,7 +4,7 @@ module.exports = {
 		source: `demo`,
 		// port: ``,
 		domain: `eyas.cycosoft.com/demo/path?query=string#hash`,
-		routes: [{ from: `/REDIRECT`, to: `/demo/alt` }],
+		redirects: [{ from: `/REDIRECT`, to: `/demo/alt` }],
 		title: `Eyas App Demo`,
 		version: ``,
 		viewports: [
