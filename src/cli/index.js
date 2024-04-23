@@ -39,6 +39,7 @@ const actions = {
 // setup
 const path = require(`path`);
 const isDev = process.env.NODE_ENV === `dev`;
+const TEST_SOURCE = `source`;
 const consumerRoot = process.cwd();
 const moduleRoot = isDev
 	? consumerRoot
@@ -56,6 +57,7 @@ const paths = {
 	build: roots.eyasBuild,
 	configLoader: path.join(roots.dist, names.scripts, `get-config.js`),
 	configDest: path.join(roots.eyasBuild, `.eyas.config.js`),
+	testDest: path.join(roots.eyasBuild, TEST_SOURCE),
 	eyasApp: path.join(roots.eyasBuild, `index.js`),
 	eyasAssetsSrc: path.join(roots.dist, names.eyasAssets),
 	eyasAssetsDest: path.join(roots.eyasBuild, names.eyasAssets),
@@ -83,8 +85,6 @@ actions.previewDev.enabled = isDev;
 
 // load the user's config
 const config = require(paths.configLoader);
-const testFolderName = path.basename(config.test.source);
-paths.testDest = path.join(roots.eyasBuild, testFolderName);
 
 // Entry Point
 (async () => {
@@ -222,7 +222,7 @@ function getModifiedConfig() {
 	// create a new config file with the updated values in the build folder
 	userLog(`Creating snapshot of config...`);
 	const configCopy = JSON.parse(JSON.stringify(config));
-	delete configCopy.test.source; // isn't used past this point
+	delete configCopy.test.source; // isn't used past this point, so don't ship it.
 
 	// generate meta data for the build
 	const { execSync } = require(`child_process`);
@@ -344,7 +344,7 @@ async function runCommand_bundle() {
 		archive.append(modifiedConfig, { name: `.eyas.config.js` });
 
 		// add the user's test
-		archive.directory(path.join(consumerRoot, config.test.source), testFolderName);
+		archive.directory(path.join(consumerRoot, config.test.source), TEST_SOURCE);
 
 		// close the archive
 		archive.finalize();

@@ -41,11 +41,13 @@
 	};
 
 	// setup
+	const TEST_SOURCE = `source`;
 	const roots = require(path.join(__dirname, `scripts`, `get-roots.js`));
 	const paths = {
 		configLoader: path.join(roots.eyas, `scripts`, `get-config.js`),
 		icon: path.join(roots.eyas, `eyas-assets`, `eyas-logo.png`),
 		packageJson: path.join(roots.eyas, `package.json`),
+		testSrc: path.join(roots.config, TEST_SOURCE),
 		eventBridge: path.join(roots.eyas, `scripts`, `event-bridge.js`),
 		ui: {
 			app: path.join(roots.eyas, `eyas-interface`, `index.html`)
@@ -65,8 +67,6 @@
 
 	// load the users config
 	const config = require(paths.configLoader);
-	const testFolderName = path.basename(config.test.source);
-	paths.testSrc = path.join(roots.config, testFolderName);
 
 	// config
 	const appName = `Eyas`;
