@@ -85,7 +85,7 @@ npm run build-my-project && npx eyas bundle
 
 ## Outputs
 
-- `bundle`: Packages consumer source code for each enabled platform to `./.eyas-dist/`
+- `bundle`: Packages consumer source code for each enabled platform to `./eyas-dist/`
 
 All outputs are zipped, and can have a base range between 60-100mb depending on the platform.
 
