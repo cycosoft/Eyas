@@ -10,4 +10,4 @@ dist/
 .runners
 
 .DS_Store
-.env
+.env.local
