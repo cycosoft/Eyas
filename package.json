@@ -17,7 +17,7 @@
   "scripts": {
     "_______________DEV_______________": "",
     "direct": "npm run compile:prep && npm run compile:ui && npm run compile:module && npx electron .build/index.js",
-    "dev": "npm i && npm-check -u -i '\"inquirer\"' && cross-env NODE_ENV=dev npm run compile:prod && cross-env NODE_ENV=dev node dist/cli/index.js",
+    "dev": "npm i && npm-check -u -i '\"inquirer\"' && cross-env NODE_ENV=dev npm run compile:mac:no-sign && cross-env NODE_ENV=dev node dist/cli/index.js",
     "dev:ui": "vite --config src/eyas-interface/app/.vite.config.ui.js --open",
     "_____________COMPILE_____________": "",
     "compile:prep": "node src/scripts/compile-prep.js",
@@ -80,21 +80,21 @@
     "mkcert": "^3.2.0",
     "url-parse": "^1.5.10",
     "validator": "^13.11.0",
-    "vue": "^3.4.23",
-    "vuetify": "^3.5.16"
+    "vue": "^3.4.24",
+    "vuetify": "^3.5.17"
   },
   "devDependencies": {
-    "@electron/osx-sign": "^1.1.0",
+    "@electron/osx-sign": "^1.2.0",
     "@rollup/plugin-terser": "^0.4.4",
     "@vitejs/plugin-vue": "^5.0.4",
     "cross-env": "^7.0.3",
     "dotenv": "^16.4.5",
-    "electron-vite": "^2.1.0",
-    "eslint": "^9.0.0",
+    "electron-vite": "^2.2.0",
+    "eslint": "^9.1.1",
     "eslint-plugin-vue": "^9.24.1",
     "npm-check": "^6.0.1",
     "sass": "^1.74.1",
-    "vite": "^5.2.9",
+    "vite": "^5.2.10",
     "vite-plugin-vuetify": "^2.0.3"
   },
   "overrides": {

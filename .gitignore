@@ -4,6 +4,7 @@ node_modules/
 # do not include the packaged output
 cycosoft-eyas-*.tgz
 .eyas-*
+eyas-dist/
 dist/
 .build
 .pre-build

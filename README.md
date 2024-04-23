@@ -91,7 +91,7 @@ All outputs are zipped, and can have a base range between 60-100mb depending on 
 
 ## Tips
 
-- Add `eyas-*` to your `.gitignore` to prevent outputs from being committed to your repo
+- Add `.eyas-*` and `eyas-*` to your `.gitignore` to prevent outputs from being committed to your repo
 - If your app is using a custom domain and you'd like to test it in your browser via Eyas, you will need to add the domain to your `etc/hosts` file. See [this guide](https://www.ephost.com/account/index.php/knowledgebase/232/How-to-edit-your-Host-file.html) (no affiliation) for more information.
 - View documented changes at [CHANGELOG.md](CHANGELOG.md)
 
