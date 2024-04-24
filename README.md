@@ -50,26 +50,28 @@ npm install @cycosoft/eyas --save-dev
 ```js
 // <projectRoot>/.eyas.config.js
 module.exports = {
-  test: {
-    // The path to the directory containing your application files
-    source: `dist`,
-    // The port your application will be served on via localhost
-    port: 3000,
-    // Run your application from any domain locally instead of localhost
-    domain: null,
-    // Define custom redirects for your test
-    redirects: [/* { from: `/my-route`, to: `/demo/alt-route` } */],
-    // The name of your application
-    title: `My Cool Site`,
-    // The version of your application that was built. Defaults to current branch name.
-    version: `<current-branch>`,
-    // Additional screen sizes to test your application at
-    viewports: [/* { label: `iPad Pro`, width: 1024, height: 1366 } */],
-    // Custom links to display in the menu (external opens directly in browser)
-    menu: [/* { label: `Cycosoft, LLC`, url: `cycosoft.com`, external: true } */]
-  },
-
+  // The path to the directory containing your application files
+  source: `dist`,
+  // The port your application will be served on via localhost
+  port: 3000,
+  // Run your application from any domain locally instead of localhost
+  domain: null,
+  // Define custom redirects for your test
+  redirects: [/* { from: `/my-route`, to: `/demo/alt-route` } */],
+  // The name of your application
+  title: `My Cool Site`,
+  // The version of your application that was built. Defaults to current branch name.
+  version: `<current-branch>`,
+  // Additional screen sizes to test your application at
+  viewports: [/* { label: `iPad Pro`, width: 1024, height: 1366 } */],
+  // Custom links to display in the menu (external opens directly in browser)
+  menu: [/* { label: `Cycosoft, LLC`, url: `cycosoft.com`, external: true } */]
+  // File outputs
   outputs: {
+    // Build a Windows distributable
+    windows: true,
+    // Build a MacOS distributable
+    mac: true,
     // The number of hours from build time until the distributable expires
     expires: 168 // (range: 1-720 hours)
   }

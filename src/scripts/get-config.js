@@ -29,22 +29,19 @@ try {
 }
 
 // error checking for config
-userConfig.test = userConfig.test || {};
 userConfig.outputs = userConfig.outputs || {};
 userConfig.meta = userConfig.meta || {};
 
 // configuration merge and validation step
 const eyasConfig = {
-	test: {
-		source: userConfig.test.source || `dist`,
-		port: userConfig.test.port || 3000,
-		domain: userConfig.test.domain || null,
-		redirects: userConfig.test.redirects || [],
-		title: (userConfig.test.title || `Eyas`).trim(),
-		version: (userConfig.test.version || getBranchName() || `Unspecified Version`).trim(),
-		viewports: userConfig.test.viewports || [/* { label: ``, width: 0, height: 0 } */],
-		menu: userConfig.test.menu || [/* { label: ``, url: `` } */]
-	},
+	source: userConfig.source || `dist`,
+	port: userConfig.port || 3000,
+	domain: userConfig.domain || null,
+	redirects: userConfig.redirects || [],
+	title: (userConfig.title || `Eyas`).trim(),
+	version: (userConfig.version || getBranchName() || `Unspecified Version`).trim(),
+	viewports: userConfig.viewports || [/* { label: ``, width: 0, height: 0 } */],
+	menu: userConfig.menu || [/* { label: ``, url: `` } */],
 
 	outputs: {
 		// platform

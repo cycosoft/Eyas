@@ -70,16 +70,16 @@
 
 	// config
 	const appName = `Eyas`;
-	const testServerPort = config.test.port;
+	const testServerPort = config.port;
 	const testServerUrl = `https://localhost:${testServerPort}`;
-	const appUrlOverride = formatURL(config.test.domain);
+	const appUrlOverride = formatURL(config.domain);
 	const appUrl = appUrlOverride || testServerUrl;
 	let clientWindow = null;
 	let expressLayer = null;
 	let appLayer = null;
 	let testServer = null;
 	const allViewports = [
-		...config.test.viewports,
+		...config.viewports,
 		{ isDefault: true, label: `Desktop`, width: 1366, height: 768 },
 		{ isDefault: true, label: `Tablet`, width: 768, height: 1024 },
 		{ isDefault: true, label: `Mobile`, width: 360, height: 640 }
@@ -180,8 +180,8 @@
 								title: `About ${appName}`,
 								icon: paths.icon,
 								message: `
-								Test name: ${config.test.title}
-								Test version: ${config.test.version}
+								Test name: ${config.title}
+								Test version: ${config.version}
 								Test expires: ${expirationFormatted} (${relativeFormatted})
 
 								Built from: ${config.meta.gitBranch} #${config.meta.gitHash}
@@ -249,7 +249,7 @@
 
 		// for each menu item where the list exists
 		const customLinkList = [];
-		config.test.menu.forEach(item => {
+		config.menu.forEach(item => {
 			// check if the provided url is valid
 			const itemUrl = formatURL(item.url);
 
@@ -455,10 +455,10 @@
 		let output = `${appName}`;
 
 		// Add the test app title
-		output += ` :: ${config.test.title}`;
+		output += ` :: ${config.title}`;
 
 		// Add the build version
-		output += ` :: ${config.test.version} ✨`;
+		output += ` :: ${config.version} ✨`;
 
 		// Add the current URL if it`s available
 		if (clientWindow){
@@ -469,16 +469,16 @@
 		return output;
 	}
 
-	// Set up Express to serve files from test/
+	// Set up Express to serve files from the test directory
 	async function setupTestServer() {
 		// Create the Express app
 		expressLayer = express();
 
-		// Serve static files from test/
+		// Serve static files from the test directory
 		expressLayer.use(express.static(paths.testSrc));
 
 		// For each provided route from the user
-		config.test.redirects.forEach(route => {
+		config.redirects.forEach(route => {
 			// Add a redirect to the test server
 			expressLayer.get(route.from, function (req, res) {
 				// Redirect to the provided route

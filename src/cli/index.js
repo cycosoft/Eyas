@@ -211,8 +211,8 @@ async function createBuildFolder() {
 	}
 
 	// copy the users source files to the build folder
-	userLog(`Copying user test from ${path.join(consumerRoot, config.test.source)} to ${paths.testDest}...`);
-	await fs.copy(path.join(consumerRoot, config.test.source), paths.testDest);
+	userLog(`Copying user test from ${path.join(consumerRoot, config.source)} to ${paths.testDest}...`);
+	await fs.copy(path.join(consumerRoot, config.source), paths.testDest);
 
 	// write the config file
 	const data = getModifiedConfig();
@@ -223,7 +223,7 @@ function getModifiedConfig() {
 	// create a new config file with the updated values in the build folder
 	userLog(`Creating snapshot of config...`);
 	const configCopy = JSON.parse(JSON.stringify(config));
-	delete configCopy.test.source; // isn't used past this point, so don't ship it.
+	delete configCopy.source; // isn't used past this point, so don't ship it.
 
 	// generate meta data for the build
 	const { execSync } = require(`child_process`);
@@ -317,7 +317,7 @@ async function runCommand_bundle() {
 		// skip if the platform isn't enabled
 		if(!platform.enabled) { return; }
 
-		const artifactName = `${config.test.title} - ${config.test.version}.${platform.tag}.zip`;
+		const artifactName = `${config.title} - ${config.version}.${platform.tag}.zip`;
 
 		// create the zip file
 		const output = fs.createWriteStream(path.join(roots.eyasDist, artifactName));
@@ -345,7 +345,7 @@ async function runCommand_bundle() {
 		archive.append(modifiedConfig, { name: `.eyas.config.js` });
 
 		// add the user's test
-		archive.directory(path.join(consumerRoot, config.test.source), TEST_SOURCE);
+		archive.directory(path.join(consumerRoot, config.source), TEST_SOURCE);
 
 		// close the archive
 		archive.finalize();

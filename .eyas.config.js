@@ -5,7 +5,7 @@ module.exports = {
 	domain: `eyas.cycosoft.com/demo/path?query=string#hash`,
 	redirects: [{ from: `/REDIRECT`, to: `/demo/alt` }],
 	title: `Eyas App Demo`,
-	version: ``,
+	// version: ``,
 	viewports: [
 		{ label: `Custom Size`, width: 1024, height: 768 }
 	],
