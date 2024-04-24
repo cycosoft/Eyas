@@ -6,6 +6,8 @@
 - Changed CLI command from `compile` to `bundle`
 - Removed CLI command `preview`
 - Updated dependencies
+- Flatten config options
+- Rename runners from `Eyas` to `Start`
 
 # v1.1.2
 

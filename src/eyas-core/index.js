@@ -249,7 +249,7 @@
 
 		// for each menu item where the list exists
 		const customLinkList = [];
-		config.menu.forEach(item => {
+		config.links.forEach(item => {
 			// check if the provided url is valid
 			const itemUrl = formatURL(item.url);
 

@@ -41,7 +41,7 @@ const eyasConfig = {
 	title: (userConfig.title || `Eyas`).trim(),
 	version: (userConfig.version || getBranchName() || `Unspecified Version`).trim(),
 	viewports: userConfig.viewports || [/* { label: ``, width: 0, height: 0 } */],
-	menu: userConfig.menu || [/* { label: ``, url: `` } */],
+	links: userConfig.links || [/* { label: ``, url: `` } */],
 
 	outputs: {
 		// platform

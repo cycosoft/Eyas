@@ -9,7 +9,7 @@ module.exports = {
 	viewports: [
 		{ label: `Custom Size`, width: 1024, height: 768 }
 	],
-	menu: [
+	links: [
 		{ label: `Cycosoft.com (browser)`, url: `https://cycosoft.com`, external: true },
 		{ url: `server` },
 		{ label: `Cycosoft.com (electron)`, url: `https://cycosoft.com` },

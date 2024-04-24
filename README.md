@@ -65,7 +65,7 @@ module.exports = {
   // Additional screen sizes to test your application at
   viewports: [/* { label: `iPad Pro`, width: 1024, height: 1366 } */],
   // Custom links to display in the menu (external opens directly in browser)
-  menu: [/* { label: `Cycosoft, LLC`, url: `cycosoft.com`, external: true } */]
+  links: [/* { label: `Cycosoft, LLC`, url: `cycosoft.com`, external: true } */]
   // File outputs
   outputs: {
     // Build a Windows distributable
