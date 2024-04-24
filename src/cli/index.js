@@ -50,7 +50,8 @@ const names = {
 	packageJson: `package.json`,
 	eyasAssets: `eyas-assets`,
 	eyasInterface: `eyas-interface`,
-	scripts: `scripts`
+	scripts: `scripts`,
+	runner: `Start`
 };
 const paths = {
 	dist: roots.eyasDist,
@@ -71,13 +72,13 @@ const paths = {
 	scriptsSrc: path.join(roots.dist, names.scripts),
 	scriptsDest: path.join(roots.eyasBuild, names.scripts),
 	icon: path.join(roots.eyasBuild, `eyas-assets`, `eyas-logo.png`),
-	eyasRunnerWinSrc: path.join(roots.dist, `runners`, `Eyas.exe`),
-	eyasRunnerWinDest: path.join(roots.eyasBuild, `Eyas.exe`),
-	macRunnerSrcZip: path.join(roots.dist, `runners`, `Eyas.app.zip`),
-	macRunnerSrc: path.join(roots.dist, `runners`, `Eyas.app`),
-	macRunnerDest: path.join(roots.eyasBuild, `Eyas.app`),
-	linuxRunnerSrc: path.join(roots.dist, `runners`, `Eyas.AppImage`),
-	linuxRunnerDest: path.join(roots.eyasBuild, `Eyas.AppImage`)
+	eyasRunnerWinSrc: path.join(roots.dist, `runners`, `${names.runner}exe`),
+	eyasRunnerWinDest: path.join(roots.eyasBuild, `${names.runner}exe`),
+	macRunnerSrcZip: path.join(roots.dist, `runners`, `${names.runner}app.zip`),
+	macRunnerSrc: path.join(roots.dist, `runners`, `${names.runner}app`),
+	macRunnerDest: path.join(roots.eyasBuild, `${names.runner}app`),
+	linuxRunnerSrc: path.join(roots.dist, `runners`, `${names.runner}AppImage`),
+	linuxRunnerDest: path.join(roots.eyasBuild, `${names.runner}AppImage`)
 };
 
 // set mode
@@ -335,9 +336,9 @@ async function runCommand_bundle() {
 
 		// add the appropriate runner
 		if(platform.tag === `mac`) {
-			archive.directory(platform.runner, `Eyas.${platform.ext}`);
+			archive.directory(platform.runner, `${names.runner}.${platform.ext}`);
 		} else {
-			archive.file(platform.runner, { name: `Eyas.${platform.ext}` });
+			archive.file(platform.runner, { name: `${names.runner}.${platform.ext}` });
 		}
 
 		// add the updated config
