@@ -72,13 +72,13 @@ const paths = {
 	scriptsSrc: path.join(roots.dist, names.scripts),
 	scriptsDest: path.join(roots.eyasBuild, names.scripts),
 	icon: path.join(roots.eyasBuild, `eyas-assets`, `eyas-logo.png`),
-	eyasRunnerWinSrc: path.join(roots.dist, `runners`, `${names.runner}exe`),
-	eyasRunnerWinDest: path.join(roots.eyasBuild, `${names.runner}exe`),
-	macRunnerSrcZip: path.join(roots.dist, `runners`, `${names.runner}app.zip`),
-	macRunnerSrc: path.join(roots.dist, `runners`, `${names.runner}app`),
-	macRunnerDest: path.join(roots.eyasBuild, `${names.runner}app`),
-	linuxRunnerSrc: path.join(roots.dist, `runners`, `${names.runner}AppImage`),
-	linuxRunnerDest: path.join(roots.eyasBuild, `${names.runner}AppImage`)
+	eyasRunnerWinSrc: path.join(roots.dist, `runners`, `${names.runner}.exe`),
+	eyasRunnerWinDest: path.join(roots.eyasBuild, `${names.runner}.exe`),
+	macRunnerSrcZip: path.join(roots.dist, `runners`, `${names.runner}.app.zip`),
+	macRunnerSrc: path.join(roots.dist, `runners`, `${names.runner}.app`),
+	macRunnerDest: path.join(roots.eyasBuild, `${names.runner}.app`),
+	linuxRunnerSrc: path.join(roots.dist, `runners`, `${names.runner}.AppImage`),
+	linuxRunnerDest: path.join(roots.eyasBuild, `${names.runner}.AppImage`)
 };
 
 // set mode
