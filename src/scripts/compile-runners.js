@@ -74,7 +74,7 @@ const paths = {
 		// skip anything not an exe
 		if (!file.endsWith(`.exe`)) { return; }
 
-		const dest = path.join(distRoot, `runners`, path.basename(file));
+		const dest = path.join(distRoot, `runners`, `Start.exe`);
 		console.log(`copying ${file} to ${dest}`);
 		fs.copy(file, dest);
 	});
