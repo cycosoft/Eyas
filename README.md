@@ -83,7 +83,7 @@ module.exports = {
 ## Usage
 
 ```bash
-# ackages the configured app to a distributable
+# Packages the configured app to a distributable zip
 npm run build-my-project && npx eyas bundle
 ```
 
