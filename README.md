@@ -10,7 +10,9 @@
 <p align="center">Feature Branch Testing Without a Server</p>
 
 <p align="center">
-<img src="https://img.shields.io/npm/v/@cycosoft/eyas?color=6988e6&label=version">
+  <a href="https://www.npmjs.com/package/@cycosoft/eyas">
+    <img src="https://img.shields.io/npm/v/@cycosoft/eyas?color=6988e6&label=version">
+  </a>
 </p>
 
 <br />
