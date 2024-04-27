@@ -217,19 +217,31 @@
 					{
 						label: `🖥️ Open in Browser`,
 						click: () => {
+							// url to navigate to
+							let urlToNavigateTo = clientWindow.webContents.getURL();
+
 							// if the base url is the test defined domain
 							if(appUrlOverride){
+								// grab the base url parts
+								urlToNavigateTo = new URL(appUrlOverride);
+								urlToNavigateTo.port = testServerPort;
+
 								// alert the user that it needs to be defined in etc/hosts
 								dialog.showMessageBoxSync(clientWindow, {
 									type: `warning`,
-									buttons: [`OK`],
+									buttons: [`Open`],
 									title: `Open in Browser`,
-									message: `To successfully load your test externally, you must add ( ${appUrlOverride} ) to your "etc/hosts" file.`
+									message: `To run your test outside of Eyas, you must add the following to your "etc/hosts" file:
+
+									127.0.0.1     ${urlToNavigateTo.hostname}`
 								});
+
+								// convert the url to a string
+								urlToNavigateTo = urlToNavigateTo.toString();
 							}
 
 							// open the current url in the default browser
-							navigate(clientWindow.webContents.getURL(), true);
+							navigate(urlToNavigateTo, true);
 						}
 					},
 					{ type: `separator` },
