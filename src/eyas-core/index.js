@@ -216,7 +216,21 @@
 					{ type: `separator` },
 					{
 						label: `🖥️ Open in Browser`,
-						click: () => shell.openExternal(clientWindow.webContents.getURL())
+						click: () => {
+							// if the base url is the test defined domain
+							if(appUrlOverride){
+								// alert the user that it needs to be defined in etc/hosts
+								dialog.showMessageBoxSync(clientWindow, {
+									type: `warning`,
+									buttons: [`OK`],
+									title: `Open in Browser`,
+									message: `To successfully load your test externally, you must add ( ${appUrlOverride} ) to your "etc/hosts" file.`
+								});
+							}
+
+							// open the current url in the default browser
+							navigate(clientWindow.webContents.getURL(), true);
+						}
 					},
 					{ type: `separator` },
 					// populate with appropriate dev tools
