@@ -17,7 +17,8 @@
   "scripts": {
     "_______________DEV_______________": "",
     "direct": "npm run compile:prep && npm run compile:ui && npm run compile:module && npx electron .build/index.js",
-    "dev": "npm i && npm-check -u -i '\"inquirer\"' && cross-env NODE_ENV=dev npm run compile:mac:no-sign && cross-env NODE_ENV=dev node dist/cli/index.js",
+    "dev:mac": "npm i && npm-check -u -i '\"inquirer\"' && cross-env NODE_ENV=dev npm run compile:mac:no-sign && cross-env NODE_ENV=dev node dist/cli/index.js",
+    "dev:win": "npm i && npm-check -u -i '\"inquirer\"' && cross-env NODE_ENV=dev npm run compile:win && cross-env NODE_ENV=dev node dist/cli/index.js",
     "dev:ui": "vite --config src/eyas-interface/app/.vite.config.ui.js --open",
     "_____________COMPILE_____________": "",
     "compile:prep": "node src/scripts/compile-prep.js",
