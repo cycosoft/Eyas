@@ -18,10 +18,13 @@
 <br />
 <br />
 
+## About
+
+_Eyas_ leverages a packaged version of your application to provide a simple and shareable testing solution without the need to set up an entire server. Regardless of your team size, you can now decrease the feedback loop for no extra cost. You can easily include PMs, designers, executives and customers in the testing process.
+
 ## Table of Contents
 
 - [Features](#features)
-- [About](#about)
 - [Install](#install)
 - [Configuration](#configuration)
 - [Usage](#usage)
@@ -35,10 +38,6 @@
 - 🔗 Dynamic: Simulate running your app from any domain.
 - 📏 Supports standard & custom screen sizes (mobile, tablet, desktop).
 - 🕜 Time-limited: Set test expiration dates between 1 hour and 30 days.
-
-## About
-
-_Eyas_ leverages a packaged version of your application to provide a simple and shareable testing solution without the need to set up an entire server. Regardless of your team size, you can now decrease the feedback loop for no extra cost. You can easily include PMs, designers, executives and customers in the testing process.
 
 ## Install
 
