@@ -44,9 +44,8 @@
     "notarize:log": "xcrun notarytool log PASTE_LOG_ID_HERE --keychain-profile \"Eyas\"",
     "_____________SCRIPTS_____________": "",
     "docker:run": "docker build -t eyas . && docker run -v ./dist/runners:/usr/src/app/dist/runners -it --rm eyas",
-    "bundle": "npm i --no-audit && npm run compile:prod && npm pack",
-    "bundle:test": "npm i --no-audit && cross-env NODE_ENV=dev npm run compile:all:no-sign && npm pack",
-    "deploy": "npm i --no-audit && npm run compile:prod && npm publish",
+    "bundle": "npm pack",
+    "deploy": "npm publish",
     "bump:patch": "npm version patch && git push && git push --tags",
     "bump:minor": "npm version minor && git push && git push --tags",
     "bump:beta": "npm version prerelease --preid beta && git push && git push --tags"
