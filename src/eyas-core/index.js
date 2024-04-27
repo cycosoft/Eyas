@@ -210,7 +210,7 @@
 				label: `🧪 Testing`,
 				submenu: [
 					{
-						label: `📦 Load Packaged App`,
+						label: `📦 Load Test Files`,
 						click: () => navigate(appUrl)
 					},
 					{ type: `separator` },

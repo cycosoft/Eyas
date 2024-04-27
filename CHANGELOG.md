@@ -1,3 +1,8 @@
+# v2.0.1
+
+- Renamed menu item `Load Packaged App` to `Load Test Files`
+- Display an alert about `etc/hosts` when user tries to load test files in the browser
+
 # v2.0.0
 
 - Eyas now ships with a pre-built executable, rather than requiring the user to build it. Bundling your app is now a much faster and simpler process.
@@ -13,7 +18,6 @@
 
 - Updated: Dependencies
 - Link package.json to GitHub repo
-
 
 # v1.1.1
 
