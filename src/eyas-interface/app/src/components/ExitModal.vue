@@ -35,6 +35,7 @@
 					<v-btn
 						color="error"
 						variant="elevated"
+						:loading="exiting"
 						@click="exit"
 					>
 						Exit
@@ -48,7 +49,8 @@
 <script>
 export default {
 	data: () => ({
-		visible: false
+		visible: false,
+		exiting: false
 	}),
 
 	mounted() {
@@ -64,6 +66,7 @@ export default {
 
 	methods: {
 		exit() {
+			this.exiting = true;
 			window.eventBridge?.send(`app-exit`);
 		},
 
