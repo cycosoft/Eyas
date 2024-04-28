@@ -424,7 +424,7 @@
 		// listen for the window to close
 		clientWindow.on(`close`, onAppClose);
 
-		// Load Eyas analytics
+		// navigate to the test url
 		navigate(appUrl);
 
 		// Overlay the appLayer
