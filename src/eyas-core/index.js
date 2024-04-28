@@ -93,6 +93,14 @@
 		icon: paths.icon
 	};
 
+	// NEW METHOD
+	// init electron
+	// init the application layer
+	// display the UI (with a center loader)
+	// ask the user to select the environment OR use the default
+	// * start the server during this time
+	// load the test
+
 	// Configure Electron to ignore certificate errors
 	electronLayer.commandLine.appendSwitch(`ignore-certificate-errors`);
 
