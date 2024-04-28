@@ -77,7 +77,7 @@ module.exports = eyasConfig;
 
 // validate the user input for the custom domain
 function validateCustomDomain(domains) {
-	const output = [];
+	const output = [/* { url: ``, port: 3000, title: `Staging` } */];
 
 	// if the input is not an array AND not a string
 	if (!Array.isArray(domains) && typeof domains !== `string`) {
@@ -89,7 +89,7 @@ function validateCustomDomain(domains) {
 	// if the input is a string
 	if (typeof domains === `string`) {
 		// convert to an array
-		output.push(domains);
+		output.push({ url: domains });
 	}
 
 	// return validated input
