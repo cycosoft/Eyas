@@ -46,7 +46,7 @@
     "_____________SCRIPTS_____________": "",
     "docker:run": "docker build -t eyas . && docker run -v ./dist/runners:/usr/src/app/dist/runners -it --rm eyas",
     "bundle": "npm pack",
-    "deploy": "npm publish",
+    "deploy": "npm run ENSURE_VERSION_SET && npm publish",
     "bump:patch": "npm version patch && git push && git push --tags",
     "bump:minor": "npm version minor && git push && git push --tags",
     "bump:beta": "npm version prerelease --preid beta && git push && git push --tags"
