@@ -22,7 +22,7 @@ const {
 } = require(`electron`);
 
 // initialize the first layer of the app
-initCore();
+initElectronCore();
 
 
 // wrapped in an async IIFE to allow for "root" await calls
@@ -351,87 +351,7 @@ initCore();
 	// 	external && shell.openExternal(url);
 	// }
 
-	// Configure and create an instance of electronWindow to display the UI
-	// function startApplication() {
-	// 	// Create the browser window
-	// 	clientWindow = new electronWindow(windowConfig);
 
-	// 	// stop the user here if the test is expired
-	// 	const { isPast } = require(`date-fns/isPast`);
-	// 	const { format } = require(`date-fns/format`);
-	// 	const expiredAsDate = new Date(config.meta.expires);
-	// 	const isExpired = isPast(expiredAsDate);
-	// 	if(isExpired){
-	// 		dialog.showMessageBoxSync({
-	// 			title: `🚫 Test Expired`,
-	// 			message: `This test expired on ${format(expiredAsDate, `PPP`)} and can no longer be used`,
-	// 			buttons: [`Exit`],
-	// 			noLink: true
-	// 		});
-
-	// 		// track that the app is being closed
-	// 		!isDev && analytics.track(EVENTS.core.exit, { distinct_id: userId });
-
-	// 		// Exit the app
-	// 		electronCore.quit();
-	// 	}
-
-	// 	// Create a menu template
-	// 	setMenu();
-
-	// 	// Prevent the title from changing automatically
-	// 	clientWindow.on(`page-title-updated`, onTitleUpdate);
-
-	// 	// listen for changes to the window size
-	// 	clientWindow.on(`resize`, () => {
-	// 		// get the current viewport dimensions
-	// 		const [newWidth, newHeight] = clientWindow.getContentSize();
-
-	// 		// if the dimensions have not changed
-	// 		if(newWidth === currentViewport[0] && newHeight === currentViewport[1]){
-	// 			return;
-	// 		}
-
-	// 		// update the current dimensions
-	// 		currentViewport = clientWindow.getContentSize();
-
-	// 		// update the menu
-	// 		setMenu();
-	// 	});
-
-	// 	// listen for messages from the UI
-	// 	ipcMain.on(`app-exit`, () => {
-	// 		// remove the close event listener so we don't get stuck in a loop
-	// 		clientWindow.removeListener(`close`, onAppClose);
-
-	// 		// track that the app is being closed
-	// 		!isDev && analytics.track(EVENTS.core.exit, { distinct_id: userId });
-
-	// 		// Shut down the test server AND THEN exit the app
-	// 		testServer.close(electronCore.quit);
-	// 	});
-
-	// 	// open links in the browser when requested
-	// 	ipcMain.on(`open-in-browser`, (event, url) => {
-	// 		const validated = formatURL(url);
-	// 		validated && navigate(validated, true);
-	// 	});
-
-	// 	// hide the UI when requested
-	// 	ipcMain.on(`hide-ui`, () => enableUI(false));
-
-	// 	// listen for the window to close
-	// 	clientWindow.on(`close`, onAppClose);
-
-	// 	// navigate to the test url
-	// 	navigate(appUrl);
-
-	// 	// Overlay the appLayer
-	// 	appLayer = new BrowserView({ webPreferences: { preload: paths.eventBridge } });
-	// 	clientWindow.addBrowserView(appLayer);
-	// 	appLayer.setAutoResize({ width: true, height: true });
-	// 	appLayer.webContents.loadFile(paths.ui.app);
-	// }
 
 	// Prevent the title from changing AND also update it based on the current URL
 	// function onTitleUpdate(evt) {
@@ -535,26 +455,108 @@ initCore();
 	// 	// Start the server
 	// 	testServer = https
 	// 		.createServer({ key: cert.key, cert: cert.cert }, expressLayer)
-	// 		.listen(testServerPort, initCore);
+	// 		.listen(testServerPort, initElectronCore);
 	// }
 })();
 
 // start the core of the application
-function initCore() {
+function initElectronCore() {
 	// start the electron layer
 	electronCore.whenReady()
-	// then create the UI
+		// when the electron layer is ready
 		.then(() => {
-			//
-			startApplication();
+			// start the UI layer
+			initElectronUi();
 
 			// if Electron receives the `activate` event
 			electronCore.on(`activate`, () => {
 				// ensure the electronWindow doesn't already exist
 				if (electronWindow.getAllWindows().length === 0) {
 					// create the window
-					startApplication();
+					initElectronUi();
 				}
 			});
 		});
+}
+
+// initiate the Eyas UI
+function initElectronUi() {
+	// Create the browser window
+	clientWindow = new electronWindow(windowConfig);
+
+	// stop the user here if the test is expired
+	const { isPast } = require(`date-fns/isPast`);
+	const { format } = require(`date-fns/format`);
+	const expiredAsDate = new Date(config.meta.expires);
+	const isExpired = isPast(expiredAsDate);
+	if(isExpired){
+		dialog.showMessageBoxSync({
+			title: `🚫 Test Expired`,
+			message: `This test expired on ${format(expiredAsDate, `PPP`)} and can no longer be used`,
+			buttons: [`Exit`],
+			noLink: true
+		});
+
+		// track that the app is being closed
+		!isDev && analytics.track(EVENTS.core.exit, { distinct_id: userId });
+
+		// Exit the app
+		electronCore.quit();
+	}
+
+	// Create a menu template
+	setMenu();
+
+	// Prevent the title from changing automatically
+	clientWindow.on(`page-title-updated`, onTitleUpdate);
+
+	// listen for changes to the window size
+	clientWindow.on(`resize`, () => {
+		// get the current viewport dimensions
+		const [newWidth, newHeight] = clientWindow.getContentSize();
+
+		// if the dimensions have not changed
+		if(newWidth === currentViewport[0] && newHeight === currentViewport[1]){
+			return;
+		}
+
+		// update the current dimensions
+		currentViewport = clientWindow.getContentSize();
+
+		// update the menu
+		setMenu();
+	});
+
+	// listen for messages from the UI
+	ipcMain.on(`app-exit`, () => {
+		// remove the close event listener so we don't get stuck in a loop
+		clientWindow.removeListener(`close`, onAppClose);
+
+		// track that the app is being closed
+		!isDev && analytics.track(EVENTS.core.exit, { distinct_id: userId });
+
+		// Shut down the test server AND THEN exit the app
+		testServer.close(electronCore.quit);
+	});
+
+	// open links in the browser when requested
+	ipcMain.on(`open-in-browser`, (event, url) => {
+		const validated = formatURL(url);
+		validated && navigate(validated, true);
+	});
+
+	// hide the UI when requested
+	ipcMain.on(`hide-ui`, () => enableUI(false));
+
+	// listen for the window to close
+	clientWindow.on(`close`, onAppClose);
+
+	// navigate to the test url
+	navigate(appUrl);
+
+	// Overlay the appLayer
+	appLayer = new BrowserView({ webPreferences: { preload: paths.eventBridge } });
+	clientWindow.addBrowserView(appLayer);
+	appLayer.setAutoResize({ width: true, height: true });
+	appLayer.webContents.loadFile(paths.ui.app);
 }
