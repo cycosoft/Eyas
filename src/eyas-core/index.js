@@ -95,7 +95,7 @@
 
 	// NEW METHOD
 	// init electron
-	// init the application layer
+	// init the core layer
 	// display the UI (with a center loader)
 	// ask the user to select the environment OR use the default
 	// * start the server during this time
