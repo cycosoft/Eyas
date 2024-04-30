@@ -10,20 +10,24 @@
 // * start the server during this time
 // load the test
 
+// import
+const {
+	app: electronCore,
+	BrowserWindow: electronWindow,
+	// BrowserView,
+	// Menu,
+	// dialog,
+	// shell,
+	// ipcMain
+} = require(`electron`);
+
+// initialize the first layer of the app
+initCore();
 
 
-// wrapped in an async function to allow for "root" await calls
+// wrapped in an async IIFE to allow for "root" await calls
 (async () => {
 	// imports
-	// const {
-	// 	app: electronLayer,
-	// 	BrowserWindow,
-	// 	BrowserView,
-	// 	Menu,
-	// 	dialog,
-	// 	shell,
-	// 	ipcMain
-	// } = require(`electron`);
 	// const express = require(`express`);
 	// const path = require(`path`);
 	// const https = require(`https`);
@@ -104,7 +108,7 @@
 	// };
 
 	// Configure Electron to ignore certificate errors
-	// electronLayer.commandLine.appendSwitch(`ignore-certificate-errors`);
+	// electronCore.commandLine.appendSwitch(`ignore-certificate-errors`);
 
 	// // if a custom domain is provided
 	// if(appUrlOverride){
@@ -113,7 +117,7 @@
 	// 	const { host: routeTo } = new URL(testServerUrl);
 
 	// 	// override requests to the custom domain to use the test server
-	// 	electronLayer.commandLine.appendSwitch(`host-resolver-rules`, `MAP ${routeFrom} ${routeTo}`);
+	// 	electronCore.commandLine.appendSwitch(`host-resolver-rules`, `MAP ${routeFrom} ${routeTo}`);
 	// }
 
 	// start the test server
@@ -143,22 +147,7 @@
 	// 	return output;
 	// }
 
-	// then listen for the app to be ready
-	// function electronInit() {
-	// 	electronLayer.whenReady()
-	// 	// then create the UI
-	// 		.then(() => {
-	// 			startApplication();
 
-	// 			// On macOS it`s common to re-create a window in the app when the
-	// 			// dock icon is clicked and there are no other windows open
-	// 			electronLayer.on(`activate`, () => {
-	// 				if (BrowserWindow.getAllWindows().length === 0) {
-	// 					startApplication();
-	// 				}
-	// 			});
-	// 		});
-	// }
 
 	// Set up the application menu
 	// function setMenu () {
@@ -211,7 +200,7 @@
 	// 				{
 	// 					label: `🏃 Exit`,
 	// 					accelerator: `CmdOrCtrl+Q`,
-	// 					click: electronLayer.quit
+	// 					click: electronCore.quit
 	// 				}
 	// 			]
 	// 		},
@@ -362,10 +351,10 @@
 	// 	external && shell.openExternal(url);
 	// }
 
-	// Configure and create an instance of BrowserWindow to display the UI
+	// Configure and create an instance of electronWindow to display the UI
 	// function startApplication() {
 	// 	// Create the browser window
-	// 	clientWindow = new BrowserWindow(windowConfig);
+	// 	clientWindow = new electronWindow(windowConfig);
 
 	// 	// stop the user here if the test is expired
 	// 	const { isPast } = require(`date-fns/isPast`);
@@ -384,7 +373,7 @@
 	// 		!isDev && analytics.track(EVENTS.core.exit, { distinct_id: userId });
 
 	// 		// Exit the app
-	// 		electronLayer.quit();
+	// 		electronCore.quit();
 	// 	}
 
 	// 	// Create a menu template
@@ -419,7 +408,7 @@
 	// 		!isDev && analytics.track(EVENTS.core.exit, { distinct_id: userId });
 
 	// 		// Shut down the test server AND THEN exit the app
-	// 		testServer.close(electronLayer.quit);
+	// 		testServer.close(electronCore.quit);
 	// 	});
 
 	// 	// open links in the browser when requested
@@ -546,6 +535,26 @@
 	// 	// Start the server
 	// 	testServer = https
 	// 		.createServer({ key: cert.key, cert: cert.cert }, expressLayer)
-	// 		.listen(testServerPort, electronInit);
+	// 		.listen(testServerPort, initCore);
 	// }
 })();
+
+// start the core of the application
+function initCore() {
+	// start the electron layer
+	electronCore.whenReady()
+	// then create the UI
+		.then(() => {
+			//
+			startApplication();
+
+			// if Electron receives the `activate` event
+			electronCore.on(`activate`, () => {
+				// ensure the electronWindow doesn't already exist
+				if (electronWindow.getAllWindows().length === 0) {
+					// create the window
+					startApplication();
+				}
+			});
+		});
+}
