@@ -71,7 +71,6 @@ initElectronCore();
 	// const roots = require(path.join(__dirname, `scripts`, `get-roots.js`));
 	// const paths = {
 	// 	configLoader: path.join(roots.eyas, `scripts`, `get-config.js`),
-	// 	icon: path.join(roots.eyas, `eyas-assets`, `eyas-logo.png`),
 	// 	packageJson: path.join(roots.eyas, `package.json`),
 	// 	testSrc: path.join(roots.config, TEST_SOURCE),
 	// 	eventBridge: path.join(roots.eyas, `scripts`, `event-bridge.js`),
@@ -352,14 +351,7 @@ initElectronCore();
 
 
 
-	// Prevent the title from changing AND also update it based on the current URL
-	// function onTitleUpdate(evt) {
-	// 	// Prevent the app from changing the title automatically
-	// 	evt.preventDefault();
 
-	// 	// set a custom title
-	// 	$appWindow.setTitle(getAppTitle());
-	// }
 
 	// listen for the window to close
 	// async function onAppClose(evt) {
@@ -591,4 +583,13 @@ function getAppTitle() {
 
 	// Return the built title
 	return output;
+}
+
+// Prevent the title from changing AND also update it based on the current URL
+function onTitleUpdate(evt) {
+	// Prevent the app from changing the title automatically
+	evt.preventDefault();
+
+	// set a custom title
+	$appWindow.setTitle(getAppTitle());
 }
