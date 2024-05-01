@@ -30,6 +30,9 @@ const $allViewports = [
 	{ isDefault: true, label: `Tablet`, width: 768, height: 1024 },
 	{ isDefault: true, label: `Mobile`, width: 360, height: 640 }
 ];
+const paths = {
+	icon: path.join(__dirname, `..`, `eyas-assets`, `eyas-logo.png`)
+};
 
 // initialize the first layer of the app
 initElectronCore();
