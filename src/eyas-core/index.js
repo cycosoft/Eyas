@@ -479,21 +479,7 @@ function initElectronUi() {
 	$appWindow.on(`page-title-updated`, onTitleUpdate);
 
 	// listen for changes to the window size
-	$appWindow.on(`resize`, () => {
-		// get the current viewport dimensions
-		const [newWidth, newHeight] = $appWindow.getContentSize();
-
-		// if the dimensions have not changed
-		if(newWidth === $currentViewport[0] && newHeight === $currentViewport[1]){
-			return;
-		}
-
-		// update the current dimensions
-		$currentViewport = $appWindow.getContentSize();
-
-		// update the menu
-		setMenu();
-	});
+	$appWindow.on(`resize`, onResize);
 
 	// listen for messages from the UI
 	ipcMain.on(`app-exit`, () => {
@@ -592,4 +578,21 @@ function onTitleUpdate(evt) {
 
 	// set a custom title
 	$appWindow.setTitle(getAppTitle());
+}
+
+// when the app resizes
+function onResize() {
+	// get the current viewport dimensions
+	const [newWidth, newHeight] = $appWindow.getContentSize();
+
+	// if the dimensions have not changed
+	if(newWidth === $currentViewport[0] && newHeight === $currentViewport[1]){
+		return;
+	}
+
+	// update the current dimensions
+	$currentViewport = $appWindow.getContentSize();
+
+	// update the menu
+	setMenu();
 }
