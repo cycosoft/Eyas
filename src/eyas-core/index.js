@@ -22,6 +22,7 @@ const {
 } = require(`electron`);
 
 // global variables $
+const $appName = `Eyas`;
 let $appWindow = null;
 const $currentViewport = [];
 const $allViewports = [
@@ -91,7 +92,7 @@ initElectronCore();
 	// const config = require(paths.configLoader);
 
 	// // config
-	// const appName = `Eyas`;
+
 	// const testServerPort = config.port;
 	// const testServerUrl = `https://localhost:${testServerPort}`;
 	// const appUrlOverride = formatURL(config.domain);
@@ -149,7 +150,7 @@ initElectronCore();
 	// 	// build the default menu in MacOS style
 	// 	const menuDefault = [
 	// 		{
-	// 			label: appName,
+	// 			label: $appName,
 	// 			submenu: [
 	// 				{
 	// 					label: `📇 About`,
@@ -171,7 +172,7 @@ initElectronCore();
 	// 						dialog.showMessageBox($appWindow, {
 	// 							type: `info`,
 	// 							buttons: [`OK`],
-	// 							title: `About ${appName}`,
+	// 							title: `About ${$appName}`,
 	// 							icon: paths.icon,
 	// 							message: `
 	// 							Test name: ${config.title}
@@ -182,7 +183,7 @@ initElectronCore();
 	// 							Built by: ${config.meta.gitUser}
 	// 							Built on: ${new Date(config.meta.compiled).toLocaleString()}
 
-	// 							Runner: ${appName} v${appVersion}
+	// 							Runner: ${$appName} v${appVersion}
 
 
 	// 							🏢 © ${yearRange} Cycosoft, LLC
@@ -571,7 +572,7 @@ function config() {
 // Get the app title
 function getAppTitle() {
 	// Always start with the main app name
-	let output = `${appName}`;
+	let output = $appName;
 
 	// Add the test app title
 	output += ` :: ${config.title}`;
