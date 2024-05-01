@@ -477,6 +477,7 @@ function initElectronUi() {
 	});
 
 	// exit the app if the test has expired
+	// NOTE: THIS NEEDS TO BE MOVED TO THE UI LAYER
 	checkTestExpiration();
 
 	// Create a menu template
