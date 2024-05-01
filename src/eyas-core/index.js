@@ -147,198 +147,7 @@ initElectronCore();
 
 
 
-	// Set up the application menu
-	// function setMenu () {
-	// 	// build the default menu in MacOS style
-	// 	const menuDefault = [
-	// 		{
-	// 			label: $appName,
-	// 			submenu: [
-	// 				{
-	// 					label: `📇 About`,
-	// 					click: () => {
-	// 						// setup
-	// 						const { format } = require(`date-fns/format`);
-	// 						const { differenceInDays } = require(`date-fns/differenceInDays`);
-	// 						const now = new Date();
-	// 						const expires = new Date(config.meta.expires);
-	// 						const dayCount = differenceInDays(expires, now);
-	// 						const expirationFormatted = format(expires, `MMM do @ p`);
-	// 						const relativeFormatted = dayCount ? `~${dayCount} days` : `soon`;
-	// 						const startYear = 2023;
-	// 						const currentYear = now.getFullYear();
-	// 						const yearRange = startYear === currentYear
-	// 							? startYear : `${startYear} - ${currentYear}`;
 
-	// 						// show the about dialog
-	// 						dialog.showMessageBox($appWindow, {
-	// 							type: `info`,
-	// 							buttons: [`OK`],
-	// 							title: `About ${$appName}`,
-	// 							icon: paths.icon,
-	// 							message: `
-	// 							Test name: ${config.title}
-	// 							Test version: ${config.version}
-	// 							Test expires: ${expirationFormatted} (${relativeFormatted})
-
-	// 							Built from: ${config.meta.gitBranch} #${config.meta.gitHash}
-	// 							Built by: ${config.meta.gitUser}
-	// 							Built on: ${new Date(config.meta.compiled).toLocaleString()}
-
-	// 							Runner: ${$appName} v${appVersion}
-
-
-	// 							🏢 © ${yearRange} Cycosoft, LLC
-	// 							🌐 https://cycosoft.com
-	// 							✉️ support+eyas@cycosoft.com
-	// 							`
-	// 						});
-	// 					}
-	// 				},
-	// 				{
-	// 					label: `🏃 Exit`,
-	// 					accelerator: `CmdOrCtrl+Q`,
-	// 					click: _electronCore.quit
-	// 				}
-	// 			]
-	// 		},
-
-	// 		{
-	// 			label: `🧪 Testing`,
-	// 			submenu: [
-	// 				{
-	// 					label: `📦 Load Test Files`,
-	// 					click: () => navigate(appUrl)
-	// 				},
-	// 				{ type: `separator` },
-	// 				{
-	// 					label: `🖥️ Open in Browser`,
-	// 					click: () => {
-	// 						// url to navigate to
-	// 						let urlToNavigateTo = $appWindow.webContents.getURL();
-
-	// 						// if the base url is the test defined domain
-	// 						if(appUrlOverride){
-	// 							// grab the base url parts
-	// 							urlToNavigateTo = new URL(appUrlOverride);
-	// 							urlToNavigateTo.port = testServerPort;
-
-	// 							// alert the user that it needs to be defined in etc/hosts
-	// 							dialog.showMessageBoxSync($appWindow, {
-	// 								type: `warning`,
-	// 								buttons: [`Open`],
-	// 								title: `Open in Browser`,
-	// 								message: `To run your test outside of Eyas, you must add the following to your "etc/hosts" file:
-
-	// 								127.0.0.1     ${urlToNavigateTo.hostname}`
-	// 							});
-
-	// 							// convert the url to a string
-	// 							urlToNavigateTo = urlToNavigateTo.toString();
-	// 						}
-
-	// 						// open the current url in the default browser
-	// 						navigate(urlToNavigateTo, true);
-	// 					}
-	// 				},
-	// 				{ type: `separator` },
-	// 				// populate with appropriate dev tools
-	// 				...(() => {
-	// 					const output = [
-	// 						{
-	// 							label: `⚙️ DevTools`,
-	// 							click: () => $appWindow.webContents.openDevTools()
-	// 						}
-	// 					];
-
-	// 					// add the dev tools for the app layer if in dev
-	// 					isDev && output.push(
-	// 						{
-	// 							label: `⚙️ DevTools (App Layer)`,
-	// 							click: () => appLayer.webContents.openDevTools()
-	// 						}
-	// 					);
-
-	// 					return output;
-	// 				})(),
-	// 				{ type: `separator` },
-	// 				{
-	// 					label: `♻️ Reload Page`,
-	// 					click: () => $appWindow.webContents.reloadIgnoringCache()
-	// 				}
-	// 			]
-	// 		}
-	// 	];
-
-	// 	// for each menu item where the list exists
-	// 	const customLinkList = [];
-	// 	config.links.forEach(item => {
-	// 		// check if the provided url is valid
-	// 		const itemUrl = formatURL(item.url);
-
-	// 		// add the item to the menu
-	// 		customLinkList.push({
-	// 			label: `${item.label || item.url}${itemUrl ? `` : ` (invalid entry)`}`,
-	// 			click: () => navigate(itemUrl, item.external),
-	// 			enabled: !!itemUrl // disable menu item if invalid url
-	// 		});
-	// 	});
-
-	// 	// if there are any valid items THEN add the list to the menu
-	// 	customLinkList.length && menuDefault.push({ label: `💼 Links`, submenu: customLinkList });
-
-	// 	// build out the menu for selecting a screen size
-	// 	const viewportsMenu = [];
-	// 	const tolerance = 2;
-
-	// 	// add the viewports to the list
-	// 	let defaultsFound = false;
-	// 	$allViewports.forEach(res => {
-	// 		const [width, height] = $currentViewport || [];
-	// 		const isSizeMatch = Math.abs(res.width - width) <= tolerance && Math.abs(res.height - height) <= tolerance;
-
-	// 		// if this is the first default viewport
-	// 		if(!defaultsFound && res.isDefault){
-	// 			// add a separator
-	// 			viewportsMenu.push({ type: `separator` });
-
-	// 			// mark that the first default has been found
-	// 			defaultsFound = true;
-	// 		}
-
-	// 		viewportsMenu.push({
-	// 			label: `${isSizeMatch ? `🔘 ` : ``}${res.label} (${res.width} x ${res.height})`,
-	// 			click: () => $appWindow.setContentSize(res.width, res.height)
-	// 		});
-	// 	});
-
-	// 	// Add the custom viewport menu item if it's not already in the list
-	// 	(() => {
-	// 		// exit if there's no custom viewport set
-	// 		if(!$currentViewport){ return; }
-
-	// 		// setup
-	// 		const [width, height] = $currentViewport;
-
-	// 		// exit if the custom viewports are already in the list (within tolerance)
-	// 		if($allViewports.some(res => Math.abs(res.width - width) <= tolerance && Math.abs(res.height - height) <= tolerance)){ return; }
-
-	// 		// add the custom viewport to the list
-	// 		viewportsMenu.unshift(
-	// 			{
-	// 				label: `🔘 Current (${width} x ${height})`,
-	// 				click: () => $appWindow.setContentSize(width, height)
-	// 			},
-	// 			{ type: `separator` }
-	// 		);
-	// 	})();
-
-	// 	// Add the viewports submenu to the application menu
-	// 	menuDefault.push({ label: `📏 Viewport`, submenu: viewportsMenu });
-
-	// 	// Set the modified menu as the application menu
-	// 	Menu.setApplicationMenu(Menu.buildFromTemplate(menuDefault));
-	// }
 
 	// manage navigation
 	// function navigate(url, external) {
@@ -595,4 +404,197 @@ function onResize() {
 
 	// update the menu
 	setMenu();
+}
+
+// Set up the application menu
+function setMenu () {
+	// build the default menu in MacOS style
+	const menuDefault = [
+		{
+			label: $appName,
+			submenu: [
+				{
+					label: `📇 About`,
+					click: () => {
+						// setup
+						const { format } = require(`date-fns/format`);
+						const { differenceInDays } = require(`date-fns/differenceInDays`);
+						const now = new Date();
+						const expires = new Date(config.meta.expires);
+						const dayCount = differenceInDays(expires, now);
+						const expirationFormatted = format(expires, `MMM do @ p`);
+						const relativeFormatted = dayCount ? `~${dayCount} days` : `soon`;
+						const startYear = 2023;
+						const currentYear = now.getFullYear();
+						const yearRange = startYear === currentYear
+							? startYear : `${startYear} - ${currentYear}`;
+
+						// show the about dialog
+						dialog.showMessageBox($appWindow, {
+							type: `info`,
+							buttons: [`OK`],
+							title: `About ${$appName}`,
+							icon: paths.icon,
+							message: `
+							Test name: ${config.title}
+							Test version: ${config.version}
+							Test expires: ${expirationFormatted} (${relativeFormatted})
+
+							Built from: ${config.meta.gitBranch} #${config.meta.gitHash}
+							Built by: ${config.meta.gitUser}
+							Built on: ${new Date(config.meta.compiled).toLocaleString()}
+
+							Runner: ${$appName} v${appVersion}
+
+
+							🏢 © ${yearRange} Cycosoft, LLC
+							🌐 https://cycosoft.com
+							✉️ support+eyas@cycosoft.com
+							`
+						});
+					}
+				},
+				{
+					label: `🏃 Exit`,
+					accelerator: `CmdOrCtrl+Q`,
+					click: _electronCore.quit
+				}
+			]
+		},
+
+		{
+			label: `🧪 Testing`,
+			submenu: [
+				{
+					label: `📦 Load Test Files`,
+					click: () => navigate(appUrl)
+				},
+				{ type: `separator` },
+				{
+					label: `🖥️ Open in Browser`,
+					click: () => {
+						// url to navigate to
+						let urlToNavigateTo = $appWindow.webContents.getURL();
+
+						// if the base url is the test defined domain
+						if(appUrlOverride){
+							// grab the base url parts
+							urlToNavigateTo = new URL(appUrlOverride);
+							urlToNavigateTo.port = testServerPort;
+
+							// alert the user that it needs to be defined in etc/hosts
+							dialog.showMessageBoxSync($appWindow, {
+								type: `warning`,
+								buttons: [`Open`],
+								title: `Open in Browser`,
+								message: `To run your test outside of Eyas, you must add the following to your "etc/hosts" file:
+
+								127.0.0.1     ${urlToNavigateTo.hostname}`
+							});
+
+							// convert the url to a string
+							urlToNavigateTo = urlToNavigateTo.toString();
+						}
+
+						// open the current url in the default browser
+						navigate(urlToNavigateTo, true);
+					}
+				},
+				{ type: `separator` },
+				// populate with appropriate dev tools
+				...(() => {
+					const output = [
+						{
+							label: `⚙️ DevTools`,
+							click: () => $appWindow.webContents.openDevTools()
+						}
+					];
+
+					// add the dev tools for the app layer if in dev
+					isDev && output.push(
+						{
+							label: `⚙️ DevTools (App Layer)`,
+							click: () => appLayer.webContents.openDevTools()
+						}
+					);
+
+					return output;
+				})(),
+				{ type: `separator` },
+				{
+					label: `♻️ Reload Page`,
+					click: () => $appWindow.webContents.reloadIgnoringCache()
+				}
+			]
+		}
+	];
+
+	// for each menu item where the list exists
+	const customLinkList = [];
+	config.links.forEach(item => {
+		// check if the provided url is valid
+		const itemUrl = formatURL(item.url);
+
+		// add the item to the menu
+		customLinkList.push({
+			label: `${item.label || item.url}${itemUrl ? `` : ` (invalid entry)`}`,
+			click: () => navigate(itemUrl, item.external),
+			enabled: !!itemUrl // disable menu item if invalid url
+		});
+	});
+
+	// if there are any valid items THEN add the list to the menu
+	customLinkList.length && menuDefault.push({ label: `💼 Links`, submenu: customLinkList });
+
+	// build out the menu for selecting a screen size
+	const viewportsMenu = [];
+	const tolerance = 2;
+
+	// add the viewports to the list
+	let defaultsFound = false;
+	$allViewports.forEach(res => {
+		const [width, height] = $currentViewport || [];
+		const isSizeMatch = Math.abs(res.width - width) <= tolerance && Math.abs(res.height - height) <= tolerance;
+
+		// if this is the first default viewport
+		if(!defaultsFound && res.isDefault){
+			// add a separator
+			viewportsMenu.push({ type: `separator` });
+
+			// mark that the first default has been found
+			defaultsFound = true;
+		}
+
+		viewportsMenu.push({
+			label: `${isSizeMatch ? `🔘 ` : ``}${res.label} (${res.width} x ${res.height})`,
+			click: () => $appWindow.setContentSize(res.width, res.height)
+		});
+	});
+
+	// Add the custom viewport menu item if it's not already in the list
+	(() => {
+		// exit if there's no custom viewport set
+		if(!$currentViewport){ return; }
+
+		// setup
+		const [width, height] = $currentViewport;
+
+		// exit if the custom viewports are already in the list (within tolerance)
+		if($allViewports.some(res => Math.abs(res.width - width) <= tolerance && Math.abs(res.height - height) <= tolerance)){ return; }
+
+		// add the custom viewport to the list
+		viewportsMenu.unshift(
+			{
+				label: `🔘 Current (${width} x ${height})`,
+				click: () => $appWindow.setContentSize(width, height)
+			},
+			{ type: `separator` }
+		);
+	})();
+
+	// Add the viewports submenu to the application menu
+	menuDefault.push({ label: `📏 Viewport`, submenu: viewportsMenu });
+
+	// Set the modified menu as the application menu
+	Menu.setApplicationMenu(Menu.buildFromTemplate(menuDefault));
 }
