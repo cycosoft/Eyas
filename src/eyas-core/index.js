@@ -10,16 +10,19 @@
 // * start the server during this time
 // load the test
 
-// import
+// global imports _
 const {
-	app: electronCore,
-	BrowserWindow: electronWindow,
+	app: _electronCore,
+	BrowserWindow: _electronWindow,
 	// BrowserView,
 	// Menu,
 	// dialog,
 	// shell,
 	// ipcMain
 } = require(`electron`);
+
+// global variables $
+let $appWindow = null;
 
 // initialize the first layer of the app
 initElectronCore();
@@ -88,7 +91,6 @@ initElectronCore();
 	// const testServerUrl = `https://localhost:${testServerPort}`;
 	// const appUrlOverride = formatURL(config.domain);
 	// const appUrl = appUrlOverride || testServerUrl;
-	// let clientWindow = null;
 	// let expressLayer = null;
 	// let appLayer = null;
 	// let testServer = null;
@@ -99,16 +101,10 @@ initElectronCore();
 	// 	{ isDefault: true, label: `Mobile`, width: 360, height: 640 }
 	// ];
 	// let currentViewport = [allViewports[0].width, allViewports[0].height];
-	// const windowConfig = {
-	// 	useContentSize: true,
-	// 	width: currentViewport[0],
-	// 	height: currentViewport[1],
-	// 	title: getAppTitle(),
-	// 	icon: paths.icon
-	// };
+
 
 	// Configure Electron to ignore certificate errors
-	// electronCore.commandLine.appendSwitch(`ignore-certificate-errors`);
+	// _electronCore.commandLine.appendSwitch(`ignore-certificate-errors`);
 
 	// // if a custom domain is provided
 	// if(appUrlOverride){
@@ -117,7 +113,7 @@ initElectronCore();
 	// 	const { host: routeTo } = new URL(testServerUrl);
 
 	// 	// override requests to the custom domain to use the test server
-	// 	electronCore.commandLine.appendSwitch(`host-resolver-rules`, `MAP ${routeFrom} ${routeTo}`);
+	// 	_electronCore.commandLine.appendSwitch(`host-resolver-rules`, `MAP ${routeFrom} ${routeTo}`);
 	// }
 
 	// start the test server
@@ -173,7 +169,7 @@ initElectronCore();
 	// 							? startYear : `${startYear} - ${currentYear}`;
 
 	// 						// show the about dialog
-	// 						dialog.showMessageBox(clientWindow, {
+	// 						dialog.showMessageBox($appWindow, {
 	// 							type: `info`,
 	// 							buttons: [`OK`],
 	// 							title: `About ${appName}`,
@@ -200,7 +196,7 @@ initElectronCore();
 	// 				{
 	// 					label: `🏃 Exit`,
 	// 					accelerator: `CmdOrCtrl+Q`,
-	// 					click: electronCore.quit
+	// 					click: _electronCore.quit
 	// 				}
 	// 			]
 	// 		},
@@ -217,7 +213,7 @@ initElectronCore();
 	// 					label: `🖥️ Open in Browser`,
 	// 					click: () => {
 	// 						// url to navigate to
-	// 						let urlToNavigateTo = clientWindow.webContents.getURL();
+	// 						let urlToNavigateTo = $appWindow.webContents.getURL();
 
 	// 						// if the base url is the test defined domain
 	// 						if(appUrlOverride){
@@ -226,7 +222,7 @@ initElectronCore();
 	// 							urlToNavigateTo.port = testServerPort;
 
 	// 							// alert the user that it needs to be defined in etc/hosts
-	// 							dialog.showMessageBoxSync(clientWindow, {
+	// 							dialog.showMessageBoxSync($appWindow, {
 	// 								type: `warning`,
 	// 								buttons: [`Open`],
 	// 								title: `Open in Browser`,
@@ -249,7 +245,7 @@ initElectronCore();
 	// 					const output = [
 	// 						{
 	// 							label: `⚙️ DevTools`,
-	// 							click: () => clientWindow.webContents.openDevTools()
+	// 							click: () => $appWindow.webContents.openDevTools()
 	// 						}
 	// 					];
 
@@ -266,7 +262,7 @@ initElectronCore();
 	// 				{ type: `separator` },
 	// 				{
 	// 					label: `♻️ Reload Page`,
-	// 					click: () => clientWindow.webContents.reloadIgnoringCache()
+	// 					click: () => $appWindow.webContents.reloadIgnoringCache()
 	// 				}
 	// 			]
 	// 		}
@@ -310,7 +306,7 @@ initElectronCore();
 
 	// 		viewportsMenu.push({
 	// 			label: `${isSizeMatch ? `🔘 ` : ``}${res.label} (${res.width} x ${res.height})`,
-	// 			click: () => clientWindow.setContentSize(res.width, res.height)
+	// 			click: () => $appWindow.setContentSize(res.width, res.height)
 	// 		});
 	// 	});
 
@@ -329,7 +325,7 @@ initElectronCore();
 	// 		viewportsMenu.unshift(
 	// 			{
 	// 				label: `🔘 Current (${width} x ${height})`,
-	// 				click: () => clientWindow.setContentSize(width, height)
+	// 				click: () => $appWindow.setContentSize(width, height)
 	// 			},
 	// 			{ type: `separator` }
 	// 		);
@@ -345,7 +341,7 @@ initElectronCore();
 	// manage navigation
 	// function navigate(url, external) {
 	// 	// go to the requested url in electron
-	// 	!external && clientWindow?.webContents?.loadURL(url);
+	// 	!external && $appWindow?.webContents?.loadURL(url);
 
 	// 	// open the requested url in the default browser
 	// 	external && shell.openExternal(url);
@@ -359,7 +355,7 @@ initElectronCore();
 	// 	evt.preventDefault();
 
 	// 	// set a custom title
-	// 	clientWindow.setTitle(getAppTitle());
+	// 	$appWindow.setTitle(getAppTitle());
 	// }
 
 	// listen for the window to close
@@ -377,7 +373,7 @@ initElectronCore();
 	// 	let screenshot = null;
 	// 	// disable the screenshot on windows as it isn't needed
 	// 	if(operatingSystem !== `win32`) {
-	// 		screenshot = await clientWindow.capturePage();
+	// 		screenshot = await $appWindow.capturePage();
 	// 		screenshot = screenshot.toDataURL();
 	// 	}
 
@@ -406,8 +402,8 @@ initElectronCore();
 	// 	output += ` :: ${config.version} ✨`;
 
 	// 	// Add the current URL if it`s available
-	// 	if (clientWindow){
-	// 		output += ` ( ${clientWindow.webContents.getURL()} )`;
+	// 	if ($appWindow){
+	// 		output += ` ( ${$appWindow.webContents.getURL()} )`;
 	// 	}
 
 	// 	// Return the built title
@@ -462,16 +458,16 @@ initElectronCore();
 // start the core of the application
 function initElectronCore() {
 	// start the electron layer
-	electronCore.whenReady()
+	_electronCore.whenReady()
 		// when the electron layer is ready
 		.then(() => {
 			// start the UI layer
 			initElectronUi();
 
 			// if Electron receives the `activate` event
-			electronCore.on(`activate`, () => {
-				// ensure the electronWindow doesn't already exist
-				if (electronWindow.getAllWindows().length === 0) {
+			_electronCore.on(`activate`, () => {
+				// ensure the _electronWindow doesn't already exist
+				if (_electronWindow.getAllWindows().length === 0) {
 					// create the window
 					initElectronUi();
 				}
@@ -481,39 +477,28 @@ function initElectronCore() {
 
 // initiate the Eyas UI
 function initElectronUi() {
-	// Create the browser window
-	clientWindow = new electronWindow(windowConfig);
+	// Create the app window for this instance
+	$appWindow = new _electronWindow({
+		useContentSize: true,
+		width: currentViewport[0],
+		height: currentViewport[1],
+		title: getAppTitle(),
+		icon: paths.icon
+	});
 
-	// stop the user here if the test is expired
-	const { isPast } = require(`date-fns/isPast`);
-	const { format } = require(`date-fns/format`);
-	const expiredAsDate = new Date(config.meta.expires);
-	const isExpired = isPast(expiredAsDate);
-	if(isExpired){
-		dialog.showMessageBoxSync({
-			title: `🚫 Test Expired`,
-			message: `This test expired on ${format(expiredAsDate, `PPP`)} and can no longer be used`,
-			buttons: [`Exit`],
-			noLink: true
-		});
-
-		// track that the app is being closed
-		!isDev && analytics.track(EVENTS.core.exit, { distinct_id: userId });
-
-		// Exit the app
-		electronCore.quit();
-	}
+	// exit the app if the test has expired
+	checkTestExpiration();
 
 	// Create a menu template
 	setMenu();
 
 	// Prevent the title from changing automatically
-	clientWindow.on(`page-title-updated`, onTitleUpdate);
+	$appWindow.on(`page-title-updated`, onTitleUpdate);
 
 	// listen for changes to the window size
-	clientWindow.on(`resize`, () => {
+	$appWindow.on(`resize`, () => {
 		// get the current viewport dimensions
-		const [newWidth, newHeight] = clientWindow.getContentSize();
+		const [newWidth, newHeight] = $appWindow.getContentSize();
 
 		// if the dimensions have not changed
 		if(newWidth === currentViewport[0] && newHeight === currentViewport[1]){
@@ -521,7 +506,7 @@ function initElectronUi() {
 		}
 
 		// update the current dimensions
-		currentViewport = clientWindow.getContentSize();
+		currentViewport = $appWindow.getContentSize();
 
 		// update the menu
 		setMenu();
@@ -530,13 +515,13 @@ function initElectronUi() {
 	// listen for messages from the UI
 	ipcMain.on(`app-exit`, () => {
 		// remove the close event listener so we don't get stuck in a loop
-		clientWindow.removeListener(`close`, onAppClose);
+		$appWindow.removeListener(`close`, onAppClose);
 
 		// track that the app is being closed
 		!isDev && analytics.track(EVENTS.core.exit, { distinct_id: userId });
 
 		// Shut down the test server AND THEN exit the app
-		testServer.close(electronCore.quit);
+		testServer.close(_electronCore.quit);
 	});
 
 	// open links in the browser when requested
@@ -549,14 +534,50 @@ function initElectronUi() {
 	ipcMain.on(`hide-ui`, () => enableUI(false));
 
 	// listen for the window to close
-	clientWindow.on(`close`, onAppClose);
+	$appWindow.on(`close`, onAppClose);
 
 	// navigate to the test url
 	navigate(appUrl);
 
 	// Overlay the appLayer
 	appLayer = new BrowserView({ webPreferences: { preload: paths.eventBridge } });
-	clientWindow.addBrowserView(appLayer);
+	$appWindow.addBrowserView(appLayer);
 	appLayer.setAutoResize({ width: true, height: true });
 	appLayer.webContents.loadFile(paths.ui.app);
+}
+
+// forces an exit if the loaded test has expired
+function checkTestExpiration () {
+	// imports
+	const { isPast } = require(`date-fns/isPast`);
+	const { format } = require(`date-fns/format`);
+
+	// setup
+	const expirationDate = new Date(config().meta.expires);
+
+	// stop if the test has not expired
+	if(!isPast(expirationDate)){ return; }
+
+	// alert the user that the test has expired
+	dialog.showMessageBoxSync({
+		title: `🚫 Test Expired`,
+		message: `This test expired on ${format(expirationDate, `PPP`)} and can no longer be used`,
+		buttons: [`Exit`],
+		noLink: true
+	});
+
+	// track that the app is being closed
+	!isDev && analytics.track(EVENTS.core.exit, { distinct_id: userId });
+
+	// Exit the app
+	_electronCore.quit();
+}
+
+// returns the current test's config
+function config() {
+	// use the cache OR load the config
+	config.cache = config.cache || require(paths.configLoader);
+
+	// return the config
+	return config.cache;
 }
