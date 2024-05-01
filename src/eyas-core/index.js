@@ -23,10 +23,15 @@ const {
 
 // global variables $
 let $appWindow = null;
+const $currentViewport = [];
+const $allViewports = [
+	{ isDefault: true, label: `Desktop`, width: 1366, height: 768 },
+	{ isDefault: true, label: `Tablet`, width: 768, height: 1024 },
+	{ isDefault: true, label: `Mobile`, width: 360, height: 640 }
+];
 
 // initialize the first layer of the app
 initElectronCore();
-
 
 // wrapped in an async IIFE to allow for "root" await calls
 (async () => {
@@ -94,13 +99,7 @@ initElectronCore();
 	// let expressLayer = null;
 	// let appLayer = null;
 	// let testServer = null;
-	// const allViewports = [
-	// 	...config.viewports,
-	// 	{ isDefault: true, label: `Desktop`, width: 1366, height: 768 },
-	// 	{ isDefault: true, label: `Tablet`, width: 768, height: 1024 },
-	// 	{ isDefault: true, label: `Mobile`, width: 360, height: 640 }
-	// ];
-	// let currentViewport = [allViewports[0].width, allViewports[0].height];
+
 
 
 	// Configure Electron to ignore certificate errors
@@ -291,8 +290,8 @@ initElectronCore();
 
 	// 	// add the viewports to the list
 	// 	let defaultsFound = false;
-	// 	allViewports.forEach(res => {
-	// 		const [width, height] = currentViewport || [];
+	// 	$allViewports.forEach(res => {
+	// 		const [width, height] = $currentViewport || [];
 	// 		const isSizeMatch = Math.abs(res.width - width) <= tolerance && Math.abs(res.height - height) <= tolerance;
 
 	// 		// if this is the first default viewport
@@ -313,13 +312,13 @@ initElectronCore();
 	// 	// Add the custom viewport menu item if it's not already in the list
 	// 	(() => {
 	// 		// exit if there's no custom viewport set
-	// 		if(!currentViewport){ return; }
+	// 		if(!$currentViewport){ return; }
 
 	// 		// setup
-	// 		const [width, height] = currentViewport;
+	// 		const [width, height] = $currentViewport;
 
 	// 		// exit if the custom viewports are already in the list (within tolerance)
-	// 		if(allViewports.some(res => Math.abs(res.width - width) <= tolerance && Math.abs(res.height - height) <= tolerance)){ return; }
+	// 		if($allViewports.some(res => Math.abs(res.width - width) <= tolerance && Math.abs(res.height - height) <= tolerance)){ return; }
 
 	// 		// add the custom viewport to the list
 	// 		viewportsMenu.unshift(
@@ -384,7 +383,7 @@ initElectronCore();
 	// sets the visibility of the UI so externalLayer can be interacted with
 	// function enableUI(enable) {
 	// 	if(enable){
-	// 		appLayer.setBounds({ x: 0, y: 0, width: currentViewport[0], height: currentViewport[1] });
+	// 		appLayer.setBounds({ x: 0, y: 0, width: $currentViewport[0], height: $currentViewport[1] });
 	// 	}else{
 	// 		appLayer.setBounds({ x: 0, y: 0, width: 0, height: 0 });
 	// 	}
@@ -477,11 +476,18 @@ function initElectronCore() {
 
 // initiate the Eyas UI
 function initElectronUi() {
+	// add test defined viewports to the front of the list
+	$allViewports.unshift(...config().viewports);
+
+	// set the current viewport to the first viewport in the list
+	$currentViewport[0] = $allViewports[0].width;
+	$currentViewport[1] = $allViewports[0].height;
+
 	// Create the app window for this instance
 	$appWindow = new _electronWindow({
 		useContentSize: true,
-		width: currentViewport[0],
-		height: currentViewport[1],
+		width: $currentViewport[0],
+		height: $currentViewport[1],
 		title: getAppTitle(),
 		icon: paths.icon
 	});
@@ -501,12 +507,12 @@ function initElectronUi() {
 		const [newWidth, newHeight] = $appWindow.getContentSize();
 
 		// if the dimensions have not changed
-		if(newWidth === currentViewport[0] && newHeight === currentViewport[1]){
+		if(newWidth === $currentViewport[0] && newHeight === $currentViewport[1]){
 			return;
 		}
 
 		// update the current dimensions
-		currentViewport = $appWindow.getContentSize();
+		$currentViewport = $appWindow.getContentSize();
 
 		// update the menu
 		setMenu();
