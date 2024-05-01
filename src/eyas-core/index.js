@@ -575,10 +575,10 @@ function getAppTitle() {
 	let output = $appName;
 
 	// Add the test app title
-	output += ` :: ${config.title}`;
+	output += ` :: ${config().title}`;
 
 	// Add the build version
-	output += ` :: ${config.version} ✨`;
+	output += ` :: ${config().version} ✨`;
 
 	// Add the current URL if it`s available
 	if ($appWindow){
