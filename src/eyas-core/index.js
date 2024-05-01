@@ -389,26 +389,6 @@ initElectronCore();
 	// 	}
 	// }
 
-	// Get the app title
-	// function getAppTitle() {
-	// 	// Always start with the main app name
-	// 	let output = `${appName}`;
-
-	// 	// Add the test app title
-	// 	output += ` :: ${config.title}`;
-
-	// 	// Add the build version
-	// 	output += ` :: ${config.version} ✨`;
-
-	// 	// Add the current URL if it`s available
-	// 	if ($appWindow){
-	// 		output += ` ( ${$appWindow.webContents.getURL()} )`;
-	// 	}
-
-	// 	// Return the built title
-	// 	return output;
-	// }
-
 	// Set up Express to serve files from the test directory
 	// async function setupTestServer() {
 	// 	// Create the Express app
@@ -586,4 +566,24 @@ function config() {
 
 	// return the config
 	return config.cache;
+}
+
+// Get the app title
+function getAppTitle() {
+	// Always start with the main app name
+	let output = `${appName}`;
+
+	// Add the test app title
+	output += ` :: ${config.title}`;
+
+	// Add the build version
+	output += ` :: ${config.version} ✨`;
+
+	// Add the current URL if it`s available
+	if ($appWindow){
+		output += ` ( ${$appWindow.webContents.getURL()} )`;
+	}
+
+	// Return the built title
+	return output;
 }
