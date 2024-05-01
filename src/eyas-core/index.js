@@ -95,9 +95,9 @@ initElectronCore();
 
 	// // config
 
-	// const testServerPort = config.port;
+	// const testServerPort = config().port;
 	// const testServerUrl = `https://localhost:${testServerPort}`;
-	// const appUrlOverride = formatURL(config.domain);
+	// const appUrlOverride = formatURL(config().domain);
 	// const appUrl = appUrlOverride || testServerUrl;
 	// let expressLayer = null;
 	// let appLayer = null;
@@ -203,7 +203,7 @@ initElectronCore();
 	// 	expressLayer.use(express.static(paths.testSrc));
 
 	// 	// For each provided route from the user
-	// 	config.redirects.forEach(route => {
+	// 	config().redirects.forEach(route => {
 	// 		// Add a redirect to the test server
 	// 		expressLayer.get(route.from, function (req, res) {
 	// 			// Redirect to the provided route
@@ -420,7 +420,7 @@ function setMenu () {
 						const { format } = require(`date-fns/format`);
 						const { differenceInDays } = require(`date-fns/differenceInDays`);
 						const now = new Date();
-						const expires = new Date(config.meta.expires);
+						const expires = new Date(config().meta.expires);
 						const dayCount = differenceInDays(expires, now);
 						const expirationFormatted = format(expires, `MMM do @ p`);
 						const relativeFormatted = dayCount ? `~${dayCount} days` : `soon`;
@@ -436,13 +436,13 @@ function setMenu () {
 							title: `About ${$appName}`,
 							icon: paths.icon,
 							message: `
-							Test name: ${config.title}
-							Test version: ${config.version}
+							Test name: ${config().title}
+							Test version: ${config().version}
 							Test expires: ${expirationFormatted} (${relativeFormatted})
 
-							Built from: ${config.meta.gitBranch} #${config.meta.gitHash}
-							Built by: ${config.meta.gitUser}
-							Built on: ${new Date(config.meta.compiled).toLocaleString()}
+							Built from: ${config().meta.gitBranch} #${config().meta.gitHash}
+							Built by: ${config().meta.gitUser}
+							Built on: ${new Date(config().meta.compiled).toLocaleString()}
 
 							Runner: ${$appName} v${appVersion}
 
@@ -531,7 +531,7 @@ function setMenu () {
 
 	// for each menu item where the list exists
 	const customLinkList = [];
-	config.links.forEach(item => {
+	config().links.forEach(item => {
 		// check if the provided url is valid
 		const itemUrl = formatURL(item.url);
 
