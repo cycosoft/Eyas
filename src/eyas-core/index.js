@@ -31,7 +31,8 @@ const $allViewports = [
 	{ isDefault: true, label: `Mobile`, width: 360, height: 640 }
 ];
 const paths = {
-	icon: path.join(__dirname, `..`, `eyas-assets`, `eyas-logo.png`)
+	icon: path.join(__dirname, `..`, `eyas-assets`, `eyas-logo.png`),
+	configLoader: path.join(__dirname, `..`, `scripts`, `get-config.js`),
 };
 
 // initialize the first layer of the app
@@ -70,7 +71,7 @@ initElectronCore();
 	// const TEST_SOURCE = `source`;
 	// const roots = require(path.join(__dirname, `scripts`, `get-roots.js`));
 	// const paths = {
-	// 	configLoader: path.join(roots.eyas, `scripts`, `get-config.js`),
+	//
 	// 	packageJson: path.join(roots.eyas, `package.json`),
 	// 	testSrc: path.join(roots.config, TEST_SOURCE),
 	// 	eventBridge: path.join(roots.eyas, `scripts`, `event-bridge.js`),
@@ -89,9 +90,6 @@ initElectronCore();
 	// 	$os: operatingSystem,
 	// 	$app_version_string: appVersion
 	// });
-
-	// // load the users config
-	// const config = require(paths.configLoader);
 
 	// // config
 
