@@ -137,15 +137,6 @@ initElectronCore();
 	// 	return output;
 	// }
 
-	// manage navigation
-	// function navigate(url, external) {
-	// 	// go to the requested url in electron
-	// 	!external && $appWindow?.webContents?.loadURL(url);
-
-	// 	// open the requested url in the default browser
-	// 	external && shell.openExternal(url);
-	// }
-
 	// Set up Express to serve files from the test directory
 	// async function setupTestServer() {
 	// 	// Create the Express app
@@ -247,7 +238,7 @@ function initElectronUi() {
 	initEyasListeners();
 
 	// navigate to the test url
-	navigate(appUrl);
+	goToUrl(appUrl);
 
 	// Initialize the $eyasLayer
 	$eyasLayer = new BrowserView({ webPreferences: { preload: paths.eventBridge } });
@@ -279,7 +270,7 @@ function initEyasListeners() {
 	// open links in the browser when requested
 	ipcMain.on(`open-in-browser`, (event, url) => {
 		const validated = formatURL(url);
-		validated && navigate(validated, true);
+		validated && goToUrl(validated, true);
 	});
 
 	// Whenever the UI layer has requested to close the app
@@ -455,7 +446,7 @@ function setMenu () {
 			submenu: [
 				{
 					label: `📦 Load Test Files`,
-					click: () => navigate(appUrl)
+					click: () => goToUrl(appUrl)
 				},
 				{ type: `separator` },
 				{
@@ -485,7 +476,7 @@ function setMenu () {
 						}
 
 						// open the current url in the default browser
-						navigate(urlToNavigateTo, true);
+						goToUrl(urlToNavigateTo, true);
 					}
 				},
 				{ type: `separator` },
@@ -526,7 +517,7 @@ function setMenu () {
 		// add the item to the menu
 		customLinkList.push({
 			label: `${item.label || item.url}${itemUrl ? `` : ` (invalid entry)`}`,
-			click: () => navigate(itemUrl, item.external),
+			click: () => goToUrl(itemUrl, item.external),
 			enabled: !!itemUrl // disable menu item if invalid url
 		});
 	});
@@ -618,4 +609,13 @@ function toggleEyasUI(enable) {
 		// shrink the bounds to 0 to hide it
 		$eyasLayer.setBounds({ x: 0, y: 0, width: 0, height: 0 });
 	}
+}
+
+// manage navigation
+function goToUrl(url, external) {
+	// go to the requested url in electron
+	!external && $appWindow?.webContents?.loadURL(url);
+
+	// open the requested url in the default browser
+	external && shell.openExternal(url);
 }
