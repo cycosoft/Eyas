@@ -23,7 +23,7 @@ const {
 
 // global variables $
 const $isDev = process.argv.includes(`--dev`);
-const $appName = `Eyas`;
+const APP_NAME = `Eyas`;
 let $appWindow = null;
 const $currentViewport = [];
 const $allViewports = [
@@ -257,7 +257,7 @@ function initElectronCore() {
 		});
 }
 
-// initiate the Eyas UI
+// initiate the core electron UI layer
 function initElectronUi() {
 	// add test defined viewports to the front of the list
 	$allViewports.unshift(...config().viewports);
@@ -361,7 +361,7 @@ function config() {
 // Get the app title
 function getAppTitle() {
 	// Always start with the main app name
-	let output = $appName;
+	let output = APP_NAME;
 
 	// Add the test app title
 	output += ` :: ${config().title}`;
@@ -409,7 +409,7 @@ function setMenu () {
 	// build the default menu in MacOS style
 	const menuDefault = [
 		{
-			label: $appName,
+			label: APP_NAME,
 			submenu: [
 				{
 					label: `📇 About`,
@@ -431,7 +431,7 @@ function setMenu () {
 						dialog.showMessageBox($appWindow, {
 							type: `info`,
 							buttons: [`OK`],
-							title: `About ${$appName}`,
+							title: `About ${APP_NAME}`,
 							icon: paths.icon,
 							message: `
 							Test name: ${config().title}
@@ -442,7 +442,7 @@ function setMenu () {
 							Built by: ${config().meta.gitUser}
 							Built on: ${new Date(config().meta.compiled).toLocaleString()}
 
-							Runner: ${$appName} v${appVersion}
+							Runner: ${APP_NAME} v${appVersion}
 
 
 							🏢 © ${yearRange} Cycosoft, LLC
