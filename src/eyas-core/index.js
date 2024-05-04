@@ -28,6 +28,7 @@ const _os = require(`os`);
 const $isDev = process.argv.includes(`--dev`);
 const APP_NAME = `Eyas`;
 let $appWindow = null;
+let $eyasLayer = null;
 const $currentViewport = [];
 const $allViewports = [
 	{ isDefault: true, label: `Desktop`, width: 1366, height: 768 },
@@ -93,7 +94,7 @@ initElectronCore();
 	// const appUrlOverride = formatURL(config().domain);
 	// const appUrl = appUrlOverride || testServerUrl;
 	// let expressLayer = null;
-	// let appLayer = null;
+
 	// let testServer = null;
 
 
@@ -276,11 +277,11 @@ function initElectronUi() {
 	// navigate to the test url
 	navigate(appUrl);
 
-	// Overlay the appLayer
-	appLayer = new BrowserView({ webPreferences: { preload: paths.eventBridge } });
-	$appWindow.addBrowserView(appLayer);
-	appLayer.setAutoResize({ width: true, height: true });
-	appLayer.webContents.loadFile(paths.ui.app);
+	// Overlay the $eyasLayer
+	$eyasLayer = new BrowserView({ webPreferences: { preload: paths.eventBridge } });
+	$appWindow.addBrowserView($eyasLayer);
+	$eyasLayer.setAutoResize({ width: true, height: true });
+	$eyasLayer.webContents.loadFile(paths.ui.app);
 }
 
 // method for tracking events
@@ -490,7 +491,7 @@ function setMenu () {
 					$isDev && output.push(
 						{
 							label: `⚙️ DevTools (App Layer)`,
-							click: () => appLayer.webContents.openDevTools()
+							click: () => $eyasLayer.webContents.openDevTools()
 						}
 					);
 
@@ -594,16 +595,16 @@ async function manageAppClose(evt) {
 	}
 
 	// send a message to the UI to show the exit modal with the captured image
-	appLayer.webContents.send(`modal-exit-visible`, true, screenshot);
+	$eyasLayer.webContents.send(`modal-exit-visible`, true, screenshot);
 }
 
 // Toggle the Eyas UI layer so the user can interact with it or their test
 function toggleEyasUI(enable) {
 	if(enable){
 		// set the bounds to the current viewport
-		appLayer.setBounds({ x: 0, y: 0, width: $currentViewport[0], height: $currentViewport[1] });
+		$eyasLayer.setBounds({ x: 0, y: 0, width: $currentViewport[0], height: $currentViewport[1] });
 	}else{
 		// shrink the bounds to 0 to hide it
-		appLayer.setBounds({ x: 0, y: 0, width: 0, height: 0 });
+		$eyasLayer.setBounds({ x: 0, y: 0, width: 0, height: 0 });
 	}
 }
