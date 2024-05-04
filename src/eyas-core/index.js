@@ -22,6 +22,7 @@ const {
 } = require(`electron`);
 
 // global variables $
+const $isDev = process.argv.includes(`--dev`);
 const $appName = `Eyas`;
 let $appWindow = null;
 const $currentViewport = [];
@@ -51,8 +52,7 @@ initElectronCore();
 	// const os = require(`os`);
 	// const crypto = require(`crypto`);
 
-	// // set dev mode if flag is detected
-	// const isDev = process.argv.includes(`--dev`);
+
 
 	// // Set up analytics
 	// const analytics = Mixpanel.init(`07f0475cb429f7de5ebf79a1c418dc5c`);
@@ -85,7 +85,7 @@ initElectronCore();
 	// const operatingSystem = os.platform();
 
 	// // track the app launch event
-	// !isDev && analytics.track(EVENTS.core.launch, {
+	// !$isDev && analytics.track(EVENTS.core.launch, {
 	// 	distinct_id: userId,
 	// 	$os: operatingSystem,
 	// 	$app_version_string: appVersion
@@ -166,7 +166,7 @@ initElectronCore();
 	// 	evt.preventDefault();
 
 	// 	// track that the modal is being opened
-	// 	!isDev && analytics.track(EVENTS.ui.modalExitShown, { distinct_id: userId });
+	// 	!$isDev && analytics.track(EVENTS.ui.modalExitShown, { distinct_id: userId });
 
 	// 	// enable the UI layer
 	// 	enableUI(true);
@@ -288,13 +288,13 @@ function initElectronUi() {
 	// listen for changes to the window size
 	$appWindow.on(`resize`, onResize);
 
-	// listen for messages from the UI
+	// Whenever the UI layer has requested to close the app
 	ipcMain.on(`app-exit`, () => {
 		// remove the close event listener so we don't get stuck in a loop
 		$appWindow.removeListener(`close`, onAppClose);
 
 		// track that the app is being closed
-		!isDev && analytics.track(EVENTS.core.exit, { distinct_id: userId });
+		!$isDev && analytics.track(EVENTS.core.exit, { distinct_id: userId });
 
 		// Shut down the test server AND THEN exit the app
 		testServer.close(_electronCore.quit);
@@ -343,7 +343,7 @@ function checkTestExpiration () {
 	});
 
 	// track that the app is being closed
-	!isDev && analytics.track(EVENTS.core.exit, { distinct_id: userId });
+	!$isDev && analytics.track(EVENTS.core.exit, { distinct_id: userId });
 
 	// Exit the app
 	_electronCore.quit();
@@ -509,7 +509,7 @@ function setMenu () {
 					];
 
 					// add the dev tools for the app layer if in dev
-					isDev && output.push(
+					$isDev && output.push(
 						{
 							label: `⚙️ DevTools (App Layer)`,
 							click: () => appLayer.webContents.openDevTools()
