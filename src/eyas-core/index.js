@@ -113,29 +113,7 @@ initElectronCore();
 	// start the test server
 	// setupTestServer();
 
-	// format the url for electron consumption
-	// function formatURL(url) {
-	// 	// config
-	// 	let output = null;
 
-	// 	// exit if not a valid url
-	// 	if(!url || !isURL(url)){ return output; }
-
-	// 	// parse the url
-	// 	const parsed = parseURL(url);
-
-	// 	// if the url is missing a protocol
-	// 	if(!parsed.protocol){
-	// 		// default to https
-	// 		parsed.set(`protocol`, `https`);
-	// 	}
-
-	// 	// grab the url as a string from the parsed object
-	// 	output = parsed.toString();
-
-	// 	// send back formatted string
-	// 	return output;
-	// }
 
 	// Set up Express to serve files from the test directory
 	// async function setupTestServer() {
@@ -618,4 +596,28 @@ function goToUrl(url, external) {
 
 	// open the requested url in the default browser
 	external && shell.openExternal(url);
+}
+
+// format the url for electron consumption
+function formatURL(url) {
+	// config
+	let output = null;
+
+	// exit if not a valid url
+	if(!url || !isURL(url)){ return output; }
+
+	// parse the url
+	const parsed = parseURL(url);
+
+	// if the url is missing a protocol
+	if(!parsed.protocol){
+		// default to https
+		parsed.set(`protocol`, `https`);
+	}
+
+	// grab the url as a string from the parsed object
+	output = parsed.toString();
+
+	// send back formatted string
+	return output;
 }
