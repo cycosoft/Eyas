@@ -161,10 +161,10 @@ initElectronCore();
 	// 	evt.preventDefault();
 
 	// 	// track that the modal is being opened
-	// trackEvent(MP_EVENTS.ui.modalExitShown);
+	// 	trackEvent(MP_EVENTS.ui.modalExitShown);
 
 	// 	// enable the UI layer
-	// 	enableUI(true);
+	// 	toggleUI(true);
 
 	// 	// capture the current page as an image
 	// 	let screenshot = null;
@@ -179,7 +179,7 @@ initElectronCore();
 	// }
 
 	// sets the visibility of the UI so externalLayer can be interacted with
-	// function enableUI(enable) {
+	// function toggleUI(enable) {
 	// 	if(enable){
 	// 		appLayer.setBounds({ x: 0, y: 0, width: $currentViewport[0], height: $currentViewport[1] });
 	// 	}else{
@@ -308,7 +308,7 @@ function initElectronUi() {
 	});
 
 	// hide the UI when requested
-	ipcMain.on(`hide-ui`, () => enableUI(false));
+	ipcMain.on(`hide-ui`, () => toggleUI(false));
 
 	// listen for the window to close
 	$appWindow.on(`close`, onAppClose);
