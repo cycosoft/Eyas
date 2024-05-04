@@ -147,15 +147,6 @@ initElectronCore();
 	// 	external && shell.openExternal(url);
 	// }
 
-	// sets the visibility of the UI so externalLayer can be interacted with
-	// function toggleUI(enable) {
-	// 	if(enable){
-	// 		appLayer.setBounds({ x: 0, y: 0, width: $currentViewport[0], height: $currentViewport[1] });
-	// 	}else{
-	// 		appLayer.setBounds({ x: 0, y: 0, width: 0, height: 0 });
-	// 	}
-	// }
-
 	// Set up Express to serve files from the test directory
 	// async function setupTestServer() {
 	// 	// Create the Express app
@@ -277,7 +268,7 @@ function initElectronUi() {
 	});
 
 	// hide the UI when requested
-	ipcMain.on(`hide-ui`, () => toggleUI(false));
+	ipcMain.on(`hide-ui`, () => toggleEyasUI(false));
 
 	// listen for the window to close
 	$appWindow.on(`close`, manageAppClose);
@@ -593,7 +584,7 @@ async function manageAppClose(evt) {
 	trackEvent(MP_EVENTS.ui.modalExitShown);
 
 	// enable the UI layer
-	toggleUI(true);
+	toggleEyasUI(true);
 
 	// capture the current page as an image to display as a backdrop to the Eyas UI
 	let screenshot = null;
@@ -604,4 +595,15 @@ async function manageAppClose(evt) {
 
 	// send a message to the UI to show the exit modal with the captured image
 	appLayer.webContents.send(`modal-exit-visible`, true, screenshot);
+}
+
+// Toggle the Eyas UI layer so the user can interact with it or their test
+function toggleEyasUI(enable) {
+	if(enable){
+		// set the bounds to the current viewport
+		appLayer.setBounds({ x: 0, y: 0, width: $currentViewport[0], height: $currentViewport[1] });
+	}else{
+		// shrink the bounds to 0 to hide it
+		appLayer.setBounds({ x: 0, y: 0, width: 0, height: 0 });
+	}
 }
