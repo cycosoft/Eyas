@@ -282,7 +282,7 @@ function initElectronUi() {
 	// Set the application menu
 	setMenu();
 
-	// Prevent the title from changing automatically
+	// Whenever a title update is requested
 	$appWindow.on(`page-title-updated`, onTitleUpdate);
 
 	// listen for changes to the window size
@@ -378,12 +378,12 @@ function getAppTitle() {
 	return output;
 }
 
-// Prevent the title from changing AND also update it based on the current URL
+// manage automatic title updates
 function onTitleUpdate(evt) {
-	// Prevent the app from changing the title automatically
+	// Disregard the default behavior
 	evt.preventDefault();
 
-	// set a custom title
+	// update the title
 	$appWindow.setTitle(getAppTitle());
 }
 
