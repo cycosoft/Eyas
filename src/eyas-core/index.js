@@ -279,7 +279,7 @@ function initElectronUi() {
 	// NOTE: THIS NEEDS TO BE MOVED TO THE UI LAYER
 	checkTestExpiration();
 
-	// Create a menu template
+	// Set the application menu
 	setMenu();
 
 	// Prevent the title from changing automatically
