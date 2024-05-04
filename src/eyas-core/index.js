@@ -21,12 +21,13 @@ const {
 	// ipcMain
 } = require(`electron`);
 const _path = require(`path`);
+const _os = require(`os`);
+
 
 // global variables $
 const $isDev = process.argv.includes(`--dev`);
 const APP_NAME = `Eyas`;
 let $appWindow = null;
-let $analytics = null;
 const $currentViewport = [];
 const $allViewports = [
 	{ isDefault: true, label: `Desktop`, width: 1366, height: 768 },
@@ -38,7 +39,6 @@ const paths = {
 	configLoader: _path.join(__dirname, `..`, `scripts`, `get-config.js`),
 	packageJson: _path.join(__dirname, `..`, `package.json`)
 };
-let MP_USER_ID = null;
 const MP_KEY = `07f0475cb429f7de5ebf79a1c418dc5c`;
 const MP_EVENTS = {
 	core: {
@@ -49,6 +49,8 @@ const MP_EVENTS = {
 		modalExitShown: `Modal Exit Shown`
 	}
 };
+const $operatingSystem = _os.platform();
+const $appVersion = require(paths.packageJson).version;
 
 // initialize the first layer of the app
 initElectronCore();
@@ -159,7 +161,7 @@ initElectronCore();
 	// 	evt.preventDefault();
 
 	// 	// track that the modal is being opened
-	// 	!$isDev && $analytics.track(MP_EVENTS.ui.modalExitShown, { distinct_id: MP_USER_ID });
+	// trackEvent(MP_EVENTS.ui.modalExitShown);
 
 	// 	// enable the UI layer
 	// 	enableUI(true);
@@ -167,7 +169,7 @@ initElectronCore();
 	// 	// capture the current page as an image
 	// 	let screenshot = null;
 	// 	// disable the screenshot on windows as it isn't needed
-	// 	if(operatingSystem !== `win32`) {
+	// 	if($operatingSystem !== `win32`) {
 	// 		screenshot = await $appWindow.capturePage();
 	// 		screenshot = screenshot.toDataURL();
 	// 	}
@@ -268,8 +270,11 @@ function initElectronUi() {
 		icon: paths.icon
 	});
 
-	// start analytics for Eyas
-	initAnalytics();
+	// track the app launch event
+	trackEvent(MP_EVENTS.core.launch, {
+		$os: $operatingSystem,
+		$app_version_string: $appVersion
+	});
 
 	// exit the app if the test has expired
 	// NOTE: THIS NEEDS TO BE MOVED TO THE UI LAYER
@@ -290,7 +295,7 @@ function initElectronUi() {
 		$appWindow.removeListener(`close`, onAppClose);
 
 		// track that the app is being closed
-		!$isDev && $analytics.track(MP_EVENTS.core.exit, { distinct_id: MP_USER_ID });
+		trackEvent(MP_EVENTS.core.exit);
 
 		// Shut down the test server AND THEN exit the app
 		testServer.close(_electronCore.quit);
@@ -318,25 +323,20 @@ function initElectronUi() {
 	appLayer.webContents.loadFile(paths.ui.app);
 }
 
-// sets up and returns the analytics object
-function initAnalytics() {
+// method for tracking events
+function trackEvent(event, data) {
+	// imports
 	const Mixpanel = require(`mixpanel`);
 	const crypto = require(`crypto`);
-	const os = require(`os`);
-	const operatingSystem = os.platform();
-	const appVersion = require(paths.packageJson).version;
 
-	// initialize the analytics object
-	analytics = Mixpanel.init(MP_KEY);
+	// init if needed
+	trackEvent.userId = trackEvent.userId || crypto.randomUUID();
+	trackEvent.mixpanel = trackEvent.mixpanel || Mixpanel.init(MP_KEY);
 
-	// store the user id
-	MP_USER_ID = crypto.randomUUID();
-
-	// track the app launch event
-	!$isDev && $analytics.track(MP_EVENTS.core.launch, {
-		distinct_id: MP_USER_ID,
-		$os: operatingSystem,
-		$app_version_string: appVersion
+	// if not running in dev mode
+	!$isDev && trackEvent.mixpanel.track(event, {
+		...data,
+		distinct_id: trackEvent.userId // always include the user id
 	});
 }
 
@@ -361,7 +361,7 @@ function checkTestExpiration () {
 	});
 
 	// track that the app is being closed
-	!$isDev && $analytics.track(MP_EVENTS.core.exit, { distinct_id: MP_USER_ID });
+	trackEvent(MP_EVENTS.core.exit);
 
 	// Exit the app
 	_electronCore.quit();
@@ -460,7 +460,7 @@ function setMenu () {
 							Built by: ${config().meta.gitUser}
 							Built on: ${new Date(config().meta.compiled).toLocaleString()}
 
-							Runner: ${APP_NAME} v${appVersion}
+							Runner: ${APP_NAME} v${$appVersion}
 
 
 							🏢 © ${yearRange} Cycosoft, LLC
