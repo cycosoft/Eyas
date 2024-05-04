@@ -18,11 +18,9 @@ const {
 	// Menu,
 	// dialog,
 	// shell,
-	// ipcMain
 } = require(`electron`);
 const _path = require(`path`);
 const _os = require(`os`);
-
 
 // global variables $
 const $isDev = process.argv.includes(`--dev`);
@@ -244,11 +242,45 @@ function initElectronUi() {
 	// Set the application menu
 	setMenu();
 
-	// Whenever a title update is requested
-	$appWindow.on(`page-title-updated`, onTitleUpdate);
+	// listen for app events
+	initElectronListeners();
+	initEyasListeners();
+
+	// navigate to the test url
+	navigate(appUrl);
+
+	// Initialize the $eyasLayer
+	$eyasLayer = new BrowserView({ webPreferences: { preload: paths.eventBridge } });
+	$appWindow.addBrowserView($eyasLayer);
+	$eyasLayer.setAutoResize({ width: true, height: true });
+	$eyasLayer.webContents.loadFile(paths.ui.app);
+}
+
+// initialize the Electron listeners
+function initElectronListeners() {
+	// listen for the window to close
+	$appWindow.on(`close`, manageAppClose);
 
 	// listen for changes to the window size
 	$appWindow.on(`resize`, onResize);
+
+	// Whenever a title update is requested
+	$appWindow.on(`page-title-updated`, onTitleUpdate);
+}
+
+// initialize the Eyas listeners
+function initEyasListeners() {
+	// imports
+	const { ipcMain } = require(`electron`);
+
+	// hide the UI when requested
+	ipcMain.on(`hide-ui`, () => toggleEyasUI(false));
+
+	// open links in the browser when requested
+	ipcMain.on(`open-in-browser`, (event, url) => {
+		const validated = formatURL(url);
+		validated && navigate(validated, true);
+	});
 
 	// Whenever the UI layer has requested to close the app
 	ipcMain.on(`app-exit`, () => {
@@ -261,27 +293,6 @@ function initElectronUi() {
 		// Shut down the test server AND THEN exit the app
 		testServer.close(_electronCore.quit);
 	});
-
-	// open links in the browser when requested
-	ipcMain.on(`open-in-browser`, (event, url) => {
-		const validated = formatURL(url);
-		validated && navigate(validated, true);
-	});
-
-	// hide the UI when requested
-	ipcMain.on(`hide-ui`, () => toggleEyasUI(false));
-
-	// listen for the window to close
-	$appWindow.on(`close`, manageAppClose);
-
-	// navigate to the test url
-	navigate(appUrl);
-
-	// Overlay the $eyasLayer
-	$eyasLayer = new BrowserView({ webPreferences: { preload: paths.eventBridge } });
-	$appWindow.addBrowserView($eyasLayer);
-	$eyasLayer.setAutoResize({ width: true, height: true });
-	$eyasLayer.webContents.loadFile(paths.ui.app);
 }
 
 // method for tracking events
