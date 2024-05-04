@@ -20,11 +20,13 @@ const {
 	// shell,
 	// ipcMain
 } = require(`electron`);
+const _path = require(`path`);
 
 // global variables $
 const $isDev = process.argv.includes(`--dev`);
 const APP_NAME = `Eyas`;
 let $appWindow = null;
+let $analytics = null;
 const $currentViewport = [];
 const $allViewports = [
 	{ isDefault: true, label: `Desktop`, width: 1366, height: 768 },
@@ -32,8 +34,20 @@ const $allViewports = [
 	{ isDefault: true, label: `Mobile`, width: 360, height: 640 }
 ];
 const paths = {
-	icon: path.join(__dirname, `..`, `eyas-assets`, `eyas-logo.png`),
-	configLoader: path.join(__dirname, `..`, `scripts`, `get-config.js`),
+	icon: _path.join(__dirname, `..`, `eyas-assets`, `eyas-logo.png`),
+	configLoader: _path.join(__dirname, `..`, `scripts`, `get-config.js`),
+	packageJson: _path.join(__dirname, `..`, `package.json`)
+};
+let MP_USER_ID = null;
+const MP_KEY = `07f0475cb429f7de5ebf79a1c418dc5c`;
+const MP_EVENTS = {
+	core: {
+		launch: `App Launch`,
+		exit: `App Exit`
+	},
+	ui: {
+		modalExitShown: `Modal Exit Shown`
+	}
 };
 
 // initialize the first layer of the app
@@ -43,53 +57,32 @@ initElectronCore();
 (async () => {
 	// imports
 	// const express = require(`express`);
-	// const path = require(`path`);
 	// const https = require(`https`);
 	// const mkcert = require(`mkcert`);
 	// const { isURL } = require(`validator`);
 	// const parseURL = require(`url-parse`);
-	// const Mixpanel = require(`mixpanel`);
-	// const os = require(`os`);
-	// const crypto = require(`crypto`);
 
 
 
-	// // Set up analytics
-	// const analytics = Mixpanel.init(`07f0475cb429f7de5ebf79a1c418dc5c`);
-	// const userId = crypto.randomUUID();
-	// const EVENTS = {
-	// 	core: {
-	// 		launch: `App Launch`,
-	// 		exit: `App Exit`
-	// 	},
-	// 	ui: {
-	// 		modalExitShown: `Modal Exit Shown`
-	// 	}
-	// };
+
 
 	// // setup
 	// const TEST_SOURCE = `source`;
-	// const roots = require(path.join(__dirname, `scripts`, `get-roots.js`));
+	// const roots = require(_path.join(__dirname, `scripts`, `get-roots.js`));
 	// const paths = {
 	//
-	// 	packageJson: path.join(roots.eyas, `package.json`),
-	// 	testSrc: path.join(roots.config, TEST_SOURCE),
-	// 	eventBridge: path.join(roots.eyas, `scripts`, `event-bridge.js`),
+	//
+	// 	testSrc: _path.join(roots.config, TEST_SOURCE),
+	// 	eventBridge: _path.join(roots.eyas, `scripts`, `event-bridge.js`),
 	// 	ui: {
-	// 		app: path.join(roots.eyas, `eyas-interface`, `index.html`)
+	// 		app: _path.join(roots.eyas, `eyas-interface`, `index.html`)
 	// 	}
 	// };
 
-	// // get the app version
-	// const appVersion = require(paths.packageJson).version;
-	// const operatingSystem = os.platform();
 
-	// // track the app launch event
-	// !$isDev && analytics.track(EVENTS.core.launch, {
-	// 	distinct_id: userId,
-	// 	$os: operatingSystem,
-	// 	$app_version_string: appVersion
-	// });
+
+
+
 
 	// // config
 
@@ -166,7 +159,7 @@ initElectronCore();
 	// 	evt.preventDefault();
 
 	// 	// track that the modal is being opened
-	// 	!$isDev && analytics.track(EVENTS.ui.modalExitShown, { distinct_id: userId });
+	// 	!$isDev && $analytics.track(MP_EVENTS.ui.modalExitShown, { distinct_id: MP_USER_ID });
 
 	// 	// enable the UI layer
 	// 	enableUI(true);
@@ -275,6 +268,9 @@ function initElectronUi() {
 		icon: paths.icon
 	});
 
+	// start analytics for Eyas
+	initAnalytics();
+
 	// exit the app if the test has expired
 	// NOTE: THIS NEEDS TO BE MOVED TO THE UI LAYER
 	checkTestExpiration();
@@ -294,7 +290,7 @@ function initElectronUi() {
 		$appWindow.removeListener(`close`, onAppClose);
 
 		// track that the app is being closed
-		!$isDev && analytics.track(EVENTS.core.exit, { distinct_id: userId });
+		!$isDev && $analytics.track(MP_EVENTS.core.exit, { distinct_id: MP_USER_ID });
 
 		// Shut down the test server AND THEN exit the app
 		testServer.close(_electronCore.quit);
@@ -322,6 +318,28 @@ function initElectronUi() {
 	appLayer.webContents.loadFile(paths.ui.app);
 }
 
+// sets up and returns the analytics object
+function initAnalytics() {
+	const Mixpanel = require(`mixpanel`);
+	const crypto = require(`crypto`);
+	const os = require(`os`);
+	const operatingSystem = os.platform();
+	const appVersion = require(paths.packageJson).version;
+
+	// initialize the analytics object
+	analytics = Mixpanel.init(MP_KEY);
+
+	// store the user id
+	MP_USER_ID = crypto.randomUUID();
+
+	// track the app launch event
+	!$isDev && $analytics.track(MP_EVENTS.core.launch, {
+		distinct_id: MP_USER_ID,
+		$os: operatingSystem,
+		$app_version_string: appVersion
+	});
+}
+
 // forces an exit if the loaded test has expired
 function checkTestExpiration () {
 	// imports
@@ -343,7 +361,7 @@ function checkTestExpiration () {
 	});
 
 	// track that the app is being closed
-	!$isDev && analytics.track(EVENTS.core.exit, { distinct_id: userId });
+	!$isDev && $analytics.track(MP_EVENTS.core.exit, { distinct_id: MP_USER_ID });
 
 	// Exit the app
 	_electronCore.quit();
