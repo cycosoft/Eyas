@@ -138,10 +138,6 @@ initElectronCore();
 	// 	return output;
 	// }
 
-
-
-
-
 	// manage navigation
 	// function navigate(url, external) {
 	// 	// go to the requested url in electron
@@ -149,33 +145,6 @@ initElectronCore();
 
 	// 	// open the requested url in the default browser
 	// 	external && shell.openExternal(url);
-	// }
-
-
-
-
-
-	// listen for the window to close
-	// async function onAppClose(evt) {
-	// 	// stop the window from closing
-	// 	evt.preventDefault();
-
-	// 	// track that the modal is being opened
-	// 	trackEvent(MP_EVENTS.ui.modalExitShown);
-
-	// 	// enable the UI layer
-	// 	toggleUI(true);
-
-	// 	// capture the current page as an image
-	// 	let screenshot = null;
-	// 	// disable the screenshot on windows as it isn't needed
-	// 	if($operatingSystem !== `win32`) {
-	// 		screenshot = await $appWindow.capturePage();
-	// 		screenshot = screenshot.toDataURL();
-	// 	}
-
-	// 	// send a message to the UI to show the exit modal with the captured image
-	// 	appLayer.webContents.send(`modal-exit-visible`, true, screenshot);
 	// }
 
 	// sets the visibility of the UI so externalLayer can be interacted with
@@ -292,7 +261,7 @@ function initElectronUi() {
 	// Whenever the UI layer has requested to close the app
 	ipcMain.on(`app-exit`, () => {
 		// remove the close event listener so we don't get stuck in a loop
-		$appWindow.removeListener(`close`, onAppClose);
+		$appWindow.removeListener(`close`, manageAppClose);
 
 		// track that the app is being closed
 		trackEvent(MP_EVENTS.core.exit);
@@ -311,7 +280,7 @@ function initElectronUi() {
 	ipcMain.on(`hide-ui`, () => toggleUI(false));
 
 	// listen for the window to close
-	$appWindow.on(`close`, onAppClose);
+	$appWindow.on(`close`, manageAppClose);
 
 	// navigate to the test url
 	navigate(appUrl);
@@ -613,4 +582,26 @@ function setMenu () {
 
 	// Set the modified menu as the application menu
 	Menu.setApplicationMenu(Menu.buildFromTemplate(menuDefault));
+}
+
+// listen for the window to close
+async function manageAppClose(evt) {
+	// stop the window from closing
+	evt.preventDefault();
+
+	// track that the exit modal is being opened
+	trackEvent(MP_EVENTS.ui.modalExitShown);
+
+	// enable the UI layer
+	toggleUI(true);
+
+	// capture the current page as an image to display as a backdrop to the Eyas UI
+	let screenshot = null;
+	if($operatingSystem !== `win32`) { // not necessary on windows
+		screenshot = await $appWindow.capturePage();
+		screenshot = screenshot.toDataURL();
+	}
+
+	// send a message to the UI to show the exit modal with the captured image
+	appLayer.webContents.send(`modal-exit-visible`, true, screenshot);
 }
