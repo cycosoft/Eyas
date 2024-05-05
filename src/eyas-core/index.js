@@ -59,7 +59,7 @@ initElectronCore();
 	// const express = require(`express`);
 	// const https = require(`https`);
 	// const mkcert = require(`mkcert`);
-	// const { isURL } = require(`validator`);
+	//
 	// const parseURL = require(`url-parse`);
 
 	// // config
@@ -590,6 +590,9 @@ function goToUrl(url, external) {
 
 // format the url for electron consumption
 function formatURL(url) {
+	// imports
+	const { isURL } = require(`validator`);
+
 	// config
 	let output = null;
 
