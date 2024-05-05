@@ -38,14 +38,14 @@ const $allViewports = [
 	{ isDefault: true, label: `Tablet`, width: 768, height: 1024 },
 	{ isDefault: true, label: `Mobile`, width: 360, height: 640 }
 ];
-const paths = {
+const $paths = {
 	icon: _path.join(__dirname, `..`, `eyas-assets`, `eyas-logo.png`),
 	configLoader: _path.join(__dirname, `..`, `scripts`, `get-config.js`),
 	packageJson: _path.join(__dirname, `..`, `package.json`),
 	eventBridge: _path.join(__dirname, `..`, `scripts`, `event-bridge.js`)
 };
 const $operatingSystem = _os.platform();
-const $appVersion = require(paths.packageJson).version;
+const $appVersion = require($paths.packageJson).version;
 
 // initialize the first layer of the app
 initElectronCore();
@@ -66,7 +66,7 @@ initElectronCore();
 	// // setup
 	// const TEST_SOURCE = `source`;
 	// const roots = require(_path.join(__dirname, `scripts`, `get-roots.js`));
-	// const paths = {
+	// const $paths = {
 	//
 	//
 	// 	testSrc: _path.join(roots.config, TEST_SOURCE),
@@ -117,7 +117,7 @@ initElectronCore();
 	// 	expressLayer = express();
 
 	// 	// Serve static files from the test directory
-	// 	expressLayer.use(express.static(paths.testSrc));
+	// 	expressLayer.use(express.static($paths.testSrc));
 
 	// 	// For each provided route from the user
 	// 	config().redirects.forEach(route => {
@@ -194,7 +194,7 @@ function initElectronUi() {
 		width: $currentViewport[0],
 		height: $currentViewport[1],
 		title: getAppTitle(),
-		icon: paths.icon
+		icon: $paths.icon
 	});
 
 	// track the app launch event
@@ -218,10 +218,10 @@ function initElectronUi() {
 	goToUrl(appUrl);
 
 	// Initialize the $eyasLayer
-	$eyasLayer = new BrowserView({ webPreferences: { preload: paths.eventBridge } });
+	$eyasLayer = new BrowserView({ webPreferences: { preload: $paths.eventBridge } });
 	$appWindow.addBrowserView($eyasLayer);
 	$eyasLayer.setAutoResize({ width: true, height: true });
-	$eyasLayer.webContents.loadFile(paths.ui.app);
+	$eyasLayer.webContents.loadFile($paths.ui.app);
 }
 
 // initialize the Electron listeners
@@ -311,7 +311,7 @@ function checkTestExpiration () {
 // returns the current test's config
 function config() {
 	// use the cache OR load the config
-	config.cache = config.cache || require(paths.configLoader);
+	config.cache = config.cache || require($paths.configLoader);
 
 	// return the config
 	return config.cache;
@@ -394,7 +394,7 @@ function setMenu () {
 							type: `info`,
 							buttons: [`OK`],
 							title: `About ${APP_NAME}`,
-							icon: paths.icon,
+							icon: $paths.icon,
 							message: `
 							Test name: ${config().title}
 							Test version: ${config().version}
