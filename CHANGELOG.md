@@ -4,7 +4,7 @@
 - Display an alert about `etc/hosts` when user tries to load test files in the browser
 - Add a spinner to the app close button
 - Support for multiple domains via config
-- Completely restructure the core app code
+- Complete restructure of the core app code
 
 # v2.0.0
 
