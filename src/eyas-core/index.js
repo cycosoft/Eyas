@@ -10,11 +10,6 @@
 // * start the server during this time
 // load the test
 
-// global imports _
-const { app: _electronCore, BrowserWindow: _electronWindow, } = require(`electron`);
-const _path = require(`path`);
-const _os = require(`os`);
-
 // constants
 const APP_NAME = `Eyas`;
 const MP_KEY = `07f0475cb429f7de5ebf79a1c418dc5c`;
@@ -27,6 +22,11 @@ const MP_EVENTS = {
 		modalExitShown: `Modal Exit Shown`
 	}
 };
+
+// global imports _
+const { app: _electronCore, BrowserWindow: _electronWindow, } = require(`electron`);
+const _path = require(`path`);
+const _os = require(`os`);
 
 // global variables $
 const $isDev = process.argv.includes(`--dev`);
