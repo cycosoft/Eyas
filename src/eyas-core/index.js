@@ -197,10 +197,7 @@ function initElectronUi() {
 	initEyasListeners();
 
 	// load the user's test
-	$appWindow.loadURL(_path.join($paths.testSrc, `index.html`));
-
-	// navigate to the test url
-	// goToUrl(appUrl);
+	navigate();
 
 	// Initialize the $eyasLayer
 	$eyasLayer = new BrowserView({ webPreferences: { preload: $paths.eventBridge } });
@@ -411,8 +408,8 @@ function setMenu () {
 			label: `🧪 Testing`,
 			submenu: [
 				{
-					label: `📦 Load Test Files`,
-					click: () => navigate(appUrl)
+					label: `📦 Reload Test`,
+					click: () => navigate()
 				},
 				{ type: `separator` },
 				{
@@ -579,14 +576,27 @@ function toggleEyasUI(enable) {
 
 // manage navigation
 function navigate(path, external) {
-	// imports
-	const { shell } = require(`electron`);
+	// if the path wasn't provided (default to local test source)
+	if(!path){
+		// if the test server is running
+		if($testServer){
+			// update the path to the test server
+			path = appUrl;
+		} else {
+			// update the path to the local test source
+			path = _path.join($paths.testSrc, `index.html`);
+		}
+	}
 
-	// go to the requested url in electron
-	!external && $appWindow?.loadURL(path);
-
-	// open the requested url in the default browser
-	external && shell.openExternal(path);
+	// if requested to load externally
+	if(external){
+		// open the requested url in the default browser
+		const { shell } = require(`electron`);
+		shell.openExternal(path);
+	} else {
+		// load the requested path in the app window
+		$appWindow.loadURL(path);
+	}
 }
 
 // format the url for electron consumption
