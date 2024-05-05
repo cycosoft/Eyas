@@ -243,7 +243,7 @@ function initEyasListeners() {
 		trackEvent(MP_EVENTS.core.exit);
 
 		// Shut down the test server AND THEN exit the app
-		testServer.close(_electronCore.quit);
+		testServer?.close(_electronCore.quit);
 	});
 }
 
