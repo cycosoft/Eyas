@@ -195,8 +195,11 @@ function initElectronUi() {
 	initElectronListeners();
 	initEyasListeners();
 
+	// load the user's test
+	$appWindow.loadFile($paths.testSrc);
+
 	// navigate to the test url
-	goToUrl(appUrl);
+	// goToUrl(appUrl);
 
 	// Initialize the $eyasLayer
 	$eyasLayer = new BrowserView({ webPreferences: { preload: $paths.eventBridge } });
