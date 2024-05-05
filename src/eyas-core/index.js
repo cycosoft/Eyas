@@ -45,7 +45,7 @@ const $paths = {
 	eventBridge: _path.join(__dirname, `..`, `scripts`, `event-bridge.js`)
 };
 const $operatingSystem = _os.platform();
-const $appVersion = require($paths.packageJson).version;
+const { version: _appVersion } = require($paths.packageJson);
 
 // initialize the first layer of the app
 initElectronCore();
@@ -200,7 +200,7 @@ function initElectronUi() {
 	// track the app launch event
 	trackEvent(MP_EVENTS.core.launch, {
 		$os: $operatingSystem,
-		$app_version_string: $appVersion
+		$app_version_string: _appVersion
 	});
 
 	// exit the app if the test has expired
@@ -404,7 +404,7 @@ function setMenu () {
 							Built by: ${config().meta.gitUser}
 							Built on: ${new Date(config().meta.compiled).toLocaleString()}
 
-							Runner: ${APP_NAME} v${$appVersion}
+							Runner: ${APP_NAME} v${_appVersion}
 
 
 							🏢 © ${yearRange} Cycosoft, LLC
