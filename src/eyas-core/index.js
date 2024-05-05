@@ -60,7 +60,7 @@ initElectronCore();
 	// const https = require(`https`);
 	// const mkcert = require(`mkcert`);
 	//
-	// const parseURL = require(`url-parse`);
+	//
 
 	// // config
 
@@ -592,6 +592,7 @@ function goToUrl(url, external) {
 function formatURL(url) {
 	// imports
 	const { isURL } = require(`validator`);
+	const parseURL = require(`url-parse`);
 
 	// config
 	let output = null;
