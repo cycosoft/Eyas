@@ -38,7 +38,7 @@ const $allViewports = [
 	{ isDefault: true, label: `Tablet`, width: 768, height: 1024 },
 	{ isDefault: true, label: `Mobile`, width: 360, height: 640 }
 ];
-const $roots = require(_path.join(__dirname, `scripts`, `get-$roots.js`));
+const $roots = require(_path.join(__dirname, `scripts`, `get-roots.js`));
 const $paths = {
 	icon: _path.join($roots.eyas, `eyas-assets`, `eyas-logo.png`),
 	configLoader: _path.join($roots.eyas, `scripts`, `get-config.js`),
