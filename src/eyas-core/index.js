@@ -197,7 +197,7 @@ function initElectronUi() {
 	initEyasListeners();
 
 	// load the user's test
-	$appWindow.loadFile(_path.join($paths.testSrc, `index.html`));
+	$appWindow.loadURL(_path.join($paths.testSrc, `index.html`));
 
 	// navigate to the test url
 	// goToUrl(appUrl);
