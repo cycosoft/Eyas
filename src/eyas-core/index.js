@@ -232,7 +232,7 @@ function initEyasListeners() {
 	// open links in the browser when requested
 	ipcMain.on(`open-in-browser`, (event, url) => {
 		const validated = formatURL(url);
-		validated && goToUrl(validated, true);
+		validated && navigate(validated, true);
 	});
 
 	// Whenever the UI layer has requested to close the app
@@ -412,7 +412,7 @@ function setMenu () {
 			submenu: [
 				{
 					label: `📦 Load Test Files`,
-					click: () => goToUrl(appUrl)
+					click: () => navigate(appUrl)
 				},
 				{ type: `separator` },
 				{
@@ -442,7 +442,7 @@ function setMenu () {
 						}
 
 						// open the current url in the default browser
-						goToUrl(urlToNavigateTo, true);
+						navigate(urlToNavigateTo, true);
 					}
 				},
 				{ type: `separator` },
@@ -483,7 +483,7 @@ function setMenu () {
 		// add the item to the menu
 		customLinkList.push({
 			label: `${item.label || item.url}${itemUrl ? `` : ` (invalid entry)`}`,
-			click: () => goToUrl(itemUrl, item.external),
+			click: () => navigate(itemUrl, item.external),
 			enabled: !!itemUrl // disable menu item if invalid url
 		});
 	});
@@ -578,15 +578,15 @@ function toggleEyasUI(enable) {
 }
 
 // manage navigation
-function goToUrl(url, external) {
+function navigate(path, external) {
 	// imports
 	const { shell } = require(`electron`);
 
 	// go to the requested url in electron
-	!external && $appWindow?.webContents?.loadURL(url);
+	!external && $appWindow?.loadURL(path);
 
 	// open the requested url in the default browser
-	external && shell.openExternal(url);
+	external && shell.openExternal(path);
 }
 
 // format the url for electron consumption
