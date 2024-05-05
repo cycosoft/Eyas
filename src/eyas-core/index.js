@@ -38,11 +38,16 @@ const $allViewports = [
 	{ isDefault: true, label: `Tablet`, width: 768, height: 1024 },
 	{ isDefault: true, label: `Mobile`, width: 360, height: 640 }
 ];
+const $roots = require(_path.join(__dirname, `scripts`, `get-$roots.js`));
 const $paths = {
-	icon: _path.join(__dirname, `..`, `eyas-assets`, `eyas-logo.png`),
-	configLoader: _path.join(__dirname, `..`, `scripts`, `get-config.js`),
-	packageJson: _path.join(__dirname, `..`, `package.json`),
-	eventBridge: _path.join(__dirname, `..`, `scripts`, `event-bridge.js`)
+	icon: _path.join($roots.eyas, `eyas-assets`, `eyas-logo.png`),
+	configLoader: _path.join($roots.eyas, `scripts`, `get-config.js`),
+	packageJson: _path.join($roots.eyas, `package.json`),
+	eventBridge: _path.join($roots.eyas, `scripts`, `event-bridge.js`),
+	testSrc: _path.join($roots.config, `source`),
+	ui: {
+		app: _path.join($roots.eyas, `eyas-interface`, `index.html`)
+	}
 };
 const $operatingSystem = _os.platform();
 const { version: _appVersion } = require($paths.packageJson);
@@ -58,28 +63,6 @@ initElectronCore();
 	// const mkcert = require(`mkcert`);
 	// const { isURL } = require(`validator`);
 	// const parseURL = require(`url-parse`);
-
-
-
-
-
-	// // setup
-	// const TEST_SOURCE = `source`;
-	// const roots = require(_path.join(__dirname, `scripts`, `get-roots.js`));
-	// const $paths = {
-	//
-	//
-	// 	testSrc: _path.join(roots.config, TEST_SOURCE),
-	//
-	// 	ui: {
-	// 		app: _path.join(roots.eyas, `eyas-interface`, `index.html`)
-	// 	}
-	// };
-
-
-
-
-
 
 	// // config
 
