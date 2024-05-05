@@ -45,7 +45,7 @@ const $paths = {
 	configLoader: _path.join($roots.eyas, `scripts`, `get-config.js`),
 	packageJson: _path.join($roots.eyas, `package.json`),
 	eventBridge: _path.join($roots.eyas, `scripts`, `event-bridge.js`),
-	testSrc: _path.join($roots.config, `source`),
+	testSrc: _path.join($roots.config, $isDev ? `demo` : `source`),
 	eyasInterface: _path.join($roots.eyas, `eyas-interface`, `index.html`)
 };
 const $operatingSystem = _os.platform();
@@ -197,7 +197,7 @@ function initElectronUi() {
 	initEyasListeners();
 
 	// load the user's test
-	$appWindow.loadFile($paths.testSrc);
+	$appWindow.loadFile(_path.join($paths.testSrc, `index.html`));
 
 	// navigate to the test url
 	// goToUrl(appUrl);
