@@ -575,26 +575,40 @@ function toggleEyasUI(enable) {
 }
 
 // manage navigation
-function navigate(path, external) {
+function navigate(path, openInBrowser) {
+	// setup
+	let runningTestSource = false;
+
 	// if the path wasn't provided (default to local test source)
 	if(!path){
+		// store that we're running the local test source
+		runningTestSource = true;
+
 		// if the test server is running
 		if($testServer){
-			// update the path to the test server
+			// update the path to the test server via url
 			path = appUrl;
 		} else {
-			// update the path to the local test source
+			// update the path to the local test source via file path
 			path = _path.join($paths.testSrc, `index.html`);
 		}
 	}
 
-	// if requested to load externally
-	if(external){
+	if(
+		// if requested to open in the browser AND
+		openInBrowser &&
+		(
+			// not running the local test OR
+			!runningTestSource ||
+			// the test server is running AND we're running the local test
+			($testServer && runningTestSource)
+		)
+	){
 		// open the requested url in the default browser
 		const { shell } = require(`electron`);
 		shell.openExternal(path);
 	} else {
-		// load the requested path in the app window
+		// otherwise load the requested path in the app window
 		$appWindow.loadURL(path);
 	}
 }
