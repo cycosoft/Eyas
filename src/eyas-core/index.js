@@ -47,7 +47,7 @@ const $paths = {
 const $operatingSystem = _os.platform();
 const { version: _appVersion } = require($paths.packageJson);
 
-// initialize the first layer of the app
+// APP_ENTRY: initialize the first layer of the app
 initElectronCore();
 
 // wrapped in an async IIFE to allow for "root" await calls
