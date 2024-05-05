@@ -15,9 +15,21 @@ const { app: _electronCore, BrowserWindow: _electronWindow, } = require(`electro
 const _path = require(`path`);
 const _os = require(`os`);
 
+// constants
+const APP_NAME = `Eyas`;
+const MP_KEY = `07f0475cb429f7de5ebf79a1c418dc5c`;
+const MP_EVENTS = {
+	core: {
+		launch: `App Launch`,
+		exit: `App Exit`
+	},
+	ui: {
+		modalExitShown: `Modal Exit Shown`
+	}
+};
+
 // global variables $
 const $isDev = process.argv.includes(`--dev`);
-const APP_NAME = `Eyas`;
 let $appWindow = null;
 let $eyasLayer = null;
 const $currentViewport = [];
@@ -31,15 +43,6 @@ const paths = {
 	configLoader: _path.join(__dirname, `..`, `scripts`, `get-config.js`),
 	packageJson: _path.join(__dirname, `..`, `package.json`)
 };
-const MP_KEY = `07f0475cb429f7de5ebf79a1c418dc5c`;
-const MP_EVENTS = {
-	core: {
-		launch: `App Launch`,
-		exit: `App Exit`
-	},
-	ui: {
-		modalExitShown: `Modal Exit Shown`
-	}
 };
 const $operatingSystem = _os.platform();
 const $appVersion = require(paths.packageJson).version;
