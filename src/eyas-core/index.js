@@ -32,6 +32,7 @@ const _os = require(`os`);
 const $isDev = process.argv.includes(`--dev`);
 let $appWindow = null;
 let $eyasLayer = null;
+let $testServer = null;
 const $currentViewport = [];
 const $allViewports = [
 	{ isDefault: true, label: `Desktop`, width: 1366, height: 768 },
@@ -70,7 +71,7 @@ initElectronCore();
 	// const appUrl = appUrlOverride || testServerUrl;
 	// let expressLayer = null;
 
-	// let testServer = null;
+	//
 
 
 
@@ -131,7 +132,7 @@ initElectronCore();
 	// 	});
 
 	// 	// Start the server
-	// 	testServer = https
+	// 	$testServer = https
 	// 		.createServer({ key: cert.key, cert: cert.cert }, expressLayer)
 	// 		.listen(testServerPort, initElectronCore);
 	// }
@@ -243,7 +244,7 @@ function initEyasListeners() {
 		trackEvent(MP_EVENTS.core.exit);
 
 		// Shut down the test server AND THEN exit the app
-		testServer?.close(_electronCore.quit);
+		$testServer?.close(_electronCore.quit);
 	});
 }
 
