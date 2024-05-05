@@ -11,14 +11,7 @@
 // load the test
 
 // global imports _
-const {
-	app: _electronCore,
-	BrowserWindow: _electronWindow,
-	// BrowserView,
-	// Menu,
-	// dialog,
-	// shell,
-} = require(`electron`);
+const { app: _electronCore, BrowserWindow: _electronWindow, } = require(`electron`);
 const _path = require(`path`);
 const _os = require(`os`);
 
@@ -182,6 +175,9 @@ function initElectronCore() {
 
 // initiate the core electron UI layer
 function initElectronUi() {
+	// imports
+	const { BrowserView } = require(`electron`);
+
 	// add test defined viewports to the front of the list
 	$allViewports.unshift(...config().viewports);
 
@@ -286,6 +282,7 @@ function checkTestExpiration () {
 	// imports
 	const { isPast } = require(`date-fns/isPast`);
 	const { format } = require(`date-fns/format`);
+	const { dialog } = require(`electron`);
 
 	// setup
 	const expirationDate = new Date(config().meta.expires);
@@ -365,6 +362,9 @@ function onResize() {
 
 // Set up the application menu
 function setMenu () {
+	// imports
+	const { Menu, dialog } = require(`electron`);
+
 	// build the default menu in MacOS style
 	const menuDefault = [
 		{
@@ -591,6 +591,9 @@ function toggleEyasUI(enable) {
 
 // manage navigation
 function goToUrl(url, external) {
+	// imports
+	const { shell } = require(`electron`);
+
 	// go to the requested url in electron
 	!external && $appWindow?.webContents?.loadURL(url);
 
