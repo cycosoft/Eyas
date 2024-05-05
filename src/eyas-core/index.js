@@ -41,8 +41,8 @@ const $allViewports = [
 const paths = {
 	icon: _path.join(__dirname, `..`, `eyas-assets`, `eyas-logo.png`),
 	configLoader: _path.join(__dirname, `..`, `scripts`, `get-config.js`),
-	packageJson: _path.join(__dirname, `..`, `package.json`)
-};
+	packageJson: _path.join(__dirname, `..`, `package.json`),
+	eventBridge: _path.join(__dirname, `..`, `scripts`, `event-bridge.js`)
 };
 const $operatingSystem = _os.platform();
 const $appVersion = require(paths.packageJson).version;
@@ -70,7 +70,7 @@ initElectronCore();
 	//
 	//
 	// 	testSrc: _path.join(roots.config, TEST_SOURCE),
-	// 	eventBridge: _path.join(roots.eyas, `scripts`, `event-bridge.js`),
+	//
 	// 	ui: {
 	// 		app: _path.join(roots.eyas, `eyas-interface`, `index.html`)
 	// 	}
