@@ -45,9 +45,7 @@ const $paths = {
 	packageJson: _path.join($roots.eyas, `package.json`),
 	eventBridge: _path.join($roots.eyas, `scripts`, `event-bridge.js`),
 	testSrc: _path.join($roots.config, `source`),
-	ui: {
-		app: _path.join($roots.eyas, `eyas-interface`, `index.html`)
-	}
+	eyasInterface: _path.join($roots.eyas, `eyas-interface`, `index.html`)
 };
 const $operatingSystem = _os.platform();
 const { version: _appVersion } = require($paths.packageJson);
@@ -204,7 +202,7 @@ function initElectronUi() {
 	$eyasLayer = new BrowserView({ webPreferences: { preload: $paths.eventBridge } });
 	$appWindow.addBrowserView($eyasLayer);
 	$eyasLayer.setAutoResize({ width: true, height: true });
-	$eyasLayer.webContents.loadFile($paths.ui.app);
+	$eyasLayer.webContents.loadFile($paths.eyasInterface);
 }
 
 // initialize the Electron listeners
