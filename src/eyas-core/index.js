@@ -339,7 +339,8 @@ function onResize() {
 	}
 
 	// update the current dimensions
-	$currentViewport = $appWindow.getContentSize();
+	$currentViewport[0] = newWidth;
+	$currentViewport[1] = newHeight
 
 	// update the menu
 	setMenu();
