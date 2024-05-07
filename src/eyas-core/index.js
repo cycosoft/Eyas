@@ -551,12 +551,6 @@ async function manageAppClose(evt) {
 	// stop the window from closing
 	evt.preventDefault();
 
-	// track that the exit modal is being opened
-	trackEvent(MP_EVENTS.ui.modalExitShown);
-
-	// enable the UI layer
-	toggleEyasUI(true);
-
 	// capture the current page as an image to display as a backdrop to the Eyas UI
 	let screenshot = null;
 	if($operatingSystem !== `win32`) { // not necessary on windows
@@ -564,8 +558,14 @@ async function manageAppClose(evt) {
 		screenshot = screenshot.toDataURL();
 	}
 
+	// enable the UI layer
+	toggleEyasUI(true);
+
 	// send a message to the UI to show the exit modal with the captured image
 	$eyasLayer.webContents.send(`modal-exit-visible`, true, screenshot);
+
+	// track that the exit modal is being opened
+	trackEvent(MP_EVENTS.ui.modalExitShown);
 }
 
 // Toggle the Eyas UI layer so the user can interact with it or their test
