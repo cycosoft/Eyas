@@ -241,7 +241,11 @@ function initEyasListeners() {
 		trackEvent(MP_EVENTS.core.exit);
 
 		// Shut down the test server AND THEN exit the app
-		$testServer?.close(_electronCore.quit);
+		if ($testServer) {
+			$testServer.close(_electronCore.quit);
+		} else {
+			_electronCore.quit();
+		}
 	});
 }
 
