@@ -216,6 +216,12 @@ function initElectronListeners() {
 
 	// Whenever a title update is requested
 	$appWindow.on(`page-title-updated`, onTitleUpdate);
+
+	// when there's a navigation failure
+	$appWindow.webContents.on(`did-fail-load`, (event, errorCode, errorDescription) => {
+		// log the error
+		console.error(`Navigation failed: ${errorCode} - ${errorDescription}`);
+	});
 }
 
 // initialize the Eyas listeners
