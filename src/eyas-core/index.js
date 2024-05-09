@@ -144,6 +144,19 @@ function initElectronCore() {
 	_electronCore.whenReady()
 		// when the electron layer is ready
 		.then(() => {
+			const { protocol } = require(`electron`);
+
+			// use this protocol to load files relatively from the local file system
+			protocol.registerFileProtocol(`eyas`, (request, callback) => {
+				const url = request.url.substr(7); // Remove the 'eyas://' part
+				console.log({url});
+				const filePath = _path.normalize(`${paths.testSrc}/${url}`);
+				console.log({filePath});
+				callback({ path: filePath });
+			}, error => {
+				if (error) { console.error(`Failed to register protocol`); }
+			});
+
 			// start the UI layer
 			initElectronUi();
 
@@ -601,7 +614,7 @@ function navigate(path, openInBrowser) {
 			path = appUrl;
 		} else {
 			// update the path to the local test source via file path
-			path = _path.join($paths.testSrc, `index.html`);
+			path = `eyas://index.html`;
 		}
 	}
 
