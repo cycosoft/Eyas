@@ -140,21 +140,50 @@ initElectronCore();
 
 // start the core of the application
 function initElectronCore() {
+	// imports
+	const { protocol, net } = require(`electron`);
+
+	// register the custom protocol so a local test can be loaded with relative paths
+	protocol.registerSchemesAsPrivileged([
+		{ scheme: `eyas`, privileges: {
+			standard: true,
+			secure: true,
+			allowServiceWorkers: true,
+			supportFetchAPI: true
+		} }
+	]);
+
 	// start the electron layer
 	_electronCore.whenReady()
 		// when the electron layer is ready
 		.then(() => {
-			const { protocol } = require(`electron`);
-
 			// use this protocol to load files relatively from the local file system
-			protocol.registerFileProtocol(`eyas`, (request, callback) => {
-				const url = request.url.substr(7); // Remove the 'eyas://' part
-				console.log({url});
-				const filePath = _path.normalize(`${paths.testSrc}/${url}`);
-				console.log({filePath});
-				callback({ path: filePath });
-			}, error => {
-				if (error) { console.error(`Failed to register protocol`); }
+			protocol.handle(`eyas`, request => {
+				// grab the pathname from the request
+				const { pathname } = new URL(request.url);
+				console.log(`pathname`, pathname);
+
+				// parse expected file attempting to load
+				const fileIfNotDefined = `index.html`;
+
+				// check if the pathname ends with a file + extension
+				const hasExtension = pathname.split(`/`).pop().includes(`.`);
+
+				// build the relative path to the file
+				const relativePathToFile = hasExtension
+					? pathname
+					: _path.join(pathname, fileIfNotDefined);
+				console.log(`relativePathToFile`, relativePathToFile);
+
+				// build the expected path to the file
+				const localFilePath = _path.join($paths.testSrc, relativePathToFile);
+				console.log(`localFilePath`, localFilePath);
+
+				// TODO: check if the file exists
+				// TODO: throw a 404 modal, user can say ok
+
+				// return the file from the local system to complete the request
+				return net.fetch(localFilePath);
 			});
 
 			// start the UI layer
