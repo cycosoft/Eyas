@@ -681,6 +681,9 @@ function handleCustomProtocolRequests() {
 
 	// use this protocol to load files relatively from the local file system
 	protocol.handle(`eyas`, request => {
+		// imports
+		const { pathToFileURL } = require(`url`);
+
 		// grab the pathname from the request
 		const { pathname } = new URL(request.url);
 		console.log(`pathname`, pathname);
@@ -705,6 +708,6 @@ function handleCustomProtocolRequests() {
 		// TODO: throw a 404 modal, user can say ok
 
 		// return the file from the local system to complete the request
-		return net.fetch(localFilePath);
+		return net.fetch(pathToFileURL(localFilePath).toString());
 	});
 }
