@@ -686,7 +686,6 @@ function handleCustomProtocolRequests() {
 
 		// grab the pathname from the request
 		const { pathname } = new URL(request.url);
-		console.log(`pathname`, pathname);
 
 		// parse expected file attempting to load
 		const fileIfNotDefined = `index.html`;
@@ -698,14 +697,9 @@ function handleCustomProtocolRequests() {
 		const relativePathToFile = hasExtension
 			? pathname
 			: _path.join(pathname, fileIfNotDefined);
-		console.log(`relativePathToFile`, relativePathToFile);
 
 		// build the expected path to the file
 		const localFilePath = _path.join($paths.testSrc, relativePathToFile);
-		console.log(`localFilePath`, localFilePath);
-
-		// TODO: check if the file exists
-		// TODO: throw a 404 modal, user can say ok
 
 		// return the file from the local system to complete the request
 		return net.fetch(pathToFileURL(localFilePath).toString());
