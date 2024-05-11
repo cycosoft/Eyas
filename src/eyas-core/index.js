@@ -202,14 +202,27 @@ function initElectronUi() {
 	initElectronListeners();
 	initEyasListeners();
 
-	// load the user's test
-	navigate();
-
 	// Initialize the $eyasLayer
 	$eyasLayer = new BrowserView({ webPreferences: { preload: $paths.eventBridge } });
 	$appWindow.addBrowserView($eyasLayer);
 	$eyasLayer.setAutoResize({ width: true, height: true });
 	$eyasLayer.webContents.loadFile($paths.eyasInterface);
+
+	// if the user provided any custom domains
+	if (config().domain.length) {
+		// have the user choose the environment
+		const domain = config().domain[0];
+
+		// setup
+		const { hostname: routeFrom } = new URL(domain);
+		const { host: routeTo } = new URL(`eyas://`);
+
+		// override requests to the custom domain to use the test server
+		_electronCore.commandLine.appendSwitch(`host-resolver-rules`, `MAP ${routeFrom} ${routeTo}`);
+	}
+
+	// load the user's test
+	navigate(config().domain[0]);
 }
 
 // initialize the Electron listeners
