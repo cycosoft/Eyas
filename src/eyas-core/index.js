@@ -140,51 +140,15 @@ initElectronCore();
 
 // start the core of the application
 function initElectronCore() {
-	// imports
-	const { protocol, net } = require(`electron`);
-
-	// register the custom protocol so a local test can be loaded with relative paths
-	protocol.registerSchemesAsPrivileged([
-		{ scheme: `eyas`, privileges: {
-			standard: true,
-			secure: true,
-			allowServiceWorkers: true,
-			supportFetchAPI: true
-		} }
-	]);
+	// add support eyas:// protocol
+	registerCustomProtocol();
 
 	// start the electron layer
 	_electronCore.whenReady()
 		// when the electron layer is ready
 		.then(() => {
-			// use this protocol to load files relatively from the local file system
-			protocol.handle(`eyas`, request => {
-				// grab the pathname from the request
-				const { pathname } = new URL(request.url);
-				console.log(`pathname`, pathname);
-
-				// parse expected file attempting to load
-				const fileIfNotDefined = `index.html`;
-
-				// check if the pathname ends with a file + extension
-				const hasExtension = pathname.split(`/`).pop().includes(`.`);
-
-				// build the relative path to the file
-				const relativePathToFile = hasExtension
-					? pathname
-					: _path.join(pathname, fileIfNotDefined);
-				console.log(`relativePathToFile`, relativePathToFile);
-
-				// build the expected path to the file
-				const localFilePath = _path.join($paths.testSrc, relativePathToFile);
-				console.log(`localFilePath`, localFilePath);
-
-				// TODO: check if the file exists
-				// TODO: throw a 404 modal, user can say ok
-
-				// return the file from the local system to complete the request
-				return net.fetch(localFilePath);
-			});
+			// start listening for requests to the custom protocol
+			handleCustomProtocolRequests();
 
 			// start the UI layer
 			initElectronUi();
@@ -692,4 +656,55 @@ function formatURL(url) {
 
 	// send back formatted string
 	return output;
+}
+
+// register a custom protocol for loading local test files
+function registerCustomProtocol() {
+	// imports
+	const { protocol } = require(`electron`);
+
+	// register the custom protocol so a local test can be loaded with relative paths
+	protocol.registerSchemesAsPrivileged([
+		{ scheme: `eyas`, privileges: {
+			standard: true,
+			secure: true,
+			allowServiceWorkers: true,
+			supportFetchAPI: true
+		} }
+	]);
+}
+
+// handle requests to the custom protocol
+function handleCustomProtocolRequests() {
+	// imports
+	const { protocol, net } = require(`electron`);
+
+	// use this protocol to load files relatively from the local file system
+	protocol.handle(`eyas`, request => {
+		// grab the pathname from the request
+		const { pathname } = new URL(request.url);
+		console.log(`pathname`, pathname);
+
+		// parse expected file attempting to load
+		const fileIfNotDefined = `index.html`;
+
+		// check if the pathname ends with a file + extension
+		const hasExtension = pathname.split(`/`).pop().includes(`.`);
+
+		// build the relative path to the file
+		const relativePathToFile = hasExtension
+			? pathname
+			: _path.join(pathname, fileIfNotDefined);
+		console.log(`relativePathToFile`, relativePathToFile);
+
+		// build the expected path to the file
+		const localFilePath = _path.join($paths.testSrc, relativePathToFile);
+		console.log(`localFilePath`, localFilePath);
+
+		// TODO: check if the file exists
+		// TODO: throw a 404 modal, user can say ok
+
+		// return the file from the local system to complete the request
+		return net.fetch(localFilePath);
+	});
 }
