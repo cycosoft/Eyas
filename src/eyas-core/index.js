@@ -140,7 +140,7 @@ initElectronCore();
 
 // start the core of the application
 function initElectronCore() {
-	// add support eyas:// protocol
+	// add support for eyas:// protocol
 	registerCustomProtocol();
 
 	// start the electron layer
