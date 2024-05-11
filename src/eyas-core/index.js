@@ -211,11 +211,14 @@ function initElectronUi() {
 	// if the user provided any custom domains
 	if (config().domain.length) {
 		// have the user choose the environment
-		const domain = config().domain[0];
+		const domain = formatURL(config().domain[0].url);
+
+		console.log(`domain:`, domain);
 
 		// setup
 		const { hostname: routeFrom } = new URL(domain);
-		const { host: routeTo } = new URL(`eyas://`);
+		// const { host: routeTo } = new URL(`eyas://`);
+		const routeTo = `eyas://`;
 
 		// override requests to the custom domain to use the test server
 		_electronCore.commandLine.appendSwitch(`host-resolver-rules`, `MAP ${routeFrom} ${routeTo}`);
@@ -645,6 +648,7 @@ function navigate(path, openInBrowser) {
 
 // format the url for electron consumption
 function formatURL(url) {
+	console.log(url);
 	// imports
 	const { isURL } = require(`validator`);
 	const parseURL = require(`url-parse`);
@@ -658,6 +662,8 @@ function formatURL(url) {
 	// parse the url
 	const parsed = parseURL(url);
 
+	console.log(parsed);
+
 	// if the url is missing a protocol
 	if(!parsed.protocol){
 		// default to https
@@ -666,6 +672,8 @@ function formatURL(url) {
 
 	// grab the url as a string from the parsed object
 	output = parsed.toString();
+
+	console.log(output);
 
 	// send back formatted string
 	return output;
