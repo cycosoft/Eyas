@@ -696,7 +696,7 @@ function handleCustomProtocolRequests() {
 
 	// use this protocol to load files relatively from the local file system
 	protocol.handle(`eyas`, request => {
-		console.log(`handle:eyas`, request);
+		console.log(`handle:eyas`);
 		// imports
 		const { pathToFileURL } = require(`url`);
 
@@ -723,7 +723,7 @@ function handleCustomProtocolRequests() {
 		console.log({localFilePath});
 
 		// return the file from the local system to complete the request
-		return net.fetch(`${pathToFileURL(localFilePath).toString()}${parsed.search}${parsed.hash}`);
+		return net.fetch(pathToFileURL(localFilePath).toString());
 	});
 
 	// listen for requests to the specified domains and redirect to the custom protocol
@@ -740,7 +740,22 @@ function handleCustomProtocolRequests() {
 			const redirect = request.url.replace(`https://${hostname}/`, `eyas://`);
 			console.log({redirect});
 			// return { redirectURL: request.url.replace(`https://${hostname}/`, `eyas://`) };
-			return net.fetch(redirect);
+			// return { redirectURL: `${redirect}/index.html` };
+			return net.fetch(validateEyasUrl(redirect));
 		}
 	});
+
+	function validateEyasUrl(url) {
+		console.log(`validateEyasUrl`, url);
+		let output = url;
+
+		// check if the pathname ends with a file + extension
+		const hasExtension = url.split(`/`).pop().includes(`.`);
+
+		if(!hasExtension){
+			output = `${url}/index.html`;
+		}
+
+		return output;
+	}
 }
