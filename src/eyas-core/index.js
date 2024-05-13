@@ -55,7 +55,7 @@ const { version: _appVersion } = require($paths.packageJson);
 initElectronCore();
 
 // wrapped in an async IIFE to allow for "root" await calls
-(async () => {
+// (async () => {
 	// imports
 	// const express = require(`express`);
 	// const https = require(`https`);
@@ -136,7 +136,7 @@ initElectronCore();
 	// 		.createServer({ key: cert.key, cert: cert.cert }, expressLayer)
 	// 		.listen(testServerPort, initElectronCore);
 	// }
-})();
+// })();
 
 // start the core of the application
 function initElectronCore() {
@@ -225,7 +225,8 @@ function initElectronUi() {
 	// }
 
 	// load the user's test
-	console.log(`navigate:`, config().domain[0].url);
+	console.log(`navigate:`);
+	console.log(`config().domain[0].url`, config().domain);
 	navigate();
 }
 
@@ -727,14 +728,14 @@ function handleCustomProtocolRequests() {
 
 	// listen for requests to the specified domains and redirect to the custom protocol
 	protocol.handle(`https`, request => {
-		console.log(`handle:https`, request);
+		console.log(`handle:https`);
 		// setup
 		const { hostname } = new URL(request.url);
 
 
 		// if the hostname is in the list of domains
-		console.log(config().domain[0].url.some(domain => domain.url.includes(hostname)));
-		if(config().domain[0].url.some(domain => domain.url.includes(hostname))){
+		console.log(config().domain.some(domain => domain.url.includes(hostname)));
+		if(config().domain.some(domain => domain.url.includes(hostname))){
 			// redirect to the custom protocol without the domain
 			const redirect = request.url.replace(`https://${hostname}/`, `eyas://`);
 			console.log({redirect});

@@ -92,6 +92,9 @@ function validateCustomDomain(domains) {
 		output.push({ url: domains });
 	}
 
+	// if the input is an array
+	output.push(...domains);
+
 	// return validated input
 	return output;
 }
