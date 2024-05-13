@@ -226,7 +226,7 @@ function initElectronUi() {
 
 	// load the user's test
 	console.log(`navigate:`, config().domain[0].url);
-	navigate(config().domain[0].url);
+	navigate();
 }
 
 // initialize the Electron listeners
@@ -619,14 +619,8 @@ function navigate(path, openInBrowser) {
 		// store that we're running the local test source
 		runningTestSource = true;
 
-		// if the test server is running
-		if($testServer){
-			// update the path to the test server via url
-			path = appUrl;
-		} else {
-			// update the path to the local test source via file path
-			path = `eyas://`;
-		}
+		// if there's a custom domain, go there OR default to the local test source
+		path = config().domain[0].url || `eyas://`;
 	}
 
 	if(
@@ -701,7 +695,7 @@ function handleCustomProtocolRequests() {
 
 	// use this protocol to load files relatively from the local file system
 	protocol.handle(`eyas`, request => {
-		console.log(`handle:eyas`);
+		console.log(`handle:eyas`, request);
 		// imports
 		const { pathToFileURL } = require(`url`);
 
@@ -733,10 +727,10 @@ function handleCustomProtocolRequests() {
 
 	// listen for requests to the specified domains and redirect to the custom protocol
 	protocol.handle(`https`, request => {
+		console.log(`handle:https`, request);
 		// setup
 		const { hostname } = new URL(request.url);
 
-		console.log(`handle:https > hostname`, hostname);
 
 		// if the hostname is in the list of domains
 		console.log(config().domain[0].url.some(domain => domain.url.includes(hostname)));
