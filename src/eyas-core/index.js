@@ -209,23 +209,24 @@ function initElectronUi() {
 	$eyasLayer.webContents.loadFile($paths.eyasInterface);
 
 	// if the user provided any custom domains
-	if (config().domain.length) {
-		// have the user choose the environment
-		const domain = formatURL(config().domain[0].url);
+	// if (config().domain.length) {
+	// 	// have the user choose the environment
+	// 	const domain = formatURL(config().domain[0].url);
 
-		console.log(`domain:`, domain);
+	// 	console.log(`domain:`, domain);
 
-		// setup
-		const { hostname: routeFrom } = new URL(domain);
-		// const { host: routeTo } = new URL(`eyas://`);
-		const routeTo = `eyas://`;
+	// 	// setup
+	// 	const { hostname: routeFrom } = new URL(domain);
+	// 	// const { host: routeTo } = new URL(`eyas://`);
+	// 	const routeTo = `eyas://`;
 
-		// override requests to the custom domain to use the test server
-		_electronCore.commandLine.appendSwitch(`host-resolver-rules`, `MAP ${routeFrom} ${routeTo}`);
-	}
+	// 	// override requests to the custom domain to use the test server
+	// 	_electronCore.commandLine.appendSwitch(`host-resolver-rules`, `MAP ${routeFrom} ${routeTo}`);
+	// }
 
 	// load the user's test
-	navigate(config().domain[0]);
+	console.log(`navigate:`, config().domain[0].url);
+	navigate(config().domain[0].url);
 }
 
 // initialize the Electron listeners
@@ -609,6 +610,7 @@ function toggleEyasUI(enable) {
 
 // manage navigation
 function navigate(path, openInBrowser) {
+	console.log(`navigate:`, path);
 	// setup
 	let runningTestSource = false;
 
@@ -623,7 +625,7 @@ function navigate(path, openInBrowser) {
 			path = appUrl;
 		} else {
 			// update the path to the local test source via file path
-			path = `eyas://index.html`;
+			path = `eyas://`;
 		}
 	}
 
@@ -642,13 +644,14 @@ function navigate(path, openInBrowser) {
 		shell.openExternal(path);
 	} else {
 		// otherwise load the requested path in the app window
+		path = formatURL(path);
+		console.log(`attemping to load:`, path);
 		$appWindow.loadURL(path);
 	}
 }
 
 // format the url for electron consumption
 function formatURL(url) {
-	console.log(url);
 	// imports
 	const { isURL } = require(`validator`);
 	const parseURL = require(`url-parse`);
@@ -662,8 +665,6 @@ function formatURL(url) {
 	// parse the url
 	const parsed = parseURL(url);
 
-	console.log(parsed);
-
 	// if the url is missing a protocol
 	if(!parsed.protocol){
 		// default to https
@@ -672,8 +673,6 @@ function formatURL(url) {
 
 	// grab the url as a string from the parsed object
 	output = parsed.toString();
-
-	console.log(output);
 
 	// send back formatted string
 	return output;
@@ -702,11 +701,16 @@ function handleCustomProtocolRequests() {
 
 	// use this protocol to load files relatively from the local file system
 	protocol.handle(`eyas`, request => {
+		console.log(`handle:eyas`);
 		// imports
 		const { pathToFileURL } = require(`url`);
 
 		// grab the pathname from the request
-		const { pathname } = new URL(request.url);
+		const parsed = new URL(request.url);
+
+		console.log(parsed);
+
+		const { pathname } = parsed;
 
 		// parse expected file attempting to load
 		const fileIfNotDefined = `index.html`;
@@ -721,8 +725,27 @@ function handleCustomProtocolRequests() {
 
 		// build the expected path to the file
 		const localFilePath = _path.join($paths.testSrc, relativePathToFile);
+		console.log({localFilePath});
 
 		// return the file from the local system to complete the request
-		return net.fetch(pathToFileURL(localFilePath).toString());
+		return net.fetch(`${pathToFileURL(localFilePath).toString()}${parsed.search}${parsed.hash}`);
+	});
+
+	// listen for requests to the specified domains and redirect to the custom protocol
+	protocol.handle(`https`, request => {
+		// setup
+		const { hostname } = new URL(request.url);
+
+		console.log(`handle:https > hostname`, hostname);
+
+		// if the hostname is in the list of domains
+		console.log(config().domain[0].url.some(domain => domain.url.includes(hostname)));
+		if(config().domain[0].url.some(domain => domain.url.includes(hostname))){
+			// redirect to the custom protocol without the domain
+			const redirect = request.url.replace(`https://${hostname}/`, `eyas://`);
+			console.log({redirect});
+			// return { redirectURL: request.url.replace(`https://${hostname}/`, `eyas://`) };
+			return net.fetch(redirect);
+		}
 	});
 }
