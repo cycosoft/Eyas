@@ -148,7 +148,7 @@ function initElectronCore() {
 		// when the electron layer is ready
 		.then(() => {
 			// start listening for requests to the custom protocol
-			handleCustomProtocolRequests();
+			handleRedirects();
 
 			// start the UI layer
 			initElectronUi();
@@ -690,7 +690,7 @@ function registerCustomProtocol() {
 }
 
 // handle requests to the custom protocol
-function handleCustomProtocolRequests() {
+function handleRedirects() {
 	// imports
 	const { protocol, net } = require(`electron`);
 
