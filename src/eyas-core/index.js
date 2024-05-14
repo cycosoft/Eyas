@@ -225,8 +225,6 @@ function initElectronUi() {
 	// }
 
 	// load the user's test
-	console.log(`navigate:`);
-	console.log(`config().domain[0].url`, config().domain);
 	navigate();
 }
 

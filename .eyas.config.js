@@ -2,7 +2,10 @@
 module.exports = {
 	source: `demo`,
 	// port: ``,
-	domain: [{ url: `eyas.cycosoft.com` }],
+	domain: [
+		{ url: `eyas.cycosoft.com` },
+		{ url: `google.com` },
+	],
 	redirects: [{ from: `/REDIRECT`, to: `/demo/alt` }],
 	title: `Eyas App Demo`,
 	// version: ``,
