@@ -3,8 +3,9 @@ module.exports = {
 	source: `demo`,
 	// port: ``,
 	domain: [
-		{ url: `eyas.cycosoft.com` },
-		{ url: `google.com` },
+		{ url: `dev.eyas.cycosoft.com`, title: `Development`, port: 3000 },
+		{ url: `staging.eyas.cycosoft.com`, title: `Staging` },
+		{ url: `eyas.cycosoft.com`, title: `Production` }
 	],
 	redirects: [{ from: `/REDIRECT`, to: `/demo/alt` }],
 	title: `Eyas App Demo`,
