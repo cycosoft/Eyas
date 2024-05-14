@@ -611,7 +611,6 @@ function toggleEyasUI(enable) {
 
 // manage navigation
 function navigate(path, openInBrowser) {
-	console.log(`navigate:`, path);
 	// setup
 	let runningTestSource = false;
 
@@ -639,9 +638,7 @@ function navigate(path, openInBrowser) {
 		shell.openExternal(path);
 	} else {
 		// otherwise load the requested path in the app window
-		path = formatURL(path);
-		console.log(`attemping to load:`, path);
-		$appWindow.loadURL(path);
+		$appWindow.loadURL(formatURL(path));
 	}
 }
 
