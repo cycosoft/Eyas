@@ -696,7 +696,6 @@ function handleRedirects() {
 
 	// use this protocol to load files relatively from the local file system
 	protocol.handle(`eyas`, request => {
-		console.log(`handle:eyas`);
 		// imports
 		const { pathToFileURL } = require(`url`);
 
@@ -716,7 +715,6 @@ function handleRedirects() {
 
 		// build the expected path to the file
 		const localFilePath = _path.join($paths.testSrc, relativePathToFile);
-		console.log({localFilePath});
 
 		// return the file from the local system to complete the request
 		return net.fetch(pathToFileURL(localFilePath).toString());
@@ -724,34 +722,16 @@ function handleRedirects() {
 
 	// listen for requests to the specified domains and redirect to the custom protocol
 	protocol.handle(`https`, request => {
-		console.log(`handle:https`);
 		// setup
 		const { hostname } = new URL(request.url);
 
-
-		// if the hostname is in the list of domains
-		console.log(config().domain.some(domain => domain.url.includes(hostname)));
+		// if the hostname is in the list of custom domains
 		if(config().domain.some(domain => domain.url.includes(hostname))){
-			// redirect to the custom protocol without the domain
+			// navigate to the custom protocol
 			const redirect = request.url.replace(`https://`, `eyas://`);
-			console.log({redirect});
-			// return { redirectURL: request.url.replace(`https://${hostname}/`, `eyas://`) };
-			// return { redirectURL: `${redirect}/index.html` };
-			return net.fetch(validateEyasUrl(redirect));
+
+			// redirect to the custom protocol
+			return net.fetch(redirect);
 		}
 	});
-
-	function validateEyasUrl(url) {
-		console.log(`validateEyasUrl`, url);
-		let output = url;
-
-		// check if the pathname ends with a file + extension
-		const hasExtension = url.split(`/`).pop().includes(`.`);
-
-		if(!hasExtension){
-			output = `${url}/index.html`;
-		}
-
-		return output;
-	}
 }
