@@ -5,7 +5,8 @@
 - Add a spinner to the app close button
 - Support for multiple domains via config
 - Complete restructure of the core app code
-- Run tests on custom protocol if no domain is specified
+- Run user test via custom protocol instead of http server
+- Temporarily removed ability to run user test in the browser
 
 # v2.0.0
 
