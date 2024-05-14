@@ -701,11 +701,7 @@ function handleCustomProtocolRequests() {
 		const { pathToFileURL } = require(`url`);
 
 		// grab the pathname from the request
-		const parsed = new URL(request.url);
-
-		console.log(parsed);
-
-		const { pathname } = parsed;
+		const { pathname } = new URL(request.url);
 
 		// parse expected file attempting to load
 		const fileIfNotDefined = `index.html`;
@@ -737,7 +733,7 @@ function handleCustomProtocolRequests() {
 		console.log(config().domain.some(domain => domain.url.includes(hostname)));
 		if(config().domain.some(domain => domain.url.includes(hostname))){
 			// redirect to the custom protocol without the domain
-			const redirect = request.url.replace(`https://${hostname}/`, `eyas://`);
+			const redirect = request.url.replace(`https://`, `eyas://`);
 			console.log({redirect});
 			// return { redirectURL: request.url.replace(`https://${hostname}/`, `eyas://`) };
 			// return { redirectURL: `${redirect}/index.html` };
