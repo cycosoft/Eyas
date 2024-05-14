@@ -209,20 +209,13 @@ function initElectronUi() {
 	$eyasLayer.webContents.loadFile($paths.eyasInterface);
 
 	// if the user provided any custom domains
-	// if (config().domain.length) {
-	// 	// have the user choose the environment
-	// 	const domain = formatURL(config().domain[0].url);
-
-	// 	console.log(`domain:`, domain);
-
-	// 	// setup
-	// 	const { hostname: routeFrom } = new URL(domain);
-	// 	// const { host: routeTo } = new URL(`eyas://`);
-	// 	const routeTo = `eyas://`;
+	if (config().domain.length > 1) {
+		// send the custom domains to the UI layer
+		$eyasLayer.webContents.send(`choose-environment`, config().domain);
 
 	// 	// override requests to the custom domain to use the test server
 	// 	_electronCore.commandLine.appendSwitch(`host-resolver-rules`, `MAP ${routeFrom} ${routeTo}`);
-	// }
+	}
 
 	// load the user's test
 	navigate();
