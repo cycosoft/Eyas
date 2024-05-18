@@ -6,7 +6,7 @@
 	>
 		<v-card>
 			<v-card-text>
-				<p class="font-weight-black">Select Test Environment</p>
+				<p class="font-weight-black text-center text-h6 mb-3">Select Test Environment</p>
 
 				<v-btn
 					v-for="domain in domains"
