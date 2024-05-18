@@ -54,6 +54,7 @@ export default {
 	methods: {
 		choose(domain) {
 			window.eventBridge?.send(`environment-selected`, domain);
+			this.visible = false;
 		}
 	}
 }
