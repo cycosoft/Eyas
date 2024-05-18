@@ -276,7 +276,7 @@ function initEyasListeners() {
 	});
 
 	// listen for the user to select an environment
-	ipcMain.on(`environment-selected`, (event, url) => {
+	ipcMain.on(`environment-selected`, (event, selected) => {
 		console.log(`environment-url`, selected);
 	});
 }
