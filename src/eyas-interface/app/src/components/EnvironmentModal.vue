@@ -10,16 +10,20 @@
 
 				<v-sheet>
 					<v-row>
-						<v-btn
-							v-for="domain in domains"
-							class="mx-3 py-10"
-							stacked
-							@click="choose(domain)"
-							v-tooltip:bottom="domain.url"
+						<v-col
+							v-for="(domain, index) in domains"
+							:key="index"
 						>
-							<v-icon size="40">mdi-database</v-icon>
-							<p>{{ domain.title }}</p>
-						</v-btn>
+							<v-btn
+								class="-py-5"
+								:stacked="$vuetify.display.smAndUp"
+								v-tooltip:bottom="domain.url"
+								@click="choose(domain)"
+							>
+								<v-icon size="40">mdi-database</v-icon>
+								<p>{{ domain.title }}</p>
+							</v-btn>
+						</v-col>
 					</v-row>
 				</v-sheet>
 			</v-card-text>
@@ -30,7 +34,7 @@
 <script>
 export default {
 	data: () => ({
-		visible: false,
+		visible: true,
 		domains: [
 			{ url: `dev.eyas.cycosoft.com`, title: `Development`, port: 3000 },
 			{ url: `staging.eyas.cycosoft.com`, title: `Staging` },
