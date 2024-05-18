@@ -448,7 +448,7 @@ function setMenu () {
 			submenu: [
 				{
 					label: `📦 Reload Test`,
-					click: () => navigate()
+					click: () => freshStart()
 				},
 				{ type: `separator` },
 				{
@@ -735,4 +735,9 @@ function handleRedirects() {
 			return net.fetch(redirect);
 		}
 	});
+}
+
+// refresh the app
+function freshStart() {
+	navigate();
 }
