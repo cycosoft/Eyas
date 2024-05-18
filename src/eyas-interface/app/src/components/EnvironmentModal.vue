@@ -49,7 +49,7 @@ export default {
 
 	mounted() {
 		// Listen for messages from the main process
-		window.eventBridge?.receive(`choose-environment`, domains => {
+		window.eventBridge?.receive(`show-environment-modal`, domains => {
 			this.domains = domains;
 			this.visible = true;
 		});

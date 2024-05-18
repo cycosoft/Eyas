@@ -211,7 +211,7 @@ function initElectronUi() {
 	// if the user provided any custom domains
 	if (config().domain.length > 1) {
 		// send the custom domains to the UI layer
-		$eyasLayer.webContents.send(`choose-environment`, config().domain);
+		$eyasLayer.webContents.send(`show-environment-modal`, config().domain);
 
 	// 	// override requests to the custom domain to use the test server
 	// 	_electronCore.commandLine.appendSwitch(`host-resolver-rules`, `MAP ${routeFrom} ${routeTo}`);
