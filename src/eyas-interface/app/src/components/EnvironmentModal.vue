@@ -8,8 +8,11 @@
 			<v-card-text>
 				<p class="font-weight-black">Select Test Environment</p>
 
-				<v-btn v-for="domain in domains">
-					<v-icon icon="mdi-database-outline" color="red" />
+				<v-btn
+					v-for="domain in domains"
+					stacked
+					prepend-icon="mdi-database-outline"
+				>
 					{{ domain.title }}
 				</v-btn>
 			</v-card-text>
