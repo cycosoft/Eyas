@@ -16,11 +16,16 @@
 						>
 							<v-btn
 								class="-py-5"
+								block
+								size="large"
 								:stacked="$vuetify.display.smAndUp"
 								v-tooltip:bottom="domain.url"
 								@click="choose(domain)"
 							>
-								<v-icon size="40">mdi-database</v-icon>
+								<template v-slot:prepend>
+									<v-icon size="40">mdi-database</v-icon>
+								</template>
+
 								<p>{{ domain.title }}</p>
 							</v-btn>
 						</v-col>
