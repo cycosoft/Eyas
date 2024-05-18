@@ -20,7 +20,7 @@
 								size="large"
 								:stacked="$vuetify.display.smAndUp"
 								v-tooltip:bottom="domain.url"
-								@click="choose(domain)"
+								@click="choose(domain.url)"
 							>
 								<template v-slot:prepend>
 									<v-icon size="40">mdi-database</v-icon>
@@ -57,7 +57,7 @@ export default {
 
 	methods: {
 		choose(domain) {
-			window.eventBridge?.send(`select-environment`, domain);
+			window.eventBridge?.send(`environment-selected`, domain);
 		}
 	}
 }

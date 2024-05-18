@@ -268,6 +268,11 @@ function initEyasListeners() {
 			_electronCore.quit();
 		}
 	});
+
+	// listen for the user to select an environment
+	ipcMain.on(`environment-selected`, selected => {
+		console.log(`environment-selected`, selected);
+	});
 }
 
 // method for tracking events

@@ -7,7 +7,7 @@ const { contextBridge, ipcRenderer } = require(`electron`);
 contextBridge.exposeInMainWorld(`eventBridge`, {
 	send: (channel, data) => {
 		// whitelist channels
-		const validChannels = [`app-exit`, `open-in-browser`, `hide-ui`, `select-environment`];
+		const validChannels = [`app-exit`, `open-in-browser`, `hide-ui`, `environment-selected`];
 		if (validChannels.includes(channel)) {
 			ipcRenderer.send(channel, data);
 		}
