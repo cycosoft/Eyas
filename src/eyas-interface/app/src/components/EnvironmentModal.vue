@@ -12,6 +12,7 @@
 					v-for="domain in domains"
 					stacked
 					prepend-icon="mdi-database-outline"
+					class="mx-5"
 				>
 					{{ domain.title }}
 				</v-btn>
