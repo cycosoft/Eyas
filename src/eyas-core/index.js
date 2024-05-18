@@ -219,7 +219,7 @@ function initElectronUi() {
 			$eyasLayer.webContents.send(`show-environment-modal`, config().domain);
 		});
 	}else{
-		// directly load the user's test
+		// directly load the user's test using the default domain
 		navigate();
 	}
 
@@ -276,9 +276,10 @@ function initEyasListeners() {
 	});
 
 	// listen for the user to select an environment
-	ipcMain.on(`environment-selected`, (event, selected) => {
+	ipcMain.on(`environment-selected`, (event, url) => {
 		toggleEyasUI(false);
-		console.log(`environment-url`, selected);
+		console.log(`environment-url`, url);
+		navigate(url);
 	});
 }
 
