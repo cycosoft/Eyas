@@ -39,7 +39,7 @@
 <script>
 export default {
 	data: () => ({
-		visible: true,
+		visible: false,
 		domains: [
 			{ url: `dev.eyas.cycosoft.com`, title: `Development`, port: 3000 },
 			{ url: `staging.eyas.cycosoft.com`, title: `Staging` },
