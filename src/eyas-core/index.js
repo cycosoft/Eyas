@@ -208,17 +208,23 @@ function initElectronUi() {
 	$eyasLayer.setAutoResize({ width: true, height: true });
 	$eyasLayer.webContents.loadFile($paths.eyasInterface);
 
-	// if the user provided any custom domains
+	// if the user has custom domains
 	if (config().domain.length > 1) {
-		// send the custom domains to the UI layer
-		$eyasLayer.webContents.send(`show-environment-modal`, config().domain);
+		// once the Eyas UI layer is ready
+		$eyasLayer.webContents.on(`did-finish-load`, () => {
+			// show the Eyas UI layer
+			toggleEyasUI(true);
 
-	// 	// override requests to the custom domain to use the test server
-	// 	_electronCore.commandLine.appendSwitch(`host-resolver-rules`, `MAP ${routeFrom} ${routeTo}`);
+			// send the custom domains to the UI layer
+			$eyasLayer.webContents.send(`show-environment-modal`, config().domain);
+		});
+	}else{
+		// directly load the user's test
+		navigate();
 	}
 
-	// load the user's test
-	navigate();
+	// override requests to the custom domain to use the test server
+	// _electronCore.commandLine.appendSwitch(`host-resolver-rules`, `MAP ${routeFrom} ${routeTo}`);
 }
 
 // initialize the Electron listeners
@@ -270,8 +276,8 @@ function initEyasListeners() {
 	});
 
 	// listen for the user to select an environment
-	ipcMain.on(`environment-selected`, selected => {
-		console.log(`environment-selected`, selected);
+	ipcMain.on(`environment-selected`, (event, url) => {
+		console.log(`environment-url`, selected);
 	});
 }
 
