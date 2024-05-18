@@ -6,7 +6,12 @@
 	>
 		<v-card>
 			<v-card-text>
-				Choose an environment to test in:
+				<p class="font-weight-black">Select Test Environment</p>
+
+				<v-btn v-for="domain in domains">
+					<v-icon icon="mdi-database-outline" color="red" />
+					{{ domain.title }}
+				</v-btn>
 			</v-card-text>
 		</v-card>
 	</v-dialog>
@@ -15,8 +20,12 @@
 <script>
 export default {
 	data: () => ({
-		visible: false,
-		domains: []
+		visible: true,
+		domains: [
+			{ url: `dev.eyas.cycosoft.com`, title: `Development`, port: 3000 },
+			{ url: `staging.eyas.cycosoft.com`, title: `Staging` },
+			{ url: `eyas.cycosoft.com`, title: `Production` }
+		]
 	}),
 
 	mounted() {
