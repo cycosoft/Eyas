@@ -40,11 +40,7 @@
 export default {
 	data: () => ({
 		visible: false,
-		domains: [
-			{ url: `dev.eyas.cycosoft.com`, title: `Development`, port: 3000 },
-			{ url: `staging.eyas.cycosoft.com`, title: `Staging` },
-			{ url: `eyas.cycosoft.com`, title: `Production` }
-		]
+		domains: []
 	}),
 
 	mounted() {
