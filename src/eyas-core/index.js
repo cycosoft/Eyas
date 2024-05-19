@@ -722,9 +722,10 @@ function handleRedirects() {
 	protocol.handle(`https`, request => {
 		// setup
 		const { hostname } = new URL(request.url);
+		const parseURL = require(`url-parse`);
 
 		// if the hostname is in the list of custom domains
-		if(config().domains.some(domain => domain.url.includes(hostname))){
+		if(config().domains.some(domain => hostname === parseURL(formatURL(domain.url)).hostname)){
 			// navigate to the custom protocol
 			const redirect = request.url.replace(`https://`, `eyas://`);
 
