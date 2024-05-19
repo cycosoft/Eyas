@@ -5,15 +5,18 @@
 			</v-container>
 		</v-main> -->
 
+		<EnvironmentModal />
 		<ExitModal />
 	</v-app>
 </template>
 
 <script>
 import ExitModal from '@/components/ExitModal.vue';
+import EnvironmentModal from '@/components/EnvironmentModal.vue';
 
 export default {
 	components: {
+		EnvironmentModal,
 		ExitModal
 	}
 };

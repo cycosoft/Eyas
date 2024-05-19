@@ -4,6 +4,7 @@ import App from '@/App.vue';
 
 // Vuetify
 import 'vuetify/styles';
+import '@mdi/font/css/materialdesignicons.css';
 import { createVuetify } from 'vuetify';
 
 // create a new app instance

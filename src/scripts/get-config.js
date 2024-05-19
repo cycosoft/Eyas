@@ -36,7 +36,7 @@ userConfig.meta = userConfig.meta || {};
 const eyasConfig = {
 	source: userConfig.source || `dist`,
 	port: userConfig.port || 3000,
-	domain: userConfig.domain || null,
+	domains: validateCustomDomain(userConfig.domain || userConfig.domains),
 	redirects: userConfig.redirects || [],
 	title: (userConfig.title || `Eyas`).trim(),
 	version: (userConfig.version || getBranchName() || `Unspecified Version`).trim(),
@@ -74,6 +74,39 @@ eyasConfig.outputs.linux = false;
 
 // export the config for the project
 module.exports = eyasConfig;
+
+// validate the user input for the custom domain
+function validateCustomDomain(input) {
+	// default to an empty array
+	const output = [/* { url: ``, port: 3000, title: `Staging` } */];
+
+	// if the input is a string
+	if (typeof input === `string`) {
+		// convert to an array
+		output.push({ url: input });
+	}
+
+	// if the input is an array
+	if (Array.isArray(input)) {
+		// loop through each item
+		input.forEach(domain => {
+			// if the domain is a string
+			if (typeof domain === `string`) {
+				// convert to an object
+				output.push({ url: domain, title: domain });
+			}
+
+			// if the domain is an object
+			if (typeof domain === `object`) {
+				// add to the output
+				output.push(domain);
+			}
+		});
+	}
+
+	// return validated input
+	return output;
+}
 
 // attempts to return the current branch name
 function getBranchName() {

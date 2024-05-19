@@ -1,8 +1,12 @@
-# v2.0.1
+# v2.1.0
 
 - Renamed menu item `Load Packaged App` to `Load Test Files`
 - Display an alert about `etc/hosts` when user tries to load test files in the browser
 - Add a spinner to the app close button
+- Support for multiple domains via config
+- Complete restructure of the core app code
+- Run user test via custom protocol instead of http server
+- Temporarily removed ability to run user test in the browser
 
 # v2.0.0
 
