@@ -19,7 +19,7 @@
 								block
 								size="large"
 								:stacked="$vuetify.display.smAndUp"
-								v-tooltip:bottom="domain.url"
+								v-tooltip:bottom="tooltip(domain)"
 								@click="choose(domain.url)"
 							>
 								<template v-slot:prepend>
@@ -55,6 +55,11 @@ export default {
 		choose(domain) {
 			window.eventBridge?.send(`environment-selected`, domain);
 			this.visible = false;
+		},
+
+		tooltip(domain) {
+			const message = `Button title not set`;
+			return domain.url === domain.title ? message : domain.url;
 		}
 	}
 }

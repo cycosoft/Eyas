@@ -93,7 +93,7 @@ function validateCustomDomain(input) {
 			// if the domain is a string
 			if (typeof domain === `string`) {
 				// convert to an object
-				output.push({ url: domain });
+				output.push({ url: domain, title: domain });
 			}
 
 			// if the domain is an object
