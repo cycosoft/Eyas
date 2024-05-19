@@ -58,7 +58,7 @@ export default {
 		},
 
 		tooltip(domain) {
-			const message = `Button title not set`;
+			const message = `Set environment title in Eyas config`;
 			return domain.url === domain.title ? message : domain.url;
 		}
 	}
