@@ -639,7 +639,7 @@ function navigate(path, openInBrowser) {
 		shell.openExternal(path);
 	} else {
 		// otherwise load the requested path in the app window
-		$appWindow.loadURL(formatURL(path));
+		$appWindow.loadURL(path);
 	}
 }
 
