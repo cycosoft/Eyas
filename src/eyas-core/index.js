@@ -46,7 +46,7 @@ const $paths = {
 	configLoader: _path.join($roots.eyas, `scripts`, `get-config.js`),
 	packageJson: _path.join($roots.eyas, `package.json`),
 	eventBridge: _path.join($roots.eyas, `scripts`, `event-bridge.js`),
-	testSrc: _path.join($roots.config, $isDev ? `demo` : `source`),
+	testSrc: null,
 	eyasInterface: _path.join($roots.eyas, `eyas-interface`, `index.html`)
 };
 const $operatingSystem = _os.platform();
@@ -211,6 +211,9 @@ function initElectronUi() {
 	$appWindow.addBrowserView($eyasLayer);
 	$eyasLayer.setAutoResize({ width: true, height: true });
 	$eyasLayer.webContents.loadFile($paths.eyasInterface);
+
+	// set the path to the test source
+	$paths.testSrc = _path.join($roots.config, config().source);
 
 	// once the Eyas UI layer is ready, attempt navigation
 	$eyasLayer.webContents.on(`did-finish-load`, freshStart);
