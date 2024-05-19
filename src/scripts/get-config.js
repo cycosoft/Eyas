@@ -82,7 +82,7 @@ function validateCustomDomain(domains) {
 	// if the input is not an array AND not a string
 	if (!Array.isArray(domains) && typeof domains !== `string`) {
 		// exit early
-		console.warn(`⚠️ Invalid custom domain input:`, domains);
+		console.warn(`⚠️  Invalid custom domain input:`, domains);
 		return output;
 	}
 

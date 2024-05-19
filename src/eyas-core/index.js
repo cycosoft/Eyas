@@ -33,6 +33,7 @@ const $isDev = process.argv.includes(`--dev`);
 let $appWindow = null;
 let $eyasLayer = null;
 let $testServer = null;
+let $testDomain = `eyas://local.test`;
 const $currentViewport = [];
 const $allViewports = [
 	{ isDefault: true, label: `Desktop`, width: 1366, height: 768 },
@@ -265,8 +266,14 @@ function initEyasListeners() {
 
 	// listen for the user to select an environment
 	ipcMain.on(`environment-selected`, (event, url) => {
+		// hide the Eyas UI layer so the test can be interacted with
 		toggleEyasUI(false);
-		navigate(url);
+
+		// update the test domain
+		$testDomain = url;
+
+		// load the test
+		navigate();
 	});
 }
 
@@ -611,7 +618,7 @@ function navigate(path, openInBrowser) {
 		runningTestSource = true;
 
 		// if there's a custom domain, go there OR default to the local test source
-		path = config().domain[0].url || `eyas://`;
+		path = $testDomain;
 	}
 
 	if(
@@ -726,15 +733,27 @@ function handleRedirects() {
 
 // refresh the app
 function freshStart() {
-	// if the user has custom domains
+	// if there are no custom domains defined
+	if (!config().domain.length) {
+		// load the test using the default domain
+		navigate();
+	}
+
+	// if the user has a single custom domain
+	if (config().domain.length === 1) {
+		// update the default domain
+		$testDomain = config().domain[0].url;
+
+		// directly load the user's test using the new default domain
+		navigate();
+	}
+
+	// if the user has multiple custom domains
 	if (config().domain.length > 1) {
 		// show the Eyas UI layer
 		toggleEyasUI(true);
 
 		// display the environment chooser modal
 		$eyasLayer.webContents.send(`show-environment-modal`, config().domain);
-	}else{
-		// directly load the user's test using the default domain
-		navigate();
 	}
 }
