@@ -273,7 +273,7 @@ function initEyasListeners() {
 		toggleEyasUI(false);
 
 		// update the test domain
-		$testDomain = url;
+		$testDomain = formatURL(url);
 
 		// load the test
 		navigate();
@@ -748,7 +748,7 @@ function freshStart() {
 	// if the user has a single custom domain
 	if (config().domains.length === 1) {
 		// update the default domain
-		$testDomain = config().domains[0].url;
+		$testDomain = formatURL(config().domains[0].url);
 
 		// directly load the user's test using the new default domain
 		navigate();
