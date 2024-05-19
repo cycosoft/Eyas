@@ -2,7 +2,7 @@
 module.exports = {
 	source: `demo`,
 	// port: ``,
-	domain: [
+	domains: [
 		{ url: `dev.eyas.cycosoft.com`, title: `Development`, port: 3000 },
 		{ url: `staging.eyas.cycosoft.com`, title: `Staging` },
 		{ url: `eyas.cycosoft.com`, title: `Production` }
