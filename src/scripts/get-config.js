@@ -36,7 +36,7 @@ userConfig.meta = userConfig.meta || {};
 const eyasConfig = {
 	source: userConfig.source || `dist`,
 	port: userConfig.port || 3000,
-	domain: validateCustomDomain(userConfig.domain),
+	domains: validateCustomDomain(userConfig.domain || userConfig.domains),
 	redirects: userConfig.redirects || [],
 	title: (userConfig.title || `Eyas`).trim(),
 	version: (userConfig.version || getBranchName() || `Unspecified Version`).trim(),

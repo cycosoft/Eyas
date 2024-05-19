@@ -68,7 +68,7 @@ initElectronCore();
 
 	// const testServerPort = config().port;
 	// const testServerUrl = `https://localhost:${testServerPort}`;
-	// const appUrlOverride = formatURL(config().domain);
+	// const appUrlOverride = formatURL(config().domains);
 	// const appUrl = appUrlOverride || testServerUrl;
 	// let expressLayer = null;
 
@@ -724,7 +724,7 @@ function handleRedirects() {
 		const { hostname } = new URL(request.url);
 
 		// if the hostname is in the list of custom domains
-		if(config().domain.some(domain => domain.url.includes(hostname))){
+		if(config().domains.some(domain => domain.url.includes(hostname))){
 			// navigate to the custom protocol
 			const redirect = request.url.replace(`https://`, `eyas://`);
 
@@ -740,26 +740,26 @@ function handleRedirects() {
 // refresh the app
 function freshStart() {
 	// if there are no custom domains defined
-	if (!config().domain.length) {
+	if (!config().domains.length) {
 		// load the test using the default domain
 		navigate();
 	}
 
 	// if the user has a single custom domain
-	if (config().domain.length === 1) {
+	if (config().domains.length === 1) {
 		// update the default domain
-		$testDomain = config().domain[0].url;
+		$testDomain = config().domains[0].url;
 
 		// directly load the user's test using the new default domain
 		navigate();
 	}
 
 	// if the user has multiple custom domains
-	if (config().domain.length > 1) {
+	if (config().domains.length > 1) {
 		// show the Eyas UI layer
 		toggleEyasUI(true);
 
 		// display the environment chooser modal
-		$eyasLayer.webContents.send(`show-environment-modal`, config().domain);
+		$eyasLayer.webContents.send(`show-environment-modal`, config().domains);
 	}
 }
