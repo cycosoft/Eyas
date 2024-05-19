@@ -76,24 +76,33 @@ eyasConfig.outputs.linux = false;
 module.exports = eyasConfig;
 
 // validate the user input for the custom domain
-function validateCustomDomain(domains) {
+function validateCustomDomain(input) {
+	// default to an empty array
 	const output = [/* { url: ``, port: 3000, title: `Staging` } */];
 
-	// if the input is not an array AND not a string
-	if (!Array.isArray(domains) && typeof domains !== `string`) {
-		// exit early
-		console.warn(`⚠️  Invalid custom domain input:`, domains);
-		return output;
-	}
-
 	// if the input is a string
-	if (typeof domains === `string`) {
+	if (typeof input === `string`) {
 		// convert to an array
-		output.push({ url: domains });
+		output.push({ url: input });
 	}
 
 	// if the input is an array
-	output.push(...domains);
+	if (Array.isArray(input)) {
+		// loop through each item
+		input.forEach(domain => {
+			// if the domain is a string
+			if (typeof domain === `string`) {
+				// convert to an object
+				output.push({ url: domain });
+			}
+
+			// if the domain is an object
+			if (typeof domain === `object`) {
+				// add to the output
+				output.push(domain);
+			}
+		});
+	}
 
 	// return validated input
 	return output;
