@@ -55,8 +55,8 @@ module.exports = {
   source: `dist`,
   // The port your application will be served on via localhost
   port: 3000,
-  // Run your application from any domain locally instead of localhost
-  domain: null,
+  // Simulate a domain (accepts '' || [''] || [{ url, title }])
+  domains: [/* { url: `eyas://local.test`, title: `Default Domain` } */],
   // Define custom redirects for your test
   redirects: [/* { from: `/my-route`, to: `/demo/alt-route` } */],
   // The name of your application
