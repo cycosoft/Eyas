@@ -136,6 +136,9 @@ initElectronCore();
 	// 		.createServer({ key: cert.key, cert: cert.cert }, expressLayer)
 	// 		.listen(testServerPort, initElectronCore);
 	// }
+
+	// override requests to the custom domain to use the test server
+	// _electronCore.commandLine.appendSwitch(`host-resolver-rules`, `MAP ${routeFrom} ${routeTo}`);
 // })();
 
 // start the core of the application
@@ -208,23 +211,8 @@ function initElectronUi() {
 	$eyasLayer.setAutoResize({ width: true, height: true });
 	$eyasLayer.webContents.loadFile($paths.eyasInterface);
 
-	// if the user has custom domains
-	if (config().domain.length > 1) {
-		// once the Eyas UI layer is ready
-		$eyasLayer.webContents.on(`did-finish-load`, () => {
-			// show the Eyas UI layer
-			toggleEyasUI(true);
-
-			// send the custom domains to the UI layer
-			$eyasLayer.webContents.send(`show-environment-modal`, config().domain);
-		});
-	}else{
-		// directly load the user's test using the default domain
-		navigate();
-	}
-
-	// override requests to the custom domain to use the test server
-	// _electronCore.commandLine.appendSwitch(`host-resolver-rules`, `MAP ${routeFrom} ${routeTo}`);
+	// once the Eyas UI layer is ready, attempt navigation
+	$eyasLayer.webContents.on(`did-finish-load`, freshStart);
 }
 
 // initialize the Electron listeners
@@ -739,5 +727,15 @@ function handleRedirects() {
 
 // refresh the app
 function freshStart() {
-	navigate();
+	// if the user has custom domains
+	if (config().domain.length > 1) {
+		// show the Eyas UI layer
+		toggleEyasUI(true);
+
+		// display the environment chooser modal
+		$eyasLayer.webContents.send(`show-environment-modal`, config().domain);
+	}else{
+		// directly load the user's test using the default domain
+		navigate();
+	}
 }
