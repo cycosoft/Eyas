@@ -731,6 +731,9 @@ function handleRedirects() {
 			// redirect to the custom protocol
 			return net.fetch(redirect);
 		}
+
+		// otherwise, allow the request to pass through
+		return net.fetch(request, { bypassCustomProtocolHandlers: true });
 	});
 }
 
