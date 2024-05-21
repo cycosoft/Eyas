@@ -516,7 +516,6 @@ function setMenu () {
 		// generically match bracket sets to check for variables
 		const hasVariables = itemUrl.match(/{[^{}]+}/g)?.length;
 
-		console.log(hasVariables, itemUrl);
 		if(hasVariables){
 			itemUrl = itemUrl.replace(/{dev\|staging\|}/g, `validating`);
 		}
@@ -527,7 +526,7 @@ function setMenu () {
 		// add the item to the menu
 		customLinkList.push({
 			label: `${item.label || item.url}${itemUrl ? `` : ` (invalid entry)`}`,
-			click: () => navigate(itemUrl, item.external),
+			click: () => hasVariables ? navigateVariable(item.url) : navigate(itemUrl, item.external),
 			enabled: !!itemUrl // disable menu item if invalid url
 		});
 	});
@@ -774,4 +773,10 @@ function freshStart() {
 		// display the environment chooser modal
 		$eyasLayer.webContents.send(`show-environment-modal`, config().domains);
 	}
+}
+
+// navigate to a variable url
+function navigateVariable(url) {
+	// send the variable url to the UI layer
+	$eyasLayer.webContents.send(`show-variable-modal`, url);
 }
