@@ -510,6 +510,11 @@ function setMenu () {
 	// for each menu item where the list exists
 	const customLinkList = [];
 	config().links.forEach(item => {
+		// generically match bracket sets to check for variables
+		const hasVariables = item.url.match(/{[^{}]+}/g)?.length;
+
+		console.log(hasVariables, item.url);
+
 		// check if the provided url is valid
 		const itemUrl = formatURL(item.url);
 
