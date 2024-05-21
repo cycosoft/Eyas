@@ -510,13 +510,19 @@ function setMenu () {
 	// for each menu item where the list exists
 	const customLinkList = [];
 	config().links.forEach(item => {
-		// generically match bracket sets to check for variables
-		const hasVariables = item.url.match(/{[^{}]+}/g)?.length;
+		// setup
+		let itemUrl = item.url;
 
-		console.log(hasVariables, item.url);
+		// generically match bracket sets to check for variables
+		const hasVariables = itemUrl.match(/{[^{}]+}/g)?.length;
+
+		console.log(hasVariables, itemUrl);
+		if(hasVariables){
+			itemUrl = itemUrl.replace(/{dev\|staging\|}/g, `validating`);
+		}
 
 		// check if the provided url is valid
-		const itemUrl = formatURL(item.url);
+		itemUrl = formatURL(itemUrl);
 
 		// add the item to the menu
 		customLinkList.push({
