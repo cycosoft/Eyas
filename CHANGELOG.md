@@ -6,7 +6,8 @@
 - Support for multiple domains via config
 - Complete restructure of the core app code
 - Run user test via custom protocol instead of http server
-- Temporarily removed ability to run user test in the browser
+- Removed ability to run user test in the browser
+- Add support for custom links with variables
 
 # v2.0.0
 
