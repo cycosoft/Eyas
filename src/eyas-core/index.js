@@ -447,37 +447,37 @@ function setMenu () {
 					label: `📦 Reload Test`,
 					click: () => freshStart()
 				},
-				{ type: `separator` },
-				{
-					label: `🖥️ Open in Browser`,
-					click: () => {
-						// url to navigate to
-						let urlToNavigateTo = $appWindow.webContents.getURL();
+				// { type: `separator` },
+				// {
+				// 	label: `🖥️ Open in Browser`,
+				// 	click: () => {
+				// 		// url to navigate to
+				// 		let urlToNavigateTo = $appWindow.webContents.getURL();
 
-						// if the base url is the test defined domain
-						if(appUrlOverride){
-							// grab the base url parts
-							urlToNavigateTo = new URL(appUrlOverride);
-							urlToNavigateTo.port = testServerPort;
+				// 		// if the base url is the test defined domain
+				// 		if(appUrlOverride){
+				// 			// grab the base url parts
+				// 			urlToNavigateTo = new URL(appUrlOverride);
+				// 			urlToNavigateTo.port = testServerPort;
 
-							// alert the user that it needs to be defined in etc/hosts
-							dialog.showMessageBoxSync($appWindow, {
-								type: `warning`,
-								buttons: [`Open`],
-								title: `Open in Browser`,
-								message: `To run your test outside of Eyas, you must add the following to your "etc/hosts" file:
+				// 			// alert the user that it needs to be defined in etc/hosts
+				// 			dialog.showMessageBoxSync($appWindow, {
+				// 				type: `warning`,
+				// 				buttons: [`Open`],
+				// 				title: `Open in Browser`,
+				// 				message: `To run your test outside of Eyas, you must add the following to your "etc/hosts" file:
 
-								127.0.0.1     ${urlToNavigateTo.hostname}`
-							});
+				// 				127.0.0.1     ${urlToNavigateTo.hostname}`
+				// 			});
 
-							// convert the url to a string
-							urlToNavigateTo = urlToNavigateTo.toString();
-						}
+				// 			// convert the url to a string
+				// 			urlToNavigateTo = urlToNavigateTo.toString();
+				// 		}
 
-						// open the current url in the default browser
-						navigate(urlToNavigateTo, true);
-					}
-				},
+				// 		// open the current url in the default browser
+				// 		navigate(urlToNavigateTo, true);
+				// 	}
+				// },
 				{ type: `separator` },
 				// populate with appropriate dev tools
 				...(() => {
