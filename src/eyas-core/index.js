@@ -523,10 +523,10 @@ function setMenu () {
 		const hasVariables = itemUrl.match(/{[^{}]+}/g)?.length;
 
 		// if there are variables
-		if(hasVariables){
+		if(hasVariables || itemUrl.includes(`eyas://`)){
 			// check if the provided url is valid
 			const testUrl = itemUrl.replace(/{[^{}]+}/g, `validating`);
-			validVariableUrl = formatURL(testUrl);
+			validVariableUrl = new URL(testUrl);
 			isValid = !!validVariableUrl;
 		} else {
 			// check if the provided url is valid
@@ -537,7 +537,7 @@ function setMenu () {
 		// add the item to the menu
 		customLinkList.push({
 			label: `${item.label || item.url}${isValid ? `` : ` (invalid entry: "${item.url}")`}`,
-			click: () => hasVariables ? navigateVariable(itemUrl) : navigate(validUrl, item.external),
+			click: () => hasVariables ? navigateVariable(validUrl) : navigate(validUrl, item.external),
 			enabled: isValid // disable menu item if invalid url
 		});
 	});
