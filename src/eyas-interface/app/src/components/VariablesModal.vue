@@ -6,7 +6,7 @@
 	>
 		<v-card class="pa-3">
 			<v-card-text>
-				<p class="font-weight-black text-center text-h6 mb-10">Populate Link Variables</p>
+				<p class="font-weight-black text-center text-h6 mb-10">Link Requires Information</p>
 
 				<v-sheet>
 					<v-row
@@ -24,8 +24,8 @@
 <script>
 export default {
 	data: () => ({
-		visible: false,
-		link: null
+		visible: true,
+		link: `{testdomain}?id={int}&message={str}&enabled={bool}&options={dev|stage|}`
 	}),
 
     computed: {
