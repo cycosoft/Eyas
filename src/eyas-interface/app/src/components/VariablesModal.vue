@@ -20,6 +20,24 @@
 							label="Select"
 							:items="variable.split(`|`)"
 						/>
+
+						<!-- detect booleans -->
+						<v-checkbox
+							v-if="variable === `bool`"
+							label="Enabled"
+						/>
+
+						<!-- detect integers -->
+						<v-text-field
+							v-if="variable === `int`"
+							label="Enter a number"
+						/>
+
+						<!-- detect strings -->
+						<v-text-field
+							v-if="variable === `str`"
+							label="Enter a string"
+						/>
 					</v-row>
 				</v-sheet>
 			</v-card-text>
