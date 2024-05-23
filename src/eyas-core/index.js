@@ -525,7 +525,7 @@ function setMenu () {
 
 		// add the item to the menu
 		customLinkList.push({
-			label: `${item.label || item.url}${itemUrl ? `` : ` (invalid entry)`}`,
+			label: `${item.label || item.url}${itemUrl ? `` : ` (invalid entry: "${item.url}")`}`,
 			click: () => hasVariables ? navigateVariable(item.url) : navigate(itemUrl, item.external),
 			enabled: !!itemUrl // disable menu item if invalid url
 		});
