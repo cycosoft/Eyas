@@ -778,5 +778,5 @@ function freshStart() {
 // navigate to a variable url
 function navigateVariable(url) {
 	// send the variable url to the UI layer
-	$eyasLayer.webContents.send(`show-variable-modal`, url);
+	$eyasLayer.webContents.send(`show-variables-modal`, url);
 }

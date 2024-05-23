@@ -6,6 +6,7 @@
 		</v-main> -->
 
 		<EnvironmentModal />
+		<VariablesModal />
 		<ExitModal />
 	</v-app>
 </template>
@@ -13,10 +14,12 @@
 <script>
 import ExitModal from '@/components/ExitModal.vue';
 import EnvironmentModal from '@/components/EnvironmentModal.vue';
+import VariablesModal from '@/components/VariablesModal.vue';
 
 export default {
 	components: {
 		EnvironmentModal,
+		VariablesModal,
 		ExitModal
 	}
 };
