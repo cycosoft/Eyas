@@ -83,11 +83,10 @@ export default {
 				const data = {};
 				const type = variable.substring(1, variable.length - 1);
 				const isList = type.includes(`|`);
-				const options = type.split(`|`);
 
 				// populate the data object
 				data.type = isList ? `list` : type;
-				if(isList) { data.options = options; }
+				if(isList) { data.options = type.split(`|`); }
 
 				// push the data object to the output
 				output.push(data);
