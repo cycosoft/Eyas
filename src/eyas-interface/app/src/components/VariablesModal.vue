@@ -18,7 +18,7 @@
 						<v-select
 							v-if="variable.type === `list`"
 							label="Select"
-							:items="variable.options"
+							:items="variable.options.map(option => option || `{blank}`)"
 						/>
 
 						<!-- detect booleans -->
@@ -30,6 +30,7 @@
 						<!-- detect integers -->
 						<v-text-field
 							v-if="variable.type === `int`"
+							type="number"
 							label="Enter a number"
 						/>
 
