@@ -87,7 +87,10 @@ export default {
 
 				// populate the data object
 				data.type = isList ? `list` : type;
-				if(isList) { data.options = type.split(`|`); }
+				if(isList) {
+					data.options = type.split(`|`);
+					data.label = `Select an option`;
+				}
 
 				// push the data object to the output
 				output.push(data);
