@@ -16,26 +16,26 @@
                     >
 						<!-- detect lists -->
 						<v-select
-							v-if="variable.includes(`|`)"
+							v-if="variable.type.includes(`|`)"
 							label="Select"
-							:items="variable.split(`|`)"
+							:items="variable.type.split(`|`)"
 						/>
 
 						<!-- detect booleans -->
 						<v-checkbox
-							v-if="variable === `bool`"
+							v-if="variable.type === `bool`"
 							label="Enabled"
 						/>
 
 						<!-- detect integers -->
 						<v-text-field
-							v-if="variable === `int`"
+							v-if="variable.type === `int`"
 							label="Enter a number"
 						/>
 
 						<!-- detect strings -->
 						<v-text-field
-							v-if="variable === `str`"
+							v-if="variable.type === `str`"
 							label="Enter a string"
 						/>
 					</v-row>
@@ -74,17 +74,20 @@ export default {
         },
 
         variables () {
+			const output = [];
 			const variables = this.link.match(/{[^{}]+}/g);
 
 			// for each variable
-			variables.forEach((variable, index) => {
+			variables.forEach(variable => {
 				// remove the curly braces
-				variables[index] = variable.substring(1, variable.length - 1);
+				output.push({
+					type: variable.substring(1, variable.length - 1)
+				});
 			});
 
-			console.log(variables);
+			console.log(JSON.stringify(output, null, 2));
 
-            return variables;
+            return output;
         }
     },
 
