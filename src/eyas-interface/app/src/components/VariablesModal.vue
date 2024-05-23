@@ -80,14 +80,15 @@ export default {
 			// for each variable
 			variables.forEach(variable => {
 				// remove the curly braces from the type
+				const data = {};
 				const type = variable.substring(1, variable.length - 1);
 				const isList = type.includes(`|`);
 				const options = type.split(`|`);
 
-				output.push({
-					type: isList ? `list` : type,
-					options
-				});
+				data.type = isList ? `list` : type;
+				if(isList) { data.options = options; }
+
+				output.push(data);
 			});
 
 			console.log(JSON.stringify(output, null, 2));
