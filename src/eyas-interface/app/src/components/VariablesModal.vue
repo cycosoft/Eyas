@@ -17,7 +17,7 @@
 						<!-- detect lists -->
 						<v-select
 							v-if="variable.type === `list`"
-							label="Select"
+							:label="variable.label"
 							:items="variable.options.map(option => option || `{blank}`)"
 						/>
 
@@ -89,7 +89,7 @@ export default {
 				data.type = isList ? `list` : type;
 				if(isList) {
 					data.options = type.split(`|`);
-					data.label = `Select an option`;
+					data.label = `Select an Option`;
 				}
 
 				// push the data object to the output
