@@ -6,17 +6,41 @@
 	>
 		<v-card class="pa-3">
 			<v-card-text>
-				<p class="font-weight-black text-center text-h6 mb-10">Link Requires Information</p>
+				<p class="font-weight-black text-center text-h6">Link Requires Additional Information</p>
+				<small>{{ link }}</small>
 
-				<v-sheet>
+				<v-sheet class="mt-10">
 					<v-row
                         v-for="(variable, index) in variables"
                         :key="index"
                     >
 						{{ variable }}
+
+						<!-- detect lists -->
+						<v-select
+							v-if="variable.includes(`|`)"
+							label="Select"
+							:items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming']"
+						/>
 					</v-row>
 				</v-sheet>
 			</v-card-text>
+
+			<v-card-actions class="mt-5">
+					<v-btn @click="cancel">
+						Cancel
+					</v-btn>
+
+					<div class="flex-grow-1" />
+
+					<v-btn
+						color="primary"
+						variant="elevated"
+						@click="launch"
+					>
+						Continue
+					</v-btn>
+				</v-card-actions>
 		</v-card>
 	</v-dialog>
 </template>
@@ -25,7 +49,7 @@
 export default {
 	data: () => ({
 		visible: true,
-		link: `{testdomain}?id={int}&message={str}&enabled={bool}&options={dev|stage|}`
+		link: `https://{dev|staging|}.cycosoft.com?id={int}&message={str}&enabled={bool}`
 	}),
 
     computed: {
@@ -34,7 +58,17 @@ export default {
         },
 
         variables () {
-            return [`int`];
+			const variables = this.link.match(/{[^{}]+}/g);
+
+			// for each variable
+			variables.forEach((variable, index) => {
+				// remove the curly braces
+				variables[index] = variable.substring(1, variable.length - 1);
+			});
+
+			console.log(variables);
+
+            return variables;
         }
     },
 
@@ -47,6 +81,10 @@ export default {
 	},
 
 	methods: {
+		cancel() {
+			this.visible = false;
+		},
+
 		launch() {
 			this.parsedLink && window.eventBridge?.send(`launch-link`, this.parsedLink);
 			this.visible = false;
