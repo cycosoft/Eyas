@@ -517,7 +517,7 @@ function setMenu () {
 		const hasVariables = itemUrl.match(/{[^{}]+}/g)?.length;
 
 		if(hasVariables){
-			itemUrl = itemUrl.replace(/{dev\|staging\|}/g, `validating`);
+			itemUrl = itemUrl.replace(/{[^{}]+}/g, `validating.com`);
 		}
 
 		// check if the provided url is valid
