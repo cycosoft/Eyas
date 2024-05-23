@@ -42,7 +42,7 @@
 				</v-sheet>
 			</v-card-text>
 
-			<v-card-actions class="mt-5">
+			<v-card-actions>
 					<v-btn @click="cancel">
 						Cancel
 					</v-btn>
