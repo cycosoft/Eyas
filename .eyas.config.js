@@ -18,6 +18,7 @@ module.exports = {
 		{ label: `Int Demo`, url: `https://eyas.cycosoft.com?id={int}` },
 		{ label: `String Demo`, url: `https://eyas.cycosoft.com?message={str}` },
 		{ label: `Boolean Demo`, url: `https://eyas.cycosoft.com?enabled={bool}` },
+		{ label: `Test Domain Demo`, url: `{testDomain}?go` },
 		{ label: `Combo Demo`, url: `https://{dev|staging|}.cycosoft.com?id={int}&message={str}&enabled={bool}` },
 		{ label: `Cycosoft.com (browser)`, url: `https://cycosoft.com`, external: true },
 		{ label: `Cycosoft.com (electron)`, url: `https://cycosoft.com` },
