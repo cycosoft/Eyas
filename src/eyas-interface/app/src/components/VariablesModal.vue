@@ -90,6 +90,8 @@ export default {
 				if(isList) {
 					data.options = type.split(`|`);
 					data.label = `Select an Option`;
+				} else {
+					data.label = `Enter a ${type}`;
 				}
 
 				// push the data object to the output
