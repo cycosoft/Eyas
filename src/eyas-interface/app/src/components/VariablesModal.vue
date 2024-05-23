@@ -18,7 +18,7 @@
 						<v-select
 							v-if="variable.type === `list`"
 							label="Select"
-							:items="variable.type.split(`|`)"
+							:items="variable.options"
 						/>
 
 						<!-- detect booleans -->
