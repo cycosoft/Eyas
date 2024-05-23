@@ -24,20 +24,20 @@
 						<!-- detect booleans -->
 						<v-checkbox
 							v-if="variable.type === `bool`"
-							label="Enabled"
+							:label="variable.label"
 						/>
 
 						<!-- detect integers -->
 						<v-text-field
 							v-if="variable.type === `int`"
 							type="number"
-							label="Enter a number"
+							:label="variable.label"
 						/>
 
 						<!-- detect strings -->
 						<v-text-field
 							v-if="variable.type === `str`"
-							label="Enter a string"
+							:label="variable.label"
 						/>
 					</v-row>
 				</v-sheet>
