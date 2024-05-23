@@ -16,7 +16,7 @@
                     >
 						<!-- detect lists -->
 						<v-select
-							v-if="variable.type.includes(`|`)"
+							v-if="variable.type === `list`"
 							label="Select"
 							:items="variable.type.split(`|`)"
 						/>
@@ -79,9 +79,14 @@ export default {
 
 			// for each variable
 			variables.forEach(variable => {
-				// remove the curly braces
+				// remove the curly braces from the type
+				const type = variable.substring(1, variable.length - 1);
+				const isList = type.includes(`|`);
+				const options = type.split(`|`);
+
 				output.push({
-					type: variable.substring(1, variable.length - 1)
+					type: isList ? `list` : type,
+					options
 				});
 			});
 
