@@ -512,22 +512,33 @@ function setMenu () {
 	config().links.forEach(item => {
 		// setup
 		let itemUrl = item.url;
+		let isValid = false;
+		let validUrl;
+		let validVariableUrl;
+
+		// replace the test domain variable with the current test domain if it exists
+		itemUrl = itemUrl.replace(/{testdomain}/g, $testDomain);
 
 		// generically match bracket sets to check for variables
 		const hasVariables = itemUrl.match(/{[^{}]+}/g)?.length;
 
+		// if there are variables
 		if(hasVariables){
-			itemUrl = itemUrl.replace(/{[^{}]+}/g, `validating.com`);
+			// check if the provided url is valid
+			const testUrl = itemUrl.replace(/{[^{}]+}/g, `validating`);
+			validVariableUrl = formatURL(testUrl);
+			isValid = !!validVariableUrl;
+		} else {
+			// check if the provided url is valid
+			validUrl = formatURL(itemUrl);
+			isValid = !!validUrl;
 		}
-
-		// check if the provided url is valid
-		itemUrl = formatURL(itemUrl);
 
 		// add the item to the menu
 		customLinkList.push({
-			label: `${item.label || item.url}${itemUrl ? `` : ` (invalid entry: "${item.url}")`}`,
-			click: () => hasVariables ? navigateVariable(item.url) : navigate(itemUrl, item.external),
-			enabled: !!itemUrl // disable menu item if invalid url
+			label: `${item.label || item.url}${isValid ? `` : ` (invalid entry: "${item.url}")`}`,
+			click: () => hasVariables ? navigateVariable(itemUrl) : navigate(validUrl, item.external),
+			enabled: isValid // disable menu item if invalid url
 		});
 	});
 
