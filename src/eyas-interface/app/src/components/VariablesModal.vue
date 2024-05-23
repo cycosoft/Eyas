@@ -14,13 +14,11 @@
                         v-for="(variable, index) in variables"
                         :key="index"
                     >
-						{{ variable }}
-
 						<!-- detect lists -->
 						<v-select
 							v-if="variable.includes(`|`)"
 							label="Select"
-							:items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming']"
+							:items="variable.split(`|`)"
 						/>
 					</v-row>
 				</v-sheet>
