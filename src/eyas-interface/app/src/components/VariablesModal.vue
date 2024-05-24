@@ -28,7 +28,7 @@
 							:label="getFieldLabel(`Select value`, variable.field)"
 						>
 							<v-radio
-								v-for="(option, index) in [`true`, `false`]"
+								v-for="(option, index) in [`false`, `true`]"
 								:key="index"
 								:value="option"
 								:label="option"
