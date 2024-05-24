@@ -16,6 +16,7 @@
 						<!-- detect lists -->
 						<v-select
 							v-if="variable.type === `list`"
+							v-model="form[index]"
 							:label="getFieldLabel(`Select option`, variable.field)"
 							:items="variable.options.map(option => option || `{blank}`)"
 						/>
@@ -23,6 +24,7 @@
 						<!-- detect booleans -->
 						<v-radio-group
 							v-if="variable.type === `bool`"
+							v-model="form[index]"
 							inline
 							class="mt-3"
 							:label="getFieldLabel(`Select value`, variable.field)"
@@ -39,6 +41,7 @@
 						<!-- detect integers -->
 						<v-text-field
 							v-if="variable.type === `int`"
+							v-model="form[index]"
 							type="number"
 							:label="getFieldLabel(`Enter number`, variable.field)"
 						/>
@@ -46,6 +49,7 @@
 						<!-- detect strings -->
 						<v-text-field
 							v-if="variable.type === `str`"
+							v-model="form[index]"
 							:label="getFieldLabel(`Enter text`, variable.field)"
 						/>
 					</v-row>
@@ -54,6 +58,8 @@
 				<v-icon v-if="linkIsValid" class="mr-2" color="success">mdi-check-circle-outline</v-icon>
 				<v-icon v-else class="mr-2" color="error">mdi-alert-rhombus-outline</v-icon>
 				<small>{{ parsedLink }}</small>
+
+				<p>{{form}}</p>
 			</v-card-text>
 
 			<v-card-actions>
@@ -80,7 +86,8 @@
 export default {
 	data: () => ({
 		visible: true,
-		link: `https://{dev|staging|}.cycosoft.com?id={int}&message={str}&enabled={bool}`
+		link: `https://{dev|staging|}.cycosoft.com?id={int}&message={str}&enabled={bool}`,
+		form: []
 	}),
 
     computed: {
