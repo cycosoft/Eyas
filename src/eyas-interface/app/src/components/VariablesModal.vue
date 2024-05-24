@@ -7,9 +7,8 @@
 		<v-card class="pa-3">
 			<v-card-text>
 				<p class="font-weight-black text-center text-h6">Link Requires Additional Information</p>
-				<small>{{ link }}</small>
 
-				<v-sheet class="mt-10">
+				<v-sheet class="my-10">
 					<v-row
                         v-for="(variable, index) in variables"
                         :key="index"
@@ -17,30 +16,44 @@
 						<!-- detect lists -->
 						<v-select
 							v-if="variable.type === `list`"
-							:label="variable.label"
+							:label="getFieldLabel(`Select option`, variable.field)"
 							:items="variable.options.map(option => option || `{blank}`)"
 						/>
 
 						<!-- detect booleans -->
-						<v-checkbox
+						<v-radio-group
 							v-if="variable.type === `bool`"
-							:label="variable.label"
-						/>
+							inline
+							class="mt-3"
+							:label="getFieldLabel(`Select value`, variable.field)"
+						>
+							<v-radio
+								v-for="(option, index) in [`true`, `false`]"
+								:key="index"
+								:value="option"
+								:label="option"
+								class="text-capitalize"
+							/>
+						</v-radio-group>
 
 						<!-- detect integers -->
 						<v-text-field
 							v-if="variable.type === `int`"
 							type="number"
-							:label="variable.label"
+							:label="getFieldLabel(`Enter number`, variable.field)"
 						/>
 
 						<!-- detect strings -->
 						<v-text-field
 							v-if="variable.type === `str`"
-							:label="variable.label"
+							:label="getFieldLabel(`Enter text`, variable.field)"
 						/>
 					</v-row>
 				</v-sheet>
+
+				<v-icon v-if="linkIsValid" class="mr-2" color="success">mdi-check-circle-outline</v-icon>
+				<v-icon v-else class="mr-2" color="error">mdi-alert-rhombus-outline</v-icon>
+				<small>{{ parsedLink }}</small>
 			</v-card-text>
 
 			<v-card-actions>
@@ -53,6 +66,7 @@
 					<v-btn
 						color="primary"
 						variant="elevated"
+						:disabled="!linkIsValid"
 						@click="launch"
 					>
 						Continue
@@ -71,34 +85,47 @@ export default {
 
     computed: {
         parsedLink () {
-            return this.link ? new URL(this.link) : null;
+            return this.link;
         },
 
-        variables () {
-			const output = [];
-			const variables = this.link.match(/{[^{}]+}/g);
+		linkIsValid () {
+			return false;
+		},
 
-			// for each variable
-			variables.forEach(variable => {
+        variables () {
+			// setup
+			const output = [];
+
+			// find all variables in the link
+			const variables = this.link.matchAll(/([\?|&](\w*)=)?{([^{}]+)}/g);
+
+			// for each variable found
+			for (const variable of variables) {
+				console.log(variable);
 				// setup
 				const data = {};
-				const type = variable.substring(1, variable.length - 1);
-				const isList = type.includes(`|`);
+				const type = variable[3];
+				const isList = variable[3].includes(`|`);
+				const hasField = variable[2];
 
 				// populate the data object
 				data.type = isList ? `list` : type;
+
+				// add the field if it exists
+				if (hasField) {
+					data.field = variable[2];
+				}
+
+				// add the options or label
 				if(isList) {
-					data.options = type.split(`|`);
-					data.label = `Select an Option`;
-				} else {
-					data.label = `Enter a ${type}`;
+					data.options = variable[3].split(`|`);
 				}
 
 				// push the data object to the output
 				output.push(data);
-			});
+			}
 
-			console.log(JSON.stringify(output, null, 2));
+			console.warn(JSON.stringify(output, null, 2));
 
             return output;
         }
@@ -120,6 +147,10 @@ export default {
 		launch() {
 			this.parsedLink && window.eventBridge?.send(`launch-link`, this.parsedLink);
 			this.visible = false;
+		},
+
+		getFieldLabel(prefix, field) {
+			return `${prefix}${field ? ` for "${field}" field` : ``}`;
 		}
 	}
 }
