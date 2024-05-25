@@ -85,6 +85,9 @@
 <script>
 import isURL from 'validator/lib/isURL';
 
+const REGEX_VARIABLES_AND_FIELDS = /([\?|&](\w*)=)?{([^{}]+)}/g;
+const REGEX_VARIABLES_ONLY = /{([^{}]+)}/g;
+
 export default {
 	data: () => ({
 		visible: true,
@@ -99,15 +102,14 @@ export default {
 			const form = [...this.form];
 
 			// replace all variables with form data
-            return output.replace(/{([^{}]+)}/g, (wholeMatch, type) => {
+            return output.replace(REGEX_VARIABLES_ONLY, (wholeMatch, type) => {
 				const next = form.shift();
 				return next ? encodeURIComponent(next) : wholeMatch;
 			})
         },
 
 		linkIsValid () {
-			const regex = /([\?|&](\w*)=)?{([^{}]+)}/g;
-			const hasVariables = regex.test(this.parsedLink);
+			const hasVariables = REGEX_VARIABLES_AND_FIELDS.test(this.parsedLink);
 			return !hasVariables && isURL(this.parsedLink);
 		},
 
@@ -116,7 +118,7 @@ export default {
 			const output = [];
 
 			// find all variables in the link
-			const variables = this.link.matchAll(/([\?|&](\w*)=)?{([^{}]+)}/g);
+			const variables = this.link.matchAll(new RegExp(REGEX_VARIABLES_AND_FIELDS));
 
 			// for each variable found
 			for (const variable of variables) {
