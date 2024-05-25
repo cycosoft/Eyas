@@ -100,7 +100,8 @@ export default {
 
 			// replace all variables with form data
             return output.replace(/{([^{}]+)}/g, (wholeMatch, type) => {
-				return type ? encodeURIComponent(form.shift()) : wholeMatch;
+				const next = form.shift();
+				return next ? encodeURIComponent(next) : wholeMatch;
 			})
         },
 
