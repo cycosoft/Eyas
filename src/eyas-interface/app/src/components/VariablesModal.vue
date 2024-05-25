@@ -106,7 +106,9 @@ export default {
         },
 
 		linkIsValid () {
-			return isURL(this.parsedLink);
+			const regex = /([\?|&](\w*)=)?{([^{}]+)}/g;
+			const hasVariables = regex.test(this.parsedLink);
+			return !hasVariables && isURL(this.parsedLink);
 		},
 
         variables () {
