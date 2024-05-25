@@ -2,9 +2,9 @@
 	<v-dialog
 		v-model="visible"
 		persistent
-		width="auto"
+		:width="dialogWidth"
 	>
-		<v-card class="pa-3">
+		<v-card class="pa-3 variables-modal-content">
 			<v-card-text>
 				<p class="font-weight-black text-center text-h6">Link Requires Additional Information</p>
 
@@ -89,6 +89,7 @@ const REGEX_VARIABLES_ONLY = /{([^{}]+)}/g;
 
 export default {
 	data: () => ({
+		dialogWidth: `auto`,
 		visible: true,
 		link: `https://{dev.|staging.|}cycosoft.com?id={int}&message={str}&enabled={bool}`,
 		form: []
@@ -171,6 +172,8 @@ export default {
 			this.link = link;
 			this.visible = true;
 		});
+
+		this.pinDialogWidth();
 	},
 
 	methods: {
@@ -185,6 +188,10 @@ export default {
 
 		getFieldLabel(prefix, field) {
 			return `${prefix}${field ? ` for "${field}" field` : ``}`;
+		},
+
+		pinDialogWidth() {
+			this.dialogWidth = document.querySelector(`.variables-modal-content`).offsetWidth;
 		}
 	}
 }
