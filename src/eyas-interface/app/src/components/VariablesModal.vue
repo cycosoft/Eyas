@@ -98,7 +98,7 @@ export default {
 
 			// replace all variables with form data
             return output.replace(/{([^{}]+)}/g, (wholeMatch, type) => {
-				return type ? form.shift() : wholeMatch;
+				return type ? encodeURIComponent(form.shift()) : wholeMatch;
 			})
         },
 
