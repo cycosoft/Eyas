@@ -92,7 +92,14 @@ export default {
 
     computed: {
         parsedLink () {
-            return this.link;
+			// copy for manipulation
+            let output = this.link;
+			const form = [...this.form];
+
+			// replace all variables with form data
+            return output.replace(/{([^{}]+)}/g, (wholeMatch, type) => {
+				return type ? form.shift() : wholeMatch;
+			})
         },
 
 		linkIsValid () {
@@ -108,7 +115,6 @@ export default {
 
 			// for each variable found
 			for (const variable of variables) {
-				console.log(variable);
 				// setup
 				const data = {};
 				const type = variable[3];
@@ -131,8 +137,6 @@ export default {
 				// push the data object to the output
 				output.push(data);
 			}
-
-			console.warn(JSON.stringify(output, null, 2));
 
             return output;
         }
