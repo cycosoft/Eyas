@@ -102,7 +102,7 @@ export default {
 			const form = [...this.form];
 
 			// replace all variables with form data
-            return output.replace(REGEX_VARIABLES_ONLY, (wholeMatch, type) => {
+            return output.replace(REGEX_VARIABLES_ONLY, wholeMatch => {
 				const next = form.shift();
 				return next ? encodeURIComponent(next) : wholeMatch;
 			})
