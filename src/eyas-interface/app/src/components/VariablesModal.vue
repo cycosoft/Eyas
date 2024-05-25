@@ -109,7 +109,17 @@ export default {
         },
 
 		linkIsValid () {
-			const hasVariables = REGEX_VARIABLES_AND_FIELDS.test(this.parsedLink);
+			// setup
+			let hasVariables = false;
+
+			// check if the link has any variables
+			const variables = this.parsedLink.matchAll(new RegExp(REGEX_VARIABLES_AND_FIELDS));
+			for (const variable of variables) {
+				hasVariables = true;
+				break;
+			}
+
+			// valid if there are no variables AND the link is a valid URL
 			return !hasVariables && isURL(this.parsedLink);
 		},
 
