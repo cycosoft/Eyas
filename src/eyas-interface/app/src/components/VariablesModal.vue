@@ -89,7 +89,7 @@ const REGEX_VARIABLES_ONLY = /{([^{}]+)}/g;
 export default {
 	data: () => ({
 		visible: true,
-		link: `https://{dev|staging|}.cycosoft.com?id={int}&message={str}&enabled={bool}`,
+		link: `https://{dev.|staging.|}cycosoft.com?id={int}&message={str}&enabled={bool}`,
 		form: []
 	}),
 
