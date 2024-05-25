@@ -83,6 +83,8 @@
 </template>
 
 <script>
+import isURL from 'validator/lib/isURL';
+
 export default {
 	data: () => ({
 		visible: true,
@@ -103,7 +105,7 @@ export default {
         },
 
 		linkIsValid () {
-			return false;
+			return isURL(this.parsedLink);
 		},
 
         variables () {
