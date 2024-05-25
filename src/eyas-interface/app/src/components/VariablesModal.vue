@@ -18,7 +18,7 @@
 							v-if="variable.type === `list`"
 							v-model="form[index]"
 							:label="getFieldLabel(`Select option`, variable.field)"
-							:items="variable.options.map(option => option || `{blank}`)"
+							:items="variable.options"
 						/>
 
 						<!-- detect booleans -->
@@ -102,7 +102,7 @@ export default {
 			// replace all variables with form data
             return output.replace(REGEX_VARIABLES_ONLY, wholeMatch => {
 				const next = form.shift();
-				return next ? encodeURIComponent(next) : wholeMatch;
+				return next || next === '' ? encodeURIComponent(next) : wholeMatch;
 			})
         },
 
@@ -146,7 +146,14 @@ export default {
 
 				// add the options or label
 				if(isList) {
-					data.options = variable[3].split(`|`);
+					data.options = [];
+
+					variable[3].split(`|`).forEach(option => {
+						data.options.push({
+							value: option,
+							title: option || `{blank}`
+						});
+					});
 				}
 
 				// push the data object to the output
