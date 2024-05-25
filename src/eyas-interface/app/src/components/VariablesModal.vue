@@ -43,6 +43,7 @@
 							v-if="variable.type === `int`"
 							v-model="form[index]"
 							type="number"
+							hide-spin-buttons
 							:label="getFieldLabel(`Enter number`, variable.field)"
 						/>
 
