@@ -201,7 +201,11 @@ export default {
 		},
 
 		pinDialogWidth() {
-			this.dialogWidth = document.querySelector(`.variables-modal-content`).offsetWidth;
+			// exit if dialog is not visible
+			if (!this.visible) { return; }
+
+			// set the width of the dialog + 1 to round up and prevent content jumping
+			this.dialogWidth = document.querySelector(`.variables-modal-content`).offsetWidth + 1;
 		}
 	},
 
