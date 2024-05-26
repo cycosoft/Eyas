@@ -116,9 +116,9 @@ export default {
 			const form = [...this.form];
 
 			// replace all variables with form data
-            return output?.replace(REGEX_VARIABLES_ONLY, wholeMatch => {
-				const next = form.shift();
-				return next || next === '' ? encodeURIComponent(next) : wholeMatch;
+            return output?.replace(REGEX_VARIABLES_ONLY, originalMatch => {
+				const value = form.shift();
+				return value || value === '' ? encodeURIComponent(value) : originalMatch;
 			});
         },
 
