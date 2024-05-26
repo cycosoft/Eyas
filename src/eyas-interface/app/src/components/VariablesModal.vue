@@ -5,10 +5,10 @@
 		:width="dialogWidth"
 	>
 		<v-card class="pa-3 variables-modal-content">
-			<v-card-text>
+			<v-card-text class="pb-0">
 				<p class="font-weight-black text-center text-h6">Link Requires Additional Information</p>
 
-				<v-sheet class="my-10">
+				<v-sheet v-if="link" class="my-10">
 					<v-row
                         v-for="(variable, index) in variables"
                         :key="index"
@@ -54,11 +54,20 @@
 							:label="getFieldLabel(`Enter text`, variable.field)"
 						/>
 					</v-row>
+
+					<!-- display the link being updated -->
+					<v-row class="pt-2">
+						<v-icon v-if="linkIsValid" class="mr-2" color="success">mdi-check-circle-outline</v-icon>
+						<v-icon v-else class="mr-2" color="error">mdi-alert-rhombus-outline</v-icon>
+						<small>{{ parsedLink }}</small>
+					</v-row>
 				</v-sheet>
 
-				<v-icon v-if="linkIsValid" class="mr-2" color="success">mdi-check-circle-outline</v-icon>
-				<v-icon v-else class="mr-2" color="error">mdi-alert-rhombus-outline</v-icon>
-				<small>{{ parsedLink }}</small>
+				<!-- Error for missing link data state -->
+				<v-sheet v-else class="mt-10 mb-4 text-center">
+					<v-icon class="mr-2" color="error">mdi-alert-rhombus-outline</v-icon>
+					<small>No link received</small>
+				</v-sheet>
 			</v-card-text>
 
 			<v-card-actions>
@@ -66,7 +75,7 @@
 						Cancel
 					</v-btn>
 
-					<div class="flex-grow-1" />
+					<v-spacer />
 
 					<v-btn
 						color="primary"
@@ -172,8 +181,6 @@ export default {
 			this.link = link;
 			this.visible = true;
 		});
-
-		this.pinDialogWidth();
 	},
 
 	methods: {
@@ -192,6 +199,16 @@ export default {
 
 		pinDialogWidth() {
 			this.dialogWidth = document.querySelector(`.variables-modal-content`).offsetWidth;
+		}
+	},
+
+	watch: {
+		visible (isVisible) {
+			// only when the dialog is visible
+			if (isVisible) {
+				// pin the dialog width to prevent resizing
+				this.pinDialogWidth();
+			}
 		}
 	}
 }
