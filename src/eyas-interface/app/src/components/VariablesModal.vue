@@ -117,7 +117,7 @@ export default {
             return output.replace(REGEX_VARIABLES_ONLY, wholeMatch => {
 				const next = form.shift();
 				return next || next === '' ? encodeURIComponent(next) : wholeMatch;
-			})
+			});
         },
 
 		linkIsValid () {
