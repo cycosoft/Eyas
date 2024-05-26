@@ -101,7 +101,7 @@ export default {
 	data: () => ({
 		dialogWidth: `auto`,
 		visible: false,
-		link: ``, // debug `https://{dev.|staging.|}cycosoft.com?id={int}&message={str}&enabled={bool}`,
+		link: ``, //`https://{dev.|staging.|}cycosoft.com?id={int}&message={str}&enabled={bool}`,
 		form: []
 	}),
 
@@ -109,15 +109,12 @@ export default {
 
     computed: {
         parsedLink () {
-			// exit if no link
-			if (!this.link) { return ``; }
-
 			// copy for manipulation
             let output = this.link;
 			const form = [...this.form];
 
 			// replace all variables with form data
-            return output.replace(REGEX_VARIABLES_ONLY, wholeMatch => {
+            return output?.replace(REGEX_VARIABLES_ONLY, wholeMatch => {
 				const next = form.shift();
 				return next || next === '' ? encodeURIComponent(next) : wholeMatch;
 			});
