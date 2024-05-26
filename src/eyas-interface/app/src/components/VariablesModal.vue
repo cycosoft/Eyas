@@ -106,6 +106,9 @@ export default {
 
     computed: {
         parsedLink () {
+			// exit if no link
+			if (!this.link) { return ``; }
+
 			// copy for manipulation
             let output = this.link;
 			const form = [...this.form];
