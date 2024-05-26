@@ -6,7 +6,7 @@
 		</v-main> -->
 
 		<EnvironmentModal />
-		<VariablesModal />
+		<VariablesModal :key="resetTracker.variableModal" @reset="resetTracker.variableModal++" />
 		<ExitModal />
 	</v-app>
 </template>
@@ -21,7 +21,13 @@ export default {
 		EnvironmentModal,
 		VariablesModal,
 		ExitModal
-	}
+	},
+
+	data: () => ({
+		resetTracker: {
+			variableModal: 0
+		}
+	})
 };
 </script>
 

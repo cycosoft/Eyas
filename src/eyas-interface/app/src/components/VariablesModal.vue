@@ -3,6 +3,7 @@
 		v-model="visible"
 		persistent
 		:width="dialogWidth"
+		@after-enter="pinDialogWidth"
 	>
 		<v-card class="pa-3 variables-modal-content">
 			<v-card-text class="pb-0">
@@ -103,6 +104,8 @@ export default {
 		link: ``, // debug `https://{dev.|staging.|}cycosoft.com?id={int}&message={str}&enabled={bool}`,
 		form: []
 	}),
+
+	emits: [`reset`],
 
     computed: {
         parsedLink () {
@@ -207,10 +210,9 @@ export default {
 
 	watch: {
 		visible (isVisible) {
-			// only when the dialog is visible
-			if (isVisible) {
-				// pin the dialog width to prevent resizing
-				this.pinDialogWidth();
+			// reset the component when hidden
+			if (!isVisible) {
+				this.$emit(`reset`);
 			}
 		}
 	}
