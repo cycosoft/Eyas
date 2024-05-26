@@ -60,7 +60,7 @@
 					<v-row class="pt-2">
 						<v-icon v-if="linkIsValid" class="mr-2" color="success">mdi-check-circle-outline</v-icon>
 						<v-icon v-else class="mr-2" color="error">mdi-alert-rhombus-outline</v-icon>
-						<small>{{ parsedLink }}</small>
+						<small class="parsed-link">{{ parsedLink }}</small>
 					</v-row>
 				</v-sheet>
 
@@ -224,3 +224,9 @@ export default {
 	}
 }
 </script>
+
+<style>
+.parsed-link {
+	word-break: break-all;
+}
+</style>
