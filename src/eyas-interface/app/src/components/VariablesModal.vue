@@ -57,7 +57,7 @@
 					</v-row>
 
 					<!-- display the link being updated -->
-					<v-row class="pt-2">
+					<v-row class="pt-2 d-block">
 						<v-icon v-if="linkIsValid" class="mr-2" color="success">mdi-check-circle-outline</v-icon>
 						<v-icon v-else class="mr-2" color="error">mdi-alert-rhombus-outline</v-icon>
 						<small class="parsed-link">{{ parsedLink }}</small>
