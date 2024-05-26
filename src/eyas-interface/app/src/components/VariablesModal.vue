@@ -72,7 +72,7 @@
 			</v-card-text>
 
 			<v-card-actions>
-					<v-btn @click="cancel">
+					<v-btn @click="close">
 						Cancel
 					</v-btn>
 
@@ -97,15 +97,17 @@ import isURL from 'validator/lib/isURL';
 const REGEX_VARIABLES_AND_FIELDS = /([\?|&](\w*)=)?{([^{}]+)}/g;
 const REGEX_VARIABLES_ONLY = /{([^{}]+)}/g;
 
+const componentDefaults = JSON.stringify({
+	dialogWidth: `auto`,
+	visible: false,
+	link: ``, //`https://{dev.|staging.|}cycosoft.com?id={int}&message={str}&enabled={bool}`,
+	form: []
+});
+
 export default {
 	data: () => ({
-		dialogWidth: `auto`,
-		visible: false,
-		link: ``, //`https://{dev.|staging.|}cycosoft.com?id={int}&message={str}&enabled={bool}`,
-		form: []
+		...JSON.parse(componentDefaults)
 	}),
-
-	emits: [`reset`],
 
     computed: {
         parsedLink () {
@@ -123,6 +125,9 @@ export default {
 		linkIsValid () {
 			// setup
 			let hasVariables = false;
+
+			// exit if no link
+			if (!this.parsedLink) { return false; }
 
 			// check if the link has any variables
 			const variables = this.parsedLink.matchAll(new RegExp(REGEX_VARIABLES_AND_FIELDS));
@@ -181,19 +186,28 @@ export default {
 	mounted() {
 		// Listen for messages from the main process
 		window.eventBridge?.receive(`show-variables-modal`, link => {
+			this.reset();
 			this.link = link;
-			this.visible = true;
+			this.open();
 		});
 	},
 
 	methods: {
-		cancel() {
+		close() {
 			this.visible = false;
+		},
+
+		open() {
+			this.visible = true;
+		},
+
+		reset() {
+			Object.assign(this.$data, JSON.parse(componentDefaults));
 		},
 
 		launch() {
 			window.eventBridge?.send(`launch-link`, this.parsedLink);
-			this.visible = false;
+			this.close();
 		},
 
 		getFieldLabel(prefix, field) {
@@ -206,15 +220,6 @@ export default {
 
 			// set the width of the dialog + 1 to round up and prevent content jumping
 			this.dialogWidth = document.querySelector(`.variables-modal-content`).offsetWidth + 1;
-		}
-	},
-
-	watch: {
-		visible (isVisible) {
-			// reset the component when hidden
-			if (!isVisible) {
-				this.$emit(`reset`);
-			}
 		}
 	}
 }
