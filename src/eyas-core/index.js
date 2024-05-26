@@ -278,6 +278,9 @@ function initEyasListeners() {
 		// load the test
 		navigate();
 	});
+
+	// listen for the user to launch a link
+	ipcMain.on(`launch-link`, (event, url) => navigate(url));
 }
 
 // method for tracking events
@@ -788,6 +791,9 @@ function freshStart() {
 
 // navigate to a variable url
 function navigateVariable(url) {
+	// show the Eyas UI layer
+	toggleEyasUI(true);
+
 	// send the variable url to the UI layer
 	$eyasLayer.webContents.send(`show-variables-modal`, url);
 }

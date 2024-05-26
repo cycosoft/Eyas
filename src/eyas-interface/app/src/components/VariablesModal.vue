@@ -90,8 +90,8 @@ const REGEX_VARIABLES_ONLY = /{([^{}]+)}/g;
 export default {
 	data: () => ({
 		dialogWidth: `auto`,
-		visible: true,
-		link: `https://{dev.|staging.|}cycosoft.com?id={int}&message={str}&enabled={bool}`,
+		visible: false,
+		link: ``, // debug `https://{dev.|staging.|}cycosoft.com?id={int}&message={str}&enabled={bool}`,
 		form: []
 	}),
 
@@ -182,7 +182,7 @@ export default {
 		},
 
 		launch() {
-			this.parsedLink && window.eventBridge?.send(`launch-link`, this.parsedLink);
+			window.eventBridge?.send(`launch-link`, this.parsedLink);
 			this.visible = false;
 		},
 
