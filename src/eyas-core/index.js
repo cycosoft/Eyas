@@ -540,7 +540,7 @@ function setMenu () {
 		// add the item to the menu
 		customLinkList.push({
 			label: `${item.label || item.url}${isValid ? `` : ` (invalid entry: "${item.url}")`}`,
-			click: () => hasVariables ? navigateVariable(validUrl) : navigate(validUrl, item.external),
+			click: () => hasVariables ? navigateVariable(itemUrl) : navigate(validUrl, item.external),
 			enabled: isValid // disable menu item if invalid url
 		});
 	});
