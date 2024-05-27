@@ -2,14 +2,6 @@
 
 'use strict';
 
-// NEW METHOD
-// init electron
-// init the core layer
-// display the UI (with a center loader)
-// ask the user to select the environment OR use the default
-// * start the server during this time
-// load the test
-
 // constants
 const APP_NAME = `Eyas`;
 const MP_KEY = `07f0475cb429f7de5ebf79a1c418dc5c`;
@@ -438,60 +430,72 @@ function setMenu () {
 						});
 					}
 				},
+				{ type: `separator` },
 				{
-					label: `🏃 Exit`,
+					label: `🚪 Exit`,
 					accelerator: `CmdOrCtrl+Q`,
 					click: _electronCore.quit
 				}
 			]
-		},
-
-		{
-			label: `🧪 Testing`,
-			submenu: [
-				{
-					label: `📦 Reload Test`,
-					click: () => freshStart()
-				},
-				// { type: `separator` },
-				// {
-				// 	label: `🖥️ Open in Browser`,
-				// 	click: () => {
-				// 		// url to navigate to
-				// 		let urlToNavigateTo = $appWindow.webContents.getURL();
-
-				// 		// if the base url is the test defined domain
-				// 		if(appUrlOverride){
-				// 			// grab the base url parts
-				// 			urlToNavigateTo = new URL(appUrlOverride);
-				// 			urlToNavigateTo.port = testServerPort;
-
-				// 			// alert the user that it needs to be defined in etc/hosts
-				// 			dialog.showMessageBoxSync($appWindow, {
-				// 				type: `warning`,
-				// 				buttons: [`Open`],
-				// 				title: `Open in Browser`,
-				// 				message: `To run your test outside of Eyas, you must add the following to your "etc/hosts" file:
-
-				// 				127.0.0.1     ${urlToNavigateTo.hostname}`
-				// 			});
-
-				// 			// convert the url to a string
-				// 			urlToNavigateTo = urlToNavigateTo.toString();
-				// 		}
-
-				// 		// open the current url in the default browser
-				// 		navigate(urlToNavigateTo, true);
-				// 	}
-				// },
-				{ type: `separator` },
-				{
-					label: `♻️ Reload Page`,
-					click: () => $appWindow.webContents.reloadIgnoringCache()
-				}
-			]
 		}
 	];
+
+	// Add the tools menu to the application menu
+	menuDefault.push({
+		label: `🔧 Tools`,
+		submenu: [
+			{
+				label: `🧪 Restart Test`,
+				click: () => freshStart()
+			},
+			// { type: `separator` },
+			// {
+			// 	label: `🌐 Open in Browser`,
+			// 	click: () => {
+			// 		// url to navigate to
+			// 		let urlToNavigateTo = $appWindow.webContents.getURL();
+
+			// 		// if the base url is the test defined domain
+			// 		if(appUrlOverride){
+			// 			// grab the base url parts
+			// 			urlToNavigateTo = new URL(appUrlOverride);
+			// 			urlToNavigateTo.port = testServerPort;
+
+			// 			// alert the user that it needs to be defined in etc/hosts
+			// 			dialog.showMessageBoxSync($appWindow, {
+			// 				type: `warning`,
+			// 				buttons: [`Open`],
+			// 				title: `Open in Browser`,
+			// 				message: `To run your test outside of Eyas, you must add the following to your "etc/hosts" file:
+
+			// 				127.0.0.1     ${urlToNavigateTo.hostname}`
+			// 			});
+
+			// 			// convert the url to a string
+			// 			urlToNavigateTo = urlToNavigateTo.toString();
+			// 		}
+
+			// 		// open the current url in the default browser
+			// 		navigate(urlToNavigateTo, true);
+			// 	}
+			// },
+			{
+				label: `♻️ Reload Page`,
+				click: () => $appWindow.webContents.reloadIgnoringCache()
+			},
+			{ type: `separator` },
+			{
+				label: `🔧 Developer Console${$isDev ? ' (Test)' : ''}`,
+				click: () => $appWindow.webContents.openDevTools()
+			}
+		]
+	});
+
+	// Add the developer tools menu to the application menu for the UI layer
+	$isDev && menuDefault[menuDefault.length - 1].submenu.push({
+		label: `🔧 Developer Console (UI)`,
+		click: () => $eyasLayer.webContents.openDevTools()
+	});
 
 	// build out the menu for selecting a screen size
 	const viewportsMenu = [];
@@ -579,27 +583,6 @@ function setMenu () {
 
 	// if there are any valid items THEN add the list to the menu
 	customLinkList.length && menuDefault.push({ label: `💼 Links`, submenu: customLinkList });
-
-	// Add the devtools to the menu if in dev mode
-	$isDev && menuDefault.push({
-		label: `🔧 DevTools`,
-		submenu: [
-			{
-				label: `🔧 UI Layer`,
-				click: () => $eyasLayer.webContents.openDevTools()
-			},
-			{
-				label: `🔧 Test Layer`,
-				click: () => $appWindow.webContents.openDevTools()
-			}
-		]
-	});
-
-	// if not in dev mode, add a single top-level menu item to open the dev tools for the test layer
-	!$isDev && menuDefault.push({
-		label: `🔧 DevTools`,
-		click: () => $appWindow.webContents.openDevTools()
-	});
 
 	// Set the modified menu as the application menu
 	Menu.setApplicationMenu(Menu.buildFromTemplate(menuDefault));
