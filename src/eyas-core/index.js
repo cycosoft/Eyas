@@ -485,26 +485,6 @@ function setMenu () {
 				// 	}
 				// },
 				{ type: `separator` },
-				// populate with appropriate dev tools
-				...(() => {
-					const output = [
-						{
-							label: `⚙️ DevTools`,
-							click: () => $appWindow.webContents.openDevTools()
-						}
-					];
-
-					// add the dev tools for the app layer if in dev
-					$isDev && output.push(
-						{
-							label: `⚙️ DevTools (App Layer)`,
-							click: () => $eyasLayer.webContents.openDevTools()
-						}
-					);
-
-					return output;
-				})(),
-				{ type: `separator` },
 				{
 					label: `♻️ Reload Page`,
 					click: () => $appWindow.webContents.reloadIgnoringCache()
@@ -599,6 +579,27 @@ function setMenu () {
 
 	// if there are any valid items THEN add the list to the menu
 	customLinkList.length && menuDefault.push({ label: `💼 Links`, submenu: customLinkList });
+
+	// Add the devtools to the menu if in dev mode
+	$isDev && menuDefault.push({
+		label: `🔧 DevTools`,
+		submenu: [
+			{
+				label: `🔧 UI Layer`,
+				click: () => $eyasLayer.webContents.openDevTools()
+			},
+			{
+				label: `🔧 Test Layer`,
+				click: () => $appWindow.webContents.openDevTools()
+			}
+		]
+	});
+
+	// if not in dev mode, add a single top-level menu item to open the dev tools for the test layer
+	!$isDev && menuDefault.push({
+		label: `🔧 DevTools`,
+		click: () => $appWindow.webContents.openDevTools()
+	});
 
 	// Set the modified menu as the application menu
 	Menu.setApplicationMenu(Menu.buildFromTemplate(menuDefault));
