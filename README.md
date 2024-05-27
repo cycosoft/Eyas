@@ -69,8 +69,11 @@ module.exports = {
   version: `<current-branch>`,
   // Additional screen sizes to test your application at
   viewports: [/* { label: `iPad Pro`, width: 1024, height: 1366 } */],
-  // Custom links to display in the menu (external opens directly in browser)
-  links: [/* { label: `Cycosoft, LLC`, url: `cycosoft.com`, external: true } */]
+  // Custom links to display in the menu with support for variable input (external opens directly in browser)
+  links: [/*
+    { label: `Cycosoft, LLC`, url: `cycosoft.com`, external: true },
+    { label: `Variables Demo`, url: `{testdomain}?id={int}&message={str}&enabled={bool}&list={item1|item2|}` }
+  */]
   // File outputs
   outputs: {
     // Build a Windows distributable
