@@ -33,6 +33,7 @@ const $isDev = process.argv.includes(`--dev`);
 let $appWindow = null;
 let $eyasLayer = null;
 let $testServer = null;
+let $testDomainRaw = null;
 let $testDomain = `eyas://local.test`;
 const $currentViewport = [];
 const $allViewports = [
@@ -199,9 +200,6 @@ function initElectronUi() {
 	// NOTE: THIS NEEDS TO BE MOVED TO THE UI LAYER
 	checkTestExpiration();
 
-	// Set the application menu
-	setMenu();
-
 	// listen for app events
 	initElectronListeners();
 	initEyasListeners();
@@ -217,6 +215,9 @@ function initElectronUi() {
 
 	// once the Eyas UI layer is ready, attempt navigation
 	$eyasLayer.webContents.on(`did-finish-load`, freshStart);
+
+	// Set the application menu
+	setMenu();
 }
 
 // initialize the Electron listeners
@@ -273,6 +274,7 @@ function initEyasListeners() {
 		toggleEyasUI(false);
 
 		// update the test domain
+		$testDomainRaw = url;
 		$testDomain = formatURL(url);
 
 		// load the test
@@ -280,7 +282,7 @@ function initEyasListeners() {
 	});
 
 	// listen for the user to launch a link
-	ipcMain.on(`launch-link`, (event, url) => navigate(url));
+	ipcMain.on(`launch-link`, (event, url) => navigate(formatURL(url)));
 }
 
 // method for tracking events
@@ -388,6 +390,7 @@ function onResize() {
 function setMenu () {
 	// imports
 	const { Menu, dialog } = require(`electron`);
+	const { isURL } = require(`validator`);
 
 	// build the default menu in MacOS style
 	const menuDefault = [
@@ -517,20 +520,20 @@ function setMenu () {
 		let itemUrl = item.url;
 		let isValid = false;
 		let validUrl;
-		let validVariableUrl;
-
-		// replace the test domain variable with the current test domain if it exists
-		itemUrl = itemUrl.replace(/{testdomain}/g, $testDomain);
 
 		// generically match bracket sets to check for variables
 		const hasVariables = itemUrl.match(/{[^{}]+}/g)?.length;
 
 		// if there are variables
-		if(hasVariables || itemUrl.includes(`eyas://`)){
+		if(hasVariables){
+			// replace the test domain variable with a test domain
+			let testUrl = itemUrl.replace(/{testdomain}/g, `validating.com`);
+
+			// replace all other variables with a generic value
+			testUrl = testUrl.replace(/{[^{}]+}/g, `validating`);
+
 			// check if the provided url is valid
-			const testUrl = itemUrl.replace(/{[^{}]+}/g, `validating`);
-			validVariableUrl = new URL(testUrl);
-			isValid = !!validVariableUrl;
+			isValid = isURL(testUrl);
 		} else {
 			// check if the provided url is valid
 			validUrl = formatURL(itemUrl);
@@ -773,7 +776,8 @@ function freshStart() {
 	// if the user has a single custom domain
 	if (config().domains.length === 1) {
 		// update the default domain
-		$testDomain = formatURL(config().domains[0].url);
+		$testDomainRaw = config().domains[0].url;
+		$testDomain = formatURL($testDomainRaw);
 
 		// directly load the user's test using the new default domain
 		navigate();
@@ -794,6 +798,15 @@ function navigateVariable(url) {
 	// show the Eyas UI layer
 	toggleEyasUI(true);
 
-	// send the variable url to the UI layer
-	$eyasLayer.webContents.send(`show-variables-modal`, url);
+	// use whichever test domain is currently active
+	const output = url.replace(/{testdomain}/g, $testDomainRaw || $testDomain);
+
+	// if the url still has variables
+	if(output.match(/{[^{}]+}/g)?.length){
+		// send request to the UI layer
+		$eyasLayer.webContents.send(`show-variables-modal`, output);
+	} else {
+		// just pass through to navigate
+		navigate(formatURL(output));
+	}
 }
