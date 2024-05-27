@@ -8,6 +8,7 @@
 - Run user test via custom protocol instead of http server
 - Removed ability to run user test in the browser
 - Add support for custom links with variables
+- Swap the "viewport" and "links" button positions in the menu
 
 # v2.0.0
 
