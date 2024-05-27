@@ -513,44 +513,6 @@ function setMenu () {
 		}
 	];
 
-	// for each menu item where the list exists
-	const customLinkList = [];
-	config().links.forEach(item => {
-		// setup
-		let itemUrl = item.url;
-		let isValid = false;
-		let validUrl;
-
-		// generically match bracket sets to check for variables
-		const hasVariables = itemUrl.match(/{[^{}]+}/g)?.length;
-
-		// if there are variables
-		if(hasVariables){
-			// replace the test domain variable with a test domain
-			let testUrl = itemUrl.replace(/{testdomain}/g, `validating.com`);
-
-			// replace all other variables with a generic value
-			testUrl = testUrl.replace(/{[^{}]+}/g, `validating`);
-
-			// check if the provided url is valid
-			isValid = isURL(testUrl);
-		} else {
-			// check if the provided url is valid
-			validUrl = formatURL(itemUrl);
-			isValid = !!validUrl;
-		}
-
-		// add the item to the menu
-		customLinkList.push({
-			label: `${item.label || item.url}${isValid ? `` : ` (invalid entry: "${item.url}")`}`,
-			click: () => hasVariables ? navigateVariable(itemUrl) : navigate(validUrl, item.external),
-			enabled: isValid // disable menu item if invalid url
-		});
-	});
-
-	// if there are any valid items THEN add the list to the menu
-	customLinkList.length && menuDefault.push({ label: `💼 Links`, submenu: customLinkList });
-
 	// build out the menu for selecting a screen size
 	const viewportsMenu = [];
 	const tolerance = 2;
@@ -599,6 +561,44 @@ function setMenu () {
 
 	// Add the viewports submenu to the application menu
 	menuDefault.push({ label: `📏 Viewport`, submenu: viewportsMenu });
+
+	// for each menu item where the list exists
+	const customLinkList = [];
+	config().links.forEach(item => {
+		// setup
+		let itemUrl = item.url;
+		let isValid = false;
+		let validUrl;
+
+		// generically match bracket sets to check for variables
+		const hasVariables = itemUrl.match(/{[^{}]+}/g)?.length;
+
+		// if there are variables
+		if(hasVariables){
+			// replace the test domain variable with a test domain
+			let testUrl = itemUrl.replace(/{testdomain}/g, `validating.com`);
+
+			// replace all other variables with a generic value
+			testUrl = testUrl.replace(/{[^{}]+}/g, `validating`);
+
+			// check if the provided url is valid
+			isValid = isURL(testUrl);
+		} else {
+			// check if the provided url is valid
+			validUrl = formatURL(itemUrl);
+			isValid = !!validUrl;
+		}
+
+		// add the item to the menu
+		customLinkList.push({
+			label: `${item.label || item.url}${isValid ? `` : ` (invalid entry: "${item.url}")`}`,
+			click: () => hasVariables ? navigateVariable(itemUrl) : navigate(validUrl, item.external),
+			enabled: isValid // disable menu item if invalid url
+		});
+	});
+
+	// if there are any valid items THEN add the list to the menu
+	customLinkList.length && menuDefault.push({ label: `💼 Links`, submenu: customLinkList });
 
 	// Set the modified menu as the application menu
 	Menu.setApplicationMenu(Menu.buildFromTemplate(menuDefault));
