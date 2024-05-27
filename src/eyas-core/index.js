@@ -795,11 +795,26 @@ function freshStart() {
 
 // navigate to a variable url
 function navigateVariable(url) {
+	// if the url has the test domain variable AND the test domain is not set
+	if(url.match(/{testdomain}/g)?.length && !$testDomainRaw){
+		const { dialog } = require(`electron`);
+
+		// alert the user that they need to select an environment first
+		dialog.showMessageBoxSync($appWindow, {
+			type: `warning`,
+			buttons: [`OK`],
+			title: `Select an Environment`,
+			message: `You must select an environment before you can use this link`
+		});
+
+		return;
+	}
+
 	// show the Eyas UI layer
 	toggleEyasUI(true);
 
 	// use whichever test domain is currently active
-	const output = url.replace(/{testdomain}/g, $testDomainRaw || $testDomain);
+	const output = url.replace(/{testdomain}/g, $testDomainRaw);
 
 	// if the url still has variables
 	if(output.match(/{[^{}]+}/g)?.length){
