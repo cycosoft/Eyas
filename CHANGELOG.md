@@ -1,6 +1,6 @@
 # v2.1.0
 
-- Renamed menu item `Load Packaged App` to `Load Test Files`
+- General menu adjustments
 - Display an alert about `etc/hosts` when user tries to load test files in the browser
 - Add a spinner to the app close button
 - Support for multiple domains via config
