@@ -56,7 +56,11 @@ module.exports = {
   // The port your application will be served on via localhost
   port: 3000,
   // Simulate a domain (accepts '' || [''] || [{ url, title }])
-  domains: [/* { url: `eyas://local.test`, title: `Default Domain` } */],
+  domains: [/*
+    { url: `dev.cycosoft.com`, title: `Development` },
+		{ url: `staging.cycosoft.com`, title: `Staging` },
+		{ url: `cycosoft.com`, title: `Production` }
+  */],
   // Define custom redirects for your test
   redirects: [/* { from: `/my-route`, to: `/demo/alt-route` } */],
   // The name of your application
