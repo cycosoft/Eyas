@@ -14,10 +14,16 @@ module.exports = {
 		{ label: `Custom Size`, width: 1024, height: 768 }
 	],
 	links: [
+		{ label: `Options Demo`, url: `https://{dev.|staging.|}cycosoft.com` },
+		{ label: `Int Demo`, url: `https://eyas.cycosoft.com?id={int}` },
+		{ label: `String Demo`, url: `https://eyas.cycosoft.com?message={str}` },
+		{ label: `Boolean Demo`, url: `https://eyas.cycosoft.com?enabled={bool}` },
+		{ label: `Test Domain Demo`, url: `{testdomain}?go` },
+		{ label: `Test Domain Demo w/Bool`, url: `{testdomain}?enabled={bool}` },
+		{ label: `Combo Demo`, url: `https://{dev.|staging.|}cycosoft.com?id={int}&message={str}&enabled={bool}` },
 		{ label: `Cycosoft.com (browser)`, url: `https://cycosoft.com`, external: true },
-		{ url: `server` },
 		{ label: `Cycosoft.com (electron)`, url: `https://cycosoft.com` },
-		{ label: `Cycosoft.com (browser)`, url: `https://cycosoft.com`, external: true },
+		{ url: `server` },
 		{ url: `https://142.250.217.142` },
 		{ url: `142.250.217.142` },
 		{ url: `142.250.217.142/` },
