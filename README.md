@@ -20,7 +20,9 @@
 
 ## About
 
-_Eyas_ leverages a packaged version of your application to provide a simple and shareable testing solution without the need to set up an entire server. Regardless of your team size, you can now decrease the feedback loop for no extra cost. You can easily include PMs, designers, executives and customers in the testing process.
+_Eyas_ leverages a packaged version of your application to provide a simple and shareable testing solution without the need to set up a server with custom domains. Regardless of your team size, you can now decrease the feedback loop for no extra cost. You can easily include PMs, designers, executives and customers in the testing process.
+
+In practice, _Eyas_ can shift-left your testing process by allowing full testing of feature branches before they are merged into the main branch. This will increase confidence in your main branch, enable at-will deployments, reduce bugs / hotfixes / rollbacks, increase team velocity, decrease team stress, and crucially remove code freezes when "tossing the release over the wall" with QA.
 
 ## Table of Contents
 
