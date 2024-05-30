@@ -63,8 +63,6 @@ module.exports = {
 		{ url: `staging.cycosoft.com`, title: `Staging` },
 		{ url: `cycosoft.com`, title: `Production` }
   */],
-  // Define custom redirects for your test
-  redirects: [/* { from: `/my-route`, to: `/demo/alt-route` } */],
   // The name of your application
   title: `My Cool Site`,
   // The version of your application that was built. Defaults to current branch name.

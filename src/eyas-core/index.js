@@ -95,15 +95,6 @@ initElectronCore();
 	// 	// Serve static files from the test directory
 	// 	expressLayer.use(express.static($paths.testSrc));
 
-	// 	// For each provided route from the user
-	// 	config().redirects.forEach(route => {
-	// 		// Add a redirect to the test server
-	// 		expressLayer.get(route.from, function (req, res) {
-	// 			// Redirect to the provided route
-	// 			res.redirect(route.to);
-	// 		});
-	// 	});
-
 	// 	// Catch-all for bad requests
 	// 	expressLayer.get(`*`, function (req, res) {
 	// 		res.redirect(`/`);

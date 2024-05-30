@@ -7,7 +7,6 @@ module.exports = {
 		{ url: `staging.eyas.cycosoft.com`, title: `Staging` },
 		{ url: `eyas.cycosoft.com`, title: `Production` }
 	],
-	redirects: [{ from: `/REDIRECT`, to: `/demo/alt` }],
 	title: `Eyas App Demo`,
 	// version: ``,
 	viewports: [
