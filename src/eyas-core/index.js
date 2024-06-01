@@ -265,7 +265,13 @@ function initEyasListeners() {
 	});
 
 	// listen for the user to launch a link
-	ipcMain.on(`launch-link`, (event, url) => navigate(formatURL(url)));
+	ipcMain.on(`launch-link`, (event, url) => {
+		// hide the Eyas UI layer
+		toggleEyasUI(false);
+
+		// navigate to the requested url
+		navigate(formatURL(url));
+	});
 }
 
 // method for tracking events
