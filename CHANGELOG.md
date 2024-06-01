@@ -10,6 +10,7 @@
 - Add support for custom links with variables
 - Swap the "viewport" and "links" button positions in the menu
 - Removed the ability to set custom redirect rules
+- Fix inability to load a test url with a port
 
 # v2.0.0
 
