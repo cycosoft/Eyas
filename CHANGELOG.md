@@ -1,4 +1,4 @@
-# v2.1.0
+# v3.0.0
 
 - General menu adjustments
 - Display an alert about `etc/hosts` when user tries to load test files in the browser
@@ -9,6 +9,7 @@
 - Removed ability to run user test in the browser
 - Add support for custom links with variables
 - Swap the "viewport" and "links" button positions in the menu
+- Removed the ability to set custom redirect rules
 
 # v2.0.0
 
