@@ -655,7 +655,6 @@ function navigate(path, openInBrowser) {
 function formatURL(url) {
 	// imports
 	const { isURL } = require(`validator`);
-	const parseURL = require(`url-parse`);
 
 	// config
 	let output = null;
@@ -663,14 +662,14 @@ function formatURL(url) {
 	// exit if not a valid url
 	if(!url || !isURL(url)){ return output; }
 
-	// parse the url
-	const parsed = parseURL(url);
-
-	// if the url is missing a protocol
-	if(!parsed.protocol){
-		// default to https
-		parsed.set(`protocol`, `https`);
+	// if the url doesn't have a protocol
+	if(!/^[a-z0-9]+:\/\//.test(url)){
+		// add a default protocol of https
+		url = `https://${url}`;
 	}
+
+	// parse the url
+	const parsed = new URL(url);
 
 	// grab the url as a string from the parsed object
 	output = parsed.toString();
