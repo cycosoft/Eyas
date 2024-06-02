@@ -220,6 +220,9 @@ async function createBuildFolder() {
 }
 
 function getModifiedConfig() {
+	// get the version from the module's package.json
+	const { version } = require(paths.packageJsonModuleSrc);
+
 	// create a new config file with the updated values in the build folder
 	userLog(`Creating snapshot of config...`);
 	const configCopy = JSON.parse(JSON.stringify(config));
@@ -239,7 +242,8 @@ function getModifiedConfig() {
 		gitBranch,
 		gitHash,
 		gitUser,
-		compiled: now
+		compiled: now,
+		eyas: version
 	};
 
 	// wrap the config in a module export
