@@ -652,7 +652,7 @@ function navigate(path, openInBrowser) {
 }
 
 // format the url for electron consumption
-function parseURL(url) {
+function parseURL(url, returnAsString = true) {
 	// imports
 	const { isURL } = require(`validator`);
 
@@ -669,13 +669,10 @@ function parseURL(url) {
 	}
 
 	// parse the url
-	const parsed = new URL(url);
-
-	// grab the url as a string from the parsed object
-	output = parsed.toString();
+	output = new URL(url);
 
 	// send back formatted string
-	return output;
+	return returnAsString ? output.toString() : output;
 }
 
 // register a custom protocol for loading local test files
@@ -730,7 +727,7 @@ function handleRedirects() {
 		// setup
 		const { hostname } = new URL(request.url);
 
-		if(config().domains.some(domain => hostname === new URL(parseURL(domain.url)).hostname)){
+		if(config().domains.some(domain => hostname === parseURL(domain.url, false).hostname)){
 			// navigate to the custom protocol
 			const redirect = request.url.replace(`https://`, `eyas://`);
 
