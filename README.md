@@ -55,9 +55,7 @@ npm install @cycosoft/eyas --save-dev
 module.exports = {
   // The path to the directory containing your application files
   source: `dist`,
-  // The port your application will be served on via localhost
-  port: 3000,
-  // Simulate a domain (accepts '' || [''] || [{ url, title }])
+  // Simulate a domain for the test (accepts '' || [''] || [{ url, title }])
   domains: [/*
     { url: `dev.cycosoft.com`, title: `Development` },
 		{ url: `staging.cycosoft.com`, title: `Staging` },

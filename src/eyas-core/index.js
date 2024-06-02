@@ -59,7 +59,7 @@ initElectronCore();
 
 	// // config
 
-	// const testServerPort = config().port;
+	// const testServerPort = 3000;
 	// const testServerUrl = `https://localhost:${testServerPort}`;
 	// const appUrlOverride = parseURL(config().domains);
 	// const appUrl = appUrlOverride || testServerUrl;
