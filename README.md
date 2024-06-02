@@ -105,7 +105,7 @@ All outputs are zipped, and can have a base range between 60-100mb depending on 
 
 ## The Fine Print
 
-Support is available via <support+eyas@cycosoft.com>
+🆘 Support is available via ( https://github.com/cycosoft/Eyas/issues )
 
 - Licensed under the [MIT License](LICENSE.TXT)
 - View [terms of use](https://cycosoft.com/eyas/terms)

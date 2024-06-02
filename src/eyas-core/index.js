@@ -422,7 +422,7 @@ function setMenu () {
 
 							🏢 © ${yearRange} Cycosoft, LLC
 							🌐 https://cycosoft.com
-							✉️ support+eyas@cycosoft.com
+							🆘 https://github.com/cycosoft/Eyas/issues
 							`
 						});
 					}
