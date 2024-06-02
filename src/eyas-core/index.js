@@ -61,7 +61,7 @@ initElectronCore();
 
 	// const testServerPort = config().port;
 	// const testServerUrl = `https://localhost:${testServerPort}`;
-	// const appUrlOverride = formatURL(config().domains);
+	// const appUrlOverride = parseURL(config().domains);
 	// const appUrl = appUrlOverride || testServerUrl;
 	// let expressLayer = null;
 
@@ -231,7 +231,7 @@ function initEyasListeners() {
 
 	// open links in the browser when requested
 	ipcMain.on(`open-in-browser`, (event, url) => {
-		const validated = formatURL(url);
+		const validated = parseURL(url);
 		validated && navigate(validated, true);
 	});
 
@@ -258,7 +258,7 @@ function initEyasListeners() {
 
 		// update the test domain
 		$testDomainRaw = url;
-		$testDomain = formatURL(url);
+		$testDomain = parseURL(url);
 
 		// load the test
 		navigate();
@@ -270,7 +270,7 @@ function initEyasListeners() {
 		toggleEyasUI(false);
 
 		// navigate to the requested url
-		navigate(formatURL(url));
+		navigate(parseURL(url));
 	});
 }
 
@@ -566,7 +566,7 @@ function setMenu () {
 			isValid = isURL(testUrl);
 		} else {
 			// check if the provided url is valid
-			validUrl = formatURL(itemUrl);
+			validUrl = parseURL(itemUrl);
 			isValid = !!validUrl;
 		}
 
@@ -652,7 +652,7 @@ function navigate(path, openInBrowser) {
 }
 
 // format the url for electron consumption
-function formatURL(url) {
+function parseURL(url) {
 	// imports
 	const { isURL } = require(`validator`);
 
@@ -730,7 +730,7 @@ function handleRedirects() {
 		// setup
 		const { hostname } = new URL(request.url);
 
-		if(config().domains.some(domain => hostname === new URL(formatURL(domain.url)).hostname)){
+		if(config().domains.some(domain => hostname === new URL(parseURL(domain.url)).hostname)){
 			// navigate to the custom protocol
 			const redirect = request.url.replace(`https://`, `eyas://`);
 
@@ -755,7 +755,7 @@ function freshStart() {
 	if (config().domains.length === 1) {
 		// update the default domain
 		$testDomainRaw = config().domains[0].url;
-		$testDomain = formatURL($testDomainRaw);
+		$testDomain = parseURL($testDomainRaw);
 
 		// directly load the user's test using the new default domain
 		navigate();
@@ -800,6 +800,6 @@ function navigateVariable(url) {
 		$eyasLayer.webContents.send(`show-variables-modal`, output);
 	} else {
 		// just pass through to navigate
-		navigate(formatURL(output));
+		navigate(parseURL(output));
 	}
 }
