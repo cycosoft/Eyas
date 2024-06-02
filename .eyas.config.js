@@ -3,6 +3,7 @@ module.exports = {
 	source: `demo`,
 	// port: ``,
 	domains: [
+		{ url: `sub.domain.com:44301/`, title: `EYAS-253 Test` },
 		{ url: `dev.eyas.cycosoft.com`, title: `Development`, port: 3000 },
 		{ url: `staging.eyas.cycosoft.com`, title: `Staging` },
 		{ url: `eyas.cycosoft.com`, title: `Production` }
@@ -13,6 +14,7 @@ module.exports = {
 		{ label: `Custom Size`, width: 1024, height: 768 }
 	],
 	links: [
+		{ url: `sub.domain.com:44301/`, label: `EYAS-253 Test` },
 		{ label: `Options Demo`, url: `https://{dev.|staging.|}cycosoft.com` },
 		{ label: `Int Demo`, url: `https://eyas.cycosoft.com?id={int}` },
 		{ label: `String Demo`, url: `https://eyas.cycosoft.com?message={str}` },
