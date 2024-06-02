@@ -37,7 +37,7 @@ const eyasConfig = {
 	source: userConfig.source || `dist`,
 	domains: validateCustomDomain(userConfig.domain || userConfig.domains),
 	title: (userConfig.title || `Eyas`).trim(),
-	version: (userConfig.version || getBranchName() || `Unspecified Version`).trim(),
+	version: (userConfig.version || getCommitHash() || `Unspecified Version`).trim(),
 	viewports: userConfig.viewports || [/* { label: ``, width: 0, height: 0 } */],
 	links: userConfig.links || [/* { label: ``, url: `` } */],
 
@@ -106,13 +106,13 @@ function validateCustomDomain(input) {
 	return output;
 }
 
-// attempts to return the current branch name
-function getBranchName() {
+// attempts to return the current short hash
+function getCommitHash() {
 	try {
-		return execSync(`git rev-parse --abbrev-ref HEAD`).toString();
+		return execSync(`git rev-parse --short HEAD`).toString();
 	} catch (error) {
 		// eslint-disable-next-line no-console
-		console.error(`Error getting branch name:`, error);
+		console.error(`Error getting commit hash:`, error);
 		return null;
 	}
 }
