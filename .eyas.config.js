@@ -14,6 +14,7 @@ module.exports = {
 		{ label: `Custom Size`, width: 1024, height: 768 }
 	],
 	links: [
+		{ url: `sub.domain.com:44301/`, label: `EYAS-253 Test` },
 		{ label: `Options Demo`, url: `https://{dev.|staging.|}cycosoft.com` },
 		{ label: `Int Demo`, url: `https://eyas.cycosoft.com?id={int}` },
 		{ label: `String Demo`, url: `https://eyas.cycosoft.com?message={str}` },
