@@ -11,6 +11,7 @@
 - Swap the "viewport" and "links" button positions in the menu
 - Removed the ability to set custom redirect rules
 - Fix inability to load a test url with a port
+- Removed the ability to explicitly set a custom port
 
 # v2.0.0
 

@@ -35,7 +35,6 @@ userConfig.meta = userConfig.meta || {};
 // configuration merge and validation step
 const eyasConfig = {
 	source: userConfig.source || `dist`,
-	port: userConfig.port || 3000,
 	domains: validateCustomDomain(userConfig.domain || userConfig.domains),
 	title: (userConfig.title || `Eyas`).trim(),
 	version: (userConfig.version || getBranchName() || `Unspecified Version`).trim(),
@@ -77,7 +76,7 @@ module.exports = eyasConfig;
 // validate the user input for the custom domain
 function validateCustomDomain(input) {
 	// default to an empty array
-	const output = [/* { url: ``, port: 3000, title: `Staging` } */];
+	const output = [/* { url: ``, title: `Staging` } */];
 
 	// if the input is a string
 	if (typeof input === `string`) {
