@@ -14,6 +14,7 @@
 - Removed the ability to explicitly set a custom port
 - Updated support references to GitHub ( https://github.com/cycosoft/Eyas/issues )
 - The verion of Eyas that built the bundle is now appended to the bundled config file
+- Swapped the automatic build version from branch to short commit hash
 
 # v2.0.0
 
