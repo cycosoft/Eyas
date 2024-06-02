@@ -13,6 +13,7 @@
 - Fix inability to load a test url with a port
 - Removed the ability to explicitly set a custom port
 - Updated support references to GitHub ( https://github.com/cycosoft/Eyas/issues )
+- The verion of Eyas that built the bundle is now appended to the bundled config file
 
 # v2.0.0
 
