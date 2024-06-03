@@ -153,7 +153,7 @@ function initElectronCore() {
 }
 
 // initiate the core electron UI layer
-function initElectronUi() {
+async function initElectronUi() {
 	// imports
 	const { BrowserView } = require(`electron`);
 
@@ -170,9 +170,12 @@ function initElectronUi() {
 		width: $currentViewport[0],
 		height: $currentViewport[1],
 		title: getAppTitle(),
-		icon: $paths.icon,
-		partition: new Date().toISOString() // create a new session
+		icon: $paths.icon
 	});
+
+	// clear all caches from for the session
+	await $appWindow.webContents.session.clearCache(); // web cache
+	await $appWindow.webContents.session.clearStorageData(); // cookies, filesystem, indexdb, localstorage, shadercache, websql, serviceworkers, cachestorage
 
 	// track the app launch event
 	trackEvent(MP_EVENTS.core.launch, {
