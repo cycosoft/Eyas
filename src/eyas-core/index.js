@@ -170,7 +170,8 @@ function initElectronUi() {
 		width: $currentViewport[0],
 		height: $currentViewport[1],
 		title: getAppTitle(),
-		icon: $paths.icon
+		icon: $paths.icon,
+		partition: new Date().toISOString() // create a new session
 	});
 
 	// track the app launch event
