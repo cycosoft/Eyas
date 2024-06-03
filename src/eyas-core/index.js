@@ -197,7 +197,7 @@ function initElectronUi() {
 	$paths.testSrc = _path.join($roots.config, config().source);
 
 	// once the Eyas UI layer is ready, attempt navigation
-	$eyasLayer.webContents.on(`did-finish-load`, freshStart);
+	$eyasLayer.webContents.on(`did-finish-load`, startAFreshTest);
 
 	// Set the application menu
 	setMenu();
@@ -443,7 +443,7 @@ function setMenu () {
 		submenu: [
 			{
 				label: `🧪 Restart Test`,
-				click: () => freshStart()
+				click: () => startAFreshTest()
 			},
 			// { type: `separator` },
 			// {
@@ -741,7 +741,11 @@ function handleRedirects() {
 }
 
 // refresh the app
-function freshStart() {
+async function startAFreshTest() {
+	// clear all caches for the session
+	await $appWindow.webContents.session.clearCache(); // web cache
+	await $appWindow.webContents.session.clearStorageData(); // cookies, filesystem, indexdb, localstorage, shadercache, websql, serviceworkers, cachestorage
+
 	// if there are no custom domains defined
 	if (!config().domains.length) {
 		// load the test using the default domain
