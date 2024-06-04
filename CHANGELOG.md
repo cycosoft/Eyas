@@ -13,8 +13,8 @@
 - Fix inability to load a test url with a port
 - Removed the ability to explicitly set a custom port
 - Updated support references to GitHub ( https://github.com/cycosoft/Eyas/issues )
-- The verion of Eyas that built the bundle is now appended to the bundled config file
-- Swapped the automatic build version from branch to short commit hash
+- The version of Eyas that built the bundle is now appended to the bundled config file
+- Updated automatic build version to include short commit hash
 - Ensure the test cache is always cleared when Eyas starts or test is reloaded
 
 # v2.0.0
