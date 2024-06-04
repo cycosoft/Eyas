@@ -442,7 +442,15 @@ function setMenu () {
 		label: `🔧 Tools`,
 		submenu: [
 			{
-				label: `🧪 Restart Test`,
+				label: `♻️ Reload Page`,
+				click: () => $appWindow.webContents.reloadIgnoringCache()
+			},
+			{
+				label: `🧪 Back to Test`,
+				click: () => navigate()
+			},
+			{
+				label: `🧪 New Test (clear cache 🚿)`,
 				click: () => startAFreshTest()
 			},
 			// { type: `separator` },
@@ -476,10 +484,6 @@ function setMenu () {
 			// 		navigate(urlToNavigateTo, true);
 			// 	}
 			// },
-			{
-				label: `♻️ Reload Page`,
-				click: () => $appWindow.webContents.reloadIgnoringCache()
-			},
 			{ type: `separator` },
 			{
 				label: `🔧 Developer Console${$isDev ? ' (Test)' : ''}`,
