@@ -219,6 +219,7 @@ async function createBuildFolder() {
 	await fs.outputFile(paths.configDest, data);
 }
 
+// the config that is bundled with the build
 function getModifiedConfig() {
 	// get the version from the module's package.json
 	const { version } = require(paths.packageJsonModuleSrc);
@@ -226,7 +227,9 @@ function getModifiedConfig() {
 	// create a new config file with the updated values in the build folder
 	userLog(`Creating snapshot of config...`);
 	const configCopy = JSON.parse(JSON.stringify(config));
-	delete configCopy.source; // isn't used past this point, so don't ship it.
+
+	// the modified config will only point to TEST_SOURCE
+	configCopy.source = TEST_SOURCE;
 
 	// generate meta data for the build
 	const { execSync } = require(`child_process`);
