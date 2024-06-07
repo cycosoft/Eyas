@@ -1,10 +1,12 @@
 * use mac
-* compile, sign, notarize .app -> `compile:mac`
+* compile, sign, notarize .app -> `npm run compile:mac`
 * switch to windows
 * compile .exe -> `npm run compile:win`
-* sign .exe -> `sign:win`
-* verify signature -> `sign:win:verify`
+* sign .exe -> `npm run sign:win`
+* verify signature -> `npm run sign:win:verify`
 * send .exe to mac
 * switch to mac
 * put .exe in dist/
+* test -> `npm pack`
 * deploy -> `npm publish`
+* tag the commit with the version -> `git tag -a v3.0.0 -m "v3.0.0"`

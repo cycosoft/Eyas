@@ -231,7 +231,7 @@ function initEyasListeners() {
 
 	// open links in the browser when requested
 	ipcMain.on(`open-in-browser`, (event, url) => {
-		const validated = parseURL(url);
+		const validated = parseURL(url).toString();
 		validated && navigate(validated, true);
 	});
 
@@ -258,7 +258,7 @@ function initEyasListeners() {
 
 		// update the test domain
 		$testDomainRaw = url;
-		$testDomain = parseURL(url);
+		$testDomain = parseURL(url).toString();
 
 		// load the test
 		navigate();
@@ -270,7 +270,7 @@ function initEyasListeners() {
 		toggleEyasUI(false);
 
 		// navigate to the requested url
-		navigate(parseURL(url));
+		navigate(parseURL(url).toString());
 	});
 }
 
@@ -570,7 +570,7 @@ function setMenu () {
 			isValid = isURL(testUrl);
 		} else {
 			// check if the provided url is valid
-			validUrl = parseURL(itemUrl);
+			validUrl = parseURL(itemUrl).toString();
 			isValid = !!validUrl;
 		}
 
@@ -656,12 +656,12 @@ function navigate(path, openInBrowser) {
 }
 
 // format the url for electron consumption
-function parseURL(url, returnAsString = true) {
+function parseURL(url) {
 	// imports
 	const { isURL } = require(`validator`);
 
 	// config
-	let output = null;
+	let output = '';
 
 	// exit if not a valid url
 	if(!url || !isURL(url)){ return output; }
@@ -676,7 +676,7 @@ function parseURL(url, returnAsString = true) {
 	output = new URL(url);
 
 	// send back formatted string
-	return returnAsString ? output.toString() : output;
+	return output;
 }
 
 // register a custom protocol for loading local test files
@@ -706,7 +706,7 @@ function handleRedirects() {
 		const { pathToFileURL } = require(`url`);
 
 		// grab the pathname from the request
-		const { pathname } = new URL(request.url);
+		const { pathname } = parseURL(request.url.replace(`eyas://`, `https://`));
 
 		// parse expected file attempting to load
 		const fileIfNotDefined = `index.html`;
@@ -729,10 +729,11 @@ function handleRedirects() {
 	// listen for requests to the specified domains and redirect to the custom protocol
 	protocol.handle(`https`, request => {
 		// setup
-		const { hostname } = new URL(request.url);
+		const { hostname } = parseURL(request.url);
 
-		if(config().domains.some(domain => hostname === parseURL(domain.url, false).hostname)){
-			// navigate to the custom protocol
+		// if the hostname matches a given custom domain
+		if(config().domains.some(domain => hostname === parseURL(domain.url).hostname)){
+			// navigate to the custom protocol to load locally
 			const redirect = request.url.replace(`https://`, `eyas://`);
 
 			// redirect to the custom protocol
@@ -760,7 +761,7 @@ async function startAFreshTest() {
 	if (config().domains.length === 1) {
 		// update the default domain
 		$testDomainRaw = config().domains[0].url;
-		$testDomain = parseURL($testDomainRaw);
+		$testDomain = parseURL($testDomainRaw).toString();
 
 		// directly load the user's test using the new default domain
 		navigate();
@@ -805,6 +806,6 @@ function navigateVariable(url) {
 		$eyasLayer.webContents.send(`show-variables-modal`, output);
 	} else {
 		// just pass through to navigate
-		navigate(parseURL(output));
+		navigate(parseURL(output).toString());
 	}
 }
