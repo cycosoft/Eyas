@@ -486,7 +486,7 @@ function setMenu () {
 			// },
 			{ type: `separator` },
 			{
-				label: `🔧 Developer Console${$isDev ? ' (Test)' : ''}`,
+				label: `🔧 Developer Tools${$isDev ? ' (Test)' : ''}`,
 				click: () => $appWindow.webContents.openDevTools()
 			}
 		]
@@ -494,7 +494,7 @@ function setMenu () {
 
 	// Add the developer tools menu to the application menu for the UI layer
 	$isDev && menuDefault[menuDefault.length - 1].submenu.push({
-		label: `🔧 Developer Console (UI)`,
+		label: `🔧 Developer Tools (UI)`,
 		click: () => $eyasLayer.webContents.openDevTools()
 	});
 
