@@ -301,6 +301,7 @@ async function runCommand_bundle() {
 	const fs = require(`fs-extra`);
 	const archiver = require(`archiver`);
 	const extract = require(`extract-zip`);
+	const asar = require(`@electron/asar`);
 
 	// if the mac runner exists AND it wasn't already extracted
 	if(fs.existsSync(paths.macRunnerSrcZip) && !fs.existsSync(paths.macRunnerSrc)) {
@@ -315,6 +316,11 @@ async function runCommand_bundle() {
 		{ enabled: config.outputs.mac, ext: `app`, runner: paths.macRunnerSrc, tag: `mac` },
 		{ enabled: config.outputs.linux, ext: `AppImage`, runner: paths.linuxRunnerSrc, tag: `linux` }
 	];
+
+	// put the user's test into an asar file with .eyas extension
+	const src = path.join(consumerRoot, config.source);
+	const dest = `${TEST_SOURCE}.eyas`;
+	await asar.createPackage(src, dest);
 
 	// reset the output directory
 	await fs.emptyDir(roots.eyasDist);
