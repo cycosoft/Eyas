@@ -300,7 +300,7 @@ async function runCommand_preview(devMode = false) {
 async function runCommand_bundle() {
 	const fs = require(`fs-extra`);
 	const archiver = require(`archiver`);
-	const extract = require('extract-zip');
+	const extract = require(`extract-zip`);
 
 	// if the mac runner exists AND it wasn't already extracted
 	if(fs.existsSync(paths.macRunnerSrcZip) && !fs.existsSync(paths.macRunnerSrc)) {
