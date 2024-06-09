@@ -83,6 +83,7 @@
     "vuetify": "^3.6.8"
   },
   "devDependencies": {
+    "@electron/asar": "^3.2.10",
     "@electron/osx-sign": "^1.3.0",
     "@mdi/font": "^7.4.47",
     "@rollup/plugin-terser": "^0.4.4",
