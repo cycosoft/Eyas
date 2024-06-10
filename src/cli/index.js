@@ -338,6 +338,7 @@ async function runCommand_bundle() {
 		// when the process has completed (Note: listener must be added before the archive is finalized)
 		output.on(`close`, () => {
 			// alert the user
+			userLog(``);
 			userLog(`🎉 File created -> ${artifactName}`);
 		});
 
