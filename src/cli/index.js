@@ -321,9 +321,9 @@ async function runCommand_bundle() {
 	await fs.emptyDir(roots.eyasDist);
 
 	// put the user's test into an asar file with .eyas extension
-	const src = path.join(consumerRoot, config.source);
-	const dest = `${TEST_SOURCE}.eyas`;
-	await asar.createPackage(src, path.join(roots.eyasDist, dest));
+	const testSourceDirectory = path.join(consumerRoot, config.source);
+	const destinationAsarPath = path.join(roots.eyasDist, `${TEST_SOURCE}.eyas`);
+	await asar.createPackage(testSourceDirectory, destinationAsarPath);
 
 	// loop through the platforms and create the zipped files if enabled
 	platforms.forEach(platform => {
