@@ -317,13 +317,13 @@ async function runCommand_bundle() {
 		{ enabled: config.outputs.linux, ext: `AppImage`, runner: paths.linuxRunnerSrc, tag: `linux` }
 	];
 
+	// reset the output directory
+	await fs.emptyDir(roots.eyasDist);
+
 	// put the user's test into an asar file with .eyas extension
 	const src = path.join(consumerRoot, config.source);
 	const dest = `${TEST_SOURCE}.eyas`;
-	await asar.createPackage(src, dest);
-
-	// reset the output directory
-	await fs.emptyDir(roots.eyasDist);
+	await asar.createPackage(src, path.join(roots.eyasDist, dest));
 
 	// loop through the platforms and create the zipped files if enabled
 	platforms.forEach(platform => {
