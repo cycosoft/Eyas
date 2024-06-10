@@ -358,8 +358,8 @@ async function runCommand_bundle() {
 		// add the updated config
 		archive.append(modifiedConfig, { name: `.eyas.config.js` });
 
-		// add the user's test
-		archive.directory(destinationAsarPath, `${TEST_SOURCE}.eyas`);
+		// add the user's bundled asar test
+		archive.append(destinationAsarPath, { name: `${TEST_SOURCE}.eyas` });
 
 		// close the archive
 		archive.finalize();
