@@ -39,7 +39,7 @@ const actions = {
 // setup
 const path = require(`path`);
 const isDev = process.env.NODE_ENV === `dev`;
-const TEST_SOURCE = `source`;
+const TEST_SOURCE = `data`;
 const consumerRoot = process.cwd();
 const moduleRoot = isDev
 	? consumerRoot
@@ -322,8 +322,20 @@ async function runCommand_bundle() {
 
 	// put the user's test into an asar file with .eyas extension
 	const testSourceDirectory = path.join(consumerRoot, config.source);
+	const outputSourceDirectory = path.join(roots.eyasDist, `source`);
 	const destinationAsarPath = path.join(roots.eyasDist, `${TEST_SOURCE}.eyas`);
-	await asar.createPackage(testSourceDirectory, destinationAsarPath);
+
+	// create a source/ directory in the output directory
+	await fs.emptyDir(outputSourceDirectory);
+
+	// copy the user's test to the output directory
+	await fs.copy(testSourceDirectory, outputSourceDirectory);
+
+	// save the modifiedConfig to the new source/ directory
+	await fs.writeFile(path.join(outputSourceDirectory, `.eyas.config.js`), modifiedConfig);
+
+	// create an asar file from the source/ directory and store it in the output directory
+	await asar.createPackage(outputSourceDirectory, destinationAsarPath);
 
 	// loop through the platforms and create the zipped files if enabled
 	platforms.forEach(platform => {
@@ -354,9 +366,6 @@ async function runCommand_bundle() {
 		} else {
 			archive.file(platform.runner, { name: `${names.runner}.${platform.ext}` });
 		}
-
-		// add the updated config
-		archive.append(modifiedConfig, { name: `.eyas.config.js` });
 
 		// add the user's bundled asar test
 		archive.file(destinationAsarPath, { name: `${TEST_SOURCE}.eyas` });
