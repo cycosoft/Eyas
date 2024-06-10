@@ -228,8 +228,8 @@ function getModifiedConfig() {
 	userLog(`Creating snapshot of config...`);
 	const configCopy = JSON.parse(JSON.stringify(config));
 
-	// the modified config will only point to TEST_SOURCE
-	configCopy.source = TEST_SOURCE;
+	// remove the source from the config as it will only exist within the source folder now
+	delete configCopy.source;
 
 	// generate meta data for the build
 	const { execSync } = require(`child_process`);
