@@ -337,41 +337,65 @@ async function runCommand_bundle() {
 	// create an asar file from the source/ directory and store it in the output directory
 	await asar.createPackage(outputSourceDirectory, destinationAsarPath);
 
+	// create an array of promises for the archives
+	const archivePromises = [];
+
 	// loop through the platforms and create the zipped files if enabled
 	platforms.forEach(platform => {
 		// skip if the platform isn't enabled
 		if(!platform.enabled) { return; }
 
-		const artifactName = `${config.title} - ${config.version}.${platform.tag}.zip`;
+		// start a promise for this platform archive process
+		archivePromises.push(
+			new Promise((resolve, reject) => {
+				const artifactName = `${config.title} - ${config.version}.${platform.tag}.zip`;
 
-		// create the zip file
-		const output = fs.createWriteStream(path.join(roots.eyasDist, artifactName));
+				// create the zip file
+				const output = fs.createWriteStream(path.join(roots.eyasDist, artifactName));
 
-		// when the process has completed (Note: listener must be added before the archive is finalized)
-		output.on(`close`, () => {
-			// alert the user
-			userLog(``);
-			userLog(`🎉 File created -> ${artifactName}`);
-		});
+				// when the process has completed (Note: listener must be added before the archive is finalized)
+				output.on(`close`, () => {
+					// alert the user
+					userLog(``);
+					userLog(`🎉 File created -> ${artifactName}`);
 
-		// prepare a new archive
-		const archive = archiver(`zip`, { store: isDev, zlib: { level: 9 } });
+					// resolve the promise
+					resolve();
+				});
 
-		// push content to the archive
-		archive.pipe(output);
+				// prepare a new archive
+				const archive = archiver(`zip`, { store: isDev, zlib: { level: 9 } });
 
-		// add the appropriate runner
-		if(platform.tag === `mac`) {
-			archive.directory(platform.runner, `${names.runner}.${platform.ext}`);
-		} else {
-			archive.file(platform.runner, { name: `${names.runner}.${platform.ext}` });
-		}
+				// push content to the archive
+				archive.pipe(output);
 
-		// add the user's bundled asar test
-		archive.file(destinationAsarPath, { name: `${TEST_SOURCE}.eyas` });
+				// add the appropriate runner
+				if(platform.tag === `mac`) {
+					archive.directory(platform.runner, `${names.runner}.${platform.ext}`);
+				} else {
+					archive.file(platform.runner, { name: `${names.runner}.${platform.ext}` });
+				}
 
-		// close the archive
-		archive.finalize();
+				// add the user's bundled asar test
+				archive.file(destinationAsarPath, { name: `${TEST_SOURCE}.eyas` });
+
+				// close the archive
+				archive.finalize();
+			})
+		);
+	});
+
+	// when all promises have resolved
+	Promise.all(archivePromises).then(async () => {
+		// delete the source/ directory
+		await fs.remove(outputSourceDirectory);
+
+		// delete the asar file
+		await fs.remove(destinationAsarPath);
+
+		// alert the user
+		userLog(``);
+		userLog(`🎉 All files created!`);
 	});
 }
 
