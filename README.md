@@ -58,8 +58,8 @@ module.exports = {
   // Simulate a domain for the test (accepts '' || [''] || [{ url, title }])
   domains: [/*
     { url: `dev.cycosoft.com`, title: `Development` },
-		{ url: `staging.cycosoft.com`, title: `Staging` },
-		{ url: `cycosoft.com`, title: `Production` }
+    { url: `staging.cycosoft.com`, title: `Staging` },
+    { url: `cycosoft.com`, title: `Production` }
   */],
   // The name of your application
   title: `My Cool Site`,
