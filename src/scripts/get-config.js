@@ -17,7 +17,7 @@ let userConfig = {};
 let configPath = path.join(roots.config, `.eyas.config.js`);
 
 // check for any *.eyas files at the roots.config level AND get the first one
-const testFileName = _fs.readdirSync(roots.config).find(file => file.endsWith(`.eyas`));
+const testFileName = _fs.readdirSync(roots.config).find(file => file.endsWith(`.asar`));
 
 // if a file was found
 if (testFileName) {
