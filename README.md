@@ -64,7 +64,7 @@ module.exports = {
   // The name of your application
   title: `My Cool Site`,
   // The version of your application that was built. Defaults to current branch name.
-  version: `<current-branch>`,
+  version: `<current-branch>.<current-commit>`,
   // Additional screen sizes to test your application at
   viewports: [/* { label: `iPad Pro`, width: 1024, height: 1366 } */],
   // Custom links to display in the menu with support for variable input (external opens directly in browser)
