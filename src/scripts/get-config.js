@@ -9,6 +9,7 @@ const path = require(`path`);
 const { execSync } = require(`child_process`);
 const roots = require(`./get-roots.js`);
 const _fs = require(`fs`);
+const os = require(`os`);
 
 // setup
 let userConfig = {};
@@ -17,12 +18,22 @@ let userConfig = {};
 let configPath = path.join(roots.config, `.eyas.config.js`);
 
 // check for any *.eyas files at the roots.config level AND get the first one
-const testFileName = _fs.readdirSync(roots.config).find(file => file.endsWith(`.asar`));
+const testFileName = _fs.readdirSync(roots.config).find(file => file.endsWith(`.eyas`));
 
 // if a file was found
 if (testFileName) {
+	// copy testFileName and change the extension to .asar
+	const asarFileName = testFileName.replace(/\.eyas$/, `.asar`);
+
+	// define the source and target paths
+	const sourcePath = path.join(roots.config, testFileName);
+	const targetPath = path.join(os.tmpdir(), asarFileName);
+
+	// copy the eyas file to the temp directory with the asar extension
+	_fs.copyFileSync(sourcePath, targetPath);
+
 	// overwrite the config path
-	configPath = path.join(roots.config, testFileName, `.eyas.config.js`);
+	configPath = path.join(targetPath, `.eyas.config.js`);
 }
 
 // attempt to load the user's config
