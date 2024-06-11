@@ -24,7 +24,7 @@ let asarPath = null;
 // if a file was found
 if (testFileName) {
 	// copy testFileName and change the extension to .asar
-	const asarFileName = testFileName.replace(/\.eyas$/, `.asar`);
+	const asarFileName = `converted_test.asar`;
 
 	// define the source and target paths
 	const sourcePath = path.join(roots.config, testFileName);
