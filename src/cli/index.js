@@ -228,9 +228,6 @@ function getModifiedConfig() {
 	userLog(`Creating snapshot of config...`);
 	const configCopy = JSON.parse(JSON.stringify(config));
 
-	// remove the source from the config as it will only exist within the source folder now
-	delete configCopy.source;
-
 	// generate meta data for the build
 	const { execSync } = require(`child_process`);
 	const { addHours } = require(`date-fns/addHours`);
