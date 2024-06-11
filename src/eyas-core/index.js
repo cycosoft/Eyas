@@ -194,7 +194,7 @@ function initElectronUi() {
 	$eyasLayer.webContents.loadFile($paths.eyasInterface);
 
 	// set the path to the test source
-	$paths.testSrc = _path.join($roots.config, config().source);
+	$paths.testSrc = config().source;
 
 	// once the Eyas UI layer is ready, attempt navigation
 	$eyasLayer.webContents.on(`did-finish-load`, startAFreshTest);

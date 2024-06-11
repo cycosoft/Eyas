@@ -39,7 +39,7 @@ const actions = {
 // setup
 const path = require(`path`);
 const isDev = process.env.NODE_ENV === `dev`;
-const TEST_SOURCE = `source`;
+const TEST_SOURCE = `data`;
 const consumerRoot = process.cwd();
 const moduleRoot = isDev
 	? consumerRoot
@@ -211,8 +211,8 @@ async function createBuildFolder() {
 	}
 
 	// copy the users source files to the build folder
-	userLog(`Copying user test from ${path.join(consumerRoot, config.source)} to ${paths.testDest}...`);
-	await fs.copy(path.join(consumerRoot, config.source), paths.testDest);
+	userLog(`Copying user test from ${config.source} to ${paths.testDest}...`);
+	await fs.copy(config.source, paths.testDest);
 
 	// write the config file
 	const data = getModifiedConfig();
@@ -227,9 +227,6 @@ function getModifiedConfig() {
 	// create a new config file with the updated values in the build folder
 	userLog(`Creating snapshot of config...`);
 	const configCopy = JSON.parse(JSON.stringify(config));
-
-	// the modified config will only point to TEST_SOURCE
-	configCopy.source = TEST_SOURCE;
 
 	// generate meta data for the build
 	const { execSync } = require(`child_process`);
@@ -300,7 +297,8 @@ async function runCommand_preview(devMode = false) {
 async function runCommand_bundle() {
 	const fs = require(`fs-extra`);
 	const archiver = require(`archiver`);
-	const extract = require('extract-zip');
+	const extract = require(`extract-zip`);
+	const asar = require(`@electron/asar`);
 
 	// if the mac runner exists AND it wasn't already extracted
 	if(fs.existsSync(paths.macRunnerSrcZip) && !fs.existsSync(paths.macRunnerSrc)) {
@@ -319,43 +317,82 @@ async function runCommand_bundle() {
 	// reset the output directory
 	await fs.emptyDir(roots.eyasDist);
 
+	// put the user's test into an asar file with .eyas extension
+	const testSourceDirectory = config.source;
+	const outputSourceDirectory = path.join(roots.eyasDist, `source`);
+	const destinationAsarPath = path.join(roots.eyasDist, `${TEST_SOURCE}.eyas`);
+
+	// create a source/ directory in the output directory
+	await fs.emptyDir(outputSourceDirectory);
+
+	// copy the user's test to the output directory
+	await fs.copy(testSourceDirectory, outputSourceDirectory);
+
+	// save the modifiedConfig to the new source/ directory
+	await fs.writeFile(path.join(outputSourceDirectory, `.eyas.config.js`), modifiedConfig);
+
+	// create an asar file from the source/ directory and store it in the output directory
+	await asar.createPackage(outputSourceDirectory, destinationAsarPath);
+
+	// create an array of promises for the archives
+	const archivePromises = [];
+
 	// loop through the platforms and create the zipped files if enabled
 	platforms.forEach(platform => {
 		// skip if the platform isn't enabled
 		if(!platform.enabled) { return; }
 
-		const artifactName = `${config.title} - ${config.version}.${platform.tag}.zip`;
+		// start a promise for this platform archive process
+		archivePromises.push(
+			new Promise((resolve, reject) => {
+				const artifactName = `${config.title} - ${config.version}.${platform.tag}.zip`;
 
-		// create the zip file
-		const output = fs.createWriteStream(path.join(roots.eyasDist, artifactName));
+				// create the zip file
+				const output = fs.createWriteStream(path.join(roots.eyasDist, artifactName));
 
-		// when the process has completed (Note: listener must be added before the archive is finalized)
-		output.on(`close`, () => {
-			// alert the user
-			userLog(`🎉 File created -> ${artifactName}`);
-		});
+				// when the process has completed (Note: listener must be added before the archive is finalized)
+				output.on(`close`, () => {
+					// alert the user
+					userLog(``);
+					userLog(`🎉 File created -> ${artifactName}`);
 
-		// prepare a new archive
-		const archive = archiver(`zip`, { store: isDev, zlib: { level: 9 } });
+					// resolve the promise
+					resolve();
+				});
 
-		// push content to the archive
-		archive.pipe(output);
+				// prepare a new archive
+				const archive = archiver(`zip`, { store: isDev, zlib: { level: 9 } });
 
-		// add the appropriate runner
-		if(platform.tag === `mac`) {
-			archive.directory(platform.runner, `${names.runner}.${platform.ext}`);
-		} else {
-			archive.file(platform.runner, { name: `${names.runner}.${platform.ext}` });
-		}
+				// push content to the archive
+				archive.pipe(output);
 
-		// add the updated config
-		archive.append(modifiedConfig, { name: `.eyas.config.js` });
+				// add the appropriate runner
+				if(platform.tag === `mac`) {
+					archive.directory(platform.runner, `${names.runner}.${platform.ext}`);
+				} else {
+					archive.file(platform.runner, { name: `${names.runner}.${platform.ext}` });
+				}
 
-		// add the user's test
-		archive.directory(path.join(consumerRoot, config.source), TEST_SOURCE);
+				// add the user's bundled asar test
+				archive.file(destinationAsarPath, { name: `${TEST_SOURCE}.eyas` });
 
-		// close the archive
-		archive.finalize();
+				// close the archive
+				archive.finalize();
+			})
+		);
+	});
+
+	// when all promises have resolved
+	Promise.all(archivePromises).then(async () => {
+		// delete the source/ directory
+		await fs.remove(outputSourceDirectory);
+
+		// delete the asar file
+		await fs.remove(destinationAsarPath);
+
+		// alert the user
+		userLog(``);
+		userLog(`🎉 All files created!`);
 	});
 }
 

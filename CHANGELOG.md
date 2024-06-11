@@ -1,3 +1,7 @@
+# v3.1.0
+
+- Test files and user config are now bundled together in a read-only archive with an `*.eyas` extension. Eyas will automatically load the first archive it finds in the current working directory, with a fallback to previous behavior.
+
 # v3.0.0
 
 - General menu adjustments
