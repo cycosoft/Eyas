@@ -58,7 +58,7 @@ userConfig.meta = userConfig.meta || {};
 
 // configuration merge and validation step
 const eyasConfig = {
-	source: asarPath || userConfig.source || `dist`,
+	source: asarPath || path.resolve(roots.config, userConfig.source || `dist`),
 	domains: validateCustomDomain(userConfig.domain || userConfig.domains),
 	title: (userConfig.title || `Eyas`).trim(),
 	version: (userConfig.version || `${getBranchName()}.${getCommitHash()}` || `Unspecified Version`).trim(),
