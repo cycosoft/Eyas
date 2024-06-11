@@ -14,10 +14,10 @@ const os = require(`os`);
 // setup
 let userConfig = {};
 
-// set the expected path for the user's config
+// set the default path for the user's config (outside of *.eyas)
 let configPath = path.join(roots.config, `.eyas.config.js`);
 
-// check for any *.eyas files at the roots.config level AND get the first one
+// check for any *.eyas files at the roots.config level AND get the first one available
 const testFileName = _fs.readdirSync(roots.config).find(file => file.endsWith(`.eyas`));
 
 // if a file was found
