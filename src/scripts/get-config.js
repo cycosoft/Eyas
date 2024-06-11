@@ -19,6 +19,7 @@ let configPath = path.join(roots.config, `.eyas.config.js`);
 
 // check for any *.eyas files at the roots.config level AND get the first one available
 const testFileName = _fs.readdirSync(roots.config).find(file => file.endsWith(`.eyas`));
+let asarPath = null;
 
 // if a file was found
 if (testFileName) {
@@ -27,13 +28,13 @@ if (testFileName) {
 
 	// define the source and target paths
 	const sourcePath = path.join(roots.config, testFileName);
-	const targetPath = path.join(os.tmpdir(), asarFileName);
+	asarPath = path.join(os.tmpdir(), asarFileName);
 
 	// copy the eyas file to the temp directory with the asar extension
-	_fs.copyFileSync(sourcePath, targetPath);
+	_fs.copyFileSync(sourcePath, asarPath);
 
 	// overwrite the config path
-	configPath = path.join(targetPath, `.eyas.config.js`);
+	configPath = path.join(asarPath, `.eyas.config.js`);
 }
 
 // attempt to load the user's config
@@ -57,7 +58,7 @@ userConfig.meta = userConfig.meta || {};
 
 // configuration merge and validation step
 const eyasConfig = {
-	source: userConfig.source || `dist`,
+	source: asarPath || userConfig.source || `dist`,
 	domains: validateCustomDomain(userConfig.domain || userConfig.domains),
 	title: (userConfig.title || `Eyas`).trim(),
 	version: (userConfig.version || `${getBranchName()}.${getCommitHash()}` || `Unspecified Version`).trim(),
