@@ -211,8 +211,8 @@ async function createBuildFolder() {
 	}
 
 	// copy the users source files to the build folder
-	userLog(`Copying user test from ${path.join(consumerRoot, config.source)} to ${paths.testDest}...`);
-	await fs.copy(path.join(consumerRoot, config.source), paths.testDest);
+	userLog(`Copying user test from ${config.source} to ${paths.testDest}...`);
+	await fs.copy(config.source, paths.testDest);
 
 	// write the config file
 	const data = getModifiedConfig();
@@ -318,7 +318,7 @@ async function runCommand_bundle() {
 	await fs.emptyDir(roots.eyasDist);
 
 	// put the user's test into an asar file with .eyas extension
-	const testSourceDirectory = path.join(consumerRoot, config.source);
+	const testSourceDirectory = config.source;
 	const outputSourceDirectory = path.join(roots.eyasDist, `source`);
 	const destinationAsarPath = path.join(roots.eyasDist, `${TEST_SOURCE}.eyas`);
 
