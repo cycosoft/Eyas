@@ -8,12 +8,22 @@
 const path = require(`path`);
 const { execSync } = require(`child_process`);
 const roots = require(`./get-roots.js`);
+const _fs = require(`fs`);
 
 // setup
 let userConfig = {};
 
 // set the expected path for the user's config
-const configPath = path.join(roots.config, `.eyas.config.js`);
+let configPath = path.join(roots.config, `.eyas.config.js`);
+
+// check for any *.eyas files at the roots.config level AND get the first one
+const testFilePath = _fs.readdirSync(roots.config).find(file => file.endsWith(`.eyas`));
+
+// if a file was found
+if (testFilePath) {
+	// overwrite the config path
+	configPath = path.join(roots.config, testFilePath, `.eyas.config.js`);
+}
 
 // attempt to load the user's config
 try {
