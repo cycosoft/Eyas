@@ -17,12 +17,12 @@ let userConfig = {};
 let configPath = path.join(roots.config, `.eyas.config.js`);
 
 // check for any *.eyas files at the roots.config level AND get the first one
-const testFilePath = _fs.readdirSync(roots.config).find(file => file.endsWith(`.eyas`));
+const testFileName = _fs.readdirSync(roots.config).find(file => file.endsWith(`.eyas`));
 
 // if a file was found
-if (testFilePath) {
+if (testFileName) {
 	// overwrite the config path
-	configPath = path.join(roots.config, testFilePath, `.eyas.config.js`);
+	configPath = path.join(roots.config, testFileName, `.eyas.config.js`);
 }
 
 // attempt to load the user's config
