@@ -4,6 +4,7 @@
 		persistent
 		:width="dialogWidth"
 		@after-enter="pinDialogWidth"
+		@after-leave="hideUi"
 	>
 		<v-card class="pa-3 variables-modal-content">
 			<v-card-text class="pb-0">
@@ -220,6 +221,10 @@ export default {
 
 			// set the width of the dialog + 1 to round up and prevent content jumping
 			this.dialogWidth = document.querySelector(`.variables-modal-content`).offsetWidth + 1;
+		},
+
+		hideUi() {
+			window.eventBridge?.send(`hide-ui`);
 		}
 	}
 }

@@ -173,6 +173,9 @@ function initElectronUi() {
 		icon: $paths.icon
 	});
 
+	// load a default page so the app doesn't start black
+	$appWindow.loadURL('data:text/html,' + encodeURIComponent(`<html><body></body></html>`));
+
 	// track the app launch event
 	trackEvent(MP_EVENTS.core.launch, {
 		$os: $operatingSystem,
@@ -253,9 +256,6 @@ function initEyasListeners() {
 
 	// listen for the user to select an environment
 	ipcMain.on(`environment-selected`, (event, url) => {
-		// hide the Eyas UI layer so the test can be interacted with
-		toggleEyasUI(false);
-
 		// update the test domain
 		$testDomainRaw = url;
 		$testDomain = parseURL(url).toString();
@@ -266,9 +266,6 @@ function initEyasListeners() {
 
 	// listen for the user to launch a link
 	ipcMain.on(`launch-link`, (event, url) => {
-		// hide the Eyas UI layer
-		toggleEyasUI(false);
-
 		// navigate to the requested url
 		navigate(parseURL(url).toString());
 	});
@@ -594,18 +591,11 @@ async function manageAppClose(evt) {
 	// stop the window from closing
 	evt.preventDefault();
 
-	// capture the current page as an image to display as a backdrop to the Eyas UI
-	let screenshot = null;
-	if($operatingSystem !== `win32`) { // not necessary on windows
-		screenshot = await $appWindow.capturePage();
-		screenshot = screenshot.toDataURL();
-	}
-
 	// enable the UI layer
 	toggleEyasUI(true);
 
 	// send a message to the UI to show the exit modal with the captured image
-	$eyasLayer.webContents.send(`modal-exit-visible`, true, screenshot);
+	$eyasLayer.webContents.send(`modal-exit-visible`, true);
 
 	// track that the exit modal is being opened
 	trackEvent(MP_EVENTS.ui.modalExitShown);

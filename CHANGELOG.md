@@ -3,6 +3,7 @@
 - Test files and user config are now bundled together in a read-only archive with an `*.eyas` extension. Eyas will automatically load the first archive it finds in the current working directory, with a fallback to previous behavior.
 - Update to electron@31.0.0
 - Update readme with tip and warnings for production testing.
+- Fix interface modals being visible at incorrect times
 
 # v3.0.0
 
