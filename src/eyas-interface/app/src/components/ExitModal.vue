@@ -55,11 +55,7 @@ export default {
 
 	mounted() {
 		// Listen for messages from the main process
-		window.eventBridge?.receive(`modal-exit-visible`, (value, screenshot) => {
-			if(screenshot){
-				document.body.style.backgroundImage = `url(${screenshot})`;
-			}
-
+		window.eventBridge?.receive(`modal-exit-visible`, value => {
 			this.visible = value;
 		});
 	},
@@ -71,7 +67,6 @@ export default {
 		},
 
 		cancel() {
-			document.body.style.backgroundImage = ``;
 			this.visible = false;
 		},
 
