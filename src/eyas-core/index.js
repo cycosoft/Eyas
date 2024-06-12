@@ -256,9 +256,6 @@ function initEyasListeners() {
 
 	// listen for the user to select an environment
 	ipcMain.on(`environment-selected`, (event, url) => {
-		// hide the Eyas UI layer so the test can be interacted with
-		toggleEyasUI(false);
-
 		// update the test domain
 		$testDomainRaw = url;
 		$testDomain = parseURL(url).toString();
@@ -269,9 +266,6 @@ function initEyasListeners() {
 
 	// listen for the user to launch a link
 	ipcMain.on(`launch-link`, (event, url) => {
-		// hide the Eyas UI layer
-		toggleEyasUI(false);
-
 		// navigate to the requested url
 		navigate(parseURL(url).toString());
 	});

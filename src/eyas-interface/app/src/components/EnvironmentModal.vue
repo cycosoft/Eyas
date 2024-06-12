@@ -3,6 +3,7 @@
 		v-model="visible"
 		persistent
 		width="auto"
+		@after-leave="hideUi"
 	>
 		<v-card class="pa-3">
 			<v-card-text>
@@ -60,6 +61,10 @@ export default {
 		tooltip(domain) {
 			const message = `Set environment title in Eyas config`;
 			return domain.url === domain.title ? message : domain.url;
+		},
+
+		hideUi() {
+			window.eventBridge?.send(`hide-ui`);
 		}
 	}
 }
