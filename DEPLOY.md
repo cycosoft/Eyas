@@ -4,9 +4,9 @@
 * compile .exe -> `npm run compile:win`
 * sign .exe -> `npm run sign:win`
 * verify signature -> `npm run sign:win:verify`
-* send .exe to mac
+* send /dist/runners/Start.exe to mac
 * switch to mac
-* put .exe in dist/
+* put .exe in dist/runners/
 * test -> `npm pack`
 * deploy -> `npm publish`
-* tag the commit with the version -> `git tag -a v3.0.0 -m "v3.0.0"`
+* tag the commit with the version -> `git tag -a v3.1.0 -m "v3.1.0"`
