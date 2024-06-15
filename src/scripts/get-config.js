@@ -27,7 +27,7 @@ asarPath = process.argv.find(arg => arg.endsWith(eyasExtension));
 // if the asarPath still isn't set
 if (!asarPath) {
 	// try looking for sibling *.eyas files
-	siblingFileName = _fs.readdirSync(roots.config).find(file => file.endsWith(eyasExtension));
+	const siblingFileName = _fs.readdirSync(roots.config).find(file => file.endsWith(eyasExtension));
 
 	// if a file was found
 	if (siblingFileName) {
