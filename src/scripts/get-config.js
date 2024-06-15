@@ -46,6 +46,9 @@ if (asarPath) {
 
 	// update the config path to the temp directory
 	configPath = path.join(tempPath, configFileName);
+
+	// update the asar path to the temp directory
+	asarPath = tempPath;
 }
 
 // if the configPath still isn't set
