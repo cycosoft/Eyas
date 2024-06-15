@@ -49,7 +49,7 @@ const paths = {
 			removePackageScripts: true,
 			removePackageKeywords: true,
 			mac: {
-				target: `dir`,
+				target: process.env.PUBLISH_TYPE === `installer` ? `dmg` : `dir`,
 				icon: paths.icon,
 				provisioningProfile: process.env.PROVISIONING_PROFILE_PATH || ``,
 				notarize: {
@@ -57,7 +57,7 @@ const paths = {
 				}
 			},
 			win: {
-				target: `portable`,
+				target: process.env.PUBLISH_TYPE === `installer` ? `msi` : `portable`,
 				icon: paths.icon,
 				signAndEditExecutable: false
 			},
