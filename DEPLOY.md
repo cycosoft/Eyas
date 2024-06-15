@@ -14,7 +14,7 @@
 * tag the commit with the version -> `git tag -a v3.1.0 -m "v3.1.0"`
 
 
-# Updating the Windows installer
+# Updating the installer
 
 * use windows
 * compile .msi -> `npm run compile:win:msi`
