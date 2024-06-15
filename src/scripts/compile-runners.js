@@ -49,7 +49,7 @@ const paths = {
 			removePackageScripts: true,
 			removePackageKeywords: true,
 			mac: {
-				target: `dir`,
+				target: process.env.PUBLISH_TYPE === `installer` ? `pkg` : `dir`,
 				icon: paths.icon,
 				provisioningProfile: process.env.PROVISIONING_PROFILE_PATH || ``,
 				notarize: {
@@ -57,7 +57,7 @@ const paths = {
 				}
 			},
 			win: {
-				target: `portable`,
+				target: process.env.PUBLISH_TYPE === `installer` ? `msi` : `portable`,
 				icon: paths.icon,
 				signAndEditExecutable: false
 			},
@@ -65,7 +65,21 @@ const paths = {
 				target: `AppImage`,
 				icon: paths.icon,
 				category: `Utility`
-			}
+			},
+			msi: {
+				oneClick: true, // unless requested, start simple
+				runAfterFinish: false, // user is likely to start by double clicking *.eyas
+				createDesktopShortcut: true // so the user knows install process finished
+			},
+			pkg: {
+				isRelocatable: false // always install in /Applications
+			},
+			fileAssociations: [
+				{
+					ext: `eyas`,
+					name: `Eyas Test Bundle`
+				}
+			]
 		}
 	});
 
