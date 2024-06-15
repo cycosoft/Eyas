@@ -36,7 +36,7 @@
     "compile:win:exe": "npm run compile:prep && npm run compile:ui && npm run compile:module && npm run compile:runner && npm run compile:cleanup",
     "compile:win:msi": "npm run compile:prep && npm run compile:ui && npm run compile:module && cross-env PUBLISH_TYPE=installer npm run compile:runner",
     "compile:mac:no-sign": "npm run compile:prep && npm run compile:ui && npm run compile:module && npm run compile:runner && npm run compile:mac:copy && npm run compile:cleanup",
-    "compile:mac:installer:no-sign": "npm run compile:prep && npm run compile:ui && npm run compile:module && cross-env PUBLISH_TYPE=installer npm run compile:runner && npm run compile:mac:copy && npm run compile:cleanup",
+    "compile:mac:installer:no-sign": "npm run compile:prep && npm run compile:ui && npm run compile:module && cross-env PUBLISH_TYPE=installer npm run compile:runner",
     "compile:all:no-sign": "npm run compile:prep && npm run compile:ui && npm run compile:module && npm run docker:run && npm run compile:runner && npm run compile:mac:copy && npm run compile:cleanup",
     "_____________SIGNING_____________": "",
     "sign:win": "signtool sign /debug /n \"Open Source Developer, Eric Higginson\" /t http://time.certum.pl/ /fd sha256 /v ./dist/runners/Start.exe",
