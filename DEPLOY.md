@@ -19,3 +19,6 @@
 * use windows
 * compile .msi -> `npm run compile:win:msi`
 * copy from `.runners/Eyas.msi`
+* use MacOS
+* compike .pkg -> `npm run compile:mac:installer`
+* copy from `.runners/Eyas.pkg`
