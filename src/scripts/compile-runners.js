@@ -65,6 +65,11 @@ const paths = {
 				target: `AppImage`,
 				icon: paths.icon,
 				category: `Utility`
+			},
+			msi: {
+				oneClick: true, // unless requested, start simple
+				runAfterFinish: false, // user is likely to start by double clicking *.eyas
+				createDesktopShortcut: true // so the user knows install process finished
 			}
 		}
 	});
