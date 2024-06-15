@@ -70,6 +70,9 @@ const paths = {
 				oneClick: true, // unless requested, start simple
 				runAfterFinish: false, // user is likely to start by double clicking *.eyas
 				createDesktopShortcut: true // so the user knows install process finished
+			},
+			pkg: {
+				isRelocatable: false // always install in /Applications
 			}
 		}
 	});
