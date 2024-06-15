@@ -12,29 +12,46 @@ const _fs = require(`fs`);
 const os = require(`os`);
 
 // setup
+const eyasExtension = `.eyas`;
+const tempFileName = `converted_test.asar`;
+const configFileName = `.eyas.config.js`;
 let userConfig = {};
-
-// set the default path for the user's config (outside of *.eyas)
-let configPath = path.join(roots.config, `.eyas.config.js`);
-
-// check for any *.eyas files at the roots.config level AND get the first one available
-const testFileName = _fs.readdirSync(roots.config).find(file => file.endsWith(`.eyas`));
+let configPath = null;
 let asarPath = null;
 
-// if a file was found
-if (testFileName) {
-	// copy testFileName and change the extension to .asar
-	const asarFileName = `converted_test.asar`;
+/* determine how to auto load the user's test (*.eyas click, sibling *.eyas, or config + directory) */
 
-	// define the source and target paths
-	const sourcePath = path.join(roots.config, testFileName);
-	asarPath = path.join(os.tmpdir(), asarFileName);
+// try getting path from command line argument
+asarPath = process.argv.find(arg => arg.endsWith(eyasExtension));
+
+// if the asarPath still isn't set
+if (!asarPath) {
+	// try looking for sibling *.eyas files
+	siblingFileName = _fs.readdirSync(roots.config).find(file => file.endsWith(eyasExtension));
+
+	// if a file was found
+	if (siblingFileName) {
+		// define the full path to the sibling file
+		asarPath = path.join(roots.config, siblingFileName);
+	}
+}
+
+// if a file was found
+if (asarPath) {
+	// define the full path to the temp file that will be the source for the test
+	const tempPath = path.join(os.tmpdir(), tempFileName);
 
 	// copy the eyas file to the temp directory with the asar extension
-	_fs.copyFileSync(sourcePath, asarPath);
+	_fs.copyFileSync(asarPath, tempPath);
 
-	// overwrite the config path
-	configPath = path.join(asarPath, `.eyas.config.js`);
+	// update the config path to the temp directory
+	configPath = path.join(tempPath, configFileName);
+}
+
+// if the configPath still isn't set
+if (!configPath) {
+	// default to looking for a config file in the same directory as the runner
+	configPath = path.join(roots.config, configFileName);
 }
 
 // attempt to load the user's config
