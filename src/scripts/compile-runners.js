@@ -49,7 +49,7 @@ const paths = {
 			removePackageScripts: true,
 			removePackageKeywords: true,
 			mac: {
-				target: process.env.PUBLISH_TYPE === `installer` ? `dmg` : `dir`,
+				target: process.env.PUBLISH_TYPE === `installer` ? `pkg` : `dir`,
 				icon: paths.icon,
 				provisioningProfile: process.env.PROVISIONING_PROFILE_PATH || ``,
 				notarize: {
