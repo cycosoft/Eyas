@@ -73,7 +73,13 @@ const paths = {
 			},
 			pkg: {
 				isRelocatable: false // always install in /Applications
-			}
+			},
+			fileAssociations: [
+				{
+					ext: `eyas`,
+					name: `Eyas Test Bundle`
+				}
+			]
 		}
 	});
 
