@@ -13,7 +13,8 @@ const runnersRoot = path.join(consumerRoot, `.runners`);
 const distRoot = path.join(consumerRoot, `dist`);
 const paths = {
 	icon: path.join(buildRoot, `eyas-assets`, `eyas-logo.png`),
-	iconDb: path.join(`eyas-assets`, `eyas.ico`)
+	iconDbWin: path.join(buildROot, `eyas-assets`, `eyas-db.ico`),
+	iconDbMac: path.join(buildRoot, `eyas-assets`, `eyas-db.icns`)
 };
 
 // Entry Point
@@ -78,8 +79,8 @@ const paths = {
 			fileAssociations: [
 				{
 					ext: `eyas`,
-					name: `Eyas Test Bundle`,
-					icon: `.build/eyas-assets/eyas.ico`
+					name: `eyas-db`,
+					icon: process.platform === `win32` ? paths.iconDbWin : paths.iconDbMac
 				}
 			]
 		}
