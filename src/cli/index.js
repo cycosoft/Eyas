@@ -71,7 +71,6 @@ const paths = {
 	packageJsonDest: path.join(roots.eyasBuild, names.packageJson),
 	scriptsSrc: path.join(roots.dist, names.scripts),
 	scriptsDest: path.join(roots.eyasBuild, names.scripts),
-	icon: path.join(roots.eyasBuild, `eyas-assets`, `eyas-logo.png`),
 	eyasRunnerWinSrc: path.join(roots.dist, `runners`, `${names.runner}.exe`),
 	eyasRunnerWinDest: path.join(roots.eyasBuild, `${names.runner}.exe`),
 	macRunnerSrcZip: path.join(roots.dist, `runners`, `${names.runner}.app.zip`),
