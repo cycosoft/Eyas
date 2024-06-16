@@ -114,9 +114,6 @@ if (!eyasConfig.outputs.windows && !eyasConfig.outputs.mac && !eyasConfig.output
 // TEMPORARY OVERRIDE - never allow linux
 eyasConfig.outputs.linux = false;
 
-// export the config for the project
-module.exports = eyasConfig;
-
 // validate the user input for the custom domain
 function validateCustomDomain(input) {
 	// default to an empty array
@@ -212,3 +209,6 @@ function getPreviewExpiration() {
 	const now = new Date();
 	return addHours(now, 1);
 }
+
+// export the config for the project
+module.exports = eyasConfig;
