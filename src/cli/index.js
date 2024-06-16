@@ -80,8 +80,8 @@ const paths = {
 	linuxRunnerDest: path.join(roots.eyasBuild, `${names.runner}.AppImage`)
 };
 
-// set mode
-actions.previewDev.enabled = isDev;
+// set mode (disabled for now)
+// actions.previewDev.enabled = isDev;
 
 // load the user's config
 const parseConfig = require(paths.configLoader);
