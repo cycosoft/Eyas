@@ -32,7 +32,7 @@ const paths = {
 	// if(config.outputs.linux) { targets.push(builder.Platform.LINUX); }
 
 	// set the name of the output files
-	const runnerName = `Eyas`;
+	const runnerName = `Eyas${process.env.PUBLISH_TYPE === `installer` && `Installer`}`;
 
 	const builtFiles = await builder.build({
 		targets: targets.length ? builder.createTargets(targets) : null,
