@@ -15,66 +15,77 @@ const os = require(`os`);
 const eyasExtension = `.eyas`;
 const tempFileName = `converted_test.asar`;
 const configFileName = `.eyas.config.js`;
-let userConfig = {};
+let userConfig = { outputs: {}, meta: {} };
 let configPath = null;
 let asarPath = null;
 
-/* determine how to auto load the user's test (*.eyas click, sibling *.eyas, or config + directory) */
+// sets the default configuration based on selected config
+function parseConfig(requestedEyasPath) {
+	// load a test
+	loadConfig(requestedEyasPath);
 
-// try getting path from command line argument
-asarPath = process.argv.find(arg => arg.endsWith(eyasExtension));
+	return {};
+}
 
-// if the asarPath still isn't set
-if (!asarPath) {
-	// try looking for sibling *.eyas files
-	const siblingFileName = _fs.readdirSync(roots.config).find(file => file.endsWith(eyasExtension));
+// determine how to auto load the user's test (*.eyas click, sibling *.eyas, or config + directory)
+function loadConfig(requestedEyasPath) {
+	// set path to the requested eyas file first
+	asarPath = requestedEyasPath;
 
-	// if a file was found
-	if (siblingFileName) {
-		// define the full path to the sibling file
-		asarPath = path.join(roots.config, siblingFileName);
+	// if not set
+	if (!asarPath) {
+		// try getting path from command line argument
+		asarPath = process.argv.find(arg => arg.endsWith(eyasExtension));
+	}
+
+	// if the asarPath still isn't set
+	if (!asarPath) {
+		// try looking for sibling *.eyas files
+		const siblingFileName = _fs.readdirSync(roots.config).find(file => file.endsWith(eyasExtension));
+
+		// if a file was found
+		if (siblingFileName) {
+			// define the full path to the sibling file
+			asarPath = path.join(roots.config, siblingFileName);
+		}
+	}
+
+	// if a file was set
+	if (asarPath) {
+		// define the full path to the temp file that will be the source for the test
+		const tempPath = path.join(os.tmpdir(), tempFileName);
+
+		// copy the eyas file to the temp directory with the asar extension
+		_fs.copyFileSync(asarPath, tempPath);
+
+		// update the config path to the temp directory
+		configPath = path.join(tempPath, configFileName);
+
+		// update the asar path to the temp directory
+		asarPath = tempPath;
+	}
+
+	// if the configPath never got set
+	if (!configPath) {
+		// default to looking for a config file in the same directory as the runner
+		configPath = path.join(roots.config, configFileName);
+	}
+
+	// attempt to load the user's config
+	try {
+		userConfig = require(configPath);
+	} catch (error) {
+		console.warn(``);
+		console.warn(`⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️`);
+		console.warn(`------ UNABLE TO LOAD USER SETTINGS ------`);
+		console.warn(`-------- proceeding with defaults --------`);
+		console.log(``);
+		console.error(error);
+		console.log(``);
+		console.warn(`⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️`);
+		console.log(``);
 	}
 }
-
-// if a file was found
-if (asarPath) {
-	// define the full path to the temp file that will be the source for the test
-	const tempPath = path.join(os.tmpdir(), tempFileName);
-
-	// copy the eyas file to the temp directory with the asar extension
-	_fs.copyFileSync(asarPath, tempPath);
-
-	// update the config path to the temp directory
-	configPath = path.join(tempPath, configFileName);
-
-	// update the asar path to the temp directory
-	asarPath = tempPath;
-}
-
-// if the configPath still isn't set
-if (!configPath) {
-	// default to looking for a config file in the same directory as the runner
-	configPath = path.join(roots.config, configFileName);
-}
-
-// attempt to load the user's config
-try {
-	userConfig = require(configPath);
-} catch (error) {
-	console.warn(``);
-	console.warn(`⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️`);
-	console.warn(`------ UNABLE TO LOAD USER SETTINGS ------`);
-	console.warn(`-------- proceeding with defaults --------`);
-	console.log(``);
-	console.error(error);
-	console.log(``);
-	console.warn(`⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️`);
-	console.log(``);
-}
-
-// error checking for config
-userConfig.outputs = userConfig.outputs || {};
-userConfig.meta = userConfig.meta || {};
 
 // configuration merge and validation step
 const eyasConfig = {
@@ -211,4 +222,4 @@ function getPreviewExpiration() {
 }
 
 // export the config for the project
-module.exports = eyasConfig;
+module.exports = parseConfig();
