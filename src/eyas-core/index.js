@@ -27,12 +27,13 @@ let $eyasLayer = null;
 let $testServer = null;
 let $testDomainRaw = null;
 let $testDomain = `eyas://local.test`;
-const $currentViewport = [];
-const $allViewports = [
+const $defaultViewports = [
 	{ isDefault: true, label: `Desktop`, width: 1366, height: 768 },
 	{ isDefault: true, label: `Tablet`, width: 768, height: 1024 },
 	{ isDefault: true, label: `Mobile`, width: 360, height: 640 }
 ];
+const $allViewports = [];
+const $currentViewport = [];
 const $roots = require(_path.join(__dirname, `scripts`, `get-roots.js`));
 const $paths = {
 	icon: _path.join($roots.eyas, `eyas-assets`, `eyas-logo.png`),
@@ -169,12 +170,9 @@ function initElectronUi() {
 	// imports
 	const { BrowserView } = require(`electron`);
 
-	// add test defined viewports to the front of the list
-	$allViewports.unshift(...config().viewports);
-
 	// set the current viewport to the first viewport in the list
-	$currentViewport[0] = $allViewports[0].width;
-	$currentViewport[1] = $allViewports[0].height;
+	$currentViewport[0] = $defaultViewports[0].width;
+	$currentViewport[1] = $defaultViewports[0].height;
 
 	// Create the app window for this instance
 	$appWindow = new _electronWindow({
@@ -208,14 +206,8 @@ function initElectronUi() {
 	$eyasLayer.setAutoResize({ width: true, height: true });
 	$eyasLayer.webContents.loadFile($paths.eyasInterface);
 
-	// set the path to the test source
-	$paths.testSrc = config().source;
-
 	// once the Eyas UI layer is ready, attempt navigation
 	$eyasLayer.webContents.on(`did-finish-load`, startAFreshTest);
-
-	// Set the application menu
-	setMenu();
 }
 
 // initialize the Electron listeners
@@ -764,6 +756,20 @@ async function startAFreshTest() {
 	// clear all caches for the session
 	await $appWindow.webContents.session.clearCache(); // web cache
 	await $appWindow.webContents.session.clearStorageData(); // cookies, filesystem, indexdb, localstorage, shadercache, websql, serviceworkers, cachestorage
+
+	// set the available viewports
+	$allViewports = [...config().viewports, ...$defaultViewports];
+
+	// reset the current viewport to the first in the list
+	$currentViewport[0] = $allViewports[0].width;
+	$currentViewport[1] = $allViewports[0].height;
+	$appWindow.setContentSize($currentViewport[0], $currentViewport[1])
+
+	// Set the application menu
+	setMenu();
+
+	// reset the path to the test source
+	$paths.testSrc = config().source;
 
 	// if there are no custom domains defined
 	if (!config().domains.length) {
