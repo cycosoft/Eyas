@@ -15,7 +15,7 @@ const os = require(`os`);
 const eyasExtension = `.eyas`;
 const tempFileName = `converted_test.asar`;
 const configFileName = `.eyas.config.js`;
-let userConfig = { outputs: {}, meta: {} };
+let userConfig = {};
 let configPath = null;
 let asarPath = null;
 
@@ -23,6 +23,9 @@ let asarPath = null;
 function parseConfig(requestedEyasPath) {
 	// load a test
 	loadConfig(requestedEyasPath);
+
+	userConfig.outputs = userConfig.outputs || {};
+	userConfig.meta = userConfig.meta || {};
 
 	// configuration merge and validation step
 	const eyasConfig = {
