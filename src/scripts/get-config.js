@@ -222,4 +222,4 @@ function getPreviewExpiration() {
 }
 
 // export the config for the project
-module.exports = parseConfig();
+module.exports = parseConfig;
