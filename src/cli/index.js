@@ -85,7 +85,8 @@ const paths = {
 actions.previewDev.enabled = isDev;
 
 // load the user's config
-const config = require(paths.configLoader);
+const parseConfig = require(paths.configLoader);
+const config = parseConfig();
 
 // Entry Point
 (async () => {

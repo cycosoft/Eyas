@@ -27,12 +27,13 @@ let $eyasLayer = null;
 let $testServer = null;
 let $testDomainRaw = null;
 let $testDomain = `eyas://local.test`;
-const $currentViewport = [];
-const $allViewports = [
+const $defaultViewports = [
 	{ isDefault: true, label: `Desktop`, width: 1366, height: 768 },
 	{ isDefault: true, label: `Tablet`, width: 768, height: 1024 },
 	{ isDefault: true, label: `Mobile`, width: 360, height: 640 }
 ];
+let $allViewports = [];
+const $currentViewport = [];
 const $roots = require(_path.join(__dirname, `scripts`, `get-roots.js`));
 const $paths = {
 	icon: _path.join($roots.eyas, `eyas-assets`, `eyas-logo.png`),
@@ -128,6 +129,18 @@ initElectronCore();
 
 // start the core of the application
 function initElectronCore() {
+	// detect if the app was opened with a file (MacOS only)
+	_electronCore.on(`open-file`, (event, path) => {
+		// ensure the correct file type is being opened
+		if(path.endsWith(`.eyas`)){
+			// reload the config based on the new path
+			config(path);
+
+			// start a new test based on the newly loaded config
+			startAFreshTest();
+		}
+	});
+
 	// add support for eyas:// protocol
 	registerCustomProtocol();
 
@@ -157,12 +170,9 @@ function initElectronUi() {
 	// imports
 	const { BrowserView } = require(`electron`);
 
-	// add test defined viewports to the front of the list
-	$allViewports.unshift(...config().viewports);
-
 	// set the current viewport to the first viewport in the list
-	$currentViewport[0] = $allViewports[0].width;
-	$currentViewport[1] = $allViewports[0].height;
+	$currentViewport[0] = $defaultViewports[0].width;
+	$currentViewport[1] = $defaultViewports[0].height;
 
 	// Create the app window for this instance
 	$appWindow = new _electronWindow({
@@ -196,14 +206,8 @@ function initElectronUi() {
 	$eyasLayer.setAutoResize({ width: true, height: true });
 	$eyasLayer.webContents.loadFile($paths.eyasInterface);
 
-	// set the path to the test source
-	$paths.testSrc = config().source;
-
 	// once the Eyas UI layer is ready, attempt navigation
 	$eyasLayer.webContents.on(`did-finish-load`, startAFreshTest);
-
-	// Set the application menu
-	setMenu();
 }
 
 // initialize the Electron listeners
@@ -317,9 +321,21 @@ function checkTestExpiration () {
 }
 
 // returns the current test's config
-function config() {
-	// use the cache OR load the config
-	config.cache = config.cache || require($paths.configLoader);
+function config(eyasPath) {
+	// import the config loader
+	const parseConfig = require($paths.configLoader);
+
+	// if a path was passed
+	if (eyasPath) {
+		// request config from the new path
+		config.cache = parseConfig(eyasPath);
+	}
+
+	// if no path set
+	else {
+		// use the cache OR load the config using default methods
+		config.cache = config.cache || parseConfig();
+	}
 
 	// return the config
 	return config.cache;
@@ -447,7 +463,7 @@ function setMenu () {
 				click: () => navigate()
 			},
 			{
-				label: `🧪 New Test (clear cache 🚿)`,
+				label: `🧪 Reset Test (clear cache 🚿)`,
 				click: () => startAFreshTest()
 			},
 			// { type: `separator` },
@@ -740,6 +756,20 @@ async function startAFreshTest() {
 	// clear all caches for the session
 	await $appWindow.webContents.session.clearCache(); // web cache
 	await $appWindow.webContents.session.clearStorageData(); // cookies, filesystem, indexdb, localstorage, shadercache, websql, serviceworkers, cachestorage
+
+	// set the available viewports
+	$allViewports = [...config().viewports, ...$defaultViewports];
+
+	// reset the current viewport to the first in the list
+	$currentViewport[0] = $allViewports[0].width;
+	$currentViewport[1] = $allViewports[0].height;
+	$appWindow.setContentSize($currentViewport[0], $currentViewport[1])
+
+	// Set the application menu
+	setMenu();
+
+	// reset the path to the test source
+	$paths.testSrc = config().source;
 
 	// if there are no custom domains defined
 	if (!config().domains.length) {
