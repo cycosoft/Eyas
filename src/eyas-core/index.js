@@ -128,6 +128,18 @@ initElectronCore();
 
 // start the core of the application
 function initElectronCore() {
+	// detect if the app was opened with a file (MacOS only)
+	_electronCore.on(`open-file`, (event, path) => {
+		// ensure the correct file type is being opened
+		if(path.endsWith(`.eyas`)){
+			// reload the config based on the new path
+			config(path);
+
+			// start a new test based on the newly loaded config
+			startAFreshTest();
+		}
+	});
+
 	// add support for eyas:// protocol
 	registerCustomProtocol();
 
