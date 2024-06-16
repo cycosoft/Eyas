@@ -471,7 +471,7 @@ function setMenu () {
 				click: () => navigate()
 			},
 			{
-				label: `🧪 New Test (clear cache 🚿)`,
+				label: `🧪 Reset Test (clear cache 🚿)`,
 				click: () => startAFreshTest()
 			},
 			// { type: `separator` },
