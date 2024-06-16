@@ -33,6 +33,13 @@ const actions = {
 		description: `Generate a zipped output for distribution`,
 		command: `bundle`,
 		action: runCommand_bundle
+	},
+	db: {
+		enabled: true,
+		label: `Database`,
+		description: `Generate an *.eyas file`,
+		command: `db`,
+		action: () => { /* eslint-disable-next-line no-console */ console.log(`db command disabled`); }
 	}
 };
 
