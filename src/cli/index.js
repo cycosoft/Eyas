@@ -32,7 +32,7 @@ const actions = {
 		label: `Generate an *.eyas file (smaller)`,
 		description: `For use with installed versions of Eyas`,
 		command: `db`,
-		action: () => { /* eslint-disable-next-line no-console */ console.log(`db command disabled`); }
+		action: runCommand_db
 	},
 	bundle: {
 		enabled: true,
@@ -300,6 +300,38 @@ async function runCommand_preview(devMode = false) {
 	userLog();
 }
 
+// generate a db output for distribution
+async function runCommand_db() {
+	const fs = require(`fs-extra`);
+	const asar = require(`@electron/asar`);
+
+	// get the test's config and prepare it for the build
+	const modifiedConfig = getModifiedConfig();
+
+	// reset the output directory
+	await fs.emptyDir(roots.eyasDist);
+
+	// put the user's test into an asar file with .eyas extension
+	const testSourceDirectory = config.source;
+	const outputSourceDirectory = path.join(roots.eyasDist, `source`);
+	const destinationAsarPath = path.join(roots.eyasDist, `${TEST_SOURCE}.eyas`);
+
+	// create a source/ directory in the output directory
+	await fs.emptyDir(outputSourceDirectory);
+
+	// copy the user's test to the output directory
+	await fs.copy(testSourceDirectory, outputSourceDirectory);
+
+	// save the modifiedConfig to the new source/ directory
+	await fs.writeFile(path.join(outputSourceDirectory, `.eyas.config.js`), modifiedConfig);
+
+	// create an asar file from the source/ directory and store it in the output directory
+	await asar.createPackage(outputSourceDirectory, destinationAsarPath);
+
+	userLog(``);
+	userLog(`🎉 File created -> ${artifactName}`);
+}
+
 // generate a zipped output for distribution
 async function runCommand_bundle() {
 	const fs = require(`fs-extra`);
@@ -313,8 +345,10 @@ async function runCommand_bundle() {
 		await extract(paths.macRunnerSrcZip, { dir: path.join(roots.dist, `runners`) });
 	}
 
-	// setup the platform output
+	// get the test's config and prepare it for the build
 	const modifiedConfig = getModifiedConfig();
+
+	// setup the platform output
 	const platforms = [
 		{ enabled: config.outputs.windows, ext: `exe`, runner: paths.eyasRunnerWinSrc, tag: `win` },
 		{ enabled: config.outputs.mac, ext: `app`, runner: paths.macRunnerSrc, tag: `mac` },
