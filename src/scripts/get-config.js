@@ -62,7 +62,7 @@ function parseConfig(requestedEyasPath) {
 	// TEMPORARY OVERRIDE - never allow linux
 	eyasConfig.outputs.linux = false;
 
-	return {};
+	return eyasConfig;
 }
 
 // determine how to auto load the user's test (*.eyas click, sibling *.eyas, or config + directory)
