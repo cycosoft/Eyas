@@ -24,6 +24,44 @@ function parseConfig(requestedEyasPath) {
 	// load a test
 	loadConfig(requestedEyasPath);
 
+	// configuration merge and validation step
+	const eyasConfig = {
+		source: asarPath || path.resolve(roots.config, userConfig.source || `dist`),
+		domains: validateCustomDomain(userConfig.domain || userConfig.domains),
+		title: (userConfig.title || `Eyas`).trim(),
+		version: (userConfig.version || `${getBranchName()}.${getCommitHash()}` || `Unspecified Version`).trim(),
+		viewports: userConfig.viewports || [/* { label: ``, width: 0, height: 0 } */],
+		links: userConfig.links || [/* { label: ``, url: `` } */],
+
+		outputs: {
+			// platform
+			windows: userConfig.outputs.windows || false,
+			mac: userConfig.outputs.mac || false,
+			linux: userConfig.outputs.linux || false,
+
+			// options
+			expires: validateExpiration(userConfig.outputs.expires) // hours
+		},
+
+		meta: {
+			expires: userConfig.meta.expires || getPreviewExpiration(),
+			gitBranch: userConfig.meta.gitBranch || `Preview`,
+			gitHash: userConfig.meta.gitHash || `Preview`,
+			gitUser: userConfig.meta.gitUser || `Preview`,
+			compiled: userConfig.meta.compiled || new Date()
+		}
+	};
+
+	// set the default platform if none are specified
+	if (!eyasConfig.outputs.windows && !eyasConfig.outputs.mac && !eyasConfig.outputs.linux) {
+		if(process.platform === `win32`) { eyasConfig.outputs.windows = true; }
+		if(process.platform === `darwin`) { eyasConfig.outputs.mac = true; }
+		if(process.platform === `linux`) { eyasConfig.outputs.linux = true; }
+	}
+
+	// TEMPORARY OVERRIDE - never allow linux
+	eyasConfig.outputs.linux = false;
+
 	return {};
 }
 
@@ -86,44 +124,6 @@ function loadConfig(requestedEyasPath) {
 		console.log(``);
 	}
 }
-
-// configuration merge and validation step
-const eyasConfig = {
-	source: asarPath || path.resolve(roots.config, userConfig.source || `dist`),
-	domains: validateCustomDomain(userConfig.domain || userConfig.domains),
-	title: (userConfig.title || `Eyas`).trim(),
-	version: (userConfig.version || `${getBranchName()}.${getCommitHash()}` || `Unspecified Version`).trim(),
-	viewports: userConfig.viewports || [/* { label: ``, width: 0, height: 0 } */],
-	links: userConfig.links || [/* { label: ``, url: `` } */],
-
-	outputs: {
-		// platform
-		windows: userConfig.outputs.windows || false,
-		mac: userConfig.outputs.mac || false,
-		linux: userConfig.outputs.linux || false,
-
-		// options
-		expires: validateExpiration(userConfig.outputs.expires) // hours
-	},
-
-	meta: {
-		expires: userConfig.meta.expires || getPreviewExpiration(),
-		gitBranch: userConfig.meta.gitBranch || `Preview`,
-		gitHash: userConfig.meta.gitHash || `Preview`,
-		gitUser: userConfig.meta.gitUser || `Preview`,
-		compiled: userConfig.meta.compiled || new Date()
-	}
-};
-
-// set the default platform if none are specified
-if (!eyasConfig.outputs.windows && !eyasConfig.outputs.mac && !eyasConfig.outputs.linux) {
-	if(process.platform === `win32`) { eyasConfig.outputs.windows = true; }
-	if(process.platform === `darwin`) { eyasConfig.outputs.mac = true; }
-	if(process.platform === `linux`) { eyasConfig.outputs.linux = true; }
-}
-
-// TEMPORARY OVERRIDE - never allow linux
-eyasConfig.outputs.linux = false;
 
 // validate the user input for the custom domain
 function validateCustomDomain(input) {
