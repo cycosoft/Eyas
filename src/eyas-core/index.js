@@ -32,7 +32,7 @@ const $defaultViewports = [
 	{ isDefault: true, label: `Tablet`, width: 768, height: 1024 },
 	{ isDefault: true, label: `Mobile`, width: 360, height: 640 }
 ];
-const $allViewports = [];
+let $allViewports = [];
 const $currentViewport = [];
 const $roots = require(_path.join(__dirname, `scripts`, `get-roots.js`));
 const $paths = {
