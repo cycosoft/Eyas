@@ -27,19 +27,19 @@ const actions = {
 		command: `preview`,
 		action: runCommand_preview
 	},
-	bundle: {
-		enabled: true,
-		label: `Bundle`,
-		description: `Generate a zipped output for distribution`,
-		command: `bundle`,
-		action: runCommand_bundle
-	},
 	db: {
 		enabled: true,
-		label: `Database`,
-		description: `Generate an *.eyas file`,
+		label: `Generate an *.eyas file (smaller)`,
+		description: `For use with installed versions of Eyas`,
 		command: `db`,
 		action: () => { /* eslint-disable-next-line no-console */ console.log(`db command disabled`); }
+	},
+	bundle: {
+		enabled: true,
+		label: `Generate shareable zip of *.eyas file and runner (larger)`,
+		description: `Does not need Eyas installed to run the test`,
+		command: `bundle`,
+		action: runCommand_bundle
 	}
 };
 
