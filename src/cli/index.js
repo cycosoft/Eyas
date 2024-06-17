@@ -312,9 +312,10 @@ async function runCommand_db() {
 	await fs.emptyDir(roots.eyasDist);
 
 	// put the user's test into an asar file with .eyas extension
+	const artifactName = `${config.title} - ${config.version}.eyas`;
 	const testSourceDirectory = config.source;
 	const outputSourceDirectory = path.join(roots.eyasDist, `source`);
-	const destinationAsarPath = path.join(roots.eyasDist, `${TEST_SOURCE}.eyas`);
+	const destinationAsarPath = path.join(roots.eyasDist, artifactName);
 
 	// create a source/ directory in the output directory
 	await fs.emptyDir(outputSourceDirectory);
