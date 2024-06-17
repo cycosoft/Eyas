@@ -329,6 +329,9 @@ async function runCommand_db() {
 	// create an asar file from the source/ directory and store it in the output directory
 	await asar.createPackage(outputSourceDirectory, destinationAsarPath);
 
+	// delete the source/ directory
+	await fs.remove(outputSourceDirectory);
+
 	userLog(``);
 	userLog(`🎉 File created -> ${artifactName}`);
 }
