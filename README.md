@@ -67,10 +67,10 @@ module.exports = {
   version: `<current-branch>.<current-commit>`,
   // Additional screen sizes to test your application at
   viewports: [/* { label: `iPad Pro`, width: 1024, height: 1366 } */],
-  // Custom links to display in the menu with support for variable input (external opens directly in browser)
+  // Custom items for link menu with support for getting user input
   links: [/*
-    { label: `Cycosoft, LLC`, url: `cycosoft.com`, external: true },
-    { label: `Variables Demo`, url: `{testdomain}?id={int}&message={str}&enabled={bool}&list={item1|item2|}` }
+    { label: `Cycosoft, LLC`, url: `cycosoft.com`, external: true (open in browser) },
+    { label: `Variables Demo`, url: `{testdomain}?id={int}&msg={str}&go={bool}&list={item1|item2|}` }
   */]
   // File outputs
   outputs: {
@@ -91,18 +91,30 @@ module.exports = {
 npm run build-my-project && npx eyas bundle
 ```
 
+```bash
+# Generates an Eyas test database
+npm run build-my-project && npx eyas db
+```
+
 ## Outputs
 
-- `bundle`: Packages consumer source code for each enabled platform to `./eyas-dist/`
-
-All outputs are zipped, and can have a base range between 60-100mb depending on the platform.
+- `db`: Creates an `*.eyas` file of project production output + test config
+  - Requires end user to have Eyas installed
+  - Outputs to `./eyas-dist/`
+  - About the size of the project production output
+  - Recommended for end-users who do frequent testing (e.g. internal team)
+- `bundle`: Packages project production output, test config & Eyas for each enabled platform
+  - Does not require Eyas to be installed
+  - Outputs to `./eyas-dist/${title} - ${version}.${platform}.zip`
+  - 60mb - 100mb range
+  - Recommended for one-off testing (e.g. customers)
 
 ## Tips
 
 - Add `.eyas-*` and `eyas-*` to your `.gitignore` to prevent outputs from being committed to your repo
 <!-- - If your app is using a custom domain and you'd like to test it in your browser via Eyas, you will need to add the domain to your `etc/hosts` file. See [this guide](https://www.ephost.com/account/index.php/knowledgebase/232/How-to-edit-your-Host-file.html) (no affiliation) for more information. -->
 - View documented changes at [CHANGELOG.md](CHANGELOG.md)
-- While Eyas is intended to be used for testing in lower environments, testing fixes against production can be incredibly valuable when working directly with customers. It is advisable to use short time limits in these cases, and _very importantly_ that your test is branched *only* from commits currently in production.
+- While Eyas is intended to be used for testing in lower environments, testing fixes against production can be incredibly valuable when working directly with customers. It is advisable to use day-of time limits in these cases, and _very importantly_ that your test is branched *only* from the commit currently in production.
 
 ## The Fine Print
 

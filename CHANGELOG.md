@@ -1,9 +1,10 @@
 # v3.2.0
 
-- Add ability to generate `.msi` and `.pkg` installers for module developer
 - Rename menu item "New Test" to "Reset Test"
-- Can now launch installed versions of Eyas by clicking on a bundled *.eyas file
-- Refactor how config files are loaded (file via click, sibling file to runner, or via sibling config + defined source)
+- Add ability to generate `.msi` and `.pkg` installers (module development)
+- Associated `*.eyas` files with installed version of Eyas
+- Refactor config load order (via user click, sibling *.eyas to runner, or via sibling config + defined source)
+- Allow CLI to generate just *.eyas files without bundling a runner
 
 # v3.1.0
 
