@@ -43,7 +43,6 @@
     "sign:win": "signtool sign /debug /n \"Open Source Developer, Eric Higginson\" /t http://time.certum.pl/ /fd sha256 /v ./dist/runners/Start.exe",
     "sign:win:verify": "signtool verify /pa ./dist/runners/Start.exe",
     "sign:mac:verify": "codesign -dvvv ./.runners/mac-arm64/Eyas.app",
-    "sign:mac:pkg:verify": "codesign -dvvv ./.runners/mac-arm64/Eyas.app",
     "notarize:zip": "ditto -c -k --sequesterRsrc --keepParent ./.runners/mac-arm64/Eyas.app ./.runners/mac-arm64/Eyas-for-notary.zip",
     "notarize": "xcrun notarytool submit ./.runners/mac-arm64/Eyas-for-notary.zip --keychain-profile \"Eyas\" --wait",
     "notarize:pkg:output": "xcrun notarytool submit ./.runners/EyasInstaller.pkg --keychain-profile \"Eyas\" --wait",
