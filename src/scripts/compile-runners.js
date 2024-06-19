@@ -53,7 +53,10 @@ const paths = {
 			mac: {
 				target: process.env.PUBLISH_TYPE === `installer` ? `pkg` : `dir`,
 				icon: paths.icon,
-				provisioningProfile: process.env.PROVISIONING_PROFILE_PATH || ``
+				provisioningProfile: process.env.PROVISIONING_PROFILE_PATH || ``,
+				// notarize: {
+				// 	teamId: process.env.APPLE_TEAM_ID || ``
+				// }
 			},
 			win: {
 				target: process.env.PUBLISH_TYPE === `installer` ? `msi` : `portable`,
