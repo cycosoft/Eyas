@@ -54,9 +54,8 @@ const paths = {
 				target: process.env.PUBLISH_TYPE === `installer` ? `pkg` : `dir`,
 				icon: paths.icon,
 				provisioningProfile: process.env.PROVISIONING_PROFILE_PATH || ``,
-				notarize: isDev
-					? false
-					: { teamId: process.env.APPLE_TEAM_ID || `` }
+				...isDev ? { identity: null } : {}, // don't sign in dev
+				notarize: { teamId: process.env.APPLE_TEAM_ID || `` }
 			},
 			win: {
 				target: process.env.PUBLISH_TYPE === `installer` ? `msi` : `portable`,
