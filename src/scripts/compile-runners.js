@@ -7,6 +7,9 @@
 require('dotenv').config({ path: [`.env.local`, `.env`] })
 const path = require(`path`);
 const isDev = process.env.NODE_ENV === `dev`;
+const isInstaller = process.env.PUBLISH_TYPE === `installer`;
+const isMac = process.platform === `darwin`;
+const isWin = process.platform === `win32`;
 const consumerRoot = process.cwd();
 const buildRoot = path.join(consumerRoot, `.build`);
 const runnersRoot = path.join(consumerRoot, `.runners`);
@@ -25,11 +28,11 @@ const paths = {
 
 	// Determine the executables to build
 	const targets = [];
-	if(process.platform === `win32` || process.env.FORCE_BUILD === `win32`) {
+	if(isWin || process.env.FORCE_BUILD === `win32`) {
 		targets.push(builder.Platform.WINDOWS);
 	}
 
-	if(process.platform === `darwin`) { targets.push(builder.Platform.MAC); }
+	if(isMac) { targets.push(builder.Platform.MAC); }
 	// if(config.outputs.linux) { targets.push(builder.Platform.LINUX); }
 
 	// set the name of the output files
@@ -52,14 +55,14 @@ const paths = {
 			removePackageScripts: true,
 			removePackageKeywords: true,
 			mac: {
-				target: process.env.PUBLISH_TYPE === `installer` ? `pkg` : `dir`,
+				target: isInstaller ? `pkg` : `dir`,
 				icon: paths.icon,
 				provisioningProfile: process.env.PROVISIONING_PROFILE_PATH || ``,
 				...isDev ? { identity: null } : {}, // don't sign in dev
 				notarize: { teamId: process.env.APPLE_TEAM_ID || `` }
 			},
 			win: {
-				target: process.env.PUBLISH_TYPE === `installer` ? `msi` : `portable`,
+				target: isInstaller ? `msi` : `portable`,
 				icon: paths.icon,
 				sign: isDev ? null : paths.codesignWin
 			},
@@ -80,7 +83,7 @@ const paths = {
 				{
 					ext: `eyas`,
 					name: `eyas-db`,
-					icon: process.platform === `win32` ? paths.iconDbWin : paths.iconDbMac
+					icon: isWin ? paths.iconDbWin : paths.iconDbMac
 				}
 			]
 		}
