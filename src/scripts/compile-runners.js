@@ -4,9 +4,12 @@
 
 'use strict';
 
-require(`dotenv`).config();
+require('dotenv').config({ path: [`.env.local`, `.env`] })
 const path = require(`path`);
 const isDev = process.env.NODE_ENV === `dev`;
+const isInstaller = process.env.PUBLISH_TYPE === `installer`;
+const isMac = process.platform === `darwin`;
+const isWin = process.platform === `win32`;
 const consumerRoot = process.cwd();
 const buildRoot = path.join(consumerRoot, `.build`);
 const runnersRoot = path.join(consumerRoot, `.runners`);
@@ -14,7 +17,8 @@ const distRoot = path.join(consumerRoot, `dist`);
 const paths = {
 	icon: path.join(buildRoot, `eyas-assets`, `eyas-logo.png`),
 	iconDbWin: path.join(buildRoot, `eyas-assets`, `eyas-db.ico`),
-	iconDbMac: path.join(buildRoot, `eyas-assets`, `eyas-db.icns`)
+	iconDbMac: path.join(buildRoot, `eyas-assets`, `eyas-db.icns`),
+	codesignWin: path.join(consumerRoot, `src`, `scripts`, `codesign-win.js`)
 };
 
 // Entry Point
@@ -24,15 +28,17 @@ const paths = {
 
 	// Determine the executables to build
 	const targets = [];
-	if(process.platform === `win32` || process.env.FORCE_BUILD === `win32`) {
+	if(isWin || process.env.FORCE_BUILD === `win32`) {
 		targets.push(builder.Platform.WINDOWS);
 	}
 
-	if(process.platform === `darwin`) { targets.push(builder.Platform.MAC); }
+	if(isMac) { targets.push(builder.Platform.MAC); }
 	// if(config.outputs.linux) { targets.push(builder.Platform.LINUX); }
 
 	// set the name of the output files
-	const runnerName = `Eyas${process.env.PUBLISH_TYPE === `installer` && `Installer`}`;
+	const installerAppend = isInstaller ? `Installer` : ``;
+	const unsignedAppend = isInstaller && isMac ? `-unsigned` : ``;
+	const runnerName = `Eyas${installerAppend}${unsignedAppend}`;
 
 	const builtFiles = await builder.build({
 		targets: targets.length ? builder.createTargets(targets) : null,
@@ -51,17 +57,16 @@ const paths = {
 			removePackageScripts: true,
 			removePackageKeywords: true,
 			mac: {
-				target: process.env.PUBLISH_TYPE === `installer` ? `pkg` : `dir`,
+				target: isInstaller ? `pkg` : `dir`,
 				icon: paths.icon,
 				provisioningProfile: process.env.PROVISIONING_PROFILE_PATH || ``,
-				notarize: {
-					teamId: process.env.APPLE_TEAM_ID || ``
-				}
+				...isDev ? { identity: null } : {}, // don't sign in dev
+				notarize: { teamId: process.env.APPLE_TEAM_ID || `` }
 			},
 			win: {
-				target: process.env.PUBLISH_TYPE === `installer` ? `msi` : `portable`,
+				target: isInstaller ? `msi` : `portable`,
 				icon: paths.icon,
-				signAndEditExecutable: false
+				sign: isDev ? null : paths.codesignWin
 			},
 			linux: {
 				target: `AppImage`,
@@ -80,7 +85,7 @@ const paths = {
 				{
 					ext: `eyas`,
 					name: `eyas-db`,
-					icon: process.platform === `win32` ? paths.iconDbWin : paths.iconDbMac
+					icon: isWin ? paths.iconDbWin : paths.iconDbMac
 				}
 			]
 		}
