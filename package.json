@@ -30,7 +30,7 @@
     "compile:runner": "node src/scripts/compile-runners.js",
     "compile:win32": "npm i && cross-env FORCE_BUILD=win32 npm run compile:runner",
     "compile:cleanup": "node src/scripts/compile-cleanup.js",
-    "compile:mac": "npm run compile:prep && npm run compile:ui && npm run compile:module && npm run compile:runner && npm run notarize:zip && npm run notarize && npm run notarize:staple && npm run compile:mac:copy && npm run compile:cleanup",
+    "compile:mac": "npm run compile:prep && npm run compile:ui && npm run compile:module && npm run compile:runner && npm run compile:mac:copy && npm run compile:cleanup",
     "compile:mac:installer": "npm run compile:prep && npm run compile:ui && npm run compile:module && cross-env PUBLISH_TYPE=installer npm run compile:runner && npm run sign:mac:pkg && npm run notarize:pkg:output && npm run notarize:staple:pkg",
     "compile:docker": "npm run compile:prep && npm run compile:ui && npm run compile:module && npm run docker:run && npm run compile:cleanup",
     "compile:prod": "npm run compile:prep && npm run compile:ui && npm run compile:module && npm run docker:run && npm run compile:runner && npm run notarize:zip && npm run notarize && npm run notarize:staple && npm run compile:mac:copy && npm run compile:cleanup",
