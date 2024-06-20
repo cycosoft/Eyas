@@ -7,7 +7,7 @@
 	>
 		<v-card class="pa-3">
 			<v-card-text>
-				<p class="font-weight-black text-center text-h6 mb-10">⚠️ Version Mismatch ⚠️</p>
+				<p class="font-weight-black text-center text-h6 mb-10">⚠️ Possible Update Available ⚠️</p>
 
 				<v-sheet>
 					<v-row class="mt-8 px-14">
