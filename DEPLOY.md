@@ -4,7 +4,6 @@
 * compile, sign, notarize .app -> `npm run compile:mac`
 * switch to windows
 * compile .exe -> `npm run compile:win:module`
-* verify signature -> `npm run sign:win:verify`
 * send /dist/runners/Start.exe to mac
 * switch to mac
 * put .exe in dist/runners/
@@ -17,7 +16,7 @@
 
 * use windows
 * compile .msi -> `npm run compile:win:installer`
-* copy from `.runners/EyasInstaller.msi`
+* deploy from `.runners/EyasInstaller.msi`
 * use MacOS
 * compike .pkg -> `npm run compile:mac:installer`
-* copy from `.runners/EyasInstaller.pkg`
+* deploy from `.runners/EyasInstaller.pkg`
