@@ -17,7 +17,7 @@
 						<v-col class="text-center">
 							<v-btn
 								color="primary"
-								href="https://github.com/cycosoft/Eyas/releases"
+                                @click="checkForUpdate"
 							>Check For Update</v-btn>
 						</v-col>
 					</v-row>
@@ -59,7 +59,13 @@ export default {
 	methods: {
 		hideUi() {
 			window.eventBridge?.send(`hide-ui`);
-		}
+		},
+
+        checkForUpdate() {
+            const link = `https://github.com/cycosoft/Eyas/releases`;
+            window.eventBridge?.send(`launch-link`, link, true);
+            this.close();
+        }
 	}
 }
 </script>
