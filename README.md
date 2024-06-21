@@ -92,14 +92,14 @@ npm run build-my-project && npx eyas bundle
 ```
 
 ```bash
-# Generates an Eyas test database
+# Generates an Eyas test database for use with the installed version of Eyas
 npm run build-my-project && npx eyas db
 ```
 
 ## Outputs
 
-- `db`: Creates an `*.eyas` file of project production output + test config
-  - Requires end user to have Eyas installed
+- `db`: Creates an `*.eyas` file of project production output + test config (recommended)
+  - Requires end user to have Eyas [installed](https://github.com/cycosoft/Eyas/releases)
   - Outputs to `./eyas-dist/`
   - About the size of the project production output
   - Recommended for end-users who do frequent testing (e.g. internal team)
