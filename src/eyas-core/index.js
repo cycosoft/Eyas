@@ -775,7 +775,7 @@ async function startAFreshTest() {
 	$paths.testSrc = config().source;
 
 	// if the app is older than the version that built the test
-	if(semver.lt(_appVersion, config().meta.eyas)){
+	if(config().meta.eyas && semver.lt(_appVersion, config().meta.eyas)){
 		// send request to the UI layer
 		$eyasLayer.webContents.send(`show-version-mismatch-modal`, _appVersion, config().meta.eyas);
 	}
