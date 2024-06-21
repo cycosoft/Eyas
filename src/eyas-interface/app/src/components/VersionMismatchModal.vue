@@ -17,7 +17,7 @@
 						<v-col class="text-center">
 							<v-btn
 								color="primary"
-                                @click="checkForUpdate"
+								@click="checkForUpdate"
 							>Check For Update</v-btn>
 						</v-col>
 					</v-row>
@@ -58,14 +58,16 @@ export default {
 
 	methods: {
 		hideUi() {
-			window.eventBridge?.send(`hide-ui`);
+			// hide the UI if there are no other dialogs open
+			if(document.querySelectorAll(`.v-dialog`).length <= 1) {
+				window.eventBridge?.send(`hide-ui`);
+			}
 		},
 
-        checkForUpdate() {
-            const link = `https://github.com/cycosoft/Eyas/releases`;
-            window.eventBridge?.send(`launch-link`, link, true);
-            this.close();
-        }
+		checkForUpdate() {
+			const link = `https://github.com/cycosoft/Eyas/releases`;
+			window.eventBridge?.send(`launch-link`, link, true);
+		}
 	}
 }
 </script>
