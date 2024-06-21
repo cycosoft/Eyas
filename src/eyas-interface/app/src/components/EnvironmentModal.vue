@@ -64,7 +64,10 @@ export default {
 		},
 
 		hideUi() {
-			window.eventBridge?.send(`hide-ui`);
+			// hide the UI if there are no other dialogs open
+			if(document.querySelectorAll(`.v-dialog`).length <= 1) {
+				window.eventBridge?.send(`hide-ui`);
+			}
 		}
 	}
 }

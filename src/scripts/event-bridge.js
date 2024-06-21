@@ -21,7 +21,12 @@ contextBridge.exposeInMainWorld(`eventBridge`, {
 	},
 
 	receive: (channel, func) => {
-		const validChannels = [`modal-exit-visible`, `show-environment-modal`, `show-variables-modal`];
+		const validChannels = [
+			`modal-exit-visible`,
+			`show-environment-modal`,
+			`show-variables-modal`,
+			`show-version-mismatch-modal`
+		];
 		if (validChannels.includes(channel)) {
 			// Deliberately strip event as it includes `sender`
 			ipcRenderer.on(channel, (event, ...args) => func(...args));

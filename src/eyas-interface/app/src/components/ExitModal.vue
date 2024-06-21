@@ -2,7 +2,6 @@
 	<v-overlay
 		v-model="visible"
 		class="exit-modal text-white"
-		@after-leave="hideUi"
 	>
 		<div class="ad-space">
 			<span class="cursor-pointer" @click="openInBrowser(`https://cycosoft.com`)">
@@ -19,6 +18,7 @@
 			persistent
 			width="auto"
 			:scrim="false"
+			@after-leave="hideUi"
 		>
 			<v-card>
 				<v-card-text>
@@ -71,7 +71,10 @@ export default {
 		},
 
 		hideUi() {
-			window.eventBridge?.send(`hide-ui`);
+			// hide the UI if there are no other dialogs open
+			if(document.querySelectorAll(`.v-dialog`).length <= 1) {
+				window.eventBridge?.send(`hide-ui`);
+			}
 		},
 
 		openInBrowser(url) {

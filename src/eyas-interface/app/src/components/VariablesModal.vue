@@ -12,9 +12,9 @@
 
 				<v-sheet v-if="link" class="my-10">
 					<v-row
-                        v-for="(variable, index) in variables"
-                        :key="index"
-                    >
+						v-for="(variable, index) in variables"
+						:key="index"
+					>
 						<!-- detect lists -->
 						<v-select
 							v-if="variable.type === `list`"
@@ -110,18 +110,18 @@ export default {
 		...JSON.parse(componentDefaults)
 	}),
 
-    computed: {
-        parsedLink () {
+	computed: {
+		parsedLink () {
 			// copy for manipulation
-            let output = this.link;
+			let output = this.link;
 			const form = [...this.form];
 
 			// replace all variables with form data
-            return output?.replace(REGEX_VARIABLES_ONLY, originalMatch => {
+			return output?.replace(REGEX_VARIABLES_ONLY, originalMatch => {
 				const value = form.shift();
 				return value || value === '' ? encodeURIComponent(value) : originalMatch;
 			});
-        },
+		},
 
 		linkIsValid () {
 			// setup
@@ -141,7 +141,7 @@ export default {
 			return !hasVariables && isURL(this.parsedLink);
 		},
 
-        variables () {
+		variables () {
 			// setup
 			const output = [];
 
@@ -180,9 +180,9 @@ export default {
 				output.push(data);
 			}
 
-            return output;
-        }
-    },
+			return output;
+		}
+	},
 
 	mounted() {
 		// Listen for messages from the main process
@@ -224,7 +224,10 @@ export default {
 		},
 
 		hideUi() {
-			window.eventBridge?.send(`hide-ui`);
+			// hide the UI if there are no other dialogs open
+			if(document.querySelectorAll(`.v-dialog`).length <= 1) {
+				window.eventBridge?.send(`hide-ui`);
+			}
 		}
 	}
 }

@@ -269,9 +269,9 @@ function initEyasListeners() {
 	});
 
 	// listen for the user to launch a link
-	ipcMain.on(`launch-link`, (event, url) => {
+	ipcMain.on(`launch-link`, (event, url, external) => {
 		// navigate to the requested url
-		navigate(parseURL(url).toString());
+		navigate(parseURL(url).toString(), true);
 	});
 }
 
@@ -753,6 +753,9 @@ function handleRedirects() {
 
 // refresh the app
 async function startAFreshTest() {
+	// imports
+	const semver = require(`semver`);
+
 	// clear all caches for the session
 	await $appWindow.webContents.session.clearCache(); // web cache
 	await $appWindow.webContents.session.clearStorageData(); // cookies, filesystem, indexdb, localstorage, shadercache, websql, serviceworkers, cachestorage
@@ -794,6 +797,12 @@ async function startAFreshTest() {
 
 		// display the environment chooser modal
 		$eyasLayer.webContents.send(`show-environment-modal`, config().domains);
+	}
+
+	// if the app is older than the version that built the test
+	if(config().meta.eyas && semver.lt(_appVersion, config().meta.eyas)){
+		// send request to the UI layer
+		$eyasLayer.webContents.send(`show-version-mismatch-modal`, _appVersion, config().meta.eyas);
 	}
 }
 

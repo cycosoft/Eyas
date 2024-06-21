@@ -5,6 +5,8 @@
 - Associated `*.eyas` files with installed version of Eyas
 - Refactor config load order (via user click, sibling *.eyas to runner, or via sibling config + defined source)
 - Allow CLI to generate just *.eyas files without bundling a runner
+- Alert user to possible Eyas update if test was built with newer version
+- Fix the UI hiding when there are multiple modals visible
 
 # v3.1.0
 
