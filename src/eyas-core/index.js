@@ -774,12 +774,6 @@ async function startAFreshTest() {
 	// reset the path to the test source
 	$paths.testSrc = config().source;
 
-	// if the app is older than the version that built the test
-	if(config().meta.eyas && semver.lt(_appVersion, config().meta.eyas)){
-		// send request to the UI layer
-		$eyasLayer.webContents.send(`show-version-mismatch-modal`, _appVersion, config().meta.eyas);
-	}
-
 	// if there are no custom domains defined
 	if (!config().domains.length) {
 		// load the test using the default domain
@@ -803,6 +797,12 @@ async function startAFreshTest() {
 
 		// display the environment chooser modal
 		$eyasLayer.webContents.send(`show-environment-modal`, config().domains);
+	}
+
+	// if the app is older than the version that built the test
+	if(config().meta.eyas && semver.lt(_appVersion, config().meta.eyas)){
+		// send request to the UI layer
+		$eyasLayer.webContents.send(`show-version-mismatch-modal`, _appVersion, config().meta.eyas);
 	}
 }
 
