@@ -51,7 +51,8 @@ function parseConfig(requestedEyasPath) {
 			gitBranch: userConfig.meta.gitBranch || `Preview`,
 			gitHash: userConfig.meta.gitHash || `Preview`,
 			gitUser: userConfig.meta.gitUser || `Preview`,
-			compiled: userConfig.meta.compiled || new Date()
+			compiled: userConfig.meta.compiled || new Date(),
+			eyas: null // the version of eyas that was used to compile the test
 		}
 	};
 

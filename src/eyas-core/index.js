@@ -753,6 +753,9 @@ function handleRedirects() {
 
 // refresh the app
 async function startAFreshTest() {
+	// imports
+	const semver = require(`semver`);
+
 	// clear all caches for the session
 	await $appWindow.webContents.session.clearCache(); // web cache
 	await $appWindow.webContents.session.clearStorageData(); // cookies, filesystem, indexdb, localstorage, shadercache, websql, serviceworkers, cachestorage
@@ -770,6 +773,12 @@ async function startAFreshTest() {
 
 	// reset the path to the test source
 	$paths.testSrc = config().source;
+
+	// if the app is older than the version that built the test
+	if(semver.lt(_appVersion, config().meta.eyas)){
+		// send request to the UI layer
+		$eyasLayer.webContents.send(`show-version-mismatch-modal`, _appVersion, config().meta.eyas);
+	}
 
 	// if there are no custom domains defined
 	if (!config().domains.length) {
