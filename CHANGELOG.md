@@ -1,3 +1,7 @@
+# v3.2.1
+
+- Fix compiled runner failing to load test due to missing dependency
+
 # v3.2.0
 
 - Rename menu item "New Test" to "Reset Test"

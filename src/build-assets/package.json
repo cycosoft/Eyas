@@ -12,7 +12,8 @@
     "mixpanel": "",
     "mkcert": "",
     "validator": "",
-    "date-fns": ""
+    "date-fns": "",
+    "semver": ""
   },
   "devDependencies": {
     "electron": ""
