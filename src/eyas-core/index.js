@@ -768,7 +768,7 @@ async function startAFreshTest() {
 	// reset the current viewport to the first in the list
 	$currentViewport[0] = $allViewports[0].width;
 	$currentViewport[1] = $allViewports[0].height;
-	$appWindow.setContentSize($currentViewport[0], $currentViewport[1])
+	$appWindow.setContentSize($currentViewport[0], $currentViewport[1]);
 
 	// Set the application menu
 	setMenu();
