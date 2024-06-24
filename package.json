@@ -1,6 +1,6 @@
 {
   "name": "@cycosoft/eyas",
-  "version": "3.2.1",
+  "version": "3.2.2",
   "description": "Feature Branch Testing Without a Server",
   "main": "./index.js",
   "packageName": "Eyas",
@@ -94,7 +94,7 @@
     "mkcert": "^3.2.0",
     "semver": "^7.6.2",
     "validator": "^13.12.0",
-    "vue": "^3.4.29",
+    "vue": "^3.4.30",
     "vuetify": "^3.6.10"
   },
   "devDependencies": {
@@ -106,7 +106,7 @@
     "cross-env": "^7.0.3",
     "dotenv": "^16.4.5",
     "dotenv-cli": "^7.4.2",
-    "electron-vite": "^2.2.0",
+    "electron-vite": "^2.3.0",
     "eslint": "^9.5.0",
     "eslint-plugin-vue": "^9.26.0",
     "npm-check": "^6.0.1",

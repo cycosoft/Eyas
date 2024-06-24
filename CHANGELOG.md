@@ -1,3 +1,7 @@
+# v3.2.2
+
+- Fix all custom links with variables only being opened externally
+
 # v3.2.1
 
 - Fix compiled runner failing to load test due to missing dependency
