@@ -203,7 +203,6 @@ function initElectronUi() {
 	// Initialize the $eyasLayer
 	$eyasLayer = new BrowserView({ webPreferences: { preload: $paths.eventBridge } });
 	$appWindow.addBrowserView($eyasLayer);
-	$eyasLayer.setAutoResize({ width: true, height: true });
 	$eyasLayer.webContents.loadFile($paths.eyasInterface);
 
 	// once the Eyas UI layer is ready, attempt navigation
@@ -383,6 +382,9 @@ function onResize() {
 	// update the current dimensions
 	$currentViewport[0] = newWidth;
 	$currentViewport[1] = newHeight
+
+	// update the Eyas UI layer to match the new dimensions
+	$eyasLayer.setBounds({ x: 0, y: 0, width: newWidth, height: newHeight });
 
 	// update the menu
 	setMenu();
@@ -766,7 +768,7 @@ async function startAFreshTest() {
 	// reset the current viewport to the first in the list
 	$currentViewport[0] = $allViewports[0].width;
 	$currentViewport[1] = $allViewports[0].height;
-	$appWindow.setContentSize($currentViewport[0], $currentViewport[1])
+	$appWindow.setContentSize($currentViewport[0], $currentViewport[1]);
 
 	// Set the application menu
 	setMenu();
