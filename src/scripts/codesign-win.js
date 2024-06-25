@@ -5,8 +5,8 @@
 const util = require(`util`)
 const exec = util.promisify(require(`child_process`).exec)
 
-const OwnerName = process.env.CERT_OWNERNAME || `"Open Source Developer, Eric Higginson"`
-const TimeStampServer = process.env.CERT_TIMESTAMPSERVER || `http://time.certum.pl/`
+const OwnerName = `"Open Source Developer, Eric Higginson"`
+const TimeStampServer = `http://time.certum.pl/`
 const Verbose = (process.env.CERT_VERBOSE && process.env.CERT_VERBOSE === `true`) || false
 const Debug = (process.env.CERT_DEBUG && process.env.CERT_DEBUG === `true`) || false
 const Skip = (process.env.CERT_SKIP && process.env.CERT_SKIP === `true`) || false
@@ -38,7 +38,7 @@ async function doSign (file, hash, owner) {
 	try {
 		const { stdout } = await exec(args.join(` `))
 		if (Verbose) {
-		console.log(stdout)
+			console.log(stdout)
 		}
 	} catch (error) {
 		throw error
