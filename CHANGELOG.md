@@ -2,6 +2,7 @@
 
 - Fix all custom links with variables only being opened externally
 - Fix UI layer hiding when app in resized
+- Address unsanitized user input concern via ( https://github.com/cycosoft/Eyas/security/code-scanning/1 )
 
 # v3.2.1
 
