@@ -1,6 +1,7 @@
 # v3.2.2
 
 - Fix all custom links with variables only being opened externally
+- Fix UI layer hiding when app in resized
 
 # v3.2.1
 
