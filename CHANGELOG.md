@@ -2,6 +2,7 @@
 
 - Disable "one-click" install for Windows installer
 - Update project dependencies
+- Add WebdriverIO test runner
 
 # v3.2.2
 
