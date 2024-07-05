@@ -1,3 +1,8 @@
+# v3.3.0
+
+- Disable "one-click" install for Windows installer
+- Update project dependencies
+
 # v3.2.2
 
 - Fix all custom links with variables only being opened externally
