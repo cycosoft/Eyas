@@ -22,6 +22,7 @@
     "dev:win:cli": "npm i && npm-check -u -i '\"inquirer\"' && cross-env NODE_ENV=dev npm run compile:win:module && cross-env NODE_ENV=dev node dist/cli/index.js",
     "dev:win:installer": "npm i && npm-check -u -i '\"inquirer\"' && cross-env NODE_ENV=dev npm run compile:win:installer",
     "dev:ui": "npm i && npm-check -u -i '\"inquirer\"' && vite --config src/eyas-interface/app/.vite.config.ui.js --open",
+    "test:build": "cross-env NODE_ENV=dev npm run compile:win:module && npm run test",
     "test": "wdio run ./wdio.conf.js",
     "_____________COMPILE_____________": "",
     "compile:prep": "node src/scripts/compile-prep.js",

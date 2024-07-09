@@ -54,8 +54,9 @@ exports.config = {
         // Electron service options
         // see https://webdriver.io/docs/desktop-testing/electron/configuration/#service-options
         'wdio:electronServiceOptions': {
+            appBinaryPath: "./dist/runners/Start.exe",
             // custom application args
-            appArgs: []
+            // appArgs: ["app=.build/index.js"]
         }
     }],
 
@@ -115,7 +116,7 @@ exports.config = {
     // Make sure you have the wdio adapter package for the specific framework installed
     // before running any tests.
     framework: 'mocha',
-    
+
     //
     // The number of times to retry the entire specfile when it fails as a whole
     // specFileRetries: 1,
