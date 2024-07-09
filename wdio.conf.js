@@ -56,7 +56,7 @@ exports.config = {
         'wdio:electronServiceOptions': {
             appBinaryPath: "./dist/runners/Start.exe",
             // custom application args
-            // appArgs: ["app=.build/index.js"]
+            appArgs: [`dev`, `trace-warnings`]
         }
     }],
 
