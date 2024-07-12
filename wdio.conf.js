@@ -54,7 +54,7 @@ exports.config = {
         // Electron service options
         // see https://webdriver.io/docs/desktop-testing/electron/configuration/#service-options
         'wdio:electronServiceOptions': {
-            appBinaryPath: require('electron').toString(),
+            appBinaryPath: require(`electron`).toString(),
             appArgs: [`dev`, `trace-warnings`, `test`, `app=.build/index.js`]
         }
     }],
