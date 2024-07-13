@@ -383,8 +383,14 @@ function onResize() {
 	$currentViewport[0] = newWidth;
 	$currentViewport[1] = newHeight
 
-	// update the Eyas UI layer to match the new dimensions
-	$eyasLayer.setBounds({ x: 0, y: 0, width: newWidth, height: newHeight });
+	// get the $eyasLayer dimensions
+	const { width, height } = $eyasLayer.getBounds();
+
+	// if the Eyas UI layer is visible
+	if(width && height){
+		// update the Eyas UI layer to match the new dimensions
+		$eyasLayer.setBounds({ x: 0, y: 0, width: newWidth, height: newHeight });
+	}
 
 	// update the menu
 	setMenu();
