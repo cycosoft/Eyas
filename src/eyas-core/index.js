@@ -2,6 +2,12 @@
 
 'use strict';
 
+// testing harness
+// const $isTest = process.argv.includes(`--test`);
+// if ($isTest) {
+// 	require(`wdio-electron-service/main`);
+// }
+
 // constants
 const APP_NAME = `Eyas`;
 const MP_KEY = `07f0475cb429f7de5ebf79a1c418dc5c`;

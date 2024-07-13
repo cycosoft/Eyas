@@ -17,6 +17,7 @@
 			v-model="visible"
 			persistent
 			width="auto"
+			data-qa="exit-modal"
 			:scrim="false"
 			@after-leave="hideUi"
 		>

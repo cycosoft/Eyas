@@ -3,6 +3,7 @@
 		v-model="visible"
 		persistent
 		width="auto"
+		data-qa="environment-modal"
 		@after-leave="hideUi"
 	>
 		<v-card class="pa-3">
