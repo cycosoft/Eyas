@@ -208,7 +208,7 @@ export default {
 		},
 
 		launch() {
-			window.eventBridge?.send(`launch-link`, this.parsedLink);
+			window.eventBridge?.send(`launch-link`, { url: this.parsedLink });
 			this.close();
 		},
 

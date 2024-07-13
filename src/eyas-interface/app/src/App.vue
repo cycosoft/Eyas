@@ -41,7 +41,7 @@ export default {
 
 	methods: {
 		openInBrowser(url) {
-			window.eventBridge?.send(`launch-link`, url, true);
+			window.eventBridge?.send(`launch-link`, { url, openInBrowser: true });
 		}
 	}
 };
