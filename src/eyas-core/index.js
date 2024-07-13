@@ -268,9 +268,9 @@ function initEyasListeners() {
 	});
 
 	// listen for the user to launch a link
-	ipcMain.on(`launch-link`, (event, url, external) => {
+	ipcMain.on(`launch-link`, (event, url, openInBrowser) => {
 		// navigate to the requested url
-		navigate(parseURL(url).toString(), external);
+		navigate(parseURL(url).toString(), openInBrowser);
 	});
 }
 
