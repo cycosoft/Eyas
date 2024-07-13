@@ -15,7 +15,6 @@ contextBridge.exposeInMainWorld(`eventBridge`, {
 		// whitelist channels
 		const validChannels = [
 			`app-exit`,
-			`open-in-browser`,
 			`hide-ui`,
 			`environment-selected`,
 			`launch-link`

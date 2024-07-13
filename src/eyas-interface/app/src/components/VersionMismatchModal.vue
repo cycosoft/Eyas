@@ -3,6 +3,7 @@
 		v-model="visible"
 		persistent
 		width="auto"
+		:scrim="false"
 		@after-leave="hideUi"
 	>
 		<v-card class="pa-3">
@@ -65,8 +66,8 @@ export default {
 		},
 
 		checkForUpdate() {
-			const link = `https://github.com/cycosoft/Eyas/releases`;
-			window.eventBridge?.send(`launch-link`, link, true);
+			const url = `https://github.com/cycosoft/Eyas/releases`;
+			window.eventBridge?.send(`launch-link`, { url, openInBrowser: true });
 		}
 	}
 }

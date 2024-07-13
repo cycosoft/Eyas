@@ -3,6 +3,7 @@
 		v-model="visible"
 		persistent
 		:width="dialogWidth"
+		:scrim="false"
 		@after-enter="pinDialogWidth"
 		@after-leave="hideUi"
 	>
@@ -207,7 +208,7 @@ export default {
 		},
 
 		launch() {
-			window.eventBridge?.send(`launch-link`, this.parsedLink);
+			window.eventBridge?.send(`launch-link`, { url: this.parsedLink });
 			this.close();
 		},
 

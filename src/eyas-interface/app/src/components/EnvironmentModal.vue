@@ -4,6 +4,7 @@
 		persistent
 		width="auto"
 		data-qa="environment-modal"
+		:scrim="false"
 		@after-leave="hideUi"
 	>
 		<v-card class="pa-3">

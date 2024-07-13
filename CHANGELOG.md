@@ -3,6 +3,8 @@
 - Disable "one-click" install for Windows installer
 - Update project dependencies
 - Add WebdriverIO test runner
+- Set the UI layer to always have blurred background when set as visible
+- Fix issue displaying the UI layer without controls when the window is resized, making Eyas appear unresponsive.
 
 # v3.2.2
 
