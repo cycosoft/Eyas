@@ -3,6 +3,7 @@
 		v-model="visible"
 		persistent
 		:width="dialogWidth"
+		:scrim="false"
 		@after-enter="pinDialogWidth"
 		@after-leave="hideUi"
 	>

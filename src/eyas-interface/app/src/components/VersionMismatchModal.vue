@@ -3,6 +3,7 @@
 		v-model="visible"
 		persistent
 		width="auto"
+		:scrim="false"
 		@after-leave="hideUi"
 	>
 		<v-card class="pa-3">
