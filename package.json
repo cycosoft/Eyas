@@ -125,6 +125,7 @@
     "wdio-electron-service": "^6.6.1"
   },
   "overrides": {
-    "package-json": ">6.5.0 <8.0.0"
+    "package-json": ">6.5.0 <8.0.0",
+    "ws": "^7.0.0"
   }
 }
