@@ -393,7 +393,9 @@ async function runCommand_bundle() {
 		// start a promise for this platform archive process
 		archivePromises.push(
 			new Promise((resolve, reject) => {
-				const artifactName = `${config.title} - ${config.version}.${platform.tag}.zip`;
+				const artifactName = `${config.title} - ${config.version}.${platform.tag}.zip`
+					// remove any characters that could cause issues
+					.replace(/[\/\\:\*\?"<>\|]/g, `_`);
 
 				// create the zip file
 				const output = fs.createWriteStream(path.join(roots.eyasDist, artifactName));
