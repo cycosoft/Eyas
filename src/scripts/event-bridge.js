@@ -1,6 +1,12 @@
 // imports
 const { contextBridge, ipcRenderer } = require(`electron`);
 
+// testing harness
+// const $isTest = process.argv.includes(`--test`);
+// if ($isTest) {
+// 	require(`wdio-electron-service/preload`);
+// }
+
 // via ( https://stackoverflow.com/a/59814127 )
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
