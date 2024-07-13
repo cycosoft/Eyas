@@ -241,12 +241,6 @@ function initEyasListeners() {
 	// hide the UI when requested
 	ipcMain.on(`hide-ui`, () => toggleEyasUI(false));
 
-	// open links in the browser when requested
-	ipcMain.on(`open-in-browser`, (event, url) => {
-		const validated = parseURL(url).toString();
-		validated && navigate(validated, true);
-	});
-
 	// Whenever the UI layer has requested to close the app
 	ipcMain.on(`app-exit`, () => {
 		// remove the close event listener so we don't get stuck in a loop
