@@ -718,6 +718,7 @@ function handleRedirects() {
 	protocol.handle(`eyas`, request => {
 		// imports
 		const { pathToFileURL } = require(`url`);
+		const fs = require(`fs-extra`);
 
 		// grab the pathname from the request
 		const { pathname } = parseURL(request.url.replace(`eyas://`, `https://`));
@@ -734,7 +735,17 @@ function handleRedirects() {
 			: _path.join(pathname, fileIfNotDefined);
 
 		// build the expected path to the file
-		const localFilePath = _path.join($paths.testSrc, relativePathToFile);
+		let localFilePath = _path.join($paths.testSrc, relativePathToFile);
+
+		if(
+			// if the file doesn't exist
+			!fs.existsSync(localFilePath)
+			// AND the requested path isn't the root path
+			&& $paths.testSrc !== _path.join($paths.testSrc, pathname)
+		){
+			// load root file instead
+			localFilePath = _path.join($paths.testSrc, fileIfNotDefined);
+		}
 
 		// return the file from the local system to complete the request
 		return net.fetch(pathToFileURL(localFilePath).toString());
