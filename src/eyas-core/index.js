@@ -192,6 +192,7 @@ function initElectronUi() {
 	});
 
 	// display the splash screen to the user
+	const splashVisible = performance.now();
 	const splashScreen = createSplashScreen();
 
 	// load a default page so the app doesn't start black
@@ -222,13 +223,15 @@ function initElectronUi() {
 		await startAFreshTest();
 
 		// set a minimum time for the splash screen to be visible
+		const splashDelta = performance.now() - splashVisible;
+		const splashTimeout = splashDelta > 750 ? 0 : 750 - splashDelta;
 		setTimeout(() => {
 			// show the app window
 			$appWindow.show();
 
 			// we're done with the splash screen
 			splashScreen.destroy();
-		}, 750);
+		}, splashTimeout);
 	});
 }
 
