@@ -735,15 +735,16 @@ function handleRedirects() {
 			: _path.join(pathname, fileIfNotDefined);
 
 		// build the expected path to the file
-		const localFilePath = _path.join($paths.testSrc, relativePathToFile);
+		let localFilePath = _path.join($paths.testSrc, relativePathToFile);
 
-		// if the file doesn't exist AND it isn't the defaultPath
-		if(!fs.existsSync(localFilePath)){
-			// log the error
-			console.error(`File not found: ${localFilePath}`);
-
-			// return a 404
-			return { statusCode: 404, data: `File not found: ${localFilePath}` };
+		if(
+			// if the file doesn't exist
+			!fs.existsSync(localFilePath)
+			// AND the requested path isn't the root path
+			&& $paths.testSrc !== _path.join($paths.testSrc, pathname)
+		){
+			// load root file instead
+			localFilePath = _path.join($paths.testSrc, fileIfNotDefined);
 		}
 
 		// return the file from the local system to complete the request

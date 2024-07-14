@@ -6,6 +6,7 @@
 - Set the UI layer to always have blurred background when set as visible
 - Fix issue displaying the UI layer without controls when the window is resized, making Eyas appear unresponsive.
 - Make the file name safe when creating the artifact name
+- Support "Single Page Apps" by falling back to root index file if the given path + file doesn't exist
 
 # v3.2.2
 
