@@ -186,11 +186,15 @@ function initElectronUi() {
 		width: $currentViewport[0],
 		height: $currentViewport[1],
 		title: getAppTitle(),
-		icon: $paths.icon
+		icon: $paths.icon,
+		show: false
 	});
 
+	// display the splash screen to the user
+	const splashScreen = createSplashScreen();
+
 	// load a default page so the app doesn't start black
-	$appWindow.loadURL('data:text/html,' + encodeURIComponent(`<html><body></body></html>`));
+	// $appWindow.loadURL('data:text/html,' + encodeURIComponent(`<html><body></body></html>`));
 
 	// track the app launch event
 	trackEvent(MP_EVENTS.core.launch, {
@@ -212,7 +216,40 @@ function initElectronUi() {
 	$eyasLayer.webContents.loadFile($paths.eyasInterface);
 
 	// once the Eyas UI layer is ready, attempt navigation
-	$eyasLayer.webContents.on(`did-finish-load`, startAFreshTest);
+	$eyasLayer.webContents.on(`did-finish-load`, () => {
+		// start the test
+		startAFreshTest();
+
+		// show the app window
+		$appWindow.show();
+
+		// we're done with the splash screen
+		splashScreen.destroy();
+	});
+}
+
+// create a splash screen to display to the user while we wait for the $eyasLayer to load
+function createSplashScreen() {
+	// imports
+	const { BrowserWindow } = require(`electron`);
+
+	// create the splash screen
+	const splashScreen = new BrowserWindow({
+		width: 400,
+		height: 200,
+		frame: false,
+		transparent: false,
+		alwaysOnTop: true
+	});
+
+	// center the splash screen
+	splashScreen.center();
+
+	// load the splash screen
+	splashScreen.loadURL('data:text/html,' + encodeURIComponent(`<html><body><h1>Loading Eyas...</h1></body></html>`));
+
+	// return the splashscreen handle so it can be later destroyed
+	return splashScreen;
 }
 
 // initialize the Electron listeners
