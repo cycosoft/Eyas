@@ -47,7 +47,8 @@ const $paths = {
 	packageJson: _path.join($roots.eyas, `package.json`),
 	eventBridge: _path.join($roots.eyas, `scripts`, `event-bridge.js`),
 	testSrc: null,
-	eyasInterface: _path.join($roots.eyas, `eyas-interface`, `index.html`)
+	eyasInterface: _path.join($roots.eyas, `eyas-interface`, `index.html`),
+	splashScreen: _path.join($roots.eyas, `eyas-interface`, `splash.html`)
 };
 const $operatingSystem = _os.platform();
 const { version: _appVersion } = require($paths.packageJson);
@@ -186,8 +187,13 @@ function initElectronUi() {
 		width: $currentViewport[0],
 		height: $currentViewport[1],
 		title: getAppTitle(),
-		icon: $paths.icon
+		icon: $paths.icon,
+		show: false
 	});
+
+	// display the splash screen to the user
+	const splashVisible = performance.now();
+	const splashScreen = createSplashScreen();
 
 	// load a default page so the app doesn't start black
 	$appWindow.loadURL('data:text/html,' + encodeURIComponent(`<html><body></body></html>`));
@@ -212,7 +218,52 @@ function initElectronUi() {
 	$eyasLayer.webContents.loadFile($paths.eyasInterface);
 
 	// once the Eyas UI layer is ready, attempt navigation
-	$eyasLayer.webContents.on(`did-finish-load`, startAFreshTest);
+	$eyasLayer.webContents.on(`did-finish-load`, async () => {
+		// start the test
+		await startAFreshTest();
+
+		// set a minimum time for the splash screen to be visible
+		const splashDelta = performance.now() - splashVisible;
+		const splashTimeout = splashDelta > 750 ? 0 : 750 - splashDelta;
+		setTimeout(() => {
+			// show the app window
+			$appWindow.show();
+
+			// we're done with the splash screen
+			splashScreen.destroy();
+		}, splashTimeout);
+	});
+}
+
+// create a splash screen to display to the user while we wait for the $eyasLayer to load
+function createSplashScreen() {
+	// imports
+	const { BrowserWindow } = require(`electron`);
+
+	// create the splash screen
+	const splashScreen = new BrowserWindow({
+		width: 400,
+		height: 400,
+		frame: false,
+		transparent: true,
+		alwaysOnTop: true,
+		show: false
+	});
+
+	// load the splash screen
+	splashScreen.webContents.loadFile($paths.splashScreen);
+
+	// when the splash screen content has loaded
+	splashScreen.webContents.on(`did-finish-load`, () => {
+		// center the splash screen
+		splashScreen.center();
+
+		// show the splash screen
+		splashScreen.show();
+	});
+
+	// return the splashscreen handle so it can be later destroyed
+	return splashScreen;
 }
 
 // initialize the Electron listeners
