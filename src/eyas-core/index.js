@@ -718,6 +718,7 @@ function handleRedirects() {
 	protocol.handle(`eyas`, request => {
 		// imports
 		const { pathToFileURL } = require(`url`);
+		const fs = require(`fs-extra`);
 
 		// grab the pathname from the request
 		const { pathname } = parseURL(request.url.replace(`eyas://`, `https://`));
@@ -735,6 +736,15 @@ function handleRedirects() {
 
 		// build the expected path to the file
 		const localFilePath = _path.join($paths.testSrc, relativePathToFile);
+
+		// if the file doesn't exist AND it isn't the defaultPath
+		if(!fs.existsSync(localFilePath)){
+			// log the error
+			console.error(`File not found: ${localFilePath}`);
+
+			// return a 404
+			return { statusCode: 404, data: `File not found: ${localFilePath}` };
+		}
 
 		// return the file from the local system to complete the request
 		return net.fetch(pathToFileURL(localFilePath).toString());
