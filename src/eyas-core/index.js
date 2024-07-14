@@ -195,7 +195,7 @@ function initElectronUi() {
 	const splashScreen = createSplashScreen();
 
 	// load a default page so the app doesn't start black
-	// $appWindow.loadURL('data:text/html,' + encodeURIComponent(`<html><body></body></html>`));
+	$appWindow.loadURL('data:text/html,' + encodeURIComponent(`<html><body></body></html>`));
 
 	// track the app launch event
 	trackEvent(MP_EVENTS.core.launch, {
