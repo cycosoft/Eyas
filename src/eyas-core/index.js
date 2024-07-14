@@ -221,11 +221,14 @@ function initElectronUi() {
 		// start the test
 		await startAFreshTest();
 
-		// show the app window
-		$appWindow.show();
+		// set a minimum time for the splash screen to be visible
+		setTimeout(() => {
+			// show the app window
+			$appWindow.show();
 
-		// we're done with the splash screen
-		splashScreen.destroy();
+			// we're done with the splash screen
+			splashScreen.destroy();
+		}, 750);
 	});
 }
 
