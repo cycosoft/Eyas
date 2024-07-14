@@ -245,7 +245,7 @@ function createSplashScreen() {
 	});
 
 	// load the splash screen
-	splashScreen.loadURL($paths.splashScreen);
+	splashScreen.webContents.loadFile($paths.splashScreen);
 
 	// when the splash screen content has loaded
 	splashScreen.webContents.on(`did-finish-load`, () => {
