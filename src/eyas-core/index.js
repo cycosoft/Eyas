@@ -216,9 +216,9 @@ function initElectronUi() {
 	$eyasLayer.webContents.loadFile($paths.eyasInterface);
 
 	// once the Eyas UI layer is ready, attempt navigation
-	$eyasLayer.webContents.on(`did-finish-load`, () => {
+	$eyasLayer.webContents.on(`did-finish-load`, async () => {
 		// start the test
-		startAFreshTest();
+		await startAFreshTest();
 
 		// show the app window
 		$appWindow.show();
