@@ -240,14 +240,21 @@ function createSplashScreen() {
 		height: 200,
 		frame: false,
 		transparent: false,
-		alwaysOnTop: true
+		alwaysOnTop: true,
+		show: false
 	});
-
-	// center the splash screen
-	splashScreen.center();
 
 	// load the splash screen
 	splashScreen.loadURL($paths.splashScreen);
+
+	// when the splash screen content has loaded
+	splashScreen.webContents.on(`did-finish-load`, () => {
+		// center the splash screen
+		splashScreen.center();
+
+		// show the splash screen
+		splashScreen.show();
+	});
 
 	// return the splashscreen handle so it can be later destroyed
 	return splashScreen;
