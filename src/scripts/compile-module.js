@@ -28,6 +28,8 @@ const paths = {
 	eyasCoreDest: path.join(roots.moduleBuild, `index.js`),
 	eyasAssetsSrc: path.join(roots.src, names.eyasAssets),
 	eyasAssetsDest: path.join(roots.moduleBuild, names.eyasAssets),
+	eyasSplashSrc: path.join(roots.src, names.eyasInterfaceApp, `splash.html`),
+	eyasSplashDest: path.join(roots.moduleBuild, names.eyasInterfaceApp, `splash.html`),
 	eyasInterfaceAppSrc: path.join(roots.preBuild, names.eyasInterfaceApp),
 	eyasInterfaceAppDest: path.join(roots.moduleBuild, names.eyasInterfaceApp),
 	packageJsonModule: path.join(roots.module, names.packageJson),
@@ -50,6 +52,7 @@ const paths = {
 	await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
 	await fs.copy(paths.buildAssetsSrc, paths.buildAssetsDest);
 	await fs.copy(paths.eyasInterfaceAppSrc, paths.eyasInterfaceAppDest);
+	await fs.copy(paths.eyasSplashSrc, paths.eyasSplashDest);
 	await fs.copy(paths.eyasCoreSrc, paths.eyasCoreDest);
 	await fs.copy(paths.scriptsSrc, paths.scriptsBuild);
 
