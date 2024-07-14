@@ -237,9 +237,9 @@ function createSplashScreen() {
 	// create the splash screen
 	const splashScreen = new BrowserWindow({
 		width: 400,
-		height: 200,
+		height: 400,
 		frame: false,
-		transparent: false,
+		transparent: true,
 		alwaysOnTop: true,
 		show: false
 	});
