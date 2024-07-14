@@ -47,7 +47,8 @@ const $paths = {
 	packageJson: _path.join($roots.eyas, `package.json`),
 	eventBridge: _path.join($roots.eyas, `scripts`, `event-bridge.js`),
 	testSrc: null,
-	eyasInterface: _path.join($roots.eyas, `eyas-interface`, `index.html`)
+	eyasInterface: _path.join($roots.eyas, `eyas-interface`, `index.html`),
+	splashScreen: _path.join($roots.eyas, `eyas-interface`, `splash.html`)
 };
 const $operatingSystem = _os.platform();
 const { version: _appVersion } = require($paths.packageJson);
@@ -246,7 +247,7 @@ function createSplashScreen() {
 	splashScreen.center();
 
 	// load the splash screen
-	splashScreen.loadURL('data:text/html,' + encodeURIComponent(`<html><body><h1>Loading Eyas...</h1></body></html>`));
+	splashScreen.loadURL($paths.splashScreen);
 
 	// return the splashscreen handle so it can be later destroyed
 	return splashScreen;
