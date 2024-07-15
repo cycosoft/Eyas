@@ -494,9 +494,9 @@ function setMenu () {
 							Branch: ${config().meta.gitBranch} #${config().meta.gitHash}
 							User: ${config().meta.gitUser}
 							Date: ${new Date(config().meta.compiled).toLocaleString()}
-							CLI: v${config().meta.eyas || `0.0.0`}
+							CLI: v${config().meta.eyas}
 
-							Eyas: v${_appVersion}
+							Runner: v${_appVersion}
 
 							🏢 © ${yearRange} Cycosoft, LLC
 							🌐 https://cycosoft.com

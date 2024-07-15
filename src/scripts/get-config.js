@@ -48,11 +48,11 @@ function parseConfig(requestedEyasPath) {
 
 		meta: {
 			expires: userConfig.meta.expires || getPreviewExpiration(),
-			gitBranch: userConfig.meta.gitBranch || `Preview`,
-			gitHash: userConfig.meta.gitHash || `Preview`,
-			gitUser: userConfig.meta.gitUser || `Preview`,
+			gitBranch: userConfig.meta.gitBranch || getBranchName(),
+			gitHash: userConfig.meta.gitHash || getCommitHash(),
+			gitUser: userConfig.meta.gitUser || getUserName(),
 			compiled: userConfig.meta.compiled || new Date(),
-			eyas: null // the version of eyas that was used to compile the test
+			eyas: userConfig.meta.eyas || `0.0.0`
 		}
 	};
 
@@ -180,6 +180,17 @@ function getBranchName() {
 	} catch (error) {
 		// eslint-disable-next-line no-console
 		console.error(`Error getting branch name:`, error);
+		return null;
+	}
+}
+
+// attempts to return the current user name
+function getUserName() {
+	try {
+		return execSync(`git config user.name`).toString().trim();
+	} catch (error) {
+		// eslint-disable-next-line no-console
+		console.error(`Error getting user name:`, error);
 		return null;
 	}
 }
