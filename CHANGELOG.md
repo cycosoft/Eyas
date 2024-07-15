@@ -8,6 +8,7 @@
 - Make the file name safe when creating the artifact name
 - Support "Single Page Apps" by falling back to root index file if the given path + file doesn't exist
 - Add a splash screen on app load
+- Fix version mismatch checking
 
 # v3.2.2
 
