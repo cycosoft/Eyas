@@ -484,19 +484,19 @@ function setMenu () {
 						dialog.showMessageBox($appWindow, {
 							type: `info`,
 							buttons: [`OK`],
-							title: `About ${APP_NAME}`,
+							title: `About`,
 							icon: $paths.icon,
 							message: `
-							Test name: ${config().title}
-							Test version: ${config().version}
-							Test expires: ${expirationFormatted} (${relativeFormatted})
+							Name: ${config().title}
+							Version: ${config().version}
+							Expires: ${expirationFormatted} (${relativeFormatted})
 
-							Built from: ${config().meta.gitBranch} #${config().meta.gitHash}
-							Built by: ${config().meta.gitUser}
-							Built on: ${new Date(config().meta.compiled).toLocaleString()}
+							Branch: ${config().meta.gitBranch} #${config().meta.gitHash}
+							User: ${config().meta.gitUser}
+							Date: ${new Date(config().meta.compiled).toLocaleString()}
+							CLI: v${config().meta.eyas}
 
-							Runner: ${APP_NAME} v${_appVersion}
-
+							Runner: v${_appVersion}
 
 							🏢 © ${yearRange} Cycosoft, LLC
 							🌐 https://cycosoft.com
