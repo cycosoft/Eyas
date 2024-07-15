@@ -26,7 +26,7 @@
     "test:build": "npm run compile:prep && npm run compile:ui && npm run compile:module && npm run test",
     "test": "wdio run ./wdio.conf.js",
     "_____________COMPILE_____________": "",
-    "compile:prep": "node src/scripts/compile-prep.js",
+    "compile:prep": "npm cache clean --force && node src/scripts/compile-prep.js",
     "compile:mac:copy": "mv ./.runners/mac-arm64/Eyas.app ./.runners/mac-arm64/Start.app && ditto -c -k --sequesterRsrc --keepParent ./.runners/mac-arm64/Start.app ./dist/runners/Start.app.zip",
     "compile:ui": "vite build --config src/eyas-interface/app/.vite.config.ui.js",
     "compile:module": "electron-vite build && node src/scripts/compile-module.js",
