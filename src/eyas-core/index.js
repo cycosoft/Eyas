@@ -192,8 +192,13 @@ function initElectronUi() {
 	});
 
 	// display the splash screen to the user
-	const splashVisible = performance.now();
 	const splashScreen = createSplashScreen();
+
+	// track the time the splash screen was created as a backup
+	let splashVisible = performance.now();
+
+	// when the splash screen content has loaded, set a new more specific time
+	splashScreen.webContents.on(`did-finish-load`, () => splashVisible = performance.now());
 
 	// load a default page so the app doesn't start black
 	$appWindow.loadURL('data:text/html,' + encodeURIComponent(`<html><body></body></html>`));
@@ -223,8 +228,9 @@ function initElectronUi() {
 		await startAFreshTest();
 
 		// set a minimum time for the splash screen to be visible
+		const splashMinTime = 750;
 		const splashDelta = performance.now() - splashVisible;
-		const splashTimeout = splashDelta > 750 ? 0 : 750 - splashDelta;
+		const splashTimeout = splashDelta > splashMinTime ? 0 : splashMinTime - splashDelta;
 		setTimeout(() => {
 			// show the app window
 			$appWindow.show();
