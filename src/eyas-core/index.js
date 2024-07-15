@@ -775,7 +775,7 @@ function handleRedirects() {
 	protocol.handle(`eyas`, request => {
 		// imports
 		const { pathToFileURL } = require(`url`);
-		const fs = require(`fs-extra`);
+		const fs = require(`fs`);
 
 		// grab the pathname from the request
 		const { pathname } = parseURL(request.url.replace(`eyas://`, `https://`));
