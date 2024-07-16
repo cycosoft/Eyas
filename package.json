@@ -87,7 +87,7 @@
     "archiver": "^7.0.1",
     "commander": "^12.1.0",
     "date-fns": "^3.6.0",
-    "electron": "^31.2.0",
+    "electron": "^31.2.1",
     "electron-builder": "^24.13.3",
     "express": "^4.19.2",
     "extract-zip": "^2.0.1",
@@ -121,7 +121,7 @@
     "eslint-plugin-vue": "^9.27.0",
     "npm-check": "^6.0.1",
     "sass": "^1.77.8",
-    "vite": "^5.3.3",
+    "vite": "^5.3.4",
     "vite-plugin-vuetify": "^2.0.3",
     "wdio-electron-service": "^6.6.1"
   },
