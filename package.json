@@ -95,10 +95,10 @@
     "inquirer": "8.2.6",
     "mixpanel": "^0.18.0",
     "mkcert": "^3.2.0",
-    "semver": "^7.6.2",
+    "semver": "^7.6.3",
     "validator": "^13.12.0",
-    "vue": "^3.4.31",
-    "vuetify": "^3.6.12"
+    "vue": "^3.4.32",
+    "vuetify": "^3.6.13"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.24.8",
