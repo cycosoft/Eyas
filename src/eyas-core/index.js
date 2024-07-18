@@ -26,6 +26,16 @@ const { app: _electronCore, BrowserWindow: _electronWindow, } = require(`electro
 const _path = require(`path`);
 const _os = require(`os`);
 
+// only allow a single instance of the app to be at a time
+const hasLock = _electronCore.requestSingleInstanceLock();
+if (!hasLock) {
+	console.log(``);
+	console.log(`Another instance of the app is already running. Exiting.`);
+	console.log(``);
+
+	_electronCore.quit();
+}
+
 // global variables $
 const $isDev = process.argv.includes(`--dev`);
 let $appWindow = null;
@@ -287,6 +297,20 @@ function initElectronListeners() {
 	$appWindow.webContents.on(`did-fail-load`, (event, errorCode, errorDescription) => {
 		// log the error
 		console.error(`Navigation failed: ${errorCode} - ${errorDescription}`);
+	});
+
+	$appWindow.webContents.on(`new-window`, (event, url) => {
+		console.log(`Opening new window with URL:`, url);
+		event.preventDefault();
+
+		const newWindow = new BrowserWindow({
+			webPreferences: {
+				preload: $paths.eventBridge,
+				//session: customSession
+			}
+		});
+
+		newWindow.loadURL(url);
 	});
 }
 

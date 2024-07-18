@@ -1,3 +1,7 @@
+# v3.3.1
+
+- Prevent a second instance of Eyas from running
+
 # v3.3.0
 
 - Disable "one-click" install for Windows installer
