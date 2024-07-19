@@ -298,20 +298,6 @@ function initElectronListeners() {
 		// log the error
 		console.error(`Navigation failed: ${errorCode} - ${errorDescription}`);
 	});
-
-	$appWindow.webContents.on(`new-window`, (event, url) => {
-		console.log(`Opening new window with URL:`, url);
-		event.preventDefault();
-
-		const newWindow = new BrowserWindow({
-			webPreferences: {
-				preload: $paths.eventBridge,
-				//session: customSession
-			}
-		});
-
-		newWindow.loadURL(url);
-	});
 }
 
 // initialize the Eyas listeners
@@ -679,7 +665,7 @@ function setMenu () {
 
 		// add the item to the menu
 		customLinkList.push({
-			label: `${item.label || item.url}${isValid ? `` : ` (invalid entry: "${item.url}")`}`,
+			label: `${item.external ? `🌐 ` : ``}${item.label || item.url}${isValid ? `` : ` (invalid entry: "${item.url}")`}`,
 			click: () => hasVariables ? navigateVariable(itemUrl) : navigate(validUrl, item.external),
 			enabled: isValid // disable menu item if invalid url
 		});
