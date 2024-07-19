@@ -486,10 +486,10 @@ function setMenu () {
 	// build the default menu in MacOS style
 	const menuDefault = [
 		{
-			label: APP_NAME,
+			label: `&${APP_NAME}`,
 			submenu: [
 				{
-					label: `📇 About`,
+					label: `📇 &About`,
 					click: () => {
 						// setup
 						const { format } = require(`date-fns/format`);
@@ -531,7 +531,7 @@ function setMenu () {
 				},
 				{ type: `separator` },
 				{
-					label: `🚪 Exit`,
+					label: `🚪 &Exit`,
 					accelerator: `CmdOrCtrl+Q`,
 					click: _electronCore.quit
 				}
@@ -541,18 +541,18 @@ function setMenu () {
 
 	// Add the tools menu to the application menu
 	menuDefault.push({
-		label: `🔧 Tools`,
+		label: `🔧 &Tools`,
 		submenu: [
 			{
-				label: `♻️ Reload Page`,
+				label: `♻️ &Reload Page`,
 				click: () => $appWindow.webContents.reloadIgnoringCache()
 			},
 			{
-				label: `🧪 Back to Test`,
+				label: `🧪 &Back to Test`,
 				click: () => navigate()
 			},
 			{
-				label: `🧪 Reset Test (clear cache 🚿)`,
+				label: `🧪 Reset Test (&clear cache 🚿)`,
 				click: () => startAFreshTest()
 			},
 			// { type: `separator` },
@@ -588,15 +588,16 @@ function setMenu () {
 			// },
 			{ type: `separator` },
 			{
-				label: `🔧 Developer Tools${$isDev ? ' (Test)' : ''}`,
+				accelerator: `F12`,
+				label: `🔧 &Developer Tools${$isDev ? ' (Test)' : ''}`,
 				click: () => $appWindow.webContents.openDevTools()
 			}
 		]
 	});
 
 	// Add the developer tools menu to the application menu for the UI layer
-	$isDev && menuDefault[menuDefault.length - 1].submenu.push({
-		label: `🔧 Developer Tools (UI)`,
+	$isDev && menuDefault.at(-1).submenu.push({
+		label: `🔧 Developer Tools (&UI)`,
 		click: () => $eyasLayer.webContents.openDevTools()
 	});
 
@@ -647,7 +648,7 @@ function setMenu () {
 	})();
 
 	// Add the viewports submenu to the application menu
-	menuDefault.push({ label: `📏 Viewport`, submenu: viewportsMenu });
+	menuDefault.push({ label: `📏 &Viewport`, submenu: viewportsMenu });
 
 	// for each menu item where the list exists
 	const customLinkList = [];
@@ -685,7 +686,7 @@ function setMenu () {
 	});
 
 	// if there are any valid items THEN add the list to the menu
-	customLinkList.length && menuDefault.push({ label: `💼 Links`, submenu: customLinkList });
+	customLinkList.length && menuDefault.push({ label: `💼 &Links`, submenu: customLinkList });
 
 	// Set the modified menu as the application menu
 	Menu.setApplicationMenu(Menu.buildFromTemplate(menuDefault));

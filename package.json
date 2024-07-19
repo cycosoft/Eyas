@@ -1,6 +1,6 @@
 {
   "name": "@cycosoft/eyas",
-  "version": "3.3.1",
+  "version": "3.4.0",
   "description": "Feature Branch Testing Without a Server",
   "main": "./index.js",
   "packageName": "Eyas",

@@ -1,6 +1,7 @@
-# v3.3.1
+# v3.4.0
 
 - Prevent a second instance of Eyas from running
+- Added shortcut keys for menu items
 
 # v3.3.0
 
