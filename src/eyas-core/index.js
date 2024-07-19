@@ -298,20 +298,6 @@ function initElectronListeners() {
 		// log the error
 		console.error(`Navigation failed: ${errorCode} - ${errorDescription}`);
 	});
-
-	$appWindow.webContents.on(`new-window`, (event, url) => {
-		console.log(`Opening new window with URL:`, url);
-		event.preventDefault();
-
-		const newWindow = new BrowserWindow({
-			webPreferences: {
-				preload: $paths.eventBridge,
-				//session: customSession
-			}
-		});
-
-		newWindow.loadURL(url);
-	});
 }
 
 // initialize the Eyas listeners
