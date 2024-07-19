@@ -595,7 +595,7 @@ function setMenu () {
 	});
 
 	// Add the developer tools menu to the application menu for the UI layer
-	$isDev && menuDefault[menuDefault.length - 1].submenu.push({
+	$isDev && menuDefault.at(-1).submenu.push({
 		label: `🔧 Developer Tools (UI)`,
 		click: () => $eyasLayer.webContents.openDevTools()
 	});
