@@ -697,11 +697,8 @@ async function manageAppClose(evt) {
 	// stop the window from closing
 	evt.preventDefault();
 
-	// enable the UI layer
-	toggleEyasUI(true);
-
 	// send a message to the UI to show the exit modal with the captured image
-	$eyasLayer.webContents.send(`modal-exit-visible`, true);
+	uiEvent(`modal-exit-visible`, true);
 
 	// track that the exit modal is being opened
 	trackEvent(MP_EVENTS.ui.modalExitShown);
@@ -893,17 +890,14 @@ async function startAFreshTest() {
 
 	// if the user has multiple custom domains
 	if (config().domains.length > 1) {
-		// show the Eyas UI layer
-		toggleEyasUI(true);
-
 		// display the environment chooser modal
-		$eyasLayer.webContents.send(`show-environment-modal`, config().domains);
+		uiEvent(`show-environment-modal`, config().domains);
 	}
 
 	// if the app is older than the version that built the test
 	if(config().meta.eyas && semver.lt(_appVersion, config().meta.eyas)){
 		// send request to the UI layer
-		$eyasLayer.webContents.send(`show-version-mismatch-modal`, _appVersion, config().meta.eyas);
+		uiEvent(`show-version-mismatch-modal`, _appVersion, config().meta.eyas);
 	}
 }
 
@@ -924,18 +918,24 @@ function navigateVariable(url) {
 		return;
 	}
 
-	// show the Eyas UI layer
-	toggleEyasUI(true);
-
 	// use whichever test domain is currently active
 	const output = url.replace(/{testdomain}/g, $testDomainRaw);
 
 	// if the url still has variables
 	if(output.match(/{[^{}]+}/g)?.length){
 		// send request to the UI layer
-		$eyasLayer.webContents.send(`show-variables-modal`, output);
+		uiEvent(`show-variables-modal`, output);
 	} else {
 		// just pass through to navigate
 		navigate(parseURL(output).toString());
 	}
+}
+
+// request the UI layer to launch an event
+function uiEvent(eventName, ...args) {
+	// display the UI layer
+	toggleEyasUI(true);
+
+	// send the interaction to the UI layer
+	$eyasLayer.webContents.send(eventName, ...args);
 }
