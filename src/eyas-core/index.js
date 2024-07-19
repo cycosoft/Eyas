@@ -588,9 +588,9 @@ function setMenu () {
 			// },
 			{ type: `separator` },
 			{
+				role: `toggleDevTools`,
 				accelerator: `F12`,
-				label: `🔧 &Developer Tools${$isDev ? ' (Test)' : ''}`,
-				click: () => $appWindow.webContents.openDevTools()
+				label: `🔧 &Developer Tools${$isDev ? ' (Test)' : ''}`
 			}
 		]
 	});
