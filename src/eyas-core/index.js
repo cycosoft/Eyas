@@ -607,7 +607,9 @@ function setMenu () {
 		}
 
 		viewportsMenu.push({
-			label: `${isSizeMatch ? `🔘 ` : ``}${res.label} (${res.width} x ${res.height})`,
+			type: `checkbox`,
+			checked: isSizeMatch,
+			label: `${res.label} (${res.width} x ${res.height})`,
 			click: () => $appWindow.setContentSize(res.width, res.height)
 		});
 	});
@@ -626,7 +628,9 @@ function setMenu () {
 		// add the custom viewport to the list
 		viewportsMenu.unshift(
 			{
-				label: `🔘 Current (${width} x ${height})`,
+				type: `checkbox`,
+				checked: true,
+				label: `Current (${width} x ${height})`,
 				click: () => $appWindow.setContentSize(width, height)
 			},
 			{ type: `separator` }
