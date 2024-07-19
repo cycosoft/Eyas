@@ -665,7 +665,7 @@ function setMenu () {
 
 		// add the item to the menu
 		customLinkList.push({
-			label: `${item.label || item.url}${isValid ? `` : ` (invalid entry: "${item.url}")`}`,
+			label: `${item.external ? `🌐 ` : ``}${item.label || item.url}${isValid ? `` : ` (invalid entry: "${item.url}")`}`,
 			click: () => hasVariables ? navigateVariable(itemUrl) : navigate(validUrl, item.external),
 			enabled: isValid // disable menu item if invalid url
 		});
