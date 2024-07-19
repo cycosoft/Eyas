@@ -3,6 +3,7 @@
 - Prevent a second instance of Eyas from running
 - Added shortcut keys for menu items
 - Fix the version modal not displaying on open if there aren't multiple given test domains
+- Change the devtools for the test to work on any open window
 
 # v3.3.0
 
