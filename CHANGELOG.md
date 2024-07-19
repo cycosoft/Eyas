@@ -4,6 +4,7 @@
 - Added shortcut keys for menu items
 - Fix the version modal not displaying on open if there aren't multiple given test domains
 - Change the devtools for the test to work on any open window
+- Show a globe icon for external links in the "Links" menu
 
 # v3.3.0
 
