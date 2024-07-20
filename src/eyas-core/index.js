@@ -694,7 +694,15 @@ async function manageAppClose(evt) {
 function toggleEyasUI(enable) {
 	if(enable){
 		// set the bounds to the current viewport
-		$eyasLayer.setBounds({ x: 0, y: 0, width: $currentViewport[0], height: $currentViewport[1] });
+		$eyasLayer.setBounds({
+			x: 0,
+			y: 0,
+			width: $currentViewport[0],
+			height: $currentViewport[1]
+		});
+
+		// give the layer focus
+		$eyasLayer.webContents.focus();
 	}else{
 		// shrink the bounds to 0 to hide it
 		$eyasLayer.setBounds({ x: 0, y: 0, width: 0, height: 0 });
