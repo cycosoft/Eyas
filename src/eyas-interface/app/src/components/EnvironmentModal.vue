@@ -6,6 +6,7 @@
 		data-qa="environment-modal"
 		:scrim="false"
 		@after-leave="hideUi"
+		@keyup="environmentHotkey"
 	>
 		<v-card class="pa-3">
 			<v-card-text>
@@ -17,20 +18,26 @@
 							v-for="(domain, index) in domains"
 							:key="index"
 						>
-							<v-btn
-								class="-py-5"
-								block
-								size="large"
-								:stacked="$vuetify.display.smAndUp"
-								v-tooltip:bottom="tooltip(domain)"
-								@click="choose(domain.url)"
+							<v-badge
+								color="red-lighten-2"
+								:content="index + 1"
+								location="bottom right"
 							>
-								<template v-slot:prepend>
-									<v-icon size="40">mdi-database</v-icon>
-								</template>
+								<v-btn
+									class="-py-5"
+									block
+									size="large"
+									:stacked="$vuetify.display.smAndUp"
+									v-tooltip:bottom="tooltip(domain)"
+									@click="choose(domain.url)"
+								>
+									<template v-slot:prepend>
+										<v-icon size="40">mdi-database</v-icon>
+									</template>
 
-								<p>{{ domain.title }}</p>
-							</v-btn>
+									<p>{{ domain.title }}</p>
+								</v-btn>
+							</v-badge>
 						</v-col>
 					</v-row>
 				</v-sheet>
@@ -69,6 +76,20 @@ export default {
 			// hide the UI if there are no other dialogs open
 			if(document.querySelectorAll(`.v-dialog`).length <= 1) {
 				window.eventBridge?.send(`hide-ui`);
+			}
+		},
+
+		environmentHotkey(event) {
+			// setup
+			const keyAsNumber = Number(event.key);
+
+			// if the key pressed isn't a number, exit
+			if(isNaN(keyAsNumber)) { return; }
+
+			// check that the key pressed is within the range of the domains
+			if(keyAsNumber > 0 && keyAsNumber <= this.domains.length) {
+				// choose the domain at the index of the key pressed
+				this.choose(this.domains[keyAsNumber - 1].url);
 			}
 		}
 	}
