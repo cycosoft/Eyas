@@ -28,8 +28,9 @@
 									block
 									size="large"
 									:stacked="$vuetify.display.smAndUp"
+									:loading="loadingIndex === index"
 									v-tooltip:bottom="tooltip(domain)"
-									@click="choose(domain.url)"
+									@click="choose(domain.url, index)"
 								>
 									<template v-slot:prepend>
 										<v-icon size="40">mdi-database</v-icon>
@@ -50,7 +51,8 @@
 export default {
 	data: () => ({
 		visible: false,
-		domains: []
+		domains: [],
+		loadingIndex: -1
 	}),
 
 	mounted() {
@@ -62,9 +64,15 @@ export default {
 	},
 
 	methods: {
-		choose(domain) {
-			window.eventBridge?.send(`environment-selected`, domain);
-			this.visible = false;
+		choose(domain, domainIndex) {
+			// show a loader on the chosen domain
+			this.loadingIndex = domainIndex;
+
+			// timeout for user feedback + time to load test environment
+			setTimeout(() => {
+				window.eventBridge?.send(`environment-selected`, domain);
+				this.visible = false;
+			}, 200);
 		},
 
 		tooltip(domain) {
@@ -88,8 +96,10 @@ export default {
 
 			// check that the key pressed is within the range of the domains
 			if(keyAsNumber > 0 && keyAsNumber <= this.domains.length) {
+				const chosenIndex = keyAsNumber - 1;
+
 				// choose the domain at the index of the key pressed
-				this.choose(this.domains[keyAsNumber - 1].url);
+				this.choose(this.domains[chosenIndex].url, chosenIndex);
 			}
 		}
 	}
