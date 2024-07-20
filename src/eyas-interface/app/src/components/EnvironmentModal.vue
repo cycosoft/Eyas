@@ -48,12 +48,15 @@
 </template>
 
 <script>
+// component defaults
+const defaults = JSON.stringify({
+	visible: false,
+	domains: [],
+	loadingIndex: -1
+});
+
 export default {
-	data: () => ({
-		visible: false,
-		domains: [],
-		loadingIndex: -1
-	}),
+	data: () => JSON.parse(defaults),
 
 	mounted() {
 		// Listen for messages from the main process
@@ -70,8 +73,14 @@ export default {
 
 			// timeout for user feedback + time to load test environment
 			setTimeout(() => {
+				// send the chosen domain to the main process
 				window.eventBridge?.send(`environment-selected`, domain);
+
+				// close the modal
 				this.visible = false;
+
+				// reset the modal state
+				setTimeout(this.reset, 200);
 			}, 200);
 		},
 
@@ -101,6 +110,10 @@ export default {
 				// choose the domain at the index of the key pressed
 				this.choose(this.domains[chosenIndex].url, chosenIndex);
 			}
+		},
+
+		reset() {
+			Object.assign(this.$data, JSON.parse(defaults));
 		}
 	}
 }
