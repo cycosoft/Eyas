@@ -1,11 +1,13 @@
 <template>
 	<v-dialog
 		v-model="visible"
-		persistent
 		width="auto"
+		persistent
 		data-qa="exit-modal"
 		:scrim="false"
 		@after-leave="hideUi"
+		@keyup.esc="cancel"
+		@keyup.enter="exit"
 	>
 		<v-card>
 			<v-card-text>
@@ -41,9 +43,7 @@ export default {
 
 	mounted() {
 		// Listen for messages from the main process
-		window.eventBridge?.receive(`modal-exit-visible`, value => {
-			this.visible = value;
-		});
+		window.eventBridge?.receive(`modal-exit-visible`, value => this.visible = value);
 	},
 
 	methods: {
