@@ -7,7 +7,7 @@
 <div align="center">
   <h1>Eyas</h1>
 </div>
-<p align="center">Feature Branch Testing Without a Server</p>
+<p align="center">Simplified Testing for Web Applications</p>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@cycosoft/eyas">

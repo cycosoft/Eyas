@@ -1,7 +1,7 @@
 {
   "name": "@cycosoft/eyas",
   "version": "3.4.0",
-  "description": "Feature Branch Testing Without a Server",
+  "description": "Simplified Testing for Web Applications",
   "main": "./index.js",
   "packageName": "Eyas",
   "publishConfig": {
