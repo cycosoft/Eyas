@@ -134,4 +134,9 @@ npm run build-my-project && npx eyas db
   - Event: app exit modal was shown
   - Event: app closed
 
+[Eyas](https://www.dictionary.com/browse/eyas#:~:text=Falconry.%20a%20young%20falcon%20or%20hawk%20taken%20from%20the%20nest%20for%20training.):
+<small>
+Falconry. a young falcon or hawk taken from the nest for training.
+</small>
+
 [[Back to Top](#table-of-contents)]
