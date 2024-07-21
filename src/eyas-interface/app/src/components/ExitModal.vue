@@ -8,6 +8,7 @@
 		@after-leave="hideUi"
 		@keyup.esc="cancel"
 		@keyup.enter="exit"
+		@keyup.e="exit"
 	>
 		<v-card>
 			<v-card-text>
@@ -27,7 +28,7 @@
 					:loading="exiting"
 					@click="exit"
 				>
-					Exit
+					<u>E</u>xit
 				</v-btn>
 			</v-card-actions>
 		</v-card>

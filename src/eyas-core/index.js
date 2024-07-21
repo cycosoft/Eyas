@@ -702,11 +702,44 @@ function toggleEyasUI(enable) {
 		});
 
 		// give the layer focus
-		$eyasLayer.webContents.focus();
+		focusUI();
 	}else{
 		// shrink the bounds to 0 to hide it
 		$eyasLayer.setBounds({ x: 0, y: 0, width: 0, height: 0 });
 	}
+}
+
+// focus the UI layer
+function focusUI() {
+	// track the number of attempts to focus the UI to prevent infinite loops
+	focusUI.attempts = focusUI.attempts || 0;
+	focusUI.attempts++;
+
+	// if the number of attempts is greater than 5
+	if(focusUI.attempts > 5){
+		// reset the number of attempts
+		focusUI.attempts = 0;
+
+		// stop trying to focus the UI
+		return;
+	}
+
+	// give the layer focus
+	$eyasLayer.webContents.focus();
+
+	// check if the UI is focused
+	setTimeout(() => {
+		const isFocused = $eyasLayer.webContents.isFocused();
+
+		// if the UI is not focused
+		if(!isFocused){
+			// call the focus method again
+			focusUI();
+		} else {
+			// reset the number of attempts
+			focusUI.attempts = 0;
+		}
+	}, 250);
 }
 
 // manage navigation
