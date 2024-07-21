@@ -7,7 +7,7 @@
 <div align="center">
   <h1>Eyas</h1>
 </div>
-<p align="center">Feature Branch Testing Without a Server</p>
+<p align="center">Simplified Testing for Web Applications</p>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@cycosoft/eyas">
@@ -18,28 +18,30 @@
 <br />
 <br />
 
-## About
+## The Pitch
 
-_Eyas_ leverages a packaged version of your application to provide a simple and shareable testing solution without the need to set up a server and custom domains. Regardless of your team size, you can now decrease the feedback loop for no extra cost. You can easily include PMs, designers, executives and customers in the testing process.
+<!-- _Eyas_ leverages a packaged version of your application to provide a simple and shareable testing solution without the need to set up a server and custom domains. Regardless of your team size, you can now decrease the feedback loop for no extra cost. You can easily include PMs, designers, executives and customers in the testing process. -->
 
-In practice, _Eyas_ can shift-left your testing process by allowing full testing of feature branches before they are merged. This will increase confidence in your main branch, enable at-will deployments, reduce bugs / hotfixes / rollbacks, increase team velocity, decrease team stress, and crucially limit code freezes when "tossing the release over the wall" with QA.
+<!-- In practice, _Eyas_ can shift-left your testing process by allowing full testing of feature branches before they are merged. This will increase confidence in your main branch, enable at-will deployments, reduce bugs / hotfixes / rollbacks, increase team velocity, decrease team stress, and crucially limit code freezes when "tossing the release over the wall" with QA. -->
+
+You bundle your app with the CLI ( `npm run build && npx eyas db` ), and your consumer runs the output `*.eyas` with the [runner](https://github.com/cycosoft/Eyas/releases).
+
+Reduce and simplify the feedback loop with any stakeholder & any team size, regardless of their technical ability. Less bugs, faster deployment cycles, reduced stress ...for free.
+
+- 🎨 A/B Test Design Changes
+- 👩‍💻 Allow POs to Test UX
+- 🚀 Get Pre-Merge QA Sign-Off
+- 🌍 Test Against Any Environment
+- 📢 Get Early Customer Feedback
 
 ## Table of Contents
 
-- [Features](#features)
 - [Install](#install)
 - [Configuration](#configuration)
 - [Usage](#usage)
 - [Outputs](#outputs)
 - [Tips](#tips)
 - [The Fine Print](#the-fine-print)
-
-## Features
-
-- 📦 Shareable: Bundle your app in a read-only archive for Windows & MacOS. No server needed.
-- 🔗 Dynamic: Simulate running from any domain.
-- 📏 Resolution: Supports standard & custom screen sizes (mobile, tablet, desktop).
-- 🕜 Time-limited: Set test expiration dates between 1 hour and 30 days.
 
 ## Install
 
@@ -131,5 +133,10 @@ npm run build-my-project && npx eyas db
   - Event: app launched
   - Event: app exit modal was shown
   - Event: app closed
+
+[Eyas](https://www.dictionary.com/browse/eyas#:~:text=Falconry.%20a%20young%20falcon%20or%20hawk%20taken%20from%20the%20nest%20for%20training.):
+<small>
+Falconry. a young falcon or hawk taken from the nest for training.
+</small>
 
 [[Back to Top](#table-of-contents)]
