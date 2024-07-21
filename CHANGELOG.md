@@ -8,6 +8,7 @@
 - Allow escape to close the exit modal
 - Allow enter to exit the app from the exit modal
 - Add numbered hotkeys to the environment selection modal
+- Update readme
 
 # v3.3.0
 
