@@ -6,7 +6,7 @@
 		data-qa="environment-modal"
 		:scrim="false"
 		@after-leave="hideUi"
-		@keyup="environmentHotkey"
+		@keyup="hotkeyEnvSelector"
 	>
 		<v-card class="pa-3">
 			<v-card-text>
@@ -19,7 +19,7 @@
 							:key="index"
 						>
 							<v-badge
-								color="red-lighten-2"
+								:color="loadingIndex === index ? `` : `red-lighten-2`"
 								:content="index + 1"
 								location="bottom right"
 							>
@@ -96,7 +96,7 @@ export default {
 			}
 		},
 
-		environmentHotkey(event) {
+		hotkeyEnvSelector(event) {
 			// setup
 			const keyAsNumber = Number(event.key);
 
