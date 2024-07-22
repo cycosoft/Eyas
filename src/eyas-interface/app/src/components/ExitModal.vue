@@ -4,7 +4,6 @@
 			v-model="visible"
 			width="auto"
 			persistent
-			data-qa="exit-modal"
 			:scrim="false"
 			@after-leave="hideUi"
 			@keyup.esc="cancel"

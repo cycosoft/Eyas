@@ -3,7 +3,6 @@
 		v-model="visible"
 		persistent
 		width="auto"
-		data-qa="environment-modal"
 		:scrim="false"
 		@after-leave="hideUi"
 		@keyup="hotkeyEnvSelector"
