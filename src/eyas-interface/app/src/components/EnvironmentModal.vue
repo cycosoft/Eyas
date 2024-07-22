@@ -59,10 +59,15 @@ export default {
 
 	mounted() {
 		// Listen for messages from the main process
-		window.eventBridge?.receive(`show-environment-modal`, domains => {
-			this.domains = domains;
-			this.visible = true;
-		});
+		// window.eventBridge?.receive(`show-environment-modal`, domains => {
+			// this.domains = [
+			// 	{ url: `sub.domain.com:44301/`, title: `EYAS-253 Test` },
+			// 	{ url: `dev.eyas.cycosoft.com`, title: `Development` },
+			// 	{ url: `staging.eyas.cycosoft.com`, title: `Staging` },
+			// 	{ url: `eyas.cycosoft.com`, title: `Production` }
+			// ];
+			// this.visible = true;
+		// });
 	},
 
 	methods: {
