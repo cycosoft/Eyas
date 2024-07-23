@@ -4,6 +4,7 @@
 			:model-value="modelValue"
 			width="auto"
 			persistent
+			v-bind="$attrs"
 			:scrim="false"
 			@after-leave="hideUi"
 		>
@@ -19,9 +20,6 @@ export default {
 	components: {
 		ModalBackground
 	},
-
-	// set by the parent component
-	emits: [`keyup`],
 
 	props: {
 		modelValue: Boolean
