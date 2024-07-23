@@ -46,8 +46,6 @@ export default {
 	mounted() {
 		// Listen for messages from the main process
 		window.eventBridge?.receive(`modal-exit-visible`, value => this.visible = value);
-
-		// setTimeout(() => this.visible = true, 100);
 	},
 
 	methods: {
