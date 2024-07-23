@@ -1,7 +1,7 @@
 <template>
-	<ModalBackground :model-value="visible">
+	<ModalBackground :model-value="modelValue">
 		<v-dialog
-			v-model="visible"
+			:model-value="modelValue"
 			width="auto"
 			persistent
 			:scrim="false"
@@ -20,13 +20,12 @@ export default {
 		ModalBackground
 	},
 
+	// set by the parent component
+	emits: [`keyup`],
+
 	props: {
 		modelValue: Boolean
 	},
-
-	data: () => ({
-		visible: false
-	}),
 
 	methods: {
 		hideUi() {
