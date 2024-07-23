@@ -1,7 +1,7 @@
 <template>
 	<v-app>
 		<!-- always display the blur so the user knows if the UI is active -->
-		<v-overlay :model-value="true" />
+		<v-overlay :model-value="true" persistent />
 
 		<EnvironmentModal />
 		<VariablesModal />
