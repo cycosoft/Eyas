@@ -1,10 +1,6 @@
 <template>
-	<v-dialog
+	<ModalWrapper
 		v-model="visible"
-		persistent
-		width="auto"
-		:scrim="false"
-		@after-leave="hideUi"
 		@keyup="hotkeyEnvSelector"
 	>
 		<v-card class="pa-3">
@@ -43,10 +39,12 @@
 				</v-sheet>
 			</v-card-text>
 		</v-card>
-	</v-dialog>
+	</ModalWrapper>
 </template>
 
 <script>
+import ModalWrapper from '@/components/ModalWrapper.vue';
+
 // component defaults
 const defaults = JSON.stringify({
 	visible: false,
@@ -55,6 +53,10 @@ const defaults = JSON.stringify({
 });
 
 export default {
+	components: {
+		ModalWrapper
+	},
+
 	data: () => JSON.parse(defaults),
 
 	mounted() {
@@ -91,13 +93,6 @@ export default {
 		tooltip(domain) {
 			const message = `Set environment title in Eyas config`;
 			return domain.url === domain.title ? message : domain.url;
-		},
-
-		hideUi() {
-			// hide the UI if there are no other dialogs open
-			if(document.querySelectorAll(`.v-dialog`).length <= 1) {
-				window.eventBridge?.send(`hide-ui`);
-			}
 		},
 
 		hotkeyEnvSelector(event) {
