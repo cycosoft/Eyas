@@ -33,6 +33,9 @@ export default {
 	width: 100%;
 	height: 100%;
 
+	// disable highlighting of background content
+	user-select: none;
+
 	.bottom-right {
 		display: flex;
 		height: 100%;
