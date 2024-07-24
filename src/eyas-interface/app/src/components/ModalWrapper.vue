@@ -1,5 +1,8 @@
 <template>
-	<ModalBackground :model-value="modelValue">
+	<ModalBackground
+		:model-value="modelValue"
+		:content-visible="backgroundContentVisible"
+	>
 		<v-dialog
 			:model-value="modelValue"
 			width="auto"
@@ -14,6 +17,7 @@
 </template>
 
 <script>
+import ModalStore from '@/stores/modals';
 import ModalBackground from '@/components/ModalBackground.vue';
 
 export default {
@@ -23,6 +27,28 @@ export default {
 
 	props: {
 		modelValue: Boolean
+	},
+
+	data: () => ({
+		id: window.crypto.randomUUID() // generate a unique ID for this modal
+	}),
+
+	computed: {
+		backgroundContentVisible () {
+			return ModalStore().lastOpenedById === this.id;
+		}
+	},
+
+	watch: {
+		modelValue(isTrue) {
+			if(isTrue) {
+				// track this modal as the last opened modal
+				ModalStore().track(this.id);
+			} else {
+				// remove the modal from the store
+				ModalStore().untrack(this.id);
+			}
+		}
 	},
 
 	methods: {

@@ -1,14 +1,16 @@
 <template>
 	<v-overlay class="custom-background" :model-value="modelValue">
-		<div class="bottom-right">
-			<span class="cursor-pointer" @click="openInBrowser(`https://cycosoft.com`)">
-				<img
-					alt="Cycosoft, LLC logo"
-					src="@/assets/cycosoft-logo.svg"
-					width="175"
-				>
-			</span>
-		</div>
+		<template v-if="contentVisible">
+			<div class="bottom-right">
+				<span class="cursor-pointer" @click="openInBrowser(`https://cycosoft.com`)">
+					<img
+						alt="Cycosoft, LLC logo"
+						src="@/assets/cycosoft-logo.svg"
+						width="175"
+					>
+				</span>
+			</div>
+		</template>
 	</v-overlay>
 
 	<slot />
@@ -17,7 +19,8 @@
 <script>
 export default {
 	props: {
-		modelValue: Boolean
+		modelValue: Boolean,
+		contentVisible: Boolean
 	},
 
 	methods: {
