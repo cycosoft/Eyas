@@ -113,8 +113,8 @@ npm run build-my-project && npx eyas db
 
 ## Tips
 
-- Add `.eyas-*` and `eyas-*` to your `.gitignore` to prevent outputs from being committed to your repo
-<!-- - If your app is using a custom domain and you'd like to test it in your browser via Eyas, you will need to add the domain to your `etc/hosts` file. See [this guide](https://www.ephost.com/account/index.php/knowledgebase/232/How-to-edit-your-Host-file.html) (no affiliation) for more information. -->
+- Add `eyas-*` to your `.gitignore` to prevent outputs from being committed to your repo
+<!-- - Deprecated: If your app is using a custom domain and you'd like to test it in your browser via Eyas, you will need to add the domain to your `etc/hosts` file. See [this guide](https://www.ephost.com/account/index.php/knowledgebase/232/How-to-edit-your-Host-file.html) (no affiliation) for more information. -->
 - View documented changes at [CHANGELOG.md](CHANGELOG.md)
 - While Eyas is intended to be used for testing in lower environments, testing fixes against production can be incredibly valuable when working directly with customers. It is advisable to use day-of time limits in these cases, and _very importantly_ that your test is branched *only* from the commit currently in production.
 
