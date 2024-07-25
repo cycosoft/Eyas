@@ -52,7 +52,10 @@ function parseConfig(requestedEyasPath) {
 			gitHash: userConfig.meta.gitHash || getCommitHash(),
 			gitUser: userConfig.meta.gitUser || getUserName(),
 			compiled: userConfig.meta.compiled || new Date(),
-			eyas: userConfig.meta.eyas || `0.0.0`
+			eyas: userConfig.meta.eyas || `0.0.0`,
+			companyId: userConfig.meta.companyId || getCompanyId(),
+			projectId: userConfig.meta.projectId || ``,
+			testId: userConfig.meta.testId || ``
 		}
 	};
 
@@ -191,6 +194,28 @@ function getUserName() {
 	} catch (error) {
 		// eslint-disable-next-line no-console
 		console.error(`Error getting user name:`, error);
+		return null;
+	}
+}
+
+// attempt to hash the user's email domain
+function getCompanyId() {
+	try {
+		const email = execSync(`git config user.email`).toString().trim();
+
+		// get the root domain of the email without subdomains
+		const domain = email
+			.split(`@`) // split up the email
+			.at(-1) // get the last part
+			.split('.') // split up the domain
+			.slice(-2) // get the last two parts
+			.join('.'); // join them back together
+
+		const hash = require(`crypto`).createHash(`sha256`).update(domain).digest(`hex`);
+		return domain;
+	} catch (error) {
+		// eslint-disable-next-line no-console
+		console.error(`Error getting user email:`, error);
 		return null;
 	}
 }
