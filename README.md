@@ -42,7 +42,7 @@ Reduce and simplify the feedback loop with any stakeholder & any team size, rega
 ## Install
 
 ```bash
-# Install the package
+# Install the CLI
 npm install @cycosoft/eyas --save-dev
 ```
 
