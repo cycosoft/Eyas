@@ -356,17 +356,17 @@ function trackEvent(event, extraData) {
 		trackEvent.userId ||= crypto.randomUUID();
 
 		// define who the user is in mixpanel
-		trackEvent.mixpanel.people.set(trackEvent.userId, {
-			company: ``,
-		});
+		trackEvent.mixpanel.people.set(trackEvent.userId);
 	}
 
 	// if not running in dev mode
 	trackEvent.mixpanel.track(event, {
-		// data to send with every request
+		// core data to send with every request
+		distinct_id: trackEvent.userId, // user to link action to
 		$os: $operatingSystem,
 		$app_version_string: _appVersion,
-		distinct_id: trackEvent.userId, // user to link action to
+		companyId: config().meta.companyId,
+		projectId: config().meta.projectId,
 
 		// provided data to send with the event
 		...extraData
