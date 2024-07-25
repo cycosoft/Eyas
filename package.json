@@ -87,7 +87,7 @@
     "archiver": "^7.0.1",
     "commander": "^12.1.0",
     "date-fns": "^3.6.0",
-    "electron": "^31.2.1",
+    "electron": "^31.3.0",
     "electron-builder": "^24.13.3",
     "express": "^4.19.2",
     "extract-zip": "^2.0.1",
@@ -98,7 +98,7 @@
     "pinia": "^2.1.7",
     "semver": "^7.6.3",
     "validator": "^13.12.0",
-    "vue": "^3.4.33",
+    "vue": "^3.4.34",
     "vuetify": "^3.6.13"
   },
   "devDependencies": {
