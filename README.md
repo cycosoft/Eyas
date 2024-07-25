@@ -61,7 +61,7 @@ module.exports = {
     /*
       { url: `dev.cycosoft.com`, title: `Development` },
       { url: `staging.cycosoft.com`, title: `Staging` },
-      { url: `cycosoft.com`, title: `Production` }
+      { url: `cycosoft.com`, title: `Production` } // Prod URLs are helpful, but under careful consideration.
     */
   ],
   // The name of your project
