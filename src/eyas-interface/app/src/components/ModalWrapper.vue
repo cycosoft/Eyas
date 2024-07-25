@@ -40,7 +40,14 @@ export default {
 	},
 
 	watch: {
-		modelValue(isTrue) {
+		modelValue: {
+			immediate: true, // must be immediate to track the initial state AND when the modal is closed
+			handler: `trackModalState`
+		}
+	},
+
+	methods: {
+		trackModalState(isTrue) {
 			if(isTrue) {
 				// track this modal as the last opened modal
 				ModalStore().track(this.id);
@@ -48,10 +55,8 @@ export default {
 				// remove the modal from the store
 				ModalStore().untrack(this.id);
 			}
-		}
-	},
+		},
 
-	methods: {
 		hideUi() {
 			// hide the UI if there are no other dialogs open
 			if(document.querySelectorAll(`.v-dialog`).length <= 1) {
