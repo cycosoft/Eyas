@@ -11,8 +11,9 @@
 - Operating System
 - Eyas Version
 - Company ID
-- User ID
+- Device ID
 - Project ID
+- Test ID
 
 ## Goals
 
@@ -27,6 +28,8 @@
 - Determine number of companies using Eyas
   - Data: `Company ID`
 - Determine number of users using Eyas
-  - Data: `User ID`
+  - Data: `Device ID`
 - Determine number of projects using Eyas
   - Data: `Project ID`
+- Determine number of active tests
+  - Data: `Test ID`

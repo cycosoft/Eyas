@@ -99,6 +99,7 @@
     "inquirer": "8.2.6",
     "mixpanel": "^0.18.0",
     "mkcert": "^3.2.0",
+    "node-machine-id": "^1.1.12",
     "pinia": "^2.1.7",
     "semver": "^7.6.3",
     "validator": "^13.12.0",

@@ -338,7 +338,7 @@ function initEyasListeners() {
 }
 
 // method for tracking events
-function trackEvent(event, extraData) {
+async function trackEvent(event, extraData) {
 	// setup
 	const MP_KEY_PROD = `07f0475cb429f7de5ebf79a1c418dc5c`;
 	const MP_KEY_DEV = `02b67bb94dd797e9a2cbb31d021c3cef`;
@@ -353,20 +353,22 @@ function trackEvent(event, extraData) {
 		trackEvent.mixpanel ||= Mixpanel.init($isDev ? MP_KEY_DEV : MP_KEY_PROD);
 
 		// get information about the user
-		trackEvent.userId ||= crypto.randomUUID();
+		const { machineId } = require(`node-machine-id`);
+		trackEvent.deviceId ||= await machineId();
 
 		// define who the user is in mixpanel
-		trackEvent.mixpanel.people.set(trackEvent.userId);
+		trackEvent.mixpanel.people.set(trackEvent.deviceId);
 	}
 
 	// if not running in dev mode
 	trackEvent.mixpanel.track(event, {
 		// core data to send with every request
-		distinct_id: trackEvent.userId, // user to link action to
+		distinct_id: trackEvent.deviceId, // device to link action to
 		$os: $operatingSystem,
 		$app_version_string: _appVersion,
 		companyId: config().meta.companyId,
 		projectId: config().meta.projectId,
+		testId: config().meta.testId,
 
 		// provided data to send with the event
 		...extraData
