@@ -10,6 +10,9 @@
 
 - Operating System
 - Eyas Version
+- Company ID
+- User ID
+- Project ID
 
 ## Goals
 
@@ -19,5 +22,11 @@
   - Events: `Modal Exit Shown`, `App Exit`
 - Determine active versions of Eyas being used
   - Data: `Eyas Version`
-- Determine highest usage operating system
+- Determine operating system usage
   - Data: `Operating System`
+- Determine number of companies using Eyas
+  - Data: `Company ID`
+- Determine number of users using Eyas
+  - Data: `User ID`
+- Determine number of projects using Eyas
+  - Data: `Project ID`
