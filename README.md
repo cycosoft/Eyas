@@ -90,13 +90,13 @@ module.exports = {
 ## Usage
 
 ```bash
-# Packages the configured app to a distributable zip
-npm run build-my-project && npx eyas bundle
+# Generates an Eyas test database for use with the installed version of Eyas
+npm run build-my-project && npx eyas db
 ```
 
 ```bash
-# Generates an Eyas test database for use with the installed version of Eyas
-npm run build-my-project && npx eyas db
+# Packages the configured app to a distributable zip
+npm run build-my-project && npx eyas bundle
 ```
 
 ## Outputs
