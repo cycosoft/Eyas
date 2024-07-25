@@ -213,10 +213,7 @@ function initElectronUi() {
 	$appWindow.loadURL('data:text/html,' + encodeURIComponent(`<html><body></body></html>`));
 
 	// track the app launch event
-	trackEvent(MP_EVENTS.core.launch, {
-		$os: $operatingSystem,
-		$app_version_string: _appVersion
-	});
+	trackEvent(MP_EVENTS.core.launch);
 
 	// exit the app if the test has expired
 	// NOTE: THIS NEEDS TO BE MOVED TO THE UI LAYER
@@ -341,7 +338,7 @@ function initEyasListeners() {
 }
 
 // method for tracking events
-function trackEvent(event, data) {
+function trackEvent(event, extraData) {
 	// setup
 	const MP_KEY_PROD = `07f0475cb429f7de5ebf79a1c418dc5c`;
 	const MP_KEY_DEV = `02b67bb94dd797e9a2cbb31d021c3cef`;
@@ -366,8 +363,13 @@ function trackEvent(event, data) {
 
 	// if not running in dev mode
 	trackEvent.mixpanel.track(event, {
-		...data,
-		distinct_id: trackEvent.userId // always include the user id
+		// data to send with every request
+		$os: $operatingSystem,
+		$app_version_string: _appVersion,
+		distinct_id: trackEvent.userId, // user to link action to
+
+		// provided data to send with the event
+		...extraData
 	});
 }
 
