@@ -20,10 +20,6 @@
 
 ## The Pitch
 
-<!-- _Eyas_ leverages a packaged version of your application to provide a simple and shareable testing solution without the need to set up a server and custom domains. Regardless of your team size, you can now decrease the feedback loop for no extra cost. You can easily include PMs, designers, executives and customers in the testing process. -->
-
-<!-- In practice, _Eyas_ can shift-left your testing process by allowing full testing of feature branches before they are merged. This will increase confidence in your main branch, enable at-will deployments, reduce bugs / hotfixes / rollbacks, increase team velocity, decrease team stress, and crucially limit code freezes when "tossing the release over the wall" with QA. -->
-
 You bundle your app with the CLI ( `npm run build && npx eyas db` ), and your consumer runs the output `*.eyas` with the [runner](https://github.com/cycosoft/Eyas/releases).
 
 Reduce and simplify the feedback loop with any stakeholder & any team size, regardless of their technical ability. Less bugs, faster deployment cycles, reduced stress ...for free.
@@ -46,26 +42,31 @@ Reduce and simplify the feedback loop with any stakeholder & any team size, rega
 ## Install
 
 ```bash
-# Install the package
+# Install the CLI
 npm install @cycosoft/eyas --save-dev
 ```
 
 ## Configuration
 
+The CLI will attempt to run without a configuration file by using the values in this example `.eyas.config.js`. Example overrides are provided as comments.
+
 ```js
 // <projectRoot>/.eyas.config.js
 module.exports = {
-  // The path to the directory containing your application files
+  // The path to the directory containing your application files from the root of your project
   source: `dist`,
   // Simulate a domain for the test (accepts '' || [''] || [{ url, title }])
-  domains: [/*
-    { url: `dev.cycosoft.com`, title: `Development` },
-    { url: `staging.cycosoft.com`, title: `Staging` },
-    { url: `cycosoft.com`, title: `Production` }
-  */],
-  // The name of your application
-  title: `My Cool Site`,
-  // The version of your application that was built. Defaults to current branch name.
+  domains: [
+    `eyas://local.test`
+    /*
+      { url: `dev.cycosoft.com`, title: `Development` },
+      { url: `staging.cycosoft.com`, title: `Staging` },
+      { url: `cycosoft.com`, title: `Production` } // Prod URLs are helpful, but under careful consideration.
+    */
+  ],
+  // The name of your project
+  title: ``,
+  // The version of your project Eyas will be built from. You can alternatively set it to your package.json version for example.
   version: `<current-branch>.<current-commit>`,
   // Additional screen sizes to test your application at
   viewports: [/* { label: `iPad Pro`, width: 1024, height: 1366 } */],
@@ -76,9 +77,9 @@ module.exports = {
   */]
   // File outputs
   outputs: {
-    // Build a Windows distributable
+    // Build a Windows distributable for `eyas bundle` command (auto-detected if not set)
     windows: true,
-    // Build a MacOS distributable
+    // Build a MacOS distributable for `eyas bundle` command (auto-detected if not set)
     mac: true,
     // The number of hours from build time until the distributable expires
     expires: 168 // (range: 1-720 hours)
@@ -89,13 +90,13 @@ module.exports = {
 ## Usage
 
 ```bash
-# Packages the configured app to a distributable zip
-npm run build-my-project && npx eyas bundle
+# Generates an Eyas test database for use with the installed version of Eyas
+npm run build-my-project && npx eyas db
 ```
 
 ```bash
-# Generates an Eyas test database for use with the installed version of Eyas
-npm run build-my-project && npx eyas db
+# Packages the configured app to a distributable zip
+npm run build-my-project && npx eyas bundle
 ```
 
 ## Outputs
