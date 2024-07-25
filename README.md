@@ -48,20 +48,25 @@ npm install @cycosoft/eyas --save-dev
 
 ## Configuration
 
+The CLI will attempt to run without a configuration file by using the values in this example `.eyas.config.js`. Example overrides are provided as comments.
+
 ```js
 // <projectRoot>/.eyas.config.js
 module.exports = {
-  // The path to the directory containing your application files
+  // The path to the directory containing your application files from the root of your project
   source: `dist`,
   // Simulate a domain for the test (accepts '' || [''] || [{ url, title }])
-  domains: [/*
-    { url: `dev.cycosoft.com`, title: `Development` },
-    { url: `staging.cycosoft.com`, title: `Staging` },
-    { url: `cycosoft.com`, title: `Production` }
-  */],
-  // The name of your application
-  title: `My Cool Site`,
-  // The version of your application that was built. Defaults to current branch name.
+  domains: [
+    `eyas://local.test`
+    /*
+      { url: `dev.cycosoft.com`, title: `Development` },
+      { url: `staging.cycosoft.com`, title: `Staging` },
+      { url: `cycosoft.com`, title: `Production` }
+    */
+  ],
+  // The name of your project
+  title: ``,
+  // The version of your project Eyas will be built from. You can alternatively set it to your package.json version for example.
   version: `<current-branch>.<current-commit>`,
   // Additional screen sizes to test your application at
   viewports: [/* { label: `iPad Pro`, width: 1024, height: 1366 } */],
@@ -72,9 +77,9 @@ module.exports = {
   */]
   // File outputs
   outputs: {
-    // Build a Windows distributable
+    // Build a Windows distributable for `eyas bundle` command (auto-detected if not set)
     windows: true,
-    // Build a MacOS distributable
+    // Build a MacOS distributable for `eyas bundle` command (auto-detected if not set)
     mac: true,
     // The number of hours from build time until the distributable expires
     expires: 168 // (range: 1-720 hours)
