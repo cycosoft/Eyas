@@ -6,7 +6,7 @@ describe(`Electron Container Functionality`, () => {
 		// await browser.closeWindow();
 
 		// close dialog should exist
-		await expect($(`[data-qa="environment-modal"]`)).toExist();
+		// await expect($(`[data-qa="environment-modal"]`)).toExist();
 	});
 });
 

@@ -1,11 +1,6 @@
 <template>
-	<v-dialog
+	<ModalWrapper
 		v-model="visible"
-		persistent
-		width="auto"
-		data-qa="environment-modal"
-		:scrim="false"
-		@after-leave="hideUi"
 		@keyup="hotkeyEnvSelector"
 	>
 		<v-card class="pa-3">
@@ -44,10 +39,12 @@
 				</v-sheet>
 			</v-card-text>
 		</v-card>
-	</v-dialog>
+	</ModalWrapper>
 </template>
 
 <script>
+import ModalWrapper from '@/components/ModalWrapper.vue';
+
 // component defaults
 const defaults = JSON.stringify({
 	visible: false,
@@ -56,14 +53,23 @@ const defaults = JSON.stringify({
 });
 
 export default {
+	components: {
+		ModalWrapper
+	},
+
 	data: () => JSON.parse(defaults),
 
 	mounted() {
 		// Listen for messages from the main process
-		window.eventBridge?.receive(`show-environment-modal`, domains => {
-			this.domains = domains;
-			this.visible = true;
-		});
+		// window.eventBridge?.receive(`show-environment-modal`, domains => {
+			// this.domains = [
+			// 	{ url: `sub.domain.com:44301/`, title: `EYAS-253 Test` },
+			// 	{ url: `dev.eyas.cycosoft.com`, title: `Development` },
+			// 	{ url: `staging.eyas.cycosoft.com`, title: `Staging` },
+			// 	{ url: `eyas.cycosoft.com`, title: `Production` }
+			// ];
+			// this.visible = true;
+		// });
 	},
 
 	methods: {
@@ -87,13 +93,6 @@ export default {
 		tooltip(domain) {
 			const message = `Set environment title in Eyas config`;
 			return domain.url === domain.title ? message : domain.url;
-		},
-
-		hideUi() {
-			// hide the UI if there are no other dialogs open
-			if(document.querySelectorAll(`.v-dialog`).length <= 1) {
-				window.eventBridge?.send(`hide-ui`);
-			}
 		},
 
 		hotkeyEnvSelector(event) {

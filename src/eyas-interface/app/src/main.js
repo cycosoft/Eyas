@@ -1,17 +1,17 @@
 import { createApp } from 'vue';
+import { createPinia } from 'pinia';
 import App from '@/App.vue';
-// import router from '@/router';
 
 // Vuetify
 import 'vuetify/styles';
 import '@mdi/font/css/materialdesignicons.css';
 import { createVuetify } from 'vuetify';
 
-// create a new app instance
+// create a new app instance to work with
 const app = createApp(App);
 
-// attach the router and vuetify to the app
-// app.use(router);
+// attach imports to the app instance
+app.use(createPinia());
 app.use(createVuetify());
 
 // mount the app to the html

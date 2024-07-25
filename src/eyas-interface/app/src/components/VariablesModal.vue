@@ -1,11 +1,9 @@
 <template>
-	<v-dialog
+	<ModalWrapper
 		v-model="visible"
-		persistent
 		:width="dialogWidth"
-		:scrim="false"
 		@after-enter="pinDialogWidth"
-		@after-leave="hideUi"
+		@keyup.esc="close"
 	>
 		<v-card class="pa-3 variables-modal-content">
 			<v-card-text class="pb-0">
@@ -74,26 +72,27 @@
 			</v-card-text>
 
 			<v-card-actions>
-					<v-btn @click="close">
-						Cancel
-					</v-btn>
+				<v-btn @click="close">
+					Cancel
+				</v-btn>
 
-					<v-spacer />
+				<v-spacer />
 
-					<v-btn
-						color="primary"
-						variant="elevated"
-						:disabled="!linkIsValid"
-						@click="launch"
-					>
-						Continue
-					</v-btn>
-				</v-card-actions>
+				<v-btn
+					color="primary"
+					variant="elevated"
+					:disabled="!linkIsValid"
+					@click="launch"
+				>
+					Continue
+				</v-btn>
+			</v-card-actions>
 		</v-card>
-	</v-dialog>
+	</ModalWrapper>
 </template>
 
 <script>
+import ModalWrapper from '@/components/ModalWrapper.vue';
 import isURL from 'validator/lib/isURL';
 
 const REGEX_VARIABLES_AND_FIELDS = /([\?|&](\w*)=)?{([^{}]+)}/g;
@@ -107,6 +106,10 @@ const componentDefaults = JSON.stringify({
 });
 
 export default {
+	components: {
+		ModalWrapper
+	},
+
 	data: () => ({
 		...JSON.parse(componentDefaults)
 	}),
@@ -222,13 +225,6 @@ export default {
 
 			// set the width of the dialog + 1 to round up and prevent content jumping
 			this.dialogWidth = document.querySelector(`.variables-modal-content`).offsetWidth + 1;
-		},
-
-		hideUi() {
-			// hide the UI if there are no other dialogs open
-			if(document.querySelectorAll(`.v-dialog`).length <= 1) {
-				window.eventBridge?.send(`hide-ui`);
-			}
 		}
 	}
 }

@@ -1,11 +1,6 @@
 <template>
-	<v-dialog
+	<ModalWrapper
 		v-model="visible"
-		width="auto"
-		persistent
-		data-qa="exit-modal"
-		:scrim="false"
-		@after-leave="hideUi"
 		@keyup.esc="cancel"
 		@keyup.enter="exit"
 		@keyup.e="exit"
@@ -32,11 +27,17 @@
 				</v-btn>
 			</v-card-actions>
 		</v-card>
-	</v-dialog>
+	</ModalWrapper>
 </template>
 
 <script>
+import ModalWrapper from '@/components/ModalWrapper.vue';
+
 export default {
+	components: {
+		ModalWrapper
+	},
+
 	data: () => ({
 		visible: false,
 		exiting: false
@@ -55,13 +56,6 @@ export default {
 
 		cancel() {
 			this.visible = false;
-		},
-
-		hideUi() {
-			// hide the UI if there are no other dialogs open
-			if(document.querySelectorAll(`.v-dialog`).length <= 1) {
-				window.eventBridge?.send(`hide-ui`);
-			}
 		}
 	}
 };

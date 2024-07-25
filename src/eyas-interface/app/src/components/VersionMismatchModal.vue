@@ -1,11 +1,5 @@
 <template>
-	<v-dialog
-		v-model="visible"
-		persistent
-		width="auto"
-		:scrim="false"
-		@after-leave="hideUi"
-	>
+	<ModalWrapper v-model="visible">
 		<v-card class="pa-3">
 			<v-card-text>
 				<p class="font-weight-black text-center text-h6 mb-10">⚠️ Possible Update Available ⚠️</p>
@@ -37,11 +31,17 @@
 				>Later</v-btn>
 			</v-card-actions>
 		</v-card>
-	</v-dialog>
+	</ModalWrapper>
 </template>
 
 <script>
+import ModalWrapper from '@/components/ModalWrapper.vue';
+
 export default {
+	components: {
+		ModalWrapper
+	},
+
 	data: () => ({
 		visible: false,
 		runnerVersion: null,
@@ -58,13 +58,6 @@ export default {
 	},
 
 	methods: {
-		hideUi() {
-			// hide the UI if there are no other dialogs open
-			if(document.querySelectorAll(`.v-dialog`).length <= 1) {
-				window.eventBridge?.send(`hide-ui`);
-			}
-		},
-
 		checkForUpdate() {
 			const url = `https://github.com/cycosoft/Eyas/releases`;
 			window.eventBridge?.send(`launch-link`, { url, openInBrowser: true });
