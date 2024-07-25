@@ -20,10 +20,6 @@
 
 ## The Pitch
 
-<!-- _Eyas_ leverages a packaged version of your application to provide a simple and shareable testing solution without the need to set up a server and custom domains. Regardless of your team size, you can now decrease the feedback loop for no extra cost. You can easily include PMs, designers, executives and customers in the testing process. -->
-
-<!-- In practice, _Eyas_ can shift-left your testing process by allowing full testing of feature branches before they are merged. This will increase confidence in your main branch, enable at-will deployments, reduce bugs / hotfixes / rollbacks, increase team velocity, decrease team stress, and crucially limit code freezes when "tossing the release over the wall" with QA. -->
-
 You bundle your app with the CLI ( `npm run build && npx eyas db` ), and your consumer runs the output `*.eyas` with the [runner](https://github.com/cycosoft/Eyas/releases).
 
 Reduce and simplify the feedback loop with any stakeholder & any team size, regardless of their technical ability. Less bugs, faster deployment cycles, reduced stress ...for free.
