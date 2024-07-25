@@ -3,7 +3,6 @@
 		v-model="visible"
 		:width="dialogWidth"
 		@after-enter="pinDialogWidth"
-		@after-leave="hideUi"
 		@keyup.esc="close"
 	>
 		<v-card class="pa-3 variables-modal-content">
@@ -226,13 +225,6 @@ export default {
 
 			// set the width of the dialog + 1 to round up and prevent content jumping
 			this.dialogWidth = document.querySelector(`.variables-modal-content`).offsetWidth + 1;
-		},
-
-		hideUi() {
-			// hide the UI if there are no other dialogs open
-			if(document.querySelectorAll(`.v-dialog`).length <= 1) {
-				window.eventBridge?.send(`hide-ui`);
-			}
 		}
 	}
 }
