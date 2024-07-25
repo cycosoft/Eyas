@@ -10,6 +10,15 @@
 
 // constants
 const APP_NAME = `Eyas`;
+const MP_EVENTS = {
+	core: {
+		launch: `App Launch`,
+		exit: `App Exit`
+	},
+	ui: {
+		modalExitShown: `Modal Exit Shown`
+	}
+};
 
 // global imports _
 const { app: _electronCore, BrowserWindow: _electronWindow, } = require(`electron`);
@@ -339,15 +348,6 @@ function trackEvent(event, data) {
 	// setup
 	const MP_KEY_PROD = `07f0475cb429f7de5ebf79a1c418dc5c`;
 	const MP_KEY_DEV = `02b67bb94dd797e9a2cbb31d021c3cef`;
-	const MP_EVENTS = {
-		core: {
-			launch: `App Launch`,
-			exit: `App Exit`
-		},
-		ui: {
-			modalExitShown: `Modal Exit Shown`
-		}
-	};
 
 	// imports
 	const Mixpanel = require(`mixpanel`);
