@@ -201,6 +201,7 @@ function getUserName() {
 // attempt to hash the user's email domain
 function getCompanyId() {
 	try {
+		const crypto = require(`crypto`);
 		const email = execSync(`git config user.email`).toString().trim();
 
 		// get the root domain of the email without subdomains
@@ -211,8 +212,7 @@ function getCompanyId() {
 			.slice(-2) // get the last two parts
 			.join('.'); // join them back together
 
-		const hash = require(`crypto`).createHash(`sha256`).update(domain).digest(`hex`);
-		return domain;
+		return crypto.createHash(`sha256`).update(domain).digest(`hex`);
 	} catch (error) {
 		// eslint-disable-next-line no-console
 		console.error(`Error getting user email:`, error);
