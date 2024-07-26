@@ -54,7 +54,7 @@ function parseConfig(requestedEyasPath) {
 			compiled: userConfig.meta.compiled || new Date(),
 			eyas: userConfig.meta.eyas || `0.0.0`,
 			companyId: userConfig.meta.companyId || getCompanyId(),
-			projectId: userConfig.meta.projectId || ``,
+			projectId: userConfig.meta.projectId || getProjectId(),
 			testId: userConfig.meta.testId || ``
 		}
 	};
@@ -216,6 +216,22 @@ function getCompanyId() {
 	} catch (error) {
 		// eslint-disable-next-line no-console
 		console.error(`Error getting user email:`, error);
+		return null;
+	}
+}
+
+// get the project id from the git remote
+function getProjectId() {
+	try {
+		const crypto = require(`crypto`);
+		// get the remote url for git without knowing the remote name
+		const remoteUrl = execSync(`git ls-remote --get-url`).toString().trim();
+
+		// hash the remote url and return it
+		return crypto.createHash(`sha256`).update(remoteUrl).digest(`hex`);
+	} catch (error) {
+		// eslint-disable-next-line no-console
+		console.error(`Error getting project id:`, error);
 		return null;
 	}
 }
