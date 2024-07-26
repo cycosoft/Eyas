@@ -236,15 +236,6 @@ function getModifiedConfig() {
 	const configCopy = JSON.parse(JSON.stringify(config));
 
 	// generate meta data for the build
-	const { execSync } = require(`child_process`);
-	let gitBranch = ``, gitHash = ``, gitUser = ``;
-	try { gitBranch = execSync(`git rev-parse --abbrev-ref HEAD`).toString().trim(); } catch (e) {/**/}
-	try { gitHash = execSync(`git rev-parse --short HEAD`).toString().trim(); } catch (e) {/**/}
-	try { gitUser = execSync(`git config user.name`).toString().trim(); } catch (e) {/**/}
-
-	configCopy.meta.gitBranch = gitBranch;
-	configCopy.meta.gitHash = gitHash;
-	configCopy.meta.gitUser = gitUser;
 	configCopy.meta.eyas = version;
 
 	// wrap the config in a module export
