@@ -237,27 +237,21 @@ function getModifiedConfig() {
 
 	// generate meta data for the build
 	const { execSync } = require(`child_process`);
-	const { addHours } = require(`date-fns/addHours`);
-	const now = new Date();
-	const expires = addHours(now, configCopy.outputs.expires);
 	let gitBranch = ``, gitHash = ``, gitUser = ``;
 	try { gitBranch = execSync(`git rev-parse --abbrev-ref HEAD`).toString().trim(); } catch (e) {/**/}
 	try { gitHash = execSync(`git rev-parse --short HEAD`).toString().trim(); } catch (e) {/**/}
 	try { gitUser = execSync(`git config user.name`).toString().trim(); } catch (e) {/**/}
-	configCopy.meta = {
-		expires,
-		gitBranch,
-		gitHash,
-		gitUser,
-		compiled: now,
-		eyas: version
-	};
+
+	configCopy.meta.gitBranch = gitBranch;
+	configCopy.meta.gitHash = gitHash;
+	configCopy.meta.gitUser = gitUser;
+	configCopy.meta.eyas = version;
 
 	// wrap the config in a module export
 	const data = `module.exports = ${JSON.stringify(configCopy)}`;
 
-	// let the user know when this build expires
-	userLog(`Set build expirations to: ${expires.toLocaleString()}`);
+	// let the builder know when this build expires
+	userLog(`Set build expirations to: ${configCopy.meta.expires.toLocaleString()}`);
 
 	// return the updated config data
 	return data;

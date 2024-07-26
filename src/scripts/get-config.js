@@ -47,7 +47,7 @@ function parseConfig(requestedEyasPath) {
 		},
 
 		meta: {
-			expires: userConfig.meta.expires || getPreviewExpiration(),
+			expires: userConfig.meta.expires || getExpirationDate(),
 			gitBranch: userConfig.meta.gitBranch || getBranchName(),
 			gitHash: userConfig.meta.gitHash || getCommitHash(),
 			gitUser: userConfig.meta.gitUser || getUserName(),
@@ -246,7 +246,7 @@ function getTestId() {
 function validateExpiration(hours) {
 	// default
 	let output = hours;
-	const defaultHours = 7 * 24;
+	const defaultHours = 7 * 24; // 168 hours or 1 week
 	const minHours = 1;
 	const maxHours = 30 * 24;
 
@@ -277,10 +277,10 @@ function validateExpiration(hours) {
 }
 
 // get the default preview expiration
-function getPreviewExpiration() {
+function getExpirationDate() {
 	const { addHours } = require(`date-fns/addHours`);
 	const now = new Date();
-	return addHours(now, 1);
+	return addHours(now, userConfig.outputs.expires);
 }
 
 // export the config for the project
