@@ -55,7 +55,7 @@ function parseConfig(requestedEyasPath) {
 			eyas: userConfig.meta.eyas || `0.0.0`,
 			companyId: userConfig.meta.companyId || getCompanyId(),
 			projectId: userConfig.meta.projectId || getProjectId(),
-			testId: userConfig.meta.testId || ``
+			testId: userConfig.meta.testId || getTestId()
 		}
 	};
 
@@ -234,6 +234,12 @@ function getProjectId() {
 		console.error(`Error getting project id:`, error);
 		return null;
 	}
+}
+
+// create a unique id for the test
+function getTestId() {
+	const crypto = require(`crypto`);
+	return crypto.randomUUID();
 }
 
 // validate the user input for the expiration
