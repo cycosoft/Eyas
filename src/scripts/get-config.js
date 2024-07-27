@@ -237,8 +237,14 @@ function getCompanyId() {
 function getProjectId() {
 	try {
 		const crypto = require(`crypto`);
-		// get the remote url for git without knowing the remote name
-		const remoteUrl = execSync(`git ls-remote --get-url`).toString().trim();
+
+		// Split output into lines and filter out empty lines
+		const remotes = execSync(`git remote`, { encoding: `utf-8` })
+			.split(`\n`)
+			.filter(file => file);
+
+		// using the first remote, get the remote url for git
+		const remoteUrl = execSync(`git remote get-url --all ${remotes[0]}`).toString().trim();
 
 		// hash the remote url and return it
 		return crypto.createHash(`sha256`).update(remoteUrl).digest(`hex`);
