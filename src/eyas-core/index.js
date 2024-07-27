@@ -10,7 +10,6 @@
 
 // constants
 const APP_NAME = `Eyas`;
-const MP_KEY = `07f0475cb429f7de5ebf79a1c418dc5c`;
 const MP_EVENTS = {
 	core: {
 		launch: `App Launch`,
@@ -214,10 +213,7 @@ function initElectronUi() {
 	$appWindow.loadURL('data:text/html,' + encodeURIComponent(`<html><body></body></html>`));
 
 	// track the app launch event
-	trackEvent(MP_EVENTS.core.launch, {
-		$os: $operatingSystem,
-		$app_version_string: _appVersion
-	});
+	trackEvent(MP_EVENTS.core.launch);
 
 	// exit the app if the test has expired
 	// NOTE: THIS NEEDS TO BE MOVED TO THE UI LAYER
@@ -342,19 +338,40 @@ function initEyasListeners() {
 }
 
 // method for tracking events
-function trackEvent(event, data) {
+async function trackEvent(event, extraData) {
+	// setup
+	const MP_KEY_PROD = `07f0475cb429f7de5ebf79a1c418dc5c`;
+	const MP_KEY_DEV = `02b67bb94dd797e9a2cbb31d021c3cef`;
+
 	// imports
 	const Mixpanel = require(`mixpanel`);
 	const crypto = require(`crypto`);
 
-	// init if needed
-	trackEvent.userId = trackEvent.userId || crypto.randomUUID();
-	trackEvent.mixpanel = trackEvent.mixpanel || Mixpanel.init(MP_KEY);
+	// if mixpanel has not been initialized
+	if (!trackEvent.mixpanel) {
+		// initialize mixpanel to the correct environment
+		trackEvent.mixpanel ||= Mixpanel.init($isDev ? MP_KEY_DEV : MP_KEY_PROD);
+
+		// get information about the user
+		const { machineId } = require(`node-machine-id`);
+		trackEvent.deviceId ||= await machineId();
+
+		// define who the user is in mixpanel
+		trackEvent.mixpanel.people.set(trackEvent.deviceId);
+	}
 
 	// if not running in dev mode
-	!$isDev && trackEvent.mixpanel.track(event, {
-		...data,
-		distinct_id: trackEvent.userId // always include the user id
+	trackEvent.mixpanel.track(event, {
+		// core data to send with every request
+		distinct_id: trackEvent.deviceId, // device to link action to
+		$os: $operatingSystem,
+		$app_version_string: _appVersion,
+		companyId: config().meta.companyId,
+		projectId: config().meta.projectId,
+		testId: config().meta.testId,
+
+		// provided data to send with the event
+		...extraData
 	});
 }
 
@@ -503,7 +520,7 @@ function setMenu () {
 
 							Branch: ${config().meta.gitBranch} #${config().meta.gitHash}
 							User: ${config().meta.gitUser}
-							Date: ${new Date(config().meta.compiled).toLocaleString()}
+							Created: ${new Date(config().meta.compiled).toLocaleString()}
 							CLI: v${config().meta.eyas}
 
 							Runner: v${_appVersion}

@@ -24,8 +24,10 @@ function parseConfig(requestedEyasPath) {
 	// load a test
 	loadConfig(requestedEyasPath);
 
+	// object validation
 	userConfig.outputs = userConfig.outputs || {};
 	userConfig.meta = userConfig.meta || {};
+	const expiresIn = validateExpiration(userConfig.outputs.expires);
 
 	// configuration merge and validation step
 	const eyasConfig = {
@@ -43,16 +45,19 @@ function parseConfig(requestedEyasPath) {
 			linux: userConfig.outputs.linux || false,
 
 			// options
-			expires: validateExpiration(userConfig.outputs.expires) // hours
+			expires: expiresIn // hours
 		},
 
 		meta: {
-			expires: userConfig.meta.expires || getPreviewExpiration(),
+			expires: userConfig.meta.expires || getExpirationDate(expiresIn),
 			gitBranch: userConfig.meta.gitBranch || getBranchName(),
 			gitHash: userConfig.meta.gitHash || getCommitHash(),
 			gitUser: userConfig.meta.gitUser || getUserName(),
 			compiled: userConfig.meta.compiled || new Date(),
-			eyas: userConfig.meta.eyas || `0.0.0`
+			eyas: userConfig.meta.eyas || getCliVersion(),
+			companyId: userConfig.meta.companyId || getCompanyId(),
+			projectId: userConfig.meta.projectId || getProjectId(),
+			testId: userConfig.meta.testId || getTestId()
 		}
 	};
 
@@ -162,6 +167,17 @@ function validateCustomDomain(input) {
 	return output;
 }
 
+// get the version of the cli
+function getCliVersion() {
+	try {
+		const { version } = require(path.join(roots.module, `package.json`));
+		return version;
+	} catch (error) {
+		console.error(`Error getting CLI version:`, error);
+		return `0.0.0`;
+	}
+}
+
 // attempts to return the current short hash
 function getCommitHash() {
 	try {
@@ -195,11 +211,55 @@ function getUserName() {
 	}
 }
 
+// attempt to hash the user's email domain
+function getCompanyId() {
+	try {
+		const crypto = require(`crypto`);
+		const email = execSync(`git config user.email`).toString().trim();
+
+		// get the root domain of the email without subdomains
+		const domain = email
+			.split(`@`) // split up the email
+			.at(-1) // get the last part
+			.split('.') // split up the domain
+			.slice(-2) // get the last two parts
+			.join('.'); // join them back together
+
+		return crypto.createHash(`sha256`).update(domain).digest(`hex`);
+	} catch (error) {
+		// eslint-disable-next-line no-console
+		console.error(`Error getting user email:`, error);
+		return null;
+	}
+}
+
+// get the project id from the git remote
+function getProjectId() {
+	try {
+		const crypto = require(`crypto`);
+		// get the remote url for git without knowing the remote name
+		const remoteUrl = execSync(`git ls-remote --get-url`).toString().trim();
+
+		// hash the remote url and return it
+		return crypto.createHash(`sha256`).update(remoteUrl).digest(`hex`);
+	} catch (error) {
+		// eslint-disable-next-line no-console
+		console.error(`Error getting project id:`, error);
+		return null;
+	}
+}
+
+// create a unique id for the test
+function getTestId() {
+	const crypto = require(`crypto`);
+	return crypto.randomUUID();
+}
+
 // validate the user input for the expiration
 function validateExpiration(hours) {
 	// default
 	let output = hours;
-	const defaultHours = 7 * 24;
+	const defaultHours = 7 * 24; // 168 hours or 1 week
 	const minHours = 1;
 	const maxHours = 30 * 24;
 
@@ -230,10 +290,10 @@ function validateExpiration(hours) {
 }
 
 // get the default preview expiration
-function getPreviewExpiration() {
+function getExpirationDate(expiresInHours) {
 	const { addHours } = require(`date-fns/addHours`);
 	const now = new Date();
-	return addHours(now, 1);
+	return addHours(now, expiresInHours);
 }
 
 // export the config for the project

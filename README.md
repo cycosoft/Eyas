@@ -7,7 +7,7 @@
 <div align="center">
   <h1>Eyas</h1>
 </div>
-<p align="center">Simplified Testing for Web Applications</p>
+<p align="center">Simplified Hands-on Testing for Web Applications</p>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@cycosoft/eyas">
@@ -127,13 +127,7 @@ npm run build-my-project && npx eyas bundle
 - View [terms of use](https://cycosoft.com/eyas/terms)
 - View [privacy policy](https://cycosoft.com/eyas/privacy)
 - Logo source design by [Freepik](https://www.freepik.com/free-vector/eagle-logo-design-template_45007164.htm)
-- Analytics data collected:
-  - Meta: Randomized ephemeral session id
-  - Meta: operating system
-  - Meta: Eyas version number
-  - Event: app launched
-  - Event: app exit modal was shown
-  - Event: app closed
+- Analytics data collected: See [METRICS.md](docs/METRICS.md)
 
 [Eyas](https://www.dictionary.com/browse/eyas#:~:text=Falconry.%20a%20young%20falcon%20or%20hawk%20taken%20from%20the%20nest%20for%20training.):
 <small>

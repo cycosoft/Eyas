@@ -8,9 +8,8 @@
     "start": "npm i --no-audit && electron ."
   },
   "dependencies": {
-    "express": "",
     "mixpanel": "",
-    "mkcert": "",
+    "node-machine-id": "",
     "validator": "",
     "date-fns": "",
     "semver": ""
