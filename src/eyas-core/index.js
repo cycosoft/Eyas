@@ -938,7 +938,7 @@ async function startAFreshTest() {
 		uiEvent(`show-environment-modal`, config().domains);
 	}
 
-	// if the app is older than the version that built the test
+	// if the runner is older than the version that built the test
 	if(config().meta.eyas && semver.lt(_appVersion, config().meta.eyas)){
 		// send request to the UI layer
 		uiEvent(`show-version-mismatch-modal`, _appVersion, config().meta.eyas);
