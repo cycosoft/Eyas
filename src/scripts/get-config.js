@@ -24,8 +24,6 @@ function parseConfig(requestedEyasPath) {
 	// load a test
 	loadConfig(requestedEyasPath);
 
-	const { version: cliVersion } = require(path.join(roots.module, `package.json`));
-
 	// object validation
 	userConfig.outputs = userConfig.outputs || {};
 	userConfig.meta = userConfig.meta || {};
@@ -56,7 +54,7 @@ function parseConfig(requestedEyasPath) {
 			gitHash: userConfig.meta.gitHash || getCommitHash(),
 			gitUser: userConfig.meta.gitUser || getUserName(),
 			compiled: userConfig.meta.compiled || new Date(),
-			eyas: userConfig.meta.eyas || cliVersion || `0.0.0`,
+			eyas: userConfig.meta.eyas || getCliVersion(),
 			companyId: userConfig.meta.companyId || getCompanyId(),
 			projectId: userConfig.meta.projectId || getProjectId(),
 			testId: userConfig.meta.testId || getTestId()
@@ -167,6 +165,17 @@ function validateCustomDomain(input) {
 
 	// return validated input
 	return output;
+}
+
+// get the version of the cli
+function getCliVersion() {
+	try {
+		const { version } = require(path.join(roots.module, `package.json`));
+		return version;
+	} catch (error) {
+		console.error(`Error getting CLI version:`, error);
+		return `0.0.0`;
+	}
 }
 
 // attempts to return the current short hash
