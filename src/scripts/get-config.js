@@ -24,8 +24,12 @@ function parseConfig(requestedEyasPath) {
 	// load a test
 	loadConfig(requestedEyasPath);
 
+	const { version: cliVersion } = require(path.join(roots.module, `package.json`));
+
+	// object validation
 	userConfig.outputs = userConfig.outputs || {};
 	userConfig.meta = userConfig.meta || {};
+	const expiresIn = validateExpiration(userConfig.outputs.expires);
 
 	// configuration merge and validation step
 	const eyasConfig = {
@@ -43,16 +47,16 @@ function parseConfig(requestedEyasPath) {
 			linux: userConfig.outputs.linux || false,
 
 			// options
-			expires: validateExpiration(userConfig.outputs.expires) // hours
+			expires: expiresIn // hours
 		},
 
 		meta: {
-			expires: userConfig.meta.expires || getExpirationDate(),
+			expires: userConfig.meta.expires || getExpirationDate(expiresIn),
 			gitBranch: userConfig.meta.gitBranch || getBranchName(),
 			gitHash: userConfig.meta.gitHash || getCommitHash(),
 			gitUser: userConfig.meta.gitUser || getUserName(),
 			compiled: userConfig.meta.compiled || new Date(),
-			eyas: userConfig.meta.eyas || `0.0.0`,
+			eyas: userConfig.meta.eyas || cliVersion || `0.0.0`,
 			companyId: userConfig.meta.companyId || getCompanyId(),
 			projectId: userConfig.meta.projectId || getProjectId(),
 			testId: userConfig.meta.testId || getTestId()
@@ -277,10 +281,10 @@ function validateExpiration(hours) {
 }
 
 // get the default preview expiration
-function getExpirationDate() {
+function getExpirationDate(expiresInHours) {
 	const { addHours } = require(`date-fns/addHours`);
 	const now = new Date();
-	return addHours(now, userConfig.outputs.expires);
+	return addHours(now, expiresInHours);
 }
 
 // export the config for the project

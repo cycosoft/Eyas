@@ -235,9 +235,6 @@ function getModifiedConfig() {
 	userLog(`Creating snapshot of config...`);
 	const configCopy = JSON.parse(JSON.stringify(config));
 
-	// generate meta data for the build
-	configCopy.meta.eyas = version;
-
 	// wrap the config in a module export
 	const data = `module.exports = ${JSON.stringify(configCopy)}`;
 
