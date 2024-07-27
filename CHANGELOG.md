@@ -10,6 +10,7 @@
 - Add numbered hotkeys to the environment selection modal
 - Refactor how modals and their background content is managed
 - General README.md updates
+- Updated analytics information gathered. See [METRICS.md](docs/METRICS.md)
 
 # v3.3.0
 
