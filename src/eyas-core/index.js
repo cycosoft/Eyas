@@ -202,7 +202,7 @@ function initElectronUi() {
 
 	// intercept all web requests
 	$appWindow.webContents.session.webRequest.onBeforeRequest({ urls: [] }, (details, callback) => {
-		console.log(details.url);
+		console.warn(details.url);
 
 		// allow the request to continue
 		callback({ cancel: false });
@@ -886,6 +886,8 @@ function handleRedirects() {
 
 	// use this protocol to load files relatively from the local file system
 	protocol.handle(`eyas`, request => {
+		console.log(`eyas`, request.url);
+
 		// imports
 		const { pathToFileURL } = require(`url`);
 		const fs = require(`fs`);
@@ -923,6 +925,8 @@ function handleRedirects() {
 
 	// listen for requests to the specified domains and redirect to the custom protocol
 	protocol.handle(`https`, request => {
+		console.log(`https`, request.url);
+
 		// setup
 		const { hostname } = parseURL(request.url);
 
