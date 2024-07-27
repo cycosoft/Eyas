@@ -520,7 +520,7 @@ function setMenu () {
 
 							Branch: ${config().meta.gitBranch} #${config().meta.gitHash}
 							User: ${config().meta.gitUser}
-							Date: ${new Date(config().meta.compiled).toLocaleString()}
+							Created: ${new Date(config().meta.compiled).toLocaleString()}
 							CLI: v${config().meta.eyas}
 
 							Runner: v${_appVersion}
