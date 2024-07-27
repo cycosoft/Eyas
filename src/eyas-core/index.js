@@ -200,6 +200,14 @@ function initElectronUi() {
 		show: false
 	});
 
+	// intercept all web requests
+	$appWindow.webContents.session.webRequest.onBeforeRequest({ urls: [] }, (details, callback) => {
+		console.log(details.url);
+
+		// allow the request to continue
+		callback({ cancel: false });
+	});
+
 	// display the splash screen to the user
 	const splashScreen = createSplashScreen();
 
@@ -602,6 +610,45 @@ function setMenu () {
 	$isDev && menuDefault.at(-1).submenu.push({
 		label: `🔧 Developer Tools (&UI)`,
 		click: () => $eyasLayer.webContents.openDevTools()
+	});
+
+	// add a network menu dropdown
+	menuDefault.push({
+		label: `🌐 &Network`,
+		submenu: [
+			{
+				label: `🔄 &Reload`,
+				click: () => $appWindow.webContents.reloadIgnoringCache()
+			},
+			{
+				label: `🔙 &Back`,
+				click: () => $appWindow.webContents.goBack()
+			},
+			{
+				label: `🔜 &Forward`,
+				click: () => $appWindow.webContents.goForward()
+			},
+			{ type: `separator` },
+			{
+				label: `🏠 &Home`,
+				click: () => navigate()
+			},
+			{ type: `separator` },
+			{
+				label: `🔗 &Copy URL`,
+				click: () => {
+					// get the current url
+					const currentUrl = $appWindow.webContents.getURL();
+
+					// copy the url to the clipboard
+					require(`electron`).clipboard.writeText(currentUrl);
+				}
+			},
+			{
+				label: `Appear &Offline`,
+				click: () => $appWindow.webContents.session.enableNetworkEmulation({ offline: true })
+			}
+		]
 	});
 
 	// build out the menu for selecting a screen size
