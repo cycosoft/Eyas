@@ -42,6 +42,7 @@ let $eyasLayer = null;
 let $testServer = null;
 let $testDomainRaw = null;
 let $testDomain = `eyas://local.test`;
+const $uiDomain = `ui://eyas.interface`;
 const $defaultViewports = [
 	{ isDefault: true, label: `Desktop`, width: 1366, height: 768 },
 	{ isDefault: true, label: `Tablet`, width: 768, height: 1024 },
@@ -56,6 +57,7 @@ const $paths = {
 	packageJson: _path.join($roots.eyas, `package.json`),
 	eventBridge: _path.join($roots.eyas, `scripts`, `event-bridge.js`),
 	testSrc: null,
+	uiSource: _path.join($roots.eyas, `eyas-interface`),
 	eyasInterface: _path.join($roots.eyas, `eyas-interface`, `index.html`),
 	splashScreen: _path.join($roots.eyas, `eyas-interface`, `splash.html`)
 };
@@ -202,7 +204,7 @@ function initElectronUi() {
 
 	// intercept all web requests
 	$appWindow.webContents.session.webRequest.onBeforeRequest({ urls: [] }, (details, callback) => {
-		console.warn(details.url);
+		console.warn(`onBeforeRequest`, details.url);
 
 		// allow the request to continue
 		callback({ cancel: false });
@@ -234,7 +236,7 @@ function initElectronUi() {
 	// Initialize the $eyasLayer
 	$eyasLayer = new BrowserView({ webPreferences: { preload: $paths.eventBridge } });
 	$appWindow.addBrowserView($eyasLayer);
-	$eyasLayer.webContents.loadFile($paths.eyasInterface);
+	$eyasLayer.webContents.loadURL(`${$uiDomain}/index.html`);
 
 	// once the Eyas UI layer is ready, attempt navigation
 	$eyasLayer.webContents.on(`did-finish-load`, async () => {
@@ -271,7 +273,7 @@ function createSplashScreen() {
 	});
 
 	// load the splash screen
-	splashScreen.webContents.loadFile($paths.splashScreen);
+	splashScreen.webContents.loadURL(`${$uiDomain}/splash.html`);
 
 	// when the splash screen content has loaded
 	splashScreen.webContents.on(`did-finish-load`, () => {
@@ -868,13 +870,20 @@ function registerCustomProtocol() {
 	// imports
 	const { protocol } = require(`electron`);
 
-	// register the custom protocol so a local test can be loaded with relative paths
+	// register the custom protocols for relative paths + crypto support
 	protocol.registerSchemesAsPrivileged([
 		{ scheme: `eyas`, privileges: {
 			standard: true,
 			secure: true,
 			allowServiceWorkers: true,
 			supportFetchAPI: true
+		} },
+
+		{ scheme: `ui`, privileges: {
+			standard: true,
+			secure: true,
+			// allowServiceWorkers: true,
+			// supportFetchAPI: true
 		} }
 	]);
 }
@@ -883,6 +892,22 @@ function registerCustomProtocol() {
 function handleRedirects() {
 	// imports
 	const { protocol, net } = require(`electron`);
+
+	// use the "ui" protocol to load the Eyas UI layer
+	protocol.handle(`ui`, request => {
+		console.error(`ui`, request.url);
+		const { pathToFileURL } = require(`url`);
+
+		// drop the protocol from the request
+		const { pathname: relativePathToFile } = parseURL(request.url.replace(`ui://`, `https://`));
+		console.log({relativePathToFile});
+
+		// build the expected path to the requested file
+		const localFilePath = _path.join($paths.uiSource, relativePathToFile);
+
+		// return the Eyas UI layer to complete the request
+		return net.fetch(pathToFileURL(localFilePath).toString());
+	});
 
 	// use this protocol to load files relatively from the local file system
 	protocol.handle(`eyas`, request => {
