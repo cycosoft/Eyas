@@ -900,7 +900,6 @@ function handleRedirects() {
 
 		// drop the protocol from the request
 		const { pathname: relativePathToFile } = parseURL(request.url.replace(`ui://`, `https://`));
-		console.log({relativePathToFile});
 
 		// build the expected path to the requested file
 		const localFilePath = _path.join($paths.uiSource, relativePathToFile);
