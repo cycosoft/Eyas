@@ -204,17 +204,22 @@ function initElectronUi() {
 	});
 
 	// intercept all web requests
-	$appWindow.webContents.session.webRequest.onBeforeRequest({ urls: [] }, (details, callback) => {
-		console.warn(`onBeforeRequest`, details.url);
-
+	$appWindow.webContents.session.webRequest.onBeforeRequest({ urls: [] }, (request, callback) => {
+		console.warn(`onBeforeRequest`, request.url);
 		console.log({ $testNetworkEnabled });
+
+		// if the protocol is ui://
+		if(request.url.startsWith(`ui://`)){
+			// allow the request to continue
+			return callback({ cancel: false });
+		}
 
 		// if the network is disabled
 		if(!$testNetworkEnabled){
 			console.log(`Network is disabled`);
 
 			// cancel the request
-			// return callback({ cancel: true });
+			return callback({ cancel: true });
 		}
 
 		// allow the request to continue
@@ -309,6 +314,12 @@ function initElectronListeners() {
 
 	// Whenever a title update is requested
 	$appWindow.on(`page-title-updated`, onTitleUpdate);
+
+	// if navigation occured
+	$appWindow.webContents.on(`did-navigate`, (event, url) => {
+		// track the current url
+		console.log(`------Navigated to: ${url}`);
+	});
 
 	// when there's a navigation failure
 	$appWindow.webContents.on(`did-fail-load`, (event, errorCode, errorDescription) => {
@@ -903,6 +914,13 @@ function registerCustomProtocol() {
 	]);
 }
 
+// function to handle blocking requests when the user disables the network
+function disableTestNetworkRequests(url) {
+	const output = { cancel: false };
+
+
+}
+
 // handle requests to the custom protocol
 function handleRedirects() {
 	// imports
@@ -972,8 +990,6 @@ function handleRedirects() {
 
 	// listen for requests to the specified domains and redirect to the custom protocol
 	protocol.handle(`https`, request => {
-		console.log(`https`, request.url);
-
 		// setup
 		const { hostname } = parseURL(request.url);
 
