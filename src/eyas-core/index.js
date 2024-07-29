@@ -660,7 +660,10 @@ function setMenu () {
 			{
 				label: `&Appear ${$testNetworkEnabled ? `Offline` : `Online`}`,
 				click: () => {
+					// toggle the network status
 					$testNetworkEnabled = !$testNetworkEnabled;
+
+					// refresh the menu
 					setMenu();
 				}
 			}
