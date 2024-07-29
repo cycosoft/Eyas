@@ -39,6 +39,7 @@ if (!hasLock) {
 const $isDev = process.argv.includes(`--dev`);
 let $appWindow = null;
 let $eyasLayer = null;
+let $lastNavigation = null;
 let $testNetworkEnabled = true;
 let $testServer = null;
 let $testDomainRaw = null;
@@ -204,21 +205,12 @@ function initElectronUi() {
 	});
 
 	// intercept all web requests
+	// #region general intercept
 	$appWindow.webContents.session.webRequest.onBeforeRequest({ urls: [] }, (request, callback) => {
-		console.warn(`onBeforeRequest`, request.url);
-		console.log({ $testNetworkEnabled });
+		console.warn(`onBeforeRequest()`, request.url);
 
-		// if the protocol is ui://
-		if(request.url.startsWith(`ui://`)){
-			// allow the request to continue
-			return callback({ cancel: false });
-		}
-
-		// if the network is disabled
-		if(!$testNetworkEnabled){
-			console.log(`Network is disabled`);
-
-			// cancel the request
+		// validate this request
+		if (disableNetworkRequest(request.url)) {
 			return callback({ cancel: true });
 		}
 
@@ -315,10 +307,12 @@ function initElectronListeners() {
 	// Whenever a title update is requested
 	$appWindow.on(`page-title-updated`, onTitleUpdate);
 
-	// if navigation occured
+	// if navigation occurred
+	// #region last navigation
 	$appWindow.webContents.on(`did-navigate`, (event, url) => {
 		// track the current url
 		console.log(`------Navigated to: ${url}`);
+		$lastNavigation = url;
 	});
 
 	// when there's a navigation failure
@@ -915,10 +909,33 @@ function registerCustomProtocol() {
 }
 
 // function to handle blocking requests when the user disables the network
-function disableTestNetworkRequests(url) {
-	const output = { cancel: false };
+// #region disable logic
+function disableNetworkRequest(url) {
+	let output = false;
 
+	// exit if the network is not disabled
+	if($testNetworkEnabled){ return output; }
 
+	// if the protocol is ui://
+	if(url.startsWith(`ui://`)){
+		// allow the request to continue
+		return output;
+	}
+
+	// if the protocol is eyas://
+	if(url.startsWith(`eyas://`)){
+		// block the request
+		output = true;
+	}
+
+	// does the $lastNavigation match the test domain
+	// const isTestDomain = $lastNavigation.startsWith($testDomain);
+
+	if(output){
+		console.log(`--Blocking request: ${url}`);
+	}
+
+	return output;
 }
 
 // handle requests to the custom protocol
@@ -945,11 +962,8 @@ function handleRedirects() {
 	protocol.handle(`eyas`, request => {
 		console.log(`eyas`, request.url);
 
-		// if the network is disabled
-		if(!$testNetworkEnabled){
-			console.log(`eyas:// Network is disabled`);
-
-			// cancel the request
+		// validate this request
+		if (disableNetworkRequest(request.url)) {
 			return { cancel: true };
 		}
 
