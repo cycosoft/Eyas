@@ -627,7 +627,7 @@ function setMenu () {
 
 	// add a network menu dropdown
 	menuDefault.push({
-		label: `${$testNetworkEnabled ? `🌐` : `⚠️`} &Network`,
+		label: `${$testNetworkEnabled ? `🌐` : `🔴`} &Network`,
 		submenu: [
 			{
 				label: `🔄 &Reload`,
@@ -658,7 +658,7 @@ function setMenu () {
 				}
 			},
 			{
-				label: `${$testNetworkEnabled ? `Disable` : `Enable`} &Network`,
+				label: `&Appear ${$testNetworkEnabled ? `Offline` : `Online`}`,
 				click: () => {
 					$testNetworkEnabled = !$testNetworkEnabled;
 					setMenu();
