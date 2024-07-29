@@ -39,6 +39,7 @@ if (!hasLock) {
 const $isDev = process.argv.includes(`--dev`);
 let $appWindow = null;
 let $eyasLayer = null;
+let $testNetworkEnabled = true;
 let $testServer = null;
 let $testDomainRaw = null;
 let $testDomain = `eyas://local.test`;
@@ -205,6 +206,16 @@ function initElectronUi() {
 	// intercept all web requests
 	$appWindow.webContents.session.webRequest.onBeforeRequest({ urls: [] }, (details, callback) => {
 		console.warn(`onBeforeRequest`, details.url);
+
+		console.log({ $testNetworkEnabled });
+
+		// if the network is disabled
+		if(!$testNetworkEnabled){
+			console.log(`Network is disabled`);
+
+			// cancel the request
+			// return callback({ cancel: true });
+		}
 
 		// allow the request to continue
 		callback({ cancel: false });
@@ -616,7 +627,7 @@ function setMenu () {
 
 	// add a network menu dropdown
 	menuDefault.push({
-		label: `🌐 &Network`,
+		label: `${$testNetworkEnabled ? `🌐` : `⚠️`} &Network`,
 		submenu: [
 			{
 				label: `🔄 &Reload`,
@@ -647,8 +658,11 @@ function setMenu () {
 				}
 			},
 			{
-				label: `Appear &Offline`,
-				click: () => $appWindow.webContents.session.enableNetworkEmulation({ offline: true })
+				label: `${$testNetworkEnabled ? `Disable` : `Enable`} &Network`,
+				click: () => {
+					$testNetworkEnabled = !$testNetworkEnabled;
+					setMenu();
+				}
 			}
 		]
 	});
@@ -881,9 +895,7 @@ function registerCustomProtocol() {
 
 		{ scheme: `ui`, privileges: {
 			standard: true,
-			secure: true,
-			// allowServiceWorkers: true,
-			// supportFetchAPI: true
+			secure: true
 		} }
 	]);
 }
@@ -911,6 +923,14 @@ function handleRedirects() {
 	// use this protocol to load files relatively from the local file system
 	protocol.handle(`eyas`, request => {
 		console.log(`eyas`, request.url);
+
+		// if the network is disabled
+		if(!$testNetworkEnabled){
+			console.log(`eyas:// Network is disabled`);
+
+			// cancel the request
+			return { cancel: true };
+		}
 
 		// imports
 		const { pathToFileURL } = require(`url`);
