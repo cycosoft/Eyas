@@ -200,7 +200,10 @@ function initElectronUi() {
 		height: $currentViewport[1],
 		title: getAppTitle(),
 		icon: $paths.icon,
-		show: false
+		show: false,
+		webPreferences: {
+			preload: $paths.eventBridge
+		}
 	});
 
 	// intercept all web requests
@@ -236,6 +239,15 @@ function initElectronUi() {
 	// listen for app events
 	initElectronListeners();
 	initUiListeners();
+
+	// Whenever the content is loaded on the app window
+	$appWindow.webContents.on(`did-finish-load`, () => {
+		// inject online/offline event listeners
+		$appWindow.webContents.executeJavaScript(`
+			window.addEventListener('online', () => window.eventBridge?.send('network-status', true));
+			window.addEventListener('offline', () => window.eventBridge?.send('network-status', false));
+		`);
+	});
 
 	// Initialize the $eyasLayer
 	$eyasLayer = new BrowserView({ webPreferences: { preload: $paths.eventBridge } });
