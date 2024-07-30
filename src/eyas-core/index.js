@@ -513,7 +513,7 @@ function onResize() {
 }
 
 // Set up the application menu
-function setMenu () {
+async function setMenu () {
 	// imports
 	const { Menu, dialog } = require(`electron`);
 	const { isURL } = require(`validator`);
@@ -579,7 +579,7 @@ function setMenu () {
 		label: `🔧 &Tools`,
 		submenu: [
 			{
-				label: `🧪 Reset Test (&clear cache 🚿)`,
+				label: `🧪 &Restart Test`,
 				click: () => startAFreshTest()
 			},
 			{
@@ -643,7 +643,7 @@ function setMenu () {
 		label: `${$testNetworkEnabled ? `🌐` : `🔴`} &Network`,
 		submenu: [
 			{
-				label: `♻️ &Reload Page`,
+				label: `♻️ &Reload`,
 				accelerator: `CmdOrCtrl+R`,
 				click: () => $appWindow.webContents.reloadIgnoringCache()
 			},
@@ -664,7 +664,7 @@ function setMenu () {
 			},
 			{ type: `separator` },
 			{
-				label: `${$testNetworkEnabled ? `🔴 Go Offline` : `🟢 Go Online`}`,
+				label: `${$testNetworkEnabled ? `🔴 &Go Offline` : `🟢 &Go Online`}`,
 				click: () => {
 					// toggle the network status
 					$testNetworkEnabled = !$testNetworkEnabled;
@@ -672,6 +672,25 @@ function setMenu () {
 					// refresh the menu
 					setMenu();
 				}
+			}
+		]
+	});
+
+	// add a menu item for controlling the cache
+	menuDefault.push({
+		label: `📦 &Cache`,
+		submenu: [
+			{
+				label: `🕝 Age: ${getSessionAge()}`,
+				click: setMenu // refresh the menu
+			},
+			{
+				label: `📊 Size: ${await $appWindow.webContents.session.getCacheSize()} bytes`,
+				click: setMenu // refresh the menu
+			},
+			{
+				label: `🗑️ &Clear`,
+				click: clearCache
 			}
 		]
 	});
@@ -765,6 +784,33 @@ function setMenu () {
 
 	// Set the modified menu as the application menu
 	Menu.setApplicationMenu(Menu.buildFromTemplate(menuDefault));
+}
+
+function getSessionAge() {
+	const { formatDistanceToNow } = require(`date-fns/formatDistanceToNow`);
+	let output = new Date();
+
+	// get the path to the cache
+	const cachePath = $appWindow.webContents.session.getStoragePath();
+
+	// if the cache path was found
+	if(cachePath){
+		const fs = require(`fs`);
+
+		// create a path to the `Session Storage` folder
+		const sessionFolder = _path.join(cachePath, `Session Storage`);
+
+		// if the session folder exists
+		if(fs.existsSync(sessionFolder)){
+			// get the date the folder was created
+			output = fs.statSync(sessionFolder).birthtime;
+		}
+	}
+
+	// format the output to a relative time
+	output = formatDistanceToNow(output, { addSuffix: true });
+
+	return output;
 }
 
 // listen for the window to close
@@ -1002,14 +1048,20 @@ function handleRedirects() {
 	});
 }
 
+// clears the test cache
+function clearCache() {
+	// clear all caches for the session
+	$appWindow.webContents.session.clearCache(); // web cache
+	$appWindow.webContents.session.clearStorageData(); // cookies, filesystem, indexdb, localstorage, shadercache, websql, serviceworkers, cachestorage
+
+	// update the menu to reflect the cache changes
+	setMenu();
+}
+
 // refresh the app
 async function startAFreshTest() {
 	// imports
 	const semver = require(`semver`);
-
-	// clear all caches for the session
-	await $appWindow.webContents.session.clearCache(); // web cache
-	await $appWindow.webContents.session.clearStorageData(); // cookies, filesystem, indexdb, localstorage, shadercache, websql, serviceworkers, cachestorage
 
 	// set the available viewports
 	$allViewports = [...config().viewports, ...$defaultViewports];
