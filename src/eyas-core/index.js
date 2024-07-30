@@ -204,10 +204,7 @@ function initElectronUi() {
 	});
 
 	// intercept all web requests
-	// #region general intercept
 	$appWindow.webContents.session.webRequest.onBeforeRequest({ urls: [] }, (request, callback) => {
-		console.warn(`onBeforeRequest()`, request.url);
-
 		// validate this request
 		if (disableNetworkRequest(request.url)) {
 			return callback({ cancel: true });
@@ -900,42 +897,17 @@ function registerCustomProtocol() {
 	]);
 }
 
-// function to handle blocking requests when the user disables the network
-// #region disable logic
+// handle blocking requests when the user disables the network
 function disableNetworkRequest(url) {
 	let output = false;
 
 	// exit if the network is not disabled
 	if($testNetworkEnabled){ return output; }
 
-	// if the protocol is ui://
-	if(url.startsWith(`ui://`)){
-		// allow the request to continue
-		return output;
-	}
+	// don't allow blocking the UI layer
+	if(url.startsWith(`ui://`)){ return output; }
 
-	// if the protocol is eyas://
-	if(url.startsWith(`eyas://`)){
-		// block the request
-		output = true;
-	}
-
-	// if the current url is the test domain (then block all requests)
-	console.log(`parseURL --`, parseURL($appWindow.webContents.getURL()).hostname);
-	console.log(`$testDomain --`, parseURL($testDomain).hostname);
-
-
-	if (parseURL($appWindow.webContents.getURL()).hostname === parseURL($testDomain).hostname) {
-		console.error(`the current url is the test domain`);
-		// block the request
-		output = true;
-	}
-
-	if(output){
-		console.error(`----Blocking request: ${url}`);
-	}
-
-	return output;
+	return true;
 }
 
 // handle requests to the custom protocol
