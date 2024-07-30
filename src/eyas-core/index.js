@@ -39,7 +39,6 @@ if (!hasLock) {
 const $isDev = process.argv.includes(`--dev`);
 let $appWindow = null;
 let $eyasLayer = null;
-let $lastNavigation = null;
 let $testNetworkEnabled = true;
 let $testServer = null;
 let $testDomainRaw = null;
@@ -211,6 +210,8 @@ function initElectronUi() {
 
 		// validate this request
 		if (disableNetworkRequest(request.url)) {
+			console.log(`blocking request`);
+
 			return callback({ cancel: true });
 		}
 
@@ -306,14 +307,6 @@ function initElectronListeners() {
 
 	// Whenever a title update is requested
 	$appWindow.on(`page-title-updated`, onTitleUpdate);
-
-	// if navigation occurred
-	// #region last navigation
-	$appWindow.webContents.on(`did-navigate`, (event, url) => {
-		// track the current url
-		console.log(`------Navigated to: ${url}`);
-		$lastNavigation = url;
-	});
 
 	// when there's a navigation failure
 	$appWindow.webContents.on(`did-fail-load`, (event, errorCode, errorDescription) => {
@@ -928,8 +921,17 @@ function disableNetworkRequest(url) {
 		output = true;
 	}
 
-	// does the $lastNavigation match the test domain
-	// const isTestDomain = $lastNavigation.startsWith($testDomain);
+	// if the current url is the test domain (then block all requests)
+	console.log(`$appWindow.webContents.getURL()`, $appWindow.webContents.getURL());
+	console.log(`$testDomain`, $testDomain);
+
+
+	if ($appWindow.webContents.getURL() === $testDomain) {
+		console.error(`the current url is the test domain`);
+		// block the request
+		output = true;
+	}
+
 
 	if(output){
 		console.log(`--Blocking request: ${url}`);
@@ -945,7 +947,6 @@ function handleRedirects() {
 
 	// use the "ui" protocol to load the Eyas UI layer
 	protocol.handle(`ui`, request => {
-		console.error(`ui`, request.url);
 		const { pathToFileURL } = require(`url`);
 
 		// drop the protocol from the request
