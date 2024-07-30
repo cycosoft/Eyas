@@ -565,6 +565,7 @@ function setMenu () {
 		submenu: [
 			{
 				label: `♻️ &Reload Page`,
+				accelerator: `CmdOrCtrl+R`,
 				click: () => $appWindow.webContents.reloadIgnoringCache()
 			},
 			{
