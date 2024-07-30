@@ -235,7 +235,7 @@ function initElectronUi() {
 
 	// listen for app events
 	initElectronListeners();
-	initEyasListeners();
+	initUiListeners();
 
 	// Initialize the $eyasLayer
 	$eyasLayer = new BrowserView({ webPreferences: { preload: $paths.eventBridge } });
@@ -311,9 +311,15 @@ function initElectronListeners() {
 }
 
 // initialize the Eyas listeners
-function initEyasListeners() {
+function initUiListeners() {
 	// imports
 	const { ipcMain } = require(`electron`);
+
+	// update the network status
+	ipcMain.on(`network-status`, (event, status) => {
+		$testNetworkEnabled = status;
+		setMenu();
+	});
 
 	// hide the UI when requested
 	ipcMain.on(`hide-ui`, () => toggleEyasUI(false));
