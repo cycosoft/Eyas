@@ -579,17 +579,18 @@ function setMenu () {
 		label: `🔧 &Tools`,
 		submenu: [
 			{
-				label: `♻️ &Reload Page`,
-				accelerator: `CmdOrCtrl+R`,
-				click: () => $appWindow.webContents.reloadIgnoringCache()
-			},
-			{
-				label: `🧪 &Back to Test`,
-				click: () => navigate()
-			},
-			{
 				label: `🧪 Reset Test (&clear cache 🚿)`,
 				click: () => startAFreshTest()
+			},
+			{
+				label: `🔗 &Copy URL`,
+				click: () => {
+					// get the current url
+					const currentUrl = $appWindow.webContents.getURL();
+
+					// copy the url to the clipboard
+					require(`electron`).clipboard.writeText(currentUrl);
+				}
 			},
 			// { type: `separator` },
 			// {
@@ -642,35 +643,28 @@ function setMenu () {
 		label: `${$testNetworkEnabled ? `🌐` : `🔴`} &Network`,
 		submenu: [
 			{
-				label: `🔄 &Reload`,
+				label: `♻️ &Reload Page`,
+				accelerator: `CmdOrCtrl+R`,
 				click: () => $appWindow.webContents.reloadIgnoringCache()
 			},
 			{
-				label: `🔙 &Back`,
+				label: `⬅️ &Back`,
+				accelerator: `CmdOrCtrl+Left`,
 				click: () => $appWindow.webContents.goBack()
 			},
 			{
-				label: `🔜 &Forward`,
+				label: `➡️ &Forward`,
+				accelerator: `CmdOrCtrl+Right`,
 				click: () => $appWindow.webContents.goForward()
 			},
 			{ type: `separator` },
 			{
-				label: `🏠 &Home`,
+				label: `🏠 Test &Home`,
 				click: () => navigate()
 			},
 			{ type: `separator` },
 			{
-				label: `🔗 &Copy URL`,
-				click: () => {
-					// get the current url
-					const currentUrl = $appWindow.webContents.getURL();
-
-					// copy the url to the clipboard
-					require(`electron`).clipboard.writeText(currentUrl);
-				}
-			},
-			{
-				label: `&Appear ${$testNetworkEnabled ? `Offline` : `Online`}`,
+				label: `${$testNetworkEnabled ? `🔴 Go Offline` : `🟢 Go Online`}`,
 				click: () => {
 					// toggle the network status
 					$testNetworkEnabled = !$testNetworkEnabled;
