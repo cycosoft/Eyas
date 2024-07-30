@@ -210,8 +210,6 @@ function initElectronUi() {
 
 		// validate this request
 		if (disableNetworkRequest(request.url)) {
-			console.log(`blocking request`);
-
 			return callback({ cancel: true });
 		}
 
@@ -922,19 +920,18 @@ function disableNetworkRequest(url) {
 	}
 
 	// if the current url is the test domain (then block all requests)
-	console.log(`$appWindow.webContents.getURL()`, $appWindow.webContents.getURL());
-	console.log(`$testDomain`, $testDomain);
+	console.log(`parseURL --`, parseURL($appWindow.webContents.getURL()).hostname);
+	console.log(`$testDomain --`, parseURL($testDomain).hostname);
 
 
-	if ($appWindow.webContents.getURL() === $testDomain) {
+	if (parseURL($appWindow.webContents.getURL()).hostname === parseURL($testDomain).hostname) {
 		console.error(`the current url is the test domain`);
 		// block the request
 		output = true;
 	}
 
-
 	if(output){
-		console.log(`--Blocking request: ${url}`);
+		console.error(`----Blocking request: ${url}`);
 	}
 
 	return output;
@@ -961,8 +958,6 @@ function handleRedirects() {
 
 	// use this protocol to load files relatively from the local file system
 	protocol.handle(`eyas`, request => {
-		console.log(`eyas`, request.url);
-
 		// validate this request
 		if (disableNetworkRequest(request.url)) {
 			return { cancel: true };
