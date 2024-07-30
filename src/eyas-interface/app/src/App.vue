@@ -24,4 +24,8 @@ export default {
 		VersionMismatchModal
 	}
 };
+
+// detect when the network status changes
+window.addEventListener(`online`, () => window.eventBridge?.send(`network-status`, true));
+window.addEventListener(`offline`, () => window.eventBridge?.send(`network-status`, false));
 </script>

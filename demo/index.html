@@ -18,5 +18,18 @@
 	<a href="/BAD_ROUTE">Go to BAD_ROUTE</a>
 	<br>
 	<a href="../../README.md">Test ESCAPE</a>
+
+	<br>
+	<br>
+
+	Setting in 5 seconds after loading the page
+	<img id="demo-image" alt="Demo Image">
+
+	<script>
+		// set #demo-image src to https://dummyimage.com/400x200/000/fff&text=demo+external+image after 1s
+		setTimeout(() => {
+			document.getElementById('demo-image').src = 'https://dummyimage.com/400x200/000/fff&text=demo+external+image';
+		}, 5000);
+	</script>
 </body>
 </html>

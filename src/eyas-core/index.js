@@ -39,9 +39,11 @@ if (!hasLock) {
 const $isDev = process.argv.includes(`--dev`);
 let $appWindow = null;
 let $eyasLayer = null;
+let $testNetworkEnabled = true;
 let $testServer = null;
 let $testDomainRaw = null;
 let $testDomain = `eyas://local.test`;
+const $uiDomain = `ui://eyas.interface`;
 const $defaultViewports = [
 	{ isDefault: true, label: `Desktop`, width: 1366, height: 768 },
 	{ isDefault: true, label: `Tablet`, width: 768, height: 1024 },
@@ -56,6 +58,7 @@ const $paths = {
 	packageJson: _path.join($roots.eyas, `package.json`),
 	eventBridge: _path.join($roots.eyas, `scripts`, `event-bridge.js`),
 	testSrc: null,
+	uiSource: _path.join($roots.eyas, `eyas-interface`),
 	eyasInterface: _path.join($roots.eyas, `eyas-interface`, `index.html`),
 	splashScreen: _path.join($roots.eyas, `eyas-interface`, `splash.html`)
 };
@@ -197,7 +200,21 @@ function initElectronUi() {
 		height: $currentViewport[1],
 		title: getAppTitle(),
 		icon: $paths.icon,
-		show: false
+		show: false,
+		webPreferences: {
+			preload: $paths.eventBridge
+		}
+	});
+
+	// intercept all web requests
+	$appWindow.webContents.session.webRequest.onBeforeRequest({ urls: [] }, (request, callback) => {
+		// validate this request
+		if (disableNetworkRequest(request.url)) {
+			return callback({ cancel: true });
+		}
+
+		// allow the request to continue
+		callback({ cancel: false });
 	});
 
 	// display the splash screen to the user
@@ -221,12 +238,21 @@ function initElectronUi() {
 
 	// listen for app events
 	initElectronListeners();
-	initEyasListeners();
+	initUiListeners();
+
+	// Whenever the content is loaded on the app window
+	$appWindow.webContents.on(`did-finish-load`, () => {
+		// inject online/offline event listeners
+		$appWindow.webContents.executeJavaScript(`
+			window.addEventListener('online', () => window.eventBridge?.send('network-status', true));
+			window.addEventListener('offline', () => window.eventBridge?.send('network-status', false));
+		`);
+	});
 
 	// Initialize the $eyasLayer
 	$eyasLayer = new BrowserView({ webPreferences: { preload: $paths.eventBridge } });
 	$appWindow.addBrowserView($eyasLayer);
-	$eyasLayer.webContents.loadFile($paths.eyasInterface);
+	$eyasLayer.webContents.loadURL(`${$uiDomain}/index.html`);
 
 	// once the Eyas UI layer is ready, attempt navigation
 	$eyasLayer.webContents.on(`did-finish-load`, async () => {
@@ -263,7 +289,7 @@ function createSplashScreen() {
 	});
 
 	// load the splash screen
-	splashScreen.webContents.loadFile($paths.splashScreen);
+	splashScreen.webContents.loadURL(`${$uiDomain}/splash.html`);
 
 	// when the splash screen content has loaded
 	splashScreen.webContents.on(`did-finish-load`, () => {
@@ -297,9 +323,15 @@ function initElectronListeners() {
 }
 
 // initialize the Eyas listeners
-function initEyasListeners() {
+function initUiListeners() {
 	// imports
 	const { ipcMain } = require(`electron`);
+
+	// update the network status
+	ipcMain.on(`network-status`, (event, status) => {
+		$testNetworkEnabled = status;
+		setMenu();
+	});
 
 	// hide the UI when requested
 	ipcMain.on(`hide-ui`, () => toggleEyasUI(false));
@@ -547,16 +579,18 @@ function setMenu () {
 		label: `🔧 &Tools`,
 		submenu: [
 			{
-				label: `♻️ &Reload Page`,
-				click: () => $appWindow.webContents.reloadIgnoringCache()
-			},
-			{
-				label: `🧪 &Back to Test`,
-				click: () => navigate()
-			},
-			{
 				label: `🧪 Reset Test (&clear cache 🚿)`,
 				click: () => startAFreshTest()
+			},
+			{
+				label: `🔗 &Copy URL`,
+				click: () => {
+					// get the current url
+					const currentUrl = $appWindow.webContents.getURL();
+
+					// copy the url to the clipboard
+					require(`electron`).clipboard.writeText(currentUrl);
+				}
 			},
 			// { type: `separator` },
 			// {
@@ -602,6 +636,44 @@ function setMenu () {
 	$isDev && menuDefault.at(-1).submenu.push({
 		label: `🔧 Developer Tools (&UI)`,
 		click: () => $eyasLayer.webContents.openDevTools()
+	});
+
+	// add a network menu dropdown
+	menuDefault.push({
+		label: `${$testNetworkEnabled ? `🌐` : `🔴`} &Network`,
+		submenu: [
+			{
+				label: `♻️ &Reload Page`,
+				accelerator: `CmdOrCtrl+R`,
+				click: () => $appWindow.webContents.reloadIgnoringCache()
+			},
+			{
+				label: `⬅️ &Back`,
+				accelerator: `CmdOrCtrl+Left`,
+				click: () => $appWindow.webContents.goBack()
+			},
+			{
+				label: `➡️ &Forward`,
+				accelerator: `CmdOrCtrl+Right`,
+				click: () => $appWindow.webContents.goForward()
+			},
+			{ type: `separator` },
+			{
+				label: `🏠 Test &Home`,
+				click: () => navigate()
+			},
+			{ type: `separator` },
+			{
+				label: `${$testNetworkEnabled ? `🔴 Go Offline` : `🟢 Go Online`}`,
+				click: () => {
+					// toggle the network status
+					$testNetworkEnabled = !$testNetworkEnabled;
+
+					// refresh the menu
+					setMenu();
+				}
+			}
+		]
 	});
 
 	// build out the menu for selecting a screen size
@@ -821,15 +893,33 @@ function registerCustomProtocol() {
 	// imports
 	const { protocol } = require(`electron`);
 
-	// register the custom protocol so a local test can be loaded with relative paths
+	// register the custom protocols for relative paths + crypto support
 	protocol.registerSchemesAsPrivileged([
 		{ scheme: `eyas`, privileges: {
 			standard: true,
 			secure: true,
 			allowServiceWorkers: true,
 			supportFetchAPI: true
+		} },
+
+		{ scheme: `ui`, privileges: {
+			standard: true,
+			secure: true
 		} }
 	]);
+}
+
+// handle blocking requests when the user disables the network
+function disableNetworkRequest(url) {
+	let output = false;
+
+	// exit if the network is not disabled
+	if($testNetworkEnabled){ return output; }
+
+	// don't allow blocking the UI layer
+	if(url.startsWith(`ui://`)){ return output; }
+
+	return true;
 }
 
 // handle requests to the custom protocol
@@ -837,8 +927,27 @@ function handleRedirects() {
 	// imports
 	const { protocol, net } = require(`electron`);
 
+	// use the "ui" protocol to load the Eyas UI layer
+	protocol.handle(`ui`, request => {
+		const { pathToFileURL } = require(`url`);
+
+		// drop the protocol from the request
+		const { pathname: relativePathToFile } = parseURL(request.url.replace(`ui://`, `https://`));
+
+		// build the expected path to the requested file
+		const localFilePath = _path.join($paths.uiSource, relativePathToFile);
+
+		// return the Eyas UI layer to complete the request
+		return net.fetch(pathToFileURL(localFilePath).toString());
+	});
+
 	// use this protocol to load files relatively from the local file system
 	protocol.handle(`eyas`, request => {
+		// validate this request
+		if (disableNetworkRequest(request.url)) {
+			return { cancel: true };
+		}
+
 		// imports
 		const { pathToFileURL } = require(`url`);
 		const fs = require(`fs`);

@@ -17,7 +17,8 @@ contextBridge.exposeInMainWorld(`eventBridge`, {
 			`app-exit`,
 			`hide-ui`,
 			`environment-selected`,
-			`launch-link`
+			`launch-link`,
+			`network-status`
 		];
 
 		if (validChannels.includes(channel)) {
