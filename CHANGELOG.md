@@ -11,6 +11,10 @@
 - Refactor how modals and their background content is managed
 - General README.md updates
 - Updated analytics information gathered. See [METRICS.md](docs/METRICS.md)
+- Move the UI layer to its own protocol
+- Fix devtools "network offline" mode not working
+- Added a new Network menu with navigation options and ability to disable network
+- Add new "tool" menu item to copy the current URL to the clipboard
 
 # v3.3.0
 
