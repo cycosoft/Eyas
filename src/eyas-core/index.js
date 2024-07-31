@@ -697,7 +697,13 @@ async function setMenu () {
 			{
 				label: `🗑️ &Clear`,
 				click: clearCache
-			}
+			},
+			...$isDev ? [
+				{
+					label: `📂 Open Cache Folder`,
+					click: () => require(`electron`).shell.openPath($appWindow.webContents.session.getStoragePath())
+				}
+			] : []
 		]
 	});
 
