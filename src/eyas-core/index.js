@@ -202,7 +202,8 @@ function initElectronUi() {
 		icon: $paths.icon,
 		show: false,
 		webPreferences: {
-			preload: $paths.eventBridge
+			preload: $paths.eventBridge,
+			partition: `persist:${config().meta.testId}`
 		}
 	});
 
