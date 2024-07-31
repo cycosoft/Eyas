@@ -808,7 +808,7 @@ function getSessionAge() {
 	}
 
 	// format the output to a relative time
-	output = formatDistanceToNow(output, { addSuffix: true });
+	output = formatDistanceToNow(output);
 
 	return output;
 }
