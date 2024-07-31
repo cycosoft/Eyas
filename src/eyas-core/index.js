@@ -237,17 +237,8 @@ function initElectronUi() {
 	checkTestExpiration();
 
 	// listen for app events
-	initElectronListeners();
+	initTestListeners();
 	initUiListeners();
-
-	// Whenever the content is loaded on the app window
-	$appWindow.webContents.on(`did-finish-load`, () => {
-		// inject online/offline event listeners
-		$appWindow.webContents.executeJavaScript(`
-			window.addEventListener('online', () => window.eventBridge?.send('network-status', true));
-			window.addEventListener('offline', () => window.eventBridge?.send('network-status', false));
-		`);
-	});
 
 	// Initialize the $eyasLayer
 	$eyasLayer = new BrowserView({ webPreferences: { preload: $paths.eventBridge } });
@@ -304,8 +295,8 @@ function createSplashScreen() {
 	return splashScreen;
 }
 
-// initialize the Electron listeners
-function initElectronListeners() {
+// initialize the listeners on the test content
+function initTestListeners() {
 	// listen for the window to close
 	$appWindow.on(`close`, manageAppClose);
 
@@ -314,6 +305,21 @@ function initElectronListeners() {
 
 	// Whenever a title update is requested
 	$appWindow.on(`page-title-updated`, onTitleUpdate);
+
+	// Whenever the content is loaded on the app window
+	$appWindow.webContents.on(`did-finish-load`, () => {
+		// inject online/offline event listeners
+		$appWindow.webContents.executeJavaScript(`
+			window.addEventListener('online', () => window.eventBridge?.send('network-status', true));
+			window.addEventListener('offline', () => window.eventBridge?.send('network-status', false));
+		`);
+
+		// update the title
+		$appWindow.setTitle(getAppTitle());
+
+		// update the cache menu
+		setMenu();
+	});
 
 	// when there's a navigation failure
 	$appWindow.webContents.on(`did-fail-load`, (event, errorCode, errorDescription) => {
