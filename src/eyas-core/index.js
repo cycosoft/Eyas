@@ -950,15 +950,19 @@ function parseURL(url) {
 // register a custom protocol for loading local test files
 function registerCustomProtocol() {
 	// imports
-	const { protocol } = require(`electron`);
+	const { protocol, session } = require(`electron`);
+
+	const ses = session.fromPartition(`persist:${config().meta.testId}`);
 
 	// register the custom protocols for relative paths + crypto support
-	protocol.registerSchemesAsPrivileged([
+	ses.protocol.registerSchemesAsPrivileged([
 		{ scheme: `eyas`, privileges: {
 			standard: true,
 			secure: true,
 			allowServiceWorkers: true,
-			supportFetchAPI: true
+			supportFetchAPI: true,
+			corsEnabled: true,
+			stream: true
 		} },
 
 		{ scheme: `ui`, privileges: {
