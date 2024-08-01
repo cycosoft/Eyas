@@ -193,6 +193,8 @@ function initElectronUi() {
 	$currentViewport[0] = $defaultViewports[0].width;
 	$currentViewport[1] = $defaultViewports[0].height;
 
+	console.log(`initElectronUi()`, config().meta.testId);
+
 	// Create the app window for this instance
 	$appWindow = new _electronWindow({
 		useContentSize: true,
@@ -242,7 +244,10 @@ function initElectronUi() {
 	initUiListeners();
 
 	// Initialize the $eyasLayer
-	$eyasLayer = new BrowserView({ webPreferences: { preload: $paths.eventBridge } });
+	$eyasLayer = new BrowserView({ webPreferences: {
+		preload: $paths.eventBridge,
+		partition: `persist:${config().meta.testId}`
+	} });
 	$appWindow.addBrowserView($eyasLayer);
 	$eyasLayer.webContents.loadURL(`${$uiDomain}/index.html`);
 
@@ -986,10 +991,13 @@ function disableNetworkRequest(url) {
 // handle requests to the custom protocol
 function handleRedirects() {
 	// imports
-	const { protocol, net } = require(`electron`);
+	const { session, net } = require(`electron`);
+	const protocol = session.fromPartition(`persist:${config().meta.testId}`).protocol;
 
 	// use the "ui" protocol to load the Eyas UI layer
 	protocol.handle(`ui`, request => {
+		console.log(`ui protocol`, request.url);
+
 		const { pathToFileURL } = require(`url`);
 
 		// drop the protocol from the request
@@ -1004,6 +1012,8 @@ function handleRedirects() {
 
 	// use this protocol to load files relatively from the local file system
 	protocol.handle(`eyas`, request => {
+		console.log(`eyas protocol`, request.url);
+
 		// validate this request
 		if (disableNetworkRequest(request.url)) {
 			return { cancel: true };
@@ -1046,6 +1056,8 @@ function handleRedirects() {
 
 	// listen for requests to the specified domains and redirect to the custom protocol
 	protocol.handle(`https`, request => {
+		console.log(`https protocol`, request.url);
+
 		// setup
 		const { hostname } = parseURL(request.url);
 
