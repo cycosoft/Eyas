@@ -211,6 +211,8 @@ function initElectronUi() {
 
 	// intercept all web requests
 	$appWindow.webContents.session.webRequest.onBeforeRequest({ urls: [] }, (request, callback) => {
+		console.log(`onBeforeRequest`, request.url);
+
 		// validate this request
 		if (disableNetworkRequest(request.url)) {
 			return callback({ cancel: true });
@@ -282,7 +284,10 @@ function createSplashScreen() {
 		frame: false,
 		transparent: true,
 		alwaysOnTop: true,
-		show: false
+		show: false,
+		webPreferences: {
+			partition: `persist:${config().meta.testId}`
+		}
 	});
 
 	// load the splash screen
