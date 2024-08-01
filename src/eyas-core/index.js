@@ -996,11 +996,11 @@ function disableNetworkRequest(url) {
 // handle requests to the custom protocol
 function handleRedirects() {
 	// imports
-	const { session, net } = require(`electron`);
-	const protocol = session.fromPartition(`persist:${config().meta.testId}`).protocol;
+	const { protocol, session, net } = require(`electron`);
+	const ses = session.fromPartition(`persist:${config().meta.testId}`);
 
 	// use the "ui" protocol to load the Eyas UI layer
-	protocol.handle(`ui`, request => {
+	ses.protocol.handle(`ui`, request => {
 		console.log(`ui protocol`, request.url);
 
 		const { pathToFileURL } = require(`url`);
@@ -1016,7 +1016,7 @@ function handleRedirects() {
 	});
 
 	// use this protocol to load files relatively from the local file system
-	protocol.handle(`eyas`, request => {
+	ses.protocol.handle(`eyas`, request => {
 		console.log(`eyas protocol`, request.url);
 
 		// validate this request
