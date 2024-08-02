@@ -1012,7 +1012,7 @@ function handleRedirects() {
 		const localFilePath = _path.join($paths.uiSource, relativePathToFile);
 
 		// return the Eyas UI layer to complete the request
-		return net.fetch(pathToFileURL(localFilePath).toString());
+		return ses.fetch(pathToFileURL(localFilePath).toString());
 	});
 
 	// use this protocol to load files relatively from the local file system
@@ -1056,11 +1056,11 @@ function handleRedirects() {
 		}
 
 		// return the file from the local system to complete the request
-		return net.fetch(pathToFileURL(localFilePath).toString());
+		return ses.fetch(pathToFileURL(localFilePath).toString());
 	});
 
 	// listen for requests to the specified domains and redirect to the custom protocol
-	protocol.handle(`https`, request => {
+	ses.protocol.handle(`https`, request => {
 		console.log(`https protocol`, request.url);
 
 		// setup
@@ -1072,11 +1072,11 @@ function handleRedirects() {
 			const redirect = request.url.replace(`https://`, `eyas://`);
 
 			// redirect to the custom protocol
-			return net.fetch(redirect);
+			return ses.fetch(redirect);
 		}
 
 		// otherwise, allow the request to pass through
-		return net.fetch(request, { bypassCustomProtocolHandlers: true });
+		return ses.fetch(request, { bypassCustomProtocolHandlers: true });
 	});
 }
 
