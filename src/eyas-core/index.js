@@ -656,6 +656,11 @@ async function setMenu () {
 		label: `${$testNetworkEnabled ? `🌐` : `🔴`} &Network`,
 		submenu: [
 			{
+				label: `🏠 Test &Home`,
+				click: () => navigate()
+			},
+			{ type: `separator` },
+			{
 				label: `♻️ &Reload`,
 				accelerator: `CmdOrCtrl+R`,
 				click: () => $appWindow.webContents.reloadIgnoringCache()
@@ -669,11 +674,6 @@ async function setMenu () {
 				label: `➡️ &Forward`,
 				accelerator: `CmdOrCtrl+Right`,
 				click: () => $appWindow.webContents.goForward()
-			},
-			{ type: `separator` },
-			{
-				label: `🏠 Test &Home`,
-				click: () => navigate()
 			},
 			{ type: `separator` },
 			{
