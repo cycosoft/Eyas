@@ -193,8 +193,6 @@ function initElectronUi() {
 	$currentViewport[0] = $defaultViewports[0].width;
 	$currentViewport[1] = $defaultViewports[0].height;
 
-	console.log(`initElectronUi()`, config().meta.testId);
-
 	// Create the app window for this instance
 	$appWindow = new _electronWindow({
 		useContentSize: true,
@@ -211,8 +209,6 @@ function initElectronUi() {
 
 	// intercept all web requests
 	$appWindow.webContents.session.webRequest.onBeforeRequest({ urls: [] }, (request, callback) => {
-		console.log(`onBeforeRequest`, request.url);
-
 		// validate this request
 		if (disableNetworkRequest(request.url)) {
 			return callback({ cancel: true });
@@ -1001,8 +997,6 @@ function handleRedirects() {
 
 	// use the "ui" protocol to load the Eyas UI layer
 	ses.protocol.handle(`ui`, request => {
-		console.log(`ui protocol`, request.url);
-
 		const { pathToFileURL } = require(`url`);
 
 		// drop the protocol from the request
@@ -1017,8 +1011,6 @@ function handleRedirects() {
 
 	// use this protocol to load files relatively from the local file system
 	ses.protocol.handle(`eyas`, request => {
-		console.log(`eyas protocol`, request.url);
-
 		// validate this request
 		if (disableNetworkRequest(request.url)) {
 			return { cancel: true };
@@ -1061,8 +1053,6 @@ function handleRedirects() {
 
 	// listen for requests to the specified domains and redirect to the custom protocol
 	ses.protocol.handle(`https`, request => {
-		console.log(`https protocol`, request.url);
-
 		// setup
 		const { hostname } = parseURL(request.url);
 
