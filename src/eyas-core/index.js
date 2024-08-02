@@ -202,7 +202,8 @@ function initElectronUi() {
 		icon: $paths.icon,
 		show: false,
 		webPreferences: {
-			preload: $paths.eventBridge
+			preload: $paths.eventBridge,
+			partition: `persist:${config().meta.testId}`
 		}
 	});
 
@@ -237,20 +238,14 @@ function initElectronUi() {
 	checkTestExpiration();
 
 	// listen for app events
-	initElectronListeners();
+	initTestListeners();
 	initUiListeners();
 
-	// Whenever the content is loaded on the app window
-	$appWindow.webContents.on(`did-finish-load`, () => {
-		// inject online/offline event listeners
-		$appWindow.webContents.executeJavaScript(`
-			window.addEventListener('online', () => window.eventBridge?.send('network-status', true));
-			window.addEventListener('offline', () => window.eventBridge?.send('network-status', false));
-		`);
-	});
-
 	// Initialize the $eyasLayer
-	$eyasLayer = new BrowserView({ webPreferences: { preload: $paths.eventBridge } });
+	$eyasLayer = new BrowserView({ webPreferences: {
+		preload: $paths.eventBridge,
+		partition: `persist:${config().meta.testId}`
+	} });
 	$appWindow.addBrowserView($eyasLayer);
 	$eyasLayer.webContents.loadURL(`${$uiDomain}/index.html`);
 
@@ -285,7 +280,10 @@ function createSplashScreen() {
 		frame: false,
 		transparent: true,
 		alwaysOnTop: true,
-		show: false
+		show: false,
+		webPreferences: {
+			partition: `persist:${config().meta.testId}`
+		}
 	});
 
 	// load the splash screen
@@ -304,8 +302,8 @@ function createSplashScreen() {
 	return splashScreen;
 }
 
-// initialize the Electron listeners
-function initElectronListeners() {
+// initialize the listeners on the test content
+function initTestListeners() {
 	// listen for the window to close
 	$appWindow.on(`close`, manageAppClose);
 
@@ -314,6 +312,21 @@ function initElectronListeners() {
 
 	// Whenever a title update is requested
 	$appWindow.on(`page-title-updated`, onTitleUpdate);
+
+	// Whenever the content is loaded on the app window
+	$appWindow.webContents.on(`did-finish-load`, () => {
+		// inject online/offline event listeners
+		$appWindow.webContents.executeJavaScript(`
+			window.addEventListener('online', () => window.eventBridge?.send('network-status', true));
+			window.addEventListener('offline', () => window.eventBridge?.send('network-status', false));
+		`);
+
+		// update the title
+		$appWindow.setTitle(getAppTitle());
+
+		// update the cache menu
+		setMenu();
+	});
 
 	// when there's a navigation failure
 	$appWindow.webContents.on(`did-fail-load`, (event, errorCode, errorDescription) => {
@@ -513,7 +526,7 @@ function onResize() {
 }
 
 // Set up the application menu
-function setMenu () {
+async function setMenu () {
 	// imports
 	const { Menu, dialog } = require(`electron`);
 	const { isURL } = require(`validator`);
@@ -579,7 +592,7 @@ function setMenu () {
 		label: `🔧 &Tools`,
 		submenu: [
 			{
-				label: `🧪 Reset Test (&clear cache 🚿)`,
+				label: `🧪 &Restart Test`,
 				click: () => startAFreshTest()
 			},
 			{
@@ -643,7 +656,12 @@ function setMenu () {
 		label: `${$testNetworkEnabled ? `🌐` : `🔴`} &Network`,
 		submenu: [
 			{
-				label: `♻️ &Reload Page`,
+				label: `🏠 Test &Home`,
+				click: () => navigate()
+			},
+			{ type: `separator` },
+			{
+				label: `♻️ &Reload`,
 				accelerator: `CmdOrCtrl+R`,
 				click: () => $appWindow.webContents.reloadIgnoringCache()
 			},
@@ -659,12 +677,7 @@ function setMenu () {
 			},
 			{ type: `separator` },
 			{
-				label: `🏠 Test &Home`,
-				click: () => navigate()
-			},
-			{ type: `separator` },
-			{
-				label: `${$testNetworkEnabled ? `🔴 Go Offline` : `🟢 Go Online`}`,
+				label: `${$testNetworkEnabled ? `🔴 &Go Offline` : `🟢 &Go Online`}`,
 				click: () => {
 					// toggle the network status
 					$testNetworkEnabled = !$testNetworkEnabled;
@@ -673,6 +686,31 @@ function setMenu () {
 					setMenu();
 				}
 			}
+		]
+	});
+
+	// add a menu item for controlling the cache
+	menuDefault.push({
+		label: `📦 &Cache`,
+		submenu: [
+			{
+				label: `🕝 Age: ${getSessionAge()}`,
+				click: setMenu // refresh the menu
+			},
+			{
+				label: `📊 Size: ${await $appWindow.webContents.session.getCacheSize()} bytes`,
+				click: setMenu // refresh the menu
+			},
+			{
+				label: `🗑️ &Clear`,
+				click: clearCache
+			},
+			...$isDev ? [
+				{
+					label: `📂 Open Cache Folder`,
+					click: () => require(`electron`).shell.openPath($appWindow.webContents.session.getStoragePath())
+				}
+			] : []
 		]
 	});
 
@@ -765,6 +803,33 @@ function setMenu () {
 
 	// Set the modified menu as the application menu
 	Menu.setApplicationMenu(Menu.buildFromTemplate(menuDefault));
+}
+
+function getSessionAge() {
+	const { formatDistanceToNow } = require(`date-fns/formatDistanceToNow`);
+	let output = new Date();
+
+	// get the path to the cache
+	const cachePath = $appWindow.webContents.session.getStoragePath();
+
+	// if the cache path was found
+	if(cachePath){
+		const fs = require(`fs`);
+
+		// create a path to the `Session Storage` folder
+		const sessionFolder = _path.join(cachePath, `Session Storage`);
+
+		// if the session folder exists
+		if(fs.existsSync(sessionFolder)){
+			// get the date the folder was created
+			output = fs.statSync(sessionFolder).birthtime;
+		}
+	}
+
+	// format the output to a relative time
+	output = formatDistanceToNow(output);
+
+	return output;
 }
 
 // listen for the window to close
@@ -899,7 +964,9 @@ function registerCustomProtocol() {
 			standard: true,
 			secure: true,
 			allowServiceWorkers: true,
-			supportFetchAPI: true
+			supportFetchAPI: true,
+			corsEnabled: true,
+			stream: true
 		} },
 
 		{ scheme: `ui`, privileges: {
@@ -925,10 +992,11 @@ function disableNetworkRequest(url) {
 // handle requests to the custom protocol
 function handleRedirects() {
 	// imports
-	const { protocol, net } = require(`electron`);
+	const { protocol, session, net } = require(`electron`);
+	const ses = session.fromPartition(`persist:${config().meta.testId}`);
 
 	// use the "ui" protocol to load the Eyas UI layer
-	protocol.handle(`ui`, request => {
+	ses.protocol.handle(`ui`, request => {
 		const { pathToFileURL } = require(`url`);
 
 		// drop the protocol from the request
@@ -938,11 +1006,11 @@ function handleRedirects() {
 		const localFilePath = _path.join($paths.uiSource, relativePathToFile);
 
 		// return the Eyas UI layer to complete the request
-		return net.fetch(pathToFileURL(localFilePath).toString());
+		return ses.fetch(pathToFileURL(localFilePath).toString());
 	});
 
 	// use this protocol to load files relatively from the local file system
-	protocol.handle(`eyas`, request => {
+	ses.protocol.handle(`eyas`, request => {
 		// validate this request
 		if (disableNetworkRequest(request.url)) {
 			return { cancel: true };
@@ -980,11 +1048,11 @@ function handleRedirects() {
 		}
 
 		// return the file from the local system to complete the request
-		return net.fetch(pathToFileURL(localFilePath).toString());
+		return ses.fetch(pathToFileURL(localFilePath).toString());
 	});
 
 	// listen for requests to the specified domains and redirect to the custom protocol
-	protocol.handle(`https`, request => {
+	ses.protocol.handle(`https`, request => {
 		// setup
 		const { hostname } = parseURL(request.url);
 
@@ -994,22 +1062,28 @@ function handleRedirects() {
 			const redirect = request.url.replace(`https://`, `eyas://`);
 
 			// redirect to the custom protocol
-			return net.fetch(redirect);
+			return ses.fetch(redirect);
 		}
 
 		// otherwise, allow the request to pass through
-		return net.fetch(request, { bypassCustomProtocolHandlers: true });
+		return ses.fetch(request, { bypassCustomProtocolHandlers: true });
 	});
+}
+
+// clears the test cache
+function clearCache() {
+	// clear all caches for the session
+	$appWindow.webContents.session.clearCache(); // web cache
+	$appWindow.webContents.session.clearStorageData(); // cookies, filesystem, indexdb, localstorage, shadercache, websql, serviceworkers, cachestorage
+
+	// update the menu to reflect the cache changes
+	setMenu();
 }
 
 // refresh the app
 async function startAFreshTest() {
 	// imports
 	const semver = require(`semver`);
-
-	// clear all caches for the session
-	await $appWindow.webContents.session.clearCache(); // web cache
-	await $appWindow.webContents.session.clearStorageData(); // cookies, filesystem, indexdb, localstorage, shadercache, websql, serviceworkers, cachestorage
 
 	// set the available viewports
 	$allViewports = [...config().viewports, ...$defaultViewports];

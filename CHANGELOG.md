@@ -15,6 +15,7 @@
 - Fix devtools "network offline" mode not working
 - Added a new Network menu with navigation options and ability to disable network
 - Add new "tool" menu item to copy the current URL to the clipboard
+- Give each testId its own session and cache that can be cleared independently. Cache is now maintained between test runs.
 
 # v3.3.0
 
