@@ -100,10 +100,10 @@
     "mixpanel": "^0.18.0",
     "mkcert": "^3.2.0",
     "node-machine-id": "^1.1.12",
-    "pinia": "^2.2.0",
+    "pinia": "^2.2.1",
     "semver": "^7.6.3",
     "validator": "^13.12.0",
-    "vue": "^3.4.35",
+    "vue": "^3.4.36",
     "vuetify": "^3.6.14"
   },
   "devDependencies": {
@@ -115,9 +115,9 @@
     "@rollup/plugin-terser": "^0.4.4",
     "@testing-library/webdriverio": "^3.2.1",
     "@vitejs/plugin-vue": "^5.1.2",
-    "@wdio/cli": "^8.39.1",
-    "@wdio/local-runner": "^8.39.1",
-    "@wdio/mocha-framework": "^8.39.0",
+    "@wdio/cli": "^8.40.0",
+    "@wdio/local-runner": "^8.40.1",
+    "@wdio/mocha-framework": "^8.40.0",
     "@wdio/spec-reporter": "^8.39.0",
     "cross-env": "^7.0.3",
     "dotenv": "^16.4.5",
@@ -128,7 +128,7 @@
     "npm-check": "^6.0.1",
     "sass": "^1.77.8",
     "vite": "^5.3.5",
-    "vite-plugin-vuetify": "^2.0.3",
+    "vite-plugin-vuetify": "^2.0.4",
     "wdio-electron-service": "^6.6.1"
   },
   "overrides": {
