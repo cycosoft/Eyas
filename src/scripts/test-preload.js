@@ -97,20 +97,20 @@ function polyfillUploadProgress() {
 		}
 
 		// when the request has finished loading
-		this.addEventListener('loadend', function() {
+		this.addEventListener(`loadend`, function() {
 			// calculate the actual upload speed
 			const timeTaken = performance.now() - requestStart;
 			uploadSpeed = totalBytes * (1000 / timeTaken);
 			clearInterval(intervalId);
 
 			// dispatch a final progress event with the total bytes
-			this.upload.dispatchEvent(new ProgressEvent('progress',
+			this.upload.dispatchEvent(new ProgressEvent(`progress`,
 				{ lengthComputable: true, loaded: totalBytes, total: totalBytes }
 			));
 		});
 
 		// dispatch an initial progress event with 0 loaded bytes
-		this.upload.dispatchEvent(new ProgressEvent('progress',
+		this.upload.dispatchEvent(new ProgressEvent(`progress`,
 			{ lengthComputable: true, loaded: 0, total: totalBytes }
 		));
 
@@ -122,7 +122,7 @@ function polyfillUploadProgress() {
 			if (loaded > totalBytes) { loaded = totalBytes; }
 
 			// alert the progress event
-			this.upload.dispatchEvent(new ProgressEvent('progress',
+			this.upload.dispatchEvent(new ProgressEvent(`progress`,
 				{ lengthComputable: true, loaded, total: totalBytes }
 			));
 		};
