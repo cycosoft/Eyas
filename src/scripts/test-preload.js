@@ -84,6 +84,14 @@ function polyfillUploadProgress() {
 		// track the time this request started
 		const requestStart = performance.now();
 
+		// log the data type
+		console.log({ data });
+
+		// update the fileBytes for ArrayBuffer, TypedArray, DataView
+		if (data instanceof ArrayBuffer || data instanceof DataView || data instanceof TypedArray) {
+			fileBytes = data.byteLength;
+		}
+
 		// update the fileBytes for Blob
 		if (data instanceof Blob) {
 			fileBytes = data.size;
@@ -97,6 +105,14 @@ function polyfillUploadProgress() {
 				}
 			}
 		}
+
+		// update the fileBytes for string
+		if (typeof data === `string`) {
+			fileBytes = data.length;
+		}
+
+		console.log({ fileBytes });
+
 
 		// when the request has finished loading
 		this.addEventListener(`loadend`, function() {
