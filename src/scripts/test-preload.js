@@ -73,6 +73,7 @@ function polyfillUploadProgress() {
 	const origOpen = XMLHttpRequest.prototype.send;
 	let uploadSpeed = 150 * 1024; // 150KB/s
 
+	// Can be: Document, Blob, ArrayBuffer, TypedArray, DataView, FormData, URLSearchParams, string, object, null.
 	XMLHttpRequest.prototype.send = function(data) {
 		// setup
 		const intervalTiming = 100;
@@ -97,9 +98,11 @@ function polyfillUploadProgress() {
 
 		// when the request has finished loading
 		this.addEventListener('loadend', function() {
+			// calculate the actual upload speed
 			const timeTaken = performance.now() - requestStart;
 			uploadSpeed = totalBytes * (1000 / timeTaken);
 			clearInterval(intervalId);
+
 			// dispatch a final progress event with the total bytes
 			this.upload.dispatchEvent(new ProgressEvent('progress',
 				{ lengthComputable: true, loaded: totalBytes, total: totalBytes }
