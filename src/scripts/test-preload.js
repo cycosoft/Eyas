@@ -71,6 +71,7 @@ function reportNetworkStatus() {
 // polyfill for upload progress within Eyas
 function polyfillUploadProgress() {
 	const origOpen = XMLHttpRequest.prototype.send;
+	const minUploadSpeed = 50 * 1024;
 	let uploadSpeed = 150 * 1024; // default to 150KB/s
 
 	// Can be: Document, Blob, ArrayBuffer, Int8Array, DataView, FormData, URLSearchParams, string, object, null.
@@ -84,9 +85,6 @@ function polyfillUploadProgress() {
 
 		// track the time this request started
 		const requestStart = performance.now();
-
-		// log the data type
-		console.log({ data });
 
 		// update the fileBytes for ArrayBuffer, Int8Array, DataView
 		if (data instanceof ArrayBuffer || data instanceof DataView || data instanceof Int8Array) {
@@ -112,13 +110,13 @@ function polyfillUploadProgress() {
 			fileBytes = data.length;
 		}
 
-		console.log({ fileBytes });
-
 		// when the request has finished loading
 		xhr.addEventListener(`loadend`, function() {
 			// calculate the actual upload speed
 			const timeTaken = performance.now() - requestStart;
-			uploadSpeed = fileBytes * (1000 / timeTaken);
+			const calculatedSpeed = fileBytes * (1000 / timeTaken);
+			uploadSpeed = calculatedSpeed > minUploadSpeed ? calculatedSpeed : uploadSpeed;
+
 			clearInterval(intervalId);
 
 			// dispatch a final progress event with the total bytes
@@ -141,8 +139,6 @@ function polyfillUploadProgress() {
 
 		// the event to dispatch the progress event
 		function emitProgress(loaded, total) {
-			console.log(`emitProgress()`, { loaded, total });
-
 			xhr.upload.dispatchEvent(new ProgressEvent(`progress`,
 				{ lengthComputable: true, loaded, total }
 			));
