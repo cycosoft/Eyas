@@ -73,7 +73,7 @@ function polyfillUploadProgress() {
 	const origOpen = XMLHttpRequest.prototype.send;
 	let uploadSpeed = 150 * 1024; // default to 150KB/s
 
-	// Can be: Document, Blob, ArrayBuffer, TypedArray, DataView, FormData, URLSearchParams, string, object, null.
+	// Can be: Document, Blob, ArrayBuffer, Int8Array, DataView, FormData, URLSearchParams, string, object, null.
 	XMLHttpRequest.prototype.send = function(data) {
 		// setup
 		const intervalTiming = 100;
@@ -87,8 +87,8 @@ function polyfillUploadProgress() {
 		// log the data type
 		console.log({ data });
 
-		// update the fileBytes for ArrayBuffer, TypedArray, DataView
-		if (data instanceof ArrayBuffer || data instanceof DataView || data instanceof TypedArray) {
+		// update the fileBytes for ArrayBuffer, Int8Array, DataView
+		if (data instanceof ArrayBuffer || data instanceof DataView || data instanceof Int8Array) {
 			fileBytes = data.byteLength;
 		}
 
@@ -113,7 +113,6 @@ function polyfillUploadProgress() {
 
 		console.log({ fileBytes });
 
-
 		// when the request has finished loading
 		this.addEventListener(`loadend`, function() {
 			// calculate the actual upload speed
@@ -122,15 +121,11 @@ function polyfillUploadProgress() {
 			clearInterval(intervalId);
 
 			// dispatch a final progress event with the total bytes
-			this.upload.dispatchEvent(new ProgressEvent(`progress`,
-				{ lengthComputable: true, loaded: fileBytes, total: fileBytes }
-			));
+			emitProgress(fileBytes, fileBytes);
 		});
 
 		// dispatch an initial progress event with 0 loaded bytes
-		this.upload.dispatchEvent(new ProgressEvent(`progress`,
-			{ lengthComputable: true, loaded: 0, total: fileBytes }
-		));
+		emitProgress(0, fileBytes);
 
 		const updateProgress = () => {
 			totalUpdates++;
@@ -140,10 +135,17 @@ function polyfillUploadProgress() {
 			if (loaded > fileBytes) { loaded = fileBytes; }
 
 			// alert the progress event
-			this.upload.dispatchEvent(new ProgressEvent(`progress`,
-				{ lengthComputable: true, loaded, total: fileBytes }
-			));
+			emitProgress(loaded, fileBytes);
 		};
+
+		// the event to dispatch the progress event
+		function emitProgress(loaded, total) {
+			console.log(`emitProgress()`, { loaded, total });
+
+			this.upload.dispatchEvent(new ProgressEvent(`progress`,
+				{ lengthComputable: true, loaded, total }
+			));
+		}
 
 		// update the new progress event now and then every following interval
 		updateProgress();
