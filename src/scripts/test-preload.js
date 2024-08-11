@@ -71,7 +71,7 @@ function reportNetworkStatus() {
 // polyfill for upload progress within Eyas
 function polyfillUploadProgress() {
 	const origOpen = XMLHttpRequest.prototype.send;
-	let uploadSpeed = 150 * 1024; // 150KB/s
+	let uploadSpeed = 150 * 1024; // default to 150KB/s
 
 	// Can be: Document, Blob, ArrayBuffer, TypedArray, DataView, FormData, URLSearchParams, string, object, null.
 	XMLHttpRequest.prototype.send = function(data) {
