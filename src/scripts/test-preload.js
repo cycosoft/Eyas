@@ -76,6 +76,7 @@ function polyfillUploadProgress() {
 	// Can be: Document, Blob, ArrayBuffer, Int8Array, DataView, FormData, URLSearchParams, string, object, null.
 	XMLHttpRequest.prototype.send = function(data) {
 		// setup
+		const xhr = this;
 		const intervalTiming = 100;
 		let totalUpdates = 0;
 		let intervalId = null;
@@ -114,7 +115,7 @@ function polyfillUploadProgress() {
 		console.log({ fileBytes });
 
 		// when the request has finished loading
-		this.addEventListener(`loadend`, function() {
+		xhr.addEventListener(`loadend`, function() {
 			// calculate the actual upload speed
 			const timeTaken = performance.now() - requestStart;
 			uploadSpeed = fileBytes * (1000 / timeTaken);
@@ -142,7 +143,7 @@ function polyfillUploadProgress() {
 		function emitProgress(loaded, total) {
 			console.log(`emitProgress()`, { loaded, total });
 
-			this.upload.dispatchEvent(new ProgressEvent(`progress`,
+			xhr.upload.dispatchEvent(new ProgressEvent(`progress`,
 				{ lengthComputable: true, loaded, total }
 			));
 		}
@@ -151,6 +152,6 @@ function polyfillUploadProgress() {
 		updateProgress();
 		intervalId = setInterval(updateProgress, intervalTiming);
 
-		origOpen.apply(this, arguments);
+		origOpen.apply(xhr, arguments);
 	};
 }
