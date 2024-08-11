@@ -56,6 +56,7 @@ const $paths = {
 	icon: _path.join($roots.eyas, `eyas-assets`, `eyas-logo.png`),
 	configLoader: _path.join($roots.eyas, `scripts`, `get-config.js`),
 	packageJson: _path.join($roots.eyas, `package.json`),
+	testPreload: _path.join($roots.eyas, `scripts`, `test-preload.js`),
 	eventBridge: _path.join($roots.eyas, `scripts`, `event-bridge.js`),
 	testSrc: null,
 	uiSource: _path.join($roots.eyas, `eyas-interface`),
@@ -202,7 +203,7 @@ function initElectronUi() {
 		icon: $paths.icon,
 		show: false,
 		webPreferences: {
-			preload: $paths.eventBridge,
+			preload: $paths.testPreload,
 			partition: `persist:${config().meta.testId}`
 		}
 	});

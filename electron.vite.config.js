@@ -13,7 +13,8 @@ export default {
 				input: {
 					'get-roots': resolve(__dirname, `src/scripts/get-roots.js`),
 					'get-config': resolve(__dirname, `src/scripts/get-config.js`),
-					'event-bridge': resolve(__dirname, `src/scripts/event-bridge.js`)
+					'event-bridge': resolve(__dirname, `src/scripts/event-bridge.js`),
+					'test-preload': resolve(__dirname, `src/scripts/test-preload.js`)
 				}
 			},
 
