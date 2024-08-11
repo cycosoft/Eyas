@@ -25,7 +25,7 @@ export default {
 
 	methods: {
 		openInBrowser(url) {
-			window.eventBridge?.send(`launch-link`, { url, openInBrowser: true });
+			window.eyas?.send(`launch-link`, { url, openInBrowser: true });
 		}
 	}
 };

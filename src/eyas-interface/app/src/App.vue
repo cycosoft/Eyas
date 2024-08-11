@@ -26,6 +26,6 @@ export default {
 };
 
 // detect when the network status changes
-window.addEventListener(`online`, () => window.eventBridge?.send(`network-status`, true));
-window.addEventListener(`offline`, () => window.eventBridge?.send(`network-status`, false));
+window.addEventListener(`online`, () => window.eyas?.send(`network-status`, true));
+window.addEventListener(`offline`, () => window.eyas?.send(`network-status`, false));
 </script>

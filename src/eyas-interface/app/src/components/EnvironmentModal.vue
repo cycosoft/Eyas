@@ -61,7 +61,7 @@ export default {
 
 	mounted() {
 		// Listen for messages from the main process
-		window.eventBridge?.receive(`show-environment-modal`, domains => {
+		window.eyas?.receive(`show-environment-modal`, domains => {
 			this.domains = domains;
 			this.visible = true;
 		});
@@ -75,7 +75,7 @@ export default {
 			// timeout for user feedback + time to load test environment
 			setTimeout(() => {
 				// send the chosen domain to the main process
-				window.eventBridge?.send(`environment-selected`, domain);
+				window.eyas?.send(`environment-selected`, domain);
 
 				// close the modal
 				this.visible = false;

@@ -50,7 +50,7 @@ export default {
 
 	mounted() {
 		// Listen for messages from the main process
-		window.eventBridge?.receive(`show-version-mismatch-modal`, (runnerVersion, testVersion) => {
+		window.eyas?.receive(`show-version-mismatch-modal`, (runnerVersion, testVersion) => {
 			this.runnerVersion = runnerVersion;
 			this.testVersion = testVersion;
 			this.visible = true;
@@ -60,7 +60,7 @@ export default {
 	methods: {
 		checkForUpdate() {
 			const url = `https://github.com/cycosoft/Eyas/releases`;
-			window.eventBridge?.send(`launch-link`, { url, openInBrowser: true });
+			window.eyas?.send(`launch-link`, { url, openInBrowser: true });
 		}
 	}
 }

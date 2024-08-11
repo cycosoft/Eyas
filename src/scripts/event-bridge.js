@@ -10,7 +10,7 @@ const { contextBridge, ipcRenderer } = require(`electron`);
 // via ( https://stackoverflow.com/a/59814127 )
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
-contextBridge.exposeInMainWorld(`eventBridge`, {
+contextBridge.exposeInMainWorld(`eyas`, {
 	send: (channel, data) => {
 		// whitelist channels
 		const validChannels = [

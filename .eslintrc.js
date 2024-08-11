@@ -9,7 +9,7 @@ module.exports = {
 		`plugin:vue/vue3-recommended`
 	],
 	globals: {
-		eventBridge: `readonly`
+		eyas: `readonly`
 	},
 	overrides: [
 		{
