@@ -45,13 +45,13 @@ export default {
 
 	mounted() {
 		// Listen for messages from the main process
-		window.eventBridge?.receive(`modal-exit-visible`, value => this.visible = value);
+		window.eyas?.receive(`modal-exit-visible`, value => this.visible = value);
 	},
 
 	methods: {
 		exit() {
 			this.exiting = true;
-			window.eventBridge?.send(`app-exit`);
+			window.eyas?.send(`app-exit`);
 		},
 
 		cancel() {

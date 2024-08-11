@@ -13,6 +13,8 @@ module.exports = {
 		{ label: `Custom Size`, width: 1024, height: 768 }
 	],
 	links: [
+		{ url: `https://tus.io/demo`, label: `Blob Upload Progress Demo` },
+		{ url: `https://blueimp.github.io/jQuery-File-Upload/`, label: `FormData Upload Progress Demo` },
 		{ url: `sub.domain.com:44301/`, label: `EYAS-253 Test` },
 		{ label: `Options Demo`, url: `https://{dev.|staging.|}cycosoft.com` },
 		{ label: `Int Demo`, url: `https://eyas.cycosoft.com?id={int}` },

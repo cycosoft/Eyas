@@ -190,7 +190,7 @@ export default {
 
 	mounted() {
 		// Listen for messages from the main process
-		window.eventBridge?.receive(`show-variables-modal`, link => {
+		window.eyas?.receive(`show-variables-modal`, link => {
 			this.reset();
 			this.link = link;
 			this.open();
@@ -211,7 +211,7 @@ export default {
 		},
 
 		launch() {
-			window.eventBridge?.send(`launch-link`, { url: this.parsedLink });
+			window.eyas?.send(`launch-link`, { url: this.parsedLink });
 			this.close();
 		},
 
