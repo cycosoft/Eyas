@@ -76,24 +76,25 @@ function polyfillUploadProgress() {
 	// Can be: Document, Blob, ArrayBuffer, TypedArray, DataView, FormData, URLSearchParams, string, object, null.
 	XMLHttpRequest.prototype.send = function(data) {
 		// setup
-		const supportedProgressTypes = [Blob, FormData];
 		const intervalTiming = 100;
 		let totalUpdates = 0;
 		let intervalId = null;
-		let fileBytes = 0;
+		let fileBytes = 1; // default to 1 byte to avoid division by 0
 
 		// track the time this request started
 		const requestStart = performance.now();
 
-		// if the received data is not supported, set the fileBytes to 1
-		if (!supportedProgressTypes.some(type => data instanceof type)) {
-			fileBytes = 1;
+		// update the fileBytes for Blob
+		if (data instanceof Blob) {
+			fileBytes = data.size;
 		}
 
-		// get the file size
-		for (let pair of data.entries()) {
-			if (pair[1] instanceof File) {
-				fileBytes += pair[1].size;
+		// update the fileBytes for FormData
+		if (data instanceof FormData) {
+			for (let pair of data.entries()) {
+				if (pair[1] instanceof File) {
+					fileBytes += pair[1].size;
+				}
 			}
 		}
 
