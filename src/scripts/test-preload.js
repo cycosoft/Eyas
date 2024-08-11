@@ -76,23 +76,24 @@ function polyfillUploadProgress() {
 	// Can be: Document, Blob, ArrayBuffer, TypedArray, DataView, FormData, URLSearchParams, string, object, null.
 	XMLHttpRequest.prototype.send = function(data) {
 		// setup
+		const supportedProgressTypes = [Blob, FormData];
 		const intervalTiming = 100;
 		let totalUpdates = 0;
 		let intervalId = null;
+		let fileBytes = 0;
 
-		// exit if it's not a FormData object
-		if (!(data instanceof FormData)) {
-			return origOpen.apply(this, arguments);
+		// if the received data is not supported, set the fileBytes to 1
+		if (!supportedProgressTypes.some(type => data instanceof type)) {
+			fileBytes = 1;
 		}
 
 		// track the time this request started
 		const requestStart = performance.now();
 
 		// get the file size
-		let totalBytes = 0;
 		for (let pair of data.entries()) {
 			if (pair[1] instanceof File) {
-				totalBytes += pair[1].size;
+				fileBytes += pair[1].size;
 			}
 		}
 
@@ -100,18 +101,18 @@ function polyfillUploadProgress() {
 		this.addEventListener(`loadend`, function() {
 			// calculate the actual upload speed
 			const timeTaken = performance.now() - requestStart;
-			uploadSpeed = totalBytes * (1000 / timeTaken);
+			uploadSpeed = fileBytes * (1000 / timeTaken);
 			clearInterval(intervalId);
 
 			// dispatch a final progress event with the total bytes
 			this.upload.dispatchEvent(new ProgressEvent(`progress`,
-				{ lengthComputable: true, loaded: totalBytes, total: totalBytes }
+				{ lengthComputable: true, loaded: fileBytes, total: fileBytes }
 			));
 		});
 
 		// dispatch an initial progress event with 0 loaded bytes
 		this.upload.dispatchEvent(new ProgressEvent(`progress`,
-			{ lengthComputable: true, loaded: 0, total: totalBytes }
+			{ lengthComputable: true, loaded: 0, total: fileBytes }
 		));
 
 		const updateProgress = () => {
@@ -119,11 +120,11 @@ function polyfillUploadProgress() {
 			let loaded = totalUpdates * uploadSpeed * (intervalTiming / 1000);
 
 			// quality check
-			if (loaded > totalBytes) { loaded = totalBytes; }
+			if (loaded > fileBytes) { loaded = fileBytes; }
 
 			// alert the progress event
 			this.upload.dispatchEvent(new ProgressEvent(`progress`,
-				{ lengthComputable: true, loaded, total: totalBytes }
+				{ lengthComputable: true, loaded, total: fileBytes }
 			));
 		};
 
