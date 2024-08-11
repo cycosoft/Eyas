@@ -82,13 +82,13 @@ function polyfillUploadProgress() {
 		let intervalId = null;
 		let fileBytes = 0;
 
+		// track the time this request started
+		const requestStart = performance.now();
+
 		// if the received data is not supported, set the fileBytes to 1
 		if (!supportedProgressTypes.some(type => data instanceof type)) {
 			fileBytes = 1;
 		}
-
-		// track the time this request started
-		const requestStart = performance.now();
 
 		// get the file size
 		for (let pair of data.entries()) {
