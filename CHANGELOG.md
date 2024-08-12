@@ -2,6 +2,9 @@
 
 - As Electron@31.3.1 does not support the file upload progress event in the renderer process, Eyas will polyfill this event to simulate the progress bar. It attempts to get more accurate after each use, but will never match the actual progress.
 - Dependency updates
+- Fix animations freezing when hiding the UI layer
+- Hide the UI whenever navigating to a new url
+- Request to close all modals when hiding the UI layer
 
 # v3.4.0
 
