@@ -843,7 +843,7 @@ async function manageAppClose(evt) {
 
 // Toggle the Eyas UI layer so the user can interact with it or their test
 function toggleEyasUI(enable) {
-	if(enable){
+	if(enable) {
 		// set the bounds to the current viewport
 		$eyasLayer.setBounds({
 			x: 0,
@@ -854,7 +854,7 @@ function toggleEyasUI(enable) {
 
 		// give the layer focus
 		focusUI();
-	}else{
+	} else {
 		// shrink the bounds to 0 to hide it
 		$eyasLayer.setBounds({ x: 0, y: 0, width: 0, height: 0 });
 	}
