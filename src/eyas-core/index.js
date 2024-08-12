@@ -924,6 +924,9 @@ function navigate(path, openInBrowser) {
 		// otherwise load the requested path in the app window
 		$appWindow.loadURL(path);
 	}
+
+	// ensure the UI is closed so the user can interact with the content
+	toggleEyasUI(false);
 }
 
 // format the url for electron consumption
