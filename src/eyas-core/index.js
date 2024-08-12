@@ -245,7 +245,8 @@ function initElectronUi() {
 	// Initialize the $eyasLayer
 	$eyasLayer = new BrowserView({ webPreferences: {
 		preload: $paths.eventBridge,
-		partition: `persist:${config().meta.testId}`
+		partition: `persist:${config().meta.testId}`,
+		backgroundThrottling: false // allow to update even when hidden (e.g. modal close)
 	} });
 	$appWindow.addBrowserView($eyasLayer);
 	$eyasLayer.webContents.loadURL(`${$uiDomain}/index.html`);
