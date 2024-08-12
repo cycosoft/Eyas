@@ -855,6 +855,9 @@ function toggleEyasUI(enable) {
 		// give the layer focus
 		focusUI();
 	} else {
+		// close all modals in the UI
+		$eyasLayer.webContents.send(`close-modals`);
+
 		// shrink the bounds to 0 to hide it
 		$eyasLayer.setBounds({ x: 0, y: 0, width: 0, height: 0 });
 	}

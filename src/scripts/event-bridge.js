@@ -31,7 +31,8 @@ contextBridge.exposeInMainWorld(`eyas`, {
 			`modal-exit-visible`,
 			`show-environment-modal`,
 			`show-variables-modal`,
-			`show-version-mismatch-modal`
+			`show-version-mismatch-modal`,
+			`close-modals`
 		];
 		if (validChannels.includes(channel)) {
 			// Deliberately strip event as it includes `sender`
