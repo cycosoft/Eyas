@@ -245,7 +245,8 @@ function initElectronUi() {
 	// Initialize the $eyasLayer
 	$eyasLayer = new BrowserView({ webPreferences: {
 		preload: $paths.eventBridge,
-		partition: `persist:${config().meta.testId}`
+		partition: `persist:${config().meta.testId}`,
+		backgroundThrottling: false // allow to update even when hidden (e.g. modal close)
 	} });
 	$appWindow.addBrowserView($eyasLayer);
 	$eyasLayer.webContents.loadURL(`${$uiDomain}/index.html`);
@@ -643,6 +644,7 @@ async function setMenu () {
 	// Add the developer tools menu to the application menu for the UI layer
 	$isDev && menuDefault.at(-1).submenu.push({
 		label: `🔧 Developer Tools (&UI)`,
+		accelerator: `CmdOrCtrl+Shift+J`,
 		click: () => $eyasLayer.webContents.openDevTools()
 	});
 
@@ -841,7 +843,7 @@ async function manageAppClose(evt) {
 
 // Toggle the Eyas UI layer so the user can interact with it or their test
 function toggleEyasUI(enable) {
-	if(enable){
+	if(enable) {
 		// set the bounds to the current viewport
 		$eyasLayer.setBounds({
 			x: 0,
@@ -852,7 +854,10 @@ function toggleEyasUI(enable) {
 
 		// give the layer focus
 		focusUI();
-	}else{
+	} else {
+		// close all modals in the UI
+		$eyasLayer.webContents.send(`close-modals`);
+
 		// shrink the bounds to 0 to hide it
 		$eyasLayer.setBounds({ x: 0, y: 0, width: 0, height: 0 });
 	}
@@ -922,6 +927,9 @@ function navigate(path, openInBrowser) {
 		// otherwise load the requested path in the app window
 		$appWindow.loadURL(path);
 	}
+
+	// ensure the UI is closed so the user can interact with the content
+	toggleEyasUI(false);
 }
 
 // format the url for electron consumption
