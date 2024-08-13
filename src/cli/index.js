@@ -235,6 +235,9 @@ function getModifiedConfig() {
 	userLog(`Creating snapshot of config...`);
 	const configCopy = JSON.parse(JSON.stringify(config));
 
+	// delete the source property
+	delete configCopy.source;
+
 	// wrap the config in a module export
 	const data = `module.exports = ${JSON.stringify(configCopy)}`;
 
