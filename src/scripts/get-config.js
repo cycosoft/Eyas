@@ -16,13 +16,13 @@ const eyasExtension = `.eyas`;
 const tempFileName = `converted_test.asar`;
 const configFileName = `.eyas.config.js`;
 let userConfig = {};
-let configPath = null;
+let configPath = null; // TODO: Why is this global?
 let asarPath = null;
 
 // sets the default configuration based on selected config
-function parseConfig(requestedEyasPath) {
+function parseConfig(requestedEyasPath, loadAsar = true) {
 	// load a test
-	loadConfig(requestedEyasPath);
+	loadConfig(requestedEyasPath, loadAsar);
 
 	// object validation
 	userConfig.outputs = userConfig.outputs || {};
@@ -75,41 +75,44 @@ function parseConfig(requestedEyasPath) {
 }
 
 // determine how to auto load the user's test (*.eyas click, sibling *.eyas, or config + directory)
-function loadConfig(requestedEyasPath) {
+function loadConfig(requestedEyasPath, loadAsar = true) {
 	// set path to the requested eyas file first
 	asarPath = requestedEyasPath;
 
-	// if not set
-	if (!asarPath) {
-		// try getting path from command line argument
-		asarPath = process.argv.find(arg => arg.endsWith(eyasExtension));
-	}
-
-	// if the asarPath still isn't set
-	if (!asarPath) {
-		// try looking for sibling *.eyas files
-		const siblingFileName = _fs.readdirSync(roots.config).find(file => file.endsWith(eyasExtension));
-
-		// if a file was found
-		if (siblingFileName) {
-			// define the full path to the sibling file
-			asarPath = path.join(roots.config, siblingFileName);
+	// if we should be looking for asar files
+	if(loadAsar) {
+		// if not set
+		if (!asarPath) {
+			// try getting path from command line argument
+			asarPath = process.argv.find(arg => arg.endsWith(eyasExtension));
 		}
-	}
 
-	// if a file was set
-	if (asarPath) {
-		// define the full path to the temp file that will be the source for the test
-		const tempPath = path.join(os.tmpdir(), tempFileName);
+		// if the asarPath still isn't set
+		if (!asarPath) {
+			// try looking for sibling *.eyas files
+			const siblingFileName = _fs.readdirSync(roots.config).find(file => file.endsWith(eyasExtension));
 
-		// copy the eyas file to the temp directory with the asar extension
-		_fs.copyFileSync(asarPath, tempPath);
+			// if a file was found
+			if (siblingFileName) {
+				// define the full path to the sibling file
+				asarPath = path.join(roots.config, siblingFileName);
+			}
+		}
 
-		// update the config path to the temp directory
-		configPath = path.join(tempPath, configFileName);
+		// if a file was set
+		if (asarPath) {
+			// define the full path to the temp file that will be the source for the test
+			const tempPath = path.join(os.tmpdir(), tempFileName);
 
-		// update the asar path to the temp directory
-		asarPath = tempPath;
+			// copy the eyas file to the temp directory with the asar extension
+			_fs.copyFileSync(asarPath, tempPath);
+
+			// update the config path to the temp directory
+			configPath = path.join(tempPath, configFileName);
+
+			// update the asar path to the temp directory
+			asarPath = tempPath;
+		}
 	}
 
 	// if the configPath never got set

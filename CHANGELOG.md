@@ -6,6 +6,7 @@
 - Hide the UI whenever navigating to a new url
 - Request to close all modals when hiding the UI layer
 - Stop outputting the local path to the test in the config
+- Do not look for sibling asar files when getting the user's config via the CLI build step
 
 # v3.4.0
 
