@@ -5,6 +5,7 @@
 - Fix animations freezing when hiding the UI layer
 - Hide the UI whenever navigating to a new url
 - Request to close all modals when hiding the UI layer
+- Stop outputting the local path to the test in the config
 
 # v3.4.0
 
