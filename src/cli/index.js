@@ -92,7 +92,7 @@ const paths = {
 
 // load the user's config
 const parseConfig = require(paths.configLoader);
-const config = parseConfig();
+const config = parseConfig(null, false);
 
 // Entry Point
 (async () => {
