@@ -87,6 +87,13 @@ const paths = {
 					name: `eyas-db`,
 					icon: isWin ? paths.iconDbWin : paths.iconDbMac
 				}
+			],
+			protocols: [
+				{
+					name: `Eyas`,
+					schemes: [`eyas`],
+					role: `Viewer`
+				}
 			]
 		}
 	});
