@@ -75,7 +75,7 @@ const paths = {
 			},
 			msi: {
 				oneClick: false, // because there is no feedback to users otherwise
-				runAfterFinish: false, // user is likely to start by double clicking *.eyas
+				runAfterFinish: true, // required for user to create protocol association
 				createDesktopShortcut: true // so the user knows install process finished
 			},
 			pkg: {
