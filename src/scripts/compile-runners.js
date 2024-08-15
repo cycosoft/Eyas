@@ -75,7 +75,7 @@ const paths = {
 			},
 			msi: {
 				oneClick: false, // because there is no feedback to users otherwise
-				runAfterFinish: true, // required for user to create protocol association
+				runAfterFinish: false, // this gives the user an option, but we want mandatory
 				createDesktopShortcut: true // so the user knows install process finished
 			},
 			pkg: {
