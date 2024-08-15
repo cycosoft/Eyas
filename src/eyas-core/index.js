@@ -149,6 +149,25 @@ initElectronCore();
 
 // start the core of the application
 function initElectronCore() {
+	// register the custom protocol for OS deep linking
+	console.log(`process.defaultApp`, process.defaultApp);
+	if (process.defaultApp) {
+		console.log(`process.argv`, process.argv);
+
+		if (process.argv.length >= 2) {
+			console.log(`path 1`);
+
+			_electronCore.setAsDefaultProtocolClient(
+				`eyas`,
+				process.execPath,
+				[_path.resolve(process.argv[1])]
+			);
+		} else {
+			console.log(`path 2`);
+			_electronCore.setAsDefaultProtocolClient(`eyas`);
+		}
+	}
+
 	// detect if the app was opened with a file (MacOS only)
 	_electronCore.on(`open-file`, (event, path) => {
 		// ensure the correct file type is being opened
@@ -159,6 +178,24 @@ function initElectronCore() {
 			// start a new test based on the newly loaded config
 			startAFreshTest();
 		}
+	});
+
+	// macOS: detect if Eyas was triggered from a custom protocol
+	_electronCore.on(`open-url`, (event, url) => {
+		console.log(`open-url:url`, url);
+		console.log(`open-url:event`, event);
+
+
+		// reload the config based on the new path
+		// config(url);
+
+		// start a new test based on the newly loaded config
+		// startAFreshTest();
+	});
+
+	// Windows: detect if Eyas was triggered from a custom protocol
+	_electronCore.on(`second-instance`, (event, commandLine, workingDirectory) => {
+		console.log(`second-instance:url`, commandLine.pop());
 	});
 
 	// add support for eyas:// protocol
