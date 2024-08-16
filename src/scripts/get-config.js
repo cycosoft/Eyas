@@ -87,18 +87,32 @@ function loadConfig(path, isNotCli = true) {
 
 	// setup
 	let configPath = null;
+	let pathPointsToURL = false;
 
 	// if the path starts with eyas://
 	if (path && path.startsWith(`eyas://`)) {
 		const parsed = new URL(path.replace(`eyas://`, `https://`));
 
-		console.log(parsed);
-
 		// is the path a URL?
-		console.log(`isURL(parsed)`, isURL(parsed.toString()));
+		pathPointsToURL = isURL(parsed.toString());
+		console.log(`isURL(parsed)`, pathPointsToURL);
+
+		// get the contents of the config file from the url using node fetch
+		if (pathPointsToURL) {
+			fetch(parsed.toString())
+				.then(response => response.text())
+				.then(data => {
+					console.log(data);
+				})
+				.catch(error => {
+					console.error(`Error fetching config:`, error);
+				});
+		}
+
 		// stop here
 		return;
 	}
+
 
 	// set path to the requested eyas file first
 	asarPath = path;
