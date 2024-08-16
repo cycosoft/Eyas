@@ -19,9 +19,9 @@ let userConfig = {};
 let asarPath = null;
 
 // sets the default configuration based on selected config
-function parseConfig(path, loadAsar = true) {
+function parseConfig(path, isNotCli = true) {
 	// load a test
-	loadConfig(path, loadAsar);
+	loadConfig(path, isNotCli);
 
 	// object validation
 	userConfig.outputs = userConfig.outputs || {};
@@ -73,8 +73,15 @@ function parseConfig(path, loadAsar = true) {
 	return eyasConfig;
 }
 
-// determine how to auto load the user's test (*.eyas click, sibling *.eyas, or config + directory)
-function loadConfig(path, loadAsar = true) {
+/*
+determine how to load the test
+
+- *.eyas click
+- sibling *.eyas
+- direct config + directory
+- via url
+*/
+function loadConfig(path, isNotCli = true) {
 	// setup
 	let configPath = null;
 
@@ -82,7 +89,7 @@ function loadConfig(path, loadAsar = true) {
 	asarPath = path;
 
 	// if we should be looking for asar files
-	if(loadAsar) {
+	if(isNotCli) {
 		// if not set
 		if (!asarPath) {
 			// try getting path from command line argument
