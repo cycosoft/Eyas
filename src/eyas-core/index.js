@@ -486,19 +486,16 @@ function checkTestExpiration () {
 
 // returns the current test's config
 function config(eyasPath) {
-	// import the config loader
-	const parseConfig = require($paths.configLoader);
-
 	// if a path was passed
 	if (eyasPath) {
 		// request config from the new path
-		config.cache = parseConfig(eyasPath);
+		config.cache = require($paths.configLoader)(eyasPath);
 	}
 
 	// if no path set
 	else {
 		// use the cache OR load the config using default methods
-		config.cache = config.cache || parseConfig();
+		config.cache ||= require($paths.configLoader)();
 	}
 
 	// return the config
