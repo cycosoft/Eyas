@@ -485,11 +485,11 @@ function checkTestExpiration () {
 }
 
 // returns the current test's config
-function config(eyasPath) {
+function config(path) {
 	// if a path was passed
-	if (eyasPath) {
+	if (path) {
 		// request config from the new path
-		config.cache = require($paths.configLoader)(eyasPath);
+		config.cache = require($paths.configLoader)(path);
 	}
 
 	// if no path set
