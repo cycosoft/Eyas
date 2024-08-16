@@ -16,7 +16,6 @@ const eyasExtension = `.eyas`;
 const tempFileName = `converted_test.asar`;
 const configFileName = `.eyas.config.js`;
 let userConfig = {};
-let configPath = null; // TODO: Why is this global?
 let asarPath = null;
 
 // sets the default configuration based on selected config
@@ -68,16 +67,19 @@ function parseConfig(path, loadAsar = true) {
 		if(process.platform === `linux`) { eyasConfig.outputs.linux = true; }
 	}
 
-	// TEMPORARY OVERRIDE - never allow linux
+	// OVERRIDE - linux support is not currently available
 	eyasConfig.outputs.linux = false;
 
 	return eyasConfig;
 }
 
 // determine how to auto load the user's test (*.eyas click, sibling *.eyas, or config + directory)
-function loadConfig(requestedEyasPath, loadAsar = true) {
+function loadConfig(path, loadAsar = true) {
+	// setup
+	let configPath = null;
+
 	// set path to the requested eyas file first
-	asarPath = requestedEyasPath;
+	asarPath = path;
 
 	// if we should be looking for asar files
 	if(loadAsar) {
