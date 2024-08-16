@@ -82,8 +82,23 @@ determine how to load the test
 - via url
 */
 function loadConfig(path, isNotCli = true) {
+	// imports
+	const { isURL } = require(`validator`);
+
 	// setup
 	let configPath = null;
+
+	// if the path starts with eyas://
+	if (path && path.startsWith(`eyas://`)) {
+		const parsed = new URL(path.replace(`eyas://`, `https://`));
+
+		console.log(parsed);
+
+		// is the path a URL?
+		console.log(`isURL(parsed)`, isURL(parsed.toString()));
+		// stop here
+		return;
+	}
 
 	// set path to the requested eyas file first
 	asarPath = path;
