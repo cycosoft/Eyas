@@ -20,9 +20,9 @@ let configPath = null; // TODO: Why is this global?
 let asarPath = null;
 
 // sets the default configuration based on selected config
-function parseConfig(requestedEyasPath, loadAsar = true) {
+function parseConfig(path, loadAsar = true) {
 	// load a test
-	loadConfig(requestedEyasPath, loadAsar);
+	loadConfig(path, loadAsar);
 
 	// object validation
 	userConfig.outputs = userConfig.outputs || {};
