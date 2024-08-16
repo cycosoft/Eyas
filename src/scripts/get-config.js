@@ -5,7 +5,7 @@
 'use strict';
 
 // imports
-const path = require(`path`);
+const _path = require(`path`);
 const { execSync } = require(`child_process`);
 const roots = require(`./get-roots.js`);
 const _fs = require(`fs`);
@@ -30,7 +30,7 @@ function parseConfig(path, isNotCli = true) {
 
 	// configuration merge and validation step
 	const eyasConfig = {
-		source: asarPath || path.resolve(roots.config, userConfig.source || `dist`),
+		source: asarPath || _path.resolve(roots.config, userConfig.source || `dist`),
 		domains: validateCustomDomain(userConfig.domain || userConfig.domains),
 		title: (userConfig.title || `Eyas`).trim(),
 		version: (userConfig.version || `${getBranchName()}.${getCommitHash()}` || `Unspecified Version`).trim(),
@@ -104,20 +104,20 @@ function loadConfig(path, isNotCli = true) {
 			// if a file was found
 			if (siblingFileName) {
 				// define the full path to the sibling file
-				asarPath = path.join(roots.config, siblingFileName);
+				asarPath = _path.join(roots.config, siblingFileName);
 			}
 		}
 
 		// if a file was set
 		if (asarPath) {
 			// define the full path to the temp file that will be the source for the test
-			const tempPath = path.join(os.tmpdir(), tempFileName);
+			const tempPath = _path.join(os.tmpdir(), tempFileName);
 
 			// copy the eyas file to the temp directory with the asar extension
 			_fs.copyFileSync(asarPath, tempPath);
 
 			// update the config path to the temp directory
-			configPath = path.join(tempPath, configFileName);
+			configPath = _path.join(tempPath, configFileName);
 
 			// update the asar path to the temp directory
 			asarPath = tempPath;
@@ -127,7 +127,7 @@ function loadConfig(path, isNotCli = true) {
 	// if the configPath never got set
 	if (!configPath) {
 		// default to looking for a config file in the same directory as the runner
-		configPath = path.join(roots.config, configFileName);
+		configPath = _path.join(roots.config, configFileName);
 	}
 
 	// attempt to load the user's config
@@ -182,7 +182,7 @@ function validateCustomDomain(input) {
 // get the version of the cli
 function getCliVersion() {
 	try {
-		const { version } = require(path.join(roots.module, `package.json`));
+		const { version } = require(_path.join(roots.module, `package.json`));
 		return version;
 	} catch (error) {
 		console.error(`Error getting CLI version:`, error);
