@@ -168,7 +168,7 @@ function initElectronCore() {
 		}
 	}
 
-	// detect if the app was opened with a file (MacOS only)
+	// macOS: detect if the app was opened with a file
 	_electronCore.on(`open-file`, (event, path) => {
 		// ensure the correct file type is being opened
 		if(path.endsWith(`.eyas`)){
@@ -182,20 +182,23 @@ function initElectronCore() {
 
 	// macOS: detect if Eyas was triggered from a custom protocol
 	_electronCore.on(`open-url`, (event, url) => {
-		console.log(`open-url:url`, url);
-		console.log(`open-url:event`, event);
-
-
 		// reload the config based on the new path
-		// config(url);
+		config(url);
 
 		// start a new test based on the newly loaded config
-		// startAFreshTest();
+		startAFreshTest();
 	});
 
 	// Windows: detect if Eyas was triggered from a custom protocol
 	_electronCore.on(`second-instance`, (event, commandLine, workingDirectory) => {
-		console.log(`second-instance:url`, commandLine.pop());
+		// get the url from the command line
+		const url = commandLine.pop();
+
+		// reload the config based on the new path
+		config(url);
+
+		// start a new test based on the newly loaded config
+		startAFreshTest();
 	});
 
 	// add support for eyas:// protocol
