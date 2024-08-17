@@ -8,7 +8,6 @@
 const _path = require(`path`);
 const { execSync } = require(`child_process`);
 const roots = require(`./get-roots.js`);
-const _fs = require(`fs`);
 const os = require(`os`);
 
 // setup
@@ -83,6 +82,7 @@ determine how to load the test
 */
 function loadConfig(path, isNotCli = true) {
 	// imports
+	const _fs = require(`fs`);
 	const { isURL } = require(`validator`);
 
 	// setup
