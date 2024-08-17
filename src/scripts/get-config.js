@@ -9,9 +9,6 @@ const _path = require(`path`);
 const roots = require(`./get-roots.js`);
 
 // setup
-const eyasExtension = `.eyas`;
-const tempFileName = `converted_test.asar`;
-const configFileName = `.eyas.config.js`;
 let userConfig = {};
 let asarPath = null;
 
@@ -84,6 +81,9 @@ function loadConfig(path, isNotCli = true) {
 	const { isURL } = require(`validator`);
 
 	// setup
+	const eyasExtension = `.eyas`;
+	const tempFileName = `converted_test.asar`;
+	const configFileName = `.eyas.config.js`;
 	let configPath = null;
 	let pathPointsToURL = false;
 
