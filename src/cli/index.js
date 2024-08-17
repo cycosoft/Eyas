@@ -226,7 +226,7 @@ async function createBuildFolder() {
 }
 
 // the config that is bundled with the build
-function getModifiedConfig() {
+function getModifiedConfig(asModule = true) {
 	// get the version from the module's package.json
 	const { version } = require(paths.packageJsonModuleSrc);
 
@@ -237,14 +237,14 @@ function getModifiedConfig() {
 	// delete the source property
 	delete configCopy.source;
 
-	// wrap the config in a module export
-	const data = `module.exports = ${JSON.stringify(configCopy)}`;
-
 	// let the builder know when this build expires
 	userLog(`Set build expirations to: ${configCopy.meta.expires.toLocaleString()}`);
 
-	// return the updated config data
-	return data;
+	// convert the config to a string
+	const stringified = JSON.stringify(configCopy);
+
+	// return the updated config in the requested format
+	return asModule ? `module.exports = ${stringified}` : stringified;
 }
 
 // launch a preview of the consumers application
