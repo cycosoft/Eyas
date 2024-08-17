@@ -53,7 +53,7 @@ The CLI will attempt to run without a configuration file by using the values in 
 ```js
 // <projectRoot>/.eyas.config.js
 module.exports = {
-  // The path to the directory containing your application files from the root of your project
+  // From <projectRoot>, this is the path to your production output i.e. `npm run build` output
   source: `dist`,
   // Simulate a domain for the test (accepts '' || [''] || [{ url, title }])
   domains: [
