@@ -6,7 +6,6 @@
 
 // imports
 const _path = require(`path`);
-const { execSync } = require(`child_process`);
 const roots = require(`./get-roots.js`);
 
 // setup
@@ -224,6 +223,8 @@ function getCliVersion() {
 
 // attempts to return the current short hash
 function getCommitHash() {
+	const { execSync } = require(`child_process`);
+
 	try {
 		return execSync(`git rev-parse --short HEAD`).toString().trim();
 	} catch (error) {
@@ -235,6 +236,8 @@ function getCommitHash() {
 
 // attempts to return the current branch name
 function getBranchName() {
+	const { execSync } = require(`child_process`);
+
 	try {
 		return execSync(`git rev-parse --abbrev-ref HEAD`).toString().trim();
 	} catch (error) {
@@ -246,6 +249,8 @@ function getBranchName() {
 
 // attempts to return the current user name
 function getUserName() {
+	const { execSync } = require(`child_process`);
+
 	try {
 		return execSync(`git config user.name`).toString().trim();
 	} catch (error) {
@@ -257,6 +262,8 @@ function getUserName() {
 
 // attempt to hash the user's email domain
 function getCompanyId() {
+	const { execSync } = require(`child_process`);
+
 	try {
 		const crypto = require(`crypto`);
 		const email = execSync(`git config user.email`).toString().trim();
@@ -279,6 +286,8 @@ function getCompanyId() {
 
 // get the project id from the git remote
 function getProjectId() {
+	const { execSync } = require(`child_process`);
+
 	try {
 		const crypto = require(`crypto`);
 
