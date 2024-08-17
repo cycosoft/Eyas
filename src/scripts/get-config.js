@@ -12,6 +12,18 @@ const roots = require(`./get-roots.js`);
 let userConfig = {};
 let asarPath = null;
 
+/*
+Retrieves the configuration for the test by one of the following methods
+
+- Path to *.eyas provided by double-clicking the file
+- Path to *.eyas found in the same directory as the runner
+- Path to .eyas.config.js loaded via the CLI
+- Via url (eyas://) provided by clicking a link or entered by the user
+*/
+async function getConfig() {
+
+};
+
 // sets the default configuration based on selected config
 function parseConfig(path, isNotCli = true) {
 	// load a test
