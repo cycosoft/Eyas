@@ -27,16 +27,23 @@ const actions = {
 		command: `preview`,
 		action: runCommand_preview
 	},
+	web: {
+		enabled: true,
+		label: `WEB: Generate "eyas.json" for eyas:// links`,
+		description: `For use with installed versions of Eyas`,
+		command: `web`,
+		action: runCommand_web
+	},
 	db: {
 		enabled: true,
-		label: `Generate an *.eyas file (smaller)`,
-		description: `For use with installed versions of Eyas`,
+		label: `DB: Build "*.eyas" file for Eyas users`,
+		description: `Share with users who have Eyas installed`,
 		command: `db`,
 		action: runCommand_db
 	},
 	bundle: {
 		enabled: true,
-		label: `Generate shareable zip of *.eyas file and runner (larger)`,
+		label: `ZIP: Bundled "*.eyas" file for non-Eyas users that includes runner`,
 		description: `Does not need Eyas installed to run the test`,
 		command: `bundle`,
 		action: runCommand_bundle
@@ -320,6 +327,20 @@ async function runCommand_db() {
 
 	// delete the source/ directory
 	await fs.remove(outputSourceDirectory);
+
+	userLog(``);
+	userLog(`🎉 File created -> ${artifactName}`);
+}
+
+// generate a web output for distribution
+async function runCommand_web() {
+	const _fs = require(`fs-extra`);
+
+	// get the test's config as JSON, and prepare it for the build
+	const modifiedConfig = getOutputConfig().asJson;
+
+	// save the modifiedConfig to the source/ directory
+	await _fs.writeFile(path.join(config.source, `eyas.json`), modifiedConfig);
 
 	userLog(``);
 	userLog(`🎉 File created -> ${artifactName}`);
