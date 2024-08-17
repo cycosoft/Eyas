@@ -99,6 +99,7 @@ function loadConfig(path, isNotCli = true) {
 
 		// get the contents of the config file from the url using node fetch
 		if (pathPointsToURL) {
+			// TESTING NOTE: add `cross-env NODE_TLS_REJECT_UNAUTHORIZED=0` before `electron` to use self-signed certs
 			fetch(parsed.toString())
 				.then(response => response.text())
 				.then(data => {
