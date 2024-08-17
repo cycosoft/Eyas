@@ -221,15 +221,12 @@ async function createBuildFolder() {
 	await fs.copy(config.source, paths.testDest);
 
 	// write the config file
-	const data = getModifiedConfig();
+	const data = getOutputConfig().asModule;
 	await fs.outputFile(paths.configDest, data);
 }
 
 // the config that is bundled with the build
-function getModifiedConfig(asModule = true) {
-	// get the version from the module's package.json
-	const { version } = require(paths.packageJsonModuleSrc);
-
+function getOutputConfig() {
 	// create a new config file with the updated values in the build folder
 	userLog(`Creating snapshot of config...`);
 	const configCopy = JSON.parse(JSON.stringify(config));
@@ -243,8 +240,12 @@ function getModifiedConfig(asModule = true) {
 	// convert the config to a string
 	const stringified = JSON.stringify(configCopy);
 
-	// return the updated config in the requested format
-	return asModule ? `module.exports = ${stringified}` : stringified;
+	// return the updated config in the several formats
+	return {
+		object: configCopy,
+		asJson: stringified,
+		asModule: `module.exports = ${stringified}`
+	};
 }
 
 // launch a preview of the consumers application
@@ -290,7 +291,7 @@ async function runCommand_db() {
 	const asar = require(`@electron/asar`);
 
 	// get the test's config and prepare it for the build
-	const modifiedConfig = getModifiedConfig();
+	const modifiedConfig = getOutputConfig().asModule;
 
 	// reset the output directory
 	await fs.emptyDir(roots.eyasDist);
@@ -337,7 +338,7 @@ async function runCommand_bundle() {
 	}
 
 	// get the test's config and prepare it for the build
-	const modifiedConfig = getModifiedConfig();
+	const modifiedConfig = getOutputConfig().asModule;
 
 	// setup the platform output
 	const platforms = [
