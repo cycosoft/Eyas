@@ -42,6 +42,7 @@ function parseConfig(path, isNotCli = true) {
 			windows: userConfig.outputs.windows || false,
 			mac: userConfig.outputs.mac || false,
 			linux: userConfig.outputs.linux || false,
+			web: userConfig.outputs.web || false,
 
 			// options
 			expires: expiresIn // hours
@@ -67,7 +68,7 @@ function parseConfig(path, isNotCli = true) {
 		if(process.platform === `linux`) { eyasConfig.outputs.linux = true; }
 	}
 
-	// OVERRIDE - linux support is not currently available
+	// OVERRIDE - linux support is not currently supported
 	eyasConfig.outputs.linux = false;
 
 	return eyasConfig;
