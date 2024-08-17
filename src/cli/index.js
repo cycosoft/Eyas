@@ -231,8 +231,9 @@ function getOutputConfig() {
 	userLog(`Creating snapshot of config...`);
 	const configCopy = JSON.parse(JSON.stringify(config));
 
-	// delete the source property
+	// delete the properties that aren't needed in the build
 	delete configCopy.source;
+	delete configCopy.outputs;
 
 	// let the builder know when this build expires
 	userLog(`Set build expirations to: ${configCopy.meta.expires.toLocaleString()}`);
