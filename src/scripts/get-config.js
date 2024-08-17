@@ -8,7 +8,6 @@
 const _path = require(`path`);
 const { execSync } = require(`child_process`);
 const roots = require(`./get-roots.js`);
-const os = require(`os`);
 
 // setup
 const eyasExtension = `.eyas`;
@@ -140,8 +139,11 @@ function loadConfig(path, isNotCli = true) {
 
 		// if a file was set
 		if (asarPath) {
+			// load the _os module
+			const _os = require(`os`);
+
 			// define the full path to the temp file that will be the source for the test
-			const tempPath = _path.join(os.tmpdir(), tempFileName);
+			const tempPath = _path.join(_os.tmpdir(), tempFileName);
 
 			// copy the eyas file to the temp directory with the asar extension
 			_fs.copyFileSync(asarPath, tempPath);
