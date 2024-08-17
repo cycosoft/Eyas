@@ -310,8 +310,7 @@ function getProjectId() {
 
 // create a unique id for the test
 function getTestId() {
-	const crypto = require(`crypto`);
-	return crypto.randomUUID();
+	return require(`crypto`).randomUUID();
 }
 
 // validate the user input for the expiration
