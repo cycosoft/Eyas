@@ -42,7 +42,6 @@ function parseConfig(path, isNotCli = true) {
 			windows: userConfig.outputs.windows || false,
 			mac: userConfig.outputs.mac || false,
 			linux: userConfig.outputs.linux || false,
-			web: userConfig.outputs.web || false,
 
 			// options
 			expires: expiresIn // hours
