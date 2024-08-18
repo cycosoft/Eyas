@@ -92,9 +92,6 @@ async function getConfigViaUrl(path) {
 	// update the source path to the test
 	loadedConfig.source = url.origin;
 
-	// log the response for testing
-	console.log(loadedConfig);
-
 	// send back the data
 	return loadedConfig;
 }
