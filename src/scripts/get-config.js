@@ -135,7 +135,7 @@ async function getConfigViaCli(path) {
 	}
 
 	// set the full path to the test to whatever was provided OR the default "dist" directory
-	loadedConfig.source = _path.resolve(roots.config, loadedConfig.source || `dist`),
+	loadedConfig.source = _path.resolve(roots.config, loadedConfig.source || `dist`);
 
 	// send back the data
 	return loadedConfig;
