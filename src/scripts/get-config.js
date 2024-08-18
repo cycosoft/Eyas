@@ -9,7 +9,6 @@ const _path = require(`path`);
 const roots = require(`./get-roots.js`);
 
 // setup
-let userConfig = {};
 let asarPath = null;
 const eyasExtension = `.eyas`;
 
@@ -125,16 +124,16 @@ async function getConfigViaRoot() {
 // get the config via the CLI
 async function getConfigViaCli(path) {
 	// setup
-	let userConfig = null;
+	let loadedConfig = null;
 
 	// attempt to load the test config directly
 	try {
-		userConfig = require(_path.join(roots.config, configFileName));
+		loadedConfig = require(_path.join(roots.config, configFileName));
 	} catch (error) {
 		throw new Error(`CLI: Error loading config: ${error.message}`);
 	}
 
-	return userConfig;
+	return loadedConfig;
 }
 
 // copy the *.eyas file to a temporary location as an *.asar and load the config directly
@@ -148,7 +147,7 @@ async function getConfigFromAsar(path) {
 	// setup
 	const tempFileName = `converted_test.asar`;
 	const configFileName = `.eyas.config.js`;
-	let userConfig = null;
+	let loadedConfig = null;
 
 	// determine the path to where a copy of the *.eyas file will live
 	const tempPath = _path.join(_os.tmpdir(), tempFileName);
@@ -158,13 +157,13 @@ async function getConfigFromAsar(path) {
 
 	// attempt to load the test config
 	try {
-		userConfig = require(_path.join(tempPath, configFileName));
+		loadedConfig = require(_path.join(tempPath, configFileName));
 	} catch (error) {
 		throw new Error(`FILE: Error loading config: ${error.message}`);
 	}
 
 	// send back the data
-	return userConfig;
+	return loadedConfig;
 }
 
 // returns the validated configuration based on the loaded config
