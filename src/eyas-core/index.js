@@ -214,7 +214,7 @@ function initElectronCore() {
 	// start the electron layer
 	_electronCore.whenReady()
 		// when the electron layer is ready
-		.then(() => {
+		.then(async () => {
 			// get the default config
 			$config = await require($paths.configLoader)(LOAD_TYPES.ROOT);
 
