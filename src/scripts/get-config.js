@@ -15,17 +15,101 @@ let asarPath = null;
 /*
 Retrieves the configuration for the test by one of the following methods
 
+- Via url (eyas://) provided by clicking a link or entered by the user
 - Path to *.eyas provided by double-clicking the file
 - Path to *.eyas found in the same directory as the runner
 - Path to .eyas.config.js loaded via the CLI
-- Via url (eyas://) provided by clicking a link or entered by the user
 */
-async function getConfig() {
+async function getConfig(method, path) {
+	// imports
+	const { LOAD_TYPES } = require(`./constants.js`);
 
+	// setup
+	let config = null;
+
+	// if requesting a config via the web
+	if (method === LOAD_TYPES.WEB) {
+		config = await getConfigViaUrl(path);
+	}
+
+	// if requesting a config via a file association
+	if (method === LOAD_TYPES.ASSOCIATION) {
+		config = await getConfigViaAssociation(path);
+	}
+
+	// if requesting a config via a sibling file
+	if (method === LOAD_TYPES.ROOT) {
+		config = await getConfigViaRoot();
+	}
+
+	// if requesting a config via the CLI
+	if (method === LOAD_TYPES.CLI) {
+		config = await getConfigViaCli(path);
+	}
+
+	// pass the loaded config data to the parser for validation
+	return validateConfig(config);
 };
 
+// get the config via web requests
+// * supports both eyas:// and https:// protocols
+// * to test self-signed certs, add `cross-env NODE_TLS_REJECT_UNAUTHORIZED=0` before `npx electron`
+async function getConfigViaUrl(path) {
+	// imports
+	const { isURL } = require(`validator`);
+
+	// setup
+	const defaultConfigName = `eyas.json`;
+
+	// convert the eyas protocol to https if it's not already
+	let url = path.replace(`eyas://`, `https://`);
+
+	// convert the path to a URL object
+	url = new URL(url);
+
+	// the url must be valid
+	if (!isURL(url.toString())) {
+		throw new Error(`Invalid URL: ${url}`);
+	}
+
+	// if the path name does not end in `.json`
+	if (!url.pathname.endsWith(`.json`)) {
+		// update the url to look for the default config at the url root
+		url.pathname = defaultConfigName;
+	}
+
+	// fetch the config file from the parsed url
+	const response = await fetch(url.toString())
+		.then(response => response.json())
+		.catch(error => console.error(`WEB: Error fetching config:`, error.message));
+
+	// log the response
+	console.log(response);
+
+	return response;
+}
+
+// get the config via file association
+async function getConfigViaAssociation(path) {
+	// setup
+	const eyasExtension = `.eyas`;
+
+	// try getting path from command line argument
+	const filePath = process.argv.find(arg => arg.endsWith(eyasExtension));
+}
+
+// get the config via a sibling file
+async function getConfigViaRoot() {
+	//
+}
+
+// get the config via the CLI
+async function getConfigViaCli(path) {
+	//
+}
+
 // sets the default configuration based on selected config
-function parseConfig(path, isNotCli = true) {
+function validateConfig(path, isNotCli = true) {
 	// load a test
 	loadConfig(path, isNotCli);
 
@@ -90,7 +174,6 @@ determine how to load the test
 function loadConfig(path, isNotCli = true) {
 	// imports
 	const _fs = require(`fs`);
-	const { isURL } = require(`validator`);
 
 	// setup
 	const eyasExtension = `.eyas`;
@@ -98,32 +181,6 @@ function loadConfig(path, isNotCli = true) {
 	const configFileName = `.eyas.config.js`;
 	let configPath = null;
 	let pathPointsToURL = false;
-
-	// if the path starts with eyas://
-	if (path && path.startsWith(`eyas://`)) {
-		const parsed = new URL(path.replace(`eyas://`, `https://`));
-
-		// is the path a URL?
-		pathPointsToURL = isURL(parsed.toString());
-		console.log(`isURL(parsed)`, pathPointsToURL);
-
-		// get the contents of the config file from the url using node fetch
-		if (pathPointsToURL) {
-			// TESTING NOTE: add `cross-env NODE_TLS_REJECT_UNAUTHORIZED=0` before `electron` to use self-signed certs
-			fetch(parsed.toString())
-				.then(response => response.text())
-				.then(data => {
-					console.log(data);
-				})
-				.catch(error => {
-					console.error(`Error fetching config:`, error);
-				});
-		}
-
-		// stop here
-		return;
-	}
-
 
 	// set path to the requested eyas file first
 	asarPath = path;
@@ -367,4 +424,4 @@ function getExpirationDate(expiresInHours) {
 }
 
 // export the config for the project
-module.exports = parseConfig;
+module.exports = validateConfig;

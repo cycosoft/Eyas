@@ -172,6 +172,9 @@ function initElectronCore() {
 	_electronCore.on(`open-file`, (event, path) => {
 		// ensure the correct file type is being opened
 		if(path.endsWith(`.eyas`)){
+			// docs ( https://www.electronjs.org/docs/latest/api/app#event-open-file-macos ) say to call this without providing a reason
+			event.preventDefault();
+
 			// reload the config based on the new path
 			config(path);
 
