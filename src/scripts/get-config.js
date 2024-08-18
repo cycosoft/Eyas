@@ -40,17 +40,17 @@ async function getConfig(method, path) {
 
 	// if requesting a config via a file association
 	if (method === LOAD_TYPES.ASSOCIATION) {
-		loadedConfig = await getConfigViaAssociation(path);
+		loadedConfig = getConfigViaAssociation(path);
 	}
 
 	// if requesting a config via a sibling file
 	if (method === LOAD_TYPES.ROOT) {
-		loadedConfig = await getConfigViaRoot();
+		loadedConfig = getConfigViaRoot();
 	}
 
 	// if requesting a config via the CLI
 	if (method === LOAD_TYPES.CLI) {
-		loadedConfig = await getConfigViaCli(path);
+		loadedConfig = getConfigViaCli(path);
 	}
 
 	// pass the loaded config data to the parser for validation
@@ -100,18 +100,18 @@ async function getConfigViaUrl(path) {
 }
 
 // get the config via file association
-async function getConfigViaAssociation(path) {
+function getConfigViaAssociation(path) {
 	// pass the path through to the asar loader AND return the config object
-	return await getConfigFromAsar(path);
+	return getConfigFromAsar(path);
 }
 
 // get the config via a sibling file
-async function getConfigViaRoot() {
+function getConfigViaRoot() {
 	// imports
 	const _fs = require(`fs`);
 
 	// look for tests in the same directory as the runner
-	const fileInRoot = _fs.readdir(roots.config).find(file => file.endsWith(EXTENSION));
+	const fileInRoot = _fs.readdirSync(roots.config).find(file => file.endsWith(EXTENSION));
 
 	// if no file was found
 	if (!fileInRoot) {
@@ -119,11 +119,11 @@ async function getConfigViaRoot() {
 	}
 
 	// pass the path through to the asar loader AND return the config
-	return await getConfigFromAsar(_path.join(roots.config, fileInRoot));
+	return getConfigFromAsar(_path.join(roots.config, fileInRoot));
 }
 
 // get the config via the CLI
-async function getConfigViaCli(path) {
+function getConfigViaCli(path) {
 	// setup
 	let loadedConfig = null;
 
@@ -144,7 +144,7 @@ async function getConfigViaCli(path) {
 // copy the *.eyas file to a temporary location as an *.asar and load the config directly
 // * config cannot be loaded from custom extension
 // * renaming the file to *.asar in-place is poor UX
-async function getConfigFromAsar(path) {
+function getConfigFromAsar(path) {
 	// imports
 	const _fs = require(`fs`);
 	const _os = require(`os`);
@@ -158,7 +158,7 @@ async function getConfigFromAsar(path) {
 	const tempPath = _path.join(_os.tmpdir(), tempFileName);
 
 	// copy the test file to the temp directory with the asar extension
-	await _fs.copyFile(path, tempPath);
+	_fs.copyFileSync(path, tempPath);
 
 	// attempt to load the test config
 	try {
