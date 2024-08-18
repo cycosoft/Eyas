@@ -89,9 +89,13 @@ async function getConfigViaUrl(path) {
 		.then(response => response.json())
 		.catch(error => console.error(`WEB: Error fetching config:`, error.message));
 
+	// update the source path to the test
+	loadedConfig.source = url.origin;
+
 	// log the response for testing
 	console.log(loadedConfig);
 
+	// send back the data
 	return loadedConfig;
 }
 
@@ -130,6 +134,10 @@ async function getConfigViaCli(path) {
 		throw new Error(`CLI: Error loading config: ${error.message}`);
 	}
 
+	// set the full path to the test to whatever was provided OR the default "dist" directory
+	loadedConfig.source = _path.resolve(roots.config, loadedConfig.source || `dist`),
+
+	// send back the data
 	return loadedConfig;
 }
 
@@ -159,6 +167,9 @@ async function getConfigFromAsar(path) {
 		throw new Error(`FILE: Error loading config: ${error.message}`);
 	}
 
+	// set the path to the test in the config
+	loadedConfig.source = tempPath;
+
 	// send back the data
 	return loadedConfig;
 }
@@ -177,7 +188,7 @@ function validateConfig(loadedConfig) {
 
 	// configuration merge and validation step
 	const validatedConfig = {
-		source: asarPath || _path.resolve(roots.config, loadedConfig.source || `dist`),
+		// source, // validated and set during the load step
 		domains: validateCustomDomain(loadedConfig.domain || loadedConfig.domains),
 		title: (loadedConfig.title || `Eyas`).trim(),
 		version: (loadedConfig.version || `${getBranchName()}.${getCommitHash()}` || `Unspecified Version`).trim(),
