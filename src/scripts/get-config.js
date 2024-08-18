@@ -176,7 +176,7 @@ function validateConfig(loadedConfig) {
 	const expiresIn = validateExpiration(loadedConfig.outputs.expires);
 
 	// configuration merge and validation step
-	const eyasConfig = {
+	const validatedConfig = {
 		source: asarPath || _path.resolve(roots.config, loadedConfig.source || `dist`),
 		domains: validateCustomDomain(loadedConfig.domain || loadedConfig.domains),
 		title: (loadedConfig.title || `Eyas`).trim(),
@@ -208,16 +208,16 @@ function validateConfig(loadedConfig) {
 	};
 
 	// set the default platform if none are specified
-	if (!eyasConfig.outputs.windows && !eyasConfig.outputs.mac && !eyasConfig.outputs.linux) {
-		if(process.platform === `win32`) { eyasConfig.outputs.windows = true; }
-		if(process.platform === `darwin`) { eyasConfig.outputs.mac = true; }
-		if(process.platform === `linux`) { eyasConfig.outputs.linux = true; }
+	if (!validatedConfig.outputs.windows && !validatedConfig.outputs.mac && !validatedConfig.outputs.linux) {
+		if(process.platform === `win32`) { validatedConfig.outputs.windows = true; }
+		if(process.platform === `darwin`) { validatedConfig.outputs.mac = true; }
+		if(process.platform === `linux`) { validatedConfig.outputs.linux = true; }
 	}
 
 	// OVERRIDE - linux support is not currently supported
-	eyasConfig.outputs.linux = false;
+	validatedConfig.outputs.linux = false;
 
-	return eyasConfig;
+	return validatedConfig;
 }
 
 // validate the user input for the custom domain
