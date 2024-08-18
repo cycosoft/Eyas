@@ -134,8 +134,11 @@ function getConfigViaCli(path) {
 		throw new Error(`CLI: Error loading config: ${error.message}`);
 	}
 
-	// set the full path to the test to whatever was provided OR the default "dist" directory
-	loadedConfig.source = _path.resolve(roots.config, loadedConfig.source || `dist`);
+	// if a source was provided
+	if (loadedConfig.source) {
+		// resolve it to the full path
+		loadedConfig.source = _path.resolve(roots.config, loadedConfig.source);
+	}
 
 	// send back the data
 	return loadedConfig;
