@@ -188,7 +188,7 @@ function validateConfig(loadedConfig) {
 	// configuration merge and validation step
 	const validatedConfig = {
 		// use given value or resolve to default location
-		source: loadedConfig.source || _path.resolve(roots.config, `dist`)
+		source: loadedConfig.source || _path.resolve(roots.config, `dist`),
 		domains: validateCustomDomain(loadedConfig.domain || loadedConfig.domains),
 		title: (loadedConfig.title || `Eyas`).trim(),
 		version: (loadedConfig.version || `${getBranchName()}.${getCommitHash()}` || `Unspecified Version`).trim(),
