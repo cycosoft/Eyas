@@ -169,6 +169,7 @@ function initElectronCore() {
 	}
 
 	// macOS: detect if the app was opened with a file
+	// NOTE: Windows passes this data via CLI arguments
 	_electronCore.on(`open-file`, (event, path) => {
 		// ensure the correct file type is being opened
 		if(path.endsWith(`.eyas`)){
