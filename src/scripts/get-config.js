@@ -108,19 +108,17 @@ async function getConfigViaAssociation(path) {
 	// setup
 	const tempFileName = `converted_test.asar`;
 	const configFileName = `.eyas.config.js`;
+	let userConfig = null;
 
 	// determine the path to where a copy of the *.eyas file will live
 	const tempPath = _path.join(_os.tmpdir(), tempFileName);
 
-	// copy the eyas file to the temp directory with the asar extension
+	// copy the test file to the temp directory with the asar extension
 	await _fs.copyFile(path, tempPath);
 
-	// update the config path to the temp directory
-	const configPath = _path.join(tempPath, configFileName);
-
-	// attempt to load the user's config
+	// attempt to load the test config
 	try {
-		userConfig = require(configPath);
+		userConfig = require(_path.join(tempPath, configFileName));
 	} catch (error) {
 		throw new Error(`Error loading user settings: ${error.message}`);
 	}
@@ -130,7 +128,28 @@ async function getConfigViaAssociation(path) {
 
 // get the config via a sibling file
 async function getConfigViaRoot() {
-	//
+	// imports
+	const _fs = require(`fs`);
+
+	// setup
+	let userConfig = null;
+
+	// look for tests in the same directory as the runner
+	const fileInRoot = _fs.readdir(roots.config).find(file => file.endsWith(eyasExtension));
+
+	// if no file was found
+	if (!fileInRoot) {
+		throw new Error(`No test found in ${roots.config}`);
+	}
+
+	// attempt to load the test config
+	try {
+		userConfig = require(_path.join(roots.config, fileInRoot));
+	} catch (error) {
+		throw new Error(`Error loading test settings: ${error.message}`);
+	}
+
+	return userConfig;
 }
 
 // get the config via the CLI
