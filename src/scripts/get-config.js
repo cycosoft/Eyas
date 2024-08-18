@@ -85,14 +85,14 @@ async function getConfigViaUrl(path) {
 	}
 
 	// fetch the config file from the parsed url
-	const response = await fetch(url.toString())
+	const loadedConfig = await fetch(url.toString())
 		.then(response => response.json())
 		.catch(error => console.error(`WEB: Error fetching config:`, error.message));
 
 	// log the response for testing
-	console.log(response);
+	console.log(loadedConfig);
 
-	return response;
+	return loadedConfig;
 }
 
 // get the config via file association
