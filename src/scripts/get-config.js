@@ -79,7 +79,7 @@ async function getConfigViaUrl(path) {
 
 	// the url must be valid
 	if (!isURL(url.toString())) {
-		throw new Error(`Invalid URL: ${url}`);
+		throw new Error(`WEB: Invalid URL: ${url}`);
 	}
 
 	// if the path name does not end in `.json`
@@ -93,7 +93,7 @@ async function getConfigViaUrl(path) {
 		.then(response => response.json())
 		.catch(error => console.error(`WEB: Error fetching config:`, error.message));
 
-	// log the response
+	// log the response for testing
 	console.log(response);
 
 	return response;
@@ -120,7 +120,7 @@ async function getConfigViaAssociation(path) {
 	try {
 		userConfig = require(_path.join(tempPath, configFileName));
 	} catch (error) {
-		throw new Error(`Error loading user settings: ${error.message}`);
+		throw new Error(`ASSOC: Error loading test config: ${error.message}`);
 	}
 
 	return userConfig;
@@ -139,14 +139,14 @@ async function getConfigViaRoot() {
 
 	// if no file was found
 	if (!fileInRoot) {
-		throw new Error(`No test found in ${roots.config}`);
+		throw new Error(`ROOT: No test found in ${roots.config}`);
 	}
 
 	// attempt to load the test config
 	try {
 		userConfig = require(_path.join(roots.config, fileInRoot));
 	} catch (error) {
-		throw new Error(`Error loading test settings: ${error.message}`);
+		throw new Error(`ROOT: Error loading config: ${error.message}`);
 	}
 
 	return userConfig;
@@ -154,13 +154,23 @@ async function getConfigViaRoot() {
 
 // get the config via the CLI
 async function getConfigViaCli(path) {
-	//
+	// setup
+	let userConfig = null;
+
+	// attempt to load the test config directly
+	try {
+		userConfig = require(_path.join(roots.config, configFileName));
+	} catch (error) {
+		throw new Error(`CLI: Error loading config: ${error.message}`);
+	}
+
+	return userConfig;
 }
 
 // sets the default configuration based on selected config
 function validateConfig(path, isNotCli = true) {
 	// load a test
-	loadConfig(path, isNotCli);
+	// loadConfig(path, isNotCli);
 
 	// object validation
 	userConfig.outputs = userConfig.outputs || {};
@@ -210,88 +220,6 @@ function validateConfig(path, isNotCli = true) {
 	eyasConfig.outputs.linux = false;
 
 	return eyasConfig;
-}
-
-/*
-determine how to load the test
-
-- *.eyas click
-- sibling *.eyas
-- direct config + directory
-- via url
-*/
-function loadConfig(path, isNotCli = true) {
-	// imports
-	const _fs = require(`fs`);
-
-	// setup
-	const tempFileName = `converted_test.asar`;
-	const configFileName = `.eyas.config.js`;
-	let configPath = null;
-	let pathPointsToURL = false;
-
-	// set path to the requested eyas file first
-	asarPath = path;
-
-	// if we should be looking for asar files
-	if(isNotCli) {
-		// if not set
-		if (!asarPath) {
-			// try getting path from command line argument
-			// asarPath = process.argv.find(arg => arg.endsWith(eyasExtension));
-		}
-
-		// if the asarPath still isn't set
-		if (!asarPath) {
-			// try looking for sibling *.eyas files
-			const siblingFileName = _fs.readdirSync(roots.config).find(file => file.endsWith(eyasExtension));
-
-			// if a file was found
-			if (siblingFileName) {
-				// define the full path to the sibling file
-				asarPath = _path.join(roots.config, siblingFileName);
-			}
-		}
-
-		// if a file was set
-		if (asarPath) {
-			// load the _os module
-			const _os = require(`os`);
-
-			// define the full path to the temp file that will be the source for the test
-			const tempPath = _path.join(_os.tmpdir(), tempFileName);
-
-			// copy the eyas file to the temp directory with the asar extension
-			_fs.copyFileSync(asarPath, tempPath);
-
-			// update the config path to the temp directory
-			configPath = _path.join(tempPath, configFileName);
-
-			// update the asar path to the temp directory
-			asarPath = tempPath;
-		}
-	}
-
-	// if the configPath never got set
-	if (!configPath) {
-		// default to looking for a config file in the same directory as the runner
-		configPath = _path.join(roots.config, configFileName);
-	}
-
-	// attempt to load the user's config
-	try {
-		userConfig = require(configPath);
-	} catch (error) {
-		console.warn(``);
-		console.warn(`⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️`);
-		console.warn(`------ UNABLE TO LOAD USER SETTINGS ------`);
-		console.warn(`-------- proceeding with defaults --------`);
-		console.log(``);
-		console.error(error);
-		console.log(``);
-		console.warn(`⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️`);
-		console.log(``);
-	}
 }
 
 // validate the user input for the custom domain
