@@ -11,6 +11,7 @@ const roots = require(`./get-roots.js`);
 // setup
 let userConfig = {};
 let asarPath = null;
+const eyasExtension = `.eyas`;
 
 /*
 Retrieves the configuration for the test by one of the following methods
@@ -25,30 +26,39 @@ async function getConfig(method, path) {
 	const { LOAD_TYPES } = require(`./constants.js`);
 
 	// setup
-	let config = null;
+	let configData = null;
+
+	// WINDOWS: check if request is via file association
+	const associationFilePath = process.argv.find(arg => arg.endsWith(eyasExtension));
+
+	// WINDOWS: override the method and path if an association file was found
+	if (associationFilePath) {
+		method = LOAD_TYPES.ASSOCIATION;
+		path = associationFilePath;
+	}
 
 	// if requesting a config via the web
 	if (method === LOAD_TYPES.WEB) {
-		config = await getConfigViaUrl(path);
+		configData = await getConfigViaUrl(path);
 	}
 
 	// if requesting a config via a file association
 	if (method === LOAD_TYPES.ASSOCIATION) {
-		config = await getConfigViaAssociation(path);
+		configData = await getConfigViaAssociation(path);
 	}
 
 	// if requesting a config via a sibling file
 	if (method === LOAD_TYPES.ROOT) {
-		config = await getConfigViaRoot();
+		configData = await getConfigViaRoot();
 	}
 
 	// if requesting a config via the CLI
 	if (method === LOAD_TYPES.CLI) {
-		config = await getConfigViaCli(path);
+		configData = await getConfigViaCli(path);
 	}
 
 	// pass the loaded config data to the parser for validation
-	return validateConfig(config);
+	return validateConfig(configData);
 };
 
 // get the config via web requests
@@ -91,11 +101,31 @@ async function getConfigViaUrl(path) {
 
 // get the config via file association
 async function getConfigViaAssociation(path) {
-	// setup
-	const eyasExtension = `.eyas`;
+	// imports
+	const _fs = require(`fs`);
+	const _os = require(`os`);
 
-	// try getting path from command line argument
-	const filePath = process.argv.find(arg => arg.endsWith(eyasExtension));
+	// setup
+	const tempFileName = `converted_test.asar`;
+	const configFileName = `.eyas.config.js`;
+
+	// determine the path to where a copy of the *.eyas file will live
+	const tempPath = _path.join(_os.tmpdir(), tempFileName);
+
+	// copy the eyas file to the temp directory with the asar extension
+	_fs.copyFileSync(path, tempPath);
+
+	// update the config path to the temp directory
+	const configPath = _path.join(tempPath, configFileName);
+
+	// attempt to load the user's config
+	try {
+		userConfig = require(configPath);
+	} catch (error) {
+		throw new Error(`Error loading user settings: ${error.message}`);
+	}
+
+	return userConfig;
 }
 
 // get the config via a sibling file
@@ -176,7 +206,6 @@ function loadConfig(path, isNotCli = true) {
 	const _fs = require(`fs`);
 
 	// setup
-	const eyasExtension = `.eyas`;
 	const tempFileName = `converted_test.asar`;
 	const configFileName = `.eyas.config.js`;
 	let configPath = null;
@@ -190,7 +219,7 @@ function loadConfig(path, isNotCli = true) {
 		// if not set
 		if (!asarPath) {
 			// try getting path from command line argument
-			asarPath = process.argv.find(arg => arg.endsWith(eyasExtension));
+			// asarPath = process.argv.find(arg => arg.endsWith(eyasExtension));
 		}
 
 		// if the asarPath still isn't set
