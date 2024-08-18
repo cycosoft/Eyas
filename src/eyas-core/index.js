@@ -220,11 +220,8 @@ function initElectronCore() {
 
 			// if Electron receives the `activate` event
 			_electronCore.on(`activate`, () => {
-				// ensure the _electronWindow doesn't already exist
-				if (_electronWindow.getAllWindows().length === 0) {
-					// create the window
-					initElectronUi();
-				}
+				// if the window does not already exist, create it
+				!_electronWindow.getAllWindows().length && initElectronUi();
 			});
 		});
 }
