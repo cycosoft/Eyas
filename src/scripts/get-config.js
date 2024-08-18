@@ -205,6 +205,7 @@ function validateConfig(loadedConfig) {
 			expires: expiresIn // hours
 		},
 
+		// data that is provided by the CLI step, not the user.
 		meta: {
 			expires: loadedConfig.meta.expires || getExpirationDate(expiresIn),
 			gitBranch: loadedConfig.meta.gitBranch || getBranchName(),
