@@ -400,4 +400,4 @@ function getExpirationDate(expiresInHours) {
 }
 
 // export the config for the project
-module.exports = validateConfig;
+module.exports = getConfig;
