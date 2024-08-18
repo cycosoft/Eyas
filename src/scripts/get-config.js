@@ -165,6 +165,11 @@ async function getConfigFromAsar(path) {
 
 // returns the validated configuration based on the loaded config
 function validateConfig(loadedConfig) {
+	// error check
+	if (!loadedConfig) {
+		throw new Error(`VALIDATION: No configuration data provided`);
+	}
+
 	// object validation
 	loadedConfig.outputs = loadedConfig.outputs || {};
 	loadedConfig.meta = loadedConfig.meta || {};
