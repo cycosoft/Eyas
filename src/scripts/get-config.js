@@ -113,7 +113,7 @@ async function getConfigViaAssociation(path) {
 	const tempPath = _path.join(_os.tmpdir(), tempFileName);
 
 	// copy the eyas file to the temp directory with the asar extension
-	_fs.copyFileSync(path, tempPath);
+	await _fs.copyFile(path, tempPath);
 
 	// update the config path to the temp directory
 	const configPath = _path.join(tempPath, configFileName);
