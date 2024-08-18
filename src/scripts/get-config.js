@@ -115,7 +115,7 @@ function getConfigViaRoot() {
 
 	// if no file was found
 	if (!fileInRoot) {
-		throw new Error(`ROOT: No test found in ${roots.config}`);
+		return null;
 	}
 
 	// pass the path through to the asar loader AND return the config
