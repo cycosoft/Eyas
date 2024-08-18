@@ -8,18 +8,6 @@
 // 	require(`wdio-electron-service/main`);
 // }
 
-// constants
-const APP_NAME = `Eyas`;
-const MP_EVENTS = {
-	core: {
-		launch: `App Launch`,
-		exit: `App Exit`
-	},
-	ui: {
-		modalExitShown: `Modal Exit Shown`
-	}
-};
-
 // global imports _
 const { app: _electronCore, BrowserWindow: _electronWindow, } = require(`electron`);
 const _path = require(`path`);
@@ -58,6 +46,7 @@ const $paths = {
 	packageJson: _path.join($roots.eyas, `package.json`),
 	testPreload: _path.join($roots.eyas, `scripts`, `test-preload.js`),
 	eventBridge: _path.join($roots.eyas, `scripts`, `event-bridge.js`),
+	constants: _path.join($roots.eyas, `scripts`, `constants.js`),
 	testSrc: null,
 	uiSource: _path.join($roots.eyas, `eyas-interface`),
 	eyasInterface: _path.join($roots.eyas, `eyas-interface`, `index.html`),
@@ -65,6 +54,19 @@ const $paths = {
 };
 const $operatingSystem = _os.platform();
 const { version: _appVersion } = require($paths.packageJson);
+
+// constants
+const { LOAD_TYPES } = require($paths.constants);
+const APP_NAME = `Eyas`;
+const MP_EVENTS = {
+	core: {
+		launch: `App Launch`,
+		exit: `App Exit`
+	},
+	ui: {
+		modalExitShown: `Modal Exit Shown`
+	}
+};
 
 // APP_ENTRY: initialize the first layer of the app
 initElectronCore();
