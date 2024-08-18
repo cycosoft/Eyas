@@ -101,6 +101,46 @@ async function getConfigViaUrl(path) {
 
 // get the config via file association
 async function getConfigViaAssociation(path) {
+	// pass the path through to the asar loader AND return the config object
+	return await getConfigFromAsar(path);
+}
+
+// get the config via a sibling file
+async function getConfigViaRoot() {
+	// imports
+	const _fs = require(`fs`);
+
+	// look for tests in the same directory as the runner
+	const fileInRoot = _fs.readdir(roots.config).find(file => file.endsWith(eyasExtension));
+
+	// if no file was found
+	if (!fileInRoot) {
+		throw new Error(`ROOT: No test found in ${roots.config}`);
+	}
+
+	// pass the path through to the asar loader AND return the config
+	return await getConfigFromAsar(_path.join(roots.config, fileInRoot));
+}
+
+// get the config via the CLI
+async function getConfigViaCli(path) {
+	// setup
+	let userConfig = null;
+
+	// attempt to load the test config directly
+	try {
+		userConfig = require(_path.join(roots.config, configFileName));
+	} catch (error) {
+		throw new Error(`CLI: Error loading config: ${error.message}`);
+	}
+
+	return userConfig;
+}
+
+// copy the *.eyas file to a temporary location as an *.asar and load the config directly
+// * config cannot be loaded from custom extension
+// * renaming the file to *.asar in-place is poor UX
+async function getConfigFromAsar(path) {
 	// imports
 	const _fs = require(`fs`);
 	const _os = require(`os`);
@@ -120,50 +160,10 @@ async function getConfigViaAssociation(path) {
 	try {
 		userConfig = require(_path.join(tempPath, configFileName));
 	} catch (error) {
-		throw new Error(`ASSOC: Error loading test config: ${error.message}`);
+		throw new Error(`FILE: Error loading config: ${error.message}`);
 	}
 
-	return userConfig;
-}
-
-// get the config via a sibling file
-async function getConfigViaRoot() {
-	// imports
-	const _fs = require(`fs`);
-
-	// setup
-	let userConfig = null;
-
-	// look for tests in the same directory as the runner
-	const fileInRoot = _fs.readdir(roots.config).find(file => file.endsWith(eyasExtension));
-
-	// if no file was found
-	if (!fileInRoot) {
-		throw new Error(`ROOT: No test found in ${roots.config}`);
-	}
-
-	// attempt to load the test config
-	try {
-		userConfig = require(_path.join(roots.config, fileInRoot));
-	} catch (error) {
-		throw new Error(`ROOT: Error loading config: ${error.message}`);
-	}
-
-	return userConfig;
-}
-
-// get the config via the CLI
-async function getConfigViaCli(path) {
-	// setup
-	let userConfig = null;
-
-	// attempt to load the test config directly
-	try {
-		userConfig = require(_path.join(roots.config, configFileName));
-	} catch (error) {
-		throw new Error(`CLI: Error loading config: ${error.message}`);
-	}
-
+	// send back the data
 	return userConfig;
 }
 
