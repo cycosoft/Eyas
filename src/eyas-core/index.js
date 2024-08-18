@@ -215,6 +215,9 @@ function initElectronCore() {
 	_electronCore.whenReady()
 		// when the electron layer is ready
 		.then(() => {
+			// get the default config
+			$config = await require($paths.configLoader)(LOAD_TYPES.ROOT);
+
 			// start listening for requests to the custom protocol
 			handleRedirects();
 
@@ -233,7 +236,6 @@ function initElectronCore() {
 async function initElectronUi() {
 	// imports
 	const { BrowserView } = require(`electron`);
-	$config = await require($paths.configLoader)(LOAD_TYPES.ROOT);
 
 	// set the current viewport to the first viewport in the list
 	$currentViewport[0] = $defaultViewports[0].width;
