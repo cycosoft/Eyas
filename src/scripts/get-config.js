@@ -167,45 +167,42 @@ async function getConfigFromAsar(path) {
 	return userConfig;
 }
 
-// sets the default configuration based on selected config
-function validateConfig(path, isNotCli = true) {
-	// load a test
-	// loadConfig(path, isNotCli);
-
+// returns the validated configuration based on the loaded config
+function validateConfig(loadedConfig) {
 	// object validation
-	userConfig.outputs = userConfig.outputs || {};
-	userConfig.meta = userConfig.meta || {};
-	const expiresIn = validateExpiration(userConfig.outputs.expires);
+	loadedConfig.outputs = loadedConfig.outputs || {};
+	loadedConfig.meta = loadedConfig.meta || {};
+	const expiresIn = validateExpiration(loadedConfig.outputs.expires);
 
 	// configuration merge and validation step
 	const eyasConfig = {
-		source: asarPath || _path.resolve(roots.config, userConfig.source || `dist`),
-		domains: validateCustomDomain(userConfig.domain || userConfig.domains),
-		title: (userConfig.title || `Eyas`).trim(),
-		version: (userConfig.version || `${getBranchName()}.${getCommitHash()}` || `Unspecified Version`).trim(),
-		viewports: userConfig.viewports || [/* { label: ``, width: 0, height: 0 } */],
-		links: userConfig.links || [/* { label: ``, url: `` } */],
+		source: asarPath || _path.resolve(roots.config, loadedConfig.source || `dist`),
+		domains: validateCustomDomain(loadedConfig.domain || loadedConfig.domains),
+		title: (loadedConfig.title || `Eyas`).trim(),
+		version: (loadedConfig.version || `${getBranchName()}.${getCommitHash()}` || `Unspecified Version`).trim(),
+		viewports: loadedConfig.viewports || [/* { label: ``, width: 0, height: 0 } */],
+		links: loadedConfig.links || [/* { label: ``, url: `` } */],
 
 		outputs: {
 			// platform
-			windows: userConfig.outputs.windows || false,
-			mac: userConfig.outputs.mac || false,
-			linux: userConfig.outputs.linux || false,
+			windows: loadedConfig.outputs.windows || false,
+			mac: loadedConfig.outputs.mac || false,
+			linux: loadedConfig.outputs.linux || false,
 
 			// options
 			expires: expiresIn // hours
 		},
 
 		meta: {
-			expires: userConfig.meta.expires || getExpirationDate(expiresIn),
-			gitBranch: userConfig.meta.gitBranch || getBranchName(),
-			gitHash: userConfig.meta.gitHash || getCommitHash(),
-			gitUser: userConfig.meta.gitUser || getUserName(),
-			compiled: userConfig.meta.compiled || new Date(),
-			eyas: userConfig.meta.eyas || getCliVersion(),
-			companyId: userConfig.meta.companyId || getCompanyId(),
-			projectId: userConfig.meta.projectId || getProjectId(),
-			testId: userConfig.meta.testId || getTestId()
+			expires: loadedConfig.meta.expires || getExpirationDate(expiresIn),
+			gitBranch: loadedConfig.meta.gitBranch || getBranchName(),
+			gitHash: loadedConfig.meta.gitHash || getCommitHash(),
+			gitUser: loadedConfig.meta.gitUser || getUserName(),
+			compiled: loadedConfig.meta.compiled || new Date(),
+			eyas: loadedConfig.meta.eyas || getCliVersion(),
+			companyId: loadedConfig.meta.companyId || getCompanyId(),
+			projectId: loadedConfig.meta.projectId || getProjectId(),
+			testId: loadedConfig.meta.testId || getTestId()
 		}
 	};
 
