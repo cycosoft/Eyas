@@ -22,7 +22,7 @@ Retrieves the configuration for the test by one of the following methods
 */
 async function getConfig(method, path) {
 	// setup
-	let configData = null;
+	let loadedConfig = null;
 
 	// WINDOWS: check if request is via file association
 	const associationFilePath = process.argv.find(arg => arg.endsWith(EXTENSION));
@@ -35,26 +35,26 @@ async function getConfig(method, path) {
 
 	// if requesting a config via the web
 	if (method === LOAD_TYPES.WEB) {
-		configData = await getConfigViaUrl(path);
+		loadedConfig = await getConfigViaUrl(path);
 	}
 
 	// if requesting a config via a file association
 	if (method === LOAD_TYPES.ASSOCIATION) {
-		configData = await getConfigViaAssociation(path);
+		loadedConfig = await getConfigViaAssociation(path);
 	}
 
 	// if requesting a config via a sibling file
 	if (method === LOAD_TYPES.ROOT) {
-		configData = await getConfigViaRoot();
+		loadedConfig = await getConfigViaRoot();
 	}
 
 	// if requesting a config via the CLI
 	if (method === LOAD_TYPES.CLI) {
-		configData = await getConfigViaCli(path);
+		loadedConfig = await getConfigViaCli(path);
 	}
 
 	// pass the loaded config data to the parser for validation
-	return validateConfig(configData);
+	return validateConfig(loadedConfig);
 };
 
 // get the config via web requests
