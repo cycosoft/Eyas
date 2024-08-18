@@ -7,10 +7,10 @@
 // imports
 const _path = require(`path`);
 const roots = require(`./get-roots.js`);
+const { LOAD_TYPES, EXTENSION } = require(`./constants.js`);
 
 // setup
 let asarPath = null;
-const eyasExtension = `.eyas`;
 
 /*
 Retrieves the configuration for the test by one of the following methods
@@ -21,14 +21,11 @@ Retrieves the configuration for the test by one of the following methods
 - Path to .eyas.config.js loaded via the CLI
 */
 async function getConfig(method, path) {
-	// imports
-	const { LOAD_TYPES } = require(`./constants.js`);
-
 	// setup
 	let configData = null;
 
 	// WINDOWS: check if request is via file association
-	const associationFilePath = process.argv.find(arg => arg.endsWith(eyasExtension));
+	const associationFilePath = process.argv.find(arg => arg.endsWith(EXTENSION));
 
 	// WINDOWS: override the method and path if an association file was found
 	if (associationFilePath) {
@@ -110,7 +107,7 @@ async function getConfigViaRoot() {
 	const _fs = require(`fs`);
 
 	// look for tests in the same directory as the runner
-	const fileInRoot = _fs.readdir(roots.config).find(file => file.endsWith(eyasExtension));
+	const fileInRoot = _fs.readdir(roots.config).find(file => file.endsWith(EXTENSION));
 
 	// if no file was found
 	if (!fileInRoot) {
