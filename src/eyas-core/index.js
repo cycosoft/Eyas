@@ -23,8 +23,12 @@ if (!hasLock) {
 	_electronCore.quit();
 }
 
-// global variables $
 const $isDev = process.argv.includes(`--dev`);
+
+// dev is allowed to run insecure content
+$isDev && _electronCore.commandLine.appendSwitch('ignore-certificate-errors');
+
+// global variables $
 let $appWindow = null;
 let $eyasLayer = null;
 let $config = null;
