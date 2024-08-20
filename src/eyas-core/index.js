@@ -1129,6 +1129,13 @@ async function startAFreshTest() {
 	// reset the path to the test source
 	$paths.testSrc = $config.source;
 
+	// check if $config.source is a url
+	const testedSource = parseURL($config.source);
+	if(testedSource){
+		$testDomainRaw = $config.source;
+		$testDomain = testedSource.toString();
+	}
+
 	// if there are no custom domains defined
 	if (!$config.domains.length) {
 		// load the test using the default domain
