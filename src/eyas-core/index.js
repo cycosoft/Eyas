@@ -979,11 +979,8 @@ function parseURL(url) {
 		url = `https://${url}`;
 	}
 
-	// parse the url
-	output = new URL(url);
-
-	// send back formatted string
-	return output;
+	// parse the url and send back the object
+	return new URL(url);
 }
 
 // register a custom protocol for loading local test files
