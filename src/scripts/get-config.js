@@ -11,6 +11,7 @@ const { LOAD_TYPES, EXTENSION } = require(`./constants.js`);
 
 // setup
 let asarPath = null;
+const configFileName = `.eyas.config.js`;
 
 /*
 Retrieves the configuration for the test by one of the following methods
@@ -149,7 +150,6 @@ function getConfigFromAsar(path) {
 
 	// setup
 	const tempFileName = `converted_test.asar`;
-	const configFileName = `.eyas.config.js`;
 	let loadedConfig = null;
 
 	// determine the path to where a copy of the *.eyas file will live
