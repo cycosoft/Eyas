@@ -47,6 +47,12 @@ async function getConfig(method, path) {
 	// if requesting a config via a sibling file
 	if (method === LOAD_TYPES.ROOT) {
 		loadedConfig = getConfigViaRoot();
+
+		// if no *.eyas file was found
+		if(!loadedConfig) {
+			// fallback to the CLI method
+			method = LOAD_TYPES.CLI;
+		}
 	}
 
 	// if requesting a config via the CLI
