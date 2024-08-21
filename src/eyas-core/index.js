@@ -1084,14 +1084,24 @@ function handleRedirects() {
 	// listen for requests to the specified domains and redirect to the custom protocol
 	ses.protocol.handle(`https`, request => {
 		// setup
-		const { hostname } = parseURL(request.url);
+		const { hostname, pathname } = parseURL(request.url);
 
 		// if the hostname matches a given custom domain
 		if($config.domains.some(domain => hostname === parseURL(domain.url).hostname)){
-			// navigate to the custom protocol to load locally
-			const redirect = request.url.replace(`https://`, `eyas://`);
+			// setup
+			const sourceOnWeb = parseURL($config.source);
+			let redirect = null;
 
-			// redirect to the custom protocol
+			// if the config.source is a url, redirect to the source url
+			if(sourceOnWeb){
+				sourceOnWeb.pathname = pathname;
+				redirect = sourceOnWeb.toString();
+			} else {
+				// if the config.source is a file, redirect to the local file
+				redirect = request.url.replace(`https://`, `eyas://`);
+			}
+
+			// redirect to the chosen source AND stop here
 			return ses.fetch(redirect);
 		}
 
