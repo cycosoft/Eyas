@@ -19,7 +19,7 @@
   "scripts": {
     "_______________DEV_______________": "",
     "dev": "npm i && npm-check -u -i '\"inquirer\"' && npm run compile:prep && npm run compile:ui && npm run dev:module",
-    "dev:module": "npm run compile:module && cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 npx electron .build/index.js --dev --trace-warnings",
+    "dev:module": "npm run compile:module && cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 electron .build/index.js --dev --trace-warnings",
     "dev:mac:cli": "npm i && npm-check -u -i '\"inquirer\"' && cross-env NODE_ENV=dev npm run compile:mac:no-sign && cross-env NODE_ENV=dev node dist/cli/index.js",
     "dev:mac:installer": "npm i && npm-check -u -i '\"inquirer\"' && cross-env NODE_ENV=dev npm run compile:mac:installer:no-sign",
     "dev:win:cli": "npm i && npm-check -u -i '\"inquirer\"' && cross-env NODE_ENV=dev npm run compile:win:module && cross-env NODE_ENV=dev node dist/cli/index.js",
