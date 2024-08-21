@@ -1130,10 +1130,10 @@ async function startAFreshTest() {
 	$paths.testSrc = $config.source;
 
 	// check if $config.source is a url
-	const testedSource = parseURL($config.source);
-	if(testedSource){
+	const sourceOnWeb = parseURL($config.source);
+	if(sourceOnWeb){
 		$testDomainRaw = $config.source;
-		$testDomain = testedSource.toString();
+		$testDomain = sourceOnWeb.toString();
 	}
 
 	// if there are no custom domains defined
