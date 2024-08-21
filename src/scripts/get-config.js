@@ -57,9 +57,7 @@ async function getConfig(method, path) {
 	return validateConfig(loadedConfig);
 };
 
-// get the config via web requests
-// * supports both eyas:// and https:// protocols
-// * to test self-signed certs, add `cross-env NODE_TLS_REJECT_UNAUTHORIZED=0` before `npx electron`
+// get the config via web requests ( supports both eyas:// and https:// protocols )
 async function getConfigViaUrl(path) {
 	// imports
 	const { isURL } = require(`validator`);
