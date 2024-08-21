@@ -1082,7 +1082,7 @@ function handleRedirects() {
 	});
 
 	// listen for requests to the specified domains and redirect to the custom protocol
-	ses.protocol.handle(`https`, request => {
+	ses.protocol.handle(`https`, async request => {
 		// setup
 		const { hostname, pathname } = parseURL(request.url);
 
@@ -1102,7 +1102,7 @@ function handleRedirects() {
 			}
 
 			// redirect to the chosen source AND stop here
-			return ses.fetch(redirect);
+			return await ses.fetch(redirect, { bypassCustomProtocolHandlers: true });
 		}
 
 		// otherwise, allow the request to pass through
