@@ -23,12 +23,8 @@ if (!hasLock) {
 	_electronCore.quit();
 }
 
-const $isDev = process.argv.includes(`--dev`);
-
-// dev is allowed to run insecure content
-$isDev && _electronCore.commandLine.appendSwitch('ignore-certificate-errors');
-
 // global variables $
+const $isDev = process.argv.includes(`--dev`);
 let $appWindow = null;
 let $eyasLayer = null;
 let $config = null;
@@ -157,20 +153,14 @@ initElectronCore();
 // start the core of the application
 function initElectronCore() {
 	// register the custom protocol for OS deep linking
-	console.log(`process.defaultApp`, process.defaultApp);
 	if (process.defaultApp) {
-		console.log(`process.argv`, process.argv);
-
 		if (process.argv.length >= 2) {
-			console.log(`path 1`);
-
 			_electronCore.setAsDefaultProtocolClient(
 				`eyas`,
 				process.execPath,
 				[_path.resolve(process.argv[1])]
 			);
 		} else {
-			console.log(`path 2`);
 			_electronCore.setAsDefaultProtocolClient(`eyas`);
 		}
 	}
@@ -1084,29 +1074,27 @@ function handleRedirects() {
 	// listen for requests to the specified domains and redirect to the custom protocol
 	ses.protocol.handle(`https`, async request => {
 		// setup
-		const { hostname, pathname } = parseURL(request.url);
+		const { hostname, pathname, origin } = parseURL(request.url);
+		let bypassCustomProtocolHandlers = true;
 
 		// if the hostname matches a given custom domain
 		if($config.domains.some(domain => hostname === parseURL(domain.url).hostname)){
-			// setup
+			// check if the config.source is a valid url
 			const sourceOnWeb = parseURL($config.source);
-			let redirect = null;
 
-			// if the config.source is a url, redirect to the source url
+			// if the config.source is a url
 			if(sourceOnWeb){
-				sourceOnWeb.pathname = pathname;
-				redirect = sourceOnWeb.toString();
+				// redirect to the source domain with the same path
+				request = request.url.replace(origin, sourceOnWeb.origin);
 			} else {
 				// if the config.source is a file, redirect to the local file
-				redirect = request.url.replace(`https://`, `eyas://`);
+				request = request.url.replace(`https://`, `eyas://`);
+				bypassCustomProtocolHandlers = false;
 			}
-
-			// redirect to the chosen source AND stop here
-			return await ses.fetch(redirect, { bypassCustomProtocolHandlers: true });
 		}
 
-		// otherwise, allow the request to pass through
-		return ses.fetch(request, { bypassCustomProtocolHandlers: true });
+		// make the request
+		return ses.fetch(request, { bypassCustomProtocolHandlers });
 	});
 }
 
@@ -1114,7 +1102,7 @@ function handleRedirects() {
 function clearCache() {
 	// clear all caches for the session
 	$appWindow.webContents.session.clearCache(); // web cache
-	$appWindow.webContents.session.clearStorageData(); // cookies, filesystem, indexdb, localstorage, shadercache, websql, serviceworkers, cachestorage
+	$appWindow.webContents.session.clearStorageData(); // cookies, filesystem, indexeddb, localstorage, shadercache, websql, serviceworkers, cachestorage
 
 	// update the menu to reflect the cache changes
 	setMenu();

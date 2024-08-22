@@ -92,7 +92,8 @@ async function getConfigViaUrl(path) {
 	// fetch the config file from the parsed url
 	const loadedConfig = await fetch(url.toString())
 		.then(response => response.json())
-		.catch(error => console.error(`WEB: Error fetching config:`, error.message));
+		.catch(error => console.error(`WEB: Error fetching config:`, error.message))
+		|| {}; // if the fetch failed, return an empty config
 
 	// update the source path to the test
 	loadedConfig.source = url.origin;
