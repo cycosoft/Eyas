@@ -152,7 +152,7 @@ initElectronCore();
 
 // start the core of the application
 function initElectronCore() {
-	// register the custom protocol for OS deep linking
+	// register the custom protocol for OS deep linking and adjust based on context
 	if (process.defaultApp) {
 		if (process.argv.length >= 2) {
 			_electronCore.setAsDefaultProtocolClient(
@@ -166,7 +166,6 @@ function initElectronCore() {
 	}
 
 	// macOS: detect if the app was opened with a file
-	// NOTE: Windows passes this data via CLI arguments
 	_electronCore.on(`open-file`, async (event, path) => {
 		// ensure the correct file type is being opened
 		if(path.endsWith(`.eyas`)){
@@ -1102,7 +1101,7 @@ function handleRedirects() {
 function clearCache() {
 	// clear all caches for the session
 	$appWindow.webContents.session.clearCache(); // web cache
-	$appWindow.webContents.session.clearStorageData(); // cookies, filesystem, indexeddb, localstorage, shadercache, websql, serviceworkers, cachestorage
+	$appWindow.webContents.session.clearStorageData(); // cookies, filesystem, indexed db, local storage, shader cache, web sql, service workers, cache storage
 
 	// update the menu to reflect the cache changes
 	setMenu();
