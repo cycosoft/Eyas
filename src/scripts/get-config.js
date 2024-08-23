@@ -134,7 +134,8 @@ function getConfigViaCli() {
 	try {
 		loadedConfig = require(_path.join(roots.config, configFileName));
 	} catch (error) {
-		throw new Error(`CLI: Error loading config: ${error.message}`);
+		console.error(`CLI: Error loading config: ${error.message}`);
+		loadedConfig = {};
 	}
 
 	// if a source was provided
@@ -169,7 +170,8 @@ function getConfigFromAsar(path) {
 	try {
 		loadedConfig = require(_path.join(tempPath, configFileName));
 	} catch (error) {
-		throw new Error(`FILE: Error loading config: ${error.message}`);
+		console.error(`FILE: Error loading config: ${error.message}`);
+		loadedConfig = {};
 	}
 
 	// set the path to the test in the config
