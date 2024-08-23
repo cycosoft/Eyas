@@ -43,7 +43,7 @@ const actions = {
 	},
 	bundle: {
 		enabled: true,
-		label: `ZIP: Bundled "*.eyas" file for non-Eyas users that includes runner`,
+		label: `ZIP: Bundled "*.zip" file for non-Eyas users that includes runner`,
 		description: `Does not need Eyas installed to run the test`,
 		command: `bundle`,
 		action: runCommand_bundle
@@ -71,6 +71,7 @@ const paths = {
 	dist: roots.eyasDist,
 	build: roots.eyasBuild,
 	configLoader: path.join(roots.dist, names.scripts, `get-config.js`),
+	constants: path.join(roots.dist, names.scripts, `constants.js`),
 	configDest: path.join(roots.eyasBuild, `.eyas.config.js`),
 	testDest: path.join(roots.eyasBuild, TEST_SOURCE),
 	eyasApp: path.join(roots.eyasBuild, `index.js`),
@@ -93,15 +94,17 @@ const paths = {
 	linuxRunnerSrc: path.join(roots.dist, `runners`, `${names.runner}.AppImage`),
 	linuxRunnerDest: path.join(roots.eyasBuild, `${names.runner}.AppImage`)
 };
+const { LOAD_TYPES } = require(paths.constants);
+let config = null;
 
 // set mode (disabled for now)
 // actions.previewDev.enabled = isDev;
 
-// load the user's config
-const config = require(paths.configLoader)(null, false);
-
 // Entry Point
 (async () => {
+	// load the user's config
+	config = await require(paths.configLoader)(LOAD_TYPES.CLI);
+
 	// ERROR CHECK: capture times when the user's platform isn't supported
 	if (!config.outputs.windows && !config.outputs.mac && !config.outputs.linux) {
 		userWarn(`⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️`);

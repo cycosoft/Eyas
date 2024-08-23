@@ -57,7 +57,7 @@ async function getConfig(method, path) {
 
 	// if requesting a config via the CLI
 	if (method === LOAD_TYPES.CLI) {
-		loadedConfig = getConfigViaCli(path);
+		loadedConfig = getConfigViaCli();
 	}
 
 	// pass the loaded config data to the parser for validation
@@ -126,7 +126,7 @@ function getConfigViaRoot() {
 }
 
 // get the config via the CLI
-function getConfigViaCli(path) {
+function getConfigViaCli() {
 	// setup
 	let loadedConfig = null;
 
