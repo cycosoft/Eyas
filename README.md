@@ -20,7 +20,7 @@
 
 ## The Pitch
 
-You bundle your app with the CLI ( `npm run build && npx eyas db` ), and your consumer runs the output `*.eyas` with the [runner](https://github.com/cycosoft/Eyas/releases).
+You bundle your app in any state with the CLI through one of the available methods, and your consumer gets to test your changes with the [Eyas runner](https://github.com/cycosoft/Eyas/releases).
 
 Reduce and simplify the feedback loop with any stakeholder & any team size, regardless of their technical ability. Less bugs, faster deployment cycles, reduced stress ...for free.
 
@@ -90,6 +90,11 @@ module.exports = {
 ## Usage
 
 ```bash
+# Outputs `eyas.json` to your `config.source` directory for deployment to a web server
+npm run build-my-project && npx eyas web
+```
+
+```bash
 # Generates an Eyas test database for use with the installed version of Eyas
 npm run build-my-project && npx eyas db
 ```
@@ -101,21 +106,25 @@ npm run build-my-project && npx eyas bundle
 
 ## Outputs
 
-- `db`: Creates an `*.eyas` file of project production output + test config (recommended)
+- `web`: Outputs `eyas.json` to your `config.source` directory for deployment to a web server
+  - Requires end user to have Eyas [installed](https://github.com/cycosoft/Eyas/releases)
+  - Share a link to directory or the file as `eyas://branch-42.example.com`.
+  - Requires a secure web server to host.
+  - Recommended way to best control access to your tests. (e.g. delete source or require VPN)
+- `db`: Creates an `*.eyas` file of project production output + test config
   - Requires end user to have Eyas [installed](https://github.com/cycosoft/Eyas/releases)
   - Outputs to `./eyas-dist/`
   - About the size of the project production output
-  - Recommended for end-users who do frequent testing (e.g. internal team)
+  - Recommended for end-users who do frequent testing, and do not have the benefit of hosting build artifacts on a server.
 - `bundle`: Packages project production output, test config & Eyas for each enabled platform
   - Does not require Eyas to be installed
   - Outputs to `./eyas-dist/${title} - ${version}.${platform}.zip`
   - 60mb - 100mb range
-  - Recommended for one-off testing (e.g. customers)
+  - Recommended for one-off testing without installing Eyas to your local machine.
 
 ## Tips
 
 - Add `eyas-*` to your `.gitignore` to prevent outputs from being committed to your repo
-<!-- - Deprecated: If your app is using a custom domain and you'd like to test it in your browser via Eyas, you will need to add the domain to your `etc/hosts` file. See [this guide](https://www.ephost.com/account/index.php/knowledgebase/232/How-to-edit-your-Host-file.html) (no affiliation) for more information. -->
 - View documented changes at [CHANGELOG.md](CHANGELOG.md)
 - While Eyas is intended to be used for testing in lower environments, testing fixes against production can be incredibly valuable when working directly with customers. It is advisable to use day-of time limits in these cases, and _very importantly_ that your test is branched *only* from the commit currently in production.
 
