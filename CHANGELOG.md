@@ -1,3 +1,7 @@
+# v3.5.0
+
+- Added support for loading tests via the web using a custom protocol. An `eyas.json` will be created in the source directory to deploy with your changes. Share tests with users by swapping the https protocol for eyas. (e.g. `https://branch-42.example.com` becomes `eyas://branch-42.example.com`). This will open Eyas and load the test.
+
 # v3.4.1
 
 - As Electron@31.3.1 does not support the file upload progress event in the renderer process, Eyas will polyfill this event to simulate the progress bar. It attempts to get more accurate after each use, but will never match the actual progress.
