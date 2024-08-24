@@ -338,12 +338,13 @@ async function runCommand_db() {
 // generate a web output for distribution
 async function runCommand_web() {
 	const _fs = require(`fs-extra`);
+	const artifactName = `eyas.json`;
 
 	// get the test's config as JSON, and prepare it for the build
 	const modifiedConfig = getOutputConfig().asJson;
 
 	// save the modifiedConfig to the source/ directory
-	await _fs.writeFile(path.join(config.source, `eyas.json`), modifiedConfig);
+	await _fs.writeFile(path.join(config.source, artifactName), modifiedConfig);
 
 	userLog(``);
 	userLog(`🎉 File created -> ${artifactName}`);
