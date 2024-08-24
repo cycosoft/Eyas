@@ -190,12 +190,20 @@ function initElectronCore() {
 	});
 
 	// Windows: detect if Eyas was triggered from a custom protocol
+	// this triggers whenever a second instance is requested - web, file, etc
 	_electronCore.on(`second-instance`, async (event, commandLine) => {
 		// get the url from the command line
-		const url = commandLine.pop();
+		const path = commandLine.pop();
+		const isValid = parseURL(path.replace(`eyas://`, `https://`));
+
+		// exit if not a valid url (e.g. if file path)
+		if (!isValid) {
+			console.error(`Invalid URL:`, path);
+			return;
+		}
 
 		// reload the config based on the new path
-		$config = await require($paths.configLoader)(LOAD_TYPES.WEB, url);
+		$config = await require($paths.configLoader)(LOAD_TYPES.WEB, path);
 
 		// start a new test based on the newly loaded config
 		startAFreshTest();
@@ -208,8 +216,8 @@ function initElectronCore() {
 	_electronCore.whenReady()
 		// when the electron layer is ready
 		.then(async () => {
-			// get the default config
-			$config = await require($paths.configLoader)(LOAD_TYPES.ROOT);
+			// get config based on the context
+			$config = await require($paths.configLoader)(LOAD_TYPES.AUTO);
 
 			// start listening for requests to the custom protocol
 			handleRedirects();

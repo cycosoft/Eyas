@@ -25,13 +25,27 @@ async function getConfig(method, path) {
 	// setup
 	let loadedConfig = null;
 
-	// WINDOWS: check if request is via file association
-	const associationFilePath = process.argv.find(arg => arg.endsWith(EXTENSION));
+	// if auto-detecting the method
+	if (method === LOAD_TYPES.AUTO) {
+		// check if request is via web
+		const isWeb = process.argv.find(arg => arg.startsWith(`eyas://`));
 
-	// WINDOWS: override the method and path if an association file was found
-	if (associationFilePath) {
-		method = LOAD_TYPES.ASSOCIATION;
-		path = associationFilePath;
+		if(isWeb) {
+			method = LOAD_TYPES.WEB;
+			path = isWeb;
+		}
+
+		// check if request is via file association
+		const associatedFile = process.argv.find(arg => arg.endsWith(EXTENSION));
+		if (associatedFile) {
+			method = LOAD_TYPES.ASSOCIATION;
+			path = associatedFile;
+		}
+
+		// check if request is for root file
+		if (!isWeb && !associatedFile) {
+			method = LOAD_TYPES.ROOT; // check if request is for root config
+		}
 	}
 
 	// if requesting a config via the web
