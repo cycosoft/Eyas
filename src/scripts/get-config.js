@@ -10,7 +10,6 @@ const roots = require(`./get-roots.js`);
 const { LOAD_TYPES, EXTENSION } = require(`./constants.js`);
 
 // setup
-let asarPath = null;
 const configFileName = `.eyas.config.js`;
 
 /*
