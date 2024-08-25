@@ -10,6 +10,7 @@
 
 // global imports _
 const { app: _electronCore, BrowserWindow: _electronWindow, } = require(`electron`);
+const _deepLinking = require(`electron-app-universal-protocol-client`).default;
 const _path = require(`path`);
 const _os = require(`os`);
 
@@ -180,8 +181,8 @@ function initElectronCore() {
 		}
 	});
 
-	// macOS: detect if Eyas was triggered from a custom protocol
-	_electronCore.on(`open-url`, async (event, url) => {
+	// detect if the app was opened with a custom link
+	_deepLinking.on(`request`, async url => {
 		// reload the config based on the new path
 		$config = await require($paths.configLoader)(LOAD_TYPES.WEB, url);
 
@@ -189,24 +190,11 @@ function initElectronCore() {
 		startAFreshTest();
 	});
 
-	// Windows: detect if Eyas was triggered from a custom protocol
-	// this triggers whenever a second instance is requested - web, file, etc
-	_electronCore.on(`second-instance`, async (event, commandLine) => {
-		// get the url from the command line
-		const path = commandLine.pop();
-		const isValid = parseURL(path.replace(`eyas://`, `https://`));
-
-		// exit if not a valid url (e.g. if file path)
-		if (!isValid) {
-			console.error(`Invalid URL:`, path);
-			return;
-		}
-
-		// reload the config based on the new path
-		$config = await require($paths.configLoader)(LOAD_TYPES.WEB, path);
-
-		// start a new test based on the newly loaded config
-		startAFreshTest();
+	// start listening for requests to the custom protocol
+	// NOTE: must be after _deepLinking.on()
+	_deepLinking.initialize({
+		protocol: `eyas`,
+		mode: $isDev ? `development` : `production`,
 	});
 
 	// add support for eyas:// protocol

@@ -12,7 +12,8 @@
     "node-machine-id": "",
     "validator": "",
     "date-fns": "",
-    "semver": ""
+    "semver": "",
+    "electron-app-universal-protocol-client": ""
   },
   "devDependencies": {
     "electron": ""
