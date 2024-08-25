@@ -58,6 +58,7 @@ const paths = {
 			removePackageKeywords: true,
 			mac: {
 				target: isInstaller ? `pkg` : `dir`,
+				category: `public.app-category.developer-tools`,
 				icon: paths.icon,
 				provisioningProfile: process.env.PROVISIONING_PROFILE_PATH || ``,
 				...isDev ? { identity: null } : {}, // don't sign in dev
