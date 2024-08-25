@@ -10,7 +10,6 @@
 
 // global imports _
 const { app: _electronCore, BrowserWindow: _electronWindow, } = require(`electron`);
-const _deepLinking = require(`electron-app-universal-protocol-client`).default;
 const _path = require(`path`);
 const _os = require(`os`);
 
@@ -29,6 +28,7 @@ const $isDev = process.argv.includes(`--dev`);
 let $appWindow = null;
 let $eyasLayer = null;
 let $config = null;
+let $configToLoad = {};
 let $testNetworkEnabled = true;
 let $testServer = null;
 let $testDomainRaw = null;
@@ -153,6 +153,9 @@ initElectronCore();
 
 // start the core of the application
 function initElectronCore() {
+	// imports
+	const _deepLinking = require(`electron-app-universal-protocol-client`).default;
+
 	// register the custom protocol for OS deep linking and adjust based on context
 	if (process.defaultApp) {
 		if (process.argv.length >= 2) {
@@ -169,25 +172,40 @@ function initElectronCore() {
 	// macOS: detect if the app was opened with a file
 	_electronCore.on(`open-file`, async (event, path) => {
 		// ensure the correct file type is being opened
-		if(path.endsWith(`.eyas`)){
-			// docs ( https://www.electronjs.org/docs/latest/api/app#event-open-file-macos ) say to call this without providing a reason
-			event.preventDefault();
+		if(!path.endsWith(`.eyas`)){ return; }
 
-			// reload the config based on the new path
+		// if the $appWindow was already initialized
+		if($appWindow){
+			// load the new config
 			$config = await require($paths.configLoader)(LOAD_TYPES.ASSOCIATION, path);
 
 			// start a new test based on the newly loaded config
 			startAFreshTest();
+		} else {
+			// define the config to load when the app is ready
+			$configToLoad = {
+				method: LOAD_TYPES.ASSOCIATION,
+				path
+			};
 		}
 	});
 
 	// detect if the app was opened with a custom link
-	_deepLinking.on(`request`, async url => {
-		// reload the config based on the new path
-		$config = await require($paths.configLoader)(LOAD_TYPES.WEB, url);
+	_deepLinking.on(`request`, async path => {
+		// if the $appWindow was already initialized
+		if($appWindow){
+			// load the new config
+			$config = await require($paths.configLoader)(LOAD_TYPES.WEB, path);
 
-		// start a new test based on the newly loaded config
-		startAFreshTest();
+			// start a new test based on the newly loaded config
+			startAFreshTest();
+		} else {
+			// define the config to load when the app is ready
+			$configToLoad = {
+				method: LOAD_TYPES.WEB,
+				path
+			};
+		}
 	});
 
 	// start listening for requests to the custom protocol
@@ -198,17 +216,17 @@ function initElectronCore() {
 	});
 
 	// add support for eyas:// protocol
-	registerCustomProtocol();
+	registerInternalProtocols();
 
 	// start the electron layer
 	_electronCore.whenReady()
 		// when the electron layer is ready
 		.then(async () => {
 			// get config based on the context
-			$config = await require($paths.configLoader)(LOAD_TYPES.AUTO);
+			$config = await require($paths.configLoader)($configToLoad.method || LOAD_TYPES.AUTO, $configToLoad.path);
 
 			// start listening for requests to the custom protocol
-			handleRedirects();
+			setupEyasNetworkHandlers();
 
 			// start the UI layer
 			initElectronUi();
@@ -968,8 +986,8 @@ function parseURL(url) {
 	return new URL(url);
 }
 
-// register a custom protocol for loading local test files
-function registerCustomProtocol() {
+// register a custom protocol for loading local test files and the UI
+function registerInternalProtocols() {
 	// imports
 	const { protocol } = require(`electron`);
 
@@ -1005,7 +1023,7 @@ function disableNetworkRequest(url) {
 }
 
 // handle requests to the custom protocol
-function handleRedirects() {
+function setupEyasNetworkHandlers() {
 	// imports
 	const { protocol, session, net } = require(`electron`);
 	const ses = session.fromPartition(`persist:${$config.meta.testId}`);
