@@ -58,6 +58,7 @@ const paths = {
 			removePackageKeywords: true,
 			mac: {
 				target: isInstaller ? `pkg` : `dir`,
+				category: `public.app-category.developer-tools`,
 				icon: paths.icon,
 				provisioningProfile: process.env.PROVISIONING_PROFILE_PATH || ``,
 				...isDev ? { identity: null } : {}, // don't sign in dev
@@ -75,7 +76,7 @@ const paths = {
 			},
 			msi: {
 				oneClick: false, // because there is no feedback to users otherwise
-				runAfterFinish: false, // user is likely to start by double clicking *.eyas
+				runAfterFinish: false, // this gives the user an option, but we want mandatory
 				createDesktopShortcut: true // so the user knows install process finished
 			},
 			pkg: {
@@ -86,6 +87,13 @@ const paths = {
 					ext: `eyas`,
 					name: `eyas-db`,
 					icon: isWin ? paths.iconDbWin : paths.iconDbMac
+				}
+			],
+			protocols: [
+				{
+					name: `Eyas`,
+					schemes: [`eyas`],
+					role: `Viewer`
 				}
 			]
 		}

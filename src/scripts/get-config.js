@@ -1,140 +1,252 @@
 #!/usr/bin/env node
-/* eslint-disable no-console */
+
 /* global process */
 
 'use strict';
 
 // imports
-const path = require(`path`);
-const { execSync } = require(`child_process`);
+const _path = require(`path`);
 const roots = require(`./get-roots.js`);
-const _fs = require(`fs`);
-const os = require(`os`);
+const { LOAD_TYPES, EXTENSION } = require(`./constants.js`);
 
 // setup
-const eyasExtension = `.eyas`;
-const tempFileName = `converted_test.asar`;
 const configFileName = `.eyas.config.js`;
-let userConfig = {};
-let configPath = null; // TODO: Why is this global?
-let asarPath = null;
 
-// sets the default configuration based on selected config
-function parseConfig(requestedEyasPath, loadAsar = true) {
-	// load a test
-	loadConfig(requestedEyasPath, loadAsar);
+/*
+Retrieves the configuration for the test by one of the following methods
 
+- Via url (eyas://) provided by clicking a link or entered by the user
+- Path to *.eyas provided by double-clicking the file
+- Path to *.eyas found in the same directory as the runner
+- Path to .eyas.config.js loaded via the CLI
+*/
+async function getConfig(method, path) {
+	// setup
+	let loadedConfig = null;
+
+	// if auto-detecting the method
+	if (method === LOAD_TYPES.AUTO) {
+		// check if request is via web
+		const isWeb = process.argv.find(arg => arg.startsWith(`eyas://`));
+
+		if(isWeb) {
+			method = LOAD_TYPES.WEB;
+			path = isWeb;
+		}
+
+		// check if request is via file association
+		const associatedFile = process.argv.find(arg => arg.endsWith(EXTENSION));
+		if (associatedFile) {
+			method = LOAD_TYPES.ASSOCIATION;
+			path = associatedFile;
+		}
+
+		// check if request is for root file
+		if (!isWeb && !associatedFile) {
+			method = LOAD_TYPES.ROOT; // check if request is for root config
+		}
+	}
+
+	// if requesting a config via the web
+	if (method === LOAD_TYPES.WEB) {
+		loadedConfig = await getConfigViaUrl(path);
+	}
+
+	// if requesting a config via a file association
+	if (method === LOAD_TYPES.ASSOCIATION) {
+		loadedConfig = getConfigViaAssociation(path);
+	}
+
+	// if requesting a config via a sibling file
+	if (method === LOAD_TYPES.ROOT) {
+		loadedConfig = getConfigViaRoot();
+
+		// if no *.eyas file was found
+		if(!loadedConfig) {
+			// fallback to the CLI method
+			method = LOAD_TYPES.CLI;
+		}
+	}
+
+	// if requesting a config via the CLI
+	if (method === LOAD_TYPES.CLI) {
+		loadedConfig = getConfigViaCli();
+	}
+
+	// pass the loaded config data to the parser for validation
+	return validateConfig(loadedConfig);
+};
+
+// get the config via web requests ( supports both eyas:// and https:// protocols )
+async function getConfigViaUrl(path) {
+	// imports
+	const { isURL } = require(`validator`);
+
+	// setup
+	const defaultConfigName = `eyas.json`;
+
+	// convert the eyas protocol to https if it's not already
+	let url = path.replace(`eyas://`, `https://`);
+
+	// convert the path to a URL object
+	url = new URL(url);
+
+	// the url must be valid
+	if (!isURL(url.toString())) {
+		throw new Error(`WEB: Invalid URL: ${url}`);
+	}
+
+	// if the path name does not end in `.json`
+	if (!url.pathname.endsWith(`.json`)) {
+		// update the url to look for the default config at the url root
+		url.pathname = defaultConfigName;
+	}
+
+	// fetch the config file from the parsed url
+	const loadedConfig = await fetch(url.toString())
+		.then(response => response.json())
+		.catch(error => console.error(`WEB: Error fetching config:`, error.message))
+		|| {}; // if the fetch failed, return an empty config
+
+	// update the source path to the test
+	loadedConfig.source = url.origin;
+
+	// send back the data
+	return loadedConfig;
+}
+
+// get the config via file association
+function getConfigViaAssociation(path) {
+	// pass the path through to the asar loader AND return the config object
+	return getConfigFromAsar(path);
+}
+
+// get the config via a sibling file
+function getConfigViaRoot() {
+	// imports
+	const _fs = require(`fs`);
+
+	// look for tests in the same directory as the runner
+	const fileInRoot = _fs.readdirSync(roots.config).find(file => file.endsWith(EXTENSION));
+
+	// if no file was found
+	if (!fileInRoot) {
+		return null;
+	}
+
+	// pass the path through to the asar loader AND return the config
+	return getConfigFromAsar(_path.join(roots.config, fileInRoot));
+}
+
+// get the config via the CLI
+function getConfigViaCli() {
+	// setup
+	let loadedConfig = null;
+
+	// attempt to load the test config directly
+	try {
+		loadedConfig = require(_path.join(roots.config, configFileName));
+	} catch (error) {
+		console.error(`CLI: Error loading config: ${error.message}`);
+		loadedConfig = {};
+	}
+
+	// if a source was provided
+	if (loadedConfig.source) {
+		// resolve it to the full path
+		loadedConfig.source = _path.resolve(roots.config, loadedConfig.source);
+	}
+
+	// send back the data
+	return loadedConfig;
+}
+
+// copy the *.eyas file to a temporary location as an *.asar and load the config directly
+// * config cannot be loaded from custom extension
+// * renaming the file to *.asar in-place is poor UX
+function getConfigFromAsar(path) {
+	// imports
+	const _fs = require(`fs`);
+	const _os = require(`os`);
+
+	// setup
+	const tempFileName = `converted_test.asar`;
+	let loadedConfig = null;
+
+	// determine the path to where a copy of the *.eyas file will live
+	const tempPath = _path.join(_os.tmpdir(), tempFileName);
+
+	// copy the test file to the temp directory with the asar extension
+	_fs.copyFileSync(path, tempPath);
+
+	// attempt to load the test config
+	try {
+		loadedConfig = require(_path.join(tempPath, configFileName));
+	} catch (error) {
+		console.error(`FILE: Error loading config: ${error.message}`);
+		loadedConfig = {};
+	}
+
+	// set the path to the test in the config
+	loadedConfig.source = tempPath;
+
+	// send back the data
+	return loadedConfig;
+}
+
+// returns the validated configuration based on the loaded config
+function validateConfig(loadedConfig) {
 	// object validation
-	userConfig.outputs = userConfig.outputs || {};
-	userConfig.meta = userConfig.meta || {};
-	const expiresIn = validateExpiration(userConfig.outputs.expires);
+	loadedConfig ||= {};
+	loadedConfig.outputs ||= {};
+	loadedConfig.meta ||= {};
+	const expiresIn = validateExpiration(loadedConfig.outputs.expires);
 
 	// configuration merge and validation step
-	const eyasConfig = {
-		source: asarPath || path.resolve(roots.config, userConfig.source || `dist`),
-		domains: validateCustomDomain(userConfig.domain || userConfig.domains),
-		title: (userConfig.title || `Eyas`).trim(),
-		version: (userConfig.version || `${getBranchName()}.${getCommitHash()}` || `Unspecified Version`).trim(),
-		viewports: userConfig.viewports || [/* { label: ``, width: 0, height: 0 } */],
-		links: userConfig.links || [/* { label: ``, url: `` } */],
+	const validatedConfig = {
+		// use given value or resolve to default location
+		source: loadedConfig.source || _path.resolve(roots.config, `dist`),
+		domains: validateCustomDomain(loadedConfig.domain || loadedConfig.domains),
+		title: (loadedConfig.title || `Eyas`).trim(),
+		version: (loadedConfig.version || `${getBranchName()}.${getCommitHash()}` || `Unspecified Version`).trim(),
+		viewports: loadedConfig.viewports || [/* { label: ``, width: 0, height: 0 } */],
+		links: loadedConfig.links || [/* { label: ``, url: `` } */],
 
 		outputs: {
 			// platform
-			windows: userConfig.outputs.windows || false,
-			mac: userConfig.outputs.mac || false,
-			linux: userConfig.outputs.linux || false,
+			windows: loadedConfig.outputs.windows || false,
+			mac: loadedConfig.outputs.mac || false,
+			linux: loadedConfig.outputs.linux || false,
 
 			// options
 			expires: expiresIn // hours
 		},
 
+		// data that is provided by the CLI step, not the user.
 		meta: {
-			expires: userConfig.meta.expires || getExpirationDate(expiresIn),
-			gitBranch: userConfig.meta.gitBranch || getBranchName(),
-			gitHash: userConfig.meta.gitHash || getCommitHash(),
-			gitUser: userConfig.meta.gitUser || getUserName(),
-			compiled: userConfig.meta.compiled || new Date(),
-			eyas: userConfig.meta.eyas || getCliVersion(),
-			companyId: userConfig.meta.companyId || getCompanyId(),
-			projectId: userConfig.meta.projectId || getProjectId(),
-			testId: userConfig.meta.testId || getTestId()
+			expires: loadedConfig.meta.expires || getExpirationDate(expiresIn),
+			gitBranch: loadedConfig.meta.gitBranch || getBranchName(),
+			gitHash: loadedConfig.meta.gitHash || getCommitHash(),
+			gitUser: loadedConfig.meta.gitUser || getUserName(),
+			compiled: loadedConfig.meta.compiled || new Date(),
+			eyas: loadedConfig.meta.eyas || getCliVersion(),
+			companyId: loadedConfig.meta.companyId || getCompanyId(),
+			projectId: loadedConfig.meta.projectId || getProjectId(),
+			testId: loadedConfig.meta.testId || getTestId()
 		}
 	};
 
 	// set the default platform if none are specified
-	if (!eyasConfig.outputs.windows && !eyasConfig.outputs.mac && !eyasConfig.outputs.linux) {
-		if(process.platform === `win32`) { eyasConfig.outputs.windows = true; }
-		if(process.platform === `darwin`) { eyasConfig.outputs.mac = true; }
-		if(process.platform === `linux`) { eyasConfig.outputs.linux = true; }
+	if (!validatedConfig.outputs.windows && !validatedConfig.outputs.mac && !validatedConfig.outputs.linux) {
+		if(process.platform === `win32`) { validatedConfig.outputs.windows = true; }
+		if(process.platform === `darwin`) { validatedConfig.outputs.mac = true; }
+		if(process.platform === `linux`) { validatedConfig.outputs.linux = true; }
 	}
 
-	// TEMPORARY OVERRIDE - never allow linux
-	eyasConfig.outputs.linux = false;
+	// OVERRIDE - linux support is not currently supported
+	validatedConfig.outputs.linux = false;
 
-	return eyasConfig;
-}
-
-// determine how to auto load the user's test (*.eyas click, sibling *.eyas, or config + directory)
-function loadConfig(requestedEyasPath, loadAsar = true) {
-	// set path to the requested eyas file first
-	asarPath = requestedEyasPath;
-
-	// if we should be looking for asar files
-	if(loadAsar) {
-		// if not set
-		if (!asarPath) {
-			// try getting path from command line argument
-			asarPath = process.argv.find(arg => arg.endsWith(eyasExtension));
-		}
-
-		// if the asarPath still isn't set
-		if (!asarPath) {
-			// try looking for sibling *.eyas files
-			const siblingFileName = _fs.readdirSync(roots.config).find(file => file.endsWith(eyasExtension));
-
-			// if a file was found
-			if (siblingFileName) {
-				// define the full path to the sibling file
-				asarPath = path.join(roots.config, siblingFileName);
-			}
-		}
-
-		// if a file was set
-		if (asarPath) {
-			// define the full path to the temp file that will be the source for the test
-			const tempPath = path.join(os.tmpdir(), tempFileName);
-
-			// copy the eyas file to the temp directory with the asar extension
-			_fs.copyFileSync(asarPath, tempPath);
-
-			// update the config path to the temp directory
-			configPath = path.join(tempPath, configFileName);
-
-			// update the asar path to the temp directory
-			asarPath = tempPath;
-		}
-	}
-
-	// if the configPath never got set
-	if (!configPath) {
-		// default to looking for a config file in the same directory as the runner
-		configPath = path.join(roots.config, configFileName);
-	}
-
-	// attempt to load the user's config
-	try {
-		userConfig = require(configPath);
-	} catch (error) {
-		console.warn(``);
-		console.warn(`⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️`);
-		console.warn(`------ UNABLE TO LOAD USER SETTINGS ------`);
-		console.warn(`-------- proceeding with defaults --------`);
-		console.log(``);
-		console.error(error);
-		console.log(``);
-		console.warn(`⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️`);
-		console.log(``);
-	}
+	return validatedConfig;
 }
 
 // validate the user input for the custom domain
@@ -173,7 +285,7 @@ function validateCustomDomain(input) {
 // get the version of the cli
 function getCliVersion() {
 	try {
-		const { version } = require(path.join(roots.module, `package.json`));
+		const { version } = require(_path.join(roots.module, `package.json`));
 		return version;
 	} catch (error) {
 		console.error(`Error getting CLI version:`, error);
@@ -183,6 +295,8 @@ function getCliVersion() {
 
 // attempts to return the current short hash
 function getCommitHash() {
+	const { execSync } = require(`child_process`);
+
 	try {
 		return execSync(`git rev-parse --short HEAD`).toString().trim();
 	} catch (error) {
@@ -194,6 +308,8 @@ function getCommitHash() {
 
 // attempts to return the current branch name
 function getBranchName() {
+	const { execSync } = require(`child_process`);
+
 	try {
 		return execSync(`git rev-parse --abbrev-ref HEAD`).toString().trim();
 	} catch (error) {
@@ -205,6 +321,8 @@ function getBranchName() {
 
 // attempts to return the current user name
 function getUserName() {
+	const { execSync } = require(`child_process`);
+
 	try {
 		return execSync(`git config user.name`).toString().trim();
 	} catch (error) {
@@ -216,6 +334,8 @@ function getUserName() {
 
 // attempt to hash the user's email domain
 function getCompanyId() {
+	const { execSync } = require(`child_process`);
+
 	try {
 		const crypto = require(`crypto`);
 		const email = execSync(`git config user.email`).toString().trim();
@@ -238,6 +358,8 @@ function getCompanyId() {
 
 // get the project id from the git remote
 function getProjectId() {
+	const { execSync } = require(`child_process`);
+
 	try {
 		const crypto = require(`crypto`);
 
@@ -260,8 +382,7 @@ function getProjectId() {
 
 // create a unique id for the test
 function getTestId() {
-	const crypto = require(`crypto`);
-	return crypto.randomUUID();
+	return require(`crypto`).randomUUID();
 }
 
 // validate the user input for the expiration
@@ -306,4 +427,4 @@ function getExpirationDate(expiresInHours) {
 }
 
 // export the config for the project
-module.exports = parseConfig;
+module.exports = getConfig;

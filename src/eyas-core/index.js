@@ -8,26 +8,14 @@
 // 	require(`wdio-electron-service/main`);
 // }
 
-// constants
-const APP_NAME = `Eyas`;
-const MP_EVENTS = {
-	core: {
-		launch: `App Launch`,
-		exit: `App Exit`
-	},
-	ui: {
-		modalExitShown: `Modal Exit Shown`
-	}
-};
-
 // global imports _
 const { app: _electronCore, BrowserWindow: _electronWindow, } = require(`electron`);
 const _path = require(`path`);
 const _os = require(`os`);
 
 // only allow a single instance of the app to be at a time
-const hasLock = _electronCore.requestSingleInstanceLock();
-if (!hasLock) {
+const isPrimaryInstance = _electronCore.requestSingleInstanceLock();
+if (!isPrimaryInstance) {
 	console.log(``);
 	console.log(`Another instance of the app is already running. Exiting.`);
 	console.log(``);
@@ -39,6 +27,8 @@ if (!hasLock) {
 const $isDev = process.argv.includes(`--dev`);
 let $appWindow = null;
 let $eyasLayer = null;
+let $config = null;
+let $configToLoad = {};
 let $testNetworkEnabled = true;
 let $testServer = null;
 let $testDomainRaw = null;
@@ -58,6 +48,7 @@ const $paths = {
 	packageJson: _path.join($roots.eyas, `package.json`),
 	testPreload: _path.join($roots.eyas, `scripts`, `test-preload.js`),
 	eventBridge: _path.join($roots.eyas, `scripts`, `event-bridge.js`),
+	constants: _path.join($roots.eyas, `scripts`, `constants.js`),
 	testSrc: null,
 	uiSource: _path.join($roots.eyas, `eyas-interface`),
 	eyasInterface: _path.join($roots.eyas, `eyas-interface`, `index.html`),
@@ -65,6 +56,19 @@ const $paths = {
 };
 const $operatingSystem = _os.platform();
 const { version: _appVersion } = require($paths.packageJson);
+
+// constants
+const { LOAD_TYPES } = require($paths.constants);
+const APP_NAME = `Eyas`;
+const MP_EVENTS = {
+	core: {
+		launch: `App Launch`,
+		exit: `App Exit`
+	},
+	ui: {
+		modalExitShown: `Modal Exit Shown`
+	}
+};
 
 // APP_ENTRY: initialize the first layer of the app
 initElectronCore();
@@ -82,7 +86,7 @@ initElectronCore();
 
 	// const testServerPort = 3000;
 	// const testServerUrl = `https://localhost:${testServerPort}`;
-	// const appUrlOverride = parseURL(config().domains);
+	// const appUrlOverride = parseURL($config.domains);
 	// const appUrl = appUrlOverride || testServerUrl;
 	// let expressLayer = null;
 
@@ -149,44 +153,94 @@ initElectronCore();
 
 // start the core of the application
 function initElectronCore() {
-	// detect if the app was opened with a file (MacOS only)
-	_electronCore.on(`open-file`, (event, path) => {
+	// imports
+	const _deepLinking = require(`electron-app-universal-protocol-client`).default;
+
+	// register the custom protocol for OS deep linking and adjust based on context
+	if (process.defaultApp) {
+		if (process.argv.length >= 2) {
+			_electronCore.setAsDefaultProtocolClient(
+				`eyas`,
+				process.execPath,
+				[_path.resolve(process.argv[1])]
+			);
+		} else {
+			_electronCore.setAsDefaultProtocolClient(`eyas`);
+		}
+	}
+
+	// macOS: detect if the app was opened with a file
+	_electronCore.on(`open-file`, async (event, path) => {
 		// ensure the correct file type is being opened
-		if(path.endsWith(`.eyas`)){
-			// reload the config based on the new path
-			config(path);
+		if(!path.endsWith(`.eyas`)){ return; }
+
+		// if the $appWindow was already initialized
+		if($appWindow){
+			// load the new config
+			$config = await require($paths.configLoader)(LOAD_TYPES.ASSOCIATION, path);
 
 			// start a new test based on the newly loaded config
 			startAFreshTest();
+		} else {
+			// define the config to load when the app is ready
+			$configToLoad = {
+				method: LOAD_TYPES.ASSOCIATION,
+				path
+			};
 		}
 	});
 
+	// detect if the app was opened with a custom link
+	_deepLinking.on(`request`, async path => {
+		// if the $appWindow was already initialized
+		if($appWindow){
+			// load the new config
+			$config = await require($paths.configLoader)(LOAD_TYPES.WEB, path);
+
+			// start a new test based on the newly loaded config
+			startAFreshTest();
+		} else {
+			// define the config to load when the app is ready
+			$configToLoad = {
+				method: LOAD_TYPES.WEB,
+				path
+			};
+		}
+	});
+
+	// start listening for requests to the custom protocol
+	// NOTE: must be after _deepLinking.on()
+	_deepLinking.initialize({
+		protocol: `eyas`,
+		mode: $isDev ? `development` : `production`,
+	});
+
 	// add support for eyas:// protocol
-	registerCustomProtocol();
+	registerInternalProtocols();
 
 	// start the electron layer
 	_electronCore.whenReady()
 		// when the electron layer is ready
-		.then(() => {
+		.then(async () => {
+			// get config based on the context
+			$config = await require($paths.configLoader)($configToLoad.method || LOAD_TYPES.AUTO, $configToLoad.path);
+
 			// start listening for requests to the custom protocol
-			handleRedirects();
+			setupEyasNetworkHandlers();
 
 			// start the UI layer
 			initElectronUi();
 
 			// if Electron receives the `activate` event
 			_electronCore.on(`activate`, () => {
-				// ensure the _electronWindow doesn't already exist
-				if (_electronWindow.getAllWindows().length === 0) {
-					// create the window
-					initElectronUi();
-				}
+				// if the window does not already exist, create it
+				!_electronWindow.getAllWindows().length && initElectronUi();
 			});
 		});
 }
 
 // initiate the core electron UI layer
-function initElectronUi() {
+async function initElectronUi() {
 	// imports
 	const { BrowserView } = require(`electron`);
 
@@ -204,7 +258,7 @@ function initElectronUi() {
 		show: false,
 		webPreferences: {
 			preload: $paths.testPreload,
-			partition: `persist:${config().meta.testId}`
+			partition: `persist:${$config.meta.testId}`
 		}
 	});
 
@@ -245,7 +299,7 @@ function initElectronUi() {
 	// Initialize the $eyasLayer
 	$eyasLayer = new BrowserView({ webPreferences: {
 		preload: $paths.eventBridge,
-		partition: `persist:${config().meta.testId}`,
+		partition: `persist:${$config.meta.testId}`,
 		backgroundThrottling: false // allow to update even when hidden (e.g. modal close)
 	} });
 	$appWindow.addBrowserView($eyasLayer);
@@ -284,7 +338,7 @@ function createSplashScreen() {
 		alwaysOnTop: true,
 		show: false,
 		webPreferences: {
-			partition: `persist:${config().meta.testId}`
+			partition: `persist:${$config.meta.testId}`
 		}
 	});
 
@@ -407,9 +461,9 @@ async function trackEvent(event, extraData) {
 		distinct_id: trackEvent.deviceId, // device to link action to
 		$os: $operatingSystem,
 		$app_version_string: _appVersion,
-		companyId: config().meta.companyId,
-		projectId: config().meta.projectId,
-		testId: config().meta.testId,
+		companyId: $config.meta.companyId,
+		projectId: $config.meta.projectId,
+		testId: $config.meta.testId,
 
 		// provided data to send with the event
 		...extraData
@@ -424,7 +478,7 @@ function checkTestExpiration () {
 	const { dialog } = require(`electron`);
 
 	// setup
-	const expirationDate = new Date(config().meta.expires);
+	const expirationDate = new Date($config.meta.expires);
 
 	// stop if the test has not expired
 	if(!isPast(expirationDate)){ return; }
@@ -444,37 +498,16 @@ function checkTestExpiration () {
 	_electronCore.quit();
 }
 
-// returns the current test's config
-function config(eyasPath) {
-	// import the config loader
-	const parseConfig = require($paths.configLoader);
-
-	// if a path was passed
-	if (eyasPath) {
-		// request config from the new path
-		config.cache = parseConfig(eyasPath);
-	}
-
-	// if no path set
-	else {
-		// use the cache OR load the config using default methods
-		config.cache = config.cache || parseConfig();
-	}
-
-	// return the config
-	return config.cache;
-}
-
 // Get the app title
 function getAppTitle() {
 	// Always start with the main app name
 	let output = APP_NAME;
 
 	// Add the test app title
-	output += ` :: ${config().title}`;
+	output += ` :: ${$config.title}`;
 
 	// Add the build version
-	output += ` :: ${config().version} ✨`;
+	output += ` :: ${$config.version} ✨`;
 
 	// Add the current URL if it`s available
 	if ($appWindow){
@@ -539,7 +572,7 @@ async function setMenu () {
 						const { format } = require(`date-fns/format`);
 						const { differenceInDays } = require(`date-fns/differenceInDays`);
 						const now = new Date();
-						const expires = new Date(config().meta.expires);
+						const expires = new Date($config.meta.expires);
 						const dayCount = differenceInDays(expires, now);
 						const expirationFormatted = format(expires, `MMM do @ p`);
 						const relativeFormatted = dayCount ? `~${dayCount} days` : `soon`;
@@ -555,14 +588,14 @@ async function setMenu () {
 							title: `About`,
 							icon: $paths.icon,
 							message: `
-							Name: ${config().title}
-							Version: ${config().version}
+							Name: ${$config.title}
+							Version: ${$config.version}
 							Expires: ${expirationFormatted} (${relativeFormatted})
 
-							Branch: ${config().meta.gitBranch} #${config().meta.gitHash}
-							User: ${config().meta.gitUser}
-							Created: ${new Date(config().meta.compiled).toLocaleString()}
-							CLI: v${config().meta.eyas}
+							Branch: ${$config.meta.gitBranch} #${$config.meta.gitHash}
+							User: ${$config.meta.gitUser}
+							Created: ${new Date($config.meta.compiled).toLocaleString()}
+							CLI: v${$config.meta.eyas}
 
 							Runner: v${_appVersion}
 
@@ -762,7 +795,7 @@ async function setMenu () {
 
 	// for each menu item where the list exists
 	const customLinkList = [];
-	config().links.forEach(item => {
+	$config.links.forEach(item => {
 		// setup
 		let itemUrl = item.url;
 		let isValid = false;
@@ -949,15 +982,12 @@ function parseURL(url) {
 		url = `https://${url}`;
 	}
 
-	// parse the url
-	output = new URL(url);
-
-	// send back formatted string
-	return output;
+	// parse the url and send back the object
+	return new URL(url);
 }
 
-// register a custom protocol for loading local test files
-function registerCustomProtocol() {
+// register a custom protocol for loading local test files and the UI
+function registerInternalProtocols() {
 	// imports
 	const { protocol } = require(`electron`);
 
@@ -993,10 +1023,10 @@ function disableNetworkRequest(url) {
 }
 
 // handle requests to the custom protocol
-function handleRedirects() {
+function setupEyasNetworkHandlers() {
 	// imports
 	const { protocol, session, net } = require(`electron`);
-	const ses = session.fromPartition(`persist:${config().meta.testId}`);
+	const ses = session.fromPartition(`persist:${$config.meta.testId}`);
 
 	// use the "ui" protocol to load the Eyas UI layer
 	ses.protocol.handle(`ui`, request => {
@@ -1055,21 +1085,29 @@ function handleRedirects() {
 	});
 
 	// listen for requests to the specified domains and redirect to the custom protocol
-	ses.protocol.handle(`https`, request => {
+	ses.protocol.handle(`https`, async request => {
 		// setup
-		const { hostname } = parseURL(request.url);
+		const { hostname, pathname, origin } = parseURL(request.url);
+		let bypassCustomProtocolHandlers = true;
 
 		// if the hostname matches a given custom domain
-		if(config().domains.some(domain => hostname === parseURL(domain.url).hostname)){
-			// navigate to the custom protocol to load locally
-			const redirect = request.url.replace(`https://`, `eyas://`);
+		if($config.domains.some(domain => hostname === parseURL(domain.url).hostname)){
+			// check if the config.source is a valid url
+			const sourceOnWeb = parseURL($config.source);
 
-			// redirect to the custom protocol
-			return ses.fetch(redirect);
+			// if the config.source is a url
+			if(sourceOnWeb){
+				// redirect to the source domain with the same path
+				request = request.url.replace(origin, sourceOnWeb.origin);
+			} else {
+				// if the config.source is a file, redirect to the local file
+				request = request.url.replace(`https://`, `eyas://`);
+				bypassCustomProtocolHandlers = false;
+			}
 		}
 
-		// otherwise, allow the request to pass through
-		return ses.fetch(request, { bypassCustomProtocolHandlers: true });
+		// make the request
+		return ses.fetch(request, { bypassCustomProtocolHandlers });
 	});
 }
 
@@ -1077,7 +1115,7 @@ function handleRedirects() {
 function clearCache() {
 	// clear all caches for the session
 	$appWindow.webContents.session.clearCache(); // web cache
-	$appWindow.webContents.session.clearStorageData(); // cookies, filesystem, indexdb, localstorage, shadercache, websql, serviceworkers, cachestorage
+	$appWindow.webContents.session.clearStorageData(); // cookies, filesystem, indexed db, local storage, shader cache, web sql, service workers, cache storage
 
 	// update the menu to reflect the cache changes
 	setMenu();
@@ -1089,7 +1127,7 @@ async function startAFreshTest() {
 	const semver = require(`semver`);
 
 	// set the available viewports
-	$allViewports = [...config().viewports, ...$defaultViewports];
+	$allViewports = [...$config.viewports, ...$defaultViewports];
 
 	// reset the current viewport to the first in the list
 	$currentViewport[0] = $allViewports[0].width;
@@ -1100,18 +1138,25 @@ async function startAFreshTest() {
 	setMenu();
 
 	// reset the path to the test source
-	$paths.testSrc = config().source;
+	$paths.testSrc = $config.source;
+
+	// check if $config.source is a url
+	const sourceOnWeb = parseURL($config.source);
+	if(sourceOnWeb){
+		$testDomainRaw = $config.source;
+		$testDomain = sourceOnWeb.toString();
+	}
 
 	// if there are no custom domains defined
-	if (!config().domains.length) {
+	if (!$config.domains.length) {
 		// load the test using the default domain
 		navigate();
 	}
 
 	// if the user has a single custom domain
-	if (config().domains.length === 1) {
+	if ($config.domains.length === 1) {
 		// update the default domain
-		$testDomainRaw = config().domains[0].url;
+		$testDomainRaw = $config.domains[0].url;
 		$testDomain = parseURL($testDomainRaw).toString();
 
 		// directly load the user's test using the new default domain
@@ -1119,15 +1164,15 @@ async function startAFreshTest() {
 	}
 
 	// if the user has multiple custom domains
-	if (config().domains.length > 1) {
+	if ($config.domains.length > 1) {
 		// display the environment chooser modal
-		uiEvent(`show-environment-modal`, config().domains);
+		uiEvent(`show-environment-modal`, $config.domains);
 	}
 
 	// if the runner is older than the version that built the test
-	if(config().meta.eyas && semver.lt(_appVersion, config().meta.eyas)){
+	if($config.meta.eyas && semver.lt(_appVersion, $config.meta.eyas)){
 		// send request to the UI layer
-		uiEvent(`show-version-mismatch-modal`, _appVersion, config().meta.eyas);
+		uiEvent(`show-version-mismatch-modal`, _appVersion, $config.meta.eyas);
 	}
 }
 

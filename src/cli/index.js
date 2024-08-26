@@ -27,16 +27,23 @@ const actions = {
 		command: `preview`,
 		action: runCommand_preview
 	},
+	web: {
+		enabled: true,
+		label: `WEB: Generate "eyas.json" for eyas:// links`,
+		description: `For use with installed versions of Eyas`,
+		command: `web`,
+		action: runCommand_web
+	},
 	db: {
 		enabled: true,
-		label: `Generate an *.eyas file (smaller)`,
-		description: `For use with installed versions of Eyas`,
+		label: `DB: Build "*.eyas" file for Eyas users`,
+		description: `Share with users who have Eyas installed`,
 		command: `db`,
 		action: runCommand_db
 	},
 	bundle: {
 		enabled: true,
-		label: `Generate shareable zip of *.eyas file and runner (larger)`,
+		label: `ZIP: Bundled "*.zip" file for non-Eyas users that includes runner`,
 		description: `Does not need Eyas installed to run the test`,
 		command: `bundle`,
 		action: runCommand_bundle
@@ -64,6 +71,7 @@ const paths = {
 	dist: roots.eyasDist,
 	build: roots.eyasBuild,
 	configLoader: path.join(roots.dist, names.scripts, `get-config.js`),
+	constants: path.join(roots.dist, names.scripts, `constants.js`),
 	configDest: path.join(roots.eyasBuild, `.eyas.config.js`),
 	testDest: path.join(roots.eyasBuild, TEST_SOURCE),
 	eyasApp: path.join(roots.eyasBuild, `index.js`),
@@ -86,16 +94,17 @@ const paths = {
 	linuxRunnerSrc: path.join(roots.dist, `runners`, `${names.runner}.AppImage`),
 	linuxRunnerDest: path.join(roots.eyasBuild, `${names.runner}.AppImage`)
 };
+const { LOAD_TYPES } = require(paths.constants);
+let config = null;
 
 // set mode (disabled for now)
 // actions.previewDev.enabled = isDev;
 
-// load the user's config
-const parseConfig = require(paths.configLoader);
-const config = parseConfig(null, false);
-
 // Entry Point
 (async () => {
+	// load the user's config
+	config = await require(paths.configLoader)(LOAD_TYPES.CLI);
+
 	// ERROR CHECK: capture times when the user's platform isn't supported
 	if (!config.outputs.windows && !config.outputs.mac && !config.outputs.linux) {
 		userWarn(`⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️`);
@@ -222,30 +231,32 @@ async function createBuildFolder() {
 	await fs.copy(config.source, paths.testDest);
 
 	// write the config file
-	const data = getModifiedConfig();
+	const data = getOutputConfig().asModule;
 	await fs.outputFile(paths.configDest, data);
 }
 
 // the config that is bundled with the build
-function getModifiedConfig() {
-	// get the version from the module's package.json
-	const { version } = require(paths.packageJsonModuleSrc);
-
+function getOutputConfig() {
 	// create a new config file with the updated values in the build folder
 	userLog(`Creating snapshot of config...`);
 	const configCopy = JSON.parse(JSON.stringify(config));
 
-	// delete the source property
+	// delete the properties that aren't needed in the build
 	delete configCopy.source;
-
-	// wrap the config in a module export
-	const data = `module.exports = ${JSON.stringify(configCopy)}`;
+	delete configCopy.outputs;
 
 	// let the builder know when this build expires
 	userLog(`Set build expirations to: ${configCopy.meta.expires.toLocaleString()}`);
 
-	// return the updated config data
-	return data;
+	// convert the config to a string
+	const stringified = JSON.stringify(configCopy);
+
+	// return the updated config in the several formats
+	return {
+		object: configCopy,
+		asJson: stringified,
+		asModule: `module.exports = ${stringified}`
+	};
 }
 
 // launch a preview of the consumers application
@@ -291,7 +302,7 @@ async function runCommand_db() {
 	const asar = require(`@electron/asar`);
 
 	// get the test's config and prepare it for the build
-	const modifiedConfig = getModifiedConfig();
+	const modifiedConfig = getOutputConfig().asModule;
 
 	// reset the output directory
 	await fs.emptyDir(roots.eyasDist);
@@ -324,6 +335,21 @@ async function runCommand_db() {
 	userLog(`🎉 File created -> ${artifactName}`);
 }
 
+// generate a web output for distribution
+async function runCommand_web() {
+	const _fs = require(`fs-extra`);
+	const artifactName = `eyas.json`;
+
+	// get the test's config as JSON, and prepare it for the build
+	const modifiedConfig = getOutputConfig().asJson;
+
+	// save the modifiedConfig to the source/ directory
+	await _fs.writeFile(path.join(config.source, artifactName), modifiedConfig);
+
+	userLog(``);
+	userLog(`🎉 File created -> ${artifactName}`);
+}
+
 // generate a zipped output for distribution
 async function runCommand_bundle() {
 	const fs = require(`fs-extra`);
@@ -338,7 +364,7 @@ async function runCommand_bundle() {
 	}
 
 	// get the test's config and prepare it for the build
-	const modifiedConfig = getModifiedConfig();
+	const modifiedConfig = getOutputConfig().asModule;
 
 	// setup the platform output
 	const platforms = [
