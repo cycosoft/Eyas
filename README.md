@@ -108,7 +108,7 @@ npm run build-my-project && npx eyas bundle
 
 - `web`: Outputs `eyas.json` to your `config.source` directory for deployment to a web server
   - Requires end user to have Eyas [installed](https://github.com/cycosoft/Eyas/releases)
-  - Share a link to directory or the file as `eyas://branch-42.example.com`.
+  - Share a link to _directory_ hosting the file as `eyas://branch-42.example.com/test`. Path cannot contain `eyas.json`, as Eyas will assume the path is a directory.
   - Requires a secure web server to host.
   - Recommended way to best control access to your tests. (e.g. delete source or require VPN)
 - `db`: Creates an `*.eyas` file of project production output + test config

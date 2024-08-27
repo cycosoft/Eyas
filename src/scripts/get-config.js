@@ -88,6 +88,9 @@ async function getConfigViaUrl(path) {
 	// convert the eyas protocol to https if it's not already
 	let url = path.replace(`eyas://`, `https://`);
 
+	// trim any trailing slashes
+	url = url.replace(/\/+$/, ``);
+
 	// convert the path to a URL object
 	url = new URL(url);
 
@@ -96,11 +99,11 @@ async function getConfigViaUrl(path) {
 		throw new Error(`WEB: Invalid URL: ${url}`);
 	}
 
-	// if the path name does not end in `.json`
-	if (!url.pathname.endsWith(`.json`)) {
-		// update the url to look for the default config at the url root
-		url.pathname = defaultConfigName;
-	}
+	// assume the url is a directory and cache for later use
+	const urlAndPathOnly = url.toString();
+
+	// append the default config name
+	url.pathname = `${url.pathname}/${defaultConfigName}`;
 
 	// fetch the config file from the parsed url
 	const loadedConfig = await fetch(url.toString())
@@ -109,7 +112,7 @@ async function getConfigViaUrl(path) {
 		|| {}; // if the fetch failed, return an empty config
 
 	// update the source path to the test
-	loadedConfig.source = url.origin;
+	loadedConfig.source = urlAndPathOnly;
 
 	// send back the data
 	return loadedConfig;
