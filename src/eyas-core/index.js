@@ -1098,9 +1098,11 @@ function setupEyasNetworkHandlers() {
 			// if the config.source is a url
 			if(sourceOnWeb){
 				// redirect to the source domain with the same path
-				request = request.url.replace(origin, sourceOnWeb.origin);
+				request = sourceOnWeb.origin
+					+ (sourceOnWeb.pathname + pathname)
+						.replaceAll(`//`, `/`);
 			} else {
-				// if the config.source is a file, redirect to the local file
+				// otherwise the config.source is a file, look locally
 				request = request.url.replace(`https://`, `eyas://`);
 				bypassCustomProtocolHandlers = false;
 			}
