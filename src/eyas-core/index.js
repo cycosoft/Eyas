@@ -1098,7 +1098,9 @@ function setupEyasNetworkHandlers() {
 			// if the config.source is a url
 			if(sourceOnWeb){
 				// redirect to the source domain with the same path
-				request = (sourceOnWeb.toString() + pathname).replaceAll(`//`, `/`);
+				request = sourceOnWeb.origin
+					+ (sourceOnWeb.pathname + pathname)
+						.replaceAll(`//`, `/`);
 			} else {
 				// otherwise the config.source is a file, look locally
 				request = request.url.replace(`https://`, `eyas://`);
