@@ -1,6 +1,7 @@
 # v3.5.0
 
 - Added support for loading tests via the web using a custom protocol. An `eyas.json` will be created in the source directory to deploy with your changes. Share tests with users by swapping the https protocol for eyas. (e.g. `https://branch-42.example.com/test` becomes `eyas://branch-42.example.com/test`). This will open Eyas and load the test.
+- Added a demo at [eyas://cycosoft.com/eyas-demo](eyas://cycosoft.com/eyas-demo) to showcase the new feature.
 
 # v3.4.1
 
