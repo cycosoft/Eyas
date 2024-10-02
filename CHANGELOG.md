@@ -1,7 +1,9 @@
 # v3.5.0
 
-- Added support for loading tests via the web using a custom protocol. An `eyas.json` will be created in the source directory to deploy with your changes. Share tests with users by swapping the https protocol for eyas. (e.g. `https://branch-42.example.com/test` becomes `eyas://branch-42.example.com/test`). This will open Eyas and load the test.
+- Added support for loading tests via the web using a custom protocol. An `eyas.json` will be created in the source directory to deploy with your build. Share tests with users by swapping the https protocol for eyas. (e.g. `https://branch-42.example.com/test` becomes `eyas://branch-42.example.com/test`). This will open Eyas and load the test.
 - Added a demo at [eyas://demo.eyas.dev](eyas://demo.eyas.dev) to showcase the new feature.
+- Created [launch.eyas.dev](https://launch.eyas.dev) to allow users to open tests in Eyas via a shareable URL. An example using the above demo would be [https://launch.eyas.dev/demo.eyas.dev](https://launch.eyas.dev/demo.eyas.dev).
+- Fix loading resources that use other non-active test domains in an Eyas.
 
 # v3.4.1
 
