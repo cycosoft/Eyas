@@ -1090,8 +1090,8 @@ function setupEyasNetworkHandlers() {
 		const { hostname, pathname, origin } = parseURL(request.url);
 		let bypassCustomProtocolHandlers = true;
 
-		// if the hostname matches a given custom domain
-		if($config.domains.some(domain => hostname === parseURL(domain.url).hostname)){
+		// if the request's hostname matches the test domain
+		if(hostname === parseURL($testDomain).hostname) {
 			// check if the config.source is a valid url
 			const sourceOnWeb = parseURL($config.source);
 
