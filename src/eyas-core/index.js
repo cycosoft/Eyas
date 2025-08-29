@@ -2,12 +2,6 @@
 
 'use strict';
 
-// testing harness
-// const $isTest = process.argv.includes(`--test`);
-// if ($isTest) {
-// 	require(`wdio-electron-service/main`);
-// }
-
 // global imports _
 const { app: _electronCore, BrowserWindow: _electronWindow, } = require(`electron`);
 const _path = require(`path`);
