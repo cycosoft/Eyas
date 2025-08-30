@@ -1,6 +1,7 @@
 # v3.5.1
 
 - Update dependencies
+- Fix loading config files when the consumer is type module. Add an alert on how to fix.
 
 # v3.5.0
 
