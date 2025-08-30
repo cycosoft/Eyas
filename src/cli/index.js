@@ -136,31 +136,30 @@ let config = null;
 // ask the user what they want to do
 function askUser() {
 	// import
-	const inquirer = require(`inquirer`);
-
+	const prompts = require(`prompts`);
 	// add a space from the previous output
 	userLog();
 
 	// ask the user what they want to do
-	inquirer
-		.prompt([
-			{
-				type: `list`,
-				name: `action`,
-				message: `What would you like to do?`,
-				choices: Object.values(actions)
-					.filter(action => action.enabled)
-					.map(action => {
-						return {
-							name: action.label,
-							value: action.command,
-							short: action.description
-						};
-					})
-			}
-		])
-		// run the selected action
-		.then(({ action }) => actions[action].action());
+	prompts([
+		{
+			type: `select`,
+			name: `action`,
+			message: `What would you like to do?`,
+			choices: Object.values(actions)
+				.filter(action => action.enabled)
+				.map(action => {
+					return {
+						title: action.label,
+						value: action.command,
+						description: action.description
+					};
+				}),
+			initial: 1
+		}
+	])
+	// run the selected action
+	.then(({ action }) => actions[action].action());
 }
 
 // setup the CLI arguments
