@@ -143,7 +143,7 @@ function askUser() {
 	// ask the user what they want to do
 	prompts([
 		{
-			type: `list`,
+			type: `select`,
 			name: `action`,
 			message: `What would you like to do?`,
 			choices: Object.values(actions)
@@ -154,7 +154,8 @@ function askUser() {
 						value: action.command,
 						description: action.description
 					};
-				})
+				}),
+			initial: 1
 		}
 	])
 	// run the selected action
