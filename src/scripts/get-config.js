@@ -166,7 +166,9 @@ function getConfigViaCli() {
 		try {
 			loadedConfig = require(cjsConfigPath);
 		} catch (error) {
-			// do nothing
+			// alert the user about potential issues
+			console.warn(`CLI: Error loading config: ${error.message}`);
+			console.warn(`CLI: Please rename ".eyas.config.js" to ".eyas.config.cjs" if you experience issues`);
 		}
 	}
 
