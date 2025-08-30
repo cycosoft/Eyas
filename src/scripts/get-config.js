@@ -168,7 +168,7 @@ function getConfigViaCli() {
 		} catch (error) {
 			// alert the user about potential issues
 			console.warn(`CLI: Error loading config: ${error.message}`);
-			console.warn(`CLI: Please rename ".eyas.config.js" to ".eyas.config.cjs" if you experience issues`);
+			console.warn(`⚠️ CLI: Please rename ".eyas.config.js" to ".eyas.config.cjs"`);
 		}
 	}
 
