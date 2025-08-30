@@ -10,7 +10,7 @@ const roots = require(`./get-roots.js`);
 const { LOAD_TYPES, EXTENSION } = require(`./constants.js`);
 
 // setup
-const configFileName = `.eyas.config.js`;
+const baseConfigName = `.eyas.config`;
 
 /*
 Retrieves the configuration for the test by one of the following methods
@@ -143,15 +143,42 @@ function getConfigViaRoot() {
 
 // get the config via the CLI
 function getConfigViaCli() {
+	// imports
+	const _fs = require(`fs`);
+
 	// setup
 	let loadedConfig = null;
+	const consumerPackageJsonPath = _path.join(roots.config, `package.json`);
+	const cjsConfigPath = _path.join(roots.config, `${baseConfigName}.cjs`);
+	const jsConfigPath = _path.join(roots.config, `${baseConfigName}.js`);
+	let consumerPackageJson = null;
 
-	// attempt to load the test config directly
+	// first load the consumer package.json
 	try {
-		loadedConfig = require(_path.join(roots.config, configFileName));
+		consumerPackageJson = require(consumerPackageJsonPath);
 	} catch (error) {
-		console.error(`CLI: Error loading config: ${error.message}`);
-		loadedConfig = {};
+		// do nothing
+	}
+
+	// if the consumer is a module
+	if(consumerPackageJson?.type === `module`) {
+		// attempt to load a *.cjs config
+		try {
+			loadedConfig = require(cjsConfigPath);
+		} catch (error) {
+			// do nothing
+		}
+	}
+
+	// if a cjs config was not loaded
+	if(!loadedConfig) {
+		// attempt to load the *.js config
+		try {
+			loadedConfig = require(jsConfigPath);
+		} catch (error) {
+			console.error(`CLI: Error loading config: ${error.message}`);
+			loadedConfig = {};
+		}
 	}
 
 	// if a source was provided
@@ -184,7 +211,7 @@ function getConfigFromAsar(path) {
 
 	// attempt to load the test config
 	try {
-		loadedConfig = require(_path.join(tempPath, configFileName));
+		loadedConfig = require(_path.join(tempPath, `${baseConfigName}.js`));
 	} catch (error) {
 		console.error(`FILE: Error loading config: ${error.message}`);
 		loadedConfig = {};
