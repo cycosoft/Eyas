@@ -26,7 +26,6 @@
     "dev:win:installer": "npm i && npm run depcheck && cross-env NODE_ENV=dev npm run compile:win:installer",
     "dev:ui": "npm i && npm run depcheck && vite --config src/eyas-interface/app/.vite.config.ui.js --open",
     "dev:fixes": "sudo xattr -r -d com.apple.quarantine ./",
-    "test:build": "npm run compile:prep && npm run compile:ui && npm run compile:module && npm run test",
     "depcheck": "npm-check-updates --interactive --format group",
     "_____________COMPILE_____________": "",
     "compile:prep": "node src/scripts/compile-prep.js",
