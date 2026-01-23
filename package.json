@@ -70,7 +70,7 @@
     "bump:minor": "npm version minor && git push && git push --tags",
     "bump:beta": "npm version prerelease --preid beta && git push && git push --tags",
     "_____________TEST_______________": "",
-    "test:e2e:cli": "playwright test"
+    "test:e2e": "playwright test"
   },
   "license": "MIT",
   "keywords": [
