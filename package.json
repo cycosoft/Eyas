@@ -29,6 +29,8 @@
     "update": "npm-check-updates --interactive --format group --cooldown 7",
     "_____________TEST_______________": "",
     "test:e2e": "playwright test",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
     "_____________COMPILE_____________": "",
     "compile:prep": "node src/scripts/compile-prep.js",
     "compile:mac:copy": "mv ./.runners/mac-arm64/Eyas.app ./.runners/mac-arm64/Start.app && ditto -c -k --sequesterRsrc --keepParent ./.runners/mac-arm64/Start.app ./dist/runners/Start.app.zip",
@@ -127,7 +129,8 @@
     "npm-check-updates": "^19.3.1",
     "sass": "^1.97.3",
     "vite": "^7.3.1",
-    "vite-plugin-vuetify": "^2.1.3"
+    "vite-plugin-vuetify": "^2.1.3",
+    "vitest": "^2.1.9"
   },
   "overrides": {
     "package-json": ">6.5.0 <8.0.0",
