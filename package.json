@@ -27,6 +27,8 @@
     "dev:ui": "npm i && npm run update && vite --config src/eyas-interface/app/.vite.config.ui.js --open",
     "dev:fixes": "sudo xattr -r -d com.apple.quarantine ./",
     "update": "npm-check-updates --interactive --format group --cooldown 7",
+    "_____________TEST_______________": "",
+    "test:e2e": "playwright test",
     "_____________COMPILE_____________": "",
     "compile:prep": "node src/scripts/compile-prep.js",
     "compile:mac:copy": "mv ./.runners/mac-arm64/Eyas.app ./.runners/mac-arm64/Start.app && ditto -c -k --sequesterRsrc --keepParent ./.runners/mac-arm64/Start.app ./dist/runners/Start.app.zip",
@@ -68,9 +70,7 @@
     "deploy": "npm run ENSURE_VERSION_SET && npm publish",
     "bump:patch": "npm version patch && git push && git push --tags",
     "bump:minor": "npm version minor && git push && git push --tags",
-    "bump:beta": "npm version prerelease --preid beta && git push && git push --tags",
-    "_____________TEST_______________": "",
-    "test:e2e": "playwright test"
+    "bump:beta": "npm version prerelease --preid beta && git push && git push --tags"
   },
   "license": "MIT",
   "keywords": [
