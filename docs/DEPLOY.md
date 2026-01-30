@@ -16,6 +16,4 @@
 - Add to release draft `.runners/EyasInstaller.pkg`
 - compile, sign, notarize .app -> `npm run compile:mac`
 - Place .exe to `dist/runners/`
-- Final Test - Module in another project -> `npm pack`
-- Deploy to NPM -> `npm publish`
 - Publish GitHub release
