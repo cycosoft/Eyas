@@ -1,6 +1,6 @@
 {
   "name": "@cycosoft/eyas",
-  "version": "3.5.1",
+  "version": "4.0.0",
   "description": "Simplified Hands-on Testing for Web Applications",
   "main": "./index.js",
   "packageName": "Eyas",
@@ -22,12 +22,11 @@
     "dev:module": "npm run compile:module && electron .build/index.js --dev --trace-warnings",
     "dev:mac:cli": "npm i && npm run update && cross-env NODE_ENV=dev npm run compile:mac:no-sign && cross-env NODE_ENV=dev node dist/cli/index.js",
     "dev:mac:installer": "npm i && npm run update && cross-env NODE_ENV=dev npm run compile:mac:installer:no-sign",
-    "dev:win:cli": "npm i && npm run update && cross-env NODE_ENV=dev npm run compile:win:module && cross-env NODE_ENV=dev node dist/cli/index.js",
     "dev:win:installer": "npm i && npm run update && cross-env NODE_ENV=dev npm run compile:win:installer",
     "dev:ui": "npm i && npm run update && vite --config src/eyas-interface/app/.vite.config.ui.js --open",
     "dev:fixes": "sudo xattr -r -d com.apple.quarantine ./",
     "_____________TEST_______________": "",
-    "check": "npm run test:electron:unit && npm run test:electron:e2e && npm run test:interface:unit && npm run update",
+    "check": "npm run test:interface:unit && npm run test:electron:unit && npm run test:electron:e2e && npm run update",
     "test:electron:e2e": "playwright test",
     "test:electron:unit": "vitest run --config vitest.config.electron.js",
     "test:interface:unit": "vitest run --config vitest.config.interface.js",
@@ -98,7 +97,7 @@
     "commander": "^12.1.0",
     "date-fns": "^4.1.0",
     "electron": "^32.1.2",
-    "electron-app-universal-protocol-client": "^1.3.0",
+    "electron-app-universal-protocol-client": "^2.1.1",
     "electron-builder": "^26.4.0",
     "express": "^4.21.0",
     "extract-zip": "^2.0.1",
@@ -120,7 +119,7 @@
     "@mdi/font": "^7.4.47",
     "@playwright/test": "^1.58.0",
     "@rollup/plugin-terser": "^0.4.4",
-    "@vitejs/plugin-vue": "^5.2.4",
+    "@vitejs/plugin-vue": "^6.0.3",
     "@vue/test-utils": "^2.4.6",
     "cross-env": "^7.0.3",
     "dotenv": "^16.4.5",
@@ -133,7 +132,7 @@
     "sass": "^1.97.3",
     "vite": "^7.3.1",
     "vite-plugin-vuetify": "^2.1.3",
-    "vitest": "^2.1.9"
+    "vitest": "^4.0.18"
   },
   "overrides": {
     "package-json": ">6.5.0 <8.0.0",

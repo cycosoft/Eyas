@@ -15,7 +15,8 @@ export default {
 					'get-config': resolve(__dirname, `src/scripts/get-config.js`),
 					'constants': resolve(__dirname, `src/scripts/constants.js`),
 					'event-bridge': resolve(__dirname, `src/scripts/event-bridge.js`),
-					'test-preload': resolve(__dirname, `src/scripts/test-preload.js`)
+					'test-preload': resolve(__dirname, `src/scripts/test-preload.js`),
+					'parse-url': resolve(__dirname, `src/scripts/parse-url.js`)
 				}
 			},
 

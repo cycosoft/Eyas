@@ -1,3 +1,9 @@
+# v4.0.0
+
+- Update some dependencies
+- Implement basic test coverage
+- Bump version to account for recent CLI update
+
 # v3.5.1
 
 - Update dependencies

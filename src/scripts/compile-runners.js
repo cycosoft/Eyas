@@ -4,8 +4,9 @@
 
 'use strict';
 
-require('dotenv').config({ path: [`.env.local`, `.env`] })
+require('dotenv').config({ path: [`.env.local`, `.env`] });
 const path = require(`path`);
+const { getElectronBuilderConfig } = require(`./electron-builder-config.js`);
 const isDev = process.env.NODE_ENV === `dev`;
 const isInstaller = process.env.PUBLISH_TYPE === `installer`;
 const isMac = process.platform === `darwin`;
@@ -40,63 +41,22 @@ const paths = {
 	const unsignedAppend = isInstaller && isMac ? `-unsigned` : ``;
 	const runnerName = `Eyas${installerAppend}${unsignedAppend}`;
 
+	const config = getElectronBuilderConfig({
+		isDev,
+		isInstaller,
+		isMac,
+		isWin,
+		paths,
+		runnerName,
+		appleTeamId: process.env.APPLE_TEAM_ID || ``,
+		buildRoot,
+		runnersRoot,
+		provisioningProfile: process.env.PROVISIONING_PROFILE_PATH || ``
+	});
+
 	const builtFiles = await builder.build({
 		targets: targets.length ? builder.createTargets(targets) : null,
-		config: {
-			appId: `com.cycosoft.eyas`,
-			productName: `Eyas`,
-			// eslint-disable-next-line quotes
-			artifactName: runnerName + '.${ext}',
-			copyright: `Copyright © 2023 Cycosoft, LLC`,
-			asarUnpack: [`resources/**`],
-			directories: {
-				app: buildRoot,
-				output: runnersRoot
-			},
-			compression: isDev ? `store` : `maximum`, // `store` | `normal` | `maximum`
-			removePackageScripts: true,
-			removePackageKeywords: true,
-			mac: {
-				target: isInstaller ? `pkg` : `dir`,
-				category: `public.app-category.developer-tools`,
-				icon: paths.icon,
-				provisioningProfile: process.env.PROVISIONING_PROFILE_PATH || ``,
-				...isDev ? { identity: null } : {}, // don't sign in dev
-				notarize: { teamId: process.env.APPLE_TEAM_ID || `` }
-			},
-			win: {
-				target: isInstaller ? `msi` : `portable`,
-				icon: paths.icon,
-				sign: isDev ? null : paths.codesignWin
-			},
-			linux: {
-				target: `AppImage`,
-				icon: paths.icon,
-				category: `Utility`
-			},
-			msi: {
-				oneClick: false, // because there is no feedback to users otherwise
-				runAfterFinish: false, // this gives the user an option, but we want mandatory
-				createDesktopShortcut: true // so the user knows install process finished
-			},
-			pkg: {
-				isRelocatable: false // always install in /Applications
-			},
-			fileAssociations: [
-				{
-					ext: `eyas`,
-					name: `eyas-db`,
-					icon: isWin ? paths.iconDbWin : paths.iconDbMac
-				}
-			],
-			protocols: [
-				{
-					name: `Eyas`,
-					schemes: [`eyas`],
-					role: `Viewer`
-				}
-			]
-		}
+		config
 	});
 
 	// copy just the final windows executables to the dist folder

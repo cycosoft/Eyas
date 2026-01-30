@@ -36,6 +36,7 @@ const $defaultViewports = [
 let $allViewports = [];
 const $currentViewport = [];
 const $roots = require(_path.join(__dirname, `scripts`, `get-roots.js`));
+const { parseURL } = require(_path.join(__dirname, `scripts`, `parse-url.js`));
 const $paths = {
 	icon: _path.join($roots.eyas, `eyas-assets`, `eyas-logo.png`),
 	configLoader: _path.join($roots.eyas, `scripts`, `get-config.js`),
@@ -958,9 +959,6 @@ function navigate(path, openInBrowser) {
 	// ensure the UI is closed so the user can interact with the content
 	toggleEyasUI(false);
 }
-
-// format the url for electron consumption
-const { parseURL } = require(_path.join(__dirname, `scripts`, `parse-url.js`));
 
 // register a custom protocol for loading local test files and the UI
 function registerInternalProtocols() {
