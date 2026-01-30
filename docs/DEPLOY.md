@@ -1,7 +1,6 @@
 # Pre-Deployment Tests
 
 - Test `npm run dev` that app loads
-- Test `npm run dev:win:cli` that portable bundle loads
 - Test `npm run dev:win:installer` that installer loads a db file
 - Test that version comparator works
 
