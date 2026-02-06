@@ -121,7 +121,7 @@
     "@rollup/plugin-terser": "^0.4.4",
     "@vitejs/plugin-vue": "^6.0.3",
     "@vue/test-utils": "^2.4.6",
-    "cross-env": "^7.0.3",
+    "cross-env": "^10.1.0",
     "dotenv": "^16.4.5",
     "dotenv-cli": "^7.4.2",
     "electron-vite": "^5.0.0",
