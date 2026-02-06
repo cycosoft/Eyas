@@ -149,7 +149,7 @@ initElectronCore();
 // start the core of the application
 function initElectronCore() {
 	// imports
-	const _deepLinking = require(`electron-app-universal-protocol-client`).default;
+	// const _deepLinking = require(`electron-app-universal-protocol-client`).default;
 
 	// register the custom protocol for OS deep linking and adjust based on context
 	if (process.defaultApp) {
@@ -186,29 +186,29 @@ function initElectronCore() {
 	});
 
 	// detect if the app was opened with a custom link
-	_deepLinking.on(`request`, async path => {
-		// if the $appWindow was already initialized
-		if($appWindow){
-			// load the new config
-			$config = await require($paths.configLoader)(LOAD_TYPES.WEB, path);
+	// _deepLinking.on(`request`, async path => {
+	// 	// if the $appWindow was already initialized
+	// 	if($appWindow){
+	// 		// load the new config
+	// 		$config = await require($paths.configLoader)(LOAD_TYPES.WEB, path);
 
-			// start a new test based on the newly loaded config
-			startAFreshTest();
-		} else {
-			// define the config to load when the app is ready
-			$configToLoad = {
-				method: LOAD_TYPES.WEB,
-				path
-			};
-		}
-	});
+	// 		// start a new test based on the newly loaded config
+	// 		startAFreshTest();
+	// 	} else {
+	// 		// define the config to load when the app is ready
+	// 		$configToLoad = {
+	// 			method: LOAD_TYPES.WEB,
+	// 			path
+	// 		};
+	// 	}
+	// });
 
 	// start listening for requests to the custom protocol
 	// NOTE: must be after _deepLinking.on()
-	_deepLinking.initialize({
-		protocol: `eyas`,
-		mode: $isDev ? `development` : `production`,
-	});
+	// _deepLinking.initialize({
+	// 	protocol: `eyas`,
+	// 	mode: $isDev ? `development` : `production`,
+	// });
 
 	// add support for eyas:// protocol
 	registerInternalProtocols();
