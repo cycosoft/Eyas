@@ -681,6 +681,8 @@ function setupAutoUpdater() {
 	const { autoUpdater } = require(`electron-updater`);
 	const { dialog } = require(`electron`);
 
+	autoUpdater.forceDevUpdateConfig = true;
+
 	autoUpdater.setFeedURL({
 		provider: `github`,
 		owner: `cycosoft`,
