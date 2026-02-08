@@ -237,9 +237,7 @@ function initElectronCore() {
 			// start the UI layer
 			initElectronUi();
 
-			if (_electronCore.isPackaged && !$isDev) {
-				setupAutoUpdater();
-			}
+			setupAutoUpdater();
 
 			// if Electron receives the `activate` event
 			_electronCore.on(`activate`, () => {
