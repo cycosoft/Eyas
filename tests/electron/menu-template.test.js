@@ -90,4 +90,32 @@ describe(`buildMenuTemplate`, () => {
 		const last = template[template.length - 1];
 		expect(last.label).not.toMatch(/Restart to install|Update available/i);
 	});
+
+	const updateIcon = `⬆️`;
+
+	test(`when updateStatus is idle, Check for updates label includes update icon`, () => {
+		const ctx = { ...minimalContext, updateStatus: `idle` };
+		const template = buildMenuTemplate(ctx);
+		const submenu = template[0].submenu;
+		const checkItem = submenu.find(item => item.label && item.label.includes(`Check for updates`));
+		expect(checkItem).toBeDefined();
+		expect(checkItem.label).toContain(updateIcon);
+	});
+
+	test(`when updateStatus is downloading, Downloading update label includes update icon`, () => {
+		const ctx = { ...minimalContext, updateStatus: `downloading` };
+		const template = buildMenuTemplate(ctx);
+		const submenu = template[0].submenu;
+		const item = submenu.find(i => i.label && i.label.toLowerCase().includes(`download`));
+		expect(item).toBeDefined();
+		expect(item.label).toContain(updateIcon);
+	});
+
+	test(`when updateStatus is downloaded, Restart to install top-level item label includes update icon`, () => {
+		const ctx = { ...minimalContext, updateStatus: `downloaded` };
+		const template = buildMenuTemplate(ctx);
+		const last = template[template.length - 1];
+		expect(last.label).toMatch(/Update available|Restart to install/i);
+		expect(last.label).toContain(updateIcon);
+	});
 });
