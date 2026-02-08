@@ -11,5 +11,9 @@
 - Generate .msi -> `npm run compile:win:installer`
 - Add to release draft `.runners/EyasInstaller.msi`
 - Generate .pkg -> `npm run compile:mac:installer`
-- Add to release draft `.runners/EyasInstaller.pkg`
+- Add to release draft:
+  - `.runners/EyasInstaller.pkg`
+  - macOS updater zip (e.g. `.runners/mac-arm64/Eyas-<version>-mac-arm64.zip` or equivalent from build output)
+  - `latest.yml` (from Windows build output, e.g. `.runners/` or platform subdir)
+  - `latest-mac.yml` (from macOS build output, e.g. `.runners/mac-arm64/` or equivalent)
 - Publish GitHub release
