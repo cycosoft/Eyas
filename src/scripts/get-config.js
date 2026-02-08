@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-/* global process */
-
 'use strict';
 
 // imports
@@ -153,7 +151,7 @@ function getConfigViaCli() {
 	// first load the consumer package.json
 	try {
 		consumerPackageJson = require(consumerPackageJsonPath);
-	} catch (error) {
+	} catch {
 		// do nothing
 	}
 

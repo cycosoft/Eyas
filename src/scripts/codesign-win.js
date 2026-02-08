@@ -35,13 +35,9 @@ async function doSign (file, hash, owner) {
 		`"${file}"`
 	];
 
-	try {
-		const { stdout } = await exec(args.join(` `));
-		if (Verbose) {
-			console.log(stdout);
-		}
-	} catch (error) {
-		throw error;
+	const { stdout } = await exec(args.join(` `));
+	if (Verbose) {
+		console.log(stdout);
 	}
 }
 

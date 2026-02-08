@@ -1,3 +1,5 @@
+/* global process */
+
 const { defineConfig } = require(`@playwright/test`);
 
 module.exports = defineConfig({

@@ -441,7 +441,6 @@ async function trackEvent(event, extraData) {
 
 	// imports
 	const Mixpanel = require(`mixpanel`);
-	const crypto = require(`crypto`);
 
 	// if mixpanel has not been initialized
 	if (!trackEvent.mixpanel) {
@@ -1005,7 +1004,7 @@ function disableNetworkRequest(url) {
 // handle requests to the custom protocol
 function setupEyasNetworkHandlers() {
 	// imports
-	const { protocol, session, net } = require(`electron`);
+	const { session } = require(`electron`);
 	const ses = session.fromPartition(`persist:${$config.meta.testId}`);
 
 	// use the "ui" protocol to load the Eyas UI layer
@@ -1067,7 +1066,7 @@ function setupEyasNetworkHandlers() {
 	// listen for requests to the specified domains and redirect to the custom protocol
 	ses.protocol.handle(`https`, async request => {
 		// setup
-		const { hostname, pathname, origin } = parseURL(request.url);
+		const { hostname, pathname } = parseURL(request.url);
 		let bypassCustomProtocolHandlers = true;
 
 		// if the request's hostname matches the test domain

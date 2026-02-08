@@ -1,10 +1,8 @@
 #!/usr/bin/env node
 
-/* global process */
-
 'use strict';
 
-require('dotenv').config({ path: [`.env.local`, `.env`] });
+require(`dotenv`).config({ path: [`.env.local`, `.env`] });
 const path = require(`path`);
 const { getElectronBuilderConfig } = require(`./electron-builder-config.js`);
 const isDev = process.env.NODE_ENV === `dev`;

@@ -10,6 +10,7 @@ export default [
 		languageOptions: {
 			globals: {
 				...globals.commonjs,
+				...globals.browser,
 				// ...globals.es2021,
 				eyas: `readonly`
 			},
@@ -46,6 +47,9 @@ export default [
 	{
 		files: [`**/*.vue`],
 		languageOptions: {
+			globals: {
+				...globals.browser
+			},
 			parser: vueEslintParser,
 			parserOptions: {
 				ecmaVersion: `latest`,
