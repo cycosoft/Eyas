@@ -86,3 +86,49 @@ test('app launches and displays UI', async () => {
 	// Otherwise it may show the modal, but the test has already verified the app launched
 	await electronApp.close();
 });
+
+test('app launches with eyas:// URL in argv (start-up request path)', async () => {
+	const electronPath = require('electron');
+	const mainPath = path.join(__dirname, '../../.build/index.js');
+
+	const electronApp = await electron.launch({
+		executablePath: electronPath,
+		args: [mainPath, '--dev', 'eyas://example.com/test'],
+		timeout: 30000
+	});
+
+	const window = await electronApp.firstWindow();
+	await window.waitForLoadState('domcontentloaded');
+
+	expect(electronApp.process()).not.toBeNull();
+	expect(electronApp.process().pid).toBeGreaterThan(0);
+	expect(window).not.toBeNull();
+
+	await new Promise(resolve => setTimeout(resolve, 1000));
+
+	try {
+		const result = await electronApp.evaluate((electron) => {
+			const { BrowserWindow } = electron;
+			const windows = BrowserWindow.getAllWindows();
+			if (windows.length > 0) {
+				const mainWindow = windows[0];
+				const browserViews = mainWindow.getBrowserViews();
+				if (browserViews.length > 0) {
+					return browserViews[0].webContents.executeJavaScript(`
+						if (window.eyas && window.eyas.send) {
+							window.eyas.send('app-exit');
+							true;
+						} else { false; }
+					`);
+				}
+			}
+			return false;
+		});
+		if (result) {
+			await new Promise(resolve => setTimeout(resolve, 1000));
+		}
+	} catch (error) {
+		console.log('Could not send app-exit message:', error.message);
+	}
+	await electronApp.close();
+});
