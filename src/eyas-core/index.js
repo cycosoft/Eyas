@@ -149,9 +149,12 @@ initElectronCore();
 // start the core of the application
 function initElectronCore() {
 	// imports
-	// const _deepLinking = require(`electron-app-universal-protocol-client`).default;
+	const {
+		handleEyasProtocolUrl,
+		getEyasUrlFromCommandLine
+	} = require(_path.join(__dirname, `deep-link-handler.js`));
 
-	// register the custom protocol for OS deep linking and adjust based on context
+	// register the custom protocol for OS deep linking (native Electron API; macOS dev requires packaged app)
 	if (process.defaultApp) {
 		if (process.argv.length >= 2) {
 			_electronCore.setAsDefaultProtocolClient(
@@ -162,7 +165,19 @@ function initElectronCore() {
 		} else {
 			_electronCore.setAsDefaultProtocolClient(`eyas`);
 		}
+	} else {
+		_electronCore.setAsDefaultProtocolClient(`eyas`);
 	}
+
+	const deepLinkContext = {
+		getAppWindow: () => $appWindow,
+		setConfigToLoad: (p) => { $configToLoad = p; },
+		loadConfig: async (method, path) => {
+			$config = await require($paths.configLoader)(method, path);
+		},
+		startAFreshTest,
+		LOAD_TYPES
+	};
 
 	// macOS: detect if the app was opened with a file
 	_electronCore.on(`open-file`, async (event, path) => {
@@ -185,30 +200,21 @@ function initElectronCore() {
 		}
 	});
 
-	// detect if the app was opened with a custom link
-	// _deepLinking.on(`request`, async path => {
-	// 	// if the $appWindow was already initialized
-	// 	if($appWindow){
-	// 		// load the new config
-	// 		$config = await require($paths.configLoader)(LOAD_TYPES.WEB, path);
-
-	// 		// start a new test based on the newly loaded config
-	// 		startAFreshTest();
-	// 	} else {
-	// 		// define the config to load when the app is ready
-	// 		$configToLoad = {
-	// 			method: LOAD_TYPES.WEB,
-	// 			path
-	// 		};
-	// 	}
-	// });
-
-	// start listening for requests to the custom protocol
-	// NOTE: must be after _deepLinking.on()
-	// _deepLinking.initialize({
-	// 	protocol: `eyas`,
-	// 	mode: $isDev ? `development` : `production`,
-	// });
+	// macOS: handle eyas:// protocol (open-url); Windows/Linux: handle second instance with protocol URL
+	_electronCore.on(`open-url`, (event, url) => {
+		event.preventDefault();
+		handleEyasProtocolUrl(url, deepLinkContext);
+	});
+	_electronCore.on(`second-instance`, (_event, commandLine) => {
+		if ($appWindow) {
+			if ($appWindow.isMinimized()) { $appWindow.restore(); }
+			$appWindow.focus();
+		}
+		const url = getEyasUrlFromCommandLine(commandLine);
+		if (url) {
+			handleEyasProtocolUrl(url, deepLinkContext);
+		}
+	});
 
 	// add support for eyas:// protocol
 	registerInternalProtocols();

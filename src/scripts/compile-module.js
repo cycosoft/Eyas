@@ -54,6 +54,10 @@ const paths = {
 	await fs.copy(paths.eyasInterfaceAppSrc, paths.eyasInterfaceAppDest);
 	await fs.copy(paths.eyasSplashSrc, paths.eyasSplashDest);
 	await fs.copy(paths.eyasCoreSrc, paths.eyasCoreDest);
+	await fs.copy(
+		path.join(roots.src, `eyas-core`, `deep-link-handler.js`),
+		path.join(roots.moduleBuild, `deep-link-handler.js`)
+	);
 	await fs.copy(paths.scriptsSrc, paths.scriptsBuild);
 
 	await fs.copy(
