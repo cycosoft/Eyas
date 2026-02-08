@@ -67,7 +67,6 @@ export default [
 		files: [
 			'eslint.config.js',
 			'src/scripts/**/*.js',
-			'src/cli/index.js',
 			'electron.vite.config.js',
 			'src/eyas-interface/app/.vite.config.ui.js',
 			'src/scripts/test-preload.js'
