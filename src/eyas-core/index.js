@@ -35,6 +35,10 @@ const $defaultViewports = [
 ];
 let $allViewports = [];
 const $currentViewport = [];
+let $updateStatus = `idle`;
+let $updateCheckUserTriggered = false;
+let $onCheckForUpdates = () => {};
+let $onInstallUpdate = () => {};
 const $roots = require(_path.join(__dirname, `scripts`, `get-roots.js`));
 const { parseURL } = require(_path.join(__dirname, `scripts`, `parse-url.js`));
 const $paths = {
@@ -232,6 +236,10 @@ function initElectronCore() {
 
 			// start the UI layer
 			initElectronUi();
+
+			if (_electronCore.isPackaged && !$isDev) {
+				setupAutoUpdater();
+			}
 
 			// if Electron receives the `activate` event
 			_electronCore.on(`activate`, () => {
