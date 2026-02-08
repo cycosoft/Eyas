@@ -28,7 +28,7 @@ export default [
 			'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
 			'no-unused-vars': 'warn',
 			indent: ['error', 'tab'],
-			quotes: ['error', 'single'],
+			quotes: ['error', 'backticks'],
 			semi: ['error', 'always'],
 			'comma-dangle': ['error', 'never'],
 			'quote-props': ['error', 'as-needed'],
