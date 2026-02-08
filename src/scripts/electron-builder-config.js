@@ -41,8 +41,13 @@ function getElectronBuilderConfig(options) {
 		compression: isDev ? `store` : `maximum`, // `store` | `normal` | `maximum`
 		removePackageScripts: true,
 		removePackageKeywords: true,
+		publish: {
+			provider: `generic`,
+			url: `https://github.com/cycosoft/Eyas/releases`,
+			publishAutoUpdate: true
+		},
 		mac: {
-			target: isInstaller ? `pkg` : `dir`,
+			target: isInstaller ? [`pkg`, `zip`] : `dir`,
 			category: `public.app-category.developer-tools`,
 			icon: paths.icon,
 			provisioningProfile,

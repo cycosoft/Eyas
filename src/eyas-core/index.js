@@ -35,6 +35,10 @@ const $defaultViewports = [
 ];
 let $allViewports = [];
 const $currentViewport = [];
+let $updateStatus = `idle`;
+let $updateCheckUserTriggered = false;
+let $onCheckForUpdates = () => {};
+let $onInstallUpdate = () => {};
 const $roots = require(_path.join(__dirname, `scripts`, `get-roots.js`));
 const { parseURL } = require(_path.join(__dirname, `scripts`, `parse-url.js`));
 const $paths = {
@@ -51,6 +55,8 @@ const $paths = {
 };
 const $operatingSystem = _os.platform();
 const { version: _appVersion } = require($paths.packageJson);
+const { buildMenuTemplate } = require(_path.join(__dirname, `menu-template.js`));
+const { getNoUpdateAvailableDialogOptions } = require(_path.join(__dirname, `update-dialog.js`));
 
 // constants
 const { LOAD_TYPES } = require($paths.constants);
@@ -231,6 +237,8 @@ function initElectronCore() {
 
 			// start the UI layer
 			initElectronUi();
+
+			setupAutoUpdater();
 
 			// if Electron receives the `activate` event
 			_electronCore.on(`activate`, () => {
@@ -556,283 +564,159 @@ function onResize() {
 
 // Set up the application menu
 async function setMenu () {
-	// imports
 	const { Menu, dialog } = require(`electron`);
 	const { isURL } = require(`validator`);
 
-	// build the default menu in MacOS style
-	const menuDefault = [
-		{
-			label: `&${APP_NAME}`,
-			submenu: [
-				{
-					label: `📇 &About`,
-					click: () => {
-						// setup
-						const { format } = require(`date-fns/format`);
-						const { differenceInDays } = require(`date-fns/differenceInDays`);
-						const now = new Date();
-						const expires = new Date($config.meta.expires);
-						const dayCount = differenceInDays(expires, now);
-						const expirationFormatted = format(expires, `MMM do @ p`);
-						const relativeFormatted = dayCount ? `~${dayCount} days` : `soon`;
-						const startYear = 2023;
-						const currentYear = now.getFullYear();
-						const yearRange = startYear === currentYear
-							? startYear : `${startYear} - ${currentYear}`;
+	const sessionAge = getSessionAge();
+	const cacheSize = await $appWindow.webContents.session.getCacheSize();
 
-						// show the about dialog
-						dialog.showMessageBox($appWindow, {
-							type: `info`,
-							buttons: [`OK`],
-							title: `About`,
-							icon: $paths.icon,
-							message: `
-							Name: ${$config.title}
-							Version: ${$config.version}
-							Expires: ${expirationFormatted} (${relativeFormatted})
-
-							Branch: ${$config.meta.gitBranch} #${$config.meta.gitHash}
-							User: ${$config.meta.gitUser}
-							Created: ${new Date($config.meta.compiled).toLocaleString()}
-							CLI: v${$config.meta.eyas}
-
-							Runner: v${_appVersion}
-
-							🏢 © ${yearRange} Cycosoft, LLC
-							🌐 https://cycosoft.com
-							🆘 https://github.com/cycosoft/Eyas/issues
-							`
-						});
-					}
-				},
-				{ type: `separator` },
-				{
-					label: `🚪 &Exit`,
-					accelerator: `CmdOrCtrl+Q`,
-					click: _electronCore.quit
-				}
-			]
-		}
-	];
-
-	// Add the tools menu to the application menu
-	menuDefault.push({
-		label: `🔧 &Tools`,
-		submenu: [
-			{
-				label: `🧪 &Restart Test`,
-				click: () => startAFreshTest()
-			},
-			{
-				label: `🔗 &Copy URL`,
-				click: () => {
-					// get the current url
-					const currentUrl = $appWindow.webContents.getURL();
-
-					// copy the url to the clipboard
-					require(`electron`).clipboard.writeText(currentUrl);
-				}
-			},
-			// { type: `separator` },
-			// {
-			// 	label: `🌐 Open in Browser`,
-			// 	click: () => {
-			// 		// url to navigate to
-			// 		let urlToNavigateTo = $appWindow.webContents.getURL();
-
-			// 		// if the base url is the test defined domain
-			// 		if(appUrlOverride){
-			// 			// grab the base url parts
-			// 			urlToNavigateTo = new URL(appUrlOverride);
-			// 			urlToNavigateTo.port = testServerPort;
-
-			// 			// alert the user that it needs to be defined in etc/hosts
-			// 			dialog.showMessageBoxSync($appWindow, {
-			// 				type: `warning`,
-			// 				buttons: [`Open`],
-			// 				title: `Open in Browser`,
-			// 				message: `To run your test outside of Eyas, you must add the following to your "etc/hosts" file:
-
-			// 				127.0.0.1     ${urlToNavigateTo.hostname}`
-			// 			});
-
-			// 			// convert the url to a string
-			// 			urlToNavigateTo = urlToNavigateTo.toString();
-			// 		}
-
-			// 		// open the current url in the default browser
-			// 		navigate(urlToNavigateTo, true);
-			// 	}
-			// },
-			{ type: `separator` },
-			{
-				role: `toggleDevTools`,
-				accelerator: `F12`,
-				label: `🔧 &Developer Tools${$isDev ? ` (Test)` : ``}`
-			}
-		]
-	});
-
-	// Add the developer tools menu to the application menu for the UI layer
-	$isDev && menuDefault.at(-1).submenu.push({
-		label: `🔧 Developer Tools (&UI)`,
-		accelerator: `CmdOrCtrl+Shift+J`,
-		click: () => $eyasLayer.webContents.openDevTools()
-	});
-
-	// add a network menu dropdown
-	menuDefault.push({
-		label: `${$testNetworkEnabled ? `🌐` : `🔴`} &Network`,
-		submenu: [
-			{
-				label: `🏠 Test &Home`,
-				click: () => navigate()
-			},
-			{ type: `separator` },
-			{
-				label: `♻️ &Reload`,
-				accelerator: `CmdOrCtrl+R`,
-				click: () => $appWindow.webContents.reloadIgnoringCache()
-			},
-			{
-				label: `⬅️ &Back`,
-				accelerator: `CmdOrCtrl+Left`,
-				click: () => $appWindow.webContents.goBack()
-			},
-			{
-				label: `➡️ &Forward`,
-				accelerator: `CmdOrCtrl+Right`,
-				click: () => $appWindow.webContents.goForward()
-			},
-			{ type: `separator` },
-			{
-				label: `${$testNetworkEnabled ? `🔴 &Go Offline` : `🟢 &Go Online`}`,
-				click: () => {
-					// toggle the network status
-					$testNetworkEnabled = !$testNetworkEnabled;
-
-					// refresh the menu
-					setMenu();
-				}
-			}
-		]
-	});
-
-	// add a menu item for controlling the cache
-	menuDefault.push({
-		label: `📦 &Cache`,
-		submenu: [
-			{
-				label: `🕝 Age: ${getSessionAge()}`,
-				click: setMenu // refresh the menu
-			},
-			{
-				label: `📊 Size: ${await $appWindow.webContents.session.getCacheSize()} bytes`,
-				click: setMenu // refresh the menu
-			},
-			{
-				label: `🗑️ &Clear`,
-				click: clearCache
-			},
-			...$isDev ? [
-				{
-					label: `📂 Open Cache Folder`,
-					click: () => require(`electron`).shell.openPath($appWindow.webContents.session.getStoragePath())
-				}
-			] : []
-		]
-	});
-
-	// build out the menu for selecting a screen size
-	const viewportsMenu = [];
 	const tolerance = 2;
-
-	// add the viewports to the list
+	const viewportItems = [];
 	let defaultsFound = false;
 	$allViewports.forEach(res => {
 		const [width, height] = $currentViewport || [];
 		const isSizeMatch = Math.abs(res.width - width) <= tolerance && Math.abs(res.height - height) <= tolerance;
-
-		// if this is the first default viewport
-		if(!defaultsFound && res.isDefault){
-			// add a separator
-			viewportsMenu.push({ type: `separator` });
-
-			// mark that the first default has been found
+		if (!defaultsFound && res.isDefault) {
+			viewportItems.push({ type: `separator` });
 			defaultsFound = true;
 		}
-
-		viewportsMenu.push({
+		viewportItems.push({
 			label: `${isSizeMatch ? `🔘 ` : ``}${res.label} (${res.width} x ${res.height})`,
 			click: () => $appWindow.setContentSize(res.width, res.height)
 		});
 	});
-
-	// Add the custom viewport menu item if it's not already in the list
-	(() => {
-		// exit if there's no custom viewport set
-		if(!$currentViewport){ return; }
-
-		// setup
-		const [width, height] = $currentViewport;
-
-		// exit if the custom viewports are already in the list (within tolerance)
-		if($allViewports.some(res => Math.abs(res.width - width) <= tolerance && Math.abs(res.height - height) <= tolerance)){ return; }
-
-		// add the custom viewport to the list
-		viewportsMenu.unshift(
-			{
-				label: `🔘 Current (${width} x ${height})`,
-				click: () => $appWindow.setContentSize(width, height)
-			},
+	if ($currentViewport && !$allViewports.some(res => Math.abs(res.width - $currentViewport[0]) <= tolerance && Math.abs(res.height - $currentViewport[1]) <= tolerance)) {
+		viewportItems.unshift(
+			{ label: `🔘 Current (${$currentViewport[0]} x ${$currentViewport[1]})`, click: () => $appWindow.setContentSize($currentViewport[0], $currentViewport[1]) },
 			{ type: `separator` }
 		);
-	})();
+	}
 
-	// Add the viewports submenu to the application menu
-	menuDefault.push({ label: `📏 &Viewport`, submenu: viewportsMenu });
-
-	// for each menu item where the list exists
-	const customLinkList = [];
+	const linkItems = [];
 	$config.links.forEach(item => {
-		// setup
 		const itemUrl = item.url;
 		let isValid = false;
 		let validUrl;
-
-		// generically match bracket sets to check for variables
 		const hasVariables = itemUrl.match(/{[^{}]+}/g)?.length;
-
-		// if there are variables
-		if(hasVariables){
-			// replace the test domain variable with a test domain
-			let testUrl = itemUrl.replace(/{testdomain}/g, `validating.com`);
-
-			// replace all other variables with a generic value
-			testUrl = testUrl.replace(/{[^{}]+}/g, `validating`);
-
-			// check if the provided url is valid
+		if (hasVariables) {
+			const testUrl = itemUrl.replace(/{testdomain}/g, `validating.com`).replace(/{[^{}]+}/g, `validating`);
 			isValid = isURL(testUrl);
 		} else {
-			// check if the provided url is valid
 			validUrl = parseURL(itemUrl).toString();
 			isValid = !!validUrl;
 		}
-
-		// add the item to the menu
-		customLinkList.push({
+		linkItems.push({
 			label: `${item.external ? `🌐 ` : ``}${item.label || item.url}${isValid ? `` : ` (invalid entry: "${item.url}")`}`,
 			click: () => hasVariables ? navigateVariable(itemUrl) : navigate(validUrl, item.external),
-			enabled: isValid // disable menu item if invalid url
+			enabled: isValid
 		});
 	});
 
-	// if there are any valid items THEN add the list to the menu
-	customLinkList.length && menuDefault.push({ label: `💼 &Links`, submenu: customLinkList });
+	const context = {
+		appName: APP_NAME,
+		isDev: $isDev,
+		testNetworkEnabled: $testNetworkEnabled,
+		sessionAge,
+		cacheSize,
+		showAbout: () => {
+			const { format } = require(`date-fns/format`);
+			const { differenceInDays } = require(`date-fns/differenceInDays`);
+			const now = new Date();
+			const expires = new Date($config.meta.expires);
+			const dayCount = differenceInDays(expires, now);
+			const expirationFormatted = format(expires, `MMM do @ p`);
+			const relativeFormatted = dayCount ? `~${dayCount} days` : `soon`;
+			const startYear = 2023;
+			const currentYear = now.getFullYear();
+			const yearRange = startYear === currentYear ? startYear : `${startYear} - ${currentYear}`;
+			dialog.showMessageBox($appWindow, {
+				type: `info`,
+				buttons: [`OK`],
+				title: `About`,
+				icon: $paths.icon,
+				message: `
+Name: ${$config.title}
+Version: ${$config.version}
+Expires: ${expirationFormatted} (${relativeFormatted})
 
-	// Set the modified menu as the application menu
-	Menu.setApplicationMenu(Menu.buildFromTemplate(menuDefault));
+Branch: ${$config.meta.gitBranch} #${$config.meta.gitHash}
+User: ${$config.meta.gitUser}
+Created: ${new Date($config.meta.compiled).toLocaleString()}
+CLI: v${$config.meta.eyas}
+
+Runner: v${_appVersion}
+
+🏢 © ${yearRange} Cycosoft, LLC
+🌐 https://cycosoft.com
+🆘 https://github.com/cycosoft/Eyas/issues
+`
+			});
+		},
+		quit: _electronCore.quit,
+		startAFreshTest,
+		copyUrl: () => require(`electron`).clipboard.writeText($appWindow.webContents.getURL()),
+		openUiDevTools: () => $eyasLayer.webContents.openDevTools(),
+		navigateHome: () => navigate(),
+		reload: () => $appWindow.webContents.reloadIgnoringCache(),
+		back: () => $appWindow.webContents.goBack(),
+		forward: () => $appWindow.webContents.goForward(),
+		toggleNetwork: () => {
+			$testNetworkEnabled = !$testNetworkEnabled;
+			setMenu();
+		},
+		clearCache,
+		openCacheFolder: () => require(`electron`).shell.openPath($appWindow.webContents.session.getStoragePath()),
+		refreshMenu: setMenu,
+		viewportItems,
+		linkItems,
+		updateStatus: typeof $updateStatus !== `undefined` ? $updateStatus : `idle`,
+		onCheckForUpdates: typeof $onCheckForUpdates === `function` ? $onCheckForUpdates : () => {},
+		onInstallUpdate: typeof $onInstallUpdate === `function` ? $onInstallUpdate : () => {}
+	};
+
+	const template = buildMenuTemplate(context);
+	Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+}
+
+function setupAutoUpdater() {
+	const { autoUpdater } = require(`electron-updater`);
+	const { dialog } = require(`electron`);
+
+	autoUpdater.forceDevUpdateConfig = true;
+
+	autoUpdater.setFeedURL({
+		provider: `github`,
+		owner: `cycosoft`,
+		repo: `Eyas`
+	});
+
+	$onCheckForUpdates = () => {
+		$updateCheckUserTriggered = true;
+		autoUpdater.checkForUpdates();
+	};
+	$onInstallUpdate = () => autoUpdater.quitAndInstall();
+
+	autoUpdater.on(`update-available`, () => {
+		$updateStatus = `downloading`;
+		setMenu();
+	});
+	autoUpdater.on(`update-downloaded`, () => {
+		$updateStatus = `downloaded`;
+		setMenu();
+	});
+	const showNoUpdateIfUserTriggered = () => {
+		if ($updateCheckUserTriggered) {
+			$updateCheckUserTriggered = false;
+			dialog.showMessageBox($appWindow, getNoUpdateAvailableDialogOptions());
+		}
+	};
+	autoUpdater.on(`update-not-available`, showNoUpdateIfUserTriggered);
+	autoUpdater.on(`error`, err => {
+		console.error(`Auto-update error:`, err);
+		showNoUpdateIfUserTriggered();
+	});
+
+	autoUpdater.checkForUpdates();
 }
 
 function getSessionAge() {

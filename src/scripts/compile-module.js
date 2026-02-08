@@ -56,6 +56,14 @@ const paths = {
 		path.join(roots.src, `eyas-core`, `deep-link-handler.js`),
 		path.join(roots.moduleBuild, `deep-link-handler.js`)
 	);
+	await fs.copy(
+		path.join(roots.src, `eyas-core`, `menu-template.js`),
+		path.join(roots.moduleBuild, `menu-template.js`)
+	);
+	await fs.copy(
+		path.join(roots.src, `eyas-core`, `update-dialog.js`),
+		path.join(roots.moduleBuild, `update-dialog.js`)
+	);
 	await fs.copy(paths.scriptsSrc, paths.scriptsBuild);
 
 	await fs.copy(

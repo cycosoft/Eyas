@@ -1,6 +1,9 @@
 # v4.0.1
 
 - Dependency updates
+- Remove some deprecated CLI code
+- Project linting
+- Auto update support
 
 # v4.0.0
 

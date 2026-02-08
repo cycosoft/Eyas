@@ -64,4 +64,15 @@ describe(`getElectronBuilderConfig`, () => {
 		});
 		expect(config.win.signtoolOptions).toBeUndefined();
 	});
+
+	test(`mac target is array with pkg and zip when isInstaller and isMac`, () => {
+		const config = getElectronBuilderConfig({
+			...baseOptions,
+			isInstaller: true,
+			isMac: true
+		});
+		expect(Array.isArray(config.mac.target)).toBe(true);
+		expect(config.mac.target).toContain(`pkg`);
+		expect(config.mac.target).toContain(`zip`);
+	});
 });
