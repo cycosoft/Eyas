@@ -34,8 +34,8 @@ function buildMenuTemplate(context) {
 	} = context;
 
 	const updateStatusItem = updateStatus === `downloading`
-		? { label: `Downloading update...`, enabled: false }
-		: { label: `Check for updates`, click: onCheckForUpdates };
+		? { label: `⬆️ Downloading update...`, enabled: false }
+		: { label: `⬆️ Check for updates`, click: onCheckForUpdates };
 
 	const appSubmenu = [
 		{ label: `📇 &About`, click: showAbout },
@@ -96,7 +96,7 @@ function buildMenuTemplate(context) {
 
 	if (updateStatus === `downloaded`) {
 		menu.push({
-			label: `Update available – Restart to install`,
+			label: `⬆️ Update available – Restart to install`,
 			click: onInstallUpdate
 		});
 	}
