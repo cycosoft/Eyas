@@ -13,7 +13,7 @@
     "validator": "",
     "date-fns": "",
     "semver": "",
-    "electron-app-universal-protocol-client": ""
+    "electron-updater": ""
   },
   "devDependencies": {
     "electron": ""
