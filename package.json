@@ -9,9 +9,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "bin": {
-    "eyas": "./dist/cli/index.js"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/cycosoft/Eyas.git"
@@ -20,7 +17,6 @@
     "_______________DEV_______________": "",
     "dev": "npm i && npm run update && npm run compile:prep && npm run compile:ui && npm run dev:module",
     "dev:module": "npm run compile:module && electron .build/index.js --dev --trace-warnings",
-    "dev:mac:cli": "npm i && npm run update && cross-env NODE_ENV=dev npm run compile:mac:no-sign && cross-env NODE_ENV=dev node dist/cli/index.js",
     "dev:mac:installer": "npm i && npm run update && cross-env NODE_ENV=dev npm run compile:mac:installer:no-sign",
     "dev:win:installer": "npm i && npm run update && cross-env NODE_ENV=dev npm run compile:win:installer",
     "dev:ui": "npm i && npm run update && vite --config src/eyas-interface/app/.vite.config.ui.js --open",

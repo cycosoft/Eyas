@@ -81,11 +81,6 @@ const paths = {
 
 	// Update the package.json version numbers
 	await updatePackageJsonValues();
-
-	// Copy the CLI
-	console.log(`copying ${paths.cliSrcFile}`);
-	await fs.copy(paths.cliSrcFile, paths.cliDestFile);
-	console.log(`🎉 complete`);
 })();
 
 // update all the versions in the distributed package.json from the module package.json
