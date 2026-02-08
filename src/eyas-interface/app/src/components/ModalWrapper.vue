@@ -33,14 +33,6 @@ export default {
 		id: window.crypto.randomUUID() // generate a unique ID for this modal
 	}),
 
-	mounted() {
-		// listen for global events to close all the modals
-		window.eyas?.receive(`close-modals`, () => {
-			// tell the parent to update the model value
-			this.$emit(`update:modelValue`, false);
-		});
-	},
-
 	computed: {
 		backgroundContentVisible () {
 			return ModalStore().lastOpenedById === this.id;
@@ -52,6 +44,14 @@ export default {
 			immediate: true, // must be immediate to track the initial state AND when the modal is closed
 			handler: `trackModalState`
 		}
+	},
+
+	mounted() {
+		// listen for global events to close all the modals
+		window.eyas?.receive(`close-modals`, () => {
+			// tell the parent to update the model value
+			this.$emit(`update:modelValue`, false);
+		});
 	},
 
 	methods: {

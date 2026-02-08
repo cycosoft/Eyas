@@ -4,7 +4,7 @@ function parseURL(url) {
 	const { isURL } = require(`validator`);
 
 	// config
-	let output = '';
+	const output = ``;
 
 	// exit if not a valid url
 	if(!url || !isURL(url)){ return output; }

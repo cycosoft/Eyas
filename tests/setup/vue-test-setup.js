@@ -14,16 +14,16 @@ global.window.eyas = {
 };
 
 // Mock window.crypto.randomUUID for ModalWrapper
-Object.defineProperty(global.window, 'crypto', {
+Object.defineProperty(global.window, `crypto`, {
 	value: {
-		randomUUID: () => 'test-uuid-' + Math.random().toString(36).substring(7)
+		randomUUID: () => `test-uuid-` + Math.random().toString(36).substring(7)
 	},
 	writable: true,
 	configurable: true
 });
 
 // Mock visualViewport for Vuetify VOverlay
-Object.defineProperty(global.window, 'visualViewport', {
+Object.defineProperty(global.window, `visualViewport`, {
 	value: {
 		width: 1024,
 		height: 768,

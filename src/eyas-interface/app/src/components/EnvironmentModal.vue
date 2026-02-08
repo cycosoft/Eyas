@@ -19,12 +19,12 @@
 								location="bottom right"
 							>
 								<v-btn
+									v-tooltip:bottom="tooltip(domain)"
 									class="-py-5"
 									block
 									size="large"
 									:stacked="$vuetify.display.smAndUp"
 									:loading="loadingIndex === index"
-									v-tooltip:bottom="tooltip(domain)"
 									@click="choose(domain.url, index)"
 								>
 									<template v-slot:prepend>

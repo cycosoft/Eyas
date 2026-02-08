@@ -44,7 +44,7 @@ function injectWithAnonymousScope(fn) {
 	// newline required for the function to be properly parsed
 	return `(() => {
 		${extractFunctionBody(fn)}
-	})();`
+	})();`;
 }
 
 // Extract the body of the function
@@ -98,7 +98,7 @@ function polyfillUploadProgress() {
 
 		// update the fileBytes for FormData
 		if (data instanceof FormData) {
-			for (let pair of data.entries()) {
+			for (const pair of data.entries()) {
 				if (pair[1] instanceof File) {
 					fileBytes += pair[1].size;
 				}

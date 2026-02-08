@@ -3,7 +3,7 @@
 'use strict';
 
 // global imports _
-const { app: _electronCore, BrowserWindow: _electronWindow, } = require(`electron`);
+const { app: _electronCore, BrowserWindow: _electronWindow } = require(`electron`);
 const _path = require(`path`);
 const _os = require(`os`);
 
@@ -24,7 +24,7 @@ let $eyasLayer = null;
 let $config = null;
 let $configToLoad = {};
 let $testNetworkEnabled = true;
-let $testServer = null;
+const $testServer = null;
 let $testDomainRaw = null;
 let $testDomain = `eyas://local.test`;
 const $uiDomain = `ui://eyas.interface`;
@@ -70,80 +70,80 @@ initElectronCore();
 
 // wrapped in an async IIFE to allow for "root" await calls
 // (async () => {
-	// imports
-	// const express = require(`express`);
-	// const https = require(`https`);
-	// const mkcert = require(`mkcert`);
-	//
-	//
+// imports
+// const express = require(`express`);
+// const https = require(`https`);
+// const mkcert = require(`mkcert`);
+//
+//
 
-	// // config
+// // config
 
-	// const testServerPort = 3000;
-	// const testServerUrl = `https://localhost:${testServerPort}`;
-	// const appUrlOverride = parseURL($config.domains);
-	// const appUrl = appUrlOverride || testServerUrl;
-	// let expressLayer = null;
+// const testServerPort = 3000;
+// const testServerUrl = `https://localhost:${testServerPort}`;
+// const appUrlOverride = parseURL($config.domains);
+// const appUrl = appUrlOverride || testServerUrl;
+// let expressLayer = null;
 
-	//
-
-
-
-	// Configure Electron to ignore certificate errors
-	// _electronCore.commandLine.appendSwitch(`ignore-certificate-errors`);
-
-	// // if a custom domain is provided
-	// if(appUrlOverride){
-	// 	// config
-	// 	const { hostname: routeFrom } = new URL(appUrlOverride);
-	// 	const { host: routeTo } = new URL(testServerUrl);
-
-	// 	// override requests to the custom domain to use the test server
-	// 	_electronCore.commandLine.appendSwitch(`host-resolver-rules`, `MAP ${routeFrom} ${routeTo}`);
-	// }
-
-	// start the test server
-	// setupTestServer();
+//
 
 
 
-	// Set up Express to serve files from the test directory
-	// async function setupTestServer() {
-	// 	// Create the Express app
-	// 	expressLayer = express();
+// Configure Electron to ignore certificate errors
+// _electronCore.commandLine.appendSwitch(`ignore-certificate-errors`);
 
-	// 	// Serve static files from the test directory
-	// 	expressLayer.use(express.static($paths.testSrc));
+// // if a custom domain is provided
+// if(appUrlOverride){
+// 	// config
+// 	const { hostname: routeFrom } = new URL(appUrlOverride);
+// 	const { host: routeTo } = new URL(testServerUrl);
 
-	// 	// Catch-all for bad requests
-	// 	expressLayer.get(`*`, function (req, res) {
-	// 		res.redirect(`/`);
-	// 	});
+// 	// override requests to the custom domain to use the test server
+// 	_electronCore.commandLine.appendSwitch(`host-resolver-rules`, `MAP ${routeFrom} ${routeTo}`);
+// }
 
-	// 	// Create a certificate authority
-	// 	const ca = await mkcert.createCA({
-	// 		organization: `Cycosoft, LLC - Test Server`,
-	// 		countryCode: `US`,
-	// 		state: `Arizona`,
-	// 		locality: `Chandler`,
-	// 		validityDays: 7
-	// 	});
+// start the test server
+// setupTestServer();
 
-	// 	// Create a certificate for the domain under the certificate authority
-	// 	const cert = await mkcert.createCert({
-	// 		ca,
-	// 		domains: [`localhost`],
-	// 		validity: 7
-	// 	});
 
-	// 	// Start the server
-	// 	$testServer = https
-	// 		.createServer({ key: cert.key, cert: cert.cert }, expressLayer)
-	// 		.listen(testServerPort, initElectronCore);
-	// }
 
-	// override requests to the custom domain to use the test server
-	// _electronCore.commandLine.appendSwitch(`host-resolver-rules`, `MAP ${routeFrom} ${routeTo}`);
+// Set up Express to serve files from the test directory
+// async function setupTestServer() {
+// 	// Create the Express app
+// 	expressLayer = express();
+
+// 	// Serve static files from the test directory
+// 	expressLayer.use(express.static($paths.testSrc));
+
+// 	// Catch-all for bad requests
+// 	expressLayer.get(`*`, function (req, res) {
+// 		res.redirect(`/`);
+// 	});
+
+// 	// Create a certificate authority
+// 	const ca = await mkcert.createCA({
+// 		organization: `Cycosoft, LLC - Test Server`,
+// 		countryCode: `US`,
+// 		state: `Arizona`,
+// 		locality: `Chandler`,
+// 		validityDays: 7
+// 	});
+
+// 	// Create a certificate for the domain under the certificate authority
+// 	const cert = await mkcert.createCert({
+// 		ca,
+// 		domains: [`localhost`],
+// 		validity: 7
+// 	});
+
+// 	// Start the server
+// 	$testServer = https
+// 		.createServer({ key: cert.key, cert: cert.cert }, expressLayer)
+// 		.listen(testServerPort, initElectronCore);
+// }
+
+// override requests to the custom domain to use the test server
+// _electronCore.commandLine.appendSwitch(`host-resolver-rules`, `MAP ${routeFrom} ${routeTo}`);
 // })();
 
 // start the core of the application
@@ -171,7 +171,7 @@ function initElectronCore() {
 
 	const deepLinkContext = {
 		getAppWindow: () => $appWindow,
-		setConfigToLoad: (p) => { $configToLoad = p; },
+		setConfigToLoad: p => { $configToLoad = p; },
 		loadConfig: async (method, path) => {
 			$config = await require($paths.configLoader)(method, path);
 		},
@@ -284,7 +284,7 @@ async function initElectronUi() {
 	splashScreen.webContents.on(`did-finish-load`, () => splashVisible = performance.now());
 
 	// load a default page so the app doesn't start black
-	$appWindow.loadURL('data:text/html,' + encodeURIComponent(`<html><body></body></html>`));
+	$appWindow.loadURL(`data:text/html,` + encodeURIComponent(`<html><body></body></html>`));
 
 	// track the app launch event
 	trackEvent(MP_EVENTS.core.launch);
@@ -441,7 +441,6 @@ async function trackEvent(event, extraData) {
 
 	// imports
 	const Mixpanel = require(`mixpanel`);
-	const crypto = require(`crypto`);
 
 	// if mixpanel has not been initialized
 	if (!trackEvent.mixpanel) {
@@ -540,7 +539,7 @@ function onResize() {
 
 	// update the current dimensions
 	$currentViewport[0] = newWidth;
-	$currentViewport[1] = newHeight
+	$currentViewport[1] = newHeight;
 
 	// get the $eyasLayer dimensions
 	const { width, height } = $eyasLayer.getBounds();
@@ -670,7 +669,7 @@ async function setMenu () {
 			{
 				role: `toggleDevTools`,
 				accelerator: `F12`,
-				label: `🔧 &Developer Tools${$isDev ? ' (Test)' : ''}`
+				label: `🔧 &Developer Tools${$isDev ? ` (Test)` : ``}`
 			}
 		]
 	});
@@ -798,7 +797,7 @@ async function setMenu () {
 	const customLinkList = [];
 	$config.links.forEach(item => {
 		// setup
-		let itemUrl = item.url;
+		const itemUrl = item.url;
 		let isValid = false;
 		let validUrl;
 
@@ -991,7 +990,7 @@ function registerInternalProtocols() {
 
 // handle blocking requests when the user disables the network
 function disableNetworkRequest(url) {
-	let output = false;
+	const output = false;
 
 	// exit if the network is not disabled
 	if($testNetworkEnabled){ return output; }
@@ -1005,7 +1004,7 @@ function disableNetworkRequest(url) {
 // handle requests to the custom protocol
 function setupEyasNetworkHandlers() {
 	// imports
-	const { protocol, session, net } = require(`electron`);
+	const { session } = require(`electron`);
 	const ses = session.fromPartition(`persist:${$config.meta.testId}`);
 
 	// use the "ui" protocol to load the Eyas UI layer
@@ -1067,7 +1066,7 @@ function setupEyasNetworkHandlers() {
 	// listen for requests to the specified domains and redirect to the custom protocol
 	ses.protocol.handle(`https`, async request => {
 		// setup
-		const { hostname, pathname, origin } = parseURL(request.url);
+		const { hostname, pathname } = parseURL(request.url);
 		let bypassCustomProtocolHandlers = true;
 
 		// if the request's hostname matches the test domain

@@ -5,7 +5,6 @@
  * @param {object} options - Build options
  * @param {boolean} options.isDev - Whether this is a dev build
  * @param {boolean} options.isInstaller - Whether to build installer (e.g. msi/pkg)
- * @param {boolean} options.isMac - Whether building for macOS
  * @param {boolean} options.isWin - Whether building for Windows
  * @param {object} options.paths - Paths (icon, iconDbWin, iconDbMac, codesignWin)
  * @param {string} options.runnerName - Artifact name base (e.g. Eyas, EyasInstaller)
@@ -19,14 +18,13 @@ function getElectronBuilderConfig(options) {
 	const {
 		isDev,
 		isInstaller,
-		isMac,
 		isWin,
 		paths,
 		runnerName,
-		appleTeamId = '',
+		appleTeamId = ``,
 		buildRoot,
 		runnersRoot,
-		provisioningProfile = ''
+		provisioningProfile = ``
 	} = options;
 
 	return {
