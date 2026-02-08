@@ -6,7 +6,7 @@
  * @returns {boolean}
  */
 function isEyasProtocolUrl(url) {
-	return typeof url === 'string' && url.length > 0 && url.startsWith('eyas://');
+	return typeof url === `string` && url.length > 0 && url.startsWith(`eyas://`);
 }
 
 /**
@@ -44,7 +44,7 @@ async function handleEyasProtocolUrl(url, context) {
 function getEyasUrlFromCommandLine(argv) {
 	for (let i = 0; i < argv.length; i++) {
 		const arg = argv[i];
-		if (typeof arg === 'string' && arg.startsWith('eyas://')) {
+		if (typeof arg === `string` && arg.startsWith(`eyas://`)) {
 			return arg;
 		}
 	}

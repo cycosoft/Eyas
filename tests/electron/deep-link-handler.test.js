@@ -7,40 +7,40 @@ import {
 
 const LOAD_TYPES = { WEB: `web` };
 
-describe('isEyasProtocolUrl', () => {
-	test('returns true for eyas://host/path', () => {
+describe(`isEyasProtocolUrl`, () => {
+	test(`returns true for eyas://host/path`, () => {
 		expect(isEyasProtocolUrl(`eyas://host/path`)).toBe(true);
 	});
 
-	test('returns true for eyas://x', () => {
+	test(`returns true for eyas://x`, () => {
 		expect(isEyasProtocolUrl(`eyas://x`)).toBe(true);
 	});
 
-	test('returns false for https URL', () => {
+	test(`returns false for https URL`, () => {
 		expect(isEyasProtocolUrl(`https://example.com`)).toBe(false);
 	});
 
-	test('returns false for eyas:/ (single slash)', () => {
+	test(`returns false for eyas:/ (single slash)`, () => {
 		expect(isEyasProtocolUrl(`eyas:/`)).toBe(false);
 	});
 
-	test('returns false for empty string', () => {
+	test(`returns false for empty string`, () => {
 		expect(isEyasProtocolUrl(``)).toBe(false);
 	});
 
-	test('returns false for null and undefined', () => {
+	test(`returns false for null and undefined`, () => {
 		expect(isEyasProtocolUrl(null)).toBe(false);
 		expect(isEyasProtocolUrl(undefined)).toBe(false);
 	});
 
-	test('returns false for non-string', () => {
+	test(`returns false for non-string`, () => {
 		expect(isEyasProtocolUrl(123)).toBe(false);
 		expect(isEyasProtocolUrl({})).toBe(false);
 	});
 });
 
-describe('handleEyasProtocolUrl', () => {
-	test('does nothing for invalid url', async () => {
+describe(`handleEyasProtocolUrl`, () => {
+	test(`does nothing for invalid url`, async () => {
 		const loadConfig = vi.fn();
 		const startAFreshTest = vi.fn();
 		const setConfigToLoad = vi.fn();
@@ -57,7 +57,7 @@ describe('handleEyasProtocolUrl', () => {
 		expect(setConfigToLoad).not.toHaveBeenCalled();
 	});
 
-	test('calls setConfigToLoad when window is null', async () => {
+	test(`calls setConfigToLoad when window is null`, async () => {
 		const loadConfig = vi.fn();
 		const startAFreshTest = vi.fn();
 		const setConfigToLoad = vi.fn();
@@ -79,7 +79,7 @@ describe('handleEyasProtocolUrl', () => {
 		expect(startAFreshTest).not.toHaveBeenCalled();
 	});
 
-	test('calls loadConfig then startAFreshTest when window exists', async () => {
+	test(`calls loadConfig then startAFreshTest when window exists`, async () => {
 		const loadConfig = vi.fn().mockResolvedValue(undefined);
 		const startAFreshTest = vi.fn();
 		const setConfigToLoad = vi.fn();
@@ -99,16 +99,16 @@ describe('handleEyasProtocolUrl', () => {
 	});
 });
 
-describe('getEyasUrlFromCommandLine', () => {
-	test('returns first arg that starts with eyas://', () => {
+describe(`getEyasUrlFromCommandLine`, () => {
+	test(`returns first arg that starts with eyas://`, () => {
 		expect(getEyasUrlFromCommandLine([`a`, `eyas://b/c`, `d`])).toBe(`eyas://b/c`);
 	});
 
-	test('returns undefined when no eyas URL in argv', () => {
+	test(`returns undefined when no eyas URL in argv`, () => {
 		expect(getEyasUrlFromCommandLine([`a`, `b`])).toBeUndefined();
 	});
 
-	test('returns undefined for empty array', () => {
+	test(`returns undefined for empty array`, () => {
 		expect(getEyasUrlFromCommandLine([])).toBeUndefined();
 	});
 });

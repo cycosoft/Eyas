@@ -143,9 +143,6 @@ function getConfigViaRoot() {
 
 // get the config via the CLI
 function getConfigViaCli() {
-	// imports
-	const _fs = require(`fs`);
-
 	// setup
 	let loadedConfig = null;
 	const consumerPackageJsonPath = _path.join(roots.config, `package.json`);
@@ -332,7 +329,7 @@ function getCommitHash() {
 	try {
 		return execSync(`git rev-parse --short HEAD`).toString().trim();
 	} catch (error) {
-		// eslint-disable-next-line no-console
+
 		console.error(`Error getting commit hash:`, error);
 		return null;
 	}
@@ -345,7 +342,7 @@ function getBranchName() {
 	try {
 		return execSync(`git rev-parse --abbrev-ref HEAD`).toString().trim();
 	} catch (error) {
-		// eslint-disable-next-line no-console
+
 		console.error(`Error getting branch name:`, error);
 		return null;
 	}
@@ -358,7 +355,7 @@ function getUserName() {
 	try {
 		return execSync(`git config user.name`).toString().trim();
 	} catch (error) {
-		// eslint-disable-next-line no-console
+
 		console.error(`Error getting user name:`, error);
 		return null;
 	}
@@ -376,13 +373,13 @@ function getCompanyId() {
 		const domain = email
 			.split(`@`) // split up the email
 			.at(-1) // get the last part
-			.split('.') // split up the domain
+			.split(`.`) // split up the domain
 			.slice(-2) // get the last two parts
-			.join('.'); // join them back together
+			.join(`.`); // join them back together
 
 		return crypto.createHash(`sha256`).update(domain).digest(`hex`);
 	} catch (error) {
-		// eslint-disable-next-line no-console
+
 		console.error(`Error getting user email:`, error);
 		return null;
 	}
@@ -406,7 +403,7 @@ function getProjectId() {
 		// hash the remote url and return it
 		return crypto.createHash(`sha256`).update(remoteUrl).digest(`hex`);
 	} catch (error) {
-		// eslint-disable-next-line no-console
+
 		console.error(`Error getting project id:`, error);
 		return null;
 	}

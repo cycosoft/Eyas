@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia'
+import { defineStore } from 'pinia';
 
 export default defineStore(`modals`, {
 	state: () => ({
@@ -27,4 +27,4 @@ export default defineStore(`modals`, {
 			return this.visible.at(-1);
 		}
 	}
-})
+});
