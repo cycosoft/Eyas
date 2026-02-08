@@ -56,6 +56,7 @@ const $paths = {
 const $operatingSystem = _os.platform();
 const { version: _appVersion } = require($paths.packageJson);
 const { buildMenuTemplate } = require(_path.join(__dirname, `menu-template.js`));
+const { getNoUpdateAvailableDialogOptions } = require(_path.join(__dirname, `update-dialog.js`));
 
 // constants
 const { LOAD_TYPES } = require($paths.constants);
@@ -703,19 +704,16 @@ function setupAutoUpdater() {
 		$updateStatus = `downloaded`;
 		setMenu();
 	});
-	autoUpdater.on(`update-not-available`, () => {
+	const showNoUpdateIfUserTriggered = () => {
 		if ($updateCheckUserTriggered) {
 			$updateCheckUserTriggered = false;
-			dialog.showMessageBox($appWindow, {
-				type: `info`,
-				buttons: [`OK`],
-				title: `Update`,
-				message: `No update available.`
-			});
+			dialog.showMessageBox($appWindow, getNoUpdateAvailableDialogOptions());
 		}
-	});
+	};
+	autoUpdater.on(`update-not-available`, showNoUpdateIfUserTriggered);
 	autoUpdater.on(`error`, err => {
 		console.error(`Auto-update error:`, err);
+		showNoUpdateIfUserTriggered();
 	});
 
 	autoUpdater.checkForUpdates();
