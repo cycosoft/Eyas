@@ -8,6 +8,7 @@ const fs = require(`fs-extra`);
 // setup paths
 const path = require(`path`);
 const roots = require(`./get-roots`);
+const { getBuildVersion } = require(`./get-build-version.js`);
 const names = {
 	buildAssets: `build-assets`,
 	eyasAssets: `eyas-assets`,
@@ -125,6 +126,9 @@ async function updatePackageJsonValues() {
 
 	// electron-builder requires `electron` to be a devDependency. Copy version from source.
 	packageJsonDist.devDependencies.electron = packageJsonModule.dependencies.electron;
+
+	// auto-generated UTC build version (YYYY.MMDD.HHMMSS)
+	packageJsonDist.version = getBuildVersion();
 
 	// save the updated dist/package.json
 	await fs.outputFile(paths.packageJsonDist, JSON.stringify(packageJsonDist));
