@@ -65,6 +65,10 @@ const paths = {
 		path.join(roots.src, `eyas-core`, `update-dialog.js`),
 		path.join(roots.moduleBuild, `update-dialog.js`)
 	);
+	await fs.copy(
+		path.join(roots.src, `eyas-core`, `metrics-events.js`),
+		path.join(roots.moduleBuild, `metrics-events.js`)
+	);
 	await fs.copy(paths.scriptsSrc, paths.scriptsBuild);
 
 	await fs.copy(

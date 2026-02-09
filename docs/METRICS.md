@@ -3,7 +3,7 @@
 ## Events
 
 - App Launch
-- Modal Exit Shown
+- Modal Background Content Viewed
 - App Exit
 
 ## Data
@@ -20,7 +20,7 @@
 - Determine average Eyas session length
   - Events: `App Launch`, `App Exit`
 - Determine average time exit modal is viewed
-  - Events: `Modal Exit Shown`, `App Exit`
+  - Events: `Modal Background Content Viewed`, `App Exit`
 - Determine active versions of Eyas being used
   - Data: `Eyas Version`
 - Determine operating system usage

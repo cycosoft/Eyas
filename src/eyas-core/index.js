@@ -57,19 +57,11 @@ const $operatingSystem = _os.platform();
 const { version: _appVersion } = require($paths.packageJson);
 const { buildMenuTemplate } = require(_path.join(__dirname, `menu-template.js`));
 const { getNoUpdateAvailableDialogOptions } = require(_path.join(__dirname, `update-dialog.js`));
+const { MP_EVENTS } = require(_path.join(__dirname, `metrics-events.js`));
 
 // constants
 const { LOAD_TYPES } = require($paths.constants);
 const APP_NAME = `Eyas`;
-const MP_EVENTS = {
-	core: {
-		launch: `App Launch`,
-		exit: `App Exit`
-	},
-	ui: {
-		modalExitShown: `Modal Exit Shown`
-	}
-};
 
 // APP_ENTRY: initialize the first layer of the app
 initElectronCore();
@@ -754,8 +746,8 @@ async function manageAppClose(evt) {
 	// send a message to the UI to show the exit modal with the captured image
 	uiEvent(`modal-exit-visible`, true);
 
-	// track that the exit modal is being opened
-	trackEvent(MP_EVENTS.ui.modalExitShown);
+	// track that the modal background content was viewed
+	trackEvent(MP_EVENTS.ui.modalBackgroundContentViewed);
 }
 
 // Toggle the Eyas UI layer so the user can interact with it or their test
