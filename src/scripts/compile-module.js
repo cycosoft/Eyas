@@ -69,6 +69,10 @@ const paths = {
 		path.join(roots.src, `eyas-core`, `metrics-events.js`),
 		path.join(roots.moduleBuild, `metrics-events.js`)
 	);
+	await fs.copy(
+		path.join(roots.src, `eyas-core`, `expose`),
+		path.join(roots.moduleBuild, `expose`)
+	);
 	await fs.copy(paths.scriptsSrc, paths.scriptsBuild);
 
 	await fs.copy(
