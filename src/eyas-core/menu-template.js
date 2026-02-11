@@ -30,8 +30,31 @@ function buildMenuTemplate(context) {
 		linkItems,
 		updateStatus = `idle`,
 		onCheckForUpdates,
-		onInstallUpdate
+		onInstallUpdate,
+		exposeActive = false,
+		exposeMinutes = 0,
+		onStartExpose,
+		onStopExpose,
+		onCopyExposedUrl,
+		onOpenExposedInBrowser,
+		exposeHttpsEnabled = false,
+		onToggleExposeHttps
 	} = context;
+
+	const exposeLabel = exposeActive
+		? `🌐 Exposed for ${exposeMinutes} minute${exposeMinutes === 1 ? `` : `s`}`
+		: `🌐 Start Server`;
+	const exposeMenuItem = {
+		label: exposeLabel,
+		click: onStartExpose
+	};
+	if (exposeActive && onStopExpose && onCopyExposedUrl && onOpenExposedInBrowser) {
+		exposeMenuItem.submenu = [
+			{ label: `⏹ &Stop Expose`, click: onStopExpose },
+			{ label: `🔗 &Copy Exposed URL`, click: onCopyExposedUrl },
+			{ label: `🌐 &Open in Browser`, click: onOpenExposedInBrowser }
+		];
+	}
 
 	const updateStatusItem = updateStatus === `downloading`
 		? { label: `⬆️ Downloading update...`, enabled: false }
@@ -51,6 +74,7 @@ function buildMenuTemplate(context) {
 			submenu: [
 				{ label: `🧪 &Restart Test`, click: startAFreshTest },
 				{ label: `🔗 &Copy URL`, click: copyUrl },
+				...(typeof onToggleExposeHttps === `function` ? [{ type: `separator` }, { label: exposeHttpsEnabled ? `🔒 ✓ HTTPS for Expose` : `🔒 Enable HTTPS for Expose`, click: onToggleExposeHttps }] : []),
 				{ type: `separator` },
 				{ role: `toggleDevTools`, accelerator: `F12`, label: `🔧 &Developer Tools${isDev ? ` (Test)` : ``}` }
 			]
@@ -64,6 +88,8 @@ function buildMenuTemplate(context) {
 			click: openUiDevTools
 		});
 	}
+
+	menu.push(exposeMenuItem);
 
 	menu.push({
 		label: `${testNetworkEnabled ? `🌐` : `🔴`} &Network`,
