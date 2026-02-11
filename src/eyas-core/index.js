@@ -24,7 +24,9 @@ let $eyasLayer = null;
 let $config = null;
 let $configToLoad = {};
 let $testNetworkEnabled = true;
-const $testServer = null;
+let $exposeHttpsEnabled = false;
+let $exposeMenuIntervalId = null;
+let $exposeSetupShown = false;
 let $testDomainRaw = null;
 let $testDomain = `eyas://local.test`;
 const $uiDomain = `ui://eyas.interface`;
@@ -58,6 +60,10 @@ const { version: _appVersion } = require($paths.packageJson);
 const { buildMenuTemplate } = require(_path.join(__dirname, `menu-template.js`));
 const { getNoUpdateAvailableDialogOptions } = require(_path.join(__dirname, `update-dialog.js`));
 const { MP_EVENTS } = require(_path.join(__dirname, `metrics-events.js`));
+const exposeServer = require(_path.join(__dirname, `expose`, `expose-server.js`));
+const exposeCerts = require(_path.join(__dirname, `expose`, `expose-certs.js`));
+const exposeTimeout = require(_path.join(__dirname, `expose`, `expose-timeout.js`));
+const exposeHosts = require(_path.join(__dirname, `expose`, `expose-hosts.js`));
 
 // constants
 const { LOAD_TYPES } = require($paths.constants);
@@ -408,12 +414,15 @@ function initUiListeners() {
 		// track that the app is being closed
 		trackEvent(MP_EVENTS.core.exit);
 
-		// Shut down the test server AND THEN exit the app
-		if ($testServer) {
-			$testServer.close(_electronCore.quit);
-		} else {
-			_electronCore.quit();
+		// Shut down expose server if running, then exit
+		exposeHosts.removeAutoAdded();
+		exposeServer.stopExpose();
+		exposeTimeout.cancelExposeTimeout();
+		if ($exposeMenuIntervalId) {
+			clearInterval($exposeMenuIntervalId);
+			$exposeMenuIntervalId = null;
 		}
+		_electronCore.quit();
 	});
 
 	// listen for the user to select an environment
@@ -430,6 +439,11 @@ function initUiListeners() {
 	ipcMain.on(`launch-link`, (event, { url, openInBrowser }) => {
 		// navigate to the requested url
 		navigate(parseURL(url).toString(), openInBrowser);
+	});
+
+	// expose setup modal: user clicked Continue, start the server
+	ipcMain.on(`expose-setup-continue`, () => {
+		doStartExpose();
 	});
 }
 
@@ -554,6 +568,93 @@ function onResize() {
 	setMenu();
 }
 
+function stopExposeHandler() {
+	exposeHosts.removeAutoAdded();
+	exposeServer.stopExpose();
+	exposeTimeout.cancelExposeTimeout();
+	if ($exposeMenuIntervalId) {
+		clearInterval($exposeMenuIntervalId);
+		$exposeMenuIntervalId = null;
+	}
+	setMenu();
+}
+
+function copyExposedUrlHandler() {
+	const state = exposeServer.getExposeState();
+	if (state && state.url) {
+		require(`electron`).clipboard.writeText(state.url);
+	}
+}
+
+function openExposedInBrowserHandler() {
+	const state = exposeServer.getExposeState();
+	if (state && state.url) {
+		require(`electron`).shell.openExternal(state.url);
+	}
+}
+
+async function startExposeHandler() {
+	if (exposeServer.getExposeState()) return;
+	if (!$paths.testSrc) return;
+	if (!$exposeSetupShown && $eyasLayer) {
+		const caInstalled = exposeCerts.isCaInstalled();
+		const steps = [
+			{ id: `ca`, label: `Install mkcert CA (bypass browser certificate warnings)`, status: caInstalled ? `done` : `pending`, canInitiate: !caInstalled },
+			{ id: `hosts`, label: `Add domain to etc/hosts (optional)`, status: `pending`, canInitiate: false }
+		];
+		uiEvent(`show-expose-setup-modal`, {
+			domain: `http://127.0.0.1`,
+			hostnameForHosts: `local.test`,
+			steps
+		});
+		return;
+	}
+	await doStartExpose();
+}
+
+async function doStartExpose() {
+	let certs;
+	if ($exposeHttpsEnabled) {
+		try {
+			certs = await exposeCerts.getCerts([`127.0.0.1`, `localhost`]);
+		} catch (err) {
+			console.error(`Expose HTTPS cert generation failed:`, err);
+			return;
+		}
+	}
+	try {
+		await exposeServer.startExpose({
+			rootPath: $paths.testSrc,
+			useHttps: $exposeHttpsEnabled,
+			certs: certs || undefined
+		});
+	} catch (err) {
+		console.error(`Expose server start failed:`, err);
+		return;
+	}
+	// Optional: add local.test to etc/hosts so user can open http://local.test:port (may require root)
+	try {
+		exposeHosts.addHostEntry(`local.test`);
+	} catch {
+		// addHostEntry may fail (e.g. no root for /etc/hosts)
+	}
+	$exposeSetupShown = true;
+	exposeTimeout.startExposeTimeout(() => {
+		if ($appWindow && typeof $appWindow.flashFrame === `function`) {
+			$appWindow.flashFrame(true);
+		}
+		exposeHosts.removeAutoAdded();
+		exposeServer.stopExpose();
+		if ($exposeMenuIntervalId) {
+			clearInterval($exposeMenuIntervalId);
+			$exposeMenuIntervalId = null;
+		}
+		setMenu();
+	});
+	$exposeMenuIntervalId = setInterval(() => setMenu(), 60 * 1000);
+	setMenu();
+}
+
 // Set up the application menu
 async function setMenu () {
 	const { Menu, dialog } = require(`electron`);
@@ -663,7 +764,21 @@ Runner: v${_appVersion}
 		linkItems,
 		updateStatus: typeof $updateStatus !== `undefined` ? $updateStatus : `idle`,
 		onCheckForUpdates: typeof $onCheckForUpdates === `function` ? $onCheckForUpdates : () => {},
-		onInstallUpdate: typeof $onInstallUpdate === `function` ? $onInstallUpdate : () => {}
+		onInstallUpdate: typeof $onInstallUpdate === `function` ? $onInstallUpdate : () => {},
+		exposeActive: !!exposeServer.getExposeState(),
+		exposeMinutes: (() => {
+			const s = exposeServer.getExposeState();
+			return s ? Math.max(0, Math.floor((Date.now() - s.startedAt) / 60000)) : 0;
+		})(),
+		onStartExpose: startExposeHandler,
+		onStopExpose: stopExposeHandler,
+		onCopyExposedUrl: copyExposedUrlHandler,
+		onOpenExposedInBrowser: openExposedInBrowserHandler,
+		exposeHttpsEnabled: $exposeHttpsEnabled,
+		onToggleExposeHttps: () => {
+			$exposeHttpsEnabled = !$exposeHttpsEnabled;
+			setMenu();
+		}
 	};
 
 	const template = buildMenuTemplate(context);
@@ -826,7 +941,7 @@ function navigate(path, openInBrowser) {
 			// not running the local test OR
 			!runningTestSource ||
 			// the test server is running AND we're running the local test
-			($testServer && runningTestSource)
+			(exposeServer.getExposeState() && runningTestSource)
 		)
 	){
 		// open the requested url in the default browser
@@ -982,6 +1097,17 @@ function clearCache() {
 async function startAFreshTest() {
 	// imports
 	const semver = require(`semver`);
+
+	// stop expose server when test changes
+	if (exposeServer.getExposeState()) {
+		exposeHosts.removeAutoAdded();
+		exposeServer.stopExpose();
+		exposeTimeout.cancelExposeTimeout();
+		if ($exposeMenuIntervalId) {
+			clearInterval($exposeMenuIntervalId);
+			$exposeMenuIntervalId = null;
+		}
+	}
 
 	// set the available viewports
 	$allViewports = [...$config.viewports, ...$defaultViewports];
