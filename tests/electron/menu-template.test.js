@@ -27,7 +27,15 @@ const minimalContext = {
 	linkItems: [],
 	updateStatus: `idle`,
 	onCheckForUpdates: noop,
-	onInstallUpdate: noop
+	onInstallUpdate: noop,
+	exposeActive: false,
+	exposeMinutes: 0,
+	onStartExpose: noop,
+	onStopExpose: noop,
+	onCopyExposedUrl: noop,
+	onOpenExposedInBrowser: noop,
+	exposeHttpsEnabled: false,
+	onToggleExposeHttps: noop
 };
 
 describe(`buildMenuTemplate`, () => {
@@ -117,5 +125,61 @@ describe(`buildMenuTemplate`, () => {
 		const last = template[template.length - 1];
 		expect(last.label).toMatch(/Update available|Restart to install/i);
 		expect(last.label).toContain(updateIcon);
+	});
+
+	test(`when exposeActive is false, template includes top-level Start Server item with onStartExpose click`, () => {
+		const onStartExpose = () => {};
+		const ctx = { ...minimalContext, exposeActive: false, exposeMinutes: 0, onStartExpose };
+		const template = buildMenuTemplate(ctx);
+		const startItem = template.find(item => item.label && item.label.includes(`Start Server`));
+		expect(startItem).toBeDefined();
+		expect(startItem.label).toContain(`Start Server`);
+		expect(startItem.click).toBe(onStartExpose);
+	});
+
+	test(`when exposeActive is true and exposeMinutes 23, Start Server item label is Exposed for 23 minutes`, () => {
+		const ctx = { ...minimalContext, exposeActive: true, exposeMinutes: 23 };
+		const template = buildMenuTemplate(ctx);
+		const startItem = template.find(item => item.label && (item.label.includes(`Start Server`) || item.label.includes(`Exposed`)));
+		expect(startItem).toBeDefined();
+		expect(startItem.label).toMatch(/Exposed for 23 minutes?/);
+	});
+
+	test(`when exposeActive is true, Start Server item has submenu with Stop, Copy URL, Open in browser`, () => {
+		const onStopExpose = () => {};
+		const onCopyExposedUrl = () => {};
+		const onOpenExposedInBrowser = () => {};
+		const ctx = {
+			...minimalContext,
+			exposeActive: true,
+			exposeMinutes: 5,
+			onStopExpose,
+			onCopyExposedUrl,
+			onOpenExposedInBrowser
+		};
+		const template = buildMenuTemplate(ctx);
+		const startItem = template.find(item => item.label && item.label.includes(`Exposed`));
+		expect(startItem).toBeDefined();
+		expect(Array.isArray(startItem.submenu)).toBe(true);
+		const stopItem = startItem.submenu.find(i => i.label && i.label.toLowerCase().includes(`stop`));
+		const copyItem = startItem.submenu.find(i => i.label && i.label.toLowerCase().includes(`copy`));
+		const openItem = startItem.submenu.find(i => i.label && i.label.toLowerCase().includes(`open`) || i.label && i.label.toLowerCase().includes(`browser`));
+		expect(stopItem).toBeDefined();
+		expect(stopItem.click).toBe(onStopExpose);
+		expect(copyItem).toBeDefined();
+		expect(copyItem.click).toBe(onCopyExposedUrl);
+		expect(openItem).toBeDefined();
+		expect(openItem.click).toBe(onOpenExposedInBrowser);
+	});
+
+	test(`template includes Enable HTTPS option when exposeHttpsEnabled and onToggleExposeHttps provided`, () => {
+		const onToggle = () => {};
+		const ctx = { ...minimalContext, exposeHttpsEnabled: true, onToggleExposeHttps: onToggle };
+		const template = buildMenuTemplate(ctx);
+		const toolsMenu = template.find(item => item.label && item.label.includes(`Tools`));
+		expect(toolsMenu).toBeDefined();
+		const httpsItem = toolsMenu.submenu.find(s => s.label && s.label.toLowerCase().includes(`https`));
+		expect(httpsItem).toBeDefined();
+		expect(httpsItem.click).toBe(onToggle);
 	});
 });
