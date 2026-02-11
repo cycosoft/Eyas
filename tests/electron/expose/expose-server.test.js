@@ -8,10 +8,10 @@ describe(`expose-server`, () => {
 	let tempDir;
 
 	beforeEach(async () => {
-		tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'eyas-expose-'));
-		fs.writeFileSync(path.join(tempDir, 'index.html'), '<html>root</html>');
-		fs.mkdirSync(path.join(tempDir, 'sub'), { recursive: true });
-		fs.writeFileSync(path.join(tempDir, 'sub', 'file.txt'), 'sub file');
+		tempDir = fs.mkdtempSync(path.join(os.tmpdir(), `eyas-expose-`));
+		fs.writeFileSync(path.join(tempDir, `index.html`), `<html>root</html>`);
+		fs.mkdirSync(path.join(tempDir, `sub`), { recursive: true });
+		fs.writeFileSync(path.join(tempDir, `sub`, `file.txt`), `sub file`);
 	});
 
 	afterEach(() => {
@@ -34,24 +34,24 @@ describe(`expose-server`, () => {
 		expect(state.useHttps).toBe(false);
 
 		const baseUrl = state.url;
-		const body = await fetchAsText(baseUrl + '/');
-		expect(body).toContain('root');
+		const body = await fetchAsText(baseUrl + `/`);
+		expect(body).toContain(`root`);
 
-		const bodySub = await fetchAsText(baseUrl + '/sub/file.txt');
-		expect(bodySub).toBe('sub file');
+		const bodySub = await fetchAsText(baseUrl + `/sub/file.txt`);
+		expect(bodySub).toBe(`sub file`);
 
-		const res = await fetch(baseUrl + '/', { redirect: 'manual' });
-		expect(res.headers.get('content-type')).toMatch(/text\/html/);
+		const res = await fetch(baseUrl + `/`, { redirect: `manual` });
+		expect(res.headers.get(`content-type`)).toMatch(/text\/html/);
 	});
 
 	test(`requests for path outside root return 404`, async () => {
 		const state = await startExpose({ rootPath: tempDir });
 		const baseUrl = state.url;
 
-		const res1 = await fetch(baseUrl + '/../package.json', { redirect: 'manual' });
+		const res1 = await fetch(baseUrl + `/../package.json`, { redirect: `manual` });
 		expect(res1.status).toBe(404);
 
-		const res2 = await fetch(baseUrl + '/..%2f..%2fetc%2fpasswd', { redirect: 'manual' });
+		const res2 = await fetch(baseUrl + `/..%2f..%2fetc%2fpasswd`, { redirect: `manual` });
 		expect(res2.status).toBe(404);
 	});
 
@@ -61,12 +61,12 @@ describe(`expose-server`, () => {
 		stopExpose();
 		expect(getExposeState()).toBeNull();
 
-		await expect(fetch(baseUrl + '/')).rejects.toThrow();
+		await expect(fetch(baseUrl + `/`)).rejects.toThrow();
 	});
 
 	test(`server URL uses 127.0.0.1 only`, async () => {
 		const state = await startExpose({ rootPath: tempDir });
-		expect(state.url).toContain('127.0.0.1');
+		expect(state.url).toContain(`127.0.0.1`);
 		expect(state.url).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
 	});
 });

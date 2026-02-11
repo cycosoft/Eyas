@@ -13,24 +13,24 @@ describe(`expose-hosts`, () => {
 	});
 
 	test(`addHostEntry calls hostile.set with 127.0.0.1 and hostname`, () => {
-		addHostEntry('local.test', mockHostile);
-		expect(mockHostile.set).toHaveBeenCalledWith('127.0.0.1', 'local.test');
-		expect(wasAutoAdded('local.test')).toBe(true);
+		addHostEntry(`local.test`, mockHostile);
+		expect(mockHostile.set).toHaveBeenCalledWith(`127.0.0.1`, `local.test`);
+		expect(wasAutoAdded(`local.test`)).toBe(true);
 	});
 
 	test(`removeHostEntry calls hostile.remove for auto-added host`, () => {
-		addHostEntry('local.test', mockHostile);
-		removeHostEntry('local.test', mockHostile);
-		expect(mockHostile.remove).toHaveBeenCalledWith('127.0.0.1', 'local.test');
-		expect(wasAutoAdded('local.test')).toBe(false);
+		addHostEntry(`local.test`, mockHostile);
+		removeHostEntry(`local.test`, mockHostile);
+		expect(mockHostile.remove).toHaveBeenCalledWith(`127.0.0.1`, `local.test`);
+		expect(wasAutoAdded(`local.test`)).toBe(false);
 	});
 
 	test(`removeAutoAdded removes all auto-added entries`, () => {
-		addHostEntry('local.test', mockHostile);
-		addHostEntry('other.test', mockHostile);
+		addHostEntry(`local.test`, mockHostile);
+		addHostEntry(`other.test`, mockHostile);
 		removeAutoAdded(mockHostile);
 		expect(mockHostile.remove).toHaveBeenCalledTimes(2);
-		expect(wasAutoAdded('local.test')).toBe(false);
-		expect(wasAutoAdded('other.test')).toBe(false);
+		expect(wasAutoAdded(`local.test`)).toBe(false);
+		expect(wasAutoAdded(`other.test`)).toBe(false);
 	});
 });
