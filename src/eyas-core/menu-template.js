@@ -44,16 +44,22 @@ function buildMenuTemplate(context) {
 	const exposeLabel = exposeActive
 		? `🌐 Exposed for ${exposeMinutes} minute${exposeMinutes === 1 ? `` : `s`}`
 		: `🌐 Start Server`;
+
 	const exposeMenuItem = {
-		label: exposeLabel,
-		click: onStartExpose
+		label: exposeLabel
 	};
+
 	if (exposeActive && onStopExpose && onCopyExposedUrl && onOpenExposedInBrowser) {
 		exposeMenuItem.submenu = [
 			{ label: `⏹ &Stop Expose`, click: onStopExpose },
 			{ label: `🔗 &Copy Exposed URL`, click: onCopyExposedUrl },
 			{ label: `🌐 &Open in Browser`, click: onOpenExposedInBrowser }
 		];
+	} else {
+		exposeMenuItem.submenu = [
+			{ label: `🌐 Start Server`, click: onStartExpose }
+		];
+		exposeMenuItem.click = onStartExpose;
 	}
 
 	const updateStatusItem = updateStatus === `downloading`
