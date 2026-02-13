@@ -270,7 +270,7 @@ async function initElectronUi() {
 	});
 
 	// intercept all web requests
-	$appWindow.webContents.session.webRequest.onBeforeRequest({ urls: [] }, (request, callback) => {
+	$appWindow.webContents.session.webRequest.onBeforeRequest({ urls: [`<all_urls>`] }, (request, callback) => {
 		// validate this request
 		if (disableNetworkRequest(request.url)) {
 			return callback({ cancel: true });
