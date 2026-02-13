@@ -20,6 +20,26 @@ function getMenuStructure(electronApp) {
 	});
 }
 
+/**
+ * Programmatically click a top-level menu item.
+ * Runs in the Electron main process via evaluate().
+ */
+function clickTopLevelMenuItem(electronApp, label) {
+	return electronApp.evaluate(({ Menu }, label) => {
+		const appMenu = Menu.getApplicationMenu();
+		if (!appMenu) return false;
+
+		const menuItem = appMenu.items.find(item => item.label && item.label.includes(label));
+		if (menuItem && menuItem.click) {
+			// In a test environment, passing a direct window reference can be tricky.
+			// The handler for this specific click doesn't use the window object, so null is safe.
+			menuItem.click(menuItem, null, {});
+			return true;
+		}
+		return false;
+	}, label);
+}
+
 function getTopLevelLabels(menuStructure) {
 	return menuStructure ? menuStructure.map(item => item.label) : [];
 }
@@ -109,3 +129,63 @@ test(`app-name menu has About and Exit`, async () => {
 	}
 	await electronApp.close();
 });
+
+test(`Expose Test menu flow works correctly`, async () => {
+	const electronPath = require(`electron`);
+	const mainPath = path.join(__dirname, `../../.build/index.js`);
+
+	const electronApp = await electron.launch({
+		executablePath: electronPath,
+		args: [mainPath, `--dev`],
+		timeout: 30000
+	});
+
+	const window = await electronApp.firstWindow();
+	await window.waitForLoadState(`domcontentloaded`);
+
+	// The UI is in a BrowserView, find its Page object by looking for the custom protocol
+	const ui = electronApp.windows().find(p => p.url().startsWith(`ui://`));
+	expect(ui).toBeDefined();
+
+	await new Promise(resolve => setTimeout(resolve, 1500));
+
+	// --- 1. Click menu item, modal appears ---
+	await clickTopLevelMenuItem(electronApp, `Expose Test`);
+	const modalTitle = ui.locator(`text="Expose test server setup"`);
+	await expect(modalTitle).toBeVisible();
+
+	// --- 2. Click cancel, modal disappears, server not started ---
+	await ui.locator(`button:has-text("Cancel")`).click();
+	await expect(modalTitle).not.toBeVisible();
+	let menu = await getMenuStructure(electronApp);
+	let exposeItem = menu.find(item => item.label.includes(`Expose`));
+	expect(exposeItem.label).toContain(`Expose Test`); // Should not have changed
+
+	// --- 3. Click continue, server starts ---
+	await clickTopLevelMenuItem(electronApp, `Expose Test`);
+	await ui.locator(`button:has-text("Continue")`).click();
+	await expect(modalTitle).not.toBeVisible();
+
+	// Wait for menu to update
+	await new Promise(resolve => setTimeout(resolve, 500));
+
+	menu = await getMenuStructure(electronApp);
+	exposeItem = menu.find(item => item.label.includes(`Expose`));
+	expect(exposeItem.label).toMatch(/Exposed for ~30m/); // Should now show remaining time
+
+	// --- Cleanup ---
+	try {
+		await electronApp.evaluate(({ BrowserWindow }) => {
+			const w = BrowserWindow.getAllWindows()[0];
+			if (w && w.getBrowserViews().length > 0) {
+				return w.getBrowserViews()[0].webContents.executeJavaScript(`window.eyas?.send('app-exit'); true`);
+			}
+			return false;
+		});
+		await new Promise(resolve => setTimeout(resolve, 500));
+	} catch {
+		// ignore
+	}
+	await electronApp.close();
+});
+

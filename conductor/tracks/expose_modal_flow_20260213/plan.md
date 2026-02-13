@@ -16,4 +16,4 @@
     - [x] Sub-task: Click the "Cancel" button in the modal and verify that the server has not started.
     - [x] Sub-task: Click the "Expose Test" menu item again.
     - [x] Sub-task: Click the "Continue" button and verify that the server has started successfully.
-- [ ] Task: Conductor - User Manual Verification 'Testing and Verification' (Protocol in workflow.md)
+- [~] Task: Conductor - User Manual Verification 'Testing and Verification' (Protocol in workflow.md)
