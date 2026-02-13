@@ -766,9 +766,13 @@ Runner: v${_appVersion}
 		onCheckForUpdates: typeof $onCheckForUpdates === `function` ? $onCheckForUpdates : () => {},
 		onInstallUpdate: typeof $onInstallUpdate === `function` ? $onInstallUpdate : () => {},
 		exposeActive: !!exposeServer.getExposeState(),
-		exposeMinutes: (() => {
+		exposeRemainingMinutes: (() => {
 			const s = exposeServer.getExposeState();
-			return s ? Math.max(0, Math.floor((Date.now() - s.startedAt) / 60000)) : 0;
+			if (!s) { return 0; }
+			const EXPIRE_MS = 30 * 60 * 1000;
+			const elapsed = Date.now() - s.startedAt;
+			const remaining = EXPIRE_MS - elapsed;
+			return Math.max(0, Math.ceil(remaining / 60000));
 		})(),
 		onStartExpose: startExposeHandler,
 		onStopExpose: stopExposeHandler,

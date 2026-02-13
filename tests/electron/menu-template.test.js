@@ -29,7 +29,7 @@ const minimalContext = {
 	onCheckForUpdates: noop,
 	onInstallUpdate: noop,
 	exposeActive: false,
-	exposeMinutes: 0,
+	exposeRemainingMinutes: 0,
 	onStartExpose: noop,
 	onStopExpose: noop,
 	onCopyExposedUrl: noop,
@@ -129,7 +129,7 @@ describe(`buildMenuTemplate`, () => {
 
 	test(`when exposeActive is false, template includes top-level Expose Test item with onStartExpose click`, () => {
 		const onStartExpose = () => {};
-		const ctx = { ...minimalContext, exposeActive: false, exposeMinutes: 0, onStartExpose };
+		const ctx = { ...minimalContext, exposeActive: false, exposeRemainingMinutes: 0, onStartExpose };
 		const template = buildMenuTemplate(ctx);
 		const startItem = template.find(item => item.label && item.label.includes(`Expose Test`));
 		expect(startItem).toBeDefined();
@@ -137,12 +137,12 @@ describe(`buildMenuTemplate`, () => {
 		expect(startItem.click).toBe(onStartExpose);
 	});
 
-	test(`when exposeActive is true and exposeMinutes 23, Expose Test item label is Exposed for 23 minutes`, () => {
-		const ctx = { ...minimalContext, exposeActive: true, exposeMinutes: 23 };
+	test(`when exposeActive is true and exposeRemainingMinutes is 29, label is 'Exposed for ~29m'`, () => {
+		const ctx = { ...minimalContext, exposeActive: true, exposeRemainingMinutes: 29 };
 		const template = buildMenuTemplate(ctx);
 		const startItem = template.find(item => item.label && (item.label.includes(`Expose Test`) || item.label.includes(`Exposed`)));
 		expect(startItem).toBeDefined();
-		expect(startItem.label).toMatch(/Exposed for 23 minutes?/);
+		expect(startItem.label).toMatch(/Exposed for ~29m/);
 	});
 
 	test(`when exposeActive is true, Expose Test item has submenu with Stop, Copy URL, Open in browser`, () => {
@@ -152,7 +152,7 @@ describe(`buildMenuTemplate`, () => {
 		const ctx = {
 			...minimalContext,
 			exposeActive: true,
-			exposeMinutes: 5,
+			exposeRemainingMinutes: 5,
 			onStopExpose,
 			onCopyExposedUrl,
 			onOpenExposedInBrowser
