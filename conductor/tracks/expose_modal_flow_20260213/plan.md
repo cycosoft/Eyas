@@ -4,7 +4,7 @@
 - [x] Task: Analyze `startExposeHandler` in `src/eyas-core/index.js` to identify where the modal is shown and where `doStartExpose` is called.
 - [x] Task: Modify `startExposeHandler` to only display the `ExposeSetupModal` and prevent the immediate call to `doStartExpose`.
 - [x] Task: Add a "Cancel" button or dismissal handler to the `ExposeSetupModal.vue` component that closes the modal without further action.
-- [ ] Task: Ensure the "Continue" button handler in `ExposeSetupModal.vue` sends a new IPC event (e.g., `expose-setup-continue`).
+- [x] Task: Ensure the "Continue" button handler in `ExposeSetupModal.vue` sends a new IPC event (e.g., `expose-setup-continue`).
 - [ ] Task: Confirm a listener for the `expose-setup-continue` event exists in `src/eyas-core/index.js` and that it correctly calls the `doStartExpose` function.
 - [ ] Task: Conductor - User Manual Verification 'Decouple UI from Server Logic' (Protocol in workflow.md)
 
