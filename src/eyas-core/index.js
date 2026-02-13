@@ -26,7 +26,6 @@ let $configToLoad = {};
 let $testNetworkEnabled = true;
 let $exposeHttpsEnabled = false;
 let $exposeMenuIntervalId = null;
-let $exposeSetupShown = false;
 let $testDomainRaw = null;
 let $testDomain = `eyas://local.test`;
 const $uiDomain = `ui://eyas.interface`;
@@ -596,7 +595,9 @@ function openExposedInBrowserHandler() {
 async function startExposeHandler() {
 	if (exposeServer.getExposeState()) return;
 	if (!$paths.testSrc) return;
-	if (!$exposeSetupShown && $eyasLayer) {
+
+	// Always show the setup modal
+	if ($eyasLayer) {
 		const caInstalled = exposeCerts.isCaInstalled();
 		const steps = [
 			{ id: `ca`, label: `Install mkcert CA (bypass browser certificate warnings)`, status: caInstalled ? `done` : `pending`, canInitiate: !caInstalled },
@@ -607,9 +608,7 @@ async function startExposeHandler() {
 			hostnameForHosts: `local.test`,
 			steps
 		});
-		return;
 	}
-	await doStartExpose();
 }
 
 async function doStartExpose() {
@@ -638,7 +637,6 @@ async function doStartExpose() {
 	} catch {
 		// addHostEntry may fail (e.g. no root for /etc/hosts)
 	}
-	$exposeSetupShown = true;
 	exposeTimeout.startExposeTimeout(() => {
 		if ($appWindow && typeof $appWindow.flashFrame === `function`) {
 			$appWindow.flashFrame(true);
