@@ -6,12 +6,12 @@
 		@keyup.e="exit"
 	>
 		<v-card>
-			<v-card-text>
+			<v-card-text data-qa="exit-modal-text">
 				Would you like to exit the test?
 			</v-card-text>
 
 			<v-card-actions class="mt-5">
-				<v-btn @click="cancel">
+				<v-btn data-qa="btn-cancel-exit" @click="cancel">
 					Cancel
 				</v-btn>
 
@@ -21,6 +21,7 @@
 					color="error"
 					variant="elevated"
 					:loading="exiting"
+					data-qa="btn-exit"
 					@click="exit"
 				>
 					<u>E</u>xit

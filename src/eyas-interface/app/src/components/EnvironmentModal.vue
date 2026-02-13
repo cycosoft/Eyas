@@ -5,7 +5,7 @@
 	>
 		<v-card class="pa-3">
 			<v-card-text>
-				<p class="font-weight-black text-center text-h6 mb-10">Select Test Environment</p>
+				<p class="font-weight-black text-center text-h6 mb-10" data-qa="environment-modal-title">Select Test Environment</p>
 
 				<v-sheet>
 					<v-row>
@@ -25,6 +25,7 @@
 									size="large"
 									:stacked="$vuetify.display.smAndUp"
 									:loading="loadingIndex === index"
+									data-qa="btn-env"
 									@click="choose(domain.url, index)"
 								>
 									<template v-slot:prepend>

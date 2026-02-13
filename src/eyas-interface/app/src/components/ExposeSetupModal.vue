@@ -1,7 +1,7 @@
 <template>
 	<ModalWrapper v-model="visible">
 		<v-card class="pa-3">
-			<v-card-title class="text-h6">Expose test server setup</v-card-title>
+			<v-card-title class="text-h6" data-qa="expose-setup-title">Expose test server setup</v-card-title>
 			<v-card-text>
 				<p class="mb-4">Complete these steps if needed, then click Continue to start the server.</p>
 
@@ -60,10 +60,10 @@
 			</v-card-text>
 			<v-card-actions>
 				<v-spacer />
-				<v-btn @click="cancel">
+				<v-btn data-qa="btn-cancel-expose" @click="cancel">
 					Cancel
 				</v-btn>
-				<v-btn color="primary" @click="continueStart">
+				<v-btn color="primary" data-qa="btn-continue-expose" @click="continueStart">
 					Continue
 				</v-btn>
 			</v-card-actions>
