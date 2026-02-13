@@ -40,4 +40,14 @@ describe(`ExposeSetupModal`, () => {
 		expect(global.window.eyas.send).toHaveBeenCalledWith(`expose-setup-continue`);
 		expect(wrapper.vm.visible).toBe(false);
 	});
+
+	test(`cancel closes modal without sending event`, async () => {
+		receiveCallback({ domain: `http://127.0.0.1`, hostnameForHosts: `local.test`, steps: [] });
+		await wrapper.vm.$nextTick();
+		expect(wrapper.vm.visible).toBe(true);
+
+		wrapper.vm.cancel();
+		expect(global.window.eyas.send).not.toHaveBeenCalledWith(`expose-setup-continue`);
+		expect(wrapper.vm.visible).toBe(false);
+	});
 });
