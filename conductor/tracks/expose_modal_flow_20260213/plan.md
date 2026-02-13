@@ -10,7 +10,7 @@
 
 ## Phase 2: Testing and Verification
 - [ ] Task: Write a unit test for `startExposeHandler` to verify that it only shows the modal and does not start the server.
-- [ ] Task: Write a component test for `ExposeSetupModal.vue` to verify the "Cancel" functionality.
+- [x] Task: Write a component test for `ExposeSetupModal.vue` to verify the "Cancel" functionality.
 - [ ] Task: Create or update an end-to-end test to simulate the full user flow:
     - [ ] Sub-task: Click the "Expose Test" menu item.
     - [ ] Sub-task: Click the "Cancel" button in the modal and verify that the server has not started.
