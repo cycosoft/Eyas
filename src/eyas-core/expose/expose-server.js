@@ -38,7 +38,7 @@ async function startExpose(options) {
 
 	app.use(express.static(rootPath, { index: [`index.html`] }));
 
-	app.get(`*`, (req, res) => {
+	app.use((req, res) => {
 		res.status(404).end();
 	});
 

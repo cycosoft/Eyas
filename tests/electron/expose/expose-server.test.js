@@ -18,7 +18,7 @@ describe(`expose-server`, () => {
 		stopExpose();
 		try {
 			fs.rmSync(tempDir, { recursive: true });
-		} catch (_) {}
+		} catch { /* ignore */ }
 	});
 
 	test(`getExposeState returns null when server not started`, () => {
