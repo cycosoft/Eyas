@@ -1,6 +1,6 @@
 # Implementation Plan: Decouple Expose Modal
 
-## Phase 1: Decouple UI from Server Logic
+## Phase 1: Decouple UI from Server Logic [checkpoint: 639d599]
 - [x] Task: Analyze `startExposeHandler` in `src/eyas-core/index.js` to identify where the modal is shown and where `doStartExpose` is called.
 - [x] Task: Modify `startExposeHandler` to only display the `ExposeSetupModal` and prevent the immediate call to `doStartExpose`.
 - [x] Task: Add a "Cancel" button or dismissal handler to the `ExposeSetupModal.vue` component that closes the modal without further action.
