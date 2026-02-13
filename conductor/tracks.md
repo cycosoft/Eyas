@@ -1,8 +1,3 @@
 # Project Tracks
 
 This file tracks all major tracks for the project. Each track has its own detailed plan in its respective folder.
-
----
-
-- [x] **Track: Refactor Expose Menu and Modal Integration**
-*Link: [./tracks/refactor_expose_menu_20260213/](./tracks/refactor_expose_menu_20260213/)*
