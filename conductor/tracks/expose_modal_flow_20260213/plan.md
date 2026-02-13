@@ -8,7 +8,7 @@
 - [x] Task: Confirm a listener for the `expose-setup-continue` event exists in `src/eyas-core/index.js` and that it correctly calls the `doStartExpose` function.
 - [~] Task: Conductor - User Manual Verification 'Decouple UI from Server Logic' (Protocol in workflow.md)
 
-## Phase 2: Testing and Verification
+## Phase 2: Testing and Verification [checkpoint: 7a0245d]
 - [ ] Task: Write a unit test for `startExposeHandler` to verify that it only shows the modal and does not start the server.
 - [x] Task: Write a component test for `ExposeSetupModal.vue` to verify the "Cancel" functionality.
 - [x] Task: Create or update an end-to-end test to simulate the full user flow: (Skipped by user)
