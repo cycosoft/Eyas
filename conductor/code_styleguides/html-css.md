@@ -4,7 +4,7 @@ This document summarizes key rules and best practices from the Google HTML/CSS S
 
 ## 1. General Rules
 - **Protocol:** Use HTTPS for all embedded resources.
-- **Indentation:** Indent by 2 spaces. Do not use tabs.
+- **Indentation:** Use tabs for indentation.
 - **Capitalization:** Use only lowercase for all code (element names, attributes, selectors, properties).
 - **Trailing Whitespace:** Remove all trailing whitespace.
 - **Encoding:** Use UTF-8 (without a BOM). Specify `<meta charset="utf-8">` in HTML.
@@ -35,7 +35,6 @@ This document summarizes key rules and best practices from the Google HTML/CSS S
 
 ## 5. CSS Formatting Rules
 - **Declaration Order:** Alphabetize declarations within a rule.
-- **Indentation:** Indent all block content.
 - **Semicolons:** Use a semicolon after every declaration.
 - **Spacing:**
   - Use a space after a property name's colon (`font-weight: bold;`).

@@ -5,7 +5,7 @@ This document summarizes key rules and best practices from the Google JavaScript
 ## 1. Source File Basics
 - **File Naming:** All lowercase, with underscores (`_`) or dashes (`-`). Extension must be `.js`.
 - **File Encoding:** UTF-8.
-- **Whitespace:** Use only ASCII horizontal spaces (0x20). Tabs are forbidden for indentation.
+- **Whitespace:** Use tabs for indentation.
 
 ## 2. Source File Structure
 - New files should be ES modules (`import`/`export`).
@@ -14,10 +14,10 @@ This document summarizes key rules and best practices from the Google JavaScript
 
 ## 3. Formatting
 - **Braces:** Required for all control structures (`if`, `for`, `while`, etc.), even single-line blocks. Use K&R style ("Egyptian brackets").
-- **Indentation:** +2 spaces for each new block.
+- **Indentation:** Use tabs for indentation.
 - **Semicolons:** Every statement must be terminated with a semicolon.
 - **Column Limit:** 80 characters.
-- **Line-wrapping:** Indent continuation lines at least +4 spaces.
+- **Line-wrapping:** Indent continuation lines with tabs.
 - **Whitespace:** Use single blank lines between methods. No trailing whitespace.
 
 ## 4. Language Features
