@@ -60,6 +60,9 @@
 			</v-card-text>
 			<v-card-actions>
 				<v-spacer />
+				<v-btn @click="cancel">
+					Cancel
+				</v-btn>
 				<v-btn color="primary" @click="continueStart">
 					Continue
 				</v-btn>
@@ -113,6 +116,11 @@ export default {
 
 		copyHostsLine() {
 			navigator.clipboard.writeText(this.hostsLine);
+		},
+
+		cancel() {
+			this.visible = false;
+			Object.assign(this.$data, defaults);
 		},
 
 		continueStart() {
