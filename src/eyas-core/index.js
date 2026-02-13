@@ -414,13 +414,7 @@ function initUiListeners() {
 		trackEvent(MP_EVENTS.core.exit);
 
 		// Shut down expose server if running, then exit
-		exposeHosts.removeAutoAdded();
-		exposeServer.stopExpose();
-		exposeTimeout.cancelExposeTimeout();
-		if ($exposeMenuIntervalId) {
-			clearInterval($exposeMenuIntervalId);
-			$exposeMenuIntervalId = null;
-		}
+		stopExposeServer();
 		_electronCore.quit();
 	});
 
@@ -567,7 +561,7 @@ function onResize() {
 	setMenu();
 }
 
-function stopExposeHandler() {
+function stopExposeServer() {
 	exposeHosts.removeAutoAdded();
 	exposeServer.stopExpose();
 	exposeTimeout.cancelExposeTimeout();
@@ -641,13 +635,7 @@ async function doStartExpose() {
 		if ($appWindow && typeof $appWindow.flashFrame === `function`) {
 			$appWindow.flashFrame(true);
 		}
-		exposeHosts.removeAutoAdded();
-		exposeServer.stopExpose();
-		if ($exposeMenuIntervalId) {
-			clearInterval($exposeMenuIntervalId);
-			$exposeMenuIntervalId = null;
-		}
-		setMenu();
+		stopExposeServer();
 	});
 	$exposeMenuIntervalId = setInterval(() => setMenu(), 60 * 1000);
 	setMenu();
@@ -773,7 +761,7 @@ Runner: v${_appVersion}
 			return Math.max(0, Math.ceil(remaining / 60000));
 		})(),
 		onStartExpose: startExposeHandler,
-		onStopExpose: stopExposeHandler,
+		onStopExpose: stopExposeServer,
 		onCopyExposedUrl: copyExposedUrlHandler,
 		onOpenExposedInBrowser: openExposedInBrowserHandler,
 		exposeHttpsEnabled: $exposeHttpsEnabled,
@@ -1102,13 +1090,7 @@ async function startAFreshTest() {
 
 	// stop expose server when test changes
 	if (exposeServer.getExposeState()) {
-		exposeHosts.removeAutoAdded();
-		exposeServer.stopExpose();
-		exposeTimeout.cancelExposeTimeout();
-		if ($exposeMenuIntervalId) {
-			clearInterval($exposeMenuIntervalId);
-			$exposeMenuIntervalId = null;
-		}
+		stopExposeServer();
 	}
 
 	// set the available viewports
