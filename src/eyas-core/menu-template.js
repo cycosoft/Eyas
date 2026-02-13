@@ -43,7 +43,7 @@ function buildMenuTemplate(context) {
 
 	const exposeLabel = exposeActive
 		? `🌐 Exposed for ${exposeMinutes} minute${exposeMinutes === 1 ? `` : `s`}`
-		: `🌐 Start Server`;
+		: `📡 Expose Test`;
 
 	const exposeMenuItem = {
 		label: exposeLabel
@@ -57,7 +57,7 @@ function buildMenuTemplate(context) {
 		];
 	} else {
 		exposeMenuItem.submenu = [
-			{ label: `🌐 Start Server`, click: onStartExpose }
+			{ label: `📡 Expose Test`, click: onStartExpose }
 		];
 		exposeMenuItem.click = onStartExpose;
 	}

@@ -127,25 +127,25 @@ describe(`buildMenuTemplate`, () => {
 		expect(last.label).toContain(updateIcon);
 	});
 
-	test(`when exposeActive is false, template includes top-level Start Server item with onStartExpose click`, () => {
+	test(`when exposeActive is false, template includes top-level Expose Test item with onStartExpose click`, () => {
 		const onStartExpose = () => {};
 		const ctx = { ...minimalContext, exposeActive: false, exposeMinutes: 0, onStartExpose };
 		const template = buildMenuTemplate(ctx);
-		const startItem = template.find(item => item.label && item.label.includes(`Start Server`));
+		const startItem = template.find(item => item.label && item.label.includes(`Expose Test`));
 		expect(startItem).toBeDefined();
-		expect(startItem.label).toContain(`Start Server`);
+		expect(startItem.label).toContain(`Expose Test`);
 		expect(startItem.click).toBe(onStartExpose);
 	});
 
-	test(`when exposeActive is true and exposeMinutes 23, Start Server item label is Exposed for 23 minutes`, () => {
+	test(`when exposeActive is true and exposeMinutes 23, Expose Test item label is Exposed for 23 minutes`, () => {
 		const ctx = { ...minimalContext, exposeActive: true, exposeMinutes: 23 };
 		const template = buildMenuTemplate(ctx);
-		const startItem = template.find(item => item.label && (item.label.includes(`Start Server`) || item.label.includes(`Exposed`)));
+		const startItem = template.find(item => item.label && (item.label.includes(`Expose Test`) || item.label.includes(`Exposed`)));
 		expect(startItem).toBeDefined();
 		expect(startItem.label).toMatch(/Exposed for 23 minutes?/);
 	});
 
-	test(`when exposeActive is true, Start Server item has submenu with Stop, Copy URL, Open in browser`, () => {
+	test(`when exposeActive is true, Expose Test item has submenu with Stop, Copy URL, Open in browser`, () => {
 		const onStopExpose = () => {};
 		const onCopyExposedUrl = () => {};
 		const onOpenExposedInBrowser = () => {};
