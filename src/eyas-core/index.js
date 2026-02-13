@@ -435,7 +435,8 @@ function initUiListeners() {
 	});
 
 	// expose setup modal: user clicked Continue, start the server
-	ipcMain.on(`expose-setup-continue`, () => {
+	ipcMain.on(`expose-setup-continue`, (event, { useHttps }) => {
+		$exposeHttpsEnabled = !!useHttps;
 		doStartExpose();
 	});
 }
@@ -600,7 +601,8 @@ async function startExposeHandler() {
 		uiEvent(`show-expose-setup-modal`, {
 			domain: `http://127.0.0.1`,
 			hostnameForHosts: `local.test`,
-			steps
+			steps,
+			useHttps: $exposeHttpsEnabled
 		});
 	}
 }

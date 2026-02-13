@@ -21,23 +21,24 @@ function getMenuStructure(electronApp) {
 }
 
 /**
- * Programmatically click a top-level menu item.
+ * Programmatically click a menu item within a sub-menu.
  * Runs in the Electron main process via evaluate().
  */
-function clickTopLevelMenuItem(electronApp, label) {
-	return electronApp.evaluate(({ Menu }, label) => {
+function clickSubMenuItem(electronApp, topLevelLabel, subMenuLabel) {
+	return electronApp.evaluate(({ Menu }, { topLevelLabel, subMenuLabel }) => {
 		const appMenu = Menu.getApplicationMenu();
 		if (!appMenu) return false;
 
-		const menuItem = appMenu.items.find(item => item.label && item.label.includes(label));
-		if (menuItem && menuItem.click) {
-			// In a test environment, passing a direct window reference can be tricky.
-			// The handler for this specific click doesn't use the window object, so null is safe.
-			menuItem.click(menuItem, null, {});
+		const topLevelItem = appMenu.items.find(item => item.label && item.label.includes(topLevelLabel));
+		if (!topLevelItem || !topLevelItem.submenu) return false;
+
+		const subMenuItem = topLevelItem.submenu.items.find(item => item.label && item.label.includes(subMenuLabel));
+		if (subMenuItem && subMenuItem.click) {
+			subMenuItem.click(subMenuItem, null, {});
 			return true;
 		}
 		return false;
-	}, label);
+	}, { topLevelLabel, subMenuLabel });
 }
 
 function getTopLevelLabels(menuStructure) {
@@ -157,7 +158,7 @@ test.fixme(`Expose Test menu flow works correctly`, async () => {
 	}
 
 	// --- 1. Click menu item, modal appears ---
-	await clickTopLevelMenuItem(electronApp, `Expose Test`);
+	await clickSubMenuItem(electronApp, `Tools`, `Expose Test`);
 	const modalTitle = ui.locator(`[data-qa="expose-setup-title"]`);
 	await expect(modalTitle).toBeVisible();
 
@@ -165,11 +166,12 @@ test.fixme(`Expose Test menu flow works correctly`, async () => {
 	await ui.locator(`[data-qa="btn-cancel-expose"]`).click();
 	await expect(modalTitle).not.toBeVisible();
 	let menu = await getMenuStructure(electronApp);
-	let exposeItem = menu.find(item => item.label.includes(`Expose`));
+	let toolsMenu = menu.find(item => item.label.includes(`Tools`));
+	let exposeItem = toolsMenu.submenu.find(item => item.label.includes(`Expose`));
 	expect(exposeItem.label).toContain(`Expose Test`); // Should not have changed
 
 	// --- 3. Click continue, server starts ---
-	await clickTopLevelMenuItem(electronApp, `Expose Test`);
+	await clickSubMenuItem(electronApp, `Tools`, `Expose Test`);
 	await ui.locator(`[data-qa="btn-continue-expose"]`).click();
 	await expect(modalTitle).not.toBeVisible();
 
@@ -177,7 +179,8 @@ test.fixme(`Expose Test menu flow works correctly`, async () => {
 	await new Promise(resolve => setTimeout(resolve, 1000));
 
 	menu = await getMenuStructure(electronApp);
-	exposeItem = menu.find(item => item.label.includes(`Expose`));
+	toolsMenu = menu.find(item => item.label.includes(`Tools`));
+	exposeItem = toolsMenu.submenu.find(item => item.label.includes(`Exposed`));
 	expect(exposeItem.label).toMatch(/Exposed for ~30m/); // Should now show remaining time
 
 	// --- Cleanup ---
@@ -200,4 +203,3 @@ test.fixme(`Expose Test menu flow works correctly`, async () => {
 	}
 	await electronApp.close();
 });
-

@@ -127,25 +127,27 @@ describe(`buildMenuTemplate`, () => {
 		expect(last.label).toContain(updateIcon);
 	});
 
-	test(`when exposeActive is false, template includes top-level Expose Test item with onStartExpose click`, () => {
+	test(`when exposeActive is false, Tools menu includes Expose Test item with onStartExpose click`, () => {
 		const onStartExpose = () => {};
 		const ctx = { ...minimalContext, exposeActive: false, exposeRemainingMinutes: 0, onStartExpose };
 		const template = buildMenuTemplate(ctx);
-		const startItem = template.find(item => item.label && item.label.includes(`Expose Test`));
+		const toolsMenu = template.find(item => item.label && item.label.includes(`Tools`));
+		const startItem = toolsMenu.submenu.find(item => item.label && item.label.includes(`Expose Test`));
 		expect(startItem).toBeDefined();
-		expect(startItem.label).toContain(`Expose Test`);
 		expect(startItem.click).toBe(onStartExpose);
 	});
 
-	test(`when exposeActive is true and exposeRemainingMinutes is 29, label is 'Exposed for ~29m'`, () => {
+	test(`when exposeActive is true and exposeRemainingMinutes is 29, Tools menu includes 'Exposed for ~29m' item with sub-menu`, () => {
 		const ctx = { ...minimalContext, exposeActive: true, exposeRemainingMinutes: 29 };
 		const template = buildMenuTemplate(ctx);
-		const startItem = template.find(item => item.label && (item.label.includes(`Expose Test`) || item.label.includes(`Exposed`)));
+		const toolsMenu = template.find(item => item.label && item.label.includes(`Tools`));
+		const startItem = toolsMenu.submenu.find(item => item.label && item.label.includes(`Exposed`));
 		expect(startItem).toBeDefined();
 		expect(startItem.label).toMatch(/Exposed for ~29m/);
+		expect(Array.isArray(startItem.submenu)).toBe(true);
 	});
 
-	test(`when exposeActive is true, Expose Test item has submenu with Stop, Copy URL, Open in browser`, () => {
+	test(`when exposeActive is true, Expose sub-menu in Tools has Stop, Copy URL, Open in browser`, () => {
 		const onStopExpose = () => {};
 		const onCopyExposedUrl = () => {};
 		const onOpenExposedInBrowser = () => {};
@@ -158,7 +160,8 @@ describe(`buildMenuTemplate`, () => {
 			onOpenExposedInBrowser
 		};
 		const template = buildMenuTemplate(ctx);
-		const startItem = template.find(item => item.label && item.label.includes(`Exposed`));
+		const toolsMenu = template.find(item => item.label && item.label.includes(`Tools`));
+		const startItem = toolsMenu.submenu.find(item => item.label && item.label.includes(`Exposed`));
 		expect(startItem).toBeDefined();
 		expect(Array.isArray(startItem.submenu)).toBe(true);
 		const stopItem = startItem.submenu.find(i => i.label && i.label.toLowerCase().includes(`stop`));
@@ -172,14 +175,13 @@ describe(`buildMenuTemplate`, () => {
 		expect(openItem.click).toBe(onOpenExposedInBrowser);
 	});
 
-	test(`template includes Enable HTTPS option when exposeHttpsEnabled and onToggleExposeHttps provided`, () => {
+	test(`template does NOT include Enable HTTPS option in Tools menu`, () => {
 		const onToggle = () => {};
 		const ctx = { ...minimalContext, exposeHttpsEnabled: true, onToggleExposeHttps: onToggle };
 		const template = buildMenuTemplate(ctx);
 		const toolsMenu = template.find(item => item.label && item.label.includes(`Tools`));
 		expect(toolsMenu).toBeDefined();
 		const httpsItem = toolsMenu.submenu.find(s => s.label && s.label.toLowerCase().includes(`https`));
-		expect(httpsItem).toBeDefined();
-		expect(httpsItem.click).toBe(onToggle);
+		expect(httpsItem).toBeUndefined();
 	});
 });

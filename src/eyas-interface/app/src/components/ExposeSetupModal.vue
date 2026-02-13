@@ -36,6 +36,22 @@
 							</v-btn>
 						</template>
 					</v-list-item>
+
+					<v-list-item>
+						<template v-slot:prepend>
+							<v-icon>mdi-shield-lock-outline</v-icon>
+						</template>
+						<v-list-item-title>Enable HTTPS for Expose</v-list-item-title>
+						<template v-slot:append>
+							<v-switch
+								v-model="useHttps"
+								color="primary"
+								hide-details
+								density="compact"
+								data-qa="switch-use-https"
+							/>
+						</template>
+					</v-list-item>
 				</v-list>
 
 				<v-expansion-panels class="mt-4">
@@ -78,7 +94,8 @@ const defaults = {
 	visible: false,
 	domain: '',
 	hostnameForHosts: 'local.test',
-	steps: []
+	steps: [],
+	useHttps: false
 };
 
 export default {
@@ -101,6 +118,7 @@ export default {
 			this.domain = payload.domain || '';
 			this.hostnameForHosts = payload.hostnameForHosts || 'local.test';
 			this.steps = Array.isArray(payload.steps) ? payload.steps : [];
+			this.useHttps = !!payload.useHttps;
 			this.visible = true;
 		});
 	},
@@ -124,7 +142,7 @@ export default {
 		},
 
 		continueStart() {
-			window.eyas?.send(`expose-setup-continue`);
+			window.eyas?.send(`expose-setup-continue`, { useHttps: this.useHttps });
 			this.visible = false;
 			Object.assign(this.$data, defaults);
 		}

@@ -33,11 +33,14 @@ describe(`ExposeSetupModal`, () => {
 		expect(wrapper.vm.hostsLine).toContain(`local.test`);
 	});
 
-	test(`continueStart sends expose-setup-continue and closes modal`, async () => {
-		receiveCallback({ domain: `http://127.0.0.1`, hostnameForHosts: `local.test`, steps: [] });
+	test(`continueStart sends expose-setup-continue with useHttps and closes modal`, async () => {
+		receiveCallback({ domain: `http://127.0.0.1`, hostnameForHosts: `local.test`, steps: [], useHttps: true });
 		await wrapper.vm.$nextTick();
+		expect(wrapper.vm.useHttps).toBe(true);
+
+		wrapper.vm.useHttps = false;
 		wrapper.vm.continueStart();
-		expect(global.window.eyas.send).toHaveBeenCalledWith(`expose-setup-continue`);
+		expect(global.window.eyas.send).toHaveBeenCalledWith(`expose-setup-continue`, { useHttps: false });
 		expect(wrapper.vm.visible).toBe(false);
 	});
 

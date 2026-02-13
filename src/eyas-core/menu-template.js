@@ -36,31 +36,12 @@ function buildMenuTemplate(context) {
 		onStartExpose,
 		onStopExpose,
 		onCopyExposedUrl,
-		onOpenExposedInBrowser,
-		exposeHttpsEnabled = false,
-		onToggleExposeHttps
+		onOpenExposedInBrowser
 	} = context;
 
 	const exposeLabel = exposeActive
 		? `📡 Exposed for ~${exposeRemainingMinutes}m`
 		: `📡 Expose Test`;
-
-	const exposeMenuItem = {
-		label: exposeLabel
-	};
-
-	if (exposeActive && onStopExpose && onCopyExposedUrl && onOpenExposedInBrowser) {
-		exposeMenuItem.submenu = [
-			{ label: `🛑 &Stop Expose`, click: onStopExpose },
-			{ label: `📋 &Copy Exposed URL`, click: onCopyExposedUrl },
-			{ label: `🌐 &Open in Browser`, click: onOpenExposedInBrowser }
-		];
-	} else {
-		exposeMenuItem.submenu = [
-			{ label: `📡 Expose Test`, click: onStartExpose }
-		];
-		exposeMenuItem.click = onStartExpose;
-	}
 
 	const updateStatusItem = updateStatus === `downloading`
 		? { label: `⬆️ Downloading update...`, enabled: false }
@@ -73,17 +54,33 @@ function buildMenuTemplate(context) {
 		{ label: `🚪 &Exit`, accelerator: `CmdOrCtrl+Q`, click: quit }
 	];
 
+	const toolsSubmenu = [
+		{ label: `🔄 &Restart Test`, click: startAFreshTest },
+		{ label: `📋 &Copy URL`, click: copyUrl },
+		{ type: `separator` }
+	];
+
+	if (exposeActive && onStopExpose && onCopyExposedUrl && onOpenExposedInBrowser) {
+		toolsSubmenu.push({
+			label: exposeLabel,
+			submenu: [
+				{ label: `🛑 &Stop Expose`, click: onStopExpose },
+				{ label: `📋 &Copy Exposed URL`, click: onCopyExposedUrl },
+				{ label: `🌐 &Open in Browser`, click: onOpenExposedInBrowser }
+			]
+		});
+	} else {
+		toolsSubmenu.push({ label: `📡 Expose Test`, click: onStartExpose });
+	}
+
+	toolsSubmenu.push({ type: `separator` });
+	toolsSubmenu.push({ role: `toggleDevTools`, accelerator: `F12`, label: `⚙️ &Developer Tools${isDev ? ` (Test)` : ``}` });
+
 	const menu = [
 		{ label: `&${appName}`, submenu: appSubmenu },
 		{
 			label: `🔧 &Tools`,
-			submenu: [
-				{ label: `🔄 &Restart Test`, click: startAFreshTest },
-				{ label: `📋 &Copy URL`, click: copyUrl },
-				...(typeof onToggleExposeHttps === `function` ? [{ type: `separator` }, { label: exposeHttpsEnabled ? `🔒 HTTPS for Expose` : `🔒 Enable HTTPS for Expose`, click: onToggleExposeHttps }] : []),
-				{ type: `separator` },
-				{ role: `toggleDevTools`, accelerator: `F12`, label: `⚙️ &Developer Tools${isDev ? ` (Test)` : ``}` }
-			]
+			submenu: toolsSubmenu
 		}
 	];
 
@@ -94,8 +91,6 @@ function buildMenuTemplate(context) {
 			click: openUiDevTools
 		});
 	}
-
-	menu.push(exposeMenuItem);
 
 	menu.push({
 		label: `${testNetworkEnabled ? `📶` : `🚫`} &Network`,
