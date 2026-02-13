@@ -65,7 +65,12 @@ async function startExpose(options) {
 
 function stopExpose() {
 	if (server) {
+		// forcefully terminate existing browser keep-alive connections (prevents ~15s delay)
+		server.closeAllConnections();
+
+		// stop listening for new connections
 		server.close();
+
 		server = null;
 	}
 	state = null;
