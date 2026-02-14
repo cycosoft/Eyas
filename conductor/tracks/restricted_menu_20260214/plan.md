@@ -1,10 +1,10 @@
 # Implementation Plan: Restricted Menu State
 
 ## Phase 1: Test Preparation (Red Phase)
-- [ ] Task: Update `tests/electron/menu-template.test.js` to support the initialization state.
-    - [ ] Sub-task: Add a test case verifying that when `isInitializing` is true, functional menus (Tools, Network, Cache) have `enabled: false` on their top-level items.
-    - [ ] Sub-task: Verify that non-restricted menus (App, Viewport, Links) remain enabled.
-    - [ ] Sub-task: Confirm tests fail as expected.
+- [x] Task: Update `tests/electron/menu-template.test.js` to support the initialization state. 3c37984
+    - [x] Sub-task: Add a test case verifying that when `isInitializing` is true, functional menus (Tools, Network, Cache) have `enabled: false` on their top-level items.
+    - [x] Sub-task: Verify that non-restricted menus (App, Viewport, Links) remain enabled.
+    - [x] Sub-task: Confirm tests fail as expected.
 - [ ] Task: Conductor - User Manual Verification 'Test Preparation' (Protocol in workflow.md)
 
 ## Phase 2: Core Implementation (Green Phase)
