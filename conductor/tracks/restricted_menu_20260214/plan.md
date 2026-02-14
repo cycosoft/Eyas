@@ -19,5 +19,5 @@
 - [ ] Task: Conductor - User Manual Verification 'Implementation' (Protocol in workflow.md)
 
 ## Phase 3: Verification & Finalization
-- [ ] Task: Run full regression suite (`npm run check`).
+- [x] Task: Run full regression suite (`npm run check`).
 - [ ] Task: Conductor - User Manual Verification 'Verification & Finalization' (Protocol in workflow.md)
