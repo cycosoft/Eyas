@@ -1,0 +1,8 @@
+{
+  "track_id": "restricted_menu_20260214",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-02-14T10:00:00Z",
+  "updated_at": "2026-02-14T10:00:00Z",
+  "description": "Disable functional menus until the environment has been chosen or navigation begins."
+}
