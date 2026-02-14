@@ -184,4 +184,19 @@ describe(`buildMenuTemplate`, () => {
 		const httpsItem = toolsMenu.submenu.find(s => s.label && s.label.toLowerCase().includes(`https`));
 		expect(httpsItem).toBeUndefined();
 	});
+
+	test(`when exposeActive is true, template includes a top-level status item at the end`, () => {
+		const ctx = { ...minimalContext, exposeActive: true, exposeRemainingMinutes: 15 };
+		const template = buildMenuTemplate(ctx);
+		const last = template[template.length - 1];
+		expect(last.label).toMatch(/Exposed for ~15m/);
+		expect(Array.isArray(last.submenu)).toBe(true);
+	});
+
+	test(`when exposeActive is false, template does not include top-level status item at the end`, () => {
+		const ctx = { ...minimalContext, exposeActive: false };
+		const template = buildMenuTemplate(ctx);
+		const last = template[template.length - 1];
+		expect(last.label).not.toMatch(/Exposed for/);
+	});
 });

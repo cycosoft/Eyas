@@ -39,6 +39,12 @@ function buildMenuTemplate(context) {
 		onOpenExposedInBrowser
 	} = context;
 
+	const getExposeSubmenu = () => [
+		{ label: `🛑 &Stop Expose`, click: onStopExpose },
+		{ label: `📋 &Copy Exposed URL`, click: onCopyExposedUrl },
+		{ label: `🌐 &Open in Browser`, click: onOpenExposedInBrowser }
+	];
+
 	const exposeLabel = exposeActive
 		? `📡 Exposed for ~${exposeRemainingMinutes}m`
 		: `📡 Expose Test`;
@@ -63,11 +69,7 @@ function buildMenuTemplate(context) {
 	if (exposeActive && onStopExpose && onCopyExposedUrl && onOpenExposedInBrowser) {
 		toolsSubmenu.push({
 			label: exposeLabel,
-			submenu: [
-				{ label: `🛑 &Stop Expose`, click: onStopExpose },
-				{ label: `📋 &Copy Exposed URL`, click: onCopyExposedUrl },
-				{ label: `🌐 &Open in Browser`, click: onOpenExposedInBrowser }
-			]
+			submenu: getExposeSubmenu()
 		});
 	} else {
 		toolsSubmenu.push({ label: `📡 Expose Test`, click: onStartExpose });
@@ -119,6 +121,13 @@ function buildMenuTemplate(context) {
 
 	if (linkItems.length) {
 		menu.push({ label: `🔗 &Links`, submenu: linkItems });
+	}
+
+	if (exposeActive) {
+		menu.push({
+			label: exposeLabel,
+			submenu: getExposeSubmenu()
+		});
 	}
 
 	if (updateStatus === `downloaded`) {
