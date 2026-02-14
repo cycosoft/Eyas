@@ -8,14 +8,14 @@
 - [ ] Task: Conductor - User Manual Verification 'Test Preparation' (Protocol in workflow.md)
 
 ## Phase 2: Core Implementation (Green Phase)
-- [ ] Task: Update `src/eyas-core/menu-template.js` to handle `isInitializing`.
-    - [ ] Sub-task: Pass `isInitializing` through the context.
-    - [ ] Sub-task: Set `enabled: !isInitializing` for Tools, Network, and Cache menu headers.
-- [ ] Task: Manage state in `src/eyas-core/index.js`.
-    - [ ] Sub-task: Initialize `$isInitializing` to `true`.
-    - [ ] Sub-task: Update IPC listeners or navigation handlers (e.g., `did-start-navigation`) to set `$isInitializing = false` and call `setMenu()`.
-    - [ ] Sub-task: Ensure `$isInitializing` is reset to `true` during `startAFreshTest()`.
-- [ ] Task: Confirm unit tests pass.
+- [x] Task: Update `src/eyas-core/menu-template.js` to handle `isInitializing`. cc73075
+    - [x] Sub-task: Pass `isInitializing` through the context.
+    - [x] Sub-task: Set `enabled: !isInitializing` for Tools, Network, and Cache menu headers.
+- [x] Task: Manage state in `src/eyas-core/index.js`. cc73075
+    - [x] Sub-task: Initialize `$isInitializing` to `true`.
+    - [x] Sub-task: Update IPC listeners or navigation handlers (e.g., `did-start-navigation`) to set `$isInitializing = false` and call `setMenu()`.
+    - [x] Sub-task: Ensure `$isInitializing` is reset to `true` during `startAFreshTest()`.
+- [x] Task: Confirm unit tests pass.
 - [ ] Task: Conductor - User Manual Verification 'Implementation' (Protocol in workflow.md)
 
 ## Phase 3: Verification & Finalization
