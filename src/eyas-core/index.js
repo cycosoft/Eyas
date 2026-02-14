@@ -37,6 +37,7 @@ const $defaultViewports = [
 let $allViewports = [];
 const $currentViewport = [];
 let $updateStatus = `idle`;
+let $isInitializing = true;
 let $updateCheckUserTriggered = false;
 let $onCheckForUpdates = () => {};
 let $onInstallUpdate = () => {};
@@ -382,6 +383,21 @@ function initTestListeners() {
 
 		// update the cache menu
 		setMenu();
+	});
+
+	// when navigation starts
+	$appWindow.webContents.on(`did-start-navigation`, (event, url) => {
+		// if the url is not the placeholder data url
+		if (!url.startsWith(`data:text/html`)) {
+			// if the app is still initializing
+			if ($isInitializing) {
+				// update the initialization state
+				$isInitializing = false;
+
+				// update the menu
+				setMenu();
+			}
+		}
 	});
 
 	// when there's a navigation failure
@@ -770,7 +786,8 @@ Runner: v${_appVersion}
 		onToggleExposeHttps: () => {
 			$exposeHttpsEnabled = !$exposeHttpsEnabled;
 			setMenu();
-		}
+		},
+		isInitializing: $isInitializing
 	};
 
 	const template = buildMenuTemplate(context);
@@ -1104,6 +1121,9 @@ async function startAFreshTest() {
 
 	// clear the cached port for the expose server
 	exposeServer.clearExposePort();
+
+	// reset initialization state
+	$isInitializing = true;
 
 	// set the available viewports
 	$allViewports = [...$config.viewports, ...$defaultViewports];

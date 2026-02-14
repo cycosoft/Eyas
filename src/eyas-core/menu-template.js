@@ -36,7 +36,8 @@ function buildMenuTemplate(context) {
 		onStartExpose,
 		onStopExpose,
 		onCopyExposedUrl,
-		onOpenExposedInBrowser
+		onOpenExposedInBrowser,
+		isInitializing = false
 	} = context;
 
 	const getExposeSubmenu = () => [
@@ -82,6 +83,7 @@ function buildMenuTemplate(context) {
 		{ label: `&${appName}`, submenu: appSubmenu },
 		{
 			label: `🔧 &Tools`,
+			enabled: !isInitializing,
 			submenu: toolsSubmenu
 		}
 	];
@@ -96,6 +98,7 @@ function buildMenuTemplate(context) {
 
 	menu.push({
 		label: `${testNetworkEnabled ? `📶` : `🚫`} &Network`,
+		enabled: !isInitializing,
 		submenu: [
 			{ label: `🏠 Test &Home`, click: navigateHome },
 			{ type: `separator` },
@@ -109,6 +112,7 @@ function buildMenuTemplate(context) {
 
 	menu.push({
 		label: `📦 &Cache`,
+		enabled: !isInitializing,
 		submenu: [
 			{ label: `⏳ Age: ${sessionAge}`, click: refreshMenu },
 			{ label: `💾 Size: ${cacheSize} bytes`, click: refreshMenu },
