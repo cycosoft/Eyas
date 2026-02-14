@@ -62,18 +62,19 @@ function buildMenuTemplate(context) {
 	];
 
 	const toolsSubmenu = [
-		{ label: `🔄 &Restart Test`, click: startAFreshTest },
-		{ label: `📋 &Copy URL`, click: copyUrl },
+		{ label: `🔄 &Restart Test`, click: startAFreshTest, enabled: !isInitializing },
+		{ label: `📋 &Copy URL`, click: copyUrl, enabled: !isInitializing },
 		{ type: `separator` }
 	];
 
 	if (exposeActive && onStopExpose && onCopyExposedUrl && onOpenExposedInBrowser) {
 		toolsSubmenu.push({
 			label: exposeLabel,
+			enabled: !isInitializing,
 			submenu: getExposeSubmenu()
 		});
 	} else {
-		toolsSubmenu.push({ label: `📡 Expose Test`, click: onStartExpose });
+		toolsSubmenu.push({ label: `📡 Expose Test`, click: onStartExpose, enabled: !isInitializing });
 	}
 
 	toolsSubmenu.push({ type: `separator` });
@@ -100,13 +101,13 @@ function buildMenuTemplate(context) {
 		label: `${testNetworkEnabled ? `📶` : `🚫`} &Network`,
 		enabled: !isInitializing,
 		submenu: [
-			{ label: `🏠 Test &Home`, click: navigateHome },
+			{ label: `🏠 Test &Home`, click: navigateHome, enabled: !isInitializing },
 			{ type: `separator` },
-			{ label: `🔄 &Reload`, accelerator: `CmdOrCtrl+R`, click: reload },
-			{ label: `⬅️ &Back`, accelerator: `CmdOrCtrl+Left`, click: back },
-			{ label: `➡️ &Forward`, accelerator: `CmdOrCtrl+Right`, click: forward },
+			{ label: `🔄 &Reload`, accelerator: `CmdOrCtrl+R`, click: reload, enabled: !isInitializing },
+			{ label: `⬅️ &Back`, accelerator: `CmdOrCtrl+Left`, click: back, enabled: !isInitializing },
+			{ label: `➡️ &Forward`, accelerator: `CmdOrCtrl+Right`, click: forward, enabled: !isInitializing },
 			{ type: `separator` },
-			{ label: `${testNetworkEnabled ? `🚫 &Go Offline` : `📶 &Go Online`}`, click: toggleNetwork }
+			{ label: `${testNetworkEnabled ? `🚫 &Go Offline` : `📶 &Go Online`}`, click: toggleNetwork, enabled: !isInitializing }
 		]
 	});
 
@@ -114,10 +115,10 @@ function buildMenuTemplate(context) {
 		label: `📦 &Cache`,
 		enabled: !isInitializing,
 		submenu: [
-			{ label: `⏳ Age: ${sessionAge}`, click: refreshMenu },
-			{ label: `💾 Size: ${cacheSize} bytes`, click: refreshMenu },
-			{ label: `🗑️ &Clear`, click: clearCache },
-			...(isDev ? [{ label: `📂 Open Cache Folder`, click: openCacheFolder }] : [])
+			{ label: `⏳ Age: ${sessionAge}`, click: refreshMenu, enabled: !isInitializing },
+			{ label: `💾 Size: ${cacheSize} bytes`, click: refreshMenu, enabled: !isInitializing },
+			{ label: `🗑️ &Clear`, click: clearCache, enabled: !isInitializing },
+			...(isDev ? [{ label: `📂 Open Cache Folder`, click: openCacheFolder, enabled: !isInitializing }] : [])
 		]
 	});
 

@@ -13,6 +13,7 @@ function getMenuStructure(electronApp) {
 		function toPlain(menu) {
 			return menu.items.map(item => ({
 				label: item.label || ``,
+				enabled: item.enabled,
 				submenu: item.submenu ? toPlain(item.submenu) : undefined
 			}));
 		}
@@ -115,6 +116,73 @@ test(`app-name menu has About and Exit`, async () => {
 	const appSubmenu = findSubmenuLabels(menuStructure, `Eyas`);
 	expect(appSubmenu.some(l => l.includes(`About`))).toBe(true);
 	expect(appSubmenu.some(l => l.includes(`Exit`))).toBe(true);
+
+	try {
+		await electronApp.evaluate(({ BrowserWindow }) => {
+			const w = BrowserWindow.getAllWindows()[0];
+			if (w && w.getBrowserViews().length > 0) {
+				return w.getBrowserViews()[0].webContents.executeJavaScript(`window.eyas?.send('app-exit'); true`);
+			}
+			return false;
+		});
+		await new Promise(resolve => setTimeout(resolve, 500));
+	} catch {
+		// ignore
+	}
+	await electronApp.close();
+});
+
+test(`functional menus are disabled until environment selection`, async () => {
+	test.setTimeout(15000);
+	const electronPath = require(`electron`);
+	const mainPath = path.join(__dirname, `../../.build/index.js`);
+
+	const electronApp = await electron.launch({
+		executablePath: electronPath,
+		args: [mainPath, `--dev`],
+		timeout: 30000
+	});
+
+	const window = await electronApp.firstWindow();
+	await window.waitForLoadState(`domcontentloaded`);
+
+	// The UI is in a BrowserView, find its Page object by looking for the custom protocol
+	let ui;
+	for (let i = 0; i < 10; i++) {
+		ui = electronApp.windows().find(p => p.url() === `ui://eyas.interface/index.html`);
+		if (ui) break;
+		await new Promise(resolve => setTimeout(resolve, 500));
+	}
+	expect(ui).toBeDefined();
+
+	// Wait for the modal to be definitely visible
+	const envModalTitle = ui.locator(`[data-qa="environment-modal-title"]`);
+	await expect(envModalTitle).toBeVisible();
+
+	// Check menu state
+	const menuStructure = await getMenuStructure(electronApp);
+	const toolsMenu = menuStructure.find(item => item.label.includes(`Tools`));
+	const networkMenu = menuStructure.find(item => item.label.includes(`Network`));
+	const cacheMenu = menuStructure.find(item => item.label.includes(`Cache`));
+
+	expect(toolsMenu.enabled).toBe(false);
+	expect(networkMenu.enabled).toBe(false);
+	expect(cacheMenu.enabled).toBe(false);
+
+	// Select an environment
+	await ui.locator(`[data-qa="btn-env"]`).first().click();
+
+	// Wait for navigation to trigger enabling
+	await new Promise(resolve => setTimeout(resolve, 2000));
+
+	const menuAfter = await getMenuStructure(electronApp);
+	const toolsAfter = menuAfter.find(item => item.label.includes(`Tools`));
+	const networkAfter = menuAfter.find(item => item.label.includes(`Network`));
+	const cacheAfter = menuAfter.find(item => item.label.includes(`Cache`));
+
+	expect(toolsAfter.enabled).toBe(true);
+	expect(networkAfter.enabled).toBe(true);
+	expect(cacheAfter.enabled).toBe(true);
 
 	try {
 		await electronApp.evaluate(({ BrowserWindow }) => {

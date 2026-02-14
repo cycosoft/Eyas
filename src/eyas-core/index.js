@@ -387,8 +387,8 @@ function initTestListeners() {
 
 	// when navigation starts
 	$appWindow.webContents.on(`did-start-navigation`, (event, url) => {
-		// if the url is not the placeholder data url
-		if (!url.startsWith(`data:text/html`)) {
+		// if the url is not the placeholder data url or about:blank
+		if (!url.startsWith(`data:text/html`) && url !== `about:blank`) {
 			// if the app is still initializing
 			if ($isInitializing) {
 				// update the initialization state
@@ -579,6 +579,7 @@ function onResize() {
 }
 
 function stopExposeServer() {
+	if ($isInitializing) return;
 	exposeHosts.removeAutoAdded();
 	exposeServer.stopExpose();
 	exposeTimeout.cancelExposeTimeout();
@@ -590,6 +591,7 @@ function stopExposeServer() {
 }
 
 function copyExposedUrlHandler() {
+	if ($isInitializing) return;
 	const state = exposeServer.getExposeState();
 	if (state && state.url) {
 		require(`electron`).clipboard.writeText(state.url);
@@ -597,6 +599,7 @@ function copyExposedUrlHandler() {
 }
 
 function openExposedInBrowserHandler() {
+	if ($isInitializing) return;
 	const state = exposeServer.getExposeState();
 	if (state && state.url) {
 		require(`electron`).shell.openExternal(state.url);
@@ -604,6 +607,7 @@ function openExposedInBrowserHandler() {
 }
 
 async function startExposeHandler() {
+	if ($isInitializing) return;
 	if (exposeServer.getExposeState()) return;
 	if (!$paths.testSrc) return;
 
@@ -751,18 +755,40 @@ Runner: v${_appVersion}
 		},
 		quit: _electronCore.quit,
 		startAFreshTest,
-		copyUrl: () => require(`electron`).clipboard.writeText($appWindow.webContents.getURL()),
+		copyUrl: () => {
+			if ($isInitializing) return;
+			require(`electron`).clipboard.writeText($appWindow.webContents.getURL());
+		},
 		openUiDevTools: () => $eyasLayer.webContents.openDevTools(),
-		navigateHome: () => navigate(),
-		reload: () => $appWindow.webContents.reloadIgnoringCache(),
-		back: () => $appWindow.webContents.goBack(),
-		forward: () => $appWindow.webContents.goForward(),
+		navigateHome: () => {
+			if ($isInitializing) return;
+			navigate();
+		},
+		reload: () => {
+			if ($isInitializing) return;
+			$appWindow.webContents.reloadIgnoringCache();
+		},
+		back: () => {
+			if ($isInitializing) return;
+			$appWindow.webContents.goBack();
+		},
+		forward: () => {
+			if ($isInitializing) return;
+			$appWindow.webContents.goForward();
+		},
 		toggleNetwork: () => {
+			if ($isInitializing) return;
 			$testNetworkEnabled = !$testNetworkEnabled;
 			setMenu();
 		},
-		clearCache,
-		openCacheFolder: () => require(`electron`).shell.openPath($appWindow.webContents.session.getStoragePath()),
+		clearCache: () => {
+			if ($isInitializing) return;
+			clearCache();
+		},
+		openCacheFolder: () => {
+			if ($isInitializing) return;
+			require(`electron`).shell.openPath($appWindow.webContents.session.getStoragePath());
+		},
 		refreshMenu: setMenu,
 		viewportItems,
 		linkItems,
@@ -1148,12 +1174,14 @@ async function startAFreshTest() {
 
 	// if there are no custom domains defined
 	if (!$config.domains.length) {
+		console.log(`No domains defined, navigating...`);
 		// load the test using the default domain
 		navigate();
 	}
 
 	// if the user has a single custom domain
 	if ($config.domains.length === 1) {
+		console.log(`Single domain defined, navigating...`);
 		// update the default domain
 		$testDomainRaw = $config.domains[0].url;
 		$testDomain = parseURL($testDomainRaw).toString();
