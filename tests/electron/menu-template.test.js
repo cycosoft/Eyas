@@ -199,4 +199,26 @@ describe(`buildMenuTemplate`, () => {
 		const last = template[template.length - 1];
 		expect(last.label).not.toMatch(/Exposed for/);
 	});
+
+	test(`when isInitializing is true, Tools, Network, and Cache menus are disabled`, () => {
+		const ctx = { ...minimalContext, isInitializing: true };
+		const template = buildMenuTemplate(ctx);
+		const toolsMenu = template.find(item => item.label && item.label.includes(`Tools`));
+		const networkMenu = template.find(item => item.label && item.label.includes(`Network`));
+		const cacheMenu = template.find(item => item.label && item.label.includes(`Cache`));
+		expect(toolsMenu.enabled).toBe(false);
+		expect(networkMenu.enabled).toBe(false);
+		expect(cacheMenu.enabled).toBe(false);
+	});
+
+	test(`when isInitializing is true, App, Viewport, and Links menus are enabled`, () => {
+		const ctx = { ...minimalContext, isInitializing: true, linkItems: [{ label: `Link1`, click: noop, enabled: true }] };
+		const template = buildMenuTemplate(ctx);
+		const appMenu = template.find(item => item.label && item.label.includes(minimalContext.appName));
+		const viewportMenu = template.find(item => item.label && item.label.includes(`Viewport`));
+		const linksMenu = template.find(item => item.label && item.label.includes(`Links`));
+		expect(appMenu.enabled).not.toBe(false);
+		expect(viewportMenu.enabled).not.toBe(false);
+		expect(linksMenu.enabled).not.toBe(false);
+	});
 });
