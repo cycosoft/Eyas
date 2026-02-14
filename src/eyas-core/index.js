@@ -50,6 +50,7 @@ const $paths = {
 	testPreload: _path.join($roots.eyas, `scripts`, `test-preload.js`),
 	eventBridge: _path.join($roots.eyas, `scripts`, `event-bridge.js`),
 	constants: _path.join($roots.eyas, `scripts`, `constants.js`),
+	pathUtils: _path.join($roots.eyas, `scripts`, `path-utils.js`),
 	testSrc: null,
 	uiSource: _path.join($roots.eyas, `eyas-interface`),
 	eyasInterface: _path.join($roots.eyas, `eyas-interface`, `index.html`),
@@ -64,6 +65,7 @@ const exposeServer = require(_path.join(__dirname, `expose`, `expose-server.js`)
 const exposeCerts = require(_path.join(__dirname, `expose`, `expose-certs.js`));
 const exposeTimeout = require(_path.join(__dirname, `expose`, `expose-timeout.js`));
 const exposeHosts = require(_path.join(__dirname, `expose`, `expose-hosts.js`));
+const { safeJoin } = require(_path.join(__dirname, `scripts`, `path-utils.js`));
 
 // constants
 const { LOAD_TYPES } = require($paths.constants);
@@ -1048,7 +1050,12 @@ function setupEyasNetworkHandlers() {
 		const { pathname: relativePathToFile } = parseURL(request.url.replace(`ui://`, `https://`));
 
 		// build the expected path to the requested file
-		const localFilePath = _path.join($paths.uiSource, relativePathToFile);
+		const localFilePath = safeJoin($paths.uiSource, relativePathToFile);
+
+		// if the path is unsafe
+		if (!localFilePath) {
+			return new Response(`Not Found`, { status: 404 });
+		}
 
 		// return the Eyas UI layer to complete the request
 		return ses.fetch(pathToFileURL(localFilePath).toString());
@@ -1080,16 +1087,21 @@ function setupEyasNetworkHandlers() {
 			: _path.join(pathname, fileIfNotDefined);
 
 		// build the expected path to the file
-		let localFilePath = _path.join($paths.testSrc, relativePathToFile);
+		let localFilePath = safeJoin($paths.testSrc, relativePathToFile);
 
 		if(
-			// if the file doesn't exist
-			!fs.existsSync(localFilePath)
+			// if the file is unsafe OR doesn't exist
+			(!localFilePath || !fs.existsSync(localFilePath))
 			// AND the requested path isn't the root path
-			&& $paths.testSrc !== _path.join($paths.testSrc, pathname)
+			&& $paths.testSrc !== safeJoin($paths.testSrc, pathname)
 		){
 			// load root file instead
-			localFilePath = _path.join($paths.testSrc, fileIfNotDefined);
+			localFilePath = safeJoin($paths.testSrc, fileIfNotDefined);
+		}
+
+		// if the path is still unsafe (shouldn't happen with index.html, but for safety)
+		if (!localFilePath) {
+			return new Response(`Not Found`, { status: 404 });
 		}
 
 		// return the file from the local system to complete the request

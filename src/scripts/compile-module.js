@@ -90,6 +90,11 @@ const paths = {
 		path.join(paths.scriptsDist, `constants.js`)
 	);
 
+	await fs.copy(
+		path.join(paths.scriptsSrc, `path-utils.js`),
+		path.join(paths.scriptsDist, `path-utils.js`)
+	);
+
 	// remove the prebuild folder
 	// console.log(`clean up: removing ${roots.preBuild}`);
 	// await fs.remove(roots.preBuild);

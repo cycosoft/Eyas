@@ -14,7 +14,8 @@ export default {
 					constants: resolve(__dirname, `src/scripts/constants.js`),
 					'event-bridge': resolve(__dirname, `src/scripts/event-bridge.js`),
 					'test-preload': resolve(__dirname, `src/scripts/test-preload.js`),
-					'parse-url': resolve(__dirname, `src/scripts/parse-url.js`)
+					'parse-url': resolve(__dirname, `src/scripts/parse-url.js`),
+					'path-utils': resolve(__dirname, `src/scripts/path-utils.js`)
 				}
 			},
 

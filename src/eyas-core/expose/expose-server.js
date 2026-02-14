@@ -1,3 +1,5 @@
+/* global __dirname */
+
 'use strict';
 
 const path = require(`path`);
@@ -7,17 +9,18 @@ const getPort = typeof getPortModule === `function` ? getPortModule : getPortMod
 const http = require(`http`);
 const https = require(`https`);
 
+// Resolve path-utils.js robustly for both src and .build structures
+const pathUtilsPath = [
+	path.join(__dirname, `..`, `..`, `scripts`, `path-utils.js`),
+	path.join(__dirname, `..`, `scripts`, `path-utils.js`)
+].find(p => require(`fs`).existsSync(p));
+
+const { safeJoin } = require(pathUtilsPath);
+
 let server = null;
 let state = null;
 let cachedPort = null;
 const HOST = `127.0.0.1`;
-
-function safePath(rootPath, requestPath) {
-	const normalized = path.normalize(path.join(`.`, requestPath)).replace(/^(\.\.(\/|\\))+/, ``);
-	const resolved = path.resolve(rootPath, normalized);
-	const rootResolved = path.resolve(rootPath);
-	return resolved.startsWith(rootResolved) ? resolved : null;
-}
 
 async function startExpose(options) {
 	const { rootPath, useHttps = false, certs } = options;
@@ -30,7 +33,7 @@ async function startExpose(options) {
 	const app = express();
 
 	app.use((req, res, next) => {
-		const safe = safePath(rootPath, req.path);
+		const safe = safeJoin(rootPath, req.path);
 		if (safe === null) {
 			return res.status(404).end();
 		}
