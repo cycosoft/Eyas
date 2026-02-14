@@ -783,6 +783,9 @@ function setupAutoUpdater() {
 
 	autoUpdater.forceDevUpdateConfig = true;
 
+	// Silence internal logging to prevent duplicate stack traces
+	autoUpdater.logger = null;
+
 	autoUpdater.setFeedURL({
 		provider: `github`,
 		owner: `cycosoft`,
@@ -791,7 +794,7 @@ function setupAutoUpdater() {
 
 	$onCheckForUpdates = () => {
 		$updateCheckUserTriggered = true;
-		autoUpdater.checkForUpdates();
+		autoUpdater.checkForUpdates().catch(() => {});
 	};
 	$onInstallUpdate = () => autoUpdater.quitAndInstall();
 
@@ -811,11 +814,15 @@ function setupAutoUpdater() {
 	};
 	autoUpdater.on(`update-not-available`, showNoUpdateIfUserTriggered);
 	autoUpdater.on(`error`, err => {
-		console.error(`Auto-update error:`, err);
+		if (err.message?.includes(`404`)) {
+			console.error(`Auto-update error: update server not found`);
+		} else {
+			console.error(`Auto-update error:`, err);
+		}
 		showNoUpdateIfUserTriggered();
 	});
 
-	autoUpdater.checkForUpdates();
+	autoUpdater.checkForUpdates().catch(() => {});
 }
 
 function getSessionAge() {
