@@ -1102,6 +1102,9 @@ async function startAFreshTest() {
 		stopExposeServer();
 	}
 
+	// clear the cached port for the expose server
+	exposeServer.clearExposePort();
+
 	// set the available viewports
 	$allViewports = [...$config.viewports, ...$defaultViewports];
 

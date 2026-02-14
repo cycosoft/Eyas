@@ -9,6 +9,7 @@ const https = require(`https`);
 
 let server = null;
 let state = null;
+let cachedPort = null;
 const HOST = `127.0.0.1`;
 
 function safePath(rootPath, requestPath) {
@@ -24,7 +25,8 @@ async function startExpose(options) {
 		return getExposeState();
 	}
 
-	const port = await getPort();
+	// use cached port if available, otherwise find a new one
+	const port = cachedPort || await getPort();
 	const app = express();
 
 	app.use((req, res, next) => {
@@ -49,10 +51,20 @@ async function startExpose(options) {
 		server = http.createServer(app);
 	}
 
-	await new Promise((resolve, reject) => {
-		server.listen(port, HOST, () => resolve());
-		server.on(`error`, reject);
-	});
+	try {
+		await new Promise((resolve, reject) => {
+			server.listen(port, HOST, () => resolve());
+			server.on(`error`, reject);
+		});
+	} catch {
+		// if there was an error, clear the port and server state and try again
+		cachedPort = null;
+		server = null;
+		return startExpose(options);
+	}
+
+	// store the successfully bound port for future use
+	cachedPort = port;
 
 	state = {
 		url: `${protocol}://${HOST}:${port}`,
@@ -76,6 +88,10 @@ function stopExpose() {
 	state = null;
 }
 
+function clearExposePort() {
+	cachedPort = null;
+}
+
 function getExposeState() {
 	return state;
 }
@@ -83,5 +99,6 @@ function getExposeState() {
 module.exports = {
 	startExpose,
 	stopExpose,
-	getExposeState
+	getExposeState,
+	clearExposePort
 };
