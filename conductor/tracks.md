@@ -1,7 +1,3 @@
 # Project Tracks
 
 This file tracks all major tracks for the project. Each track has its own detailed plan in its respective folder.
----
-
-- [x] **Track: Add a dynamic root-level menu item to show the Expose server countdown when active.**
-*Link: [./tracks/root_level_expose_status_20260214/](./tracks/root_level_expose_status_20260214/)*
