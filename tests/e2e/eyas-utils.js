@@ -54,7 +54,7 @@ async function ensureEnvironmentSelected(uiPage) {
 		await expect(envModalTitle).not.toBeVisible();
 		// Wait for navigation/menu update
 		await new Promise(resolve => setTimeout(resolve, 1000));
-	} catch (e) {
+	} catch {
 		// Modal might not be required or already cleared
 	}
 }
@@ -95,7 +95,7 @@ async function exitEyas(electronApp) {
 		});
 		// Wait a bit for the app to process the exit
 		await new Promise(resolve => setTimeout(resolve, 1000));
-	} catch (error) {
+	} catch {
 		// ignore
 	} finally {
 		await electronApp.close().catch(() => {});
