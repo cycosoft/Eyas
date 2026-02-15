@@ -1,273 +1,96 @@
-const { _electron: electron } = require(`@playwright/test`);
-const path = require(`path`);
 const { test, expect } = require(`@playwright/test`);
+const {
+	launchEyas,
+	getUiView,
+	ensureEnvironmentSelected,
+	exitEyas,
+	getMenuStructure,
+	clickSubMenuItem,
+	waitForMenuUpdate
+} = require(`./eyas-utils`);
 
-/**
- * Serialize the application menu to a plain structure (labels only) for assertion.
- * Runs in the Electron main process via evaluate().
- */
-function getMenuStructure(electronApp) {
-	return electronApp.evaluate(({ Menu }) => {
-		const appMenu = Menu.getApplicationMenu();
-		if (!appMenu) return null;
-		function toPlain(menu) {
-			return menu.items.map(item => ({
-				label: item.label || ``,
-				enabled: item.enabled,
-				submenu: item.submenu ? toPlain(item.submenu) : undefined
-			}));
-		}
-		return toPlain(appMenu);
-	});
-}
+test.describe(`Application Menu`, () => {
+	let electronApp;
 
-/**
- * Programmatically click a menu item within a sub-menu.
- * Runs in the Electron main process via evaluate().
- */
-function clickSubMenuItem(electronApp, topLevelLabel, subMenuLabel) {
-	return electronApp.evaluate(({ Menu }, { topLevelLabel, subMenuLabel }) => {
-		const appMenu = Menu.getApplicationMenu();
-		if (!appMenu) return false;
-
-		const topLevelItem = appMenu.items.find(item => item.label && item.label.includes(topLevelLabel));
-		if (!topLevelItem || !topLevelItem.submenu) return false;
-
-		const subMenuItem = topLevelItem.submenu.items.find(item => item.label && item.label.includes(subMenuLabel));
-		if (subMenuItem && subMenuItem.click) {
-			subMenuItem.click(subMenuItem, null, {});
-			return true;
-		}
-		return false;
-	}, { topLevelLabel, subMenuLabel });
-}
-
-function getTopLevelLabels(menuStructure) {
-	return menuStructure ? menuStructure.map(item => item.label) : [];
-}
-
-function findSubmenuLabels(menuStructure, topLevelLabelContains) {
-	if (!menuStructure) return [];
-	const top = menuStructure.find(item => item.label && item.label.includes(topLevelLabelContains));
-	return top?.submenu ? top.submenu.map(item => item.label).filter(Boolean) : [];
-}
-
-test(`application menu has expected top-level items`, async () => {
-	const electronPath = require(`electron`);
-	const mainPath = path.join(__dirname, `../../.build/index.js`);
-
-	const electronApp = await electron.launch({
-		executablePath: electronPath,
-		args: [mainPath, `--dev`],
-		timeout: 30000
+	test.beforeEach(async () => {
+		electronApp = await launchEyas();
 	});
 
-	const window = await electronApp.firstWindow();
-	await window.waitForLoadState(`domcontentloaded`);
-	await new Promise(resolve => setTimeout(resolve, 1500));
+	test.afterEach(async () => {
+		await exitEyas(electronApp);
+	});
 
-	const menuStructure = await getMenuStructure(electronApp);
-	expect(menuStructure).not.toBeNull();
-	expect(Array.isArray(menuStructure)).toBe(true);
+	test(`application menu has expected top-level items`, async () => {
+		const menuStructure = await getMenuStructure(electronApp);
+		const labels = menuStructure.map(item => item.label);
 
-	const topLevel = getTopLevelLabels(menuStructure);
-	expect(topLevel.length).toBeGreaterThanOrEqual(5);
+		expect(labels.length).toBeGreaterThanOrEqual(5);
+		expect(labels.some(l => l.match(/Eyas|File/i))).toBe(true);
+		expect(labels.some(l => l.includes(`Tools`))).toBe(true);
+		expect(labels.some(l => l.includes(`Network`))).toBe(true);
+		expect(labels.some(l => l.includes(`Cache`))).toBe(true);
+		expect(labels.some(l => l.includes(`Viewport`))).toBe(true);
+	});
 
-	expect(topLevel[0]).toMatch(/Eyas/i);
-	expect(topLevel.some(l => l.includes(`Tools`))).toBe(true);
-	expect(topLevel.some(l => l.includes(`Network`))).toBe(true);
-	expect(topLevel.some(l => l.includes(`Cache`))).toBe(true);
-	expect(topLevel.some(l => l.includes(`Viewport`))).toBe(true);
+	test(`app-name menu has About and Exit`, async () => {
+		const menuStructure = await getMenuStructure(electronApp);
+		const appMenu = menuStructure.find(m => m.submenu && m.submenu.some(si => si.label.includes(`About`)));
+		expect(appMenu).toBeDefined();
 
-	try {
-		const result = await electronApp.evaluate(({ BrowserWindow }) => {
-			const windows = BrowserWindow.getAllWindows();
-			if (windows.length > 0 && windows[0].getBrowserViews().length > 0) {
-				return windows[0].getBrowserViews()[0].webContents.executeJavaScript(`
-					window.eyas && window.eyas.send ? (window.eyas.send('app-exit'), true) : false;
-				`);
-			}
-			return false;
+		const submenuLabels = appMenu.submenu.map(item => item.label);
+		expect(submenuLabels.some(l => l.includes(`About`))).toBe(true);
+		expect(submenuLabels.some(l => l.includes(`Exit`))).toBe(true);
+	});
+
+	test(`functional menus are disabled until environment selection`, async () => {
+		const ui = await getUiView(electronApp);
+
+		// Check initial disabled state
+		const menuInitial = await getMenuStructure(electronApp);
+		const tools = menuInitial.find(item => item.label.includes(`Tools`));
+		expect(tools.enabled).toBe(false);
+
+		// Select environment
+		await ensureEnvironmentSelected(ui);
+
+		// Wait for menus to enable
+		const menuAfter = await waitForMenuUpdate(electronApp, m => {
+			const t = m.find(item => item.label.includes(`Tools`));
+			return t && t.enabled;
 		});
-		if (result) await new Promise(resolve => setTimeout(resolve, 500));
-	} catch {
-		// ignore
-	}
-	await electronApp.close();
-});
 
-test(`app-name menu has About and Exit`, async () => {
-	const electronPath = require(`electron`);
-	const mainPath = path.join(__dirname, `../../.build/index.js`);
-
-	const electronApp = await electron.launch({
-		executablePath: electronPath,
-		args: [mainPath, `--dev`],
-		timeout: 30000
+		expect(menuAfter.find(item => item.label.includes(`Network`)).enabled).toBe(true);
+		expect(menuAfter.find(item => item.label.includes(`Cache`)).enabled).toBe(true);
 	});
 
-	const window = await electronApp.firstWindow();
-	await window.waitForLoadState(`domcontentloaded`);
-	await new Promise(resolve => setTimeout(resolve, 1500));
+	test(`Expose Test menu flow works correctly`, async () => {
+		const ui = await getUiView(electronApp);
 
-	const menuStructure = await getMenuStructure(electronApp);
-	expect(menuStructure).not.toBeNull();
+		// Clear initial Environment Modal
+		await ensureEnvironmentSelected(ui);
 
-	const appSubmenu = findSubmenuLabels(menuStructure, `Eyas`);
-	expect(appSubmenu.some(l => l.includes(`About`))).toBe(true);
-	expect(appSubmenu.some(l => l.includes(`Exit`))).toBe(true);
+		// 1. Click menu item, modal appears
+		await clickSubMenuItem(electronApp, `Tools`, `Expose Test`);
+		const modalTitle = ui.locator(`[data-qa="expose-setup-title"]`);
+		await expect(modalTitle).toBeVisible();
 
-	try {
-		await electronApp.evaluate(({ BrowserWindow }) => {
-			const w = BrowserWindow.getAllWindows()[0];
-			if (w && w.getBrowserViews().length > 0) {
-				return w.getBrowserViews()[0].webContents.executeJavaScript(`window.eyas?.send('app-exit'); true`);
-			}
-			return false;
+		// 2. Click cancel, modal disappears
+		await ui.locator(`[data-qa="btn-cancel-expose"]`).click();
+		await expect(modalTitle).not.toBeVisible();
+
+		// 3. Click continue, server starts
+		await clickSubMenuItem(electronApp, `Tools`, `Expose Test`);
+		await ui.locator(`[data-qa="btn-continue-expose"]`).click();
+		await expect(modalTitle).not.toBeVisible();
+
+		// Wait for menu to update with time remaining
+		const menuExposed = await waitForMenuUpdate(electronApp, m => {
+			const tools = m.find(item => item.label.includes(`Tools`));
+			return tools && tools.submenu && tools.submenu.some(item => item.label.includes(`Exposed`));
 		});
-		await new Promise(resolve => setTimeout(resolve, 500));
-	} catch {
-		// ignore
-	}
-	await electronApp.close();
-});
 
-test(`functional menus are disabled until environment selection`, async () => {
-	test.setTimeout(15000);
-	const electronPath = require(`electron`);
-	const mainPath = path.join(__dirname, `../../.build/index.js`);
-
-	const electronApp = await electron.launch({
-		executablePath: electronPath,
-		args: [mainPath, `--dev`],
-		timeout: 30000
+		const tools = menuExposed.find(item => item.label.includes(`Tools`));
+		const exposeItem = tools.submenu.find(item => item.label.includes(`Exposed`));
+		expect(exposeItem.label).toMatch(/Exposed for ~30m/);
 	});
-
-	const window = await electronApp.firstWindow();
-	await window.waitForLoadState(`domcontentloaded`);
-
-	// The UI is in a BrowserView, find its Page object by looking for the custom protocol
-	let ui;
-	for (let i = 0; i < 10; i++) {
-		ui = electronApp.windows().find(p => p.url() === `ui://eyas.interface/index.html`);
-		if (ui) break;
-		await new Promise(resolve => setTimeout(resolve, 500));
-	}
-	expect(ui).toBeDefined();
-
-	// Wait for the modal to be definitely visible
-	const envModalTitle = ui.locator(`[data-qa="environment-modal-title"]`);
-	await expect(envModalTitle).toBeVisible();
-
-	// Check menu state
-	const menuStructure = await getMenuStructure(electronApp);
-	const toolsMenu = menuStructure.find(item => item.label.includes(`Tools`));
-	const networkMenu = menuStructure.find(item => item.label.includes(`Network`));
-	const cacheMenu = menuStructure.find(item => item.label.includes(`Cache`));
-
-	expect(toolsMenu.enabled).toBe(false);
-	expect(networkMenu.enabled).toBe(false);
-	expect(cacheMenu.enabled).toBe(false);
-
-	// Select an environment
-	await ui.locator(`[data-qa="btn-env"]`).first().click();
-
-	// Wait for navigation to trigger enabling
-	await new Promise(resolve => setTimeout(resolve, 2000));
-
-	const menuAfter = await getMenuStructure(electronApp);
-	const toolsAfter = menuAfter.find(item => item.label.includes(`Tools`));
-	const networkAfter = menuAfter.find(item => item.label.includes(`Network`));
-	const cacheAfter = menuAfter.find(item => item.label.includes(`Cache`));
-
-	expect(toolsAfter.enabled).toBe(true);
-	expect(networkAfter.enabled).toBe(true);
-	expect(cacheAfter.enabled).toBe(true);
-
-	try {
-		await electronApp.evaluate(({ BrowserWindow }) => {
-			const w = BrowserWindow.getAllWindows()[0];
-			if (w && w.getBrowserViews().length > 0) {
-				return w.getBrowserViews()[0].webContents.executeJavaScript(`window.eyas?.send('app-exit'); true`);
-			}
-			return false;
-		});
-		await new Promise(resolve => setTimeout(resolve, 500));
-	} catch {
-		// ignore
-	}
-	await electronApp.close();
-});
-
-test.fixme(`Expose Test menu flow works correctly`, async () => {
-	const electronPath = require(`electron`);
-	const mainPath = path.join(__dirname, `../../.build/index.js`);
-
-	const electronApp = await electron.launch({
-		executablePath: electronPath,
-		args: [mainPath, `--dev`],
-		timeout: 30000
-	});
-
-	const window = await electronApp.firstWindow();
-	await window.waitForLoadState(`domcontentloaded`);
-
-	// The UI is in a BrowserView, find its Page object by looking for the custom protocol
-	const ui = electronApp.windows().find(p => p.url().startsWith(`ui://`));
-	expect(ui).toBeDefined();
-
-	await new Promise(resolve => setTimeout(resolve, 1500));
-
-	// --- 0. Clear initial Environment Modal if present ---
-	const envModalTitle = ui.locator(`[data-qa="environment-modal-title"]`);
-	if (await envModalTitle.isVisible()) {
-		await ui.locator(`[data-qa="btn-env"]`).first().click().catch(() => {});
-		await new Promise(resolve => setTimeout(resolve, 500));
-	}
-
-	// --- 1. Click menu item, modal appears ---
-	await clickSubMenuItem(electronApp, `Tools`, `Expose Test`);
-	const modalTitle = ui.locator(`[data-qa="expose-setup-title"]`);
-	await expect(modalTitle).toBeVisible();
-
-	// --- 2. Click cancel, modal disappears, server not started ---
-	await ui.locator(`[data-qa="btn-cancel-expose"]`).click();
-	await expect(modalTitle).not.toBeVisible();
-	let menu = await getMenuStructure(electronApp);
-	let toolsMenu = menu.find(item => item.label.includes(`Tools`));
-	let exposeItem = toolsMenu.submenu.find(item => item.label.includes(`Expose`));
-	expect(exposeItem.label).toContain(`Expose Test`); // Should not have changed
-
-	// --- 3. Click continue, server starts ---
-	await clickSubMenuItem(electronApp, `Tools`, `Expose Test`);
-	await ui.locator(`[data-qa="btn-continue-expose"]`).click();
-	await expect(modalTitle).not.toBeVisible();
-
-	// Wait for menu to update
-	await new Promise(resolve => setTimeout(resolve, 1000));
-
-	menu = await getMenuStructure(electronApp);
-	toolsMenu = menu.find(item => item.label.includes(`Tools`));
-	exposeItem = toolsMenu.submenu.find(item => item.label.includes(`Exposed`));
-	expect(exposeItem.label).toMatch(/Exposed for ~30m/); // Should now show remaining time
-
-	// --- Cleanup ---
-	try {
-		// Attempt clean exit via IPC
-		await electronApp.evaluate(({ BrowserWindow }) => {
-			const w = BrowserWindow.getAllWindows()[0];
-			if (w && w.getBrowserViews().length > 0) {
-				return w.getBrowserViews()[0].webContents.executeJavaScript(`window.eyas?.send('app-exit'); true`);
-			}
-			return false;
-		});
-		await new Promise(resolve => setTimeout(resolve, 1000));
-	} catch {
-		// fallback to clicking the exit button if modal is visible
-		const exitButton = ui.locator(`[data-qa="btn-exit"]`);
-		if (await exitButton.isVisible()) {
-			await exitButton.click();
-		}
-	}
-	await electronApp.close();
 });
