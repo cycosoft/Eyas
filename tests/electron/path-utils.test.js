@@ -1,8 +1,6 @@
-/* eslint-disable quotes */
 import { describe, it, expect } from 'vitest';
 import path from 'path';
 import { safeJoin } from '../../src/scripts/path-utils.js';
-/* eslint-enable quotes */
 
 describe(`path-utils`, () => {
 	describe(`safeJoin`, () => {
