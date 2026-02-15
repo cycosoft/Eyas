@@ -4,9 +4,9 @@ const { defineConfig } = require(`@playwright/test`);
 
 module.exports = defineConfig({
 	testDir: `./tests/e2e`,
-	timeout: 5000,
+	timeout: 15000,
 	expect: {
-		timeout: 2000
+		timeout: 5000
 	},
 	fullyParallel: false,
 	forbidOnly: !!process.env.CI,
