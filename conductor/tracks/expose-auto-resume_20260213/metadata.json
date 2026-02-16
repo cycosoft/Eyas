@@ -1,8 +1,0 @@
-{
-  "track_id": "expose-auto-resume_20260213",
-  "type": "feature",
-  "status": "new",
-  "created_at": "2026-02-13T20:55:00Z",
-  "updated_at": "2026-02-13T20:55:00Z",
-  "description": "We need to show a modal when the server auto shuts down, that the users can click "resume" or close. It should just restart the server with the same settings that it was last started with."
-}
