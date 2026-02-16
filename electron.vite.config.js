@@ -15,7 +15,8 @@ export default {
 					'event-bridge': resolve(__dirname, `src/scripts/event-bridge.js`),
 					'test-preload': resolve(__dirname, `src/scripts/test-preload.js`),
 					'parse-url': resolve(__dirname, `src/scripts/parse-url.js`),
-					'path-utils': resolve(__dirname, `src/scripts/path-utils.js`)
+					'path-utils': resolve(__dirname, `src/scripts/path-utils.js`),
+					'time-utils': resolve(__dirname, `src/scripts/time-utils.js`)
 				}
 			},
 

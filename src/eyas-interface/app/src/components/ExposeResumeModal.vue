@@ -3,8 +3,8 @@
 		<v-card class="pa-3">
 			<v-card-title class="text-h6" data-qa="expose-resume-title">Expose Test Auto-Shutdown</v-card-title>
 			<v-card-text>
-				<p class="mb-4">The expose server has automatically shut down after 30 minutes.</p>
-				<p>Would you like to resume serving the test for another 30 minutes with the same settings?</p>
+				<p class="mb-4">The expose server has automatically shut down after {{ duration }}.</p>
+				<p>Would you like to resume serving the test for another {{ duration }} with the same settings?</p>
 			</v-card-text>
 			<v-card-actions>
 				<v-spacer />
@@ -23,7 +23,8 @@
 import ModalWrapper from '@/components/ModalWrapper.vue';
 
 const defaults = {
-	visible: false
+	visible: false,
+	duration: `30 minutes`
 };
 
 export default {
@@ -34,7 +35,8 @@ export default {
 	data: () => ({ ...defaults }),
 
 	mounted() {
-		window.eyas?.receive(`show-expose-resume-modal`, () => {
+		window.eyas?.receive(`show-expose-resume-modal`, (duration) => {
+			this.duration = duration || `30 minutes`;
 			this.visible = true;
 		});
 	},

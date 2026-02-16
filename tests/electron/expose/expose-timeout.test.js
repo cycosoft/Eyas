@@ -17,7 +17,7 @@ describe(`expose-timeout`, () => {
 
 	test(`expiry callback fires after 30 minutes`, () => {
 		const onExpire = vi.fn();
-		startExposeTimeout(onExpire);
+		startExposeTimeout(onExpire, 30 * 60 * 1000);
 		expect(onExpire).not.toHaveBeenCalled();
 		vi.advanceTimersByTime(30 * 60 * 1000);
 		expect(onExpire).toHaveBeenCalledTimes(1);
@@ -26,7 +26,7 @@ describe(`expose-timeout`, () => {
 
 	test(`cancel prevents callback`, () => {
 		const onExpire = vi.fn();
-		startExposeTimeout(onExpire);
+		startExposeTimeout(onExpire, 30 * 60 * 1000);
 		cancelExposeTimeout();
 		vi.advanceTimersByTime(30 * 60 * 1000);
 		expect(onExpire).not.toHaveBeenCalled();
@@ -34,9 +34,9 @@ describe(`expose-timeout`, () => {
 
 	test(`reset restarts 30-minute window`, () => {
 		const onExpire = vi.fn();
-		startExposeTimeout(onExpire);
+		startExposeTimeout(onExpire, 30 * 60 * 1000);
 		vi.advanceTimersByTime(15 * 60 * 1000);
-		resetExposeTimeout(onExpire);
+		resetExposeTimeout(onExpire, 30 * 60 * 1000);
 		vi.advanceTimersByTime(15 * 60 * 1000);
 		expect(onExpire).not.toHaveBeenCalled();
 		vi.advanceTimersByTime(15 * 60 * 1000);

@@ -32,7 +32,7 @@ function buildMenuTemplate(context) {
 		onCheckForUpdates,
 		onInstallUpdate,
 		exposeActive = false,
-		exposeRemainingMinutes = 0,
+		exposeRemainingTime = ``,
 		onStartExpose,
 		onStopExpose,
 		onCopyExposedUrl,
@@ -47,7 +47,7 @@ function buildMenuTemplate(context) {
 	];
 
 	const exposeLabel = exposeActive
-		? `📡 Exposed for ~${exposeRemainingMinutes}m`
+		? `📡 Exposed for ~${exposeRemainingTime}`
 		: `📡 Expose Test`;
 
 	const updateStatusItem = updateStatus === `downloading`

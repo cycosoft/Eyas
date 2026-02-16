@@ -1,10 +1,9 @@
 'use strict';
 
-const EXPIRE_MS = 30 * 60 * 1000; // 30 minutes
 let timeoutId = null;
 let expired = false;
 
-function startExposeTimeout(onExpire) {
+function startExposeTimeout(onExpire, expireMs) {
 	cancelExposeTimeout();
 	expired = false;
 	timeoutId = setTimeout(() => {
@@ -13,7 +12,7 @@ function startExposeTimeout(onExpire) {
 		if (typeof onExpire === `function`) {
 			onExpire();
 		}
-	}, EXPIRE_MS);
+	}, expireMs);
 }
 
 function cancelExposeTimeout() {
@@ -27,8 +26,8 @@ function isExposeTimeoutExpired() {
 	return expired;
 }
 
-function resetExposeTimeout(onExpire) {
-	startExposeTimeout(onExpire);
+function resetExposeTimeout(onExpire, expireMs) {
+	startExposeTimeout(onExpire, expireMs);
 }
 
 module.exports = {

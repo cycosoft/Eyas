@@ -40,8 +40,8 @@ const $currentViewport = [];
 let $updateStatus = `idle`;
 let $isInitializing = true;
 let $updateCheckUserTriggered = false;
-let $onCheckForUpdates = () => {};
-let $onInstallUpdate = () => {};
+let $onCheckForUpdates = () => { };
+let $onInstallUpdate = () => { };
 const $roots = require(_path.join(__dirname, `scripts`, `get-roots.js`));
 const { parseURL } = require(_path.join(__dirname, `scripts`, `parse-url.js`));
 const $paths = {
@@ -52,6 +52,7 @@ const $paths = {
 	eventBridge: _path.join($roots.eyas, `scripts`, `event-bridge.js`),
 	constants: _path.join($roots.eyas, `scripts`, `constants.js`),
 	pathUtils: _path.join($roots.eyas, `scripts`, `path-utils.js`),
+	timeUtils: _path.join($roots.eyas, `scripts`, `time-utils.js`),
 	testSrc: null,
 	uiSource: _path.join($roots.eyas, `eyas-interface`),
 	eyasInterface: _path.join($roots.eyas, `eyas-interface`, `index.html`),
@@ -67,9 +68,10 @@ const exposeCerts = require(_path.join(__dirname, `expose`, `expose-certs.js`));
 const exposeTimeout = require(_path.join(__dirname, `expose`, `expose-timeout.js`));
 const exposeHosts = require(_path.join(__dirname, `expose`, `expose-hosts.js`));
 const { safeJoin } = require(_path.join(__dirname, `scripts`, `path-utils.js`));
+const { formatDuration } = require(_path.join(__dirname, `scripts`, `time-utils.js`));
 
 // constants
-const { LOAD_TYPES } = require($paths.constants);
+const { LOAD_TYPES, EXPIRE_MS } = require($paths.constants);
 const APP_NAME = `Eyas`;
 
 // APP_ENTRY: initialize the first layer of the app
@@ -189,10 +191,10 @@ function initElectronCore() {
 	// macOS: detect if the app was opened with a file
 	_electronCore.on(`open-file`, async (event, path) => {
 		// ensure the correct file type is being opened
-		if(!path.endsWith(`.eyas`)){ return; }
+		if (!path.endsWith(`.eyas`)) { return; }
 
 		// if the $appWindow was already initialized
-		if($appWindow){
+		if ($appWindow) {
 			// load the new config
 			$config = await require($paths.configLoader)(LOAD_TYPES.ASSOCIATION, path);
 
@@ -307,11 +309,13 @@ async function initElectronUi() {
 	initUiListeners();
 
 	// Initialize the $eyasLayer
-	$eyasLayer = new BrowserView({ webPreferences: {
-		preload: $paths.eventBridge,
-		partition: `persist:${$config.meta.testId}`,
-		backgroundThrottling: false // allow to update even when hidden (e.g. modal close)
-	} });
+	$eyasLayer = new BrowserView({
+		webPreferences: {
+			preload: $paths.eventBridge,
+			partition: `persist:${$config.meta.testId}`,
+			backgroundThrottling: false // allow to update even when hidden (e.g. modal close)
+		}
+	});
 	$appWindow.addBrowserView($eyasLayer);
 	$eyasLayer.webContents.loadURL(`${$uiDomain}/index.html`);
 
@@ -509,7 +513,7 @@ async function trackEvent(event, extraData) {
 }
 
 // forces an exit if the loaded test has expired
-function checkTestExpiration () {
+function checkTestExpiration() {
 	// imports
 	const { isPast } = require(`date-fns/isPast`);
 	const { format } = require(`date-fns/format`);
@@ -519,7 +523,7 @@ function checkTestExpiration () {
 	const expirationDate = new Date($config.meta.expires);
 
 	// stop if the test has not expired
-	if(!isPast(expirationDate)){ return; }
+	if (!isPast(expirationDate)) { return; }
 
 	// alert the user that the test has expired
 	dialog.showMessageBoxSync({
@@ -548,7 +552,7 @@ function getAppTitle() {
 	output += ` :: ${$config.version} ✨`;
 
 	// Add the current URL if it`s available
-	if ($appWindow){
+	if ($appWindow) {
 		output += ` ( ${$appWindow.webContents.getURL()} )`;
 	}
 
@@ -571,7 +575,7 @@ function onResize() {
 	const [newWidth, newHeight] = $appWindow.getContentSize();
 
 	// if the dimensions have not changed
-	if(newWidth === $currentViewport[0] && newHeight === $currentViewport[1]){
+	if (newWidth === $currentViewport[0] && newHeight === $currentViewport[1]) {
 		return;
 	}
 
@@ -583,7 +587,7 @@ function onResize() {
 	const { width, height } = $eyasLayer.getBounds();
 
 	// if the Eyas UI layer is visible
-	if(width && height){
+	if (width && height) {
 		// update the Eyas UI layer to match the new dimensions
 		$eyasLayer.setBounds({ x: 0, y: 0, width: newWidth, height: newHeight });
 	}
@@ -669,7 +673,7 @@ async function doStartExpose() {
 	} catch {
 		// addHostEntry may fail (e.g. no root for /etc/hosts)
 	}
-	exposeTimeout.startExposeTimeout(onExposeTimeout);
+	exposeTimeout.startExposeTimeout(onExposeTimeout, EXPIRE_MS);
 	$exposeMenuIntervalId = setInterval(() => setMenu(), 60 * 1000);
 	setMenu();
 }
@@ -682,11 +686,11 @@ function onExposeTimeout() {
 	stopExposeServer();
 
 	// Show the resume modal in the UI
-	uiEvent(`show-expose-resume-modal`);
+	uiEvent(`show-expose-resume-modal`, formatDuration(EXPIRE_MS));
 }
 
 // Set up the application menu
-async function setMenu () {
+async function setMenu() {
 	const { Menu, dialog } = require(`electron`);
 	const { isURL } = require(`validator`);
 
@@ -815,16 +819,15 @@ Runner: v${_appVersion}
 		viewportItems,
 		linkItems,
 		updateStatus: typeof $updateStatus !== `undefined` ? $updateStatus : `idle`,
-		onCheckForUpdates: typeof $onCheckForUpdates === `function` ? $onCheckForUpdates : () => {},
-		onInstallUpdate: typeof $onInstallUpdate === `function` ? $onInstallUpdate : () => {},
+		onCheckForUpdates: typeof $onCheckForUpdates === `function` ? $onCheckForUpdates : () => { },
+		onInstallUpdate: typeof $onInstallUpdate === `function` ? $onInstallUpdate : () => { },
 		exposeActive: !!exposeServer.getExposeState(),
-		exposeRemainingMinutes: (() => {
+		exposeRemainingTime: (() => {
 			const s = exposeServer.getExposeState();
-			if (!s) { return 0; }
-			const EXPIRE_MS = 30 * 60 * 1000;
+			if (!s) { return ``; }
 			const elapsed = Date.now() - s.startedAt;
 			const remaining = EXPIRE_MS - elapsed;
-			return Math.max(0, Math.ceil(remaining / 60000));
+			return formatDuration(remaining);
 		})(),
 		onStartExpose: startExposeHandler,
 		onStopExpose: stopExposeServer,
@@ -859,7 +862,7 @@ function setupAutoUpdater() {
 
 	$onCheckForUpdates = () => {
 		$updateCheckUserTriggered = true;
-		autoUpdater.checkForUpdates().catch(() => {});
+		autoUpdater.checkForUpdates().catch(() => { });
 	};
 	$onInstallUpdate = () => autoUpdater.quitAndInstall();
 
@@ -887,7 +890,7 @@ function setupAutoUpdater() {
 		showNoUpdateIfUserTriggered();
 	});
 
-	autoUpdater.checkForUpdates().catch(() => {});
+	autoUpdater.checkForUpdates().catch(() => { });
 }
 
 function getSessionAge() {
@@ -898,14 +901,14 @@ function getSessionAge() {
 	const cachePath = $appWindow.webContents.session.getStoragePath();
 
 	// if the cache path was found
-	if(cachePath){
+	if (cachePath) {
 		const fs = require(`fs`);
 
 		// create a path to the `Session Storage` folder
 		const sessionFolder = _path.join(cachePath, `Session Storage`);
 
 		// if the session folder exists
-		if(fs.existsSync(sessionFolder)){
+		if (fs.existsSync(sessionFolder)) {
 			// get the date the folder was created
 			output = fs.statSync(sessionFolder).birthtime;
 		}
@@ -931,7 +934,7 @@ async function manageAppClose(evt) {
 
 // Toggle the Eyas UI layer so the user can interact with it or their test
 function toggleEyasUI(enable) {
-	if(enable) {
+	if (enable) {
 		// set the bounds to the current viewport
 		$eyasLayer.setBounds({
 			x: 0,
@@ -958,7 +961,7 @@ function focusUI() {
 	focusUI.attempts++;
 
 	// if the number of attempts is greater than 5
-	if(focusUI.attempts > 5){
+	if (focusUI.attempts > 5) {
 		// reset the number of attempts
 		focusUI.attempts = 0;
 
@@ -974,7 +977,7 @@ function focusUI() {
 		const isFocused = $eyasLayer.webContents.isFocused();
 
 		// if the UI is not focused
-		if(!isFocused){
+		if (!isFocused) {
 			// call the focus method again
 			focusUI();
 		} else {
@@ -990,7 +993,7 @@ function navigate(path, openInBrowser) {
 	let runningTestSource = false;
 
 	// if the path wasn't provided (default to local test source)
-	if(!path){
+	if (!path) {
 		// store that we're running the local test source
 		runningTestSource = true;
 
@@ -998,7 +1001,7 @@ function navigate(path, openInBrowser) {
 		path = $testDomain;
 	}
 
-	if(
+	if (
 		// if requested to open in the browser AND
 		openInBrowser &&
 		(
@@ -1007,7 +1010,7 @@ function navigate(path, openInBrowser) {
 			// the test server is running AND we're running the local test
 			(exposeServer.getExposeState() && runningTestSource)
 		)
-	){
+	) {
 		// open the requested url in the default browser
 		const { shell } = require(`electron`);
 		shell.openExternal(path);
@@ -1027,19 +1030,23 @@ function registerInternalProtocols() {
 
 	// register the custom protocols for relative paths + crypto support
 	protocol.registerSchemesAsPrivileged([
-		{ scheme: `eyas`, privileges: {
-			standard: true,
-			secure: true,
-			allowServiceWorkers: true,
-			supportFetchAPI: true,
-			corsEnabled: true,
-			stream: true
-		} },
+		{
+			scheme: `eyas`, privileges: {
+				standard: true,
+				secure: true,
+				allowServiceWorkers: true,
+				supportFetchAPI: true,
+				corsEnabled: true,
+				stream: true
+			}
+		},
 
-		{ scheme: `ui`, privileges: {
-			standard: true,
-			secure: true
-		} }
+		{
+			scheme: `ui`, privileges: {
+				standard: true,
+				secure: true
+			}
+		}
 	]);
 }
 
@@ -1048,10 +1055,10 @@ function disableNetworkRequest(url) {
 	const output = false;
 
 	// exit if the network is not disabled
-	if($testNetworkEnabled){ return output; }
+	if ($testNetworkEnabled) { return output; }
 
 	// don't allow blocking the UI layer
-	if(url.startsWith(`ui://`)){ return output; }
+	if (url.startsWith(`ui://`)) { return output; }
 
 	return true;
 }
@@ -1109,12 +1116,12 @@ function setupEyasNetworkHandlers() {
 		// build the expected path to the file
 		let localFilePath = safeJoin($paths.testSrc, relativePathToFile);
 
-		if(
+		if (
 			// if the file is unsafe OR doesn't exist
 			(!localFilePath || !fs.existsSync(localFilePath))
 			// AND the requested path isn't the root path
 			&& $paths.testSrc !== safeJoin($paths.testSrc, pathname)
-		){
+		) {
 			// load root file instead
 			localFilePath = safeJoin($paths.testSrc, fileIfNotDefined);
 		}
@@ -1135,12 +1142,12 @@ function setupEyasNetworkHandlers() {
 		let bypassCustomProtocolHandlers = true;
 
 		// if the request's hostname matches the test domain
-		if(hostname === parseURL($testDomain).hostname) {
+		if (hostname === parseURL($testDomain).hostname) {
 			// check if the config.source is a valid url
 			const sourceOnWeb = parseURL($config.source);
 
 			// if the config.source is a url
-			if(sourceOnWeb){
+			if (sourceOnWeb) {
 				// redirect to the source domain with the same path
 				request = sourceOnWeb.origin
 					+ (sourceOnWeb.pathname + pathname)
@@ -1199,7 +1206,7 @@ async function startAFreshTest() {
 
 	// check if $config.source is a url
 	const sourceOnWeb = parseURL($config.source);
-	if(sourceOnWeb){
+	if (sourceOnWeb) {
 		$testDomainRaw = $config.source;
 		$testDomain = sourceOnWeb.toString();
 	}
@@ -1229,7 +1236,7 @@ async function startAFreshTest() {
 	}
 
 	// if the runner is older than the version that built the test
-	if($config.meta.eyas && semver.lt(_appVersion, $config.meta.eyas)){
+	if ($config.meta.eyas && semver.lt(_appVersion, $config.meta.eyas)) {
 		// send request to the UI layer
 		uiEvent(`show-version-mismatch-modal`, _appVersion, $config.meta.eyas);
 	}
@@ -1238,7 +1245,7 @@ async function startAFreshTest() {
 // navigate to a variable url
 function navigateVariable(url) {
 	// if the url has the test domain variable AND the test domain is not set
-	if(url.match(/{testdomain}/g)?.length && !$testDomainRaw){
+	if (url.match(/{testdomain}/g)?.length && !$testDomainRaw) {
 		const { dialog } = require(`electron`);
 
 		// alert the user that they need to select an environment first
@@ -1256,7 +1263,7 @@ function navigateVariable(url) {
 	const output = url.replace(/{testdomain}/g, $testDomainRaw);
 
 	// if the url still has variables
-	if(output.match(/{[^{}]+}/g)?.length){
+	if (output.match(/{[^{}]+}/g)?.length) {
 		// send request to the UI layer
 		uiEvent(`show-variables-modal`, output);
 	} else {

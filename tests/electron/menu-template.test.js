@@ -29,7 +29,7 @@ const minimalContext = {
 	onCheckForUpdates: noop,
 	onInstallUpdate: noop,
 	exposeActive: false,
-	exposeRemainingMinutes: 0,
+	exposeRemainingTime: ``,
 	onStartExpose: noop,
 	onStopExpose: noop,
 	onCopyExposedUrl: noop,
@@ -129,7 +129,7 @@ describe(`buildMenuTemplate`, () => {
 
 	test(`when exposeActive is false, Tools menu includes Expose Test item with onStartExpose click`, () => {
 		const onStartExpose = () => {};
-		const ctx = { ...minimalContext, exposeActive: false, exposeRemainingMinutes: 0, onStartExpose };
+		const ctx = { ...minimalContext, exposeActive: false, exposeRemainingTime: ``, onStartExpose };
 		const template = buildMenuTemplate(ctx);
 		const toolsMenu = template.find(item => item.label && item.label.includes(`Tools`));
 		const startItem = toolsMenu.submenu.find(item => item.label && item.label.includes(`Expose Test`));
@@ -137,8 +137,8 @@ describe(`buildMenuTemplate`, () => {
 		expect(startItem.click).toBe(onStartExpose);
 	});
 
-	test(`when exposeActive is true and exposeRemainingMinutes is 29, Tools menu includes 'Exposed for ~29m' item with sub-menu`, () => {
-		const ctx = { ...minimalContext, exposeActive: true, exposeRemainingMinutes: 29 };
+	test(`when exposeActive is true and exposeRemainingTime is '29m', Tools menu includes 'Exposed for ~29m' item with sub-menu`, () => {
+		const ctx = { ...minimalContext, exposeActive: true, exposeRemainingTime: `29m` };
 		const template = buildMenuTemplate(ctx);
 		const toolsMenu = template.find(item => item.label && item.label.includes(`Tools`));
 		const startItem = toolsMenu.submenu.find(item => item.label && item.label.includes(`Exposed`));
@@ -154,7 +154,7 @@ describe(`buildMenuTemplate`, () => {
 		const ctx = {
 			...minimalContext,
 			exposeActive: true,
-			exposeRemainingMinutes: 5,
+			exposeRemainingTime: `5m`,
 			onStopExpose,
 			onCopyExposedUrl,
 			onOpenExposedInBrowser
@@ -186,7 +186,7 @@ describe(`buildMenuTemplate`, () => {
 	});
 
 	test(`when exposeActive is true, template includes a top-level status item at the end`, () => {
-		const ctx = { ...minimalContext, exposeActive: true, exposeRemainingMinutes: 15 };
+		const ctx = { ...minimalContext, exposeActive: true, exposeRemainingTime: `15m` };
 		const template = buildMenuTemplate(ctx);
 		const last = template[template.length - 1];
 		expect(last.label).toMatch(/Exposed for ~15m/);

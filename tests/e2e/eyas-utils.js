@@ -78,6 +78,7 @@ async function waitForMenuUpdate(electronApp, predicate) {
  * @param {import('@playwright/test').ElectronApplication} electronApp
  */
 async function exitEyas(electronApp) {
+	if (!electronApp) return;
 	try {
 		await electronApp.evaluate(({ BrowserWindow }) => {
 			const windows = BrowserWindow.getAllWindows();
