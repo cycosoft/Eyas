@@ -4,5 +4,5 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-- [ ] **Track: Expose Test - Auto-Shutdown Resume Modal**
+- [x] **Track: Expose Test - Auto-Shutdown Resume Modal**
 *Link: [./tracks/expose-auto-resume_20260213/](./tracks/expose-auto-resume_20260213/)*
