@@ -25,6 +25,7 @@ let $config = null;
 let $configToLoad = {};
 let $testNetworkEnabled = true;
 let $exposeHttpsEnabled = false;
+let $lastExposeOptions = null;
 let $exposeMenuIntervalId = null;
 let $testDomainRaw = null;
 let $testDomain = `eyas://local.test`;
@@ -457,6 +458,17 @@ function initUiListeners() {
 		$exposeHttpsEnabled = !!useHttps;
 		doStartExpose();
 	});
+
+	// expose resume modal: user clicked Resume
+	ipcMain.on(`expose-resume-confirm`, () => {
+		// if there are previous settings, restart with them
+		if ($lastExposeOptions) {
+			doStartExpose();
+		} else {
+			// otherwise just start with defaults
+			doStartExpose();
+		}
+	});
 }
 
 // method for tracking events
@@ -640,11 +652,13 @@ async function doStartExpose() {
 		}
 	}
 	try {
-		await exposeServer.startExpose({
+		const options = {
 			rootPath: $paths.testSrc,
 			useHttps: $exposeHttpsEnabled,
 			certs: certs || undefined
-		});
+		};
+		await exposeServer.startExpose(options);
+		$lastExposeOptions = options;
 	} catch (err) {
 		console.error(`Expose server start failed:`, err);
 		return;
@@ -655,14 +669,20 @@ async function doStartExpose() {
 	} catch {
 		// addHostEntry may fail (e.g. no root for /etc/hosts)
 	}
-	exposeTimeout.startExposeTimeout(() => {
-		if ($appWindow && typeof $appWindow.flashFrame === `function`) {
-			$appWindow.flashFrame(true);
-		}
-		stopExposeServer();
-	});
+	exposeTimeout.startExposeTimeout(onExposeTimeout);
 	$exposeMenuIntervalId = setInterval(() => setMenu(), 60 * 1000);
 	setMenu();
+}
+
+// whenever the expose server automatically shuts down
+function onExposeTimeout() {
+	if ($appWindow && typeof $appWindow.flashFrame === `function`) {
+		$appWindow.flashFrame(true);
+	}
+	stopExposeServer();
+
+	// Show the resume modal in the UI
+	uiEvent(`show-expose-resume-modal`);
 }
 
 // Set up the application menu

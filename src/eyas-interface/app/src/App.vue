@@ -8,6 +8,7 @@
 		<ExitModal />
 		<VersionMismatchModal />
 		<ExposeSetupModal />
+		<ExposeResumeModal />
 	</v-app>
 </template>
 
@@ -17,6 +18,7 @@ import EnvironmentModal from '@/components/EnvironmentModal.vue';
 import VariablesModal from '@/components/VariablesModal.vue';
 import VersionMismatchModal from '@/components/VersionMismatchModal.vue';
 import ExposeSetupModal from '@/components/ExposeSetupModal.vue';
+import ExposeResumeModal from '@/components/ExposeResumeModal.vue';
 
 export default {
 	components: {
@@ -24,7 +26,8 @@ export default {
 		VariablesModal,
 		ExitModal,
 		VersionMismatchModal,
-		ExposeSetupModal
+		ExposeSetupModal,
+		ExposeResumeModal
 	}
 };
 

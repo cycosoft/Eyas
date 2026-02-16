@@ -14,7 +14,8 @@ contextBridge.exposeInMainWorld(`eyas`, {
 			`launch-link`,
 			`network-status`,
 			`expose-setup-continue`,
-			`expose-setup-step`
+			`expose-setup-step`,
+			`expose-resume-confirm`
 		];
 
 		if (validChannels.includes(channel)) {
@@ -29,6 +30,7 @@ contextBridge.exposeInMainWorld(`eyas`, {
 			`show-variables-modal`,
 			`show-version-mismatch-modal`,
 			`show-expose-setup-modal`,
+			`show-expose-resume-modal`,
 			`close-modals`
 		];
 		if (validChannels.includes(channel)) {
