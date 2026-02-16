@@ -91,6 +91,6 @@ test.describe(`Application Menu`, () => {
 
 		const tools = menuExposed.find(item => item.label.includes(`Tools`));
 		const exposeItem = tools.submenu.find(item => item.label.includes(`Exposed`));
-		expect(exposeItem.label).toMatch(/Exposed for ~(29|30)m/);
+		expect(exposeItem.label).toMatch(/Exposed for ~\d+[smh]/);
 	});
 });

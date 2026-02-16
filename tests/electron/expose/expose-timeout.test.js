@@ -1,5 +1,6 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import { startExposeTimeout, cancelExposeTimeout, isExposeTimeoutExpired, resetExposeTimeout } from '../../../src/eyas-core/expose/expose-timeout.js';
+import { EXPIRE_MS } from '../../../src/scripts/constants.js';
 
 describe(`expose-timeout`, () => {
 	beforeEach(() => {
@@ -15,31 +16,33 @@ describe(`expose-timeout`, () => {
 		expect(isExposeTimeoutExpired()).toBe(false);
 	});
 
-	test(`expiry callback fires after 30 minutes`, () => {
+	test(`expiry callback fires after EXPIRE_MS`, () => {
 		const onExpire = vi.fn();
-		startExposeTimeout(onExpire, 30 * 60 * 1000);
+		startExposeTimeout(onExpire, EXPIRE_MS);
 		expect(onExpire).not.toHaveBeenCalled();
-		vi.advanceTimersByTime(30 * 60 * 1000);
+		vi.advanceTimersByTime(EXPIRE_MS);
 		expect(onExpire).toHaveBeenCalledTimes(1);
 		expect(isExposeTimeoutExpired()).toBe(true);
 	});
 
 	test(`cancel prevents callback`, () => {
 		const onExpire = vi.fn();
-		startExposeTimeout(onExpire, 30 * 60 * 1000);
+		startExposeTimeout(onExpire, EXPIRE_MS);
 		cancelExposeTimeout();
-		vi.advanceTimersByTime(30 * 60 * 1000);
+		vi.advanceTimersByTime(EXPIRE_MS);
 		expect(onExpire).not.toHaveBeenCalled();
 	});
 
-	test(`reset restarts 30-minute window`, () => {
+	test(`reset restarts the timeout window`, () => {
 		const onExpire = vi.fn();
-		startExposeTimeout(onExpire, 30 * 60 * 1000);
-		vi.advanceTimersByTime(15 * 60 * 1000);
-		resetExposeTimeout(onExpire, 30 * 60 * 1000);
-		vi.advanceTimersByTime(15 * 60 * 1000);
+		const half = Math.floor(EXPIRE_MS / 2);
+		startExposeTimeout(onExpire, EXPIRE_MS);
+		vi.advanceTimersByTime(half);
+		resetExposeTimeout(onExpire, EXPIRE_MS);
+		vi.advanceTimersByTime(half);
 		expect(onExpire).not.toHaveBeenCalled();
-		vi.advanceTimersByTime(15 * 60 * 1000);
+		vi.advanceTimersByTime(half);
 		expect(onExpire).toHaveBeenCalledTimes(1);
 	});
 });
+
