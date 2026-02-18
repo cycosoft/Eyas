@@ -92,7 +92,7 @@
     "@electron/asar": "^3.2.13",
     "archiver": "^7.0.1",
     "date-fns": "^4.1.0",
-    "electron": "^40.2.1",
+    "electron": "^40.3.0",
     "electron-builder": "^26.7.0",
     "electron-updater": "^6.8.2",
     "express": "^5.2.1",
