@@ -27,7 +27,7 @@ async function getConfig(method, path) {
 		// check if request is via web
 		const isWeb = process.argv.find(arg => arg.startsWith(`eyas://`));
 
-		if(isWeb) {
+		if (isWeb) {
 			method = LOAD_TYPES.WEB;
 			path = isWeb;
 		}
@@ -60,7 +60,7 @@ async function getConfig(method, path) {
 		loadedConfig = getConfigViaRoot();
 
 		// if no *.eyas file was found
-		if(!loadedConfig) {
+		if (!loadedConfig) {
 			// fallback to the CLI method
 			method = LOAD_TYPES.CLI;
 		}
@@ -168,7 +168,7 @@ function getConfigViaCli() {
 	}
 
 	// if the consumer is a module
-	if(consumerPackageJson?.type === `module`) {
+	if (consumerPackageJson?.type === `module`) {
 		// attempt to load a *.cjs config
 		try {
 			loadedConfig = require(cjsConfigPath);
@@ -180,7 +180,7 @@ function getConfigViaCli() {
 	}
 
 	// if a cjs config was not loaded
-	if(!loadedConfig) {
+	if (!loadedConfig) {
 		// attempt to load the *.js config
 		try {
 			loadedConfig = require(jsConfigPath);
@@ -210,7 +210,7 @@ function getConfigFromAsar(path) {
 
 	// setup
 	const tempFileName = `converted_test.asar`;
-	let loadedConfig = null;
+	let loadedConfig;
 
 	// determine the path to where a copy of the *.eyas file will live
 	const tempPath = _path.join(_os.tmpdir(), tempFileName);
@@ -277,9 +277,9 @@ function validateConfig(loadedConfig) {
 
 	// set the default platform if none are specified
 	if (!validatedConfig.outputs.windows && !validatedConfig.outputs.mac && !validatedConfig.outputs.linux) {
-		if(process.platform === `win32`) { validatedConfig.outputs.windows = true; }
-		if(process.platform === `darwin`) { validatedConfig.outputs.mac = true; }
-		if(process.platform === `linux`) { validatedConfig.outputs.linux = true; }
+		if (process.platform === `win32`) { validatedConfig.outputs.windows = true; }
+		if (process.platform === `darwin`) { validatedConfig.outputs.mac = true; }
+		if (process.platform === `linux`) { validatedConfig.outputs.linux = true; }
 	}
 
 	// OVERRIDE - linux support is not currently supported

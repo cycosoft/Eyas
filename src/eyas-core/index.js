@@ -209,8 +209,8 @@ function initElectronCore() {
 	});
 
 	// macOS: handle eyas:// protocol (open-url); Windows/Linux: handle second instance with protocol URL
-	_electronCore.on(`open-url`, (event, url) => {
-		event.preventDefault();
+	_electronCore.on(`open-url`, (_event, url) => {
+		_event.preventDefault();
 		handleEyasProtocolUrl(url, deepLinkContext);
 	});
 	_electronCore.on(`second-instance`, (_event, commandLine) => {
@@ -709,7 +709,7 @@ async function setMenu() {
 	const linkItems = [];
 	$config.links.forEach(item => {
 		const itemUrl = item.url;
-		let isValid = false;
+		let isValid;
 		let validUrl;
 		const hasVariables = itemUrl.match(/{[^{}]+}/g)?.length;
 		if (hasVariables) {
