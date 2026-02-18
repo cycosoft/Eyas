@@ -3,40 +3,9 @@
 		<v-card class="pa-3">
 			<v-card-title class="text-h6" data-qa="expose-setup-title">Expose test server setup</v-card-title>
 			<v-card-text>
-				<p class="mb-4">Complete these steps if needed, then click Continue to start the server.</p>
+				<p class="mb-4">Configure your expose server settings and click Continue to start.</p>
 
-				<v-list v-if="steps.length">
-					<v-list-item
-						v-for="step in steps"
-						:key="step.id"
-						:class="{ 'text-success': step.status === 'done' }"
-					>
-						<template v-slot:prepend>
-							<v-icon v-if="step.status === 'done'">mdi-check-circle</v-icon>
-							<v-icon v-else>mdi-circle-outline</v-icon>
-						</template>
-						<v-list-item-title>{{ step.label }}</v-list-item-title>
-						<template v-slot:append>
-							<v-btn
-								v-if="step.canInitiate && step.status !== 'done'"
-								size="small"
-								variant="tonal"
-								@click="initiate(step.id)"
-							>
-								Initiate
-							</v-btn>
-							<v-btn
-								v-else-if="step.canRevoke && step.status === 'done'"
-								size="small"
-								variant="tonal"
-								color="warning"
-								@click="revoke(step.id)"
-							>
-								Revoke
-							</v-btn>
-						</template>
-					</v-list-item>
-
+				<v-list>
 					<v-list-item>
 						<template v-slot:prepend>
 							<v-icon>mdi-shield-lock-outline</v-icon>
@@ -54,11 +23,22 @@
 					</v-list-item>
 				</v-list>
 
+				<v-alert v-if="useHttps" type="info" variant="tonal" class="mt-4">
+					<p class="mb-2"><strong>Using HTTPS with self-signed certificates</strong></p>
+					<p class="mb-2">Your server will be available at <code>https://127.0.0.1:12701</code></p>
+					<p class="mb-0">Your browser will show a "Connection not private" warning. Click <strong>Advanced → Proceed to 127.0.0.1 (unsafe)</strong> to continue.</p>
+				</v-alert>
+
+				<v-alert v-else type="info" variant="tonal" class="mt-4">
+					<p class="mb-2"><strong>Using HTTP</strong></p>
+					<p class="mb-0">Your server will be available at <code>http://127.0.0.1:12701</code></p>
+				</v-alert>
+
 				<v-expansion-panels class="mt-4">
 					<v-expansion-panel>
-						<v-expansion-panel-title>Manually add to etc/hosts</v-expansion-panel-title>
+						<v-expansion-panel-title>Optional: Custom domain via hosts file</v-expansion-panel-title>
 						<v-expansion-panel-text>
-							<p class="mb-2">Add this line to your etc/hosts file (e.g. /etc/hosts on macOS/Linux):</p>
+							<p class="mb-2">If you want to use a custom domain like <code>local.test</code>, manually add this line to your hosts file:</p>
 							<v-sheet class="pa-2 font-mono text-body2" rounded>
 								<code>{{ hostsLine }}</code>
 							</v-sheet>
@@ -70,6 +50,7 @@
 							>
 								Copy line
 							</v-btn>
+							<p class="mt-2 text-caption">Hosts file location: <code>/etc/hosts</code> (macOS/Linux) or <code>C:\Windows\System32\drivers\etc\hosts</code> (Windows)</p>
 						</v-expansion-panel-text>
 					</v-expansion-panel>
 				</v-expansion-panels>

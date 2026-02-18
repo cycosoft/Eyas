@@ -1,9 +1,5 @@
 'use strict';
 
-const path = require(`path`);
-const fs = require(`fs`);
-const { execSync } = require(`child_process`);
-let caCache = null;
 const certCache = new Map();
 
 function getCacheKey(domains) {
@@ -15,40 +11,55 @@ async function getCerts(domains, options = {}) {
 	if (certCache.has(key)) {
 		return certCache.get(key);
 	}
-	const mkcert = require(`mkcert`);
+
+	const selfsigned = require(`selfsigned`);
 	const validity = options.validityDays ?? 7;
 
-	if (!caCache) {
-		caCache = await mkcert.createCA({
-			organization: options.organization ?? `Eyas Test Server`,
-			countryCode: options.countryCode ?? `US`,
-			state: options.state ?? `Arizona`,
-			locality: options.locality ?? `Chandler`,
-			validity
-		});
-	}
+	const attrs = [
+		{ name: `commonName`, value: Array.isArray(domains) ? domains[0] : domains },
+		{ name: `organizationName`, value: options.organization ?? `Eyas Test Server` },
+		{ name: `countryName`, value: options.countryCode ?? `US` },
+		{ name: `stateOrProvinceName`, value: options.state ?? `Arizona` },
+		{ name: `localityName`, value: options.locality ?? `Chandler` }
+	];
 
-	const cert = await mkcert.createCert({
-		ca: caCache,
-		domains: Array.isArray(domains) ? domains : [domains],
-		validity
+	const pems = selfsigned.generate(attrs, {
+		algorithm: `sha256`,
+		days: validity,
+		keySize: 2048,
+		extensions: [
+			{
+				name: `basicConstraints`,
+				cA: false
+			},
+			{
+				name: `keyUsage`,
+				keyCertSign: false,
+				digitalSignature: true,
+				keyEncipherment: true
+			},
+			{
+				name: `subjectAltName`,
+				altNames: (Array.isArray(domains) ? domains : [domains]).map(domain => {
+					// Check if domain is an IP address
+					if (/^\d+\.\d+\.\d+\.\d+$/.test(domain)) {
+						return { type: 7, ip: domain }; // type 7 = IP address
+					}
+					return { type: 2, value: domain }; // type 2 = DNS name
+				})
+			}
+		]
 	});
+
+	const cert = {
+		key: pems.private,
+		cert: pems.cert
+	};
+
 	certCache.set(key, cert);
 	return cert;
 }
 
-function isCaInstalled() {
-	try {
-		const caroot = execSync(`mkcert -CAROOT`, { encoding: `utf8` }).trim();
-		if (!caroot) return false;
-		const rootCert = path.join(caroot, `rootCA.pem`);
-		return fs.existsSync(rootCert);
-	} catch {
-		return false;
-	}
-}
-
 module.exports = {
-	getCerts,
-	isCaInstalled
+	getCerts
 };

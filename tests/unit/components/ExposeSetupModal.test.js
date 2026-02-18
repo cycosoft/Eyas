@@ -16,19 +16,17 @@ describe(`ExposeSetupModal`, () => {
 		vi.clearAllMocks();
 	});
 
-	test(`receives show-expose-setup-modal and shows steps`, async () => {
+	test(`receives show-expose-setup-modal and displays modal`, async () => {
 		const payload = {
-			domain: `http://127.0.0.1:3456`,
+			domain: `http://127.0.0.1:12701`,
 			hostnameForHosts: `local.test`,
-			steps: [
-				{ id: `ca`, label: `Install mkcert CA`, status: `pending`, canInitiate: true },
-				{ id: `hosts`, label: `Add etc/hosts`, status: `pending`, canInitiate: false }
-			]
+			steps: [],
+			useHttps: false
 		};
 		receiveCallback(payload);
 		await wrapper.vm.$nextTick();
 		expect(wrapper.vm.visible).toBe(true);
-		expect(wrapper.vm.steps).toHaveLength(2);
+		expect(wrapper.vm.steps).toHaveLength(0);
 		expect(wrapper.vm.hostsLine).toContain(`127.0.0.1`);
 		expect(wrapper.vm.hostsLine).toContain(`local.test`);
 	});

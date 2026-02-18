@@ -26,6 +26,15 @@ describe(`expose-server`, () => {
 		expect(getExposeState()).toBeNull();
 	});
 
+	test(`server uses default port 12701 on first start`, async () => {
+		// This test should run early to ensure port 12701 is available
+		clearExposePort();
+		stopExpose(); // Ensure no server is running
+		const state = await startExpose({ rootPath: tempDir });
+		expect(state.port).toBe(12701);
+		expect(state.url).toBe(`http://127.0.0.1:12701`);
+	});
+
 	test(`startExpose serves files under root and binds to 127.0.0.1`, async () => {
 		const state = await startExpose({ rootPath: tempDir });
 		expect(state).not.toBeNull();

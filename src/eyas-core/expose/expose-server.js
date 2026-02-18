@@ -21,6 +21,7 @@ let server = null;
 let state = null;
 let cachedPort = null;
 const HOST = `127.0.0.1`;
+const DEFAULT_PORT = 12701;
 
 async function startExpose(options) {
 	const { rootPath, useHttps = false, certs } = options;
@@ -28,8 +29,8 @@ async function startExpose(options) {
 		return getExposeState();
 	}
 
-	// use cached port if available, otherwise find a new one
-	const port = cachedPort || await getPort();
+	// use cached port if available, otherwise try default port 12701, then find a new one
+	const port = cachedPort || await getPort({ port: DEFAULT_PORT });
 	const app = express();
 
 	app.use((req, res, next) => {

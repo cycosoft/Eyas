@@ -66,7 +66,6 @@ const { MP_EVENTS } = require(_path.join(__dirname, `metrics-events.js`));
 const exposeServer = require(_path.join(__dirname, `expose`, `expose-server.js`));
 const exposeCerts = require(_path.join(__dirname, `expose`, `expose-certs.js`));
 const exposeTimeout = require(_path.join(__dirname, `expose`, `expose-timeout.js`));
-const exposeHosts = require(_path.join(__dirname, `expose`, `expose-hosts.js`));
 const { safeJoin } = require(_path.join(__dirname, `scripts`, `path-utils.js`));
 const { formatDuration } = require(_path.join(__dirname, `scripts`, `time-utils.js`));
 
@@ -598,7 +597,6 @@ function onResize() {
 
 function stopExposeServer() {
 	if ($isInitializing) return;
-	exposeHosts.removeAutoAdded();
 	exposeServer.stopExpose();
 	exposeTimeout.cancelExposeTimeout();
 	if ($exposeMenuIntervalId) {
@@ -629,17 +627,12 @@ async function startExposeHandler() {
 	if (exposeServer.getExposeState()) return;
 	if (!$paths.testSrc) return;
 
-	// Always show the setup modal
+	// Show simplified setup modal
 	if ($eyasLayer) {
-		const caInstalled = exposeCerts.isCaInstalled();
-		const steps = [
-			{ id: `ca`, label: `Install mkcert CA (bypass browser certificate warnings)`, status: caInstalled ? `done` : `pending`, canInitiate: !caInstalled },
-			{ id: `hosts`, label: `Add domain to etc/hosts (optional)`, status: `pending`, canInitiate: false }
-		];
 		uiEvent(`show-expose-setup-modal`, {
 			domain: `http://127.0.0.1`,
 			hostnameForHosts: `local.test`,
-			steps,
+			steps: [],
 			useHttps: $exposeHttpsEnabled
 		});
 	}
@@ -666,12 +659,6 @@ async function doStartExpose() {
 	} catch (err) {
 		console.error(`Expose server start failed:`, err);
 		return;
-	}
-	// Optional: add local.test to etc/hosts so user can open http://local.test:port (may require root)
-	try {
-		exposeHosts.addHostEntry(`local.test`);
-	} catch {
-		// addHostEntry may fail (e.g. no root for /etc/hosts)
 	}
 	exposeTimeout.startExposeTimeout(onExposeTimeout, EXPIRE_MS);
 	$exposeMenuIntervalId = setInterval(() => setMenu(), 60 * 1000);

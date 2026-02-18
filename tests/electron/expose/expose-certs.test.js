@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { getCerts, isCaInstalled } from '../../../src/eyas-core/expose/expose-certs.js';
+import { getCerts } from '../../../src/eyas-core/expose/expose-certs.js';
 
 describe(`expose-certs`, () => {
 	test(`getCerts returns key and cert`, async () => {
@@ -12,8 +12,16 @@ describe(`expose-certs`, () => {
 		expect(result.cert).toMatch(/BEGIN CERTIFICATE/);
 	});
 
-	test(`isCaInstalled returns boolean`, () => {
-		const result = isCaInstalled();
-		expect(typeof result).toBe(`boolean`);
+	test(`getCerts caches results for same domains`, async () => {
+		const result1 = await getCerts([`localhost`, `127.0.0.1`]);
+		const result2 = await getCerts([`127.0.0.1`, `localhost`]); // same domains, different order
+		expect(result1).toBe(result2); // should be the exact same cached object
+	});
+
+	test(`getCerts generates different certs for different domains`, async () => {
+		const result1 = await getCerts([`localhost`]);
+		const result2 = await getCerts([`example.com`]);
+		expect(result1).not.toBe(result2);
+		expect(result1.key).not.toBe(result2.key);
 	});
 });
