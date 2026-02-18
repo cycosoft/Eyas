@@ -19,11 +19,11 @@ async function getCerts(domains, options = {}) {
 		{ name: `commonName`, value: Array.isArray(domains) ? domains[0] : domains },
 		{ name: `organizationName`, value: options.organization ?? `Eyas Test Server` },
 		{ name: `countryName`, value: options.countryCode ?? `US` },
-		{ name: `stateOrProvinceName`, value: options.state ?? `Arizona` },
+		{ shortName: `ST`, value: options.state ?? `Arizona` },
 		{ name: `localityName`, value: options.locality ?? `Chandler` }
 	];
 
-	const pems = selfsigned.generate(attrs, {
+	const pems = await selfsigned.generate(attrs, {
 		algorithm: `sha256`,
 		days: validity,
 		keySize: 2048,
