@@ -98,14 +98,13 @@ describe(`ExposeSetupModal`, () => {
 		expect(wrapper.vm.isWindows).toBe(false);
 	});
 
-	test(`toggling useCustomDomain expands the hosts file panel`, async () => {
+	test(`toggling useCustomDomain reveals hosts file instructions`, async () => {
 		receiveCallback({ domain: `http://127.0.0.1`, steps: [] });
 		await wrapper.vm.$nextTick();
 
-		expect(wrapper.vm.expandedPanels).toEqual([]);
-		wrapper.vm.useCustomDomain = true;
-		await wrapper.vm.$nextTick();
-		expect(wrapper.vm.expandedPanels).toEqual([0]);
+		expect(document.querySelector(`[data-qa="hosts-file-instructions"]`)).toBeNull();
+		await wrapper.setData({ useCustomDomain: true });
+		expect(document.querySelector(`[data-qa="hosts-file-instructions"]`)).not.toBeNull();
 	});
 
 	test(`displayDomain returns 127.0.0.1 when useCustomDomain is false`, async () => {

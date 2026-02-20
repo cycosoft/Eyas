@@ -54,27 +54,24 @@
 					</v-list-item>
 				</v-list>
 
-				<v-expansion-panels v-model="expandedPanels" class="mt-4">
-					<v-expansion-panel>
-						<v-expansion-panel-title>Optional: Custom domain via hosts file</v-expansion-panel-title>
-						<v-expansion-panel-text>
-							<p class="mb-2">If you want to use a custom domain like <code>{{ hostnameForHosts }}</code>, manually add this line to your hosts file:</p>
-							<v-sheet class="pa-2 font-mono text-body2" rounded>
-								<code>{{ hostsLine }}</code>
-							</v-sheet>
-							<v-btn
-								class="mt-2"
-								size="small"
-								variant="outlined"
-								@click="copyHostsLine"
-							>
-								Copy line
-							</v-btn>
-							<p v-if="isWindows" class="mt-2 text-caption">Hosts file location: <code>C:\Windows\System32\drivers\etc\hosts</code></p>
-							<p v-else class="mt-2 text-caption">Hosts file location: <code>/etc/hosts</code></p>
-						</v-expansion-panel-text>
-					</v-expansion-panel>
-				</v-expansion-panels>
+				<v-alert v-if="useCustomDomain" type="warning" variant="tonal" class="mt-4" data-qa="hosts-file-instructions">
+					<p class="mb-2"><strong>Custom domain via hosts file</strong></p>
+					<p class="mb-2">If you want to use a custom domain like <code>{{ hostnameForHosts }}</code>, manually add this line to your hosts file:</p>
+					<v-sheet class="pa-2 font-mono text-body2" rounded>
+						<code>{{ hostsLine }}</code>
+					</v-sheet>
+					<v-btn
+						class="mt-2"
+						size="small"
+						color="warning"
+						variant="outlined"
+						@click="copyHostsLine"
+					>
+						Copy line
+					</v-btn>
+					<p v-if="isWindows" class="mt-2 text-caption">Hosts file location: <code>C:\Windows\System32\drivers\etc\hosts</code></p>
+					<p v-else class="mt-2 text-caption">Hosts file location: <code>/etc/hosts</code></p>
+				</v-alert>
 
 				<v-alert v-if="useHttps" type="info" variant="tonal" class="mt-4">
 					<p class="mb-2"><strong>Using HTTPS</strong></p>
@@ -111,7 +108,6 @@ const defaults = {
 	useHttps: false,
 	autoOpenBrowser: true,
 	useCustomDomain: false,
-	expandedPanels: [],
 	port: 12701,
 	isWindows: false
 };
@@ -131,14 +127,6 @@ export default {
 		},
 		displayDomain() {
 			return this.useCustomDomain ? (this.hostnameForHosts || 'test.local') : '127.0.0.1';
-		}
-	},
-
-	watch: {
-		useCustomDomain(newVal) {
-			if (newVal) {
-				this.expandedPanels = [0];
-			}
 		}
 	},
 
