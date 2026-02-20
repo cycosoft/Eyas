@@ -19,7 +19,8 @@ describe(`ExposeSetupModal`, () => {
 	test(`receives show-expose-setup-modal and displays modal with default hostname`, async () => {
 		const payload = {
 			domain: `http://127.0.0.1`,
-			port: 12345,
+			portHttp: 12345,
+			portHttps: 54321,
 			steps: [],
 			useHttps: false
 		};
@@ -29,7 +30,9 @@ describe(`ExposeSetupModal`, () => {
 		expect(wrapper.vm.steps).toHaveLength(0);
 		expect(wrapper.vm.hostsLine).toContain(`127.0.0.1`);
 		expect(wrapper.vm.hostsLine).toContain(`test.local`); // Default fallback
-		expect(wrapper.vm.port).toBe(12345);
+		expect(wrapper.vm.portHttp).toBe(12345);
+		expect(wrapper.vm.portHttps).toBe(54321);
+		expect(wrapper.vm.port).toBe(12345); // Defaults to useHttps = false
 		expect(wrapper.vm.autoOpenBrowser).toBe(true);
 		expect(wrapper.vm.useCustomDomain).toBe(false);
 	});
@@ -37,7 +40,7 @@ describe(`ExposeSetupModal`, () => {
 	test(`displays modal with custom hostname`, async () => {
 		const payload = {
 			domain: `http://127.0.0.1`,
-			port: 12345,
+			portHttp: 12345,
 			hostnameForHosts: `my.custom.app`,
 			steps: [],
 			useHttps: false
@@ -116,10 +119,10 @@ describe(`ExposeSetupModal`, () => {
 		const mockClipboard = { writeText: vi.fn() };
 		Object.assign(navigator, { clipboard: mockClipboard });
 
-		const sheet = document.querySelector('.hosts-copy-block');
+		const sheet = document.querySelector(`.hosts-copy-block`);
 		expect(wrapper.vm.copyIcon).toBe(`mdi-content-copy`);
 
-		sheet.dispatchEvent(new Event('click'));
+		sheet.dispatchEvent(new Event(`click`));
 		await wrapper.vm.$nextTick();
 		expect(navigator.clipboard.writeText).toHaveBeenCalledWith(`127.0.0.1\tmy.custom.url`);
 		expect(wrapper.vm.copyIcon).toBe(`mdi-check`);
@@ -142,5 +145,22 @@ describe(`ExposeSetupModal`, () => {
 		wrapper.vm.useCustomDomain = true;
 		await wrapper.vm.$nextTick();
 		expect(wrapper.vm.displayDomain).toBe(`my.custom.url`);
+	});
+
+	test(`displayPort computed property correctly hides standard protocol ports`, async () => {
+		receiveCallback({ domain: `http://127.0.0.1`, portHttp: 80, portHttps: 443, steps: [] });
+		await wrapper.vm.$nextTick();
+		expect(wrapper.vm.useHttps).toBe(false);
+		expect(wrapper.vm.displayPort).toBe(``);
+
+		await wrapper.setData({ useHttps: true });
+		expect(wrapper.vm.useHttps).toBe(true);
+		expect(wrapper.vm.displayPort).toBe(``);
+
+		await wrapper.setData({ useHttps: false, portHttp: 8080 });
+		expect(wrapper.vm.displayPort).toBe(`:8080`);
+
+		await wrapper.setData({ useHttps: true, portHttps: 8443 });
+		expect(wrapper.vm.displayPort).toBe(`:8443`);
 	});
 });

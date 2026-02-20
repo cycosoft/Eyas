@@ -26,13 +26,14 @@ const { parseURL } = require(parseUrlPath);
 
 let server = null;
 let state = null;
-let cachedPort = null;
+let cachedPorts = { http: null, https: null };
 const HOST = `127.0.0.1`;
 const DEFAULT_PORT = 12701;
 
 async function getAvailablePort(urlStr, useHttps) {
-	if (cachedPort) {
-		return cachedPort;
+	const protoKey = useHttps ? `https` : `http`;
+	if (cachedPorts[protoKey]) {
+		return cachedPorts[protoKey];
 	}
 
 	let targetPort;
@@ -57,8 +58,8 @@ async function getAvailablePort(urlStr, useHttps) {
 		preferredPorts.push(DEFAULT_PORT);
 	}
 
-	cachedPort = await getPort({ port: preferredPorts });
-	return cachedPort;
+	cachedPorts[protoKey] = await getPort({ port: preferredPorts });
+	return cachedPorts[protoKey];
 }
 
 async function startExpose(options) {
@@ -67,8 +68,8 @@ async function startExpose(options) {
 		return getExposeState();
 	}
 
-	// use cached port if available, otherwise try default port 12701, then find a new one
-	const port = await getAvailablePort();
+	// use cached port for the specified protocol if available, otherwise find a new one
+	const port = await getAvailablePort(null, useHttps);
 	const app = express();
 
 	app.use((req, res, next) => {
@@ -100,13 +101,13 @@ async function startExpose(options) {
 		});
 	} catch {
 		// if there was an error, clear the port and server state and try again
-		cachedPort = null;
+		cachedPorts[options.useHttps ? `https` : `http`] = null;
 		server = null;
 		return startExpose(options);
 	}
 
 	// store the successfully bound port for future use
-	cachedPort = port;
+	cachedPorts[options.useHttps ? `https` : `http`] = port;
 
 	state = {
 		url: `${protocol}://${HOST}:${port}`,
@@ -136,7 +137,7 @@ function stopExpose() {
 }
 
 function clearExposePort() {
-	cachedPort = null;
+	cachedPorts = { http: null, https: null };
 }
 
 function getExposeState() {
