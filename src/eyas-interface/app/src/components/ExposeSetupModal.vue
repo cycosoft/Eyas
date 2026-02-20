@@ -21,6 +21,22 @@
 							/>
 						</template>
 					</v-list-item>
+
+					<v-list-item>
+						<template v-slot:prepend>
+							<v-icon>mdi-open-in-new</v-icon>
+						</template>
+						<v-list-item-title>Open in browser when started</v-list-item-title>
+						<template v-slot:append>
+							<v-switch
+								v-model="autoOpenBrowser"
+								color="primary"
+								hide-details
+								density="compact"
+								data-qa="switch-auto-open"
+							/>
+						</template>
+					</v-list-item>
 				</v-list>
 
 				<v-alert v-if="useHttps" type="info" variant="tonal" class="mt-4">
@@ -78,6 +94,7 @@ const defaults = {
 	hostnameForHosts: 'test.local',
 	steps: [],
 	useHttps: false,
+	autoOpenBrowser: true,
 	port: 12701,
 	isWindows: false
 };
@@ -128,7 +145,10 @@ export default {
 		},
 
 		continueStart() {
-			window.eyas?.send(`expose-setup-continue`, { useHttps: this.useHttps });
+			window.eyas?.send(`expose-setup-continue`, {
+				useHttps: this.useHttps,
+				autoOpenBrowser: this.autoOpenBrowser
+			});
 			this.visible = false;
 			Object.assign(this.$data, defaults);
 		}

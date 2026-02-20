@@ -30,6 +30,7 @@ describe(`ExposeSetupModal`, () => {
 		expect(wrapper.vm.hostsLine).toContain(`127.0.0.1`);
 		expect(wrapper.vm.hostsLine).toContain(`test.local`); // Default fallback
 		expect(wrapper.vm.port).toBe(12345);
+		expect(wrapper.vm.autoOpenBrowser).toBe(true);
 	});
 
 	test(`displays modal with custom hostname`, async () => {
@@ -53,8 +54,12 @@ describe(`ExposeSetupModal`, () => {
 		expect(wrapper.vm.useHttps).toBe(true);
 
 		wrapper.vm.useHttps = false;
+		wrapper.vm.autoOpenBrowser = false;
 		wrapper.vm.continueStart();
-		expect(global.window.eyas.send).toHaveBeenCalledWith(`expose-setup-continue`, { useHttps: false });
+		expect(global.window.eyas.send).toHaveBeenCalledWith(`expose-setup-continue`, {
+			useHttps: false,
+			autoOpenBrowser: false
+		});
 		expect(wrapper.vm.visible).toBe(false);
 	});
 

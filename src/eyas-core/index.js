@@ -457,9 +457,9 @@ function initUiListeners() {
 	});
 
 	// expose setup modal: user clicked Continue, start the server
-	ipcMain.on(`expose-setup-continue`, (event, { useHttps }) => {
+	ipcMain.on(`expose-setup-continue`, (event, { useHttps, autoOpenBrowser }) => {
 		$exposeHttpsEnabled = !!useHttps;
-		doStartExpose();
+		doStartExpose(autoOpenBrowser);
 	});
 
 	// expose resume modal: user clicked Resume
@@ -645,7 +645,7 @@ async function startExposeHandler() {
 	}
 }
 
-async function doStartExpose() {
+async function doStartExpose(autoOpenBrowser = true) {
 	let certs;
 	if ($exposeHttpsEnabled) {
 		try {
@@ -670,6 +670,10 @@ async function doStartExpose() {
 	exposeTimeout.startExposeTimeout(onExposeTimeout, EXPIRE_MS);
 	$exposeMenuIntervalId = setInterval(() => setMenu(), 60 * 1000);
 	setMenu();
+
+	if (autoOpenBrowser) {
+		openExposedInBrowserHandler();
+	}
 }
 
 // whenever the expose server automatically shuts down
