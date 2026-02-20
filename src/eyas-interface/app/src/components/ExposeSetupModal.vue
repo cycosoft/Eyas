@@ -54,17 +54,6 @@
 					</v-list-item>
 				</v-list>
 
-				<v-alert v-if="useHttps" type="info" variant="tonal" class="mt-4">
-					<p class="mb-2"><strong>Using HTTPS</strong></p>
-					<p class="mb-2">Your server will be available at <code>https://{{ displayDomain }}:{{ port }}</code></p>
-					<p class="mb-0">Your browser will show a "Connection not private" warning. Click <strong>Advanced → Proceed to {{ displayDomain }} (unsafe)</strong> to continue.</p>
-				</v-alert>
-
-				<v-alert v-else type="info" variant="tonal" class="mt-4">
-					<p class="mb-2"><strong>Using HTTP</strong></p>
-					<p class="mb-0">Your server will be available at <code>http://{{ displayDomain }}:{{ port }}</code></p>
-				</v-alert>
-
 				<v-expansion-panels v-model="expandedPanels" class="mt-4">
 					<v-expansion-panel>
 						<v-expansion-panel-title>Optional: Custom domain via hosts file</v-expansion-panel-title>
@@ -86,6 +75,17 @@
 						</v-expansion-panel-text>
 					</v-expansion-panel>
 				</v-expansion-panels>
+
+				<v-alert v-if="useHttps" type="info" variant="tonal" class="mt-4">
+					<p class="mb-2"><strong>Using HTTPS</strong></p>
+					<p class="mb-2">Your server will be available at <code>https://{{ displayDomain }}:{{ port }}</code></p>
+					<p class="mb-0">Your browser will show a "Connection not private" warning. Click <strong>Advanced → Proceed to {{ displayDomain }} (unsafe)</strong> to continue.</p>
+				</v-alert>
+
+				<v-alert v-else type="info" variant="tonal" class="mt-4">
+					<p class="mb-2"><strong>Using HTTP</strong></p>
+					<p class="mb-0">Your server will be available at <code>http://{{ displayDomain }}:{{ port }}</code></p>
+				</v-alert>
 			</v-card-text>
 			<v-card-actions>
 				<v-spacer />
