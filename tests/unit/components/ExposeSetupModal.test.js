@@ -107,4 +107,19 @@ describe(`ExposeSetupModal`, () => {
 		await wrapper.vm.$nextTick();
 		expect(wrapper.vm.expandedPanels).toEqual([0]);
 	});
+
+	test(`displayDomain returns 127.0.0.1 when useCustomDomain is false`, async () => {
+		receiveCallback({ domain: `http://127.0.0.1`, steps: [] });
+		await wrapper.vm.$nextTick();
+		expect(wrapper.vm.useCustomDomain).toBe(false);
+		expect(wrapper.vm.displayDomain).toBe(`127.0.0.1`);
+	});
+
+	test(`displayDomain returns custom hostname when useCustomDomain is true`, async () => {
+		receiveCallback({ domain: `http://127.0.0.1`, hostnameForHosts: `my.custom.url`, steps: [] });
+		await wrapper.vm.$nextTick();
+		wrapper.vm.useCustomDomain = true;
+		await wrapper.vm.$nextTick();
+		expect(wrapper.vm.displayDomain).toBe(`my.custom.url`);
+	});
 });

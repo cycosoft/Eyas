@@ -56,13 +56,13 @@
 
 				<v-alert v-if="useHttps" type="info" variant="tonal" class="mt-4">
 					<p class="mb-2"><strong>Using HTTPS</strong></p>
-					<p class="mb-2">Your server will be available at <code>https://127.0.0.1:{{ port }}</code></p>
-					<p class="mb-0">Your browser will show a "Connection not private" warning. Click <strong>Advanced → Proceed to 127.0.0.1 (unsafe)</strong> to continue.</p>
+					<p class="mb-2">Your server will be available at <code>https://{{ displayDomain }}:{{ port }}</code></p>
+					<p class="mb-0">Your browser will show a "Connection not private" warning. Click <strong>Advanced → Proceed to {{ displayDomain }} (unsafe)</strong> to continue.</p>
 				</v-alert>
 
 				<v-alert v-else type="info" variant="tonal" class="mt-4">
 					<p class="mb-2"><strong>Using HTTP</strong></p>
-					<p class="mb-0">Your server will be available at <code>http://127.0.0.1:{{ port }}</code></p>
+					<p class="mb-0">Your server will be available at <code>http://{{ displayDomain }}:{{ port }}</code></p>
 				</v-alert>
 
 				<v-expansion-panels class="mt-4" v-model="expandedPanels">
@@ -128,6 +128,9 @@ export default {
 			const ip = '127.0.0.1';
 			const host = this.hostnameForHosts || 'test.local';
 			return `${ip}\t${host}`;
+		},
+		displayDomain() {
+			return this.useCustomDomain ? (this.hostnameForHosts || 'test.local') : '127.0.0.1';
 		}
 	},
 
