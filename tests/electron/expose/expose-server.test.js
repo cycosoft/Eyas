@@ -103,6 +103,13 @@ describe(`expose-server`, () => {
 		// but we can assert that the internal logic was triggered.
 		expect(state2).not.toBeNull();
 	});
+
+	test(`getAvailablePort returns an available port`, async () => {
+		const port = await getAvailablePort();
+		expect(port).toBeDefined();
+		expect(typeof port).toBe(`number`);
+		expect(port).toBeGreaterThan(0);
+	});
 });
 
 function fetchAsText(url) {
