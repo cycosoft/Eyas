@@ -2,7 +2,7 @@ import { describe, test, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import { startExpose, stopExpose, getExposeState, clearExposePort } from '../../../src/eyas-core/expose/expose-server.js';
+import { startExpose, stopExpose, getExposeState, clearExposePort, getAvailablePort } from '../../../src/eyas-core/expose/expose-server.js';
 
 describe(`expose-server`, () => {
 	let tempDir;

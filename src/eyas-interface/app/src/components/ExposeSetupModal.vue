@@ -25,13 +25,13 @@
 
 				<v-alert v-if="useHttps" type="info" variant="tonal" class="mt-4">
 					<p class="mb-2"><strong>Using HTTPS with self-signed certificates</strong></p>
-					<p class="mb-2">Your server will be available at <code>https://127.0.0.1:12701</code></p>
+					<p class="mb-2">Your server will be available at <code>https://127.0.0.1:{{ port }}</code></p>
 					<p class="mb-0">Your browser will show a "Connection not private" warning. Click <strong>Advanced → Proceed to 127.0.0.1 (unsafe)</strong> to continue.</p>
 				</v-alert>
 
 				<v-alert v-else type="info" variant="tonal" class="mt-4">
 					<p class="mb-2"><strong>Using HTTP</strong></p>
-					<p class="mb-0">Your server will be available at <code>http://127.0.0.1:12701</code></p>
+					<p class="mb-0">Your server will be available at <code>http://127.0.0.1:{{ port }}</code></p>
 				</v-alert>
 
 				<v-expansion-panels class="mt-4">
@@ -76,7 +76,8 @@ const defaults = {
 	domain: '',
 	hostnameForHosts: 'local.test',
 	steps: [],
-	useHttps: false
+	useHttps: false,
+	port: 12701
 };
 
 export default {
@@ -100,6 +101,7 @@ export default {
 			this.hostnameForHosts = payload.hostnameForHosts || 'local.test';
 			this.steps = Array.isArray(payload.steps) ? payload.steps : [];
 			this.useHttps = !!payload.useHttps;
+			this.port = payload.port || 12701;
 			this.visible = true;
 		});
 	},

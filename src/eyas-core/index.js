@@ -629,8 +629,10 @@ async function startExposeHandler() {
 
 	// Show simplified setup modal
 	if ($eyasLayer) {
+		const port = await exposeServer.getAvailablePort();
 		uiEvent(`show-expose-setup-modal`, {
 			domain: `http://127.0.0.1`,
+			port,
 			hostnameForHosts: `local.test`,
 			steps: [],
 			useHttps: $exposeHttpsEnabled
