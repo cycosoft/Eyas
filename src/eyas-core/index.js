@@ -457,9 +457,10 @@ function initUiListeners() {
 	});
 
 	// expose setup modal: user clicked Continue, start the server
-	ipcMain.on(`expose-setup-continue`, (event, { useHttps, autoOpenBrowser }) => {
+	ipcMain.on(`expose-setup-continue`, (event, { useHttps, autoOpenBrowser, useCustomDomain }) => {
 		$exposeHttpsEnabled = !!useHttps;
-		doStartExpose(autoOpenBrowser);
+		const customDomain = useCustomDomain ? (parseURL($testDomain)?.hostname || `test.local`) : null;
+		doStartExpose(autoOpenBrowser, customDomain);
 	});
 
 	// expose resume modal: user clicked Resume
@@ -609,16 +610,22 @@ function stopExposeServer() {
 function copyExposedUrlHandler() {
 	if ($isInitializing) return;
 	const state = exposeServer.getExposeState();
-	if (state && state.url) {
-		require(`electron`).clipboard.writeText(state.url);
+	if (state) {
+		const targetUrl = state.customUrl || state.url;
+		if (targetUrl) {
+			require(`electron`).clipboard.writeText(targetUrl);
+		}
 	}
 }
 
 function openExposedInBrowserHandler() {
 	if ($isInitializing) return;
 	const state = exposeServer.getExposeState();
-	if (state && state.url) {
-		require(`electron`).shell.openExternal(state.url);
+	if (state) {
+		const targetUrl = state.customUrl || state.url;
+		if (targetUrl) {
+			require(`electron`).shell.openExternal(targetUrl);
+		}
 	}
 }
 
@@ -645,7 +652,7 @@ async function startExposeHandler() {
 	}
 }
 
-async function doStartExpose(autoOpenBrowser = true) {
+async function doStartExpose(autoOpenBrowser = true, customDomain = null) {
 	let certs;
 	if ($exposeHttpsEnabled) {
 		try {
@@ -659,7 +666,8 @@ async function doStartExpose(autoOpenBrowser = true) {
 		const options = {
 			rootPath: $paths.testSrc,
 			useHttps: $exposeHttpsEnabled,
-			certs: certs || undefined
+			certs: certs || undefined,
+			customDomain
 		};
 		await exposeServer.startExpose(options);
 		$lastExposeOptions = options;

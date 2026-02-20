@@ -62,7 +62,7 @@ async function getAvailablePort(urlStr, useHttps) {
 }
 
 async function startExpose(options) {
-	const { rootPath, useHttps = false, certs } = options;
+	const { rootPath, useHttps = false, certs, customDomain } = options;
 	if (server) {
 		return getExposeState();
 	}
@@ -114,6 +114,11 @@ async function startExpose(options) {
 		startedAt: Date.now(),
 		useHttps: !!useHttps
 	};
+
+	if (customDomain) {
+		state.customUrl = `${protocol}://${customDomain}:${port}`;
+	}
+
 	return state;
 }
 

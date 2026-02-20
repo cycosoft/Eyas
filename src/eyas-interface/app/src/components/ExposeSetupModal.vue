@@ -37,6 +37,21 @@
 							/>
 						</template>
 					</v-list-item>
+					<v-list-item>
+						<template v-slot:prepend>
+							<v-icon>mdi-earth</v-icon>
+						</template>
+						<v-list-item-title>Use a custom domain <code>{{ hostnameForHosts }}:{{ port }}</code></v-list-item-title>
+						<template v-slot:append>
+							<v-switch
+								v-model="useCustomDomain"
+								color="primary"
+								hide-details
+								density="compact"
+								data-qa="switch-custom-domain"
+							/>
+						</template>
+					</v-list-item>
 				</v-list>
 
 				<v-alert v-if="useHttps" type="info" variant="tonal" class="mt-4">
@@ -50,7 +65,7 @@
 					<p class="mb-0">Your server will be available at <code>http://127.0.0.1:{{ port }}</code></p>
 				</v-alert>
 
-				<v-expansion-panels class="mt-4">
+				<v-expansion-panels class="mt-4" v-model="expandedPanels">
 					<v-expansion-panel>
 						<v-expansion-panel-title>Optional: Custom domain via hosts file</v-expansion-panel-title>
 						<v-expansion-panel-text>
@@ -95,6 +110,8 @@ const defaults = {
 	steps: [],
 	useHttps: false,
 	autoOpenBrowser: true,
+	useCustomDomain: false,
+	expandedPanels: [],
 	port: 12701,
 	isWindows: false
 };
@@ -111,6 +128,14 @@ export default {
 			const ip = '127.0.0.1';
 			const host = this.hostnameForHosts || 'test.local';
 			return `${ip}\t${host}`;
+		}
+	},
+
+	watch: {
+		useCustomDomain(newVal) {
+			if (newVal) {
+				this.expandedPanels = [0];
+			}
 		}
 	},
 
@@ -147,7 +172,8 @@ export default {
 		continueStart() {
 			window.eyas?.send(`expose-setup-continue`, {
 				useHttps: this.useHttps,
-				autoOpenBrowser: this.autoOpenBrowser
+				autoOpenBrowser: this.autoOpenBrowser,
+				useCustomDomain: this.useCustomDomain
 			});
 			this.visible = false;
 			Object.assign(this.$data, defaults);

@@ -31,6 +31,7 @@ describe(`ExposeSetupModal`, () => {
 		expect(wrapper.vm.hostsLine).toContain(`test.local`); // Default fallback
 		expect(wrapper.vm.port).toBe(12345);
 		expect(wrapper.vm.autoOpenBrowser).toBe(true);
+		expect(wrapper.vm.useCustomDomain).toBe(false);
 	});
 
 	test(`displays modal with custom hostname`, async () => {
@@ -55,10 +56,12 @@ describe(`ExposeSetupModal`, () => {
 
 		wrapper.vm.useHttps = false;
 		wrapper.vm.autoOpenBrowser = false;
+		wrapper.vm.useCustomDomain = true;
 		wrapper.vm.continueStart();
 		expect(global.window.eyas.send).toHaveBeenCalledWith(`expose-setup-continue`, {
 			useHttps: false,
-			autoOpenBrowser: false
+			autoOpenBrowser: false,
+			useCustomDomain: true
 		});
 		expect(wrapper.vm.visible).toBe(false);
 	});
@@ -93,5 +96,15 @@ describe(`ExposeSetupModal`, () => {
 		receiveCallback(payload);
 		await wrapper.vm.$nextTick();
 		expect(wrapper.vm.isWindows).toBe(false);
+	});
+
+	test(`toggling useCustomDomain expands the hosts file panel`, async () => {
+		receiveCallback({ domain: `http://127.0.0.1`, steps: [] });
+		await wrapper.vm.$nextTick();
+
+		expect(wrapper.vm.expandedPanels).toEqual([]);
+		wrapper.vm.useCustomDomain = true;
+		await wrapper.vm.$nextTick();
+		expect(wrapper.vm.expandedPanels).toEqual([0]);
 	});
 });
