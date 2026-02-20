@@ -5,10 +5,11 @@
 	>
 		<v-dialog
 			:model-value="modelValue"
-			width="auto"
+			:width="dialogWidth"
 			persistent
 			v-bind="$attrs"
 			:scrim="false"
+			@after-enter="pinDialogWidth"
 			@after-leave="hideUi"
 		>
 			<slot />
@@ -30,7 +31,8 @@ export default {
 	},
 
 	data: () => ({
-		id: window.crypto.randomUUID() // generate a unique ID for this modal
+		id: window.crypto.randomUUID(), // generate a unique ID for this modal
+		dialogWidth: 'auto'
 	}),
 
 	computed: {
@@ -57,6 +59,8 @@ export default {
 	methods: {
 		trackModalState(isTrue) {
 			if(isTrue) {
+				// reset width to auto so it can calculate the new initial width
+				this.dialogWidth = 'auto';
 				// track this modal as the last opened modal
 				ModalStore().track(this.id);
 			} else {
@@ -69,6 +73,17 @@ export default {
 			// hide the UI if there are no other dialogs open
 			if(document.querySelectorAll(`.v-dialog`).length <= 1) {
 				window.eyas?.send(`hide-ui`);
+			}
+		},
+
+		pinDialogWidth() {
+			// Find the currently active modal's card (since Vuetify teleports, we look by v-dialog)
+			const activeModalContent = document.querySelector('.v-overlay--active .v-card')
+				|| document.querySelector('.v-overlay--active > .v-overlay__content > *');
+
+			if (activeModalContent) {
+				// set the width of the dialog + 1 to round up and prevent content jumping
+				this.dialogWidth = activeModalContent.offsetWidth + 1;
 			}
 		}
 	}
