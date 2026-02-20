@@ -57,18 +57,10 @@
 				<v-alert v-if="useCustomDomain" type="warning" variant="tonal" class="mt-4" data-qa="hosts-file-instructions">
 					<p class="mb-2"><strong>Custom domain via hosts file</strong></p>
 					<p class="mb-2">If you want to use a custom domain like <code>{{ hostnameForHosts }}</code>, manually add this line to your hosts file:</p>
-					<v-sheet class="pa-2 font-mono text-body2" rounded>
+					<v-sheet class="hosts-copy-block mt-2 pa-2 font-mono text-body2 cursor-pointer d-flex justify-space-between align-center" rounded @click="copyHostsLine" title="Click to copy">
 						<code>{{ hostsLine }}</code>
+						<v-icon size="small" :icon="copyIcon" color="warning" />
 					</v-sheet>
-					<v-btn
-						class="mt-2"
-						size="small"
-						color="warning"
-						variant="outlined"
-						@click="copyHostsLine"
-					>
-						Copy line
-					</v-btn>
 					<p v-if="isWindows" class="mt-2 text-caption">Hosts file location: <code>C:\Windows\System32\drivers\etc\hosts</code></p>
 					<p v-else class="mt-2 text-caption">Hosts file location: <code>/etc/hosts</code></p>
 				</v-alert>
@@ -109,7 +101,8 @@ const defaults = {
 	autoOpenBrowser: true,
 	useCustomDomain: false,
 	port: 12701,
-	isWindows: false
+	isWindows: false,
+	copyIcon: 'mdi-content-copy'
 };
 
 export default {
@@ -153,6 +146,10 @@ export default {
 
 		copyHostsLine() {
 			navigator.clipboard.writeText(this.hostsLine);
+			this.copyIcon = 'mdi-check';
+			setTimeout(() => {
+				this.copyIcon = 'mdi-content-copy';
+			}, 2000);
 		},
 
 		cancel() {
@@ -172,3 +169,12 @@ export default {
 	}
 };
 </script>
+
+<style scoped>
+.hosts-copy-block {
+	transition: background-color 0.2s ease;
+}
+.hosts-copy-block:hover {
+	background-color: rgba(var(--v-theme-warning), 0.15) !important;
+}
+</style>

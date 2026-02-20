@@ -107,6 +107,28 @@ describe(`ExposeSetupModal`, () => {
 		expect(document.querySelector(`[data-qa="hosts-file-instructions"]`)).not.toBeNull();
 	});
 
+	test(`clicking hosts file instructions copies text and changes icon temporarily`, async () => {
+		vi.useFakeTimers();
+		receiveCallback({ domain: `http://127.0.0.1`, hostnameForHosts: `my.custom.url`, steps: [] });
+		await wrapper.vm.$nextTick();
+		await wrapper.setData({ useCustomDomain: true });
+
+		const mockClipboard = { writeText: vi.fn() };
+		Object.assign(navigator, { clipboard: mockClipboard });
+
+		const sheet = document.querySelector('.hosts-copy-block');
+		expect(wrapper.vm.copyIcon).toBe(`mdi-content-copy`);
+
+		sheet.dispatchEvent(new Event('click'));
+		await wrapper.vm.$nextTick();
+		expect(navigator.clipboard.writeText).toHaveBeenCalledWith(`127.0.0.1\tmy.custom.url`);
+		expect(wrapper.vm.copyIcon).toBe(`mdi-check`);
+
+		vi.advanceTimersByTime(2000);
+		expect(wrapper.vm.copyIcon).toBe(`mdi-content-copy`);
+		vi.useRealTimers();
+	});
+
 	test(`displayDomain returns 127.0.0.1 when useCustomDomain is false`, async () => {
 		receiveCallback({ domain: `http://127.0.0.1`, steps: [] });
 		await wrapper.vm.$nextTick();
