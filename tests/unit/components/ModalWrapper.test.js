@@ -11,13 +11,7 @@ describe(`ModalWrapper`, () => {
 		vuetify = createVuetify();
 		global.window.eyas = { send: vi.fn(), receive: vi.fn() };
 
-		// Mock querySelector for the pinDialogWidth logic
-		vi.spyOn(document, `querySelector`).mockImplementation(selector => {
-			if (selector === `.eyas-modal-content` || selector.includes(`.v-overlay--active`)) {
-				return { offsetWidth: 700 };
-			}
-			return null;
-		});
+
 
 		wrapper = mount(ModalWrapper, {
 			global: { plugins: [vuetify] },
@@ -34,6 +28,12 @@ describe(`ModalWrapper`, () => {
 	test(`pins dialog width after enter to prevent jitter`, async () => {
 		// Verify initial width is auto
 		expect(wrapper.vm.dialogWidth).toBe(`auto`);
+
+		// Mock the offsetWidth on the actual ref element
+		Object.defineProperty(wrapper.vm.$refs.modalContent.firstElementChild, `offsetWidth`, {
+			get: () => 700,
+			configurable: true
+		});
 
 		// Trigger the @after-enter event that should pin the width
 		wrapper.vm.pinDialogWidth();

@@ -12,7 +12,9 @@
 			@after-enter="pinDialogWidth"
 			@after-leave="hideUi"
 		>
-			<slot />
+			<div ref="modalContent" style="display: contents;">
+				<slot />
+			</div>
 		</v-dialog>
 	</ModalBackground>
 </template>
@@ -77,9 +79,8 @@ export default {
 		},
 
 		pinDialogWidth() {
-			// Find the currently active modal's card (since Vuetify teleports, we look by v-dialog)
-			const activeModalContent = document.querySelector('.v-overlay--active .v-card')
-				|| document.querySelector('.v-overlay--active > .v-overlay__content > *');
+			// Find the currently active modal's card natively through Vue Template Refs
+			const activeModalContent = this.$refs.modalContent?.firstElementChild;
 
 			if (activeModalContent) {
 				// set the width of the dialog + 1 to round up and prevent content jumping
