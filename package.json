@@ -22,7 +22,7 @@
     "dev:ui": "npm i && npm run update && vite --config src/eyas-interface/app/.vite.config.ui.js --open",
     "dev:fixes": "sudo xattr -r -d com.apple.quarantine ./",
     "_____________TEST_______________": "",
-    "check": "npm run test:interface:unit && npm run test:electron:unit && npm run test:electron:e2e && npm run lint && npm audit",
+    "check": "npm run lint && npm run test:interface:unit && npm run test:electron:unit && npm run test:electron:e2e && npm audit",
     "test:electron:e2e": "npm run compile:module && playwright test",
     "test:electron:unit": "vitest run --config vitest.config.electron.js",
     "test:interface:unit": "vitest run --config vitest.config.interface.js",
