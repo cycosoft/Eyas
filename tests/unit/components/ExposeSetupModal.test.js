@@ -16,11 +16,10 @@ describe(`ExposeSetupModal`, () => {
 		vi.clearAllMocks();
 	});
 
-	test(`receives show-expose-setup-modal and displays modal`, async () => {
+	test(`receives show-expose-setup-modal and displays modal with default hostname`, async () => {
 		const payload = {
 			domain: `http://127.0.0.1`,
 			port: 12345,
-			hostnameForHosts: `local.test`,
 			steps: [],
 			useHttps: false
 		};
@@ -29,8 +28,23 @@ describe(`ExposeSetupModal`, () => {
 		expect(wrapper.vm.visible).toBe(true);
 		expect(wrapper.vm.steps).toHaveLength(0);
 		expect(wrapper.vm.hostsLine).toContain(`127.0.0.1`);
-		expect(wrapper.vm.hostsLine).toContain(`local.test`);
+		expect(wrapper.vm.hostsLine).toContain(`test.local`); // Default fallback
 		expect(wrapper.vm.port).toBe(12345);
+	});
+
+	test(`displays modal with custom hostname`, async () => {
+		const payload = {
+			domain: `http://127.0.0.1`,
+			port: 12345,
+			hostnameForHosts: `my.custom.app`,
+			steps: [],
+			useHttps: false
+		};
+		receiveCallback(payload);
+		await wrapper.vm.$nextTick();
+		expect(wrapper.vm.visible).toBe(true);
+		expect(wrapper.vm.hostsLine).toContain(`127.0.0.1`);
+		expect(wrapper.vm.hostsLine).toContain(`my.custom.app`);
 	});
 
 	test(`continueStart sends expose-setup-continue with useHttps and closes modal`, async () => {

@@ -38,7 +38,7 @@
 					<v-expansion-panel>
 						<v-expansion-panel-title>Optional: Custom domain via hosts file</v-expansion-panel-title>
 						<v-expansion-panel-text>
-							<p class="mb-2">If you want to use a custom domain like <code>local.test</code>, manually add this line to your hosts file:</p>
+							<p class="mb-2">If you want to use a custom domain like <code>{{ hostnameForHosts }}</code>, manually add this line to your hosts file:</p>
 							<v-sheet class="pa-2 font-mono text-body2" rounded>
 								<code>{{ hostsLine }}</code>
 							</v-sheet>
@@ -74,7 +74,7 @@ import ModalWrapper from '@/components/ModalWrapper.vue';
 const defaults = {
 	visible: false,
 	domain: '',
-	hostnameForHosts: 'local.test',
+	hostnameForHosts: 'test.local',
 	steps: [],
 	useHttps: false,
 	port: 12701
@@ -90,7 +90,7 @@ export default {
 	computed: {
 		hostsLine() {
 			const ip = '127.0.0.1';
-			const host = this.hostnameForHosts || 'local.test';
+			const host = this.hostnameForHosts || 'test.local';
 			return `${ip}\t${host}`;
 		}
 	},
@@ -98,7 +98,7 @@ export default {
 	mounted() {
 		window.eyas?.receive(`show-expose-setup-modal`, (payload) => {
 			this.domain = payload.domain || '';
-			this.hostnameForHosts = payload.hostnameForHosts || 'local.test';
+			this.hostnameForHosts = payload.hostnameForHosts || 'test.local';
 			this.steps = Array.isArray(payload.steps) ? payload.steps : [];
 			this.useHttps = !!payload.useHttps;
 			this.port = payload.port || 12701;
