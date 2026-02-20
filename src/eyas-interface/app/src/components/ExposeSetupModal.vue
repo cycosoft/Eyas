@@ -65,7 +65,7 @@
 					<p class="mb-0">Your server will be available at <code>http://{{ displayDomain }}:{{ port }}</code></p>
 				</v-alert>
 
-				<v-expansion-panels class="mt-4" v-model="expandedPanels">
+				<v-expansion-panels v-model="expandedPanels" class="mt-4">
 					<v-expansion-panel>
 						<v-expansion-panel-title>Optional: Custom domain via hosts file</v-expansion-panel-title>
 						<v-expansion-panel-text>
