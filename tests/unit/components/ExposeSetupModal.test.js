@@ -67,4 +67,26 @@ describe(`ExposeSetupModal`, () => {
 		expect(global.window.eyas.send).not.toHaveBeenCalledWith(`expose-setup-continue`);
 		expect(wrapper.vm.visible).toBe(false);
 	});
+
+	test(`displays Windows hosts path when isWindows is true`, async () => {
+		const payload = {
+			domain: `http://127.0.0.1`,
+			steps: [],
+			isWindows: true
+		};
+		receiveCallback(payload);
+		await wrapper.vm.$nextTick();
+		expect(wrapper.vm.isWindows).toBe(true);
+	});
+
+	test(`displays macOS/Linux hosts path when isWindows is false`, async () => {
+		const payload = {
+			domain: `http://127.0.0.1`,
+			steps: [],
+			isWindows: false
+		};
+		receiveCallback(payload);
+		await wrapper.vm.$nextTick();
+		expect(wrapper.vm.isWindows).toBe(false);
+	});
 });

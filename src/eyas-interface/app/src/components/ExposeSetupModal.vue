@@ -50,7 +50,8 @@
 							>
 								Copy line
 							</v-btn>
-							<p class="mt-2 text-caption">Hosts file location: <code>/etc/hosts</code> (macOS/Linux) or <code>C:\Windows\System32\drivers\etc\hosts</code> (Windows)</p>
+							<p v-if="isWindows" class="mt-2 text-caption">Hosts file location: <code>C:\Windows\System32\drivers\etc\hosts</code></p>
+							<p v-else class="mt-2 text-caption">Hosts file location: <code>/etc/hosts</code></p>
 						</v-expansion-panel-text>
 					</v-expansion-panel>
 				</v-expansion-panels>
@@ -77,7 +78,8 @@ const defaults = {
 	hostnameForHosts: 'test.local',
 	steps: [],
 	useHttps: false,
-	port: 12701
+	port: 12701,
+	isWindows: false
 };
 
 export default {
@@ -102,6 +104,7 @@ export default {
 			this.steps = Array.isArray(payload.steps) ? payload.steps : [];
 			this.useHttps = !!payload.useHttps;
 			this.port = payload.port || 12701;
+			this.isWindows = !!payload.isWindows;
 			this.visible = true;
 		});
 	},

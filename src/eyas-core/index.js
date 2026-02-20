@@ -632,13 +632,15 @@ async function startExposeHandler() {
 		const port = await exposeServer.getAvailablePort($testDomain, $exposeHttpsEnabled);
 		const parsedTestDomain = parseURL($testDomain);
 		const hostnameForHosts = parsedTestDomain?.hostname || `test.local`;
+		const isWindows = process.platform === `win32`;
 
 		uiEvent(`show-expose-setup-modal`, {
 			domain: `http://127.0.0.1`,
 			port,
 			hostnameForHosts,
 			steps: [],
-			useHttps: $exposeHttpsEnabled
+			useHttps: $exposeHttpsEnabled,
+			isWindows
 		});
 	}
 }
