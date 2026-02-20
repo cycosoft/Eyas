@@ -55,7 +55,7 @@
 				</v-list>
 
 				<v-alert v-if="useHttps" type="info" variant="tonal" class="mt-4">
-					<p class="mb-2"><strong>Using HTTPS with self-signed certificates</strong></p>
+					<p class="mb-2"><strong>Using HTTPS</strong></p>
 					<p class="mb-2">Your server will be available at <code>https://127.0.0.1:{{ port }}</code></p>
 					<p class="mb-0">Your browser will show a "Connection not private" warning. Click <strong>Advanced → Proceed to 127.0.0.1 (unsafe)</strong> to continue.</p>
 				</v-alert>
