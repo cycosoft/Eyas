@@ -104,11 +104,31 @@ describe(`expose-server`, () => {
 		expect(state2).not.toBeNull();
 	});
 
-	test(`getAvailablePort returns an available port`, async () => {
+	test(`getAvailablePort returns a valid port when no domain provided`, async () => {
 		const port = await getAvailablePort();
 		expect(port).toBeDefined();
 		expect(typeof port).toBe(`number`);
 		expect(port).toBeGreaterThan(0);
+	});
+
+	test(`getAvailablePort returns custom port from domain first`, async () => {
+		clearExposePort();
+		const port = await getAvailablePort(`http://sub.domain.com:44301`, false);
+		expect(port).toBe(44301);
+	});
+
+	test(`getAvailablePort prioritizes 80 for HTTP without explicit port`, async () => {
+		clearExposePort();
+		const port = await getAvailablePort(`http://sub.domain.com`, false);
+		// Note: depending on environment permissions, this might be 80 or fall back to 12701
+		// We expect the function to at least return a valid port.
+		expect([80, 12701]).toContain(port);
+	});
+
+	test(`getAvailablePort prioritizes 443 for HTTPS without explicit port`, async () => {
+		clearExposePort();
+		const port = await getAvailablePort(`https://sub.domain.com`, true);
+		expect([443, 12701]).toContain(port);
 	});
 });
 

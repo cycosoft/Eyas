@@ -17,16 +17,47 @@ const pathUtilsPath = [
 
 const { safeJoin } = require(pathUtilsPath);
 
+const parseUrlPath = [
+	path.join(__dirname, `..`, `..`, `scripts`, `parse-url.js`),
+	path.join(__dirname, `..`, `scripts`, `parse-url.js`)
+].find(p => require(`fs`).existsSync(p));
+
+const { parseURL } = require(parseUrlPath);
+
 let server = null;
 let state = null;
 let cachedPort = null;
 const HOST = `127.0.0.1`;
 const DEFAULT_PORT = 12701;
 
-async function getAvailablePort() {
-	if (!cachedPort) {
-		cachedPort = await getPort({ port: DEFAULT_PORT });
+async function getAvailablePort(urlStr, useHttps) {
+	if (cachedPort) {
+		return cachedPort;
 	}
+
+	let targetPort;
+	if (urlStr) {
+		const parsed = parseURL(urlStr);
+		if (parsed) {
+			if (parsed.port) {
+				targetPort = parseInt(parsed.port, 10);
+			} else {
+				// Fallback to standard HTTP/HTTPS ports if not specified
+				targetPort = useHttps ? 443 : 80;
+			}
+		}
+	}
+
+	let preferredPorts = [DEFAULT_PORT];
+	if (targetPort) {
+		preferredPorts = [targetPort];
+		for (let i = 1; i <= 10; i++) {
+			preferredPorts.push(targetPort + i);
+		}
+		preferredPorts.push(DEFAULT_PORT);
+	}
+
+	cachedPort = await getPort({ port: preferredPorts });
 	return cachedPort;
 }
 
