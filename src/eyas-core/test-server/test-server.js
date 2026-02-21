@@ -58,9 +58,12 @@ async function getAvailablePort(urlStr, useHttps) {
 		preferredPorts.push(DEFAULT_PORT);
 	}
 
-	cachedPorts[protoKey] = await getPort({ port: preferredPorts });
+	const resultPort = await getPort({ port: preferredPorts, host: HOST });
+
+	cachedPorts[protoKey] = resultPort;
 	return cachedPorts[protoKey];
 }
+
 
 async function startTestServer(options) {
 	const { rootPath, useHttps = false, certs, customDomain } = options;
@@ -123,18 +126,19 @@ async function startTestServer(options) {
 	return state;
 }
 
-function stopTestServer() {
+async function stopTestServer() {
 	if (server) {
 		// forcefully terminate existing browser keep-alive connections (prevents ~15s delay)
 		server.closeAllConnections();
 
 		// stop listening for new connections
-		server.close();
+		await new Promise(resolve => server.close(resolve));
 
 		server = null;
 	}
 	state = null;
 }
+
 
 function clearTestServerPort() {
 	cachedPorts = { http: null, https: null };
