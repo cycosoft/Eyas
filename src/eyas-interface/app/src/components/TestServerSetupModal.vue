@@ -17,6 +17,7 @@
 								color="primary"
 								hide-details
 								density="compact"
+								class="ml-4"
 								data-qa="switch-use-https"
 							/>
 						</template>
@@ -33,6 +34,7 @@
 								color="primary"
 								hide-details
 								density="compact"
+								class="ml-4"
 								data-qa="switch-auto-open"
 							/>
 						</template>
@@ -48,6 +50,7 @@
 								color="primary"
 								hide-details
 								density="compact"
+								class="ml-4"
 								data-qa="switch-custom-domain"
 							/>
 						</template>
