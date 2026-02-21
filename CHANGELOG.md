@@ -4,7 +4,7 @@
 - Remove some deprecated CLI code
 - Project linting
 - Auto update support
-- Add expose test feature for consumption by other apps
+- Add "Live Test Server" feature for consumption by other apps
 
 # v4.0.0
 
