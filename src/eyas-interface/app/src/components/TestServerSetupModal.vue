@@ -1,16 +1,16 @@
 <template>
 	<ModalWrapper v-model="visible">
 		<v-card class="pa-3">
-			<v-card-title class="text-h6" data-qa="expose-setup-title">Expose test server setup</v-card-title>
+			<v-card-title class="text-h6" data-qa="test-server-setup-title">Live Test Server Setup</v-card-title>
 			<v-card-text>
-				<p class="mb-4">Configure your expose server settings and click Continue to start.</p>
+				<p class="mb-4">Configure your test server settings and click Continue to start.</p>
 
 				<v-list>
 					<v-list-item>
 						<template v-slot:prepend>
 							<v-icon>mdi-shield-lock-outline</v-icon>
 						</template>
-						<v-list-item-title>Enable HTTPS for Expose</v-list-item-title>
+						<v-list-item-title>Enable HTTPS for Test Server</v-list-item-title>
 						<template v-slot:append>
 							<v-switch
 								v-model="useHttps"
@@ -78,10 +78,10 @@
 			</v-card-text>
 			<v-card-actions>
 				<v-spacer />
-				<v-btn data-qa="btn-cancel-expose" @click="cancel">
+				<v-btn data-qa="btn-cancel-test-server" @click="cancel">
 					Cancel
 				</v-btn>
-				<v-btn color="primary" data-qa="btn-continue-expose" @click="continueStart">
+				<v-btn color="primary" data-qa="btn-continue-test-server" @click="continueStart">
 					Continue
 				</v-btn>
 			</v-card-actions>
@@ -131,7 +131,7 @@ export default {
 	},
 
 	mounted() {
-		window.eyas?.receive(`show-expose-setup-modal`, (payload) => {
+		window.eyas?.receive(`show-test-server-setup-modal`, (payload) => {
 			this.domain = payload.domain || '';
 			this.hostnameForHosts = payload.hostnameForHosts || 'test.local';
 			this.steps = Array.isArray(payload.steps) ? payload.steps : [];
@@ -145,11 +145,11 @@ export default {
 
 	methods: {
 		initiate(stepId) {
-			window.eyas?.send(`expose-setup-step`, { action: 'initiate', stepId });
+			window.eyas?.send(`test-server-setup-step`, { action: 'initiate', stepId });
 		},
 
 		revoke(stepId) {
-			window.eyas?.send(`expose-setup-step`, { action: 'revoke', stepId });
+			window.eyas?.send(`test-server-setup-step`, { action: 'revoke', stepId });
 		},
 
 		copyHostsLine() {
@@ -166,7 +166,7 @@ export default {
 		},
 
 		continueStart() {
-			window.eyas?.send(`expose-setup-continue`, {
+			window.eyas?.send(`test-server-setup-continue`, {
 				useHttps: this.useHttps,
 				autoOpenBrowser: this.autoOpenBrowser,
 				useCustomDomain: this.useCustomDomain

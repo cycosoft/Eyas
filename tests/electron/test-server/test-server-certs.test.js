@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'vitest';
-import { getCerts } from '../../../src/eyas-core/expose/expose-certs.js';
+import { getCerts } from '../../../src/eyas-core/test-server/test-server-certs.js';
 
-describe(`expose-certs`, () => {
+describe(`test-server-certs`, () => {
 	test(`getCerts returns key and cert`, async () => {
 		const result = await getCerts([`localhost`]);
 		expect(result).toHaveProperty(`key`);

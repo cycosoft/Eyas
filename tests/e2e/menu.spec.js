@@ -63,34 +63,34 @@ test.describe(`Application Menu`, () => {
 		expect(menuAfter.find(item => item.label.includes(`Cache`)).enabled).toBe(true);
 	});
 
-	test(`Expose Test menu flow works correctly`, async () => {
+	test(`Live Test Server menu flow works correctly`, async () => {
 		const ui = await getUiView(electronApp);
 
 		// Clear initial Environment Modal
 		await ensureEnvironmentSelected(ui);
 
 		// 1. Click menu item, modal appears
-		await clickSubMenuItem(electronApp, `Tools`, `Expose Test`);
-		const modalTitle = ui.locator(`[data-qa="expose-setup-title"]`);
+		await clickSubMenuItem(electronApp, `Tools`, `Live Test Server`);
+		const modalTitle = ui.locator(`[data-qa="test-server-setup-title"]`);
 		await expect(modalTitle).toBeVisible();
 
 		// 2. Click cancel, modal disappears
-		await ui.locator(`[data-qa="btn-cancel-expose"]`).click();
+		await ui.locator(`[data-qa="btn-cancel-test-server"]`).click();
 		await expect(modalTitle).not.toBeVisible();
 
 		// 3. Click continue, server starts
-		await clickSubMenuItem(electronApp, `Tools`, `Expose Test`);
-		await ui.locator(`[data-qa="btn-continue-expose"]`).click();
+		await clickSubMenuItem(electronApp, `Tools`, `Live Test Server`);
+		await ui.locator(`[data-qa="btn-continue-test-server"]`).click();
 		await expect(modalTitle).not.toBeVisible();
 
 		// Wait for menu to update with time remaining
-		const menuExposed = await waitForMenuUpdate(electronApp, m => {
+		const menuTestServer = await waitForMenuUpdate(electronApp, m => {
 			const tools = m.find(item => item.label.includes(`Tools`));
-			return tools && tools.submenu && tools.submenu.some(item => item.label.includes(`Exposed`));
+			return tools && tools.submenu && tools.submenu.some(item => item.label.includes(`Test Server running`));
 		});
 
-		const tools = menuExposed.find(item => item.label.includes(`Tools`));
-		const exposeItem = tools.submenu.find(item => item.label.includes(`Exposed`));
-		expect(exposeItem.label).toMatch(/Exposed for ~\d+[smh]/);
+		const tools = menuTestServer.find(item => item.label.includes(`Tools`));
+		const testServerItem = tools.submenu.find(item => item.label.includes(`Test Server running`));
+		expect(testServerItem.label).toMatch(/Test Server running for ~\d+[smh]/);
 	});
 });

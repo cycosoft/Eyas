@@ -1,14 +1,14 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
-import ExposeSetupModal from '@/components/ExposeSetupModal.vue';
+import TestServerSetupModal from '@/components/TestServerSetupModal.vue';
 
-describe(`ExposeSetupModal`, () => {
+describe(`TestServerSetupModal`, () => {
 	let wrapper;
 	let receiveCallback;
 
 	beforeEach(() => {
 		global.window.eyas = { send: vi.fn(), receive: vi.fn((channel, fn) => { receiveCallback = fn; }) };
-		wrapper = mount(ExposeSetupModal);
+		wrapper = mount(TestServerSetupModal);
 	});
 
 	afterEach(() => {
@@ -16,7 +16,7 @@ describe(`ExposeSetupModal`, () => {
 		vi.clearAllMocks();
 	});
 
-	test(`receives show-expose-setup-modal and displays modal with default hostname`, async () => {
+	test(`receives show-test-server-setup-modal and displays modal with default hostname`, async () => {
 		const payload = {
 			domain: `http://127.0.0.1`,
 			portHttp: 12345,
@@ -52,7 +52,7 @@ describe(`ExposeSetupModal`, () => {
 		expect(wrapper.vm.hostsLine).toContain(`my.custom.app`);
 	});
 
-	test(`continueStart sends expose-setup-continue with useHttps and closes modal`, async () => {
+	test(`continueStart sends test-server-setup-continue with useHttps and closes modal`, async () => {
 		receiveCallback({ domain: `http://127.0.0.1`, hostnameForHosts: `local.test`, steps: [], useHttps: true });
 		await wrapper.vm.$nextTick();
 		expect(wrapper.vm.useHttps).toBe(true);
@@ -61,7 +61,7 @@ describe(`ExposeSetupModal`, () => {
 		wrapper.vm.autoOpenBrowser = false;
 		wrapper.vm.useCustomDomain = true;
 		wrapper.vm.continueStart();
-		expect(global.window.eyas.send).toHaveBeenCalledWith(`expose-setup-continue`, {
+		expect(global.window.eyas.send).toHaveBeenCalledWith(`test-server-setup-continue`, {
 			useHttps: false,
 			autoOpenBrowser: false,
 			useCustomDomain: true
@@ -75,7 +75,7 @@ describe(`ExposeSetupModal`, () => {
 		expect(wrapper.vm.visible).toBe(true);
 
 		wrapper.vm.cancel();
-		expect(global.window.eyas.send).not.toHaveBeenCalledWith(`expose-setup-continue`);
+		expect(global.window.eyas.send).not.toHaveBeenCalledWith(`test-server-setup-continue`);
 		expect(wrapper.vm.visible).toBe(false);
 	});
 

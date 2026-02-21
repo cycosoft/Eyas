@@ -24,9 +24,9 @@ let $eyasLayer = null;
 let $config = null;
 let $configToLoad = {};
 let $testNetworkEnabled = true;
-let $exposeHttpsEnabled = false;
-let $lastExposeOptions = null;
-let $exposeMenuIntervalId = null;
+let $testServerHttpsEnabled = false;
+let $lastTestServerOptions = null;
+let $testServerMenuIntervalId = null;
 let $testDomainRaw = null;
 let $testDomain = `eyas://local.test`;
 const $uiDomain = `ui://eyas.interface`;
@@ -63,9 +63,9 @@ const { version: _appVersion } = require($paths.packageJson);
 const { buildMenuTemplate } = require(_path.join(__dirname, `menu-template.js`));
 const { getNoUpdateAvailableDialogOptions } = require(_path.join(__dirname, `update-dialog.js`));
 const { MP_EVENTS } = require(_path.join(__dirname, `metrics-events.js`));
-const exposeServer = require(_path.join(__dirname, `expose`, `expose-server.js`));
-const exposeCerts = require(_path.join(__dirname, `expose`, `expose-certs.js`));
-const exposeTimeout = require(_path.join(__dirname, `expose`, `expose-timeout.js`));
+const testServer = require(_path.join(__dirname, `test-server`, `test-server.js`));
+const testServerCerts = require(_path.join(__dirname, `test-server`, `test-server-certs.js`));
+const testServerTimeout = require(_path.join(__dirname, `test-server`, `test-server-timeout.js`));
 const { safeJoin } = require(_path.join(__dirname, `scripts`, `path-utils.js`));
 const { formatDuration } = require(_path.join(__dirname, `scripts`, `time-utils.js`));
 
@@ -435,8 +435,8 @@ function initUiListeners() {
 		// track that the app is being closed
 		trackEvent(MP_EVENTS.core.exit);
 
-		// Shut down expose server if running, then exit
-		stopExposeServer();
+		// Shut down test server if running, then exit
+		stopTestServer();
 		_electronCore.quit();
 	});
 
@@ -456,21 +456,21 @@ function initUiListeners() {
 		navigate(parseURL(url).toString(), openInBrowser);
 	});
 
-	// expose setup modal: user clicked Continue, start the server
-	ipcMain.on(`expose-setup-continue`, (event, { useHttps, autoOpenBrowser, useCustomDomain }) => {
-		$exposeHttpsEnabled = !!useHttps;
+	// test server setup modal: user clicked Continue, start the server
+	ipcMain.on(`test-server-setup-continue`, (event, { useHttps, autoOpenBrowser, useCustomDomain }) => {
+		$testServerHttpsEnabled = !!useHttps;
 		const customDomain = useCustomDomain ? (parseURL($testDomain)?.hostname || `test.local`) : null;
-		doStartExpose(autoOpenBrowser, customDomain);
+		doStartTestServer(autoOpenBrowser, customDomain);
 	});
 
-	// expose resume modal: user clicked Resume
-	ipcMain.on(`expose-resume-confirm`, () => {
+	// test server resume modal: user clicked Resume
+	ipcMain.on(`test-server-resume-confirm`, () => {
 		// if there are previous settings, restart with them
-		if ($lastExposeOptions) {
-			doStartExpose();
+		if ($lastTestServerOptions) {
+			doStartTestServer();
 		} else {
 			// otherwise just start with defaults
-			doStartExpose();
+			doStartTestServer();
 		}
 	});
 }
@@ -596,20 +596,20 @@ function onResize() {
 	setMenu();
 }
 
-function stopExposeServer() {
+function stopTestServer() {
 	if ($isInitializing) return;
-	exposeServer.stopExpose();
-	exposeTimeout.cancelExposeTimeout();
-	if ($exposeMenuIntervalId) {
-		clearInterval($exposeMenuIntervalId);
-		$exposeMenuIntervalId = null;
+	testServer.stopTestServer();
+	testServerTimeout.cancelTestServerTimeout();
+	if ($testServerMenuIntervalId) {
+		clearInterval($testServerMenuIntervalId);
+		$testServerMenuIntervalId = null;
 	}
 	setMenu();
 }
 
-function copyExposedUrlHandler() {
+function copyTestServerUrlHandler() {
 	if ($isInitializing) return;
-	const state = exposeServer.getExposeState();
+	const state = testServer.getTestServerState();
 	if (state) {
 		const targetUrl = state.customUrl || state.url;
 		if (targetUrl) {
@@ -618,9 +618,9 @@ function copyExposedUrlHandler() {
 	}
 }
 
-function openExposedInBrowserHandler() {
+function openTestServerInBrowserHandler() {
 	if ($isInitializing) return;
-	const state = exposeServer.getExposeState();
+	const state = testServer.getTestServerState();
 	if (state) {
 		const targetUrl = state.customUrl || state.url;
 		if (targetUrl) {
@@ -629,72 +629,72 @@ function openExposedInBrowserHandler() {
 	}
 }
 
-async function startExposeHandler() {
+async function startTestServerHandler() {
 	if ($isInitializing) return;
-	if (exposeServer.getExposeState()) return;
+	if (testServer.getTestServerState()) return;
 	if (!$paths.testSrc) return;
 
 	// Show simplified setup modal
 	if ($eyasLayer) {
-		const portHttp = await exposeServer.getAvailablePort($testDomain, false);
-		const portHttps = await exposeServer.getAvailablePort($testDomain, true);
+		const portHttp = await testServer.getAvailablePort($testDomain, false);
+		const portHttps = await testServer.getAvailablePort($testDomain, true);
 		const parsedTestDomain = parseURL($testDomain);
 		const hostnameForHosts = parsedTestDomain?.hostname || `test.local`;
 		const isWindows = process.platform === `win32`;
 
-		uiEvent(`show-expose-setup-modal`, {
+		uiEvent(`show-test-server-setup-modal`, {
 			domain: `http://127.0.0.1`,
 			portHttp,
 			portHttps,
 			hostnameForHosts,
 			steps: [],
-			useHttps: $exposeHttpsEnabled,
+			useHttps: $testServerHttpsEnabled,
 			isWindows
 		});
 	}
 }
 
-async function doStartExpose(autoOpenBrowser = true, customDomain = null) {
+async function doStartTestServer(autoOpenBrowser = true, customDomain = null) {
 	let certs;
-	if ($exposeHttpsEnabled) {
+	if ($testServerHttpsEnabled) {
 		try {
-			certs = await exposeCerts.getCerts([`127.0.0.1`, `localhost`]);
+			certs = await testServerCerts.getCerts([`127.0.0.1`, `localhost`]);
 		} catch (err) {
-			console.error(`Expose HTTPS cert generation failed:`, err);
+			console.error(`Live Test Server HTTPS cert generation failed:`, err);
 			return;
 		}
 	}
 	try {
 		const options = {
 			rootPath: $paths.testSrc,
-			useHttps: $exposeHttpsEnabled,
+			useHttps: $testServerHttpsEnabled,
 			certs: certs || undefined,
 			customDomain
 		};
-		await exposeServer.startExpose(options);
-		$lastExposeOptions = options;
+		await testServer.startTestServer(options);
+		$lastTestServerOptions = options;
 	} catch (err) {
-		console.error(`Expose server start failed:`, err);
+		console.error(`Live Test server start failed:`, err);
 		return;
 	}
-	exposeTimeout.startExposeTimeout(onExposeTimeout, EXPIRE_MS);
-	$exposeMenuIntervalId = setInterval(() => setMenu(), 60 * 1000);
+	testServerTimeout.startTestServerTimeout(onTestServerTimeout, EXPIRE_MS);
+	$testServerMenuIntervalId = setInterval(() => setMenu(), 60 * 1000);
 	setMenu();
 
 	if (autoOpenBrowser) {
-		openExposedInBrowserHandler();
+		openTestServerInBrowserHandler();
 	}
 }
 
-// whenever the expose server automatically shuts down
-function onExposeTimeout() {
+// whenever the test server automatically shuts down
+function onTestServerTimeout() {
 	if ($appWindow && typeof $appWindow.flashFrame === `function`) {
 		$appWindow.flashFrame(true);
 	}
-	stopExposeServer();
+	stopTestServer();
 
 	// Show the resume modal in the UI
-	uiEvent(`show-expose-resume-modal`, formatDuration(EXPIRE_MS));
+	uiEvent(`show-test-server-resume-modal`, formatDuration(EXPIRE_MS));
 }
 
 // Set up the application menu
@@ -829,21 +829,21 @@ Runner: v${_appVersion}
 		updateStatus: typeof $updateStatus !== `undefined` ? $updateStatus : `idle`,
 		onCheckForUpdates: typeof $onCheckForUpdates === `function` ? $onCheckForUpdates : () => { },
 		onInstallUpdate: typeof $onInstallUpdate === `function` ? $onInstallUpdate : () => { },
-		exposeActive: !!exposeServer.getExposeState(),
-		exposeRemainingTime: (() => {
-			const s = exposeServer.getExposeState();
+		testServerActive: !!testServer.getTestServerState(),
+		testServerRemainingTime: (() => {
+			const s = testServer.getTestServerState();
 			if (!s) { return ``; }
 			const elapsed = Date.now() - s.startedAt;
 			const remaining = EXPIRE_MS - elapsed;
 			return formatDuration(remaining);
 		})(),
-		onStartExpose: startExposeHandler,
-		onStopExpose: stopExposeServer,
-		onCopyExposedUrl: copyExposedUrlHandler,
-		onOpenExposedInBrowser: openExposedInBrowserHandler,
-		exposeHttpsEnabled: $exposeHttpsEnabled,
-		onToggleExposeHttps: () => {
-			$exposeHttpsEnabled = !$exposeHttpsEnabled;
+		onStartTestServer: startTestServerHandler,
+		onStopTestServer: stopTestServer,
+		onCopyTestServerUrl: copyTestServerUrlHandler,
+		onOpenTestServerInBrowser: openTestServerInBrowserHandler,
+		testServerHttpsEnabled: $testServerHttpsEnabled,
+		onToggleTestServerHttps: () => {
+			$testServerHttpsEnabled = !$testServerHttpsEnabled;
 			setMenu();
 		},
 		isInitializing: $isInitializing
@@ -1016,7 +1016,7 @@ function navigate(path, openInBrowser) {
 			// not running the local test OR
 			!runningTestSource ||
 			// the test server is running AND we're running the local test
-			(exposeServer.getExposeState() && runningTestSource)
+			(testServer.getTestServerState() && runningTestSource)
 		)
 	) {
 		// open the requested url in the default browser
@@ -1187,13 +1187,13 @@ async function startAFreshTest() {
 	// imports
 	const semver = require(`semver`);
 
-	// stop expose server when test changes
-	if (exposeServer.getExposeState()) {
-		stopExposeServer();
+	// stop test server when test changes
+	if (testServer.getTestServerState()) {
+		stopTestServer();
 	}
 
-	// clear the cached port for the expose server
-	exposeServer.clearExposePort();
+	// clear the cached port for the test server
+	testServer.clearTestServerPort();
 
 	// reset initialization state
 	$isInitializing = true;

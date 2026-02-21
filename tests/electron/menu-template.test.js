@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'vitest';
 import { buildMenuTemplate } from '../../src/eyas-core/menu-template.js';
 
-const noop = () => {};
+const noop = () => { };
 
 const minimalContext = {
 	appName: `Eyas`,
@@ -28,14 +28,14 @@ const minimalContext = {
 	updateStatus: `idle`,
 	onCheckForUpdates: noop,
 	onInstallUpdate: noop,
-	exposeActive: false,
-	exposeRemainingTime: ``,
-	onStartExpose: noop,
-	onStopExpose: noop,
-	onCopyExposedUrl: noop,
-	onOpenExposedInBrowser: noop,
-	exposeHttpsEnabled: false,
-	onToggleExposeHttps: noop
+	testServerActive: false,
+	testServerRemainingTime: ``,
+	onStartTestServer: noop,
+	onStopTestServer: noop,
+	onCopyTestServerUrl: noop,
+	onOpenTestServerInBrowser: noop,
+	testServerHttpsEnabled: false,
+	onToggleTestServerHttps: noop
 };
 
 describe(`buildMenuTemplate`, () => {
@@ -74,7 +74,7 @@ describe(`buildMenuTemplate`, () => {
 	});
 
 	test(`when updateStatus is idle, item after About is Check for updates with onCheckForUpdates click`, () => {
-		const onCheck = () => {};
+		const onCheck = () => { };
 		const ctx = { ...minimalContext, updateStatus: `idle`, onCheckForUpdates: onCheck };
 		const template = buildMenuTemplate(ctx);
 		const submenu = template[0].submenu;
@@ -84,7 +84,7 @@ describe(`buildMenuTemplate`, () => {
 	});
 
 	test(`when updateStatus is downloaded, last top-level item is Restart to install with onInstallUpdate click`, () => {
-		const onInstall = () => {};
+		const onInstall = () => { };
 		const ctx = { ...minimalContext, updateStatus: `downloaded`, onInstallUpdate: onInstall };
 		const template = buildMenuTemplate(ctx);
 		const last = template[template.length - 1];
@@ -127,57 +127,57 @@ describe(`buildMenuTemplate`, () => {
 		expect(last.label).toContain(updateIcon);
 	});
 
-	test(`when exposeActive is false, Tools menu includes Expose Test item with onStartExpose click`, () => {
-		const onStartExpose = () => {};
-		const ctx = { ...minimalContext, exposeActive: false, exposeRemainingTime: ``, onStartExpose };
+	test(`when testServerActive is false, Tools menu includes Live Test Server item with onStartTestServer click`, () => {
+		const onStartTestServer = () => { };
+		const ctx = { ...minimalContext, testServerActive: false, testServerRemainingTime: ``, onStartTestServer };
 		const template = buildMenuTemplate(ctx);
 		const toolsMenu = template.find(item => item.label && item.label.includes(`Tools`));
-		const startItem = toolsMenu.submenu.find(item => item.label && item.label.includes(`Expose Test`));
+		const startItem = toolsMenu.submenu.find(item => item.label && item.label.includes(`Live Test Server`));
 		expect(startItem).toBeDefined();
-		expect(startItem.click).toBe(onStartExpose);
+		expect(startItem.click).toBe(onStartTestServer);
 	});
 
-	test(`when exposeActive is true and exposeRemainingTime is '29m', Tools menu includes 'Exposed for ~29m' item with sub-menu`, () => {
-		const ctx = { ...minimalContext, exposeActive: true, exposeRemainingTime: `29m` };
+	test(`when testServerActive is true and testServerRemainingTime is '29m', Tools menu includes 'Test Server running for ~29m' item with sub-menu`, () => {
+		const ctx = { ...minimalContext, testServerActive: true, testServerRemainingTime: `29m` };
 		const template = buildMenuTemplate(ctx);
 		const toolsMenu = template.find(item => item.label && item.label.includes(`Tools`));
-		const startItem = toolsMenu.submenu.find(item => item.label && item.label.includes(`Exposed`));
+		const startItem = toolsMenu.submenu.find(item => item.label && item.label.includes(`Test Server running`));
 		expect(startItem).toBeDefined();
-		expect(startItem.label).toMatch(/Exposed for ~29m/);
+		expect(startItem.label).toMatch(/Test Server running for ~29m/);
 		expect(Array.isArray(startItem.submenu)).toBe(true);
 	});
 
-	test(`when exposeActive is true, Expose sub-menu in Tools has Stop, Copy URL, Open in browser`, () => {
-		const onStopExpose = () => {};
-		const onCopyExposedUrl = () => {};
-		const onOpenExposedInBrowser = () => {};
+	test(`when testServerActive is true, Expose sub-menu in Tools has Stop, Copy URL, Open in browser`, () => {
+		const onStopTestServer = () => { };
+		const onCopyTestServerUrl = () => { };
+		const onOpenTestServerInBrowser = () => { };
 		const ctx = {
 			...minimalContext,
-			exposeActive: true,
-			exposeRemainingTime: `5m`,
-			onStopExpose,
-			onCopyExposedUrl,
-			onOpenExposedInBrowser
+			testServerActive: true,
+			testServerRemainingTime: `5m`,
+			onStopTestServer,
+			onCopyTestServerUrl,
+			onOpenTestServerInBrowser
 		};
 		const template = buildMenuTemplate(ctx);
 		const toolsMenu = template.find(item => item.label && item.label.includes(`Tools`));
-		const startItem = toolsMenu.submenu.find(item => item.label && item.label.includes(`Exposed`));
+		const startItem = toolsMenu.submenu.find(item => item.label && item.label.includes(`Test Server running`));
 		expect(startItem).toBeDefined();
 		expect(Array.isArray(startItem.submenu)).toBe(true);
 		const stopItem = startItem.submenu.find(i => i.label && i.label.toLowerCase().includes(`stop`));
 		const copyItem = startItem.submenu.find(i => i.label && i.label.toLowerCase().includes(`copy`));
 		const openItem = startItem.submenu.find(i => i.label && i.label.toLowerCase().includes(`open`) || i.label && i.label.toLowerCase().includes(`browser`));
 		expect(stopItem).toBeDefined();
-		expect(stopItem.click).toBe(onStopExpose);
+		expect(stopItem.click).toBe(onStopTestServer);
 		expect(copyItem).toBeDefined();
-		expect(copyItem.click).toBe(onCopyExposedUrl);
+		expect(copyItem.click).toBe(onCopyTestServerUrl);
 		expect(openItem).toBeDefined();
-		expect(openItem.click).toBe(onOpenExposedInBrowser);
+		expect(openItem.click).toBe(onOpenTestServerInBrowser);
 	});
 
 	test(`template does NOT include Enable HTTPS option in Tools menu`, () => {
-		const onToggle = () => {};
-		const ctx = { ...minimalContext, exposeHttpsEnabled: true, onToggleExposeHttps: onToggle };
+		const onToggle = () => { };
+		const ctx = { ...minimalContext, testServerHttpsEnabled: true, onToggleTestServerHttps: onToggle };
 		const template = buildMenuTemplate(ctx);
 		const toolsMenu = template.find(item => item.label && item.label.includes(`Tools`));
 		expect(toolsMenu).toBeDefined();
@@ -185,16 +185,16 @@ describe(`buildMenuTemplate`, () => {
 		expect(httpsItem).toBeUndefined();
 	});
 
-	test(`when exposeActive is true, template includes a top-level status item at the end`, () => {
-		const ctx = { ...minimalContext, exposeActive: true, exposeRemainingTime: `15m` };
+	test(`when testServerActive is true, template includes a top-level status item at the end`, () => {
+		const ctx = { ...minimalContext, testServerActive: true, testServerRemainingTime: `15m` };
 		const template = buildMenuTemplate(ctx);
 		const last = template[template.length - 1];
-		expect(last.label).toMatch(/Exposed for ~15m/);
+		expect(last.label).toMatch(/Test Server running for ~15m/);
 		expect(Array.isArray(last.submenu)).toBe(true);
 	});
 
-	test(`when exposeActive is false, template does not include top-level status item at the end`, () => {
-		const ctx = { ...minimalContext, exposeActive: false };
+	test(`when testServerActive is false, template does not include top-level status item at the end`, () => {
+		const ctx = { ...minimalContext, testServerActive: false };
 		const template = buildMenuTemplate(ctx);
 		const last = template[template.length - 1];
 		expect(last.label).not.toMatch(/Exposed for/);

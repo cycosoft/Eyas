@@ -31,24 +31,24 @@ function buildMenuTemplate(context) {
 		updateStatus = `idle`,
 		onCheckForUpdates,
 		onInstallUpdate,
-		exposeActive = false,
-		exposeRemainingTime = ``,
-		onStartExpose,
-		onStopExpose,
-		onCopyExposedUrl,
-		onOpenExposedInBrowser,
+		testServerActive = false,
+		testServerRemainingTime = ``,
+		onStartTestServer,
+		onStopTestServer,
+		onCopyTestServerUrl,
+		onOpenTestServerInBrowser,
 		isInitializing = false
 	} = context;
 
-	const getExposeSubmenu = () => [
-		{ label: `🛑 &Stop Expose`, click: onStopExpose },
-		{ label: `📋 &Copy Exposed URL`, click: onCopyExposedUrl },
-		{ label: `🌐 &Open in Browser`, click: onOpenExposedInBrowser }
+	const getTestServerSubmenu = () => [
+		{ label: `🛑 &Stop Live Test Server`, click: onStopTestServer },
+		{ label: `📋 &Copy Live Test Server URL`, click: onCopyTestServerUrl },
+		{ label: `🌐 &Open in Browser`, click: onOpenTestServerInBrowser }
 	];
 
-	const exposeLabel = exposeActive
-		? `📡 Exposed for ~${exposeRemainingTime}`
-		: `📡 Expose Test`;
+	const testServerLabel = testServerActive
+		? `📡 Test Server running for ~${testServerRemainingTime}`
+		: `📡 Live Test Server`;
 
 	const updateStatusItem = updateStatus === `downloading`
 		? { label: `⬆️ Downloading update...`, enabled: false }
@@ -67,14 +67,14 @@ function buildMenuTemplate(context) {
 		{ type: `separator` }
 	];
 
-	if (exposeActive && onStopExpose && onCopyExposedUrl && onOpenExposedInBrowser) {
+	if (testServerActive && onStopTestServer && onCopyTestServerUrl && onOpenTestServerInBrowser) {
 		toolsSubmenu.push({
-			label: exposeLabel,
+			label: testServerLabel,
 			enabled: !isInitializing,
-			submenu: getExposeSubmenu()
+			submenu: getTestServerSubmenu()
 		});
 	} else {
-		toolsSubmenu.push({ label: `📡 Expose Test`, click: onStartExpose, enabled: !isInitializing });
+		toolsSubmenu.push({ label: `📡 Live Test Server`, click: onStartTestServer, enabled: !isInitializing });
 	}
 
 	toolsSubmenu.push({ type: `separator` });
@@ -128,10 +128,10 @@ function buildMenuTemplate(context) {
 		menu.push({ label: `🔗 &Links`, submenu: linkItems });
 	}
 
-	if (exposeActive) {
+	if (testServerActive) {
 		menu.push({
-			label: exposeLabel,
-			submenu: getExposeSubmenu()
+			label: testServerLabel,
+			submenu: getTestServerSubmenu()
 		});
 	}
 

@@ -1,14 +1,14 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
-import ExposeResumeModal from '@/components/ExposeResumeModal.vue';
+import TestServerResumeModal from '@/components/TestServerResumeModal.vue';
 
-describe(`ExposeResumeModal`, () => {
+describe(`TestServerResumeModal`, () => {
 	let wrapper;
 	let receiveCallback;
 
 	beforeEach(() => {
 		global.window.eyas = { send: vi.fn(), receive: vi.fn((channel, fn) => { receiveCallback = fn; }) };
-		wrapper = mount(ExposeResumeModal);
+		wrapper = mount(TestServerResumeModal);
 	});
 
 	afterEach(() => {
@@ -16,19 +16,19 @@ describe(`ExposeResumeModal`, () => {
 		vi.clearAllMocks();
 	});
 
-	test(`receives show-expose-resume-modal and shows modal`, async () => {
+	test(`receives show-test-server-resume-modal and shows modal`, async () => {
 		receiveCallback();
 		await wrapper.vm.$nextTick();
 		expect(wrapper.vm.visible).toBe(true);
 	});
 
-	test(`resume sends expose-resume-confirm and closes modal`, async () => {
+	test(`resume sends test-server-resume-confirm and closes modal`, async () => {
 		receiveCallback();
 		await wrapper.vm.$nextTick();
 		expect(wrapper.vm.visible).toBe(true);
 
 		wrapper.vm.resume();
-		expect(global.window.eyas.send).toHaveBeenCalledWith(`expose-resume-confirm`);
+		expect(global.window.eyas.send).toHaveBeenCalledWith(`test-server-resume-confirm`);
 		expect(wrapper.vm.visible).toBe(false);
 	});
 
@@ -38,7 +38,7 @@ describe(`ExposeResumeModal`, () => {
 		expect(wrapper.vm.visible).toBe(true);
 
 		wrapper.vm.close();
-		expect(global.window.eyas.send).not.toHaveBeenCalledWith(`expose-resume-confirm`);
+		expect(global.window.eyas.send).not.toHaveBeenCalledWith(`test-server-resume-confirm`);
 		expect(wrapper.vm.visible).toBe(false);
 	});
 });

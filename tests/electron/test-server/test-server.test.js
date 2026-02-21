@@ -2,41 +2,41 @@ import { describe, test, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import { startExpose, stopExpose, getExposeState, clearExposePort, getAvailablePort } from '../../../src/eyas-core/expose/expose-server.js';
+import { startTestServer, stopTestServer, getTestServerState, clearTestServerPort, getAvailablePort } from '../../../src/eyas-core/test-server/test-server.js';
 
-describe(`expose-server`, () => {
+describe(`test-server`, () => {
 	let tempDir;
 
 	beforeEach(async () => {
-		clearExposePort();
-		tempDir = fs.mkdtempSync(path.join(os.tmpdir(), `eyas-expose-`));
+		clearTestServerPort();
+		tempDir = fs.mkdtempSync(path.join(os.tmpdir(), `eyas-test-server-`));
 		fs.writeFileSync(path.join(tempDir, `index.html`), `<html>root</html>`);
 		fs.mkdirSync(path.join(tempDir, `sub`), { recursive: true });
 		fs.writeFileSync(path.join(tempDir, `sub`, `file.txt`), `sub file`);
 	});
 
 	afterEach(() => {
-		stopExpose();
+		stopTestServer();
 		try {
 			fs.rmSync(tempDir, { recursive: true });
 		} catch { /* ignore */ }
 	});
 
-	test(`getExposeState returns null when server not started`, () => {
-		expect(getExposeState()).toBeNull();
+	test(`getTestServerState returns null when server not started`, () => {
+		expect(getTestServerState()).toBeNull();
 	});
 
 	test(`server uses default port 12701 on first start`, async () => {
 		// This test should run early to ensure port 12701 is available
-		clearExposePort();
-		stopExpose(); // Ensure no server is running
-		const state = await startExpose({ rootPath: tempDir });
+		clearTestServerPort();
+		stopTestServer(); // Ensure no server is running
+		const state = await startTestServer({ rootPath: tempDir });
 		expect(state.port).toBe(12701);
 		expect(state.url).toBe(`http://127.0.0.1:12701`);
 	});
 
-	test(`startExpose serves files under root and binds to 127.0.0.1`, async () => {
-		const state = await startExpose({ rootPath: tempDir });
+	test(`startTestServer serves files under root and binds to 127.0.0.1`, async () => {
+		const state = await startTestServer({ rootPath: tempDir });
 		expect(state).not.toBeNull();
 		expect(state.url).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
 		expect(state.port).toBeGreaterThan(0);
@@ -55,7 +55,7 @@ describe(`expose-server`, () => {
 	});
 
 	test(`requests for path outside root return 404`, async () => {
-		const state = await startExpose({ rootPath: tempDir });
+		const state = await startTestServer({ rootPath: tempDir });
 		const baseUrl = state.url;
 
 		const res1 = await fetch(baseUrl + `/../package.json`, { redirect: `manual` });
@@ -65,37 +65,37 @@ describe(`expose-server`, () => {
 		expect(res2.status).toBe(404);
 	});
 
-	test(`stopExpose stops server and getExposeState returns null`, async () => {
-		const state = await startExpose({ rootPath: tempDir });
+	test(`stopTestServer stops server and getTestServerState returns null`, async () => {
+		const state = await startTestServer({ rootPath: tempDir });
 		const baseUrl = state.url;
-		stopExpose();
-		expect(getExposeState()).toBeNull();
+		stopTestServer();
+		expect(getTestServerState()).toBeNull();
 
 		await expect(fetch(baseUrl + `/`)).rejects.toThrow();
 	});
 
 	test(`server URL uses 127.0.0.1 only`, async () => {
-		const state = await startExpose({ rootPath: tempDir });
+		const state = await startTestServer({ rootPath: tempDir });
 		expect(state.url).toContain(`127.0.0.1`);
 		expect(state.url).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
 	});
 
 	test(`port is reused after stop and restart`, async () => {
-		const state1 = await startExpose({ rootPath: tempDir });
+		const state1 = await startTestServer({ rootPath: tempDir });
 		const port1 = state1.port;
-		stopExpose();
+		stopTestServer();
 
-		const state2 = await startExpose({ rootPath: tempDir });
+		const state2 = await startTestServer({ rootPath: tempDir });
 		const port2 = state2.port;
 		expect(port1).toBe(port2);
 	});
 
-	test(`clearExposePort forces a new port on next start`, async () => {
-		await startExpose({ rootPath: tempDir });
-		stopExpose();
+	test(`clearTestServerPort forces a new port on next start`, async () => {
+		await startTestServer({ rootPath: tempDir });
+		stopTestServer();
 
-		clearExposePort();
-		const state2 = await startExpose({ rootPath: tempDir });
+		clearTestServerPort();
+		const state2 = await startTestServer({ rootPath: tempDir });
 
 		// Note: technically get-port could return the same one by chance,
 		// but in a test environment it usually increments.
@@ -112,13 +112,13 @@ describe(`expose-server`, () => {
 	});
 
 	test(`getAvailablePort returns custom port from domain first`, async () => {
-		clearExposePort();
+		clearTestServerPort();
 		const port = await getAvailablePort(`http://sub.domain.com:44301`, false);
 		expect(port).toBe(44301);
 	});
 
 	test(`getAvailablePort prioritizes 80 for HTTP without explicit port`, async () => {
-		clearExposePort();
+		clearTestServerPort();
 		const port = await getAvailablePort(`http://sub.domain.com`, false);
 		// Note: depending on environment permissions, this might be 80 or fall back to 12701
 		// We expect the function to at least return a valid port.
@@ -126,7 +126,7 @@ describe(`expose-server`, () => {
 	});
 
 	test(`getAvailablePort prioritizes 443 for HTTPS without explicit port`, async () => {
-		clearExposePort();
+		clearTestServerPort();
 		const port = await getAvailablePort(`https://sub.domain.com`, true);
 		expect([443, 12701]).toContain(port);
 	});

@@ -13,9 +13,9 @@ contextBridge.exposeInMainWorld(`eyas`, {
 			`environment-selected`,
 			`launch-link`,
 			`network-status`,
-			`expose-setup-continue`,
-			`expose-setup-step`,
-			`expose-resume-confirm`
+			`test-server-setup-continue`,
+			`test-server-setup-step`,
+			`test-server-resume-confirm`
 		];
 
 		if (validChannels.includes(channel)) {
@@ -29,8 +29,8 @@ contextBridge.exposeInMainWorld(`eyas`, {
 			`show-environment-modal`,
 			`show-variables-modal`,
 			`show-version-mismatch-modal`,
-			`show-expose-setup-modal`,
-			`show-expose-resume-modal`,
+			`show-test-server-setup-modal`,
+			`show-test-server-resume-modal`,
 			`close-modals`
 		];
 		if (validChannels.includes(channel)) {

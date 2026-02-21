@@ -1,9 +1,9 @@
 <template>
 	<ModalWrapper v-model="visible">
 		<v-card class="pa-3">
-			<v-card-title class="text-h6" data-qa="expose-resume-title">Expose Test Auto-Shutdown</v-card-title>
+			<v-card-title class="text-h6" data-qa="test-server-resume-title">Live Test Server Auto-Shutdown</v-card-title>
 			<v-card-text>
-				<p class="mb-4">The expose server has automatically shut down after {{ duration }}.</p>
+				<p class="mb-4">The test server has automatically shut down after {{ duration }}.</p>
 				<p>Would you like to resume serving the test for another {{ duration }} with the same settings?</p>
 			</v-card-text>
 			<v-card-actions>
@@ -35,7 +35,7 @@ export default {
 	data: () => ({ ...defaults }),
 
 	mounted() {
-		window.eyas?.receive(`show-expose-resume-modal`, (duration) => {
+		window.eyas?.receive(`show-test-server-resume-modal`, (duration) => {
 			this.duration = duration || `30 minutes`;
 			this.visible = true;
 		});
@@ -48,7 +48,7 @@ export default {
 		},
 
 		resume() {
-			window.eyas?.send(`expose-resume-confirm`);
+			window.eyas?.send(`test-server-resume-confirm`);
 			this.visible = false;
 			Object.assign(this.$data, defaults);
 		}

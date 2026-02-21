@@ -62,10 +62,10 @@ async function getAvailablePort(urlStr, useHttps) {
 	return cachedPorts[protoKey];
 }
 
-async function startExpose(options) {
+async function startTestServer(options) {
 	const { rootPath, useHttps = false, certs, customDomain } = options;
 	if (server) {
-		return getExposeState();
+		return getTestServerState();
 	}
 
 	// use cached port for the specified protocol if available, otherwise find a new one
@@ -103,7 +103,7 @@ async function startExpose(options) {
 		// if there was an error, clear the port and server state and try again
 		cachedPorts[options.useHttps ? `https` : `http`] = null;
 		server = null;
-		return startExpose(options);
+		return startTestServer(options);
 	}
 
 	// store the successfully bound port for future use
@@ -123,7 +123,7 @@ async function startExpose(options) {
 	return state;
 }
 
-function stopExpose() {
+function stopTestServer() {
 	if (server) {
 		// forcefully terminate existing browser keep-alive connections (prevents ~15s delay)
 		server.closeAllConnections();
@@ -136,18 +136,18 @@ function stopExpose() {
 	state = null;
 }
 
-function clearExposePort() {
+function clearTestServerPort() {
 	cachedPorts = { http: null, https: null };
 }
 
-function getExposeState() {
+function getTestServerState() {
 	return state;
 }
 
 module.exports = {
-	startExpose,
-	stopExpose,
-	getExposeState,
-	clearExposePort,
+	startTestServer,
+	stopTestServer,
+	getTestServerState,
+	clearTestServerPort,
 	getAvailablePort
 };
