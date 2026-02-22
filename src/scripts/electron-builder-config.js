@@ -50,6 +50,8 @@ function getElectronBuilderConfig(options) {
 			category: `public.app-category.developer-tools`,
 			icon: paths.icon,
 			provisioningProfile,
+			hardenedRuntime: true,
+			gatekeeperAssess: false,
 			...isDev ? { identity: null } : {}, // don't sign in dev
 			notarize: Boolean(appleTeamId)
 		},
