@@ -27,11 +27,11 @@ const paths = {
 
 	// Determine the executables to build
 	const targets = [];
-	if(isWin || process.env.FORCE_BUILD === `win32`) {
+	if (isWin || process.env.FORCE_BUILD === `win32`) {
 		targets.push(builder.Platform.WINDOWS);
 	}
 
-	if(isMac) { targets.push(builder.Platform.MAC); }
+	if (isMac) { targets.push(builder.Platform.MAC); }
 	// if(config.outputs.linux) { targets.push(builder.Platform.LINUX); }
 
 	// set the name of the output files
@@ -54,8 +54,10 @@ const paths = {
 
 	const builtFiles = await builder.build({
 		targets: targets.length ? builder.createTargets(targets) : null,
-		config
+		config,
+		publish: isInstaller ? `always` : `never`
 	});
+
 
 	// copy just the final windows executables to the dist folder
 	builtFiles.forEach(file => {

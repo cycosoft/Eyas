@@ -55,7 +55,7 @@ function getElectronBuilderConfig(options) {
 			notarize: Boolean(appleTeamId)
 		},
 		win: {
-			target: isInstaller ? `msi` : `portable`,
+			target: isInstaller ? `nsis` : `portable`,
 			icon: paths.icon,
 			...(isDev ? {} : { signtoolOptions: { sign: paths.codesignWin } })
 		},
