@@ -90,7 +90,7 @@ async function exitEyas(electronApp) {
 						if (window.eyas && window.eyas.send) {
 							window.eyas.send('app-exit');
 						}
-					`).catch(() => {});
+					`).catch(() => { });
 				}
 			}
 		});
@@ -99,7 +99,7 @@ async function exitEyas(electronApp) {
 	} catch {
 		// ignore
 	} finally {
-		await electronApp.close().catch(() => {});
+		await electronApp.close().catch(() => { });
 	}
 }
 
@@ -145,6 +145,47 @@ async function clickSubMenuItem(electronApp, topLevelLabel, subMenuLabel) {
 	}, { topLevelLabel, subMenuLabel });
 }
 
+/**
+ * Emits an IPC message directly to the Electron main process.
+ * @param {import('@playwright/test').ElectronApplication} electronApp
+ * @param {string} channel
+ * @param {any} args
+ */
+async function emitIpcMessage(electronApp, channel, ...args) {
+	return electronApp.evaluate(({ ipcMain }, { channel, args }) => {
+		ipcMain.emit(channel, {}, ...args);
+	}, { channel, args });
+}
+
+/**
+ * Gets the current URL of the main application window.
+ * @param {import('@playwright/test').ElectronApplication} electronApp
+ * @returns {Promise<string>}
+ */
+async function getAppWindowUrl(electronApp) {
+	return electronApp.evaluate(({ BrowserWindow }) => {
+		const windows = BrowserWindow.getAllWindows();
+		return windows.length > 0 ? windows[0].webContents.getURL() : ``;
+	});
+}
+
+/**
+ * Executes a string of JavaScript on the UI layer.
+ * @param {import('@playwright/test').ElectronApplication} electronApp
+ * @param {string} script
+ */
+async function runUiScript(electronApp, script) {
+	return electronApp.evaluate(({ BrowserWindow }, script) => {
+		const windows = BrowserWindow.getAllWindows();
+		if (windows.length > 0) {
+			const browserViews = windows[0].getBrowserViews();
+			if (browserViews.length > 0) {
+				return browserViews[0].webContents.executeJavaScript(script);
+			}
+		}
+	}, script);
+}
+
 module.exports = {
 	launchEyas,
 	getUiView,
@@ -152,5 +193,8 @@ module.exports = {
 	waitForMenuUpdate,
 	exitEyas,
 	getMenuStructure,
-	clickSubMenuItem
+	clickSubMenuItem,
+	emitIpcMessage,
+	getAppWindowUrl,
+	runUiScript
 };
