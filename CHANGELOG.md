@@ -1,10 +1,11 @@
-# v4.1.0
+# v26.x
 
+- New versioning scheme ( v{YY}.{M}.{MinutesIntoMonth} )
+- Auto update support
 - Dependency updates
 - Remove some deprecated CLI code
 - Project linting
-- Auto update support
-- Add "Live Test Server" feature for consumption by other apps
+- Add "Live Test Server" to run tests in external browsers
 
 # v4.0.0
 

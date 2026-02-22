@@ -6,9 +6,12 @@
 
 # Deployment Process
 
-- tag the commit with the version -> `git tag -a v4.0.0 -m "v4.0.0"`
+- Start a new `release` branch off `main`
+- Run `npm run bump:build`
 - Draft a new GitHub release; do not publish ( https://github.com/cycosoft/Eyas/releases )
-- Generate .msi -> `npm run compile:win:installer`
+
+- Generate Windows artifact -> `npm run compile:win:installer`
+
 - Add to release draft `.runners/EyasInstaller.msi`
 - Generate .pkg -> `npm run compile:mac:installer`
 - Add to release draft:
@@ -16,4 +19,6 @@
   - macOS updater zip (e.g. `.runners/mac-arm64/Eyas-<version>-mac-arm64.zip` or equivalent from build output)
   - `latest.yml` (from Windows build output, e.g. `.runners/` or platform subdir)
   - `latest-mac.yml` (from macOS build output, e.g. `.runners/mac-arm64/` or equivalent)
-- Publish GitHub release
+- Merge `release` branch into `main`
+- Tag latest commit with the version -> `git tag -a v26.2.32810 -m "v26.2.32810"`
+- Select latest tag & publish GitHub release
