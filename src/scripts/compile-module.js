@@ -69,6 +69,10 @@ const paths = {
 		path.join(roots.src, `eyas-core`, `metrics-events.js`),
 		path.join(roots.moduleBuild, `metrics-events.js`)
 	);
+	await fs.copy(
+		path.join(roots.src, `eyas-core`, `test-server`),
+		path.join(roots.moduleBuild, `test-server`)
+	);
 	await fs.copy(paths.scriptsSrc, paths.scriptsBuild);
 
 	await fs.copy(
@@ -84,6 +88,16 @@ const paths = {
 	await fs.copy(
 		path.join(paths.scriptsSrc, `constants.js`),
 		path.join(paths.scriptsDist, `constants.js`)
+	);
+
+	await fs.copy(
+		path.join(paths.scriptsSrc, `path-utils.js`),
+		path.join(paths.scriptsDist, `path-utils.js`)
+	);
+
+	await fs.copy(
+		path.join(paths.scriptsSrc, `time-utils.js`),
+		path.join(paths.scriptsDist, `time-utils.js`)
 	);
 
 	// remove the prebuild folder

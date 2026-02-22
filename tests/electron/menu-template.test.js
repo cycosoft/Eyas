@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'vitest';
 import { buildMenuTemplate } from '../../src/eyas-core/menu-template.js';
 
-const noop = () => {};
+const noop = () => { };
 
 const minimalContext = {
 	appName: `Eyas`,
@@ -27,7 +27,15 @@ const minimalContext = {
 	linkItems: [],
 	updateStatus: `idle`,
 	onCheckForUpdates: noop,
-	onInstallUpdate: noop
+	onInstallUpdate: noop,
+	testServerActive: false,
+	testServerRemainingTime: ``,
+	onStartTestServer: noop,
+	onStopTestServer: noop,
+	onCopyTestServerUrl: noop,
+	onOpenTestServerInBrowser: noop,
+	testServerHttpsEnabled: false,
+	onToggleTestServerHttps: noop
 };
 
 describe(`buildMenuTemplate`, () => {
@@ -66,7 +74,7 @@ describe(`buildMenuTemplate`, () => {
 	});
 
 	test(`when updateStatus is idle, item after About is Check for updates with onCheckForUpdates click`, () => {
-		const onCheck = () => {};
+		const onCheck = () => { };
 		const ctx = { ...minimalContext, updateStatus: `idle`, onCheckForUpdates: onCheck };
 		const template = buildMenuTemplate(ctx);
 		const submenu = template[0].submenu;
@@ -76,7 +84,7 @@ describe(`buildMenuTemplate`, () => {
 	});
 
 	test(`when updateStatus is downloaded, last top-level item is Restart to install with onInstallUpdate click`, () => {
-		const onInstall = () => {};
+		const onInstall = () => { };
 		const ctx = { ...minimalContext, updateStatus: `downloaded`, onInstallUpdate: onInstall };
 		const template = buildMenuTemplate(ctx);
 		const last = template[template.length - 1];
@@ -117,5 +125,100 @@ describe(`buildMenuTemplate`, () => {
 		const last = template[template.length - 1];
 		expect(last.label).toMatch(/Update available|Restart to install/i);
 		expect(last.label).toContain(updateIcon);
+	});
+
+	test(`when testServerActive is false, Tools menu includes Live Test Server item with onStartTestServer click`, () => {
+		const onStartTestServer = () => { };
+		const ctx = { ...minimalContext, testServerActive: false, testServerRemainingTime: ``, onStartTestServer };
+		const template = buildMenuTemplate(ctx);
+		const toolsMenu = template.find(item => item.label && item.label.includes(`Tools`));
+		const startItem = toolsMenu.submenu.find(item => item.label && item.label.includes(`Live Test Server`));
+		expect(startItem).toBeDefined();
+		expect(startItem.click).toBe(onStartTestServer);
+	});
+
+	test(`when testServerActive is true and testServerRemainingTime is '29m', Tools menu includes 'Test Server running for ~29m' item with sub-menu`, () => {
+		const ctx = { ...minimalContext, testServerActive: true, testServerRemainingTime: `29m` };
+		const template = buildMenuTemplate(ctx);
+		const toolsMenu = template.find(item => item.label && item.label.includes(`Tools`));
+		const startItem = toolsMenu.submenu.find(item => item.label && item.label.includes(`Test Server running`));
+		expect(startItem).toBeDefined();
+		expect(startItem.label).toMatch(/Test Server running for ~29m/);
+		expect(Array.isArray(startItem.submenu)).toBe(true);
+	});
+
+	test(`when testServerActive is true, Expose sub-menu in Tools has Stop, Copy URL, Open in browser`, () => {
+		const onStopTestServer = () => { };
+		const onCopyTestServerUrl = () => { };
+		const onOpenTestServerInBrowser = () => { };
+		const ctx = {
+			...minimalContext,
+			testServerActive: true,
+			testServerRemainingTime: `5m`,
+			onStopTestServer,
+			onCopyTestServerUrl,
+			onOpenTestServerInBrowser
+		};
+		const template = buildMenuTemplate(ctx);
+		const toolsMenu = template.find(item => item.label && item.label.includes(`Tools`));
+		const startItem = toolsMenu.submenu.find(item => item.label && item.label.includes(`Test Server running`));
+		expect(startItem).toBeDefined();
+		expect(Array.isArray(startItem.submenu)).toBe(true);
+		const stopItem = startItem.submenu.find(i => i.label && i.label.toLowerCase().includes(`stop`));
+		const copyItem = startItem.submenu.find(i => i.label && i.label.toLowerCase().includes(`copy`));
+		const openItem = startItem.submenu.find(i => i.label && i.label.toLowerCase().includes(`open`) || i.label && i.label.toLowerCase().includes(`browser`));
+		expect(stopItem).toBeDefined();
+		expect(stopItem.click).toBe(onStopTestServer);
+		expect(copyItem).toBeDefined();
+		expect(copyItem.click).toBe(onCopyTestServerUrl);
+		expect(openItem).toBeDefined();
+		expect(openItem.click).toBe(onOpenTestServerInBrowser);
+	});
+
+	test(`template does NOT include Enable HTTPS option in Tools menu`, () => {
+		const onToggle = () => { };
+		const ctx = { ...minimalContext, testServerHttpsEnabled: true, onToggleTestServerHttps: onToggle };
+		const template = buildMenuTemplate(ctx);
+		const toolsMenu = template.find(item => item.label && item.label.includes(`Tools`));
+		expect(toolsMenu).toBeDefined();
+		const httpsItem = toolsMenu.submenu.find(s => s.label && s.label.toLowerCase().includes(`https`));
+		expect(httpsItem).toBeUndefined();
+	});
+
+	test(`when testServerActive is true, template includes a top-level status item at the end`, () => {
+		const ctx = { ...minimalContext, testServerActive: true, testServerRemainingTime: `15m` };
+		const template = buildMenuTemplate(ctx);
+		const last = template[template.length - 1];
+		expect(last.label).toMatch(/Test Server running for ~15m/);
+		expect(Array.isArray(last.submenu)).toBe(true);
+	});
+
+	test(`when testServerActive is false, template does not include top-level status item at the end`, () => {
+		const ctx = { ...minimalContext, testServerActive: false };
+		const template = buildMenuTemplate(ctx);
+		const last = template[template.length - 1];
+		expect(last.label).not.toMatch(/Exposed for/);
+	});
+
+	test(`when isInitializing is true, Tools, Network, and Cache menus are disabled`, () => {
+		const ctx = { ...minimalContext, isInitializing: true };
+		const template = buildMenuTemplate(ctx);
+		const toolsMenu = template.find(item => item.label && item.label.includes(`Tools`));
+		const networkMenu = template.find(item => item.label && item.label.includes(`Network`));
+		const cacheMenu = template.find(item => item.label && item.label.includes(`Cache`));
+		expect(toolsMenu.enabled).toBe(false);
+		expect(networkMenu.enabled).toBe(false);
+		expect(cacheMenu.enabled).toBe(false);
+	});
+
+	test(`when isInitializing is true, App, Viewport, and Links menus are enabled`, () => {
+		const ctx = { ...minimalContext, isInitializing: true, linkItems: [{ label: `Link1`, click: noop, enabled: true }] };
+		const template = buildMenuTemplate(ctx);
+		const appMenu = template.find(item => item.label && item.label.includes(minimalContext.appName));
+		const viewportMenu = template.find(item => item.label && item.label.includes(`Viewport`));
+		const linksMenu = template.find(item => item.label && item.label.includes(`Links`));
+		expect(appMenu.enabled).not.toBe(false);
+		expect(viewportMenu.enabled).not.toBe(false);
+		expect(linksMenu.enabled).not.toBe(false);
 	});
 });

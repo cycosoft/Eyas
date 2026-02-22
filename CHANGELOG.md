@@ -1,9 +1,10 @@
-# v4.0.1
+# v4.1.0
 
 - Dependency updates
 - Remove some deprecated CLI code
 - Project linting
 - Auto update support
+- Add "Live Test Server" feature for consumption by other apps
 
 # v4.0.0
 

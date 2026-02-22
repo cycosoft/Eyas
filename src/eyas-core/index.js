@@ -24,7 +24,9 @@ let $eyasLayer = null;
 let $config = null;
 let $configToLoad = {};
 let $testNetworkEnabled = true;
-const $testServer = null;
+let $testServerHttpsEnabled = false;
+let $lastTestServerOptions = null;
+let $testServerMenuIntervalId = null;
 let $testDomainRaw = null;
 let $testDomain = `eyas://local.test`;
 const $uiDomain = `ui://eyas.interface`;
@@ -36,9 +38,10 @@ const $defaultViewports = [
 let $allViewports = [];
 const $currentViewport = [];
 let $updateStatus = `idle`;
+let $isInitializing = true;
 let $updateCheckUserTriggered = false;
-let $onCheckForUpdates = () => {};
-let $onInstallUpdate = () => {};
+let $onCheckForUpdates = () => { };
+let $onInstallUpdate = () => { };
 const $roots = require(_path.join(__dirname, `scripts`, `get-roots.js`));
 const { parseURL } = require(_path.join(__dirname, `scripts`, `parse-url.js`));
 const $paths = {
@@ -48,6 +51,8 @@ const $paths = {
 	testPreload: _path.join($roots.eyas, `scripts`, `test-preload.js`),
 	eventBridge: _path.join($roots.eyas, `scripts`, `event-bridge.js`),
 	constants: _path.join($roots.eyas, `scripts`, `constants.js`),
+	pathUtils: _path.join($roots.eyas, `scripts`, `path-utils.js`),
+	timeUtils: _path.join($roots.eyas, `scripts`, `time-utils.js`),
 	testSrc: null,
 	uiSource: _path.join($roots.eyas, `eyas-interface`),
 	eyasInterface: _path.join($roots.eyas, `eyas-interface`, `index.html`),
@@ -58,9 +63,14 @@ const { version: _appVersion } = require($paths.packageJson);
 const { buildMenuTemplate } = require(_path.join(__dirname, `menu-template.js`));
 const { getNoUpdateAvailableDialogOptions } = require(_path.join(__dirname, `update-dialog.js`));
 const { MP_EVENTS } = require(_path.join(__dirname, `metrics-events.js`));
+const testServer = require(_path.join(__dirname, `test-server`, `test-server.js`));
+const testServerCerts = require(_path.join(__dirname, `test-server`, `test-server-certs.js`));
+const testServerTimeout = require(_path.join(__dirname, `test-server`, `test-server-timeout.js`));
+const { safeJoin } = require(_path.join(__dirname, `scripts`, `path-utils.js`));
+const { formatDuration } = require(_path.join(__dirname, `scripts`, `time-utils.js`));
 
 // constants
-const { LOAD_TYPES } = require($paths.constants);
+const { LOAD_TYPES, EXPIRE_MS } = require($paths.constants);
 const APP_NAME = `Eyas`;
 
 // APP_ENTRY: initialize the first layer of the app
@@ -180,10 +190,10 @@ function initElectronCore() {
 	// macOS: detect if the app was opened with a file
 	_electronCore.on(`open-file`, async (event, path) => {
 		// ensure the correct file type is being opened
-		if(!path.endsWith(`.eyas`)){ return; }
+		if (!path.endsWith(`.eyas`)) { return; }
 
 		// if the $appWindow was already initialized
-		if($appWindow){
+		if ($appWindow) {
 			// load the new config
 			$config = await require($paths.configLoader)(LOAD_TYPES.ASSOCIATION, path);
 
@@ -199,8 +209,8 @@ function initElectronCore() {
 	});
 
 	// macOS: handle eyas:// protocol (open-url); Windows/Linux: handle second instance with protocol URL
-	_electronCore.on(`open-url`, (event, url) => {
-		event.preventDefault();
+	_electronCore.on(`open-url`, (_event, url) => {
+		_event.preventDefault();
 		handleEyasProtocolUrl(url, deepLinkContext);
 	});
 	_electronCore.on(`second-instance`, (_event, commandLine) => {
@@ -264,7 +274,7 @@ async function initElectronUi() {
 	});
 
 	// intercept all web requests
-	$appWindow.webContents.session.webRequest.onBeforeRequest({ urls: [] }, (request, callback) => {
+	$appWindow.webContents.session.webRequest.onBeforeRequest({ urls: [`<all_urls>`] }, (request, callback) => {
 		// validate this request
 		if (disableNetworkRequest(request.url)) {
 			return callback({ cancel: true });
@@ -298,11 +308,13 @@ async function initElectronUi() {
 	initUiListeners();
 
 	// Initialize the $eyasLayer
-	$eyasLayer = new BrowserView({ webPreferences: {
-		preload: $paths.eventBridge,
-		partition: `persist:${$config.meta.testId}`,
-		backgroundThrottling: false // allow to update even when hidden (e.g. modal close)
-	} });
+	$eyasLayer = new BrowserView({
+		webPreferences: {
+			preload: $paths.eventBridge,
+			partition: `persist:${$config.meta.testId}`,
+			backgroundThrottling: false // allow to update even when hidden (e.g. modal close)
+		}
+	});
 	$appWindow.addBrowserView($eyasLayer);
 	$eyasLayer.webContents.loadURL(`${$uiDomain}/index.html`);
 
@@ -379,6 +391,21 @@ function initTestListeners() {
 		setMenu();
 	});
 
+	// when navigation starts
+	$appWindow.webContents.on(`did-start-navigation`, (event, url) => {
+		// if the url is not the placeholder data url or about:blank
+		if (!url.startsWith(`data:text/html`) && url !== `about:blank`) {
+			// if the app is still initializing
+			if ($isInitializing) {
+				// update the initialization state
+				$isInitializing = false;
+
+				// update the menu
+				setMenu();
+			}
+		}
+	});
+
 	// when there's a navigation failure
 	$appWindow.webContents.on(`did-fail-load`, (event, errorCode, errorDescription) => {
 		// log the error
@@ -408,12 +435,9 @@ function initUiListeners() {
 		// track that the app is being closed
 		trackEvent(MP_EVENTS.core.exit);
 
-		// Shut down the test server AND THEN exit the app
-		if ($testServer) {
-			$testServer.close(_electronCore.quit);
-		} else {
-			_electronCore.quit();
-		}
+		// Shut down test server if running, then exit
+		stopTestServer();
+		_electronCore.quit();
 	});
 
 	// listen for the user to select an environment
@@ -430,6 +454,24 @@ function initUiListeners() {
 	ipcMain.on(`launch-link`, (event, { url, openInBrowser }) => {
 		// navigate to the requested url
 		navigate(parseURL(url).toString(), openInBrowser);
+	});
+
+	// test server setup modal: user clicked Continue, start the server
+	ipcMain.on(`test-server-setup-continue`, (event, { useHttps, autoOpenBrowser, useCustomDomain }) => {
+		$testServerHttpsEnabled = !!useHttps;
+		const customDomain = useCustomDomain ? (parseURL($testDomain)?.hostname || `test.local`) : null;
+		doStartTestServer(autoOpenBrowser, customDomain);
+	});
+
+	// test server resume modal: user clicked Resume
+	ipcMain.on(`test-server-resume-confirm`, () => {
+		// if there are previous settings, restart with them
+		if ($lastTestServerOptions) {
+			doStartTestServer();
+		} else {
+			// otherwise just start with defaults
+			doStartTestServer();
+		}
 	});
 }
 
@@ -471,7 +513,7 @@ async function trackEvent(event, extraData) {
 }
 
 // forces an exit if the loaded test has expired
-function checkTestExpiration () {
+function checkTestExpiration() {
 	// imports
 	const { isPast } = require(`date-fns/isPast`);
 	const { format } = require(`date-fns/format`);
@@ -481,7 +523,7 @@ function checkTestExpiration () {
 	const expirationDate = new Date($config.meta.expires);
 
 	// stop if the test has not expired
-	if(!isPast(expirationDate)){ return; }
+	if (!isPast(expirationDate)) { return; }
 
 	// alert the user that the test has expired
 	dialog.showMessageBoxSync({
@@ -510,7 +552,7 @@ function getAppTitle() {
 	output += ` :: ${$config.version} ✨`;
 
 	// Add the current URL if it`s available
-	if ($appWindow){
+	if ($appWindow) {
 		output += ` ( ${$appWindow.webContents.getURL()} )`;
 	}
 
@@ -533,7 +575,7 @@ function onResize() {
 	const [newWidth, newHeight] = $appWindow.getContentSize();
 
 	// if the dimensions have not changed
-	if(newWidth === $currentViewport[0] && newHeight === $currentViewport[1]){
+	if (newWidth === $currentViewport[0] && newHeight === $currentViewport[1]) {
 		return;
 	}
 
@@ -545,7 +587,7 @@ function onResize() {
 	const { width, height } = $eyasLayer.getBounds();
 
 	// if the Eyas UI layer is visible
-	if(width && height){
+	if (width && height) {
 		// update the Eyas UI layer to match the new dimensions
 		$eyasLayer.setBounds({ x: 0, y: 0, width: newWidth, height: newHeight });
 	}
@@ -554,8 +596,109 @@ function onResize() {
 	setMenu();
 }
 
+function stopTestServer() {
+	if ($isInitializing) return;
+	testServer.stopTestServer();
+	testServerTimeout.cancelTestServerTimeout();
+	if ($testServerMenuIntervalId) {
+		clearInterval($testServerMenuIntervalId);
+		$testServerMenuIntervalId = null;
+	}
+	setMenu();
+}
+
+function copyTestServerUrlHandler() {
+	if ($isInitializing) return;
+	const state = testServer.getTestServerState();
+	if (state) {
+		const targetUrl = state.customUrl || state.url;
+		if (targetUrl) {
+			require(`electron`).clipboard.writeText(targetUrl);
+		}
+	}
+}
+
+function openTestServerInBrowserHandler() {
+	if ($isInitializing) return;
+	const state = testServer.getTestServerState();
+	if (state) {
+		const targetUrl = state.customUrl || state.url;
+		if (targetUrl) {
+			require(`electron`).shell.openExternal(targetUrl);
+		}
+	}
+}
+
+async function startTestServerHandler() {
+	if ($isInitializing) return;
+	if (testServer.getTestServerState()) return;
+	if (!$paths.testSrc) return;
+
+	// Show simplified setup modal
+	if ($eyasLayer) {
+		const portHttp = await testServer.getAvailablePort($testDomain, false);
+		const portHttps = await testServer.getAvailablePort($testDomain, true);
+		const parsedTestDomain = parseURL($testDomain);
+		const hostnameForHosts = parsedTestDomain?.hostname || `test.local`;
+		const isWindows = process.platform === `win32`;
+
+		uiEvent(`show-test-server-setup-modal`, {
+			domain: `http://127.0.0.1`,
+			portHttp,
+			portHttps,
+			hostnameForHosts,
+			steps: [],
+			useHttps: $testServerHttpsEnabled,
+			isWindows
+		});
+	}
+}
+
+async function doStartTestServer(autoOpenBrowser = true, customDomain = null) {
+	let certs;
+	if ($testServerHttpsEnabled) {
+		try {
+			certs = await testServerCerts.getCerts([`127.0.0.1`, `localhost`]);
+		} catch (err) {
+			console.error(`Live Test Server HTTPS cert generation failed:`, err);
+			return;
+		}
+	}
+	try {
+		const options = {
+			rootPath: $paths.testSrc,
+			useHttps: $testServerHttpsEnabled,
+			certs: certs || undefined,
+			customDomain
+		};
+		await testServer.startTestServer(options);
+		$lastTestServerOptions = options;
+	} catch (err) {
+		console.error(`Live Test server start failed:`, err);
+		return;
+	}
+	testServerTimeout.startTestServerTimeout(onTestServerTimeout, EXPIRE_MS);
+	$testServerMenuIntervalId = setInterval(() => setMenu(), 60 * 1000);
+	setMenu();
+
+	if (autoOpenBrowser) {
+		openTestServerInBrowserHandler();
+	}
+}
+
+// whenever the test server automatically shuts down
+function onTestServerTimeout() {
+	if ($appWindow && typeof $appWindow.flashFrame === `function`) {
+		$appWindow.flashFrame(true);
+	}
+	stopTestServer();
+
+	// Show the resume modal in the UI
+	uiEvent(`show-test-server-resume-modal`, formatDuration(EXPIRE_MS));
+}
+
 // Set up the application menu
-async function setMenu () {
+async function setMenu() {
 	const { Menu, dialog } = require(`electron`);
 	const { isURL } = require(`validator`);
 
@@ -587,7 +730,7 @@ async function setMenu () {
 	const linkItems = [];
 	$config.links.forEach(item => {
 		const itemUrl = item.url;
-		let isValid = false;
+		let isValid;
 		let validUrl;
 		const hasVariables = itemUrl.match(/{[^{}]+}/g)?.length;
 		if (hasVariables) {
@@ -646,24 +789,64 @@ Runner: v${_appVersion}
 		},
 		quit: _electronCore.quit,
 		startAFreshTest,
-		copyUrl: () => require(`electron`).clipboard.writeText($appWindow.webContents.getURL()),
+		copyUrl: () => {
+			if ($isInitializing) return;
+			require(`electron`).clipboard.writeText($appWindow.webContents.getURL());
+		},
 		openUiDevTools: () => $eyasLayer.webContents.openDevTools(),
-		navigateHome: () => navigate(),
-		reload: () => $appWindow.webContents.reloadIgnoringCache(),
-		back: () => $appWindow.webContents.goBack(),
-		forward: () => $appWindow.webContents.goForward(),
+		navigateHome: () => {
+			if ($isInitializing) return;
+			navigate();
+		},
+		reload: () => {
+			if ($isInitializing) return;
+			$appWindow.webContents.reloadIgnoringCache();
+		},
+		back: () => {
+			if ($isInitializing) return;
+			$appWindow.webContents.goBack();
+		},
+		forward: () => {
+			if ($isInitializing) return;
+			$appWindow.webContents.goForward();
+		},
 		toggleNetwork: () => {
+			if ($isInitializing) return;
 			$testNetworkEnabled = !$testNetworkEnabled;
 			setMenu();
 		},
-		clearCache,
-		openCacheFolder: () => require(`electron`).shell.openPath($appWindow.webContents.session.getStoragePath()),
+		clearCache: () => {
+			if ($isInitializing) return;
+			clearCache();
+		},
+		openCacheFolder: () => {
+			if ($isInitializing) return;
+			require(`electron`).shell.openPath($appWindow.webContents.session.getStoragePath());
+		},
 		refreshMenu: setMenu,
 		viewportItems,
 		linkItems,
 		updateStatus: typeof $updateStatus !== `undefined` ? $updateStatus : `idle`,
-		onCheckForUpdates: typeof $onCheckForUpdates === `function` ? $onCheckForUpdates : () => {},
-		onInstallUpdate: typeof $onInstallUpdate === `function` ? $onInstallUpdate : () => {}
+		onCheckForUpdates: typeof $onCheckForUpdates === `function` ? $onCheckForUpdates : () => { },
+		onInstallUpdate: typeof $onInstallUpdate === `function` ? $onInstallUpdate : () => { },
+		testServerActive: !!testServer.getTestServerState(),
+		testServerRemainingTime: (() => {
+			const s = testServer.getTestServerState();
+			if (!s) { return ``; }
+			const elapsed = Date.now() - s.startedAt;
+			const remaining = EXPIRE_MS - elapsed;
+			return formatDuration(remaining);
+		})(),
+		onStartTestServer: startTestServerHandler,
+		onStopTestServer: stopTestServer,
+		onCopyTestServerUrl: copyTestServerUrlHandler,
+		onOpenTestServerInBrowser: openTestServerInBrowserHandler,
+		testServerHttpsEnabled: $testServerHttpsEnabled,
+		onToggleTestServerHttps: () => {
+			$testServerHttpsEnabled = !$testServerHttpsEnabled;
+			setMenu();
+		},
+		isInitializing: $isInitializing
 	};
 
 	const template = buildMenuTemplate(context);
@@ -676,6 +859,9 @@ function setupAutoUpdater() {
 
 	autoUpdater.forceDevUpdateConfig = true;
 
+	// Silence internal logging to prevent duplicate stack traces
+	autoUpdater.logger = null;
+
 	autoUpdater.setFeedURL({
 		provider: `github`,
 		owner: `cycosoft`,
@@ -684,7 +870,7 @@ function setupAutoUpdater() {
 
 	$onCheckForUpdates = () => {
 		$updateCheckUserTriggered = true;
-		autoUpdater.checkForUpdates();
+		autoUpdater.checkForUpdates().catch(() => { });
 	};
 	$onInstallUpdate = () => autoUpdater.quitAndInstall();
 
@@ -704,11 +890,15 @@ function setupAutoUpdater() {
 	};
 	autoUpdater.on(`update-not-available`, showNoUpdateIfUserTriggered);
 	autoUpdater.on(`error`, err => {
-		console.error(`Auto-update error:`, err);
+		if (err.message?.includes(`404`)) {
+			console.error(`Auto-update error: update server not found`);
+		} else {
+			console.error(`Auto-update error:`, err);
+		}
 		showNoUpdateIfUserTriggered();
 	});
 
-	autoUpdater.checkForUpdates();
+	autoUpdater.checkForUpdates().catch(() => { });
 }
 
 function getSessionAge() {
@@ -719,14 +909,14 @@ function getSessionAge() {
 	const cachePath = $appWindow.webContents.session.getStoragePath();
 
 	// if the cache path was found
-	if(cachePath){
+	if (cachePath) {
 		const fs = require(`fs`);
 
 		// create a path to the `Session Storage` folder
 		const sessionFolder = _path.join(cachePath, `Session Storage`);
 
 		// if the session folder exists
-		if(fs.existsSync(sessionFolder)){
+		if (fs.existsSync(sessionFolder)) {
 			// get the date the folder was created
 			output = fs.statSync(sessionFolder).birthtime;
 		}
@@ -752,7 +942,7 @@ async function manageAppClose(evt) {
 
 // Toggle the Eyas UI layer so the user can interact with it or their test
 function toggleEyasUI(enable) {
-	if(enable) {
+	if (enable) {
 		// set the bounds to the current viewport
 		$eyasLayer.setBounds({
 			x: 0,
@@ -779,7 +969,7 @@ function focusUI() {
 	focusUI.attempts++;
 
 	// if the number of attempts is greater than 5
-	if(focusUI.attempts > 5){
+	if (focusUI.attempts > 5) {
 		// reset the number of attempts
 		focusUI.attempts = 0;
 
@@ -795,7 +985,7 @@ function focusUI() {
 		const isFocused = $eyasLayer.webContents.isFocused();
 
 		// if the UI is not focused
-		if(!isFocused){
+		if (!isFocused) {
 			// call the focus method again
 			focusUI();
 		} else {
@@ -811,7 +1001,7 @@ function navigate(path, openInBrowser) {
 	let runningTestSource = false;
 
 	// if the path wasn't provided (default to local test source)
-	if(!path){
+	if (!path) {
 		// store that we're running the local test source
 		runningTestSource = true;
 
@@ -819,16 +1009,16 @@ function navigate(path, openInBrowser) {
 		path = $testDomain;
 	}
 
-	if(
+	if (
 		// if requested to open in the browser AND
 		openInBrowser &&
 		(
 			// not running the local test OR
 			!runningTestSource ||
 			// the test server is running AND we're running the local test
-			($testServer && runningTestSource)
+			(testServer.getTestServerState() && runningTestSource)
 		)
-	){
+	) {
 		// open the requested url in the default browser
 		const { shell } = require(`electron`);
 		shell.openExternal(path);
@@ -848,19 +1038,23 @@ function registerInternalProtocols() {
 
 	// register the custom protocols for relative paths + crypto support
 	protocol.registerSchemesAsPrivileged([
-		{ scheme: `eyas`, privileges: {
-			standard: true,
-			secure: true,
-			allowServiceWorkers: true,
-			supportFetchAPI: true,
-			corsEnabled: true,
-			stream: true
-		} },
+		{
+			scheme: `eyas`, privileges: {
+				standard: true,
+				secure: true,
+				allowServiceWorkers: true,
+				supportFetchAPI: true,
+				corsEnabled: true,
+				stream: true
+			}
+		},
 
-		{ scheme: `ui`, privileges: {
-			standard: true,
-			secure: true
-		} }
+		{
+			scheme: `ui`, privileges: {
+				standard: true,
+				secure: true
+			}
+		}
 	]);
 }
 
@@ -869,10 +1063,10 @@ function disableNetworkRequest(url) {
 	const output = false;
 
 	// exit if the network is not disabled
-	if($testNetworkEnabled){ return output; }
+	if ($testNetworkEnabled) { return output; }
 
 	// don't allow blocking the UI layer
-	if(url.startsWith(`ui://`)){ return output; }
+	if (url.startsWith(`ui://`)) { return output; }
 
 	return true;
 }
@@ -891,7 +1085,12 @@ function setupEyasNetworkHandlers() {
 		const { pathname: relativePathToFile } = parseURL(request.url.replace(`ui://`, `https://`));
 
 		// build the expected path to the requested file
-		const localFilePath = _path.join($paths.uiSource, relativePathToFile);
+		const localFilePath = safeJoin($paths.uiSource, relativePathToFile);
+
+		// if the path is unsafe
+		if (!localFilePath) {
+			return new Response(`Not Found`, { status: 404 });
+		}
 
 		// return the Eyas UI layer to complete the request
 		return ses.fetch(pathToFileURL(localFilePath).toString());
@@ -923,16 +1122,21 @@ function setupEyasNetworkHandlers() {
 			: _path.join(pathname, fileIfNotDefined);
 
 		// build the expected path to the file
-		let localFilePath = _path.join($paths.testSrc, relativePathToFile);
+		let localFilePath = safeJoin($paths.testSrc, relativePathToFile);
 
-		if(
-			// if the file doesn't exist
-			!fs.existsSync(localFilePath)
+		if (
+			// if the file is unsafe OR doesn't exist
+			(!localFilePath || !fs.existsSync(localFilePath))
 			// AND the requested path isn't the root path
-			&& $paths.testSrc !== _path.join($paths.testSrc, pathname)
-		){
+			&& $paths.testSrc !== safeJoin($paths.testSrc, pathname)
+		) {
 			// load root file instead
-			localFilePath = _path.join($paths.testSrc, fileIfNotDefined);
+			localFilePath = safeJoin($paths.testSrc, fileIfNotDefined);
+		}
+
+		// if the path is still unsafe (shouldn't happen with index.html, but for safety)
+		if (!localFilePath) {
+			return new Response(`Not Found`, { status: 404 });
 		}
 
 		// return the file from the local system to complete the request
@@ -946,12 +1150,12 @@ function setupEyasNetworkHandlers() {
 		let bypassCustomProtocolHandlers = true;
 
 		// if the request's hostname matches the test domain
-		if(hostname === parseURL($testDomain).hostname) {
+		if (hostname === parseURL($testDomain).hostname) {
 			// check if the config.source is a valid url
 			const sourceOnWeb = parseURL($config.source);
 
 			// if the config.source is a url
-			if(sourceOnWeb){
+			if (sourceOnWeb) {
 				// redirect to the source domain with the same path
 				request = sourceOnWeb.origin
 					+ (sourceOnWeb.pathname + pathname)
@@ -983,6 +1187,17 @@ async function startAFreshTest() {
 	// imports
 	const semver = require(`semver`);
 
+	// stop test server when test changes
+	if (testServer.getTestServerState()) {
+		stopTestServer();
+	}
+
+	// clear the cached port for the test server
+	testServer.clearTestServerPort();
+
+	// reset initialization state
+	$isInitializing = true;
+
 	// set the available viewports
 	$allViewports = [...$config.viewports, ...$defaultViewports];
 
@@ -999,19 +1214,21 @@ async function startAFreshTest() {
 
 	// check if $config.source is a url
 	const sourceOnWeb = parseURL($config.source);
-	if(sourceOnWeb){
+	if (sourceOnWeb) {
 		$testDomainRaw = $config.source;
 		$testDomain = sourceOnWeb.toString();
 	}
 
 	// if there are no custom domains defined
 	if (!$config.domains.length) {
+		console.log(`No domains defined, navigating...`);
 		// load the test using the default domain
 		navigate();
 	}
 
 	// if the user has a single custom domain
 	if ($config.domains.length === 1) {
+		console.log(`Single domain defined, navigating...`);
 		// update the default domain
 		$testDomainRaw = $config.domains[0].url;
 		$testDomain = parseURL($testDomainRaw).toString();
@@ -1027,7 +1244,7 @@ async function startAFreshTest() {
 	}
 
 	// if the runner is older than the version that built the test
-	if($config.meta.eyas && semver.lt(_appVersion, $config.meta.eyas)){
+	if ($config.meta.eyas && semver.lt(_appVersion, $config.meta.eyas)) {
 		// send request to the UI layer
 		uiEvent(`show-version-mismatch-modal`, _appVersion, $config.meta.eyas);
 	}
@@ -1036,7 +1253,7 @@ async function startAFreshTest() {
 // navigate to a variable url
 function navigateVariable(url) {
 	// if the url has the test domain variable AND the test domain is not set
-	if(url.match(/{testdomain}/g)?.length && !$testDomainRaw){
+	if (url.match(/{testdomain}/g)?.length && !$testDomainRaw) {
 		const { dialog } = require(`electron`);
 
 		// alert the user that they need to select an environment first
@@ -1054,7 +1271,7 @@ function navigateVariable(url) {
 	const output = url.replace(/{testdomain}/g, $testDomainRaw);
 
 	// if the url still has variables
-	if(output.match(/{[^{}]+}/g)?.length){
+	if (output.match(/{[^{}]+}/g)?.length) {
 		// send request to the UI layer
 		uiEvent(`show-variables-modal`, output);
 	} else {

@@ -1,8 +1,6 @@
 <template>
 	<ModalWrapper
 		v-model="visible"
-		:width="dialogWidth"
-		@after-enter="pinDialogWidth"
 		@keyup.esc="close"
 	>
 		<v-card class="pa-3 variables-modal-content">
@@ -99,7 +97,6 @@ const REGEX_VARIABLES_AND_FIELDS = /([\?|&](\w*)=)?{([^{}]+)}/g;
 const REGEX_VARIABLES_ONLY = /{([^{}]+)}/g;
 
 const componentDefaults = JSON.stringify({
-	dialogWidth: `auto`,
 	visible: false,
 	link: ``, //`https://{dev.|staging.|}cycosoft.com?id={int}&message={str}&enabled={bool}`,
 	form: []
@@ -217,14 +214,6 @@ export default {
 
 		getFieldLabel(prefix, field) {
 			return `${prefix}${field ? ` for "${field}" field` : ``}`;
-		},
-
-		pinDialogWidth() {
-			// exit if dialog is not visible
-			if (!this.visible) { return; }
-
-			// set the width of the dialog + 1 to round up and prevent content jumping
-			this.dialogWidth = document.querySelector(`.variables-modal-content`).offsetWidth + 1;
 		}
 	}
 }

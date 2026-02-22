@@ -8,4 +8,10 @@ export const LOAD_TYPES = {
 };
 
 // the file extension for an eyas test
+
 export const EXTENSION = `.eyas`;
+
+
+
+// The duration in milliseconds before the test server automatically shuts down
+export const EXPIRE_MS = 30 * 60 * 1000; // 30 minutes
