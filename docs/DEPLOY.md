@@ -9,16 +9,13 @@
 - Start a new `release` branch off `main`
 - Run `npm run bump:build`
 - Draft a new GitHub release; do not publish ( https://github.com/cycosoft/Eyas/releases )
-
 - Generate Windows artifact -> `npm run compile:win:installer`
-- Add installer to release draft `.runners/EyasInstaller-win.exe`
 - Add latest.yml to release draft `.runners/latest.yml`
+- Add installer to release draft `.runners/EyasInstaller-win.exe`
 
 - Generate .pkg -> `npm run compile:mac:installer`
-- Add to release draft:
-  - `.runners/EyasInstaller-mac.pkg`
-  - macOS updater zip (e.g. `.runners/mac-arm64/Eyas-<version>-mac-arm64.zip` or equivalent from build output)
-  - `latest-mac.yml` (from macOS build output, e.g. `.runners/mac-arm64/` or equivalent)
+- Add latest.yml to release draft `.runners/latest-mac.yml`
+- Add installer to release draft `.runners/EyasInstaller-mac.pkg`
 
 - Merge `release` branch into `main`
 - Tag latest commit with the version -> `git tag -a v26.2.32810 -m "v26.2.32810"`
