@@ -75,4 +75,29 @@ describe(`getElectronBuilderConfig`, () => {
 		expect(config.mac.target).toContain(`pkg`);
 		expect(config.mac.target).toContain(`zip`);
 	});
+
+	test(`artifactName includes -mac suffix when isInstaller and isMac`, () => {
+		const runnerName = `EyasInstaller`;
+		const config = getElectronBuilderConfig({
+			...baseOptions,
+			isInstaller: true,
+			isMac: true,
+			isWin: false,
+			runnerName
+		});
+		expect(config.artifactName).toBe(`${runnerName}-mac.\${ext}`);
+	});
+
+	test(`artifactName includes -win suffix when isInstaller and isWin`, () => {
+		const runnerName = `EyasInstaller`;
+		const config = getElectronBuilderConfig({
+			...baseOptions,
+			isInstaller: true,
+			isMac: false,
+			isWin: true,
+			runnerName
+		});
+		expect(config.artifactName).toBe(`${runnerName}-win.\${ext}`);
+	});
 });
+

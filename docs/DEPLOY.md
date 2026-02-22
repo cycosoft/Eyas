@@ -11,14 +11,15 @@
 - Draft a new GitHub release; do not publish ( https://github.com/cycosoft/Eyas/releases )
 
 - Generate Windows artifact -> `npm run compile:win:installer`
+- Add installer to release draft `.runners/EyasInstaller-win.exe`
+- Add latest.yml to release draft `.runners/latest.yml`
 
-- Add to release draft `.runners/EyasInstaller.msi`
 - Generate .pkg -> `npm run compile:mac:installer`
 - Add to release draft:
-  - `.runners/EyasInstaller.pkg`
+  - `.runners/EyasInstaller-mac.pkg`
   - macOS updater zip (e.g. `.runners/mac-arm64/Eyas-<version>-mac-arm64.zip` or equivalent from build output)
-  - `latest.yml` (from Windows build output, e.g. `.runners/` or platform subdir)
   - `latest-mac.yml` (from macOS build output, e.g. `.runners/mac-arm64/` or equivalent)
+
 - Merge `release` branch into `main`
 - Tag latest commit with the version -> `git tag -a v26.2.32810 -m "v26.2.32810"`
 - Select latest tag & publish GitHub release

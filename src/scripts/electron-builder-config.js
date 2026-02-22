@@ -30,8 +30,7 @@ function getElectronBuilderConfig(options) {
 	return {
 		appId: `com.cycosoft.eyas`,
 		productName: `Eyas`,
-		// eslint-disable-next-line quotes
-		artifactName: runnerName + '.${ext}',
+		artifactName: `${runnerName}${isInstaller ? (isWin ? `-win` : `-mac`) : ``}.\${ext}`,
 		copyright: `Copyright © 2023 Cycosoft, LLC`,
 		asarUnpack: [`resources/**`],
 		directories: {
