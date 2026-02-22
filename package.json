@@ -1,6 +1,6 @@
 {
   "name": "@cycosoft/eyas",
-  "version": "4.1.0",
+  "version": "26.2.32755",
   "description": "Simplified Hands-on Testing for Web Applications",
   "main": "./index.js",
   "packageName": "Eyas",
@@ -65,11 +65,7 @@
     "lint": "eslint .",
     "_encapsulated_sign:mac:pkg": "productsign --sign \"$CERT_NAME\" ./.runners/EyasInstaller-unsigned.pkg ./.runners/EyasInstaller.pkg",
     "docker:run": "docker build -t eyas . && docker run -v ./dist/runners:/usr/src/app/dist/runners -it --rm eyas",
-    "bundle": "npm pack",
-    "deploy": "npm run ENSURE_VERSION_SET && npm publish",
-    "bump:patch": "npm version patch && git push && git push --tags",
-    "bump:minor": "npm version minor && git push && git push --tags",
-    "bump:beta": "npm version prerelease --preid beta && git push && git push --tags"
+    "bump:build": "node src/scripts/bump-build-version.js"
   },
   "license": "MIT",
   "keywords": [
