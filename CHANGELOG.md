@@ -1,3 +1,7 @@
+# v26.2.34056
+
+- Fixed auto-update version comparison
+
 # v26.2.32810
 
 ⚠️ To support auto updates, the Windows installer was switched from MSI to NSIS. You should first uninstall any previous versions of Eyas before installing this version so that you don't have two versions of Eyas installed.
