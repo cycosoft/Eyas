@@ -858,6 +858,7 @@ function setupAutoUpdater() {
 	const { dialog } = require(`electron`);
 
 	autoUpdater.forceDevUpdateConfig = true;
+	autoUpdater.currentVersion = _appVersion;
 
 	// Silence internal logging to prevent duplicate stack traces
 	autoUpdater.logger = null;
