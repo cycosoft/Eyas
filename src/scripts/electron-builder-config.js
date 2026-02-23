@@ -30,8 +30,7 @@ function getElectronBuilderConfig(options) {
 	return {
 		appId: `com.cycosoft.eyas`,
 		productName: `Eyas`,
-		// eslint-disable-next-line quotes
-		artifactName: runnerName + '.${ext}',
+		artifactName: `${runnerName}${isInstaller ? (isWin ? `-win` : `-mac`) : ``}.\${ext}`,
 		copyright: `Copyright © 2023 Cycosoft, LLC`,
 		asarUnpack: [`resources/**`],
 		directories: {
@@ -51,11 +50,13 @@ function getElectronBuilderConfig(options) {
 			category: `public.app-category.developer-tools`,
 			icon: paths.icon,
 			provisioningProfile,
+			hardenedRuntime: true,
+			gatekeeperAssess: false,
 			...isDev ? { identity: null } : {}, // don't sign in dev
 			notarize: Boolean(appleTeamId)
 		},
 		win: {
-			target: isInstaller ? `msi` : `portable`,
+			target: isInstaller ? `nsis` : `portable`,
 			icon: paths.icon,
 			...(isDev ? {} : { signtoolOptions: { sign: paths.codesignWin } })
 		},

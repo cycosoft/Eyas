@@ -1,10 +1,13 @@
-# v4.1.0
+# v26.2.32810
 
+⚠️ To support auto updates, the Windows installer was switched from MSI to NSIS. You should first uninstall any previous versions of Eyas before installing this version so that you don't have two versions of Eyas installed.
+
+- New versioning scheme ( v{YY}.{M}.{MinutesIntoMonth} )
+- Auto update support
 - Dependency updates
 - Remove some deprecated CLI code
 - Project linting
-- Auto update support
-- Add "Live Test Server" feature for consumption by other apps
+- Add "Live Test Server" to run tests in external browsers
 
 # v4.0.0
 
