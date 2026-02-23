@@ -8,6 +8,7 @@
 
 - Start a new `release` branch off `main`
 - Run `npm run bump:build`
+- Update `CHANGELOG.md`
 - Draft a new GitHub release; do not publish ( https://github.com/cycosoft/Eyas/releases )
 - Generate Windows artifact -> `npm run compile:win:installer`
 - Add latest.yml to release draft `.runners/latest.yml`
