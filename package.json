@@ -63,7 +63,7 @@
     "_____________SCRIPTS_____________": "",
     "update": "npm-check-updates --interactive --format group --cooldown 7 --target greatest --pre 0",
     "lint": "eslint .",
-    "_encapsulated_sign:mac:pkg": "productsign --sign \"$CERT_NAME\" ./.runners/EyasInstaller-unsigned-mac.pkg ./.runners/EyasInstaller-mac.pkg",
+    "_encapsulated_sign:mac:pkg": "mv ./.runners/EyasInstaller-mac.pkg ./.runners/EyasInstaller-mac-unsigned.pkg && productsign --sign \"$CERT_NAME\" ./.runners/EyasInstaller-mac-unsigned.pkg ./.runners/EyasInstaller-mac.pkg",
     "docker:run": "docker build -t eyas . && docker run -v ./dist/runners:/usr/src/app/dist/runners -it --rm eyas",
     "bump:build": "node src/scripts/bump-build-version.js"
   },

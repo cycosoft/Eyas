@@ -36,8 +36,7 @@ const paths = {
 
 	// set the name of the output files
 	const installerAppend = isInstaller ? `Installer` : ``;
-	const unsignedAppend = isInstaller && isMac ? `-unsigned` : ``;
-	const runnerName = `Eyas${installerAppend}${unsignedAppend}`;
+	const runnerName = `Eyas${installerAppend}`;
 
 	const config = getElectronBuilderConfig({
 		isDev,
