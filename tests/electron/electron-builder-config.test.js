@@ -99,5 +99,18 @@ describe(`getElectronBuilderConfig`, () => {
 		});
 		expect(config.artifactName).toBe(`${runnerName}-win.\${ext}`);
 	});
+
+	test(`nsis configuration is correct when isWin is true`, () => {
+		const config = getElectronBuilderConfig({
+			...baseOptions,
+			isWin: true
+		});
+		expect(config.nsis).toBeDefined();
+		expect(config.nsis.oneClick).toBe(false);
+		expect(config.nsis.allowToChangeInstallationDirectory).toBe(true);
+		expect(config.nsis.createDesktopShortcut).toBe(`always`);
+		expect(config.nsis.createStartMenuShortcut).toBe(true);
+		expect(config.nsis.runAfterFinish).toBe(false);
+	});
 });
 
