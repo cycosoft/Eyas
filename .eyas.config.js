@@ -1,17 +1,22 @@
 // export the config for the project
 module.exports = {
 	source: `demo`,
+
 	domains: [
 		{ url: `sub.domain.com:44301/`, title: `EYAS-253 Test` },
 		{ url: `dev.eyas.cycosoft.com`, title: `Development` },
 		{ url: `staging.eyas.cycosoft.com`, title: `Staging` },
 		{ url: `eyas.cycosoft.com`, title: `Production` }
 	],
+
 	title: `Eyas App Demo`,
+
 	// version: ``,
+
 	viewports: [
 		{ label: `Custom Size`, width: 1024, height: 768 }
 	],
+
 	links: [
 		{ url: `https://tus.io/demo`, label: `Blob Upload Progress Demo` },
 		{ url: `https://blueimp.github.io/jQuery-File-Upload/`, label: `FormData Upload Progress Demo` },
@@ -46,9 +51,6 @@ module.exports = {
 
 	// defaults to current platform
 	outputs: {
-		// windows: true,
-		// mac: true,
-		// linux: true,
 		// expires: 720
 	}
 };
