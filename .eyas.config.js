@@ -27,7 +27,7 @@ module.exports = {
 		{ url: `https://tus.io/demo`, label: `Blob Upload Progress Demo` },
 		{ url: `https://blueimp.github.io/jQuery-File-Upload/`, label: `FormData Upload Progress Demo` },
 		{ url: `sub.domain.com:44301/`, label: `EYAS-253 Test` },
-		{ label: `Options Demo`, url: `https://{_env.key}cycosoft.com` },
+		{ label: `Options Demo`, url: `https://{dev.|staging.|}cycosoft.com` },
 		{ label: `Int Demo`, url: `https://eyas.cycosoft.com?id={int}` },
 		{ label: `String Demo`, url: `https://eyas.cycosoft.com?message={str}` },
 		{ label: `Boolean Demo`, url: `https://eyas.cycosoft.com?enabled={bool}` },

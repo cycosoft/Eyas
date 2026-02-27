@@ -314,4 +314,52 @@ describe(`VariablesModal`, () => {
 			expect(wrapper.vm.parsedLink).toBe(`https://example.com?q=`);
 		});
 	});
+
+	// -------------------------------------------------------------------------
+	// underscore-prefix (_env) variable behavior
+	// -------------------------------------------------------------------------
+	describe(`underscore-prefix (_env) variable behavior`, () => {
+		test(`{_env.url} pre-resolved URL has no variables and is immediately valid`, async () => {
+			// Normal flow: navigateVariable() replaces {_env.url} before calling uiEvent
+			wrapper.vm.link = `https://staging.eyas.cycosoft.com?go`;
+			await wrapper.vm.$nextTick();
+			expect(wrapper.vm.variables).toHaveLength(0);
+			expect(wrapper.vm.linkIsValid).toBe(true);
+		});
+
+		test(`{_env.key} pre-resolved URL has no variables and is immediately valid`, async () => {
+			wrapper.vm.link = `https://staging.cycosoft.com`;
+			await wrapper.vm.$nextTick();
+			expect(wrapper.vm.variables).toHaveLength(0);
+			expect(wrapper.vm.linkIsValid).toBe(true);
+		});
+
+		test(`{_env.url} token reaching the modal is treated as an unknown app token, not user-input`, () => {
+			// Documents behavior if the substitution guard is somehow bypassed
+			wrapper.vm.link = `https://example.com/{_env.url}/path`;
+			const vars = wrapper.vm.variables;
+			// Should NOT be in variables list (filtered by underscore prefix)
+			expect(vars.every(v => !v.type.startsWith(`_`))).toBe(true);
+		});
+
+		test(`{_env.key} token reaching the modal is treated as an unknown app token, not user-input`, () => {
+			wrapper.vm.link = `https://{_env.key}example.com`;
+			const vars = wrapper.vm.variables;
+			// Should NOT be in variables list (filtered by underscore prefix)
+			expect(vars.every(v => !v.type.startsWith(`_`))).toBe(true);
+		});
+
+		test(`after {_env.url} and {_env.key} resolved, only remaining user vars appear in modal`, async () => {
+			// Simulates the URL after substituteEnvVariables() has run
+			wrapper.vm.link = `https://staging.eyas.cycosoft.com?env=staging.&enabled={bool}`;
+			await wrapper.vm.$nextTick();
+			const vars = wrapper.vm.variables;
+			expect(vars).toHaveLength(1);
+			expect(vars[0].type).toBe(`bool`);
+
+			wrapper.vm.form = [`true`];
+			await wrapper.vm.$nextTick();
+			expect(wrapper.vm.linkIsValid).toBe(true);
+		});
+	});
 });

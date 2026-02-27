@@ -112,4 +112,48 @@ describe(`EnvironmentModal`, () => {
 		await wrapper.vm.$nextTick();
 		expect(wrapper.vm.visible).toBe(false);
 	});
+
+	// -------------------------------------------------------------------------
+	// _env: domain object IPC contract
+	// Verifies that choose() sends the full domain object (not just url),
+	// so the main process has access to domain.key for {_env.key} substitution.
+	// -------------------------------------------------------------------------
+	describe(`domain object IPC contract (_env support)`, () => {
+		test(`choose() sends full domain object via environment-selected IPC`, async () => {
+			const domains = [
+				{ url: `https://dev.eyas.cycosoft.com`, title: `Development`, key: `dev.` }
+			];
+
+			wrapper.vm.domains = domains;
+			wrapper.vm.visible = true;
+			await wrapper.vm.$nextTick();
+
+			wrapper.vm.choose(domains[0], 0);
+			await new Promise(resolve => setTimeout(resolve, 250));
+
+			expect(mockSend).toHaveBeenCalledWith(
+				`environment-selected`,
+				{ url: `https://dev.eyas.cycosoft.com`, title: `Development`, key: `dev.` }
+			);
+		});
+
+		test(`choose() sends domain object without key when key is absent`, async () => {
+			const domains = [
+				{ url: `https://eyas.cycosoft.com`, title: `Production` }
+			];
+
+			wrapper.vm.domains = domains;
+			wrapper.vm.visible = true;
+			await wrapper.vm.$nextTick();
+
+			wrapper.vm.choose(domains[0], 0);
+			await new Promise(resolve => setTimeout(resolve, 250));
+
+			// key is undefined — main process treats it as "" for {_env.key} substitution
+			expect(mockSend).toHaveBeenCalledWith(
+				`environment-selected`,
+				{ url: `https://eyas.cycosoft.com`, title: `Production`, key: undefined }
+			);
+		});
+	});
 });

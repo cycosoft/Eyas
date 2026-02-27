@@ -16,7 +16,8 @@ export default {
 					'test-preload': resolve(__dirname, `src/scripts/test-preload.js`),
 					'parse-url': resolve(__dirname, `src/scripts/parse-url.js`),
 					'path-utils': resolve(__dirname, `src/scripts/path-utils.js`),
-					'time-utils': resolve(__dirname, `src/scripts/time-utils.js`)
+					'time-utils': resolve(__dirname, `src/scripts/time-utils.js`),
+					'variable-utils': resolve(__dirname, `src/scripts/variable-utils.js`)
 				}
 			},
 

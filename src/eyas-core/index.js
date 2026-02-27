@@ -29,6 +29,7 @@ let $lastTestServerOptions = null;
 let $testServerMenuIntervalId = null;
 let $testDomainRaw = null;
 let $testDomain = `eyas://local.test`;
+let $envKey = null;
 const $uiDomain = `ui://eyas.interface`;
 const $defaultViewports = [
 	{ isDefault: true, label: `Desktop`, width: 1366, height: 768 },
@@ -68,6 +69,7 @@ const testServerCerts = require(_path.join(__dirname, `test-server`, `test-serve
 const testServerTimeout = require(_path.join(__dirname, `test-server`, `test-server-timeout.js`));
 const { safeJoin } = require(_path.join(__dirname, `scripts`, `path-utils.js`));
 const { formatDuration } = require(_path.join(__dirname, `scripts`, `time-utils.js`));
+const { substituteEnvVariables, isVariableLinkValid, hasRemainingVariables } = require(_path.join($roots.eyas, `scripts`, `variable-utils.js`));
 
 // constants
 const { LOAD_TYPES, EXPIRE_MS } = require($paths.constants);
@@ -441,10 +443,15 @@ function initUiListeners() {
 	});
 
 	// listen for the user to select an environment
-	ipcMain.on(`environment-selected`, (event, url) => {
-		// update the test domain
-		$testDomainRaw = url;
-		$testDomain = parseURL(url).toString();
+	ipcMain.on(`environment-selected`, (event, domain) => {
+		// support both legacy string (url only) and new object {url, key} formats
+		const domainUrl = typeof domain === `string` ? domain : domain.url;
+		const domainKey = typeof domain === `string` ? null : (domain.key ?? null);
+
+		// update the test domain and env key
+		$testDomainRaw = domainUrl;
+		$testDomain = parseURL(domainUrl).toString();
+		$envKey = domainKey;
 
 		// load the test
 		navigate();
@@ -734,8 +741,7 @@ async function setMenu() {
 		let validUrl;
 		const hasVariables = itemUrl.match(/{[^{}]+}/g)?.length;
 		if (hasVariables) {
-			const testUrl = itemUrl.replace(/{testdomain}/g, `validating.com`).replace(/{[^{}]+}/g, `validating`);
-			isValid = isURL(testUrl);
+			isValid = isVariableLinkValid(itemUrl);
 		} else {
 			validUrl = parseURL(itemUrl).toString();
 			isValid = !!validUrl;
@@ -856,9 +862,10 @@ Runner: v${_appVersion}
 function setupAutoUpdater() {
 	const { autoUpdater } = require(`electron-updater`);
 	const { dialog } = require(`electron`);
+	const semver = require(`semver`);
 
 	autoUpdater.forceDevUpdateConfig = true;
-	autoUpdater.currentVersion = _appVersion;
+	autoUpdater.currentVersion = semver.parse(_appVersion);
 
 	// Silence internal logging to prevent duplicate stack traces
 	autoUpdater.logger = null;
@@ -1218,6 +1225,7 @@ async function startAFreshTest() {
 	if (sourceOnWeb) {
 		$testDomainRaw = $config.source;
 		$testDomain = sourceOnWeb.toString();
+		$envKey = null; // source URLs have no key
 	}
 
 	// if there are no custom domains defined
@@ -1230,9 +1238,10 @@ async function startAFreshTest() {
 	// if the user has a single custom domain
 	if ($config.domains.length === 1) {
 		console.log(`Single domain defined, navigating...`);
-		// update the default domain
+		// update the default domain and env key
 		$testDomainRaw = $config.domains[0].url;
 		$testDomain = parseURL($testDomainRaw).toString();
+		$envKey = $config.domains[0].key ?? null;
 
 		// directly load the user's test using the new default domain
 		navigate();
@@ -1253,8 +1262,13 @@ async function startAFreshTest() {
 
 // navigate to a variable url
 function navigateVariable(url) {
-	// if the url has the test domain variable AND the test domain is not set
-	if (url.match(/{testdomain}/g)?.length && !$testDomainRaw) {
+	const env = { url: $testDomainRaw, key: $envKey };
+
+	// substitute all Eyas-managed env variables (_env.url, _env.key, testdomain)
+	const output = substituteEnvVariables(url, env);
+
+	// if substitution returned null, the env url is required but not yet set
+	if (output === null) {
 		const { dialog } = require(`electron`);
 
 		// alert the user that they need to select an environment first
@@ -1268,11 +1282,8 @@ function navigateVariable(url) {
 		return;
 	}
 
-	// use whichever test domain is currently active
-	const output = url.replace(/{testdomain}/g, $testDomainRaw);
-
-	// if the url still has variables
-	if (output.match(/{[^{}]+}/g)?.length) {
+	// if the url still has user-input variables
+	if (hasRemainingVariables(output)) {
 		// send request to the UI layer
 		uiEvent(`show-variables-modal`, output);
 	} else {

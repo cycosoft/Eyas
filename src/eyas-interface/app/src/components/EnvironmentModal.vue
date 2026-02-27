@@ -26,7 +26,7 @@
 									:stacked="$vuetify.display.smAndUp"
 									:loading="loadingIndex === index"
 									data-qa="btn-env"
-									@click="choose(domain.url, index)"
+									@click="choose(domain, index)"
 								>
 									<template v-slot:prepend>
 										<v-icon size="40">mdi-database</v-icon>
@@ -63,7 +63,7 @@ export default {
 	mounted() {
 		// Listen for messages from the main process
 		window.eyas?.receive(`show-environment-modal`, domains => {
-			this.domains = domains;
+			this.domains = JSON.parse(JSON.stringify(domains));
 			this.visible = true;
 		});
 	},
@@ -76,7 +76,7 @@ export default {
 			// timeout for user feedback + time to load test environment
 			setTimeout(() => {
 				// send the chosen domain to the main process
-				window.eyas?.send(`environment-selected`, domain);
+				window.eyas?.send(`environment-selected`, JSON.parse(JSON.stringify(domain)));
 
 				// close the modal
 				this.visible = false;
@@ -103,7 +103,7 @@ export default {
 				const chosenIndex = keyAsNumber - 1;
 
 				// choose the domain at the index of the key pressed
-				this.choose(this.domains[chosenIndex].url, chosenIndex);
+				this.choose(this.domains[chosenIndex], chosenIndex);
 			}
 		},
 
