@@ -60,6 +60,13 @@ function getElectronBuilderConfig(options) {
 			icon: paths.icon,
 			...(isDev ? {} : { signtoolOptions: { sign: paths.codesignWin } })
 		},
+		nsis: {
+			oneClick: false,
+			allowToChangeInstallationDirectory: true,
+			createDesktopShortcut: `always`,
+			createStartMenuShortcut: true,
+			runAfterFinish: false
+		},
 		linux: {
 			target: `AppImage`,
 			icon: paths.icon,
