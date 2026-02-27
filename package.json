@@ -61,7 +61,7 @@
     "notarize:staple:verify:pkg": "xcrun stapler validate ./.runners/EyasInstaller-mac.pkg",
     "notarize:log": "xcrun notarytool log PASTE_LOG_ID_HERE --keychain-profile \"Eyas\"",
     "_____________SCRIPTS_____________": "",
-    "update": "npm-check-updates --interactive --format group",
+    "update": "npm-check-updates --interactive --format group,time",
     "lint": "eslint .",
     "_encapsulated_sign:mac:pkg": "mv ./.runners/EyasInstaller-mac.pkg ./.runners/EyasInstaller-mac-unsigned.pkg && productsign --sign \"$CERT_NAME\" ./.runners/EyasInstaller-mac-unsigned.pkg ./.runners/EyasInstaller-mac.pkg",
     "docker:run": "docker build -t eyas . && docker run -v ./dist/runners:/usr/src/app/dist/runners -it --rm eyas",
