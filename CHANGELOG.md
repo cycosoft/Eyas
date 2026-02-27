@@ -1,3 +1,11 @@
+# v26.x
+
+- Global config variables are now prepended with an underscore
+- Add support for getting environment data from the `_env` variable
+  - `_env.url`
+  - `_env.key`
+- `testdomain` variable is now deprecated in favor of `_env.url`
+
 # v26.2.34056
 
 - Fixed auto-update version comparison

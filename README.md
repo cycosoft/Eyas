@@ -73,7 +73,7 @@ module.exports = {
   // Custom items for link menu with support for getting user input
   links: [/*
     { label: `Cycosoft, LLC`, url: `cycosoft.com`, external: true (open in browser) },
-    { label: `Variables Demo`, url: `{testdomain}?id={int}&msg={str}&go={bool}&list={item1|item2|}` }
+    { label: `Variables Demo`, url: `{_env.url}?id={int}&msg={str}&go={bool}&list={item1|item2|}` }
   */]
   // File outputs
   outputs: {

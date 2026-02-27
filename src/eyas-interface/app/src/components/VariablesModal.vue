@@ -157,6 +157,9 @@ export default {
 				const isList = variable[3].includes(`|`);
 				const hasField = variable[2];
 
+				// skip Eyas-managed variables (underscore prefix = app-defined, not user-input)
+				if (type.startsWith(`_`)) { continue; }
+
 				// populate the data object
 				data.type = isList ? `list` : type;
 

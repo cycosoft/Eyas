@@ -1,18 +1,29 @@
 // export the config for the project
 module.exports = {
 	source: `demo`,
+
 	domains: [
 		{ url: `sub.domain.com:44301/`, title: `EYAS-253 Test` },
-		{ url: `dev.eyas.cycosoft.com`, title: `Development` },
-		{ url: `staging.eyas.cycosoft.com`, title: `Staging` },
-		{ url: `eyas.cycosoft.com`, title: `Production` }
+		{ url: `dev.eyas.cycosoft.com`, title: `Development`, key: `dev.` },
+		{ url: `staging.eyas.cycosoft.com`, title: `Staging`, key: `staging.` },
+		{ url: `eyas.cycosoft.com`, title: `Production` },
+
+		{ url: `dev.cycosoft.com`, title: `Dev`, key: `dev.` },
+		{ url: `qa.cycosoft.com`, title: `QA`, key: `qa.` },
+		{ url: `po.cycosoft.com`, title: `PO`, key: `po.` }
 	],
+
 	title: `Eyas App Demo`,
+
 	// version: ``,
+
 	viewports: [
 		{ label: `Custom Size`, width: 1024, height: 768 }
 	],
+
 	links: [
+		{ label: `Variable Test`, url: `https://landing.{_env.key}cycosoft.com` },
+
 		{ url: `https://tus.io/demo`, label: `Blob Upload Progress Demo` },
 		{ url: `https://blueimp.github.io/jQuery-File-Upload/`, label: `FormData Upload Progress Demo` },
 		{ url: `sub.domain.com:44301/`, label: `EYAS-253 Test` },
@@ -20,9 +31,9 @@ module.exports = {
 		{ label: `Int Demo`, url: `https://eyas.cycosoft.com?id={int}` },
 		{ label: `String Demo`, url: `https://eyas.cycosoft.com?message={str}` },
 		{ label: `Boolean Demo`, url: `https://eyas.cycosoft.com?enabled={bool}` },
-		{ label: `Test Domain Demo`, url: `{testdomain}?go` },
-		{ label: `Test Domain Demo w/Bool`, url: `{testdomain}?enabled={bool}` },
-		{ label: `Combo Demo`, url: `https://{dev.|staging.|}cycosoft.com?id={int}&message={str}&enabled={bool}` },
+		{ label: `Test Domain Demo`, url: `{_env.url}?go` },
+		{ label: `Test Domain Demo w/Bool`, url: `{_env.url}?enabled={bool}` },
+		{ label: `Combo Demo`, url: `https://{_env.key}cycosoft.com?id={int}&message={str}&enabled={bool}` },
 		{ label: `Cycosoft.com (browser)`, url: `https://cycosoft.com`, external: true },
 		{ label: `Cycosoft.com (electron)`, url: `https://cycosoft.com` },
 		{ url: `server` },
@@ -46,9 +57,6 @@ module.exports = {
 
 	// defaults to current platform
 	outputs: {
-		// windows: true,
-		// mac: true,
-		// linux: true,
 		// expires: 720
 	}
 };
