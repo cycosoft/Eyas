@@ -9,9 +9,9 @@
 					<v-tab value="app" data-qa="settings-tab-app">App</v-tab>
 				</v-tabs>
 
-				<v-tabs-window v-model="activeTab">
+				<v-window v-model="activeTab">
 					<!-- Project-level settings -->
-					<v-tabs-window-item value="project">
+					<v-window-item value="project">
 						<v-sheet class="pa-4">
 							<p class="text-subtitle-2 mb-3">Settings for the current project</p>
 							<v-checkbox
@@ -23,10 +23,10 @@
 								@update:model-value="saveProjectSetting('env.alwaysChoose', $event)"
 							/>
 						</v-sheet>
-					</v-tabs-window-item>
+					</v-window-item>
 
 					<!-- App-level settings -->
-					<v-tabs-window-item value="app">
+					<v-window-item value="app">
 						<v-sheet class="pa-4">
 							<p class="text-subtitle-2 mb-3">App-wide defaults</p>
 							<v-checkbox
@@ -38,8 +38,8 @@
 								@update:model-value="saveAppSetting('env.alwaysChoose', $event)"
 							/>
 						</v-sheet>
-					</v-tabs-window-item>
-				</v-tabs-window>
+					</v-window-item>
+				</v-window>
 			</v-card-text>
 
 			<v-card-actions class="justify-end px-4 pb-4">

@@ -15,7 +15,9 @@ contextBridge.exposeInMainWorld(`eyas`, {
 			`network-status`,
 			`test-server-setup-continue`,
 			`test-server-setup-step`,
-			`test-server-resume-confirm`
+			`test-server-resume-confirm`,
+			`save-setting`,
+			`get-settings`
 		];
 
 		if (validChannels.includes(channel)) {
@@ -31,7 +33,10 @@ contextBridge.exposeInMainWorld(`eyas`, {
 			`show-version-mismatch-modal`,
 			`show-test-server-setup-modal`,
 			`show-test-server-resume-modal`,
-			`close-modals`
+			`close-modals`,
+			`show-settings-modal`,
+			`setting-saved`,
+			`settings-loaded`
 		];
 		if (validChannels.includes(channel)) {
 			// Deliberately strip event as it includes `sender`
