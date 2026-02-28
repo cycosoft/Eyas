@@ -38,6 +38,20 @@
 						</v-col>
 					</v-row>
 				</v-sheet>
+
+				<!-- always-choose setting -->
+				<v-row class="mt-4" justify="end">
+					<v-col cols="auto">
+						<v-checkbox
+							v-model="alwaysChoose"
+							label="Always choose this environment for this project"
+							density="compact"
+							hide-details
+							data-qa="checkbox-always-choose"
+							@update:model-value="onAlwaysChooseChange"
+						/>
+					</v-col>
+				</v-row>
 			</v-card-text>
 		</v-card>
 	</ModalWrapper>
@@ -50,7 +64,10 @@ import ModalWrapper from '@/components/ModalWrapper.vue';
 const defaults = JSON.stringify({
 	visible: false,
 	domains: [],
-	loadingIndex: -1
+	loadingIndex: -1,
+	alwaysChoose: false,
+	projectId: null,
+	domainsHash: null
 });
 
 export default {
@@ -62,8 +79,11 @@ export default {
 
 	mounted() {
 		// Listen for messages from the main process
-		window.eyas?.receive(`show-environment-modal`, domains => {
+		window.eyas?.receive(`show-environment-modal`, (domains, options = {}) => {
 			this.domains = JSON.parse(JSON.stringify(domains));
+			this.projectId = options.projectId ?? null;
+			this.alwaysChoose = !!options.alwaysChoose;
+			this.domainsHash = options.domainsHash ?? null;
 			this.visible = true;
 		});
 	},
@@ -72,6 +92,18 @@ export default {
 		choose(domain, domainIndex) {
 			// show a loader on the chosen domain
 			this.loadingIndex = domainIndex;
+
+			// save the user's choice and hash so we can skip the modal next time
+			window.eyas?.send(`save-setting`, {
+				key: `env.lastChoice`,
+				value: JSON.parse(JSON.stringify(domain)),
+				projectId: this.projectId
+			});
+			window.eyas?.send(`save-setting`, {
+				key: `env.lastChoiceHash`,
+				value: this.domainsHash,
+				projectId: this.projectId
+			});
 
 			// timeout for user feedback + time to load test environment
 			setTimeout(() => {
@@ -105,6 +137,15 @@ export default {
 				// choose the domain at the index of the key pressed
 				this.choose(this.domains[chosenIndex], chosenIndex);
 			}
+		},
+
+		onAlwaysChooseChange(value) {
+			// immediately save the setting when the checkbox is toggled
+			window.eyas?.send(`save-setting`, {
+				key: `env.alwaysChoose`,
+				value: !!value,
+				projectId: this.projectId
+			});
 		},
 
 		reset() {

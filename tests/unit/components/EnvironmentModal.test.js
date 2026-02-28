@@ -156,4 +156,65 @@ describe(`EnvironmentModal`, () => {
 			);
 		});
 	});
+
+	// -------------------------------------------------------------------------
+	// Settings -- "always choose" checkbox and save-setting IPC
+	// -------------------------------------------------------------------------
+	describe(`settings integration`, () => {
+		test(`alwaysChoose initialises to false by default`, () => {
+			expect(wrapper.vm.alwaysChoose).toBe(false);
+		});
+
+		test(`show-environment-modal payload sets alwaysChoose`, () => {
+			// Simulate the IPC receive callback
+			const call = mockReceive.mock.calls.find(c => c[0] === `show-environment-modal`);
+			call[1]([], { alwaysChoose: true, projectId: `proj-x`, domainsHash: `abc` });
+			expect(wrapper.vm.alwaysChoose).toBe(true);
+			expect(wrapper.vm.projectId).toBe(`proj-x`);
+			expect(wrapper.vm.domainsHash).toBe(`abc`);
+		});
+
+		test(`onAlwaysChooseChange sends save-setting with correct projectId`, () => {
+			wrapper.vm.projectId = `proj-y`;
+			wrapper.vm.onAlwaysChooseChange(true);
+			expect(mockSend).toHaveBeenCalledWith(`save-setting`, {
+				key: `env.alwaysChoose`,
+				value: true,
+				projectId: `proj-y`
+			});
+		});
+
+		test(`choose() sends save-setting for env.lastChoice`, async () => {
+			const domain = { url: `https://example.com`, title: `Example` };
+			wrapper.vm.domains = [domain];
+			wrapper.vm.projectId = `proj-z`;
+			wrapper.vm.visible = true;
+			await wrapper.vm.$nextTick();
+
+			wrapper.vm.choose(domain, 0);
+
+			// save-setting is sent before the setTimeout delay
+			expect(mockSend).toHaveBeenCalledWith(`save-setting`, expect.objectContaining({
+				key: `env.lastChoice`,
+				projectId: `proj-z`
+			}));
+		});
+
+		test(`choose() sends save-setting for env.lastChoiceHash`, async () => {
+			const domain = { url: `https://example.com`, title: `Example` };
+			wrapper.vm.domains = [domain];
+			wrapper.vm.domainsHash = `deadbeef`;
+			wrapper.vm.projectId = `proj-z`;
+			wrapper.vm.visible = true;
+			await wrapper.vm.$nextTick();
+
+			wrapper.vm.choose(domain, 0);
+
+			expect(mockSend).toHaveBeenCalledWith(`save-setting`, {
+				key: `env.lastChoiceHash`,
+				value: `deadbeef`,
+				projectId: `proj-z`
+			});
+		});
+	});
 });

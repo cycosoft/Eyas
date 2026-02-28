@@ -58,6 +58,37 @@ describe(`buildMenuTemplate`, () => {
 		expect(exitIndex).toBeGreaterThan(separatorIndex);
 	});
 
+	test(`app submenu contains a Settings item`, () => {
+		const template = buildMenuTemplate(minimalContext);
+		const submenu = template[0].submenu;
+		const settingsItem = submenu.find(item => item.label && item.label.includes(`Settings`));
+		expect(settingsItem).toBeDefined();
+	});
+
+	test(`Settings item uses the onOpenSettings click handler from context`, () => {
+		const onOpenSettings = () => { };
+		const ctx = { ...minimalContext, onOpenSettings };
+		const template = buildMenuTemplate(ctx);
+		const submenu = template[0].submenu;
+		const settingsItem = submenu.find(item => item.label && item.label.includes(`Settings`));
+		expect(settingsItem.click).toBe(onOpenSettings);
+	});
+
+	test(`Settings item appears between About and Check for updates`, () => {
+		const template = buildMenuTemplate(minimalContext);
+		const submenu = template[0].submenu;
+		const aboutIndex = submenu.findIndex(item => item.label && item.label.includes(`About`));
+		const settingsIndex = submenu.findIndex(item => item.label && item.label.includes(`Settings`));
+		const checkIndex = submenu.findIndex(item => item.label && item.label.includes(`Check for updates`));
+		expect(settingsIndex).toBeGreaterThan(aboutIndex);
+		expect(settingsIndex).toBeLessThan(checkIndex);
+	});
+
+	test(`buildMenuTemplate works without onOpenSettings in context (uses noop default)`, () => {
+		const { onOpenSettings: _removed, ...ctx } = minimalContext;
+		expect(() => buildMenuTemplate(ctx)).not.toThrow();
+	});
+
 	test(`template has multiple top-level items when context has viewport and link data`, () => {
 		const template = buildMenuTemplate(minimalContext);
 		expect(template.length).toBeGreaterThan(1);
@@ -67,10 +98,9 @@ describe(`buildMenuTemplate`, () => {
 		const ctx = { ...minimalContext, updateStatus: `downloading` };
 		const template = buildMenuTemplate(ctx);
 		const submenu = template[0].submenu;
-		const aboutIndex = submenu.findIndex(item => item.label && item.label.includes(`About`));
-		const itemAfterAbout = submenu[aboutIndex + 1];
-		expect(itemAfterAbout.type).not.toBe(`separator`);
-		expect(itemAfterAbout.label.toLowerCase()).toMatch(/download/);
+		const downloadItem = submenu.find(item => item.label && item.label.toLowerCase().includes(`download`));
+		expect(downloadItem).toBeDefined();
+		expect(downloadItem.type).not.toBe(`separator`);
 	});
 
 	test(`when updateStatus is idle, item after About is Check for updates with onCheckForUpdates click`, () => {

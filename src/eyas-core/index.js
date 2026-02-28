@@ -70,10 +70,24 @@ const testServerTimeout = require(_path.join(__dirname, `test-server`, `test-ser
 const { safeJoin } = require(_path.join(__dirname, `scripts`, `path-utils.js`));
 const { formatDuration } = require(_path.join(__dirname, `scripts`, `time-utils.js`));
 const { substituteEnvVariables, isVariableLinkValid, hasRemainingVariables } = require(_path.join($roots.eyas, `scripts`, `variable-utils.js`));
+const settingsService = require(_path.join(__dirname, `settings-service.js`));
 
 // constants
 const { LOAD_TYPES, EXPIRE_MS } = require($paths.constants);
 const APP_NAME = `Eyas`;
+
+/**
+ * djb2 hash of a domains array — detects any structural change
+ * (add, remove, reorder, URL edit) without any external dependencies.
+ * @param {object[]} domains
+ * @returns {string} unsigned 32-bit hex string
+ */
+function hashDomains(domains) {
+	const str = JSON.stringify(domains);
+	let h = 5381;
+	for (let i = 0; i < str.length; i++) { h = (h * 33) ^ str.charCodeAt(i); }
+	return (h >>> 0).toString(16);
+}
 
 // APP_ENTRY: initialize the first layer of the app
 initElectronCore();
@@ -235,6 +249,9 @@ function initElectronCore() {
 		.then(async () => {
 			// get config based on the context
 			$config = await require($paths.configLoader)($configToLoad.method || LOAD_TYPES.AUTO, $configToLoad.path);
+
+			// load user settings from disk before first test start
+			await settingsService.load();
 
 			// start listening for requests to the custom protocol
 			setupEyasNetworkHandlers();
@@ -455,6 +472,21 @@ function initUiListeners() {
 
 		// load the test
 		navigate();
+	});
+
+	// listen for a setting to be saved from the UI
+	ipcMain.on(`save-setting`, (event, { key, value, projectId }) => {
+		settingsService.set(key, value, projectId || null);
+		settingsService.save(); // fire-and-forget
+		event.reply(`setting-saved`, { key, projectId });
+	});
+
+	// listen for the UI to request the current settings
+	ipcMain.on(`get-settings`, (event, { projectId } = {}) => {
+		event.reply(`settings-loaded`, {
+			project: settingsService.getProjectSettings(projectId),
+			app: settingsService.getAppSettings()
+		});
 	});
 
 	// listen for the user to launch a link
@@ -794,7 +826,7 @@ Runner: v${_appVersion}
 			});
 		},
 		quit: _electronCore.quit,
-		startAFreshTest,
+		startAFreshTest: () => startAFreshTest(true),
 		copyUrl: () => {
 			if ($isInitializing) return;
 			require(`electron`).clipboard.writeText($appWindow.webContents.getURL());
@@ -852,7 +884,12 @@ Runner: v${_appVersion}
 			$testServerHttpsEnabled = !$testServerHttpsEnabled;
 			setMenu();
 		},
-		isInitializing: $isInitializing
+		isInitializing: $isInitializing,
+		onOpenSettings: () => uiEvent(`show-settings-modal`, {
+			project: settingsService.getProjectSettings($config?.meta?.projectId),
+			app: settingsService.getAppSettings(),
+			projectId: $config?.meta?.projectId
+		})
 	};
 
 	const template = buildMenuTemplate(context);
@@ -1191,7 +1228,7 @@ function clearCache() {
 }
 
 // refresh the app
-async function startAFreshTest() {
+async function startAFreshTest(forceShow = false) {
 	// imports
 	const semver = require(`semver`);
 
@@ -1249,8 +1286,28 @@ async function startAFreshTest() {
 
 	// if the user has multiple custom domains
 	if ($config.domains.length > 1) {
-		// display the environment chooser modal
-		uiEvent(`show-environment-modal`, $config.domains);
+		const currentHash = hashDomains($config.domains);
+		const envSettings = settingsService.get(`env`, $config.meta.projectId);
+		const alwaysChoose = envSettings?.alwaysChoose;
+		const lastChoice = envSettings?.lastChoice;
+		const lastHash = envSettings?.lastChoiceHash;
+
+		// skip the modal if the user opted out AND the domain list hasn't changed
+		if (alwaysChoose && lastChoice && lastHash === currentHash) {
+			// auto-select the previously chosen environment
+			$testDomainRaw = lastChoice.url;
+			$testDomain = parseURL(lastChoice.url).toString();
+			$envKey = lastChoice.key ?? null;
+			navigate();
+		} else {
+			// display the environment chooser modal
+			uiEvent(`show-environment-modal`, $config.domains, {
+				projectId: $config.meta.projectId,
+				alwaysChoose: !!alwaysChoose,
+				domainsHash: currentHash,
+				forceShow
+			});
+		}
 	}
 
 	// if the runner is older than the version that built the test
