@@ -5,6 +5,7 @@
   - `_env.url`
   - `_env.key`
 - `testdomain` variable is now deprecated in favor of `_env.url`
+- Add the ability to always remember the selected environment at the project level
 
 # v26.2.34056
 
