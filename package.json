@@ -117,7 +117,7 @@
     "electron-vite": "^5.0.0",
     "eslint": "^10.0.2",
     "eslint-plugin-vue": "^10.8.0",
-    "globals": "^17.3.0",
+    "globals": "^17.4.0",
     "jsdom": "^28.1.0",
     "npm-check-updates": "^19.6.3",
     "pinia": "^3.0.4",
