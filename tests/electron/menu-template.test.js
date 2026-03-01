@@ -85,8 +85,7 @@ describe(`buildMenuTemplate`, () => {
 	});
 
 	test(`buildMenuTemplate works without onOpenSettings in context (uses noop default)`, () => {
-		const { onOpenSettings: _removed, ...ctx } = minimalContext;
-		expect(() => buildMenuTemplate(ctx)).not.toThrow();
+		expect(() => buildMenuTemplate(minimalContext)).not.toThrow();
 	});
 
 	test(`template has multiple top-level items when context has viewport and link data`, () => {

@@ -739,7 +739,6 @@ function onTestServerTimeout() {
 // Set up the application menu
 async function setMenu() {
 	const { Menu, dialog } = require(`electron`);
-	const { isURL } = require(`validator`);
 
 	const sessionAge = getSessionAge();
 	const cacheSize = await $appWindow.webContents.session.getCacheSize();
