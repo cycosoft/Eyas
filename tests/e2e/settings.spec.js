@@ -67,9 +67,11 @@ test.describe(`User Settings`, () => {
 		await expect(envModalTitle).not.toBeVisible();
 		await new Promise(resolve => setTimeout(resolve, 2000));
 
-		// Restart Eyas
+		// Restart Eyas with the same user data directory
+		const userDataDir = electronApp._userDataDir;
 		await exitEyas(electronApp);
-		electronApp = await launchEyas();
+
+		electronApp = await launchEyas([], userDataDir);
 		uiPage = await getUiView(electronApp);
 		uiPage.on(`console`, msg => console.log(`RENDERER (launch 2): ${msg.text()}`));
 

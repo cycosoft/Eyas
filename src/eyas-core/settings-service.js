@@ -1,8 +1,8 @@
 'use strict';
 
 // imports
+const { app } = require(`electron`);
 const _path = require(`path`);
-const _os = require(`os`);
 
 // ─── internal state ────────────────────────────────────────────────────────────
 
@@ -10,7 +10,7 @@ const _os = require(`os`);
 let _data = null;
 
 /** Path to the settings JSON file (overridable for tests) */
-let _storagePath = _path.join(_os.homedir(), `AppData`, `Roaming`, `Eyas`, `settings.json`);
+let _storagePath = null;
 
 // ─── test-only escape hatch ───────────────────────────────────────────────────
 
@@ -54,6 +54,10 @@ function _deepSet(obj, keyPath, value) {
  * Safe to call even if the file does not yet exist.
  */
 async function load() {
+	if (!_storagePath) {
+		_storagePath = _path.join(app.getPath(`userData`), `settings.json`);
+	}
+
 	const fsExtra = require(`fs-extra`);
 	try {
 		const raw = await fsExtra.readJson(_storagePath);
@@ -69,6 +73,10 @@ async function load() {
  * Fire-and-forget — callers should not await unless they need to know it finished.
  */
 async function save() {
+	if (!_storagePath) {
+		_storagePath = _path.join(app.getPath(`userData`), `settings.json`);
+	}
+
 	const fsExtra = require(`fs-extra`);
 	await fsExtra.outputJson(_storagePath, _data, { spaces: 2 });
 }

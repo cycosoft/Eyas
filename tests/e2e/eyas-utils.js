@@ -4,17 +4,35 @@ const path = require(`path`);
 /**
  * Launches the Eyas application and waits for the initial window.
  * @param {string[]} extraArgs
+ * @param {string} [userDataDir] - Optional user data directory to use
  * @returns {Promise<import('@playwright/test').ElectronApplication>}
  */
-async function launchEyas(extraArgs = []) {
+async function launchEyas(extraArgs = [], userDataDir = null) {
 	const electronPath = require(`electron`);
 	const mainPath = path.join(__dirname, `../../.build/index.js`);
+	const fs = require(`fs-extra`);
+
+	// Use a temporary directory for each test run to ensure isolation
+	if (!userDataDir) {
+		userDataDir = path.join(__dirname, `../../.test-data`, `user-data-${Date.now()}-${Math.floor(Math.random() * 1000)}`);
+	}
+
+	// Ensure the directory exists
+	await fs.ensureDir(userDataDir);
 
 	const electronApp = await electron.launch({
 		executablePath: electronPath,
-		args: [mainPath, `--dev`, ...extraArgs],
+		args: [
+			mainPath,
+			`--dev`,
+			`--user-data-dir=${userDataDir}`,
+			...extraArgs
+		],
 		timeout: 30000
 	});
+
+	// Store the user data dir on the app object for later reuse if needed
+	electronApp._userDataDir = userDataDir;
 
 	const window = await electronApp.firstWindow();
 	await window.waitForLoadState(`domcontentloaded`);
