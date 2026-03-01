@@ -1291,8 +1291,8 @@ async function startAFreshTest(forceShow = false) {
 		const lastChoice = envSettings?.lastChoice;
 		const lastHash = envSettings?.lastChoiceHash;
 
-		// skip the modal if the user opted out AND the domain list hasn't changed
-		if (alwaysChoose && lastChoice && lastHash === currentHash) {
+		// skip the modal if the user opted out AND the domain list hasn't changed AND it's not a forced show
+		if (!forceShow && alwaysChoose && lastChoice && lastHash === currentHash) {
 			// auto-select the previously chosen environment
 			$testDomainRaw = lastChoice.url;
 			$testDomain = parseURL(lastChoice.url).toString();
