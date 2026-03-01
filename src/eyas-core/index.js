@@ -475,9 +475,9 @@ function initUiListeners() {
 	});
 
 	// listen for a setting to be saved from the UI
-	ipcMain.on(`save-setting`, (event, { key, value, projectId }) => {
+	ipcMain.on(`save-setting`, async (event, { key, value, projectId }) => {
 		settingsService.set(key, value, projectId || null);
-		settingsService.save(); // fire-and-forget
+		await settingsService.save();
 		event.reply(`setting-saved`, { key, projectId });
 	});
 

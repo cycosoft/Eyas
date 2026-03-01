@@ -72,13 +72,24 @@ async function load() {
  * Persist the current in-memory settings to disk.
  * Fire-and-forget — callers should not await unless they need to know it finished.
  */
+/**
+ * Persist the current in-memory settings to disk.
+ * Sequentializes saves to prevent concurrent write issues.
+ */
+let _saveQueue = Promise.resolve();
 async function save() {
-	if (!_storagePath) {
-		_storagePath = _path.join(app.getPath(`userData`), `settings.json`);
-	}
+	_saveQueue = _saveQueue.then(async () => {
+		if (!_storagePath) {
+			_storagePath = _path.join(app.getPath(`userData`), `settings.json`);
+		}
 
-	const fsExtra = require(`fs-extra`);
-	await fsExtra.outputJson(_storagePath, _data, { spaces: 2 });
+		const fsExtra = require(`fs-extra`);
+		await fsExtra.outputJson(_storagePath, _data, { spaces: 2 });
+	}).catch(err => {
+		console.error(`[SETTINGS-SERVICE] save failed:`, err);
+	});
+
+	return _saveQueue;
 }
 
 // Inline copy of SETTINGS_DEFAULTS — avoids crossing the ESM/CJS boundary
