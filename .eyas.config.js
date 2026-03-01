@@ -3,14 +3,9 @@ module.exports = {
 	source: `demo`,
 
 	domains: [
-		{ url: `sub.domain.com:44301/`, title: `EYAS-253 Test` },
 		{ url: `dev.eyas.cycosoft.com`, title: `Development`, key: `dev.` },
 		{ url: `staging.eyas.cycosoft.com`, title: `Staging`, key: `staging.` },
-		{ url: `eyas.cycosoft.com`, title: `Production` },
-
-		{ url: `dev.cycosoft.com`, title: `Dev`, key: `dev.` },
-		{ url: `qa.cycosoft.com`, title: `QA`, key: `qa.` },
-		{ url: `po.cycosoft.com`, title: `PO`, key: `po.` }
+		{ url: `eyas.cycosoft.com`, title: `Production` }
 	],
 
 	title: `Eyas App Demo`,
@@ -23,7 +18,6 @@ module.exports = {
 
 	links: [
 		{ label: `Variable Test`, url: `https://landing.{_env.key}cycosoft.com` },
-
 		{ url: `https://tus.io/demo`, label: `Blob Upload Progress Demo` },
 		{ url: `https://blueimp.github.io/jQuery-File-Upload/`, label: `FormData Upload Progress Demo` },
 		{ url: `sub.domain.com:44301/`, label: `EYAS-253 Test` },
