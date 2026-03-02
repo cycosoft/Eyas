@@ -5,9 +5,11 @@ const path = require(`path`);
  * Launches the Eyas application and waits for the initial window.
  * @param {string[]} extraArgs
  * @param {string} [userDataDir] - Optional user data directory to use
+ * @param {string} [cwd] - Optional working directory to launch from (determines which project config is loaded)
+ * @param {object} [env] - Optional environment variable overrides
  * @returns {Promise<import('@playwright/test').ElectronApplication>}
  */
-async function launchEyas(extraArgs = [], userDataDir = null) {
+async function launchEyas(extraArgs = [], userDataDir = null, cwd = null, env = {}) {
 	const electronPath = require(`electron`);
 	const mainPath = path.join(__dirname, `../../.build/index.js`);
 	const fs = require(`fs-extra`);
@@ -22,6 +24,8 @@ async function launchEyas(extraArgs = [], userDataDir = null) {
 
 	const electronApp = await electron.launch({
 		executablePath: electronPath,
+		cwd: cwd || process.cwd(),
+		env: { ...process.env, ...env },
 		args: [
 			mainPath,
 			`--dev`,
@@ -97,6 +101,13 @@ async function waitForMenuUpdate(electronApp, predicate) {
  */
 async function exitEyas(electronApp) {
 	if (!electronApp) return;
+
+	// Get the PID now, before any teardown, via Electron's own main process.
+	let electronPid = null;
+	try {
+		electronPid = await electronApp.evaluate(() => process.pid);
+	} catch { /* ignore — app may already be shutting down */ }
+
 	try {
 		await electronApp.evaluate(({ BrowserWindow }) => {
 			const windows = BrowserWindow.getAllWindows();
@@ -118,6 +129,11 @@ async function exitEyas(electronApp) {
 		// ignore
 	} finally {
 		await electronApp.close().catch(() => { });
+		// Forcefully kill the process to ensure the single-instance lock is released
+		// before any subsequent launch in the same test run.
+		if (electronPid) {
+			try { process.kill(electronPid, `SIGKILL`); } catch { /* ignore — may already be gone */ }
+		}
 	}
 }
 
