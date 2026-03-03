@@ -3,7 +3,7 @@
 		v-model="visible"
 		@keyup="hotkeyEnvSelector"
 	>
-		<v-card class="pa-3" style="overflow-y: auto; max-height: 90vh;">
+		<v-card class="pa-3">
 			<v-card-text>
 				<p class="font-weight-black text-center text-h6 mb-10" data-qa="environment-modal-title">Select Test Environment</p>
 
