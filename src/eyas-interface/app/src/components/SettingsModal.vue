@@ -2,8 +2,6 @@
 	<ModalWrapper v-model="visible">
 		<v-card class="pa-4" min-width="480">
 			<v-card-text>
-				<p class="font-weight-black text-h6 mb-4" data-qa="settings-modal-title">Settings</p>
-
 				<v-tabs v-model="activeTab" color="primary">
 					<v-tab value="project" data-qa="settings-tab-project">Project</v-tab>
 					<v-tab value="app" data-qa="settings-tab-app">App</v-tab>
@@ -16,7 +14,7 @@
 							<p class="text-subtitle-2 mb-3">Settings for the current project</p>
 							<v-checkbox
 								v-model="projectAlwaysChoose"
-								label="Always choose this environment for this project"
+								label="Remember Selected Environment"
 								density="compact"
 								hide-details
 								data-qa="settings-project-always-choose"
@@ -31,7 +29,7 @@
 							<p class="text-subtitle-2 mb-3">App-wide defaults</p>
 							<v-checkbox
 								v-model="appAlwaysChoose"
-								label="Default: always choose environment"
+								label="Remember Selected Environment"
 								density="compact"
 								hide-details
 								data-qa="settings-app-always-choose"

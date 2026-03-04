@@ -44,7 +44,7 @@
 					<v-col cols="auto">
 						<v-checkbox
 							v-model="alwaysChoose"
-							label="Always choose this environment for this project"
+							label="Remember this choice"
 							density="compact"
 							hide-details
 							data-qa="checkbox-always-choose"
