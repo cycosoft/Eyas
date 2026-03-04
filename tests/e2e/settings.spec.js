@@ -37,15 +37,15 @@ test.describe(`User Settings`, () => {
 		// Open the settings modal from the menu
 		await clickSubMenuItem(electronApp, `Eyas`, `Settings`);
 
-		const settingsModalTitle = uiPage.locator(`[data-qa="settings-modal-title"]`);
+		const settingsTabProject = uiPage.locator(`[data-qa="settings-tab-project"]`);
 
 		// Wait for visibility
-		await expect(settingsModalTitle).toBeVisible({ timeout: 10000 });
-		await expect(settingsModalTitle).toHaveText(`Settings`);
+		await expect(settingsTabProject).toBeVisible({ timeout: 10000 });
+		await expect(settingsTabProject).toHaveText(`Project`);
 
 		// Close it
 		await uiPage.locator(`[data-qa="settings-close"]`).click();
-		await expect(settingsModalTitle).not.toBeVisible();
+		await expect(settingsTabProject).not.toBeVisible();
 	});
 
 	test(`Always choose checkbox preserves selection on next launch`, async () => {
