@@ -69,6 +69,10 @@ const paths = {
 		path.join(roots.moduleBuild, `metrics-events.js`)
 	);
 	await fs.copy(
+		path.join(roots.src, `eyas-core`, `settings-service.js`),
+		path.join(roots.moduleBuild, `settings-service.js`)
+	);
+	await fs.copy(
 		path.join(roots.src, `eyas-core`, `test-server`),
 		path.join(roots.moduleBuild, `test-server`)
 	);

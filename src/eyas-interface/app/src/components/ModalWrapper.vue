@@ -6,6 +6,8 @@
 		<v-dialog
 			:model-value="modelValue"
 			:width="dialogWidth"
+			max-height="90vh"
+			scrollable
 			persistent
 			v-bind="$attrs"
 			:scrim="false"

@@ -14,6 +14,7 @@ function buildMenuTemplate(context) {
 		sessionAge,
 		cacheSize,
 		showAbout,
+		onOpenSettings = () => { },
 		quit,
 		startAFreshTest,
 		copyUrl,
@@ -56,10 +57,12 @@ function buildMenuTemplate(context) {
 
 	const appSubmenu = [
 		{ label: `ℹ️ &About`, click: showAbout },
+		{ label: `⚙️ &Settings`, click: onOpenSettings },
 		updateStatusItem,
 		{ type: `separator` },
 		{ label: `🚪 &Exit`, accelerator: `CmdOrCtrl+Q`, click: quit }
 	];
+
 
 	const toolsSubmenu = [
 		{ label: `🔄 &Restart Test`, click: startAFreshTest, enabled: !isInitializing },
