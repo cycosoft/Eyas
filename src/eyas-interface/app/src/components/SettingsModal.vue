@@ -88,12 +88,15 @@ export default {
 			this.projectAlwaysChoose = !!(project?.env?.alwaysChoose);
 			this.appAlwaysChoose = !!(app?.env?.alwaysChoose);
 			this.activeTab = `project`;
+			this.toastVisible = false;
 			this.visible = true;
 		});
 
 		// Show toast when a setting is acknowledged by the main process
 		window.eyas?.receive(`setting-saved`, () => {
-			this.toastVisible = true;
+			if (this.visible) {
+				this.toastVisible = true;
+			}
 		});
 	},
 

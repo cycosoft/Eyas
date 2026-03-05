@@ -78,7 +78,8 @@ describe(`SettingsModal`, () => {
 		});
 	});
 
-	test(`setting-saved IPC shows the toast`, () => {
+	test(`setting-saved IPC shows the toast if modal is visible`, () => {
+		wrapper.vm.visible = true; // Modal must be visible for toast to show
 		expect(wrapper.vm.toastVisible).toBe(false);
 		const call = mockReceive.mock.calls.find(c => c[0] === `setting-saved`);
 		expect(call).toBeDefined();
@@ -101,5 +102,40 @@ describe(`SettingsModal`, () => {
 		wrapper.vm.visible = false;
 		await wrapper.vm.$nextTick();
 		expect(mockSend).not.toHaveBeenCalledWith(`save-setting`, expect.anything());
+	});
+
+	test(`show-settings-modal does NOT send save-setting (reproduction for toast bug)`, () => {
+		const call = mockReceive.mock.calls.find(c => c[0] === `show-settings-modal`);
+
+		// Reset mock to ensure we don't count the initial setup if any
+		mockSend.mockClear();
+
+		// Setting values that are different from the current ones to see if it triggers an update
+		call[1]({
+			project: { env: { alwaysChoose: true } },
+			app: { env: { alwaysChoose: true } },
+			projectId: `proj-test`
+		});
+
+		expect(mockSend).not.toHaveBeenCalledWith(`save-setting`, expect.anything());
+	});
+
+	test(`toast is NOT shown if setting-saved was received while modal was closed`, async () => {
+		// Ensure modal is closed and toast is hidden
+		wrapper.vm.visible = false;
+		wrapper.vm.toastVisible = false;
+
+		// Simulate receiving setting-saved while closed
+		const call = mockReceive.mock.calls.find(c => c[0] === `setting-saved`);
+		call[1]();
+
+		// Open the modal
+		const showCall = mockReceive.mock.calls.find(c => c[0] === `show-settings-modal`);
+		showCall[1]({ project: {}, app: {} });
+
+		await wrapper.vm.$nextTick();
+
+		// The bug is that toastVisible will be true here
+		expect(wrapper.vm.toastVisible).toBe(false);
 	});
 });
