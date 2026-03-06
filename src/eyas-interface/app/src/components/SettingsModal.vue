@@ -4,7 +4,7 @@
 			<v-card-text>
 				<v-tabs v-model="activeTab" color="primary">
 					<v-tab value="project" data-qa="settings-tab-project">Project</v-tab>
-					<v-tab value="app" data-qa="settings-tab-app">App</v-tab>
+					<v-tab value="app" data-qa="settings-tab-app">Eyas</v-tab>
 				</v-tabs>
 
 				<v-window v-model="activeTab">
@@ -26,7 +26,7 @@
 					<!-- App-level settings -->
 					<v-window-item value="app">
 						<v-sheet class="pa-4">
-							<p class="text-subtitle-2 mb-3">App-wide defaults</p>
+							<p class="text-subtitle-2 mb-3">Eyas Defaults</p>
 							<v-checkbox
 								v-model="appAlwaysChoose"
 								label="Remember Selected Environment"
