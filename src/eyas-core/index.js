@@ -588,10 +588,10 @@ function checkTestExpiration() {
 // Get the app title
 function getAppTitle() {
 	// Always start with the main app name
-	let output = APP_NAME;
+	let output = ``;
 
 	// Add the test app title
-	output += ` :: ${$config.title}`;
+	output += $config.title;
 
 	// Add the build version
 	output += ` :: ${$config.version} ✨`;
