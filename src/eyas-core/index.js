@@ -71,7 +71,7 @@ const { safeJoin } = require(_path.join(__dirname, `scripts`, `path-utils.js`));
 const { formatDuration } = require(_path.join(__dirname, `scripts`, `time-utils.js`));
 const { substituteEnvVariables, isVariableLinkValid, hasRemainingVariables } = require(_path.join($roots.eyas, `scripts`, `variable-utils.js`));
 const settingsService = require(_path.join(__dirname, `settings-service.js`));
-const getAppTitle = require(_path.join($roots.eyas, `scripts`, `get-app-title.js`));
+const { getAppTitle, sanitizePageTitle } = require(_path.join($roots.eyas, `scripts`, `get-app-title.js`));
 
 
 // constants
@@ -405,8 +405,8 @@ function initTestListeners() {
 
 	// Whenever the content is loaded on the app window
 	$appWindow.webContents.on(`did-finish-load`, () => {
-		// update the title
-		$appWindow.setTitle(getAppTitleWithContext());
+		// update the title, preserving the current page title
+		$appWindow.setTitle(getAppTitleWithContext($appWindow.webContents.getTitle()));
 
 		// update the cache menu
 		setMenu();
@@ -431,6 +431,24 @@ function initTestListeners() {
 	$appWindow.webContents.on(`did-fail-load`, (event, errorCode, errorDescription) => {
 		// log the error
 		console.error(`Navigation failed: ${errorCode} - ${errorDescription}`);
+	});
+
+	// when the test content opens a new window (e.g. target="_blank")
+	$appWindow.webContents.on(`did-create-window`, win => {
+		// Apply our title format when the new window's page title updates
+		win.on(`page-title-updated`, (evt, title) => {
+			evt.preventDefault();
+			const rawUrl = win.webContents.getURL();
+			const url = rawUrl?.startsWith(`data:`) ? null : rawUrl;
+			win.setTitle(getAppTitle($config.title, $config.version, url, sanitizePageTitle(title, rawUrl)));
+		});
+
+		// Also apply our format when the new window finishes loading
+		win.webContents.on(`did-finish-load`, () => {
+			const rawUrl = win.webContents.getURL();
+			const url = rawUrl?.startsWith(`data:`) ? null : rawUrl;
+			win.setTitle(getAppTitle($config.title, $config.version, url, sanitizePageTitle(win.webContents.getTitle(), rawUrl)));
+		});
 	});
 }
 
@@ -588,29 +606,26 @@ function checkTestExpiration() {
 }
 
 // Get the app title
-function getAppTitleWithContext() {
-	// Add the current URL if it's available
-	let url = $appWindow ? $appWindow.webContents.getURL() : null;
+function getAppTitleWithContext(rawPageTitle) {
+	const rawUrl = $appWindow ? $appWindow.webContents.getURL() : null;
 
-	// ignore data: URLs
-	if (url?.startsWith(`data:`)) {
-		url = null;
-	}
+	// ignore data: URLs in the address bar
+	const url = rawUrl?.startsWith(`data:`) ? null : rawUrl;
+
+	// Sanitize the page title against the raw URL (before data: nulling)
+	const pageTitle = sanitizePageTitle(rawPageTitle, rawUrl);
 
 	// Return the built title
-	return getAppTitle($config.title, $config.version, url);
+	return getAppTitle($config.title, $config.version, url, pageTitle);
 }
 
-// Rename the internal calls to use the new function
-
-
 // manage automatic title updates
-function onTitleUpdate(evt) {
+function onTitleUpdate(evt, title) {
 	// Disregard the default behavior
 	evt.preventDefault();
 
-	// update the title
-	$appWindow.setTitle(getAppTitleWithContext());
+	// update the title, passing the new document.title
+	$appWindow.setTitle(getAppTitleWithContext(title));
 }
 
 // when the app resizes

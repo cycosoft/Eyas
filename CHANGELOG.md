@@ -9,6 +9,7 @@
 - Added a new settings modal for managing this new project-level setting, along with the app-wide default for all projects.
 - Remove prepended "Eyas" title from the app window title
 - Do not display data: URLs in the app window title
+- Display web page titles in the app window title
 
 # v26.2.34056
 
