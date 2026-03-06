@@ -103,6 +103,11 @@ const paths = {
 		path.join(paths.scriptsDist, `time-utils.js`)
 	);
 
+	await fs.copy(
+		path.join(paths.scriptsSrc, `get-app-title.js`),
+		path.join(paths.scriptsDist, `get-app-title.js`)
+	);
+
 	// remove the prebuild folder
 	// console.log(`clean up: removing ${roots.preBuild}`);
 	// await fs.remove(roots.preBuild);

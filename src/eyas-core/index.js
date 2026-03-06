@@ -71,6 +71,8 @@ const { safeJoin } = require(_path.join(__dirname, `scripts`, `path-utils.js`));
 const { formatDuration } = require(_path.join(__dirname, `scripts`, `time-utils.js`));
 const { substituteEnvVariables, isVariableLinkValid, hasRemainingVariables } = require(_path.join($roots.eyas, `scripts`, `variable-utils.js`));
 const settingsService = require(_path.join(__dirname, `settings-service.js`));
+const getAppTitle = require(_path.join($roots.eyas, `scripts`, `get-app-title.js`));
+
 
 // constants
 const { LOAD_TYPES, EXPIRE_MS } = require($paths.constants);
@@ -283,7 +285,7 @@ async function initElectronUi() {
 		useContentSize: true,
 		width: $currentViewport[0],
 		height: $currentViewport[1],
-		title: getAppTitle(),
+		title: getAppTitleWithContext(),
 		icon: $paths.icon,
 		show: false,
 		webPreferences: {
@@ -404,7 +406,7 @@ function initTestListeners() {
 	// Whenever the content is loaded on the app window
 	$appWindow.webContents.on(`did-finish-load`, () => {
 		// update the title
-		$appWindow.setTitle(getAppTitle());
+		$appWindow.setTitle(getAppTitleWithContext());
 
 		// update the cache menu
 		setMenu();
@@ -586,24 +588,16 @@ function checkTestExpiration() {
 }
 
 // Get the app title
-function getAppTitle() {
-	// Always start with the main app name
-	let output = ``;
-
-	// Add the test app title
-	output += $config.title;
-
-	// Add the build version
-	output += ` :: ${$config.version} ✨`;
-
-	// Add the current URL if it`s available
-	if ($appWindow) {
-		output += ` ( ${$appWindow.webContents.getURL()} )`;
-	}
+function getAppTitleWithContext() {
+	// Add the current URL if it's available
+	const url = $appWindow ? $appWindow.webContents.getURL() : null;
 
 	// Return the built title
-	return output;
+	return getAppTitle($config.title, $config.version, url);
 }
+
+// Rename the internal calls to use the new function
+
 
 // manage automatic title updates
 function onTitleUpdate(evt) {
@@ -611,7 +605,7 @@ function onTitleUpdate(evt) {
 	evt.preventDefault();
 
 	// update the title
-	$appWindow.setTitle(getAppTitle());
+	$appWindow.setTitle(getAppTitleWithContext());
 }
 
 // when the app resizes
