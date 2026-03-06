@@ -21,4 +21,12 @@ describe(`getAppTitle`, () => {
 		expect(getAppTitle(``, `1.0.0`)).toBe(` :: 1.0.0 ✨`);
 		expect(getAppTitle(`Test`, ``)).toBe(`Test ::  ✨`);
 	});
+
+	test(`should include data: URLs (utility remains flexible)`, () => {
+		const title = `Test App`;
+		const version = `1.0.0`;
+		const url = `data:text/html,<html></html>`;
+		const result = getAppTitle(title, version, url);
+		expect(result).toBe(`Test App :: 1.0.0 ✨ ( data:text/html,<html></html> )`);
+	});
 });
