@@ -590,7 +590,12 @@ function checkTestExpiration() {
 // Get the app title
 function getAppTitleWithContext() {
 	// Add the current URL if it's available
-	const url = $appWindow ? $appWindow.webContents.getURL() : null;
+	let url = $appWindow ? $appWindow.webContents.getURL() : null;
+
+	// ignore data: URLs
+	if (url?.startsWith(`data:`)) {
+		url = null;
+	}
 
 	// Return the built title
 	return getAppTitle($config.title, $config.version, url);
