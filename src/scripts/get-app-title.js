@@ -16,6 +16,14 @@ function sanitizePageTitle(rawPageTitle, rawUrl) {
 	// Omit when the title is just the URL (Electron's fallback when <title> is absent)
 	if (rawPageTitle === rawUrl) { return null; }
 
+	// Omit when the title is just the hostname (Electron's fallback on failed page loads)
+	try {
+		const { hostname } = new URL(rawUrl);
+		if (rawPageTitle === hostname) { return null; }
+	} catch (_) {
+		// rawUrl is not a parseable URL — skip this check
+	}
+
 	return rawPageTitle.trim();
 }
 

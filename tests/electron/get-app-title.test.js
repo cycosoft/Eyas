@@ -71,6 +71,11 @@ describe(`sanitizePageTitle`, () => {
 		expect(sanitizePageTitle(`https://example.com`, `https://example.com`)).toBeNull();
 	});
 
+	test(`should return null when pageTitle is the URL hostname (Electron fallback on failed load)`, () => {
+		expect(sanitizePageTitle(`landing.dev.cycosoft.com`, `https://landing.dev.cycosoft.com/`)).toBeNull();
+		expect(sanitizePageTitle(`example.com`, `https://example.com/some/path`)).toBeNull();
+	});
+
 	test(`should return null when rawUrl is absent`, () => {
 		expect(sanitizePageTitle(`My Page`, null)).toBe(`My Page`);
 		expect(sanitizePageTitle(`My Page`, undefined)).toBe(`My Page`);
