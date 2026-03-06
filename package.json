@@ -115,7 +115,7 @@
     "electron": "^40.8.0",
     "electron-builder": "^26.8.1",
     "electron-vite": "^5.0.0",
-    "eslint": "^10.0.2",
+    "eslint": "^10.0.3",
     "eslint-plugin-vue": "^10.8.0",
     "globals": "^17.4.0",
     "jsdom": "^28.1.0",
