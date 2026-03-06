@@ -432,6 +432,24 @@ function initTestListeners() {
 		// log the error
 		console.error(`Navigation failed: ${errorCode} - ${errorDescription}`);
 	});
+
+	// when the test content opens a new window (e.g. target="_blank")
+	$appWindow.webContents.on(`did-create-window`, win => {
+		// Apply our title format when the new window's page title updates
+		win.on(`page-title-updated`, (evt, title) => {
+			evt.preventDefault();
+			const rawUrl = win.webContents.getURL();
+			const url = rawUrl?.startsWith(`data:`) ? null : rawUrl;
+			win.setTitle(getAppTitle($config.title, $config.version, url, sanitizePageTitle(title, rawUrl)));
+		});
+
+		// Also apply our format when the new window finishes loading
+		win.webContents.on(`did-finish-load`, () => {
+			const rawUrl = win.webContents.getURL();
+			const url = rawUrl?.startsWith(`data:`) ? null : rawUrl;
+			win.setTitle(getAppTitle($config.title, $config.version, url, sanitizePageTitle(win.webContents.getTitle(), rawUrl)));
+		});
+	});
 }
 
 // initialize the Eyas listeners
