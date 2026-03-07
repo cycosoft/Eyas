@@ -302,6 +302,16 @@ describe(`Browser menu`, () => {
 		expect(Array.isArray(browserMenu.submenu)).toBe(true);
 	});
 
+	test(`Browser submenu contains Copy URL with copyUrl handler`, () => {
+		const copyUrl = () => { };
+		const ctx = { ...minimalContext, copyUrl };
+		const template = buildMenuTemplate(ctx);
+		const browserMenu = template[2];
+		const item = browserMenu.submenu.find(i => i.label && i.label.toLowerCase().includes(`copy url`));
+		expect(item).toBeDefined();
+		expect(item.click).toBe(copyUrl);
+	});
+
 	test(`Browser submenu contains Reload with reload handler`, () => {
 		const reload = () => { };
 		const ctx = { ...minimalContext, reload };
@@ -367,14 +377,11 @@ describe(`Developer Tools menu`, () => {
 		expect(Array.isArray(toolsMenu.submenu)).toBe(true);
 	});
 
-	test(`Tools submenu contains Copy URL with copyUrl handler`, () => {
-		const copyUrl = () => { };
-		const ctx = { ...minimalContext, copyUrl };
-		const template = buildMenuTemplate(ctx);
+	test(`Developer Tools submenu does NOT contain Copy URL`, () => {
+		const template = buildMenuTemplate(minimalContext);
 		const toolsMenu = template[3];
 		const item = toolsMenu.submenu.find(i => i.label && i.label.toLowerCase().includes(`copy url`));
-		expect(item).toBeDefined();
-		expect(item.click).toBe(copyUrl);
+		expect(item).toBeUndefined();
 	});
 
 	test(`Tools submenu contains Go Online/Offline toggle with toggleNetwork handler`, () => {

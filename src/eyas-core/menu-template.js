@@ -90,6 +90,8 @@ function buildMenuTemplate(context) {
 
 	// ── 3. Browser ───────────────────────────────────────────────────────────
 	const browserSubmenu = [
+		{ label: `📋 &Copy URL`, click: copyUrl, enabled: !isInitializing },
+		{ type: `separator` },
 		{ label: `🔄 &Reload`, accelerator: `CmdOrCtrl+R`, click: reload, enabled: !isInitializing },
 		{ label: `⬅️ &Back`, accelerator: `CmdOrCtrl+Left`, click: back, enabled: !isInitializing },
 		{ label: `➡️ &Forward`, accelerator: `CmdOrCtrl+Right`, click: forward, enabled: !isInitializing },
@@ -106,7 +108,6 @@ function buildMenuTemplate(context) {
 	];
 
 	const toolsSubmenu = [
-		{ label: `📋 &Copy URL`, click: copyUrl, enabled: !isInitializing },
 		{ label: `${testNetworkEnabled ? `🚫 &Go Offline` : `📶 &Go Online`}`, click: toggleNetwork, enabled: !isInitializing },
 		{ type: `separator` },
 		{ label: `📦 &Cache`, submenu: cacheSubmenu },
