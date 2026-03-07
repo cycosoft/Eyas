@@ -93,8 +93,8 @@ function buildMenuTemplate(context) {
 		{ label: `📋 &Copy URL`, click: copyUrl, enabled: !isInitializing },
 		{ type: `separator` },
 		{ label: `🔄 &Reload`, accelerator: `CmdOrCtrl+R`, click: reload, enabled: !isInitializing },
-		{ label: `⬅️ &Back`, accelerator: `CmdOrCtrl+Left`, click: back, enabled: !isInitializing },
-		{ label: `➡️ &Forward`, accelerator: `CmdOrCtrl+Right`, click: forward, enabled: !isInitializing },
+		{ label: `◀️ &Back`, accelerator: `CmdOrCtrl+Left`, click: back, enabled: !isInitializing },
+		{ label: `▶️ &Forward`, accelerator: `CmdOrCtrl+Right`, click: forward, enabled: !isInitializing },
 		{ type: `separator` },
 		{ label: `📐 &Viewport`, submenu: viewportItems }
 	];

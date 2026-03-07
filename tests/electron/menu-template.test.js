@@ -330,6 +330,7 @@ describe(`Browser menu`, () => {
 		const item = browserMenu.submenu.find(i => i.label && i.label.toLowerCase().includes(`back`));
 		expect(item).toBeDefined();
 		expect(item.click).toBe(back);
+		expect(item.label).toContain(`◀️`);
 	});
 
 	test(`Browser submenu contains Forward with forward handler`, () => {
@@ -340,6 +341,7 @@ describe(`Browser menu`, () => {
 		const item = browserMenu.submenu.find(i => i.label && i.label.toLowerCase().includes(`forward`));
 		expect(item).toBeDefined();
 		expect(item.click).toBe(forward);
+		expect(item.label).toContain(`▶️`);
 	});
 
 	test(`Browser submenu does NOT contain Go Online/Offline toggle`, () => {
