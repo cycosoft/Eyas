@@ -16,6 +16,8 @@ contextBridge.exposeInMainWorld(`eyas`, {
 			`test-server-setup-continue`,
 			`test-server-setup-step`,
 			`test-server-resume-confirm`,
+			`test-server-stop`,
+			`test-server-open-browser`,
 			`save-setting`,
 			`get-settings`
 		];
@@ -33,6 +35,7 @@ contextBridge.exposeInMainWorld(`eyas`, {
 			`show-version-mismatch-modal`,
 			`show-test-server-setup-modal`,
 			`show-test-server-resume-modal`,
+			`show-test-server-active-modal`,
 			`close-modals`,
 			`show-settings-modal`,
 			`setting-saved`,

@@ -743,6 +743,15 @@ async function doStartTestServer(autoOpenBrowser = true, customDomain = null) {
 	if (autoOpenBrowser) {
 		openTestServerInBrowserHandler();
 	}
+
+	const state = testServer.getTestServerState();
+	if (state) {
+		uiEvent(`show-test-server-active-modal`, {
+			domain: state.customUrl || state.url,
+			startTime: state.startedAt,
+			endTime: state.startedAt + EXPIRE_MS
+		});
+	}
 }
 
 // whenever the test server automatically shuts down

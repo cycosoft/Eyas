@@ -41,11 +41,7 @@ function buildMenuTemplate(context) {
 		isInitializing = false
 	} = context;
 
-	const getTestServerSubmenu = () => [
-		{ label: `🛑 &Stop Live Test Server`, click: onStopTestServer },
-		{ label: `📋 &Copy Live Test Server URL`, click: onCopyTestServerUrl },
-		{ label: `🌐 &Open in Browser`, click: onOpenTestServerInBrowser }
-	];
+
 
 	const testServerLabel = testServerActive
 		? `📡 Test Server running for ~${testServerRemainingTime}`
@@ -78,11 +74,10 @@ function buildMenuTemplate(context) {
 
 	testSubmenu.push({ type: `separator` });
 
-	if (testServerActive && onStopTestServer && onCopyTestServerUrl && onOpenTestServerInBrowser) {
+	if (testServerActive) {
 		testSubmenu.push({
 			label: testServerLabel,
-			enabled: !isInitializing,
-			submenu: getTestServerSubmenu()
+			enabled: false
 		});
 	} else {
 		testSubmenu.push({ label: `📡 Live Test Server`, click: onStartTestServer, enabled: !isInitializing });
@@ -134,8 +129,7 @@ function buildMenuTemplate(context) {
 	// Floating test server status item at far right (retained)
 	if (testServerActive) {
 		menu.push({
-			label: testServerLabel,
-			submenu: getTestServerSubmenu()
+			label: testServerLabel
 		});
 	}
 
