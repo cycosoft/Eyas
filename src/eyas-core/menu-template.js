@@ -55,6 +55,7 @@ function buildMenuTemplate(context) {
 		? { label: `⬆️ Downloading update...`, enabled: false }
 		: { label: `⬆️ Check for updates`, click: onCheckForUpdates };
 
+	// ── 1. Eyas ─────────────────────────────────────────────────────────────
 	const appSubmenu = [
 		{ label: `ℹ️ &About`, click: showAbout },
 		{ label: `⚙️ &Settings`, click: onOpenSettings },
@@ -63,74 +64,74 @@ function buildMenuTemplate(context) {
 		{ label: `🚪 &Exit`, accelerator: `CmdOrCtrl+Q`, click: quit }
 	];
 
-
-	const toolsSubmenu = [
-		{ label: `🔄 &Restart Test`, click: startAFreshTest, enabled: !isInitializing },
-		{ label: `📋 &Copy URL`, click: copyUrl, enabled: !isInitializing },
-		{ type: `separator` }
+	// ── 2. Test ──────────────────────────────────────────────────────────────
+	const testSubmenu = [
+		{ label: `🔄 &Choose Test Environment`, click: startAFreshTest, enabled: !isInitializing }
 	];
 
+	testSubmenu.push({ label: `🏠 Test &Home`, click: navigateHome, enabled: !isInitializing });
+
+	if (linkItems.length) {
+		testSubmenu.push({ type: `separator` });
+		testSubmenu.push({ label: `🔗 &Links`, submenu: linkItems });
+	}
+
+	testSubmenu.push({ type: `separator` });
+
 	if (testServerActive && onStopTestServer && onCopyTestServerUrl && onOpenTestServerInBrowser) {
-		toolsSubmenu.push({
+		testSubmenu.push({
 			label: testServerLabel,
 			enabled: !isInitializing,
 			submenu: getTestServerSubmenu()
 		});
 	} else {
-		toolsSubmenu.push({ label: `📡 Live Test Server`, click: onStartTestServer, enabled: !isInitializing });
+		testSubmenu.push({ label: `📡 Live Test Server`, click: onStartTestServer, enabled: !isInitializing });
 	}
 
-	toolsSubmenu.push({ type: `separator` });
-	toolsSubmenu.push({ role: `toggleDevTools`, accelerator: `F12`, label: `⚙️ &Developer Tools${isDev ? ` (Test)` : ``}` });
+	// ── 3. Browser ───────────────────────────────────────────────────────────
+	const browserSubmenu = [
+		{ label: `🔄 &Reload`, accelerator: `CmdOrCtrl+R`, click: reload, enabled: !isInitializing },
+		{ label: `⬅️ &Back`, accelerator: `CmdOrCtrl+Left`, click: back, enabled: !isInitializing },
+		{ label: `➡️ &Forward`, accelerator: `CmdOrCtrl+Right`, click: forward, enabled: !isInitializing },
+		{ type: `separator` },
+		{ label: `📐 &Viewport`, submenu: viewportItems },
+		{ type: `separator` },
+		{ label: `${testNetworkEnabled ? `🚫 &Go Offline` : `📶 &Go Online`}`, click: toggleNetwork, enabled: !isInitializing }
+	];
 
-	const menu = [
-		{ label: `&${appName}`, submenu: appSubmenu },
-		{
-			label: `🔧 &Tools`,
-			enabled: !isInitializing,
-			submenu: toolsSubmenu
-		}
+	// ── 4. Tools ─────────────────────────────────────────────────────────────
+	const cacheSubmenu = [
+		{ label: `⏳ Age: ${sessionAge}`, click: refreshMenu, enabled: !isInitializing },
+		{ label: `💾 Size: ${cacheSize} bytes`, click: refreshMenu, enabled: !isInitializing },
+		{ label: `🗑️ &Clear`, click: clearCache, enabled: !isInitializing },
+		...(isDev ? [{ label: `📂 Open Cache Folder`, click: openCacheFolder, enabled: !isInitializing }] : [])
+	];
+
+	const toolsSubmenu = [
+		{ label: `📋 &Copy URL`, click: copyUrl, enabled: !isInitializing },
+		{ type: `separator` },
+		{ label: `📦 &Cache`, submenu: cacheSubmenu },
+		{ type: `separator` },
+		{ role: `toggleDevTools`, accelerator: `F12`, label: `⚙️ &Developer Tools${isDev ? ` (Test)` : ``}` }
 	];
 
 	if (isDev) {
-		menu[1].submenu.push({
+		toolsSubmenu.push({
 			label: `⚙️ Developer Tools (&UI)`,
 			accelerator: `CmdOrCtrl+Shift+J`,
 			click: openUiDevTools
 		});
 	}
 
-	menu.push({
-		label: `${testNetworkEnabled ? `📶` : `🚫`} &Network`,
-		enabled: !isInitializing,
-		submenu: [
-			{ label: `🏠 Test &Home`, click: navigateHome, enabled: !isInitializing },
-			{ type: `separator` },
-			{ label: `🔄 &Reload`, accelerator: `CmdOrCtrl+R`, click: reload, enabled: !isInitializing },
-			{ label: `⬅️ &Back`, accelerator: `CmdOrCtrl+Left`, click: back, enabled: !isInitializing },
-			{ label: `➡️ &Forward`, accelerator: `CmdOrCtrl+Right`, click: forward, enabled: !isInitializing },
-			{ type: `separator` },
-			{ label: `${testNetworkEnabled ? `🚫 &Go Offline` : `📶 &Go Online`}`, click: toggleNetwork, enabled: !isInitializing }
-		]
-	});
+	// ── Assemble root menu ────────────────────────────────────────────────────
+	const menu = [
+		{ label: `&${appName}`, submenu: appSubmenu },
+		{ label: `🧪 &Test`, enabled: !isInitializing, submenu: testSubmenu },
+		{ label: `🌐 &Browser`, enabled: !isInitializing, submenu: browserSubmenu },
+		{ label: `🔧 &Tools`, enabled: !isInitializing, submenu: toolsSubmenu }
+	];
 
-	menu.push({
-		label: `📦 &Cache`,
-		enabled: !isInitializing,
-		submenu: [
-			{ label: `⏳ Age: ${sessionAge}`, click: refreshMenu, enabled: !isInitializing },
-			{ label: `💾 Size: ${cacheSize} bytes`, click: refreshMenu, enabled: !isInitializing },
-			{ label: `🗑️ &Clear`, click: clearCache, enabled: !isInitializing },
-			...(isDev ? [{ label: `📂 Open Cache Folder`, click: openCacheFolder, enabled: !isInitializing }] : [])
-		]
-	});
-
-	menu.push({ label: `📐 &Viewport`, submenu: viewportItems });
-
-	if (linkItems.length) {
-		menu.push({ label: `🔗 &Links`, submenu: linkItems });
-	}
-
+	// Floating test server status item at far right (retained)
 	if (testServerActive) {
 		menu.push({
 			label: testServerLabel,
