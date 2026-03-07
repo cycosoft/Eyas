@@ -332,14 +332,11 @@ describe(`Browser menu`, () => {
 		expect(item.click).toBe(forward);
 	});
 
-	test(`Browser submenu contains Go Online/Offline toggle with toggleNetwork handler`, () => {
-		const toggleNetwork = () => { };
-		const ctx = { ...minimalContext, toggleNetwork };
-		const template = buildMenuTemplate(ctx);
+	test(`Browser submenu does NOT contain Go Online/Offline toggle`, () => {
+		const template = buildMenuTemplate(minimalContext);
 		const browserMenu = template[2];
 		const item = browserMenu.submenu.find(i => i.label && (i.label.toLowerCase().includes(`online`) || i.label.toLowerCase().includes(`offline`)));
-		expect(item).toBeDefined();
-		expect(item.click).toBe(toggleNetwork);
+		expect(item).toBeUndefined();
 	});
 
 	test(`Browser submenu contains a Viewport submenu`, () => {
@@ -378,6 +375,16 @@ describe(`Tools menu`, () => {
 		const item = toolsMenu.submenu.find(i => i.label && i.label.toLowerCase().includes(`copy url`));
 		expect(item).toBeDefined();
 		expect(item.click).toBe(copyUrl);
+	});
+
+	test(`Tools submenu contains Go Online/Offline toggle with toggleNetwork handler`, () => {
+		const toggleNetwork = () => { };
+		const ctx = { ...minimalContext, toggleNetwork };
+		const template = buildMenuTemplate(ctx);
+		const toolsMenu = template[3];
+		const item = toolsMenu.submenu.find(i => i.label && (i.label.toLowerCase().includes(`online`) || i.label.toLowerCase().includes(`offline`)));
+		expect(item).toBeDefined();
+		expect(item.click).toBe(toggleNetwork);
 	});
 
 	test(`Tools submenu contains a Cache submenu with Age, Size, and Clear items`, () => {
