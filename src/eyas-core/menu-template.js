@@ -127,7 +127,7 @@ function buildMenuTemplate(context) {
 		{ label: `&${appName}`, submenu: appSubmenu },
 		{ label: `🧪 &Test`, enabled: !isInitializing, submenu: testSubmenu },
 		{ label: `🌐 &Browser`, enabled: !isInitializing, submenu: browserSubmenu },
-		{ label: `🔧 &Tools`, enabled: !isInitializing, submenu: toolsSubmenu }
+		{ label: `🔧 &Developer Tools`, enabled: !isInitializing, submenu: toolsSubmenu }
 	];
 
 	// Floating test server status item at far right (retained)

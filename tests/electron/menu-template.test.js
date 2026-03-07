@@ -54,12 +54,12 @@ describe(`Root menu structure`, () => {
 		expect(template.length).toBeGreaterThan(1);
 	});
 
-	test(`root menus are in order: Eyas, Test, Browser, Tools`, () => {
+	test(`root menus are in order: Eyas, Test, Browser, Developer Tools`, () => {
 		const template = buildMenuTemplate(minimalContext);
 		expect(template[0].label).toContain(`Eyas`);
 		expect(template[1].label).toContain(`Test`);
 		expect(template[2].label).toContain(`Browser`);
-		expect(template[3].label).toContain(`Tools`);
+		expect(template[3].label).toContain(`Developer Tools`);
 	});
 });
 
@@ -358,12 +358,12 @@ describe(`Browser menu`, () => {
 
 // ─── Tools menu ───────────────────────────────────────────────────────────
 
-describe(`Tools menu`, () => {
-	test(`Tools menu exists as fourth root item`, () => {
+describe(`Developer Tools menu`, () => {
+	test(`Developer Tools menu exists as fourth root item`, () => {
 		const template = buildMenuTemplate(minimalContext);
 		const toolsMenu = template[3];
 		expect(toolsMenu).toBeDefined();
-		expect(toolsMenu.label).toContain(`Tools`);
+		expect(toolsMenu.label).toContain(`Developer Tools`);
 		expect(Array.isArray(toolsMenu.submenu)).toBe(true);
 	});
 
@@ -409,7 +409,7 @@ describe(`Tools menu`, () => {
 		expect(devToolsItem).toBeDefined();
 	});
 
-	test(`template does NOT include Enable HTTPS option in Tools menu`, () => {
+	test(`template does NOT include Enable HTTPS option in Developer Tools menu`, () => {
 		const onToggle = () => { };
 		const ctx = { ...minimalContext, testServerHttpsEnabled: true, onToggleTestServerHttps: onToggle };
 		const template = buildMenuTemplate(ctx);
@@ -419,7 +419,7 @@ describe(`Tools menu`, () => {
 		expect(httpsItem).toBeUndefined();
 	});
 
-	test(`when isInitializing is true, Tools menu is disabled`, () => {
+	test(`when isInitializing is true, Developer Tools menu is disabled`, () => {
 		const ctx = { ...minimalContext, isInitializing: true };
 		const template = buildMenuTemplate(ctx);
 		const toolsMenu = template[3];
