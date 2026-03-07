@@ -41,20 +41,23 @@ test.describe(`Logic-Driven Integration Tests`, () => {
 
 		// Verify menu updates to reflect offline status
 		const menu = await waitForMenuUpdate(electronApp, m => {
-			const networkMenu = m.find(item => item.label.includes(`Network`));
-			return networkMenu && networkMenu.label.includes(`🚫`);
+			const devTools = m.find(item => item.label.includes(`Developer Tools`));
+			return devTools && devTools.submenu && devTools.submenu.some(item => item.label.includes(`&Go Online`));
 		});
 
-		expect(menu.find(item => item.label.includes(`Network`)).label).toContain(`🚫`);
+		const devTools = menu.find(item => item.label.includes(`Developer Tools`));
+		const toggleItem = devTools.submenu.find(item => item.label.includes(`&Go Online`));
+		expect(toggleItem).toBeDefined();
 
 		// Toggle back
 		await emitIpcMessage(electronApp, `network-status`, true);
 		const menuOnline = await waitForMenuUpdate(electronApp, m => {
-			const networkMenu = m.find(item => item.label.includes(`Network`));
-			return networkMenu && networkMenu.label.includes(`📶`);
+			const devTools = m.find(item => item.label.includes(`Developer Tools`));
+			return devTools && devTools.submenu && devTools.submenu.some(item => item.label.includes(`&Go Offline`));
 		});
 
-		expect(menuOnline.find(item => item.label.includes(`Network`)).label).toContain(`📶`);
+		const toggleItemOnline = menuOnline.find(item => item.label.includes(`Developer Tools`)).submenu.find(item => item.label.includes(`&Go Offline`));
+		expect(toggleItemOnline).toBeDefined();
 	});
 
 	test(`test server setup via IPC starts the server`, async () => {
@@ -69,12 +72,12 @@ test.describe(`Logic-Driven Integration Tests`, () => {
 		// Verify the menu shows the test server is running
 		// The interval for menu updates in index.js is 60s, but setMenu is called immediately after start
 		const menu = await waitForMenuUpdate(electronApp, m => {
-			const tools = m.find(item => item.label.includes(`Tools`));
-			return tools && tools.submenu && tools.submenu.some(item => item.label.includes(`Test Server running`));
+			const testMenu = m.find(item => item.label.includes(`Test`));
+			return testMenu && testMenu.submenu && testMenu.submenu.some(item => item.label.includes(`Test Server running`));
 		});
 
-		const tools = menu.find(item => item.label.includes(`Tools`));
-		const testServerItem = tools.submenu.find(item => item.label.includes(`Test Server running`));
+		const testMenu = menu.find(item => item.label.includes(`Test`));
+		const testServerItem = testMenu.submenu.find(item => item.label.includes(`Test Server running`));
 		expect(testServerItem.label).toMatch(/Test Server running/);
 	});
 });

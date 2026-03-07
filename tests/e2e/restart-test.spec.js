@@ -17,7 +17,7 @@ test.describe(`Restart Test`, () => {
 		await exitEyas(electronApp);
 	});
 
-	test(`"Tools > Restart Test" always displays the environment chooser`, async () => {
+	test(`"Test > Reset Test Environment" always displays the environment chooser`, async () => {
 		const uiPage = await getUiView(electronApp);
 
 		// 1. Persist an environment choice with "Always choose"
@@ -35,9 +35,9 @@ test.describe(`Restart Test`, () => {
 		// Wait for modal to disappear
 		await expect(envModalTitle).not.toBeVisible();
 
-		// 2. Trigger "Tools > Restart Test" from the menu
+		// 2. Trigger "Test > Reset Test Environment" from the menu
 		// This should show the modal again despite "Always choose" being set
-		const restartTriggered = await clickSubMenuItem(electronApp, `Tools`, `Restart Test`);
+		const restartTriggered = await clickSubMenuItem(electronApp, `Test`, `Reset Test Environment`);
 		expect(restartTriggered).toBe(true);
 
 		// 3. Verify the environment modal is visible again
