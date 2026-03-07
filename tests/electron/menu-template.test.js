@@ -188,7 +188,7 @@ describe(`Test menu`, () => {
 		const ctx = { ...minimalContext, startAFreshTest };
 		const template = buildMenuTemplate(ctx);
 		const testMenu = template[1];
-		const envItem = testMenu.submenu.find(item => item.label && item.label.toLowerCase().includes(`environment`));
+		const envItem = testMenu.submenu.find(item => item.label && item.label.toLowerCase().includes(`reset`));
 		expect(envItem).toBeDefined();
 		expect(envItem.click).toBe(startAFreshTest);
 	});

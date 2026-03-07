@@ -66,7 +66,7 @@ function buildMenuTemplate(context) {
 
 	// ── 2. Test ──────────────────────────────────────────────────────────────
 	const testSubmenu = [
-		{ label: `🔄 &Choose Test Environment`, click: startAFreshTest, enabled: !isInitializing }
+		{ label: `🔄 &Reset Test Environment`, click: startAFreshTest, enabled: !isInitializing }
 	];
 
 	testSubmenu.push({ label: `🏠 Test &Home`, click: navigateHome, enabled: !isInitializing });
