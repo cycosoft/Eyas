@@ -10,6 +10,7 @@
 - Remove prepended "Eyas" title from the app window title
 - Do not display data: URLs in the app window title
 - Display web page titles in the app window title
+- Restructured menu for easier navigation
 
 # v26.2.34056
 

@@ -20,12 +20,11 @@ test.describe(`Application Menu`, () => {
 		const menuStructure = await getMenuStructure(electronApp);
 		const labels = menuStructure.map(item => item.label);
 
-		expect(labels.length).toBeGreaterThanOrEqual(5);
+		expect(labels.length).toBeGreaterThanOrEqual(4);
 		expect(labels.some(l => l.match(/Eyas|File/i))).toBe(true);
+		expect(labels.some(l => l.includes(`Test`))).toBe(true);
+		expect(labels.some(l => l.includes(`Browser`))).toBe(true);
 		expect(labels.some(l => l.includes(`Tools`))).toBe(true);
-		expect(labels.some(l => l.includes(`Network`))).toBe(true);
-		expect(labels.some(l => l.includes(`Cache`))).toBe(true);
-		expect(labels.some(l => l.includes(`Viewport`))).toBe(true);
 	});
 
 	test(`app-name menu has About and Exit`, async () => {
