@@ -683,14 +683,14 @@ function copyTestServerUrlHandler() {
 	}
 }
 
-function openTestServerInBrowserHandler() {
+function openTestServerInBrowserHandler(event, url) {
 	if ($isInitializing) return;
 	const state = testServer.getTestServerState();
-	if (state) {
-		const targetUrl = state.customUrl || state.url;
-		if (targetUrl) {
-			require(`electron`).shell.openExternal(targetUrl);
-		}
+
+	// use the provided url, or fall back to the test server state
+	const targetUrl = url || state?.customUrl || state?.url;
+	if (targetUrl) {
+		require(`electron`).shell.openExternal(targetUrl);
 	}
 }
 

@@ -39,11 +39,14 @@ describe(`TestServerActiveModal`, () => {
 		expect(wrapper.vm.visible).toBe(false);
 	});
 
-	test(`Open in Browser button emits test-server-open-browser`, async () => {
-		receiveCallback({ domain: `http://localhost`, startTime: 0, endTime: 1000 });
+	test(`Open in Browser button emits test-server-open-browser with domain`, async () => {
+		const domain = `http://localhost:1234`;
+		receiveCallback({ domain, startTime: 0, endTime: 1000 });
 		await wrapper.vm.$nextTick();
+		
 		wrapper.vm.openInBrowser();
-		expect(global.window.eyas.send).toHaveBeenCalledWith(`test-server-open-browser`);
+		
+		expect(global.window.eyas.send).toHaveBeenCalledWith(`test-server-open-browser`, domain);
 	});
 
 	test(`Copy to clipboard functionality`, async () => {

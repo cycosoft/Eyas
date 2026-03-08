@@ -57,6 +57,7 @@
 				</v-btn>
 				
 				<v-btn
+					id="btn-open-in-browser"
 					color="primary"
 					variant="flat"
 					class="flex-grow-1 ml-2"
@@ -159,7 +160,7 @@ export default {
 		},
 
 		openInBrowser() {
-			window.eyas?.send(`test-server-open-browser`);
+			window.eyas?.send(`test-server-open-browser`, this.domain);
 		},
 
 		close() {
