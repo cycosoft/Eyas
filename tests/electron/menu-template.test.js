@@ -230,28 +230,42 @@ describe(`Test menu`, () => {
 		expect(startItem.click).toBe(onStartTestServer);
 	});
 
-	test(`when testServerActive is true and testServerRemainingTime is '29m', Test menu includes 'Test Server running for ~29m' item with no sub-menu`, () => {
+	test(`when testServerActive is true and testServerRemainingTime is '29m', Test menu includes 'Test Server running for ~29m' item with sub-menu`, () => {
 		const ctx = { ...minimalContext, testServerActive: true, testServerRemainingTime: `29m` };
 		const template = buildMenuTemplate(ctx);
 		const testMenu = template[1];
 		const startItem = testMenu.submenu.find(item => item.label && item.label.includes(`Test Server running`));
 		expect(startItem).toBeDefined();
 		expect(startItem.label).toMatch(/Test Server running for ~29m/);
-		expect(startItem.submenu).toBeUndefined();
+		expect(Array.isArray(startItem.submenu)).toBe(true);
 	});
 
-	test(`when testServerActive is true, Test menu item is disabled and has no sub-menu`, () => {
+	test(`when testServerActive is true, Test menu sub-menu has Stop, Copy URL, Open in browser`, () => {
+		const onStopTestServer = () => { };
+		const onCopyTestServerUrl = () => { };
+		const onOpenTestServerInBrowser = () => { };
 		const ctx = {
 			...minimalContext,
 			testServerActive: true,
-			testServerRemainingTime: `5m`
+			testServerRemainingTime: `5m`,
+			onStopTestServer,
+			onCopyTestServerUrl,
+			onOpenTestServerInBrowser
 		};
 		const template = buildMenuTemplate(ctx);
 		const testMenu = template[1];
 		const startItem = testMenu.submenu.find(item => item.label && item.label.includes(`Test Server running`));
 		expect(startItem).toBeDefined();
-		expect(startItem.enabled).toBe(false);
-		expect(startItem.submenu).toBeUndefined();
+		expect(Array.isArray(startItem.submenu)).toBe(true);
+		const stopItem = startItem.submenu.find(i => i.label && i.label.toLowerCase().includes(`stop`));
+		const copyItem = startItem.submenu.find(i => i.label && i.label.toLowerCase().includes(`copy`));
+		const openItem = startItem.submenu.find(i => i.label && (i.label.toLowerCase().includes(`open`) || i.label.toLowerCase().includes(`browser`)));
+		expect(stopItem).toBeDefined();
+		expect(stopItem.click).toBe(onStopTestServer);
+		expect(copyItem).toBeDefined();
+		expect(copyItem.click).toBe(onCopyTestServerUrl);
+		expect(openItem).toBeDefined();
+		expect(openItem.click).toBe(onOpenTestServerInBrowser);
 	});
 
 	test(`when testServerActive is true, template still includes a top-level status item at the end`, () => {
@@ -259,7 +273,7 @@ describe(`Test menu`, () => {
 		const template = buildMenuTemplate(ctx);
 		const last = template[template.length - 1];
 		expect(last.label).toMatch(/Test Server running for ~15m/);
-		expect(last.submenu).toBeUndefined();
+		expect(Array.isArray(last.submenu)).toBe(true);
 	});
 
 	test(`when testServerActive is false, template does not include top-level status item at the end`, () => {

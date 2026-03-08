@@ -35,8 +35,17 @@ function buildMenuTemplate(context) {
 		testServerActive = false,
 		testServerRemainingTime = ``,
 		onStartTestServer,
+		onStopTestServer,
+		onCopyTestServerUrl,
+		onOpenTestServerInBrowser,
 		isInitializing = false
 	} = context;
+
+	const getTestServerSubmenu = () => [
+		{ label: `🛑 &Stop Live Test Server`, click: onStopTestServer },
+		{ label: `📋 &Copy Live Test Server URL`, click: onCopyTestServerUrl },
+		{ label: `🌐 &Open in Browser`, click: onOpenTestServerInBrowser }
+	];
 
 
 
@@ -71,10 +80,11 @@ function buildMenuTemplate(context) {
 
 	testSubmenu.push({ type: `separator` });
 
-	if (testServerActive) {
+	if (testServerActive && onStopTestServer && onCopyTestServerUrl && onOpenTestServerInBrowser) {
 		testSubmenu.push({
 			label: testServerLabel,
-			enabled: false
+			enabled: !isInitializing,
+			submenu: getTestServerSubmenu()
 		});
 	} else {
 		testSubmenu.push({ label: `📡 Live Test Server`, click: onStartTestServer, enabled: !isInitializing });
@@ -126,7 +136,8 @@ function buildMenuTemplate(context) {
 	// Floating test server status item at far right (retained)
 	if (testServerActive) {
 		menu.push({
-			label: testServerLabel
+			label: testServerLabel,
+			submenu: getTestServerSubmenu()
 		});
 	}
 
