@@ -91,7 +91,7 @@ test.describe(`Logic-Driven Integration Tests`, () => {
 		const uiPage = await getUiView(electronApp);
 
 		// Wait for the modal title to be visible indicating it opened
-		const modalTitle = uiPage.getByText(`End Session`);
+		const modalTitle = uiPage.getByText(`Close Session`);
 		try {
 			await expect(modalTitle).toBeVisible({ timeout: 15000 });
 		} catch (e) {
@@ -100,10 +100,10 @@ test.describe(`Logic-Driven Integration Tests`, () => {
 		}
 
 		// Verify the session action button is present
-		const endSessionBtn = uiPage.getByText(`End Session`);
+		const endSessionBtn = uiPage.getByText(`Close Session`);
 		await expect(endSessionBtn).toBeVisible();
 
-		// Click the End Session button to stop the server
+		// Click the Close Session button to stop the server
 		await endSessionBtn.click();
 
 		// Wait for the modal to be hidden
