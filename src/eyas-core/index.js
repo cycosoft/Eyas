@@ -544,6 +544,13 @@ function initUiListeners() {
 
 	// test server active modal: user clicked Open in Browser
 	ipcMain.on(`test-server-open-browser`, openTestServerInBrowserHandler);
+
+	// test server active modal: user clicked Extend Session
+	ipcMain.on(`test-server-extend`, () => {
+		if ($lastTestServerOptions) {
+			doStartTestServer();
+		}
+	});
 }
 
 // method for tracking events
@@ -767,7 +774,7 @@ function onTestServerTimeout() {
 	}
 	stopTestServer();
 
-	// Show the resume modal in the UI
+	// Signal the UI that the session has expired
 	uiEvent(`show-test-server-resume-modal`, formatDuration(TEST_SERVER_SESSION_DURATION_MS));
 }
 

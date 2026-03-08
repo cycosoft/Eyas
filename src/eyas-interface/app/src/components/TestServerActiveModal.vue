@@ -1,24 +1,26 @@
 <template>
-	<ModalWrapper v-model="visible">
+	<ModalWrapper v-model="visible" eager>
 		<v-card class="pa-3">
 			<!-- Header / Action bar with countdown -->
 			<v-card-title class="d-flex align-center justify-space-between text-h6 text-primary">
 				<span>Live Test Server</span>
 				<v-chip
-					v-if="endTime"
-					color="warning"
+					v-if="endTime || isExpired"
+					:color="isExpired ? 'error' : 'warning'"
 					variant="flat"
 					class="font-weight-bold"
 					size="small"
 				>
-					Session ends in {{ countdownText }} @ {{ formattedEndTime }}
+					{{ isExpired ? 'Session Expired' : `Session ends in ${countdownText} @ ${formattedEndTime}` }}
 				</v-chip>
 			</v-card-title>
 
 			<v-card-text class="pt-4 pb-2">
 				<!-- Server Address Info -->
 				<div class="d-flex flex-column align-center justify-center py-6 mb-4 rounded-lg bg-surface-light border">
-					<span class="text-subtitle-2 text-medium-emphasis mb-2">Test served at</span>
+					<span class="text-subtitle-2 text-medium-emphasis mb-2">
+						{{ isExpired ? 'Last session served at' : 'Test served at' }}
+					</span>
 					
 					<v-tooltip location="top" :text="tooltipText">
 						<template v-slot:activator="{ props }">
@@ -38,7 +40,12 @@
 				<!-- Session Start Time -->
 				<div v-if="startTime" class="text-caption text-center text-medium-emphasis mt-4">
 					<v-icon icon="mdi-clock-outline" size="small" class="mr-1"></v-icon>
-					Session started at {{ formattedStartTime }}
+					{{ isExpired ? 'Last session started at' : 'Session started at' }} {{ formattedStartTime }}
+				</div>
+
+				<!-- Expired Message -->
+				<div v-if="isExpired" class="text-body-2 text-center text-error mt-4 font-weight-bold">
+					This session has timed out after {{ duration }}.
 				</div>
 			</v-card-text>
 
@@ -47,13 +54,26 @@
 			<!-- Action Buttons -->
 			<v-card-actions class="d-flex justify-center px-4 pb-4">
 				<v-btn
+					id="btn-close-session"
 					color="error"
 					variant="flat"
 					class="flex-grow-1 mr-2"
 					prepend-icon="mdi-stop-circle-outline"
 					@click="stopServer"
 				>
-					End Session
+					Close Session
+				</v-btn>
+
+				<v-btn
+					v-if="isExpired"
+					id="btn-extend-session"
+					color="success"
+					variant="flat"
+					class="flex-grow-1 mx-2"
+					prepend-icon="mdi-plus-circle-outline"
+					@click="extendSession"
+				>
+					Extend Session
 				</v-btn>
 				
 				<v-btn
@@ -79,7 +99,9 @@ const defaults = {
 	domain: '',
 	startTime: null,
 	endTime: null,
-	copyIcon: 'mdi-content-copy'
+	copyIcon: 'mdi-content-copy',
+	isExpired: false,
+	duration: ''
 };
 
 export default {
@@ -115,12 +137,20 @@ export default {
 			this.domain = payload.domain || '';
 			this.startTime = payload.startTime || null;
 			this.endTime = payload.endTime || null;
+			this.isExpired = false;
 			this.visible = true;
 
 			this.now = Date.now();
 			if (this.endTime) {
 				this.startTimer();
 			}
+		});
+
+		window.eyas?.receive(`show-test-server-resume-modal`, (duration) => {
+			this.duration = duration || `the session limit`;
+			this.isExpired = true;
+			this.visible = true;
+			this.stopTimer();
 		});
 	},
 
@@ -161,6 +191,10 @@ export default {
 
 		openInBrowser() {
 			window.eyas?.send(`test-server-open-browser`, this.domain);
+		},
+
+		extendSession() {
+			window.eyas?.send(`test-server-extend`);
 		},
 
 		close() {

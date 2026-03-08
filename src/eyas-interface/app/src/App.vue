@@ -8,7 +8,6 @@
 		<ExitModal />
 		<VersionMismatchModal />
 		<TestServerSetupModal />
-		<TestServerResumeModal />
 		<TestServerActiveModal />
 		<SettingsModal />
 	</v-app>
@@ -20,7 +19,6 @@ import EnvironmentModal from '@/components/EnvironmentModal.vue';
 import VariablesModal from '@/components/VariablesModal.vue';
 import VersionMismatchModal from '@/components/VersionMismatchModal.vue';
 import TestServerSetupModal from '@/components/TestServerSetupModal.vue';
-import TestServerResumeModal from '@/components/TestServerResumeModal.vue';
 import TestServerActiveModal from '@/components/TestServerActiveModal.vue';
 import SettingsModal from '@/components/SettingsModal.vue';
 
@@ -31,7 +29,6 @@ export default {
 		ExitModal,
 		VersionMismatchModal,
 		TestServerSetupModal,
-		TestServerResumeModal,
 		TestServerActiveModal,
 		SettingsModal
 	}
