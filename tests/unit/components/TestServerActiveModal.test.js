@@ -30,7 +30,10 @@ describe(`TestServerActiveModal`, () => {
 				stubs: {
 					ModalWrapper: {
 						template: `<div v-if="modelValue"><slot /></div>`,
-						props: [`modelValue`]
+						props: [`modelValue`],
+						methods: {
+							pinDialogWidth: vi.fn()
+						}
 					}
 				}
 			}
