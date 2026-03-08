@@ -538,6 +538,12 @@ function initUiListeners() {
 			doStartTestServer();
 		}
 	});
+
+	// test server active modal: user clicked End Session
+	ipcMain.on(`test-server-stop`, stopTestServer);
+
+	// test server active modal: user clicked Open in Browser
+	ipcMain.on(`test-server-open-browser`, openTestServerInBrowserHandler);
 }
 
 // method for tracking events
@@ -655,9 +661,9 @@ function onResize() {
 	setMenu();
 }
 
-function stopTestServer() {
+async function stopTestServer() {
 	if ($isInitializing) return;
-	testServer.stopTestServer();
+	await testServer.stopTestServer();
 	testServerTimeout.cancelTestServerTimeout();
 	if ($testServerMenuIntervalId) {
 		clearInterval($testServerMenuIntervalId);

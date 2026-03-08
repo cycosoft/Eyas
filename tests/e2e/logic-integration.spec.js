@@ -102,5 +102,24 @@ test.describe(`Logic-Driven Integration Tests`, () => {
 		// Verify the session action button is present
 		const endSessionBtn = uiPage.getByText(`End Session`);
 		await expect(endSessionBtn).toBeVisible();
+
+		// Click the End Session button to stop the server
+		await endSessionBtn.click();
+
+		// Wait for the modal to be hidden
+		await expect(modalTitle).not.toBeVisible();
+
+		// Verify the menu clears out the "Test Server running" entry
+		const updatedMenu = await waitForMenuUpdate(electronApp, m => {
+			const mTestMenu = m.find(item => item.label.includes(`Test`));
+			if (!mTestMenu || !mTestMenu.submenu) return true;
+			return !mTestMenu.submenu.some(item => item.label.includes(`Test Server running`));
+		});
+
+		const finalTestMenu = updatedMenu.find(item => item.label.includes(`Test`));
+		if (finalTestMenu.submenu) {
+			const runningItem = finalTestMenu.submenu.find(item => item.label.includes(`Test Server running`));
+			expect(runningItem).toBeUndefined();
+		}
 	});
 });
