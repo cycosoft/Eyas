@@ -36,7 +36,7 @@ describe(`TestServerActiveModal`, () => {
 			}
 		});
 		await nextTick();
-		
+
 		if (payload) {
 			const cb = callbacks[`show-test-server-active-modal`];
 			if (cb) {
@@ -112,7 +112,7 @@ describe(`TestServerActiveModal`, () => {
 			await nextTick();
 			await nextTick();
 		}
-		
+
 		expect(wrapper.vm.isExpired).toBe(true);
 		const extendBtn = wrapper.find(`#btn-extend-session`);
 		expect(extendBtn.exists()).toBe(true);

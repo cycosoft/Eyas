@@ -1,5 +1,5 @@
 <template>
-	<ModalWrapper v-model="visible" ref="modal">
+	<ModalWrapper ref="modal" v-model="visible">
 		<v-card class="pa-3">
 			<!-- Header / Action bar with countdown -->
 			<v-card-title class="d-flex align-center justify-space-between text-h6 text-primary">
@@ -21,7 +21,7 @@
 					<span class="text-subtitle-2 text-medium-emphasis mb-2">
 						{{ isExpired ? 'Last session served at' : 'Test served at' }}
 					</span>
-					
+
 					<v-tooltip location="top" :text="tooltipText">
 						<template v-slot:activator="{ props }">
 							<v-btn
@@ -75,7 +75,7 @@
 				>
 					Extend Session
 				</v-btn>
-				
+
 				<v-btn
 					id="btn-open-in-browser"
 					:disabled="isExpired"
