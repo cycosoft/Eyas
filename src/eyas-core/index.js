@@ -75,7 +75,7 @@ const { getAppTitle, sanitizePageTitle } = require(_path.join($roots.eyas, `scri
 
 
 // constants
-const { LOAD_TYPES, EXPIRE_MS } = require($paths.constants);
+const { LOAD_TYPES, TEST_SERVER_SESSION_DURATION_MS } = require($paths.constants);
 const APP_NAME = `Eyas`;
 
 /**
@@ -742,7 +742,7 @@ async function doStartTestServer(autoOpenBrowser = true, customDomain = null) {
 		console.error(`Live Test server start failed:`, err);
 		return;
 	}
-	testServerTimeout.startTestServerTimeout(onTestServerTimeout, EXPIRE_MS);
+	testServerTimeout.startTestServerTimeout(onTestServerTimeout, TEST_SERVER_SESSION_DURATION_MS);
 	$testServerMenuIntervalId = setInterval(() => setMenu(), 60 * 1000);
 	setMenu();
 
@@ -755,7 +755,7 @@ async function doStartTestServer(autoOpenBrowser = true, customDomain = null) {
 		uiEvent(`show-test-server-active-modal`, {
 			domain: state.customUrl || state.url,
 			startTime: state.startedAt,
-			endTime: state.startedAt + EXPIRE_MS
+			endTime: state.startedAt + TEST_SERVER_SESSION_DURATION_MS
 		});
 	}
 }
@@ -768,7 +768,7 @@ function onTestServerTimeout() {
 	stopTestServer();
 
 	// Show the resume modal in the UI
-	uiEvent(`show-test-server-resume-modal`, formatDuration(EXPIRE_MS));
+	uiEvent(`show-test-server-resume-modal`, formatDuration(TEST_SERVER_SESSION_DURATION_MS));
 }
 
 // Set up the application menu
@@ -906,7 +906,7 @@ Runner: v${_appVersion}
 			const s = testServer.getTestServerState();
 			if (!s) { return ``; }
 			const elapsed = Date.now() - s.startedAt;
-			const remaining = EXPIRE_MS - elapsed;
+			const remaining = TEST_SERVER_SESSION_DURATION_MS - elapsed;
 			return formatDuration(remaining);
 		})(),
 		onStartTestServer: startTestServerHandler,

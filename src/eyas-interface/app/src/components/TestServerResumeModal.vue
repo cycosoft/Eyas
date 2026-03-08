@@ -24,7 +24,7 @@ import ModalWrapper from '@/components/ModalWrapper.vue';
 
 const defaults = {
 	visible: false,
-	duration: `30 minutes`
+	duration: ``
 };
 
 export default {
@@ -36,7 +36,7 @@ export default {
 
 	mounted() {
 		window.eyas?.receive(`show-test-server-resume-modal`, (duration) => {
-			this.duration = duration || `30 minutes`;
+			this.duration = duration || `the session limit`;
 			this.visible = true;
 		});
 	},
