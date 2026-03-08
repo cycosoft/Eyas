@@ -1,5 +1,5 @@
 <template>
-	<ModalWrapper v-model="visible" eager>
+	<ModalWrapper v-model="visible" ref="modal">
 		<v-card class="pa-3">
 			<!-- Header / Action bar with countdown -->
 			<v-card-title class="d-flex align-center justify-space-between text-h6 text-primary">
@@ -52,7 +52,7 @@
 			<v-divider class="my-3"></v-divider>
 
 			<!-- Action Buttons -->
-			<v-card-actions class="d-flex justify-center px-4 pb-4">
+			<v-card-actions class="d-flex justify-center flex-wrap px-4 pb-4">
 				<v-btn
 					id="btn-close-session"
 					color="error"
@@ -78,6 +78,7 @@
 				
 				<v-btn
 					id="btn-open-in-browser"
+					:disabled="isExpired"
 					color="primary"
 					variant="flat"
 					class="flex-grow-1 ml-2"
@@ -129,6 +130,14 @@ export default {
 			const mins = Math.floor(diff / 60000);
 			const secs = Math.floor((diff % 60000) / 1000);
 			return `${mins}m${secs}s`;
+		}
+	},
+
+	watch: {
+		isExpired() {
+			this.$nextTick(() => {
+				this.$refs.modal?.pinDialogWidth();
+			});
 		}
 	},
 

@@ -61,6 +61,36 @@ describe(`TestServerActiveModal`, () => {
 		expect(stopBtn.text()).toMatch(/close session/i);
 	});
 
+	test(`Open in Browser button is disabled when expired`, async () => {
+		await setup();
+		const cb = callbacks[`show-test-server-resume-modal`];
+		if (cb) {
+			cb(`30m`);
+			await nextTick();
+			await nextTick();
+		}
+		const openBtn = wrapper.find(`#btn-open-in-browser`);
+		expect(openBtn.attributes(`disabled`)).toBeDefined();
+	});
+
+	test(`Open in Browser button emits test-server-open-browser with domain`, async () => {
+		await setup({ domain: `http://localhost:1234`, startTime: 0, endTime: 1000 });
+		wrapper.vm.openInBrowser();
+		expect(global.window.eyas.send).toHaveBeenCalledWith(`test-server-open-browser`, `http://localhost:1234`);
+	});
+
+	test(`Open in Browser button is disabled when expired`, async () => {
+		await setup();
+		const cb = callbacks[`show-test-server-resume-modal`];
+		if (cb) {
+			cb(`30m`);
+			await nextTick();
+			await nextTick();
+		}
+		const openBtn = wrapper.find(`#btn-open-in-browser`);
+		expect(openBtn.attributes(`disabled`)).toBeDefined();
+	});
+
 	test(`handles show-test-server-resume-modal and enters expired state`, async () => {
 		await setup();
 		const cb = callbacks[`show-test-server-resume-modal`];
@@ -74,19 +104,29 @@ describe(`TestServerActiveModal`, () => {
 		expect(wrapper.text()).toContain(`session has timed out after 30m`);
 	});
 
-	test(`Extend Session button emits test-server-extend`, async () => {
+	test(`Extend Session button emits test-server-extend and resets on response`, async () => {
 		await setup();
-		const cb = callbacks[`show-test-server-resume-modal`];
-		if (cb) {
-			cb(`30m`);
+		const resumeCb = callbacks[`show-test-server-resume-modal`];
+		if (resumeCb) {
+			resumeCb(`30m`);
 			await nextTick();
 			await nextTick();
 		}
 		
+		expect(wrapper.vm.isExpired).toBe(true);
 		const extendBtn = wrapper.find(`#btn-extend-session`);
 		expect(extendBtn.exists()).toBe(true);
 		await extendBtn.trigger(`click`);
 		expect(global.window.eyas.send).toHaveBeenCalledWith(`test-server-extend`);
+
+		// Simulate backend response
+		const activeCb = callbacks[`show-test-server-active-modal`];
+		if (activeCb) {
+			activeCb({ domain: `http://localhost`, startTime: Date.now(), endTime: Date.now() + 10000 });
+			await nextTick();
+			await nextTick();
+		}
+		expect(wrapper.vm.isExpired).toBe(false);
 	});
 
 	test(`Close Session resets expired state`, async () => {

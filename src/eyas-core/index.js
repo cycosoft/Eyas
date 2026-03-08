@@ -548,7 +548,7 @@ function initUiListeners() {
 	// test server active modal: user clicked Extend Session
 	ipcMain.on(`test-server-extend`, () => {
 		if ($lastTestServerOptions) {
-			doStartTestServer();
+			doStartTestServer(false, $lastTestServerOptions.customDomain);
 		}
 	});
 }
