@@ -5,8 +5,7 @@ const {
 	emitIpcMessage,
 	getAppWindowUrl,
 	waitForMenuUpdate,
-	getUiView,
-	ensureEnvironmentSelected
+	getUiView
 } = require(`./eyas-utils`);
 
 test.describe(`Logic-Driven Integration Tests`, () => {
@@ -65,7 +64,7 @@ test.describe(`Logic-Driven Integration Tests`, () => {
 	test(`test server setup via IPC starts the server`, async () => {
 		// Clear environment modal using IPC
 		await emitIpcMessage(electronApp, `environment-selected`, `staging.eyas.cycosoft.com`);
-		
+
 		// Wait for the UI to digest the environment selection
 		await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -90,7 +89,7 @@ test.describe(`Logic-Driven Integration Tests`, () => {
 
 		// Verify the new modal is presented to the user
 		const uiPage = await getUiView(electronApp);
-		
+
 		// Wait for the modal title to be visible indicating it opened
 		const modalTitle = uiPage.getByText(`End Session`);
 		try {
@@ -99,7 +98,7 @@ test.describe(`Logic-Driven Integration Tests`, () => {
 			await uiPage.screenshot({ path: `test-error.png` });
 			throw e;
 		}
-		
+
 		// Verify the session action button is present
 		const endSessionBtn = uiPage.getByText(`End Session`);
 		await expect(endSessionBtn).toBeVisible();

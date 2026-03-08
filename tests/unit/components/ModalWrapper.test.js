@@ -25,8 +25,22 @@ describe(`ModalWrapper`, () => {
 		if (wrapper) wrapper.unmount();
 	});
 
+	test(`computed calculatedMinWidth returns 500 for type="modal"`, () => {
+		expect(wrapper.vm.calculatedMinWidth).toBe(500);
+	});
+
+	test(`computed calculatedMinWidth returns undefined for type="dialog"`, async () => {
+		await wrapper.setProps({ type: `dialog` });
+		expect(wrapper.vm.calculatedMinWidth).toBe(undefined);
+	});
+
+	test(`computed calculatedMinWidth uses minWidth prop if provided`, async () => {
+		await wrapper.setProps({ type: `dialog`, minWidth: 200 });
+		expect(wrapper.vm.calculatedMinWidth).toBe(200);
+	});
+
 	test(`pins dialog width after enter to prevent jitter`, async () => {
-		// Verify initial width is auto
+		// Verify initial width is default auto
 		expect(wrapper.vm.dialogWidth).toBe(`auto`);
 
 		// Mock the offsetWidth on the actual ref element

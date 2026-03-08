@@ -1,6 +1,6 @@
 <template>
 	<ModalWrapper v-model="visible">
-		<v-card min-width="480">
+		<v-card>
 			<v-card-text>
 				<v-tabs v-model="activeTab" color="primary">
 					<v-tab value="project" data-qa="settings-tab-project">Project</v-tab>

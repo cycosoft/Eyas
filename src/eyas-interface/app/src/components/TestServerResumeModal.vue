@@ -1,5 +1,5 @@
 <template>
-	<ModalWrapper v-model="visible">
+	<ModalWrapper v-model="visible" type="dialog">
 		<v-card class="pa-3">
 			<v-card-title class="text-h6" data-qa="test-server-resume-title">Live Test Server Auto-Shutdown</v-card-title>
 			<v-card-text>

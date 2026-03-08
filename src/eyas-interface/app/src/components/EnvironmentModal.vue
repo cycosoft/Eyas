@@ -1,6 +1,7 @@
 <template>
 	<ModalWrapper
 		v-model="visible"
+		type="dialog"
 		@keyup="hotkeyEnvSelector"
 	>
 		<v-card class="pa-3">

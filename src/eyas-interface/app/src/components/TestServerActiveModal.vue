@@ -1,6 +1,6 @@
 <template>
 	<ModalWrapper v-model="visible">
-		<v-card class="pa-3" min-width="400">
+		<v-card class="pa-3">
 			<!-- Header / Action bar with countdown -->
 			<v-card-title class="d-flex align-center justify-space-between text-h6 text-primary">
 				<span>Live Test Server</span>

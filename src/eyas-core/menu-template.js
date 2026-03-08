@@ -35,9 +35,6 @@ function buildMenuTemplate(context) {
 		testServerActive = false,
 		testServerRemainingTime = ``,
 		onStartTestServer,
-		onStopTestServer,
-		onCopyTestServerUrl,
-		onOpenTestServerInBrowser,
 		isInitializing = false
 	} = context;
 
