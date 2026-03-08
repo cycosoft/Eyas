@@ -43,9 +43,9 @@ describe(`TestServerActiveModal`, () => {
 		const domain = `http://localhost:1234`;
 		receiveCallback({ domain, startTime: 0, endTime: 1000 });
 		await wrapper.vm.$nextTick();
-		
+
 		wrapper.vm.openInBrowser();
-		
+
 		expect(global.window.eyas.send).toHaveBeenCalledWith(`test-server-open-browser`, domain);
 	});
 
