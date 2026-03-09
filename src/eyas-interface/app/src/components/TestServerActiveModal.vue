@@ -65,8 +65,8 @@
 				</v-btn>
 
 				<v-btn
-					v-if="isExpired"
 					id="btn-extend-session"
+					:disabled="!canExtend"
 					color="success"
 					variant="flat"
 					class="flex-grow-1 mx-2"
@@ -94,6 +94,7 @@
 
 <script>
 import ModalWrapper from '@/components/ModalWrapper.vue';
+import { TEST_SERVER_SESSION_DURATION_MS } from '@/../../../scripts/constants.js';
 
 const defaults = {
 	visible: false,
@@ -130,6 +131,11 @@ export default {
 			const mins = Math.floor(diff / 60000);
 			const secs = Math.floor((diff % 60000) / 1000);
 			return `${mins}m${secs}s`;
+		},
+		canExtend() {
+			if (this.isExpired) return true;
+			if (!this.endTime) return false;
+			return (this.endTime - this.now) < TEST_SERVER_SESSION_DURATION_MS;
 		}
 	},
 

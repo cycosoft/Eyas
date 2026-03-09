@@ -2,6 +2,7 @@ import { describe, test, expect, vi, afterEach, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import TestServerActiveModal from '@/components/TestServerActiveModal.vue';
 import { nextTick } from 'vue';
+import { TEST_SERVER_SESSION_DURATION_MS } from '@/../../../scripts/constants.js';
 
 describe(`TestServerActiveModal`, () => {
 	let wrapper;
@@ -154,5 +155,39 @@ describe(`TestServerActiveModal`, () => {
 
 		vi.advanceTimersByTime(2000);
 		expect(wrapper.vm.copyIcon).toBe(`mdi-content-copy`);
+	});
+
+	describe(`Extend Session button visibility and state`, () => {
+		test(`button is always visible`, async () => {
+			await setup({ domain: `http://localhost`, startTime: Date.now(), endTime: Date.now() + TEST_SERVER_SESSION_DURATION_MS + 1000 });
+			const extendBtn = wrapper.find(`#btn-extend-session`);
+			expect(extendBtn.exists()).toBe(true);
+
+			const cb = callbacks[`show-test-server-resume-modal`];
+			if (cb) cb(`30m`);
+			await nextTick();
+			expect(wrapper.find(`#btn-extend-session`).exists()).toBe(true);
+		});
+
+		test(`button is disabled when more than 30m remains`, async () => {
+			await setup({ domain: `http://localhost`, startTime: Date.now(), endTime: Date.now() + TEST_SERVER_SESSION_DURATION_MS + 1000 });
+			const extendBtn = wrapper.find(`#btn-extend-session`);
+			expect(extendBtn.attributes(`disabled`)).toBeDefined();
+		});
+
+		test(`button is enabled when less than 30m remains`, async () => {
+			await setup({ domain: `http://localhost`, startTime: Date.now(), endTime: Date.now() + TEST_SERVER_SESSION_DURATION_MS - 1000 });
+			const extendBtn = wrapper.find(`#btn-extend-session`);
+			expect(extendBtn.attributes(`disabled`)).toBeUndefined();
+		});
+
+		test(`button is enabled when expired`, async () => {
+			await setup();
+			const cb = callbacks[`show-test-server-resume-modal`];
+			if (cb) cb(`30m`);
+			await nextTick();
+			const extendBtn = wrapper.find(`#btn-extend-session`);
+			expect(extendBtn.attributes(`disabled`)).toBeUndefined();
+		});
 	});
 });
