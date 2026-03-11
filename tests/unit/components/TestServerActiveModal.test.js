@@ -189,5 +189,31 @@ describe(`TestServerActiveModal`, () => {
 			const extendBtn = wrapper.find(`#btn-extend-session`);
 			expect(extendBtn.attributes(`disabled`)).toBeUndefined();
 		});
+
+		test(`button becomes disabled when show-test-server-active-modal fires with endTime > session default remaining`, async () => {
+			// Start with < 30 min so button is enabled
+			await setup({ domain: `http://localhost`, startTime: Date.now(), endTime: Date.now() + TEST_SERVER_SESSION_DURATION_MS - 1000 });
+			expect(wrapper.find(`#btn-extend-session`).attributes(`disabled`)).toBeUndefined();
+
+			// Simulate backend responding with extended endTime (now + 2× session = > 30 min remaining)
+			const activeCb = callbacks[`show-test-server-active-modal`];
+			activeCb({ domain: `http://localhost`, startTime: Date.now(), endTime: Date.now() + TEST_SERVER_SESSION_DURATION_MS * 2 });
+			await nextTick();
+			await nextTick();
+
+			expect(wrapper.find(`#btn-extend-session`).attributes(`disabled`)).toBeDefined();
+		});
+
+		test(`endTime on component updates when show-test-server-active-modal fires`, async () => {
+			await setup({ domain: `http://localhost`, startTime: Date.now(), endTime: Date.now() + 10000 });
+			const newEndTime = Date.now() + TEST_SERVER_SESSION_DURATION_MS * 2;
+
+			const activeCb = callbacks[`show-test-server-active-modal`];
+			activeCb({ domain: `http://localhost`, startTime: Date.now(), endTime: newEndTime });
+			await nextTick();
+			await nextTick();
+
+			expect(wrapper.vm.endTime).toBe(newEndTime);
+		});
 	});
 });

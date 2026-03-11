@@ -18,6 +18,7 @@ contextBridge.exposeInMainWorld(`eyas`, {
 			`test-server-resume-confirm`,
 			`test-server-stop`,
 			`test-server-open-browser`,
+			`test-server-extend`,
 			`save-setting`,
 			`get-settings`
 		];

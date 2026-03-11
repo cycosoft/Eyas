@@ -26,6 +26,7 @@ let $configToLoad = {};
 let $testNetworkEnabled = true;
 let $testServerHttpsEnabled = false;
 let $lastTestServerOptions = null;
+let $testServerEndTime = null;
 let $testServerMenuIntervalId = null;
 let $testDomainRaw = null;
 let $testDomain = `eyas://local.test`;
@@ -547,7 +548,19 @@ function initUiListeners() {
 
 	// test server active modal: user clicked Extend Session
 	ipcMain.on(`test-server-extend`, () => {
-		if ($lastTestServerOptions) {
+		const state = testServer.getTestServerState();
+		if (state) {
+			// Session is actively running — add time without restarting the server
+			$testServerEndTime += TEST_SERVER_SESSION_DURATION_MS;
+			testServerTimeout.cancelTestServerTimeout();
+			testServerTimeout.startTestServerTimeout(onTestServerTimeout, $testServerEndTime - Date.now());
+			uiEvent(`show-test-server-active-modal`, {
+				domain: state.customUrl || state.url,
+				startTime: state.startedAt,
+				endTime: $testServerEndTime
+			});
+		} else if ($lastTestServerOptions) {
+			// Session has expired — restart it fresh
 			doStartTestServer(false, $lastTestServerOptions.customDomain);
 		}
 	});
@@ -759,10 +772,11 @@ async function doStartTestServer(autoOpenBrowser = true, customDomain = null) {
 
 	const state = testServer.getTestServerState();
 	if (state) {
+		$testServerEndTime = state.startedAt + TEST_SERVER_SESSION_DURATION_MS;
 		uiEvent(`show-test-server-active-modal`, {
 			domain: state.customUrl || state.url,
 			startTime: state.startedAt,
-			endTime: state.startedAt + TEST_SERVER_SESSION_DURATION_MS
+			endTime: $testServerEndTime
 		});
 	}
 }
