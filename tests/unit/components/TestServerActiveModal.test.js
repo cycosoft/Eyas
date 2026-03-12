@@ -62,7 +62,7 @@ describe(`TestServerActiveModal`, () => {
 		await setup({ domain: `http://localhost` });
 		const stopBtn = wrapper.find(`#btn-close-session`);
 		expect(stopBtn.exists()).toBe(true);
-		expect(stopBtn.text()).toMatch(/close session/i);
+		expect(stopBtn.text()).toContain(`Close Session`);
 	});
 
 	test(`Open in Browser button is disabled when expired`, async () => {
@@ -105,7 +105,7 @@ describe(`TestServerActiveModal`, () => {
 		}
 		expect(wrapper.vm.isExpired).toBe(true);
 		expect(wrapper.vm.visible).toBe(true);
-		expect(wrapper.text()).toContain(`session has timed out after 30m`);
+		expect(wrapper.find(`[data-qa="test-server-expired-alert"]`).text()).toContain(`timed out after 30m`);
 	});
 
 	test(`Extend Session button emits test-server-extend and resets on response`, async () => {

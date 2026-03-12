@@ -1,91 +1,104 @@
 <template>
 	<ModalWrapper ref="modal" v-model="visible">
 		<v-card class="pa-3">
-			<!-- Header / Action bar with countdown -->
-			<v-card-title class="d-flex align-center justify-space-between text-h6 text-primary">
-				<span>Live Test Server</span>
-				<v-chip
-					v-if="endTime || isExpired"
-					:color="isExpired ? 'error' : 'warning'"
-					variant="flat"
-					class="font-weight-bold"
-					size="small"
-				>
-					{{ isExpired ? 'Session Expired' : `Session ends in ${countdownText} @ ${formattedEndTime}` }}
-				</v-chip>
-			</v-card-title>
+			<v-card-title class="text-h6" data-qa="test-server-active-title">Live Test Server</v-card-title>
 
-			<v-card-text class="pt-4 pb-2">
-				<!-- Server Address Info -->
-				<div class="d-flex flex-column align-center justify-center py-6 mb-4 rounded-lg bg-surface-light border">
-					<span class="text-subtitle-2 text-medium-emphasis mb-2">
-						{{ isExpired ? 'Last session served at' : 'Test served at' }}
-					</span>
+			<v-card-text>
+				<p class="mb-4">Your live test server is currently managing a session.</p>
 
-					<v-tooltip location="top" :text="tooltipText">
-						<template v-slot:activator="{ props }">
-							<v-btn
-								v-bind="props"
-								variant="text"
-								class="text-h5 font-weight-bold letter-spacing-1 text-none"
-								:prepend-icon="copyIcon"
-								@click="copyDomain"
-							>
-								{{ domain }}
-							</v-btn>
+				<v-list density="compact">
+					<!-- Server Address -->
+					<v-list-item>
+						<template v-slot:prepend>
+							<v-icon>mdi-earth</v-icon>
 						</template>
-					</v-tooltip>
-				</div>
+						<v-list-item-title class="font-weight-bold">{{ domain }}</v-list-item-title>
+						<v-list-item-subtitle>{{ isExpired ? 'Last session served at' : 'Test served at' }}</v-list-item-subtitle>
+						<template v-slot:append>
+							<v-tooltip location="top" :text="tooltipText">
+								<template v-slot:activator="{ props }">
+									<v-btn
+										v-bind="props"
+										variant="text"
+										icon
+										size="small"
+										color="primary"
+										@click="copyDomain"
+									>
+										<v-icon :icon="copyIcon" />
+									</v-btn>
+								</template>
+							</v-tooltip>
+						</template>
+					</v-list-item>
 
-				<!-- Session Start Time -->
-				<div v-if="startTime" class="text-caption text-center text-medium-emphasis mt-4">
-					<v-icon icon="mdi-clock-outline" size="small" class="mr-1"></v-icon>
-					{{ isExpired ? 'Last session started at' : 'Session started at' }} {{ formattedStartTime }}
-				</div>
+					<!-- Session Started -->
+					<v-list-item v-if="startTime">
+						<template v-slot:prepend>
+							<v-icon>mdi-clock-outline</v-icon>
+						</template>
+						<v-list-item-title>{{ formattedStartTime }}</v-list-item-title>
+						<v-list-item-subtitle>{{ isExpired ? 'Last session started at' : 'Session started at' }}</v-list-item-subtitle>
+					</v-list-item>
 
-				<!-- Expired Message -->
-				<div v-if="isExpired" class="text-body-2 text-center text-error mt-4 font-weight-bold">
-					This session has timed out after {{ duration }}.
-				</div>
+					<!-- Time Remaining -->
+					<v-list-item v-if="endTime && !isExpired">
+						<template v-slot:prepend>
+							<v-icon color="warning">mdi-timer-sand</v-icon>
+						</template>
+						<v-list-item-title class="font-weight-bold text-warning">{{ countdownText }}</v-list-item-title>
+						<v-list-item-subtitle>Session ends at {{ formattedEndTime }}</v-list-item-subtitle>
+					</v-list-item>
+				</v-list>
+
+				<!-- Expired Alert -->
+				<v-alert
+					v-if="isExpired"
+					type="error"
+					variant="tonal"
+					class="mt-4"
+					data-qa="test-server-expired-alert"
+				>
+					<p class="mb-0"><strong>Session Expired</strong></p>
+					<p class="mb-0 text-body-2">This session timed out after {{ duration }}.</p>
+				</v-alert>
+
+				<!-- Active Status Hint -->
+				<v-alert
+					v-else
+					type="info"
+					variant="tonal"
+					class="mt-4"
+				>
+					<p class="mb-0"><strong>Session Active</strong></p>
+					<p class="mb-0 text-body-2">Click extend to add more time to this session.</p>
+				</v-alert>
 			</v-card-text>
 
-			<v-divider class="my-3"></v-divider>
-
-			<!-- Action Buttons -->
-			<v-card-actions class="d-flex justify-center flex-wrap px-4 pb-4">
+			<v-card-actions>
 				<v-btn
 					id="btn-close-session"
-					color="error"
-					variant="flat"
-					class="flex-grow-1 mr-2"
-					prepend-icon="mdi-stop-circle-outline"
+					variant="text"
 					@click="stopServer"
 				>
 					Close Session
 				</v-btn>
-
-				<v-btn
-					id="btn-extend-session"
-					:disabled="!canExtend"
-					color="success"
-					variant="flat"
-					class="flex-grow-1 mx-2"
-					prepend-icon="mdi-plus-circle-outline"
-					@click="extendSession"
-				>
-					Extend Session
-				</v-btn>
-
+				<v-spacer />
 				<v-btn
 					id="btn-open-in-browser"
 					:disabled="isExpired"
-					color="primary"
-					variant="flat"
-					class="flex-grow-1 ml-2"
-					prepend-icon="mdi-open-in-new"
 					@click="openInBrowser"
 				>
 					Open in Browser
+				</v-btn>
+				<v-btn
+					id="btn-extend-session"
+					:disabled="!canExtend"
+					color="primary"
+					variant="flat"
+					@click="extendSession"
+				>
+					Extend Session
 				</v-btn>
 			</v-card-actions>
 		</v-card>
@@ -222,10 +235,4 @@ export default {
 </script>
 
 <style scoped>
-.letter-spacing-1 {
-	letter-spacing: 1px;
-}
-.bg-surface-light {
-	background-color: rgba(var(--v-theme-on-surface), 0.04);
-}
 </style>
