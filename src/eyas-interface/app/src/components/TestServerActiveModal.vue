@@ -1,7 +1,18 @@
 <template>
 	<ModalWrapper ref="modal" v-model="visible">
 		<v-card class="pa-3">
-			<v-card-title class="text-h6" data-qa="test-server-active-title">Live Test Server</v-card-title>
+			<v-card-title class="d-flex align-center justify-space-between text-h6" data-qa="test-server-active-title">
+				<span>Live Test Server</span>
+				<v-chip
+					v-if="(endTime || isExpired) && !isExpired"
+					color="success"
+					variant="flat"
+					class="font-weight-bold"
+					size="small"
+				>
+					{{ countdownText }}
+				</v-chip>
+			</v-card-title>
 
 			<v-card-text>
 				<p class="mb-4">Your live test server is currently managing a session.</p>
@@ -15,20 +26,38 @@
 						<v-list-item-title class="font-weight-bold">{{ domain }}</v-list-item-title>
 						<v-list-item-subtitle>{{ isExpired ? 'Last session served at' : 'Test served at' }}</v-list-item-subtitle>
 						<template v-slot:append>
-							<v-tooltip location="top" :text="tooltipText">
-								<template v-slot:activator="{ props }">
-									<v-btn
-										v-bind="props"
-										variant="text"
-										icon
-										size="small"
-										color="primary"
-										@click="copyDomain"
-									>
-										<v-icon :icon="copyIcon" />
-									</v-btn>
-								</template>
-							</v-tooltip>
+							<div class="d-flex ga-1">
+								<v-tooltip location="top" text="Open in Browser">
+									<template v-slot:activator="{ props }">
+										<v-btn
+											v-bind="props"
+											variant="text"
+											icon
+											size="small"
+											:disabled="isExpired"
+											id="btn-open-in-browser"
+											@click="openInBrowser"
+										>
+											<v-icon icon="mdi-open-in-new" />
+										</v-btn>
+									</template>
+								</v-tooltip>
+
+								<v-tooltip location="top" :text="tooltipText">
+									<template v-slot:activator="{ props }">
+										<v-btn
+											v-bind="props"
+											variant="text"
+											icon
+											size="small"
+											color="primary"
+											@click="copyDomain"
+										>
+											<v-icon :icon="copyIcon" />
+										</v-btn>
+									</template>
+								</v-tooltip>
+							</div>
 						</template>
 					</v-list-item>
 
@@ -41,13 +70,13 @@
 						<v-list-item-subtitle>{{ isExpired ? 'Last session started at' : 'Session started at' }}</v-list-item-subtitle>
 					</v-list-item>
 
-					<!-- Time Remaining -->
+					<!-- Session End Time (only if active) -->
 					<v-list-item v-if="endTime && !isExpired">
 						<template v-slot:prepend>
-							<v-icon color="warning">mdi-timer-sand</v-icon>
+							<v-icon>mdi-calendar-clock</v-icon>
 						</template>
-						<v-list-item-title class="font-weight-bold text-warning">{{ countdownText }}</v-list-item-title>
-						<v-list-item-subtitle>Session ends at {{ formattedEndTime }}</v-list-item-subtitle>
+						<v-list-item-title>{{ formattedEndTime }}</v-list-item-title>
+						<v-list-item-subtitle>Session ends at</v-list-item-subtitle>
 					</v-list-item>
 				</v-list>
 
@@ -63,9 +92,9 @@
 					<p class="mb-0 text-body-2">This session timed out after {{ duration }}.</p>
 				</v-alert>
 
-				<!-- Active Status Hint -->
+				<!-- Active Status Hint (Only if extension is possible) -->
 				<v-alert
-					v-else
+					v-else-if="canExtend"
 					type="info"
 					variant="tonal"
 					class="mt-4"
@@ -79,18 +108,12 @@
 				<v-btn
 					id="btn-close-session"
 					variant="text"
+					color="error"
 					@click="stopServer"
 				>
 					Close Session
 				</v-btn>
 				<v-spacer />
-				<v-btn
-					id="btn-open-in-browser"
-					:disabled="isExpired"
-					@click="openInBrowser"
-				>
-					Open in Browser
-				</v-btn>
 				<v-btn
 					id="btn-extend-session"
 					:disabled="!canExtend"
