@@ -714,10 +714,17 @@ function openTestServerInBrowserHandler(event, url) {
 	}
 }
 
+function resetTestServerSettings() {
+	$testServerHttpsEnabled = false;
+	$lastTestServerOptions = null;
+}
+
 async function startTestServerHandler() {
 	if ($isInitializing) return;
 	if (testServer.getTestServerState()) return;
 	if (!$paths.testSrc) return;
+	
+	resetTestServerSettings();
 
 	// Show simplified setup modal
 	if ($eyasLayer) {
@@ -1308,6 +1315,9 @@ async function startAFreshTest(forceShow = false) {
 
 	// Set the application menu
 	setMenu();
+	
+	// Reset test server settings
+	resetTestServerSettings();
 
 	// reset the path to the test source
 	$paths.testSrc = $config.source;
