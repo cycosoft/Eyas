@@ -15,6 +15,31 @@
 			</v-card-title>
 
 			<v-card-text>
+				<!-- Expired Alert -->
+				<v-alert
+					v-if="isExpired"
+					type="error"
+					variant="tonal"
+					class="mb-4"
+					data-qa="test-server-expired-alert"
+				>
+					<p class="mb-0"><strong>Session Expired</strong></p>
+					<p class="mb-0 text-body-2">This session timed out after {{ duration }}.</p>
+				</v-alert>
+
+				<!-- Active Status Hint -->
+				<v-alert
+					v-else
+					type="info"
+					variant="tonal"
+					class="mb-4"
+				>
+					<p class="mb-0"><strong>Session Active</strong></p>
+					<p class="mb-0 text-body-2">
+						{{ canExtend ? 'Click extend to add more time to this session.' : `Session expires at ${formattedEndTime}` }}
+					</p>
+				</v-alert>
+
 				<p class="mb-4">Your live test server is currently managing a session.</p>
 
 				<v-list density="compact">
@@ -23,10 +48,25 @@
 						<template v-slot:prepend>
 							<v-icon>mdi-earth</v-icon>
 						</template>
-						<v-list-item-title class="font-weight-bold">{{ domain }}</v-list-item-title>
+						<v-list-item-title class="font-weight-bold">{{ displayUrl }}</v-list-item-title>
 						<v-list-item-subtitle>{{ isExpired ? 'Last session served at' : 'Test served at' }}</v-list-item-subtitle>
 						<template v-slot:append>
 							<div class="d-flex ga-1">
+								<v-tooltip location="top" :text="tooltipText">
+									<template v-slot:activator="{ props }">
+										<v-btn
+											v-bind="props"
+											variant="text"
+											icon
+											size="small"
+											color="primary"
+											@click="copyDomain"
+										>
+											<v-icon :icon="copyIcon" />
+										</v-btn>
+									</template>
+								</v-tooltip>
+
 								<v-tooltip location="top" text="Open in Browser">
 									<template v-slot:activator="{ props }">
 										<v-btn
@@ -42,21 +82,6 @@
 										</v-btn>
 									</template>
 								</v-tooltip>
-
-								<v-tooltip location="top" :text="tooltipText">
-									<template v-slot:activator="{ props }">
-										<v-btn
-											v-bind="props"
-											variant="text"
-											icon
-											size="small"
-											color="primary"
-											@click="copyDomain"
-										>
-											<v-icon :icon="copyIcon" />
-										</v-btn>
-									</template>
-								</v-tooltip>
 							</div>
 						</template>
 					</v-list-item>
@@ -69,59 +94,27 @@
 						<v-list-item-title>{{ formattedStartTime }}</v-list-item-title>
 						<v-list-item-subtitle>{{ isExpired ? 'Last session started at' : 'Session started at' }}</v-list-item-subtitle>
 					</v-list-item>
-
-					<!-- Session End Time (only if active) -->
-					<v-list-item v-if="endTime && !isExpired">
-						<template v-slot:prepend>
-							<v-icon>mdi-calendar-clock</v-icon>
-						</template>
-						<v-list-item-title>{{ formattedEndTime }}</v-list-item-title>
-						<v-list-item-subtitle>Session ends at</v-list-item-subtitle>
-					</v-list-item>
 				</v-list>
-
-				<!-- Expired Alert -->
-				<v-alert
-					v-if="isExpired"
-					type="error"
-					variant="tonal"
-					class="mt-4"
-					data-qa="test-server-expired-alert"
-				>
-					<p class="mb-0"><strong>Session Expired</strong></p>
-					<p class="mb-0 text-body-2">This session timed out after {{ duration }}.</p>
-				</v-alert>
-
-				<!-- Active Status Hint (Only if extension is possible) -->
-				<v-alert
-					v-else-if="canExtend"
-					type="info"
-					variant="tonal"
-					class="mt-4"
-				>
-					<p class="mb-0"><strong>Session Active</strong></p>
-					<p class="mb-0 text-body-2">Click extend to add more time to this session.</p>
-				</v-alert>
 			</v-card-text>
 
 			<v-card-actions>
 				<v-btn
-					id="btn-close-session"
+					id="btn-extend-session"
+					:disabled="!canExtend"
+					color="primary"
 					variant="text"
+					@click="extendSession"
+				>
+					Extend +{{ extensionLabel }}
+				</v-btn>
+				<v-spacer />
+				<v-btn
+					id="btn-close-session"
+					variant="flat"
 					color="error"
 					@click="stopServer"
 				>
 					Close Session
-				</v-btn>
-				<v-spacer />
-				<v-btn
-					id="btn-extend-session"
-					:disabled="!canExtend"
-					color="primary"
-					variant="flat"
-					@click="extendSession"
-				>
-					Extend Session
 				</v-btn>
 			</v-card-actions>
 		</v-card>
@@ -167,6 +160,24 @@ export default {
 			const mins = Math.floor(diff / 60000);
 			const secs = Math.floor((diff % 60000) / 1000);
 			return `${mins}m${secs}s`;
+		},
+		displayUrl() {
+			if (!this.domain) return '';
+			try {
+				const url = new URL(this.domain);
+				// Hide port 90, 80 (http), 443 (https)
+				const hidePorts = ['90', '80', '443'];
+				if (hidePorts.includes(url.port)) {
+					return `${url.protocol}//${url.hostname}${url.pathname === '/' ? '' : url.pathname}`;
+				}
+				return this.domain;
+			} catch (e) {
+				return this.domain;
+			}
+		},
+		extensionLabel() {
+			const seconds = TEST_SERVER_SESSION_DURATION_MS / 1000;
+			return `${seconds}s`;
 		},
 		canExtend() {
 			if (this.isExpired) return true;
