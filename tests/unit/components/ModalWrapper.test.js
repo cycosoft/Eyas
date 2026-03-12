@@ -51,7 +51,7 @@ describe(`ModalWrapper`, () => {
 		expect(wrapper.vm.dialogWidth).toBe(`auto`);
 
 		// Find the element in the document since v-dialog renders in a portal
-		const card = document.querySelector('.v-card');
+		const card = document.querySelector(`.v-card`);
 
 		// Mock the offsetWidth on the actual element
 		Object.defineProperty(card, `offsetWidth`, {

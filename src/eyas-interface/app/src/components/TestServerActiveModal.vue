@@ -70,8 +70,8 @@
 											variant="text"
 											icon
 											size="small"
-											:disabled="isExpired"
 											id="btn-open-in-browser"
+											:disabled="isExpired"
 											@click="openInBrowser"
 										>
 											<v-icon icon="mdi-open-in-new" />
@@ -169,7 +169,7 @@ export default {
 				if (isHttp && url.port === '80') hidePorts.push('80');
 				if (isHttps && url.port === '443') hidePorts.push('443');
 
-				// If port is empty string (because it's default for protocol), 
+				// If port is empty string (because it's default for protocol),
 				// or if it's in our hidePorts list, we hide it.
 				// Note: new URL('http://localhost:80').port is '80'
 				// new URL('http://localhost').port is ''

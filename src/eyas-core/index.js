@@ -723,7 +723,7 @@ async function startTestServerHandler() {
 	if ($isInitializing) return;
 	if (testServer.getTestServerState()) return;
 	if (!$paths.testSrc) return;
-	
+
 	resetTestServerSettings();
 
 	// Show simplified setup modal
@@ -1315,7 +1315,7 @@ async function startAFreshTest(forceShow = false) {
 
 	// Set the application menu
 	setMenu();
-	
+
 	// Reset test server settings
 	resetTestServerSettings();
 
