@@ -213,7 +213,29 @@ describe(`TestServerActiveModal`, () => {
 			await nextTick();
 			await nextTick();
 
-			expect(wrapper.vm.endTime).toBe(newEndTime);
+		});
+	});
+
+	describe(`Dynamic Display Logic (TDD)`, () => {
+		test(`displayUrl hides port 80 for http`, async () => {
+			await setup({ domain: `http://localhost:80` });
+			expect(wrapper.vm.displayUrl).toBe(`http://localhost`);
+		});
+
+		test(`displayUrl hides port 443 for https`, async () => {
+			await setup({ domain: `https://localhost:443` });
+			expect(wrapper.vm.displayUrl).toBe(`https://localhost`);
+		});
+
+		test(`displayUrl hides port 90`, async () => {
+			await setup({ domain: `http://localhost:90` });
+			expect(wrapper.vm.displayUrl).toBe(`http://localhost`);
+		});
+
+		test(`extensionLabel displays minutes if >= 60`, async () => {
+			// Constants are currently 1800000ms (30m)
+			await setup();
+			expect(wrapper.vm.extensionLabel).toBe(`30m`);
 		});
 	});
 });

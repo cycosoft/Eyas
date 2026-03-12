@@ -166,10 +166,14 @@ export default {
 				const isHttp = url.protocol === 'http:';
 				const isHttps = url.protocol === 'https:';
 				const hidePorts = ['90'];
-				if (isHttp) hidePorts.push('80');
-				if (isHttps) hidePorts.push('443');
+				if (isHttp && url.port === '80') hidePorts.push('80');
+				if (isHttps && url.port === '443') hidePorts.push('443');
 
-				if (hidePorts.includes(url.port)) {
+				// If port is empty string (because it's default for protocol), 
+				// or if it's in our hidePorts list, we hide it.
+				// Note: new URL('http://localhost:80').port is '80'
+				// new URL('http://localhost').port is ''
+				if (hidePorts.includes(url.port) || url.port === '') {
 					return `${url.protocol}//${url.hostname}${url.pathname === '/' ? '' : url.pathname}`;
 				}
 				return this.domain;
@@ -179,6 +183,9 @@ export default {
 		},
 		extensionLabel() {
 			const seconds = TEST_SERVER_SESSION_DURATION_MS / 1000;
+			if (seconds >= 60 && seconds % 60 === 0) {
+				return `${seconds / 60}m`;
+			}
 			return `${seconds}s`;
 		},
 		canExtend() {
