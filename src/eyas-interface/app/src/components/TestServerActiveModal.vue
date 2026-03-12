@@ -1,7 +1,7 @@
 <template>
 	<ModalWrapper ref="modal" v-model="visible">
-		<v-card class="pa-3">
-			<v-card-title class="d-flex align-center justify-space-between text-h6" data-qa="test-server-active-title">
+		<v-card>
+			<v-card-title class="d-flex align-center justify-space-between text-h6 pt-3 px-3" data-qa="test-server-active-title">
 				<span>Live Test Server</span>
 				<v-chip
 					v-if="(endTime || isExpired) && !isExpired"
@@ -14,7 +14,7 @@
 				</v-chip>
 			</v-card-title>
 
-			<v-card-text>
+			<v-card-text class="overflow-y-auto px-3">
 				<!-- Expired Alert -->
 				<v-alert
 					v-if="isExpired"

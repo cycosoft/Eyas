@@ -1,8 +1,8 @@
 <template>
 	<ModalWrapper v-model="visible">
-		<v-card class="pa-3">
-			<v-card-title class="text-h6" data-qa="test-server-setup-title">Live Test Server Setup</v-card-title>
-			<v-card-text>
+		<v-card>
+			<v-card-title class="text-h6 pt-3 px-3" data-qa="test-server-setup-title">Live Test Server Setup</v-card-title>
+			<v-card-text class="overflow-y-auto px-3">
 				<p class="mb-4">Configure your test server settings and click Continue to start.</p>
 
 				<v-list>

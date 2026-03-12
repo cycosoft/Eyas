@@ -15,9 +15,7 @@
 			@after-enter="pinDialogWidth"
 			@after-leave="hideUi"
 		>
-			<div ref="modalContent" style="display: contents;">
-				<slot />
-			</div>
+			<slot />
 		</v-dialog>
 	</ModalBackground>
 </template>
@@ -99,8 +97,8 @@ export default {
 		},
 
 		pinDialogWidth() {
-			// Find the currently active modal's card natively through Vue Template Refs
-			const activeModalContent = this.$refs.modalContent?.firstElementChild;
+			// Find the currently active modal's card natively
+			const activeModalContent = document.querySelector('.v-card');
 
 			if (activeModalContent) {
 				// set the width of the dialog + 1 to round up and prevent content jumping
