@@ -35,12 +35,8 @@
 					class="mb-4"
 				>
 					<p class="mb-0"><strong>Session Active</strong></p>
-					<p class="mb-0 text-body-2">
-						{{ canExtend ? 'Click extend to add more time to this session.' : `Session expires at ${formattedEndTime}` }}
-					</p>
+					<p class="mb-0 text-body-2">Session expires at {{ formattedEndTime }}</p>
 				</v-alert>
-
-				<p class="mb-4">Your live test server is currently managing a session.</p>
 
 				<v-list density="compact">
 					<!-- Server Address -->
@@ -103,9 +99,10 @@
 					:disabled="!canExtend"
 					color="primary"
 					variant="text"
+					class="text-lowercase"
 					@click="extendSession"
 				>
-					Extend +{{ extensionLabel }}
+					extend +{{ extensionLabel }}
 				</v-btn>
 				<v-spacer />
 				<v-btn
@@ -144,7 +141,7 @@ export default {
 
 	computed: {
 		tooltipText() {
-			return this.copyIcon === 'mdi-check' ? 'Copied!' : 'Click to copy';
+			return this.copyIcon === 'mdi-check' ? 'Copied!' : 'Copy URL';
 		},
 		formattedStartTime() {
 			if (!this.startTime) return '';
@@ -166,7 +163,12 @@ export default {
 			try {
 				const url = new URL(this.domain);
 				// Hide port 90, 80 (http), 443 (https)
-				const hidePorts = ['90', '80', '443'];
+				const isHttp = url.protocol === 'http:';
+				const isHttps = url.protocol === 'https:';
+				const hidePorts = ['90'];
+				if (isHttp) hidePorts.push('80');
+				if (isHttps) hidePorts.push('443');
+
 				if (hidePorts.includes(url.port)) {
 					return `${url.protocol}//${url.hostname}${url.pathname === '/' ? '' : url.pathname}`;
 				}
