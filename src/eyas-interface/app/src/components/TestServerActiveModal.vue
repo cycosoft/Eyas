@@ -44,8 +44,8 @@
 						<template v-slot:prepend>
 							<v-icon>mdi-earth</v-icon>
 						</template>
-						<v-list-item-title class="font-weight-bold">{{ displayUrl }}</v-list-item-title>
-						<v-list-item-subtitle>{{ isExpired ? 'Last session served at' : 'Test served at' }}</v-list-item-subtitle>
+						<v-list-item-title class="font-weight-bold">{{ isExpired ? 'Last session served at' : 'Test served at' }}</v-list-item-title>
+						<v-list-item-subtitle>{{ displayUrl }}</v-list-item-subtitle>
 						<template v-slot:append>
 							<div class="d-flex ga-1">
 								<v-tooltip location="top" :text="tooltipText">
@@ -87,8 +87,8 @@
 						<template v-slot:prepend>
 							<v-icon>mdi-clock-outline</v-icon>
 						</template>
-						<v-list-item-title>{{ formattedStartTime }}</v-list-item-title>
-						<v-list-item-subtitle>{{ isExpired ? 'Last session started at' : 'Session started at' }}</v-list-item-subtitle>
+						<v-list-item-title class="font-weight-bold">{{ isExpired ? 'Last session started at' : 'Session started at' }}</v-list-item-title>
+						<v-list-item-subtitle>{{ formattedStartTime }}</v-list-item-subtitle>
 					</v-list-item>
 				</v-list>
 			</v-card-text>
