@@ -20,7 +20,7 @@ function sanitizePageTitle(rawPageTitle, rawUrl) {
 	try {
 		const { hostname } = new URL(rawUrl);
 		if (rawPageTitle === hostname) { return null; }
-	} catch (_) {
+	} catch {
 		// rawUrl is not a parseable URL — skip this check
 	}
 

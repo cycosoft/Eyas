@@ -33,23 +33,10 @@ function buildMenuTemplate(context) {
 		onCheckForUpdates,
 		onInstallUpdate,
 		testServerActive = false,
-		testServerRemainingTime = ``,
 		onStartTestServer,
-		onStopTestServer,
-		onCopyTestServerUrl,
-		onOpenTestServerInBrowser,
 		isInitializing = false
 	} = context;
 
-	const getTestServerSubmenu = () => [
-		{ label: `🛑 &Stop Live Test Server`, click: onStopTestServer },
-		{ label: `📋 &Copy Live Test Server URL`, click: onCopyTestServerUrl },
-		{ label: `🌐 &Open in Browser`, click: onOpenTestServerInBrowser }
-	];
-
-	const testServerLabel = testServerActive
-		? `📡 Test Server running for ~${testServerRemainingTime}`
-		: `📡 Live Test Server`;
 
 	const updateStatusItem = updateStatus === `downloading`
 		? { label: `⬆️ Downloading update...`, enabled: false }
@@ -78,15 +65,11 @@ function buildMenuTemplate(context) {
 
 	testSubmenu.push({ type: `separator` });
 
-	if (testServerActive && onStopTestServer && onCopyTestServerUrl && onOpenTestServerInBrowser) {
-		testSubmenu.push({
-			label: testServerLabel,
-			enabled: !isInitializing,
-			submenu: getTestServerSubmenu()
-		});
-	} else {
-		testSubmenu.push({ label: `📡 Live Test Server`, click: onStartTestServer, enabled: !isInitializing });
-	}
+	testSubmenu.push({
+		label: `📡 Live Test Server`,
+		click: onStartTestServer,
+		enabled: !isInitializing && !testServerActive
+	});
 
 	// ── 3. Browser ───────────────────────────────────────────────────────────
 	const browserSubmenu = [
@@ -131,13 +114,6 @@ function buildMenuTemplate(context) {
 		{ label: `🔧 &Developer Tools`, enabled: !isInitializing, submenu: toolsSubmenu }
 	];
 
-	// Floating test server status item at far right (retained)
-	if (testServerActive) {
-		menu.push({
-			label: testServerLabel,
-			submenu: getTestServerSubmenu()
-		});
-	}
 
 	if (updateStatus === `downloaded`) {
 		menu.push({

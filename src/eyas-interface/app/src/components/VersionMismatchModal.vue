@@ -1,5 +1,5 @@
 <template>
-	<ModalWrapper v-model="visible">
+	<ModalWrapper v-model="visible" type="dialog">
 		<v-card class="pa-3">
 			<v-card-text>
 				<p class="font-weight-black text-center text-h6 mb-10">⚠️ Possible Update Available ⚠️</p>

@@ -25,12 +25,36 @@ describe(`ModalWrapper`, () => {
 		if (wrapper) wrapper.unmount();
 	});
 
+	test(`computed calculatedMinWidth returns 500 for type="modal"`, () => {
+		expect(wrapper.vm.calculatedMinWidth).toBe(500);
+	});
+
+	test(`computed calculatedMinWidth returns undefined for type="dialog"`, async () => {
+		await wrapper.setProps({ type: `dialog` });
+		expect(wrapper.vm.calculatedMinWidth).toBe(undefined);
+	});
+
+	test(`computed calculatedMinWidth uses minWidth prop if provided`, async () => {
+		await wrapper.setProps({ type: `dialog`, minWidth: 200 });
+		expect(wrapper.vm.calculatedMinWidth).toBe(200);
+	});
+
 	test(`pins dialog width after enter to prevent jitter`, async () => {
-		// Verify initial width is auto
+		// Re-mount with a div that has the v-card class to match our new querySelector logic
+		wrapper = mount(ModalWrapper, {
+			global: { plugins: [vuetify] },
+			props: { modelValue: true },
+			slots: { default: `<div class="v-card eyas-modal-content">Test</div>` }
+		});
+
+		// Verify initial width is default auto
 		expect(wrapper.vm.dialogWidth).toBe(`auto`);
 
-		// Mock the offsetWidth on the actual ref element
-		Object.defineProperty(wrapper.vm.$refs.modalContent.firstElementChild, `offsetWidth`, {
+		// Find the element in the document since v-dialog renders in a portal
+		const card = document.querySelector(`.v-card`);
+
+		// Mock the offsetWidth on the actual element
+		Object.defineProperty(card, `offsetWidth`, {
 			get: () => 700,
 			configurable: true
 		});

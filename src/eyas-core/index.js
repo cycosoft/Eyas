@@ -26,6 +26,7 @@ let $configToLoad = {};
 let $testNetworkEnabled = true;
 let $testServerHttpsEnabled = false;
 let $lastTestServerOptions = null;
+let $testServerEndTime = null;
 let $testServerMenuIntervalId = null;
 let $testDomainRaw = null;
 let $testDomain = `eyas://local.test`;
@@ -75,7 +76,7 @@ const { getAppTitle, sanitizePageTitle } = require(_path.join($roots.eyas, `scri
 
 
 // constants
-const { LOAD_TYPES, EXPIRE_MS } = require($paths.constants);
+const { LOAD_TYPES, TEST_SERVER_SESSION_DURATION_MS } = require($paths.constants);
 const APP_NAME = `Eyas`;
 
 /**
@@ -538,6 +539,31 @@ function initUiListeners() {
 			doStartTestServer();
 		}
 	});
+
+	// test server active modal: user clicked End Session
+	ipcMain.on(`test-server-stop`, stopTestServer);
+
+	// test server active modal: user clicked Open in Browser
+	ipcMain.on(`test-server-open-browser`, openTestServerInBrowserHandler);
+
+	// test server active modal: user clicked Extend Session
+	ipcMain.on(`test-server-extend`, () => {
+		const state = testServer.getTestServerState();
+		if (state) {
+			// Session is actively running — add time without restarting the server
+			$testServerEndTime += TEST_SERVER_SESSION_DURATION_MS;
+			testServerTimeout.cancelTestServerTimeout();
+			testServerTimeout.startTestServerTimeout(onTestServerTimeout, $testServerEndTime - Date.now());
+			uiEvent(`show-test-server-active-modal`, {
+				domain: state.customUrl || state.url,
+				startTime: state.startedAt,
+				endTime: $testServerEndTime
+			});
+		} else if ($lastTestServerOptions) {
+			// Session has expired — restart it fresh
+			doStartTestServer(false, $lastTestServerOptions.customDomain);
+		}
+	});
 }
 
 // method for tracking events
@@ -655,9 +681,9 @@ function onResize() {
 	setMenu();
 }
 
-function stopTestServer() {
+async function stopTestServer() {
 	if ($isInitializing) return;
-	testServer.stopTestServer();
+	await testServer.stopTestServer();
 	testServerTimeout.cancelTestServerTimeout();
 	if ($testServerMenuIntervalId) {
 		clearInterval($testServerMenuIntervalId);
@@ -677,21 +703,28 @@ function copyTestServerUrlHandler() {
 	}
 }
 
-function openTestServerInBrowserHandler() {
+function openTestServerInBrowserHandler(event, url) {
 	if ($isInitializing) return;
 	const state = testServer.getTestServerState();
-	if (state) {
-		const targetUrl = state.customUrl || state.url;
-		if (targetUrl) {
-			require(`electron`).shell.openExternal(targetUrl);
-		}
+
+	// use the provided url, or fall back to the test server state
+	const targetUrl = url || state?.customUrl || state?.url;
+	if (targetUrl) {
+		require(`electron`).shell.openExternal(targetUrl);
 	}
+}
+
+function resetTestServerSettings() {
+	$testServerHttpsEnabled = false;
+	$lastTestServerOptions = null;
 }
 
 async function startTestServerHandler() {
 	if ($isInitializing) return;
 	if (testServer.getTestServerState()) return;
 	if (!$paths.testSrc) return;
+
+	resetTestServerSettings();
 
 	// Show simplified setup modal
 	if ($eyasLayer) {
@@ -736,12 +769,22 @@ async function doStartTestServer(autoOpenBrowser = true, customDomain = null) {
 		console.error(`Live Test server start failed:`, err);
 		return;
 	}
-	testServerTimeout.startTestServerTimeout(onTestServerTimeout, EXPIRE_MS);
+	testServerTimeout.startTestServerTimeout(onTestServerTimeout, TEST_SERVER_SESSION_DURATION_MS);
 	$testServerMenuIntervalId = setInterval(() => setMenu(), 60 * 1000);
 	setMenu();
 
 	if (autoOpenBrowser) {
 		openTestServerInBrowserHandler();
+	}
+
+	const state = testServer.getTestServerState();
+	if (state) {
+		$testServerEndTime = state.startedAt + TEST_SERVER_SESSION_DURATION_MS;
+		uiEvent(`show-test-server-active-modal`, {
+			domain: state.customUrl || state.url,
+			startTime: state.startedAt,
+			endTime: $testServerEndTime
+		});
 	}
 }
 
@@ -752,8 +795,8 @@ function onTestServerTimeout() {
 	}
 	stopTestServer();
 
-	// Show the resume modal in the UI
-	uiEvent(`show-test-server-resume-modal`, formatDuration(EXPIRE_MS));
+	// Signal the UI that the session has expired
+	uiEvent(`show-test-server-resume-modal`, formatDuration(TEST_SERVER_SESSION_DURATION_MS));
 }
 
 // Set up the application menu
@@ -891,7 +934,7 @@ Runner: v${_appVersion}
 			const s = testServer.getTestServerState();
 			if (!s) { return ``; }
 			const elapsed = Date.now() - s.startedAt;
-			const remaining = EXPIRE_MS - elapsed;
+			const remaining = TEST_SERVER_SESSION_DURATION_MS - elapsed;
 			return formatDuration(remaining);
 		})(),
 		onStartTestServer: startTestServerHandler,
@@ -1272,6 +1315,9 @@ async function startAFreshTest(forceShow = false) {
 
 	// Set the application menu
 	setMenu();
+
+	// Reset test server settings
+	resetTestServerSettings();
 
 	// reset the path to the test source
 	$paths.testSrc = $config.source;

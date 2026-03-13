@@ -1,6 +1,7 @@
 <template>
 	<ModalWrapper
 		v-model="visible"
+		type="dialog"
 		@keyup.esc="cancel"
 		@keyup.enter="exit"
 		@keyup.e="exit"

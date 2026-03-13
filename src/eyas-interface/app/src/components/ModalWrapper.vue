@@ -6,6 +6,7 @@
 		<v-dialog
 			:model-value="modelValue"
 			:width="dialogWidth"
+			:min-width="calculatedMinWidth"
 			max-height="90vh"
 			scrollable
 			persistent
@@ -14,7 +15,7 @@
 			@after-enter="pinDialogWidth"
 			@after-leave="hideUi"
 		>
-			<div ref="modalContent" style="display: contents;">
+			<div :data-modal-id="id" class="h-100">
 				<slot />
 			</div>
 		</v-dialog>
@@ -31,17 +32,34 @@ export default {
 	},
 
 	props: {
-		modelValue: Boolean
+		modelValue: Boolean,
+		type: {
+			type: String,
+			default: 'modal',
+			validator: (value) => ['modal', 'dialog'].includes(value)
+		},
+		minWidth: {
+			type: [Number, String],
+			default: undefined
+		}
 	},
 
-	data: () => ({
-		id: window.crypto.randomUUID(), // generate a unique ID for this modal
-		dialogWidth: 'auto'
-	}),
+	data() {
+		return {
+			id: window.crypto.randomUUID(), // generate a unique ID for this modal
+			dialogWidth: 'auto'
+		};
+	},
 
 	computed: {
 		backgroundContentVisible () {
 			return ModalStore().lastOpenedById === this.id;
+		},
+		calculatedMinWidth() {
+			if (this.minWidth !== undefined) {
+				return this.minWidth;
+			}
+			return this.type === 'modal' ? 500 : undefined;
 		}
 	},
 
@@ -63,7 +81,7 @@ export default {
 	methods: {
 		trackModalState(isTrue) {
 			if(isTrue) {
-				// reset width to auto so it can calculate the new initial width
+				// reset width to the initial auto state so it can calculate the new initial width
 				this.dialogWidth = 'auto';
 				// track this modal as the last opened modal
 				ModalStore().track(this.id);
@@ -81,8 +99,8 @@ export default {
 		},
 
 		pinDialogWidth() {
-			// Find the currently active modal's card natively through Vue Template Refs
-			const activeModalContent = this.$refs.modalContent?.firstElementChild;
+			// Find the currently active modal's card natively
+			const activeModalContent = document.querySelector(`[data-modal-id="${this.id}"] .v-card`);
 
 			if (activeModalContent) {
 				// set the width of the dialog + 1 to round up and prevent content jumping
