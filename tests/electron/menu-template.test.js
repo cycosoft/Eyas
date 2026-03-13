@@ -220,60 +220,39 @@ describe(`Test menu`, () => {
 		expect(linksItem).toBeUndefined();
 	});
 
-	test(`when testServerActive is false, Test menu includes Live Test Server item with onStartTestServer click`, () => {
+	test(`when testServerActive is false, Test menu includes Live Test Server item as enabled`, () => {
 		const onStartTestServer = () => { };
-		const ctx = { ...minimalContext, testServerActive: false, testServerRemainingTime: ``, onStartTestServer };
+		const ctx = { ...minimalContext, testServerActive: false, onStartTestServer };
 		const template = buildMenuTemplate(ctx);
 		const testMenu = template[1];
 		const startItem = testMenu.submenu.find(item => item.label && item.label.includes(`Live Test Server`));
 		expect(startItem).toBeDefined();
+		expect(startItem.enabled).toBe(true);
 		expect(startItem.click).toBe(onStartTestServer);
 	});
 
-	test(`when testServerActive is true and testServerRemainingTime is '29m', Test menu includes 'Test Server running for ~29m' item with sub-menu`, () => {
+	test(`when testServerActive is true, Test menu includes Live Test Server item as disabled`, () => {
+		const ctx = { ...minimalContext, testServerActive: true };
+		const template = buildMenuTemplate(ctx);
+		const testMenu = template[1];
+		const startItem = testMenu.submenu.find(item => item.label && item.label.includes(`Live Test Server`));
+		expect(startItem).toBeDefined();
+		expect(startItem.enabled).toBe(false);
+	});
+
+	test(`when testServerActive is true, Test menu does NOT include 'Test Server running for...' item`, () => {
 		const ctx = { ...minimalContext, testServerActive: true, testServerRemainingTime: `29m` };
 		const template = buildMenuTemplate(ctx);
 		const testMenu = template[1];
-		const startItem = testMenu.submenu.find(item => item.label && item.label.includes(`Test Server running`));
-		expect(startItem).toBeDefined();
-		expect(startItem.label).toMatch(/Test Server running for ~29m/);
-		expect(Array.isArray(startItem.submenu)).toBe(true);
+		const statusItem = testMenu.submenu.find(item => item.label && item.label.includes(`Test Server running`));
+		expect(statusItem).toBeUndefined();
 	});
 
-	test(`when testServerActive is true, Test menu sub-menu has Stop, Copy URL, Open in browser`, () => {
-		const onStopTestServer = () => { };
-		const onCopyTestServerUrl = () => { };
-		const onOpenTestServerInBrowser = () => { };
-		const ctx = {
-			...minimalContext,
-			testServerActive: true,
-			testServerRemainingTime: `5m`,
-			onStopTestServer,
-			onCopyTestServerUrl,
-			onOpenTestServerInBrowser
-		};
-		const template = buildMenuTemplate(ctx);
-		const testMenu = template[1];
-		const startItem = testMenu.submenu.find(item => item.label && item.label.includes(`Test Server running`));
-		expect(startItem).toBeDefined();
-		expect(Array.isArray(startItem.submenu)).toBe(true);
-		const stopItem = startItem.submenu.find(i => i.label && i.label.toLowerCase().includes(`stop`));
-		const copyItem = startItem.submenu.find(i => i.label && i.label.toLowerCase().includes(`copy`));
-		const openItem = startItem.submenu.find(i => i.label && (i.label.toLowerCase().includes(`open`) || i.label.toLowerCase().includes(`browser`)));
-		expect(stopItem).toBeDefined();
-		expect(stopItem.click).toBe(onStopTestServer);
-		expect(copyItem).toBeDefined();
-		expect(copyItem.click).toBe(onCopyTestServerUrl);
-		expect(openItem).toBeDefined();
-		expect(openItem.click).toBe(onOpenTestServerInBrowser);
-	});
-
-	test(`when testServerActive is true, template still includes a top-level status item at the end`, () => {
+	test(`when testServerActive is true, template does NOT include a top-level status item at the end`, () => {
 		const ctx = { ...minimalContext, testServerActive: true, testServerRemainingTime: `15m` };
 		const template = buildMenuTemplate(ctx);
-		const last = template[template.length - 1];
-		expect(last.label).toMatch(/Test Server running for ~15m/);
-		expect(Array.isArray(last.submenu)).toBe(true);
+		const labels = template.map(item => item.label);
+		expect(labels.some(l => l && l.includes(`Test Server running`))).toBe(false);
 	});
 
 	test(`when testServerActive is false, template does not include top-level status item at the end`, () => {
