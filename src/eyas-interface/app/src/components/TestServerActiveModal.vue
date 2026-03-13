@@ -67,9 +67,9 @@
 									<template v-slot:activator="{ props }">
 										<v-btn
 											v-bind="props"
+											id="btn-open-in-browser"
 											variant="text"
 											icon
-											id="btn-open-in-browser"
 											size="small"
 											:disabled="isExpired"
 											@click="openInBrowser"

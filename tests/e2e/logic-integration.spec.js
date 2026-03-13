@@ -80,12 +80,12 @@ test.describe(`Logic-Driven Integration Tests`, () => {
 		// The interval for menu updates in index.js is 60s, but setMenu is called immediately after start
 		const menu = await waitForMenuUpdate(electronApp, m => {
 			const testMenu = m.find(item => item.label.includes(`Test`));
-			return testMenu && testMenu.submenu && testMenu.submenu.some(item => item.label.includes(`Test Server running`));
+			return testMenu && testMenu.submenu && testMenu.submenu.some(item => item.label.includes(`Live Test Server`) && !item.enabled);
 		});
 
 		const testMenu = menu.find(item => item.label.includes(`Test`));
-		const testServerItem = testMenu.submenu.find(item => item.label.includes(`Test Server running`));
-		expect(testServerItem.label).toMatch(/Test Server running/);
+		const testServerItem = testMenu.submenu.find(item => item.label.includes(`Live Test Server`));
+		expect(testServerItem.enabled).toBe(false);
 
 		// Verify the new modal is presented to the user
 		const uiPage = await getUiView(electronApp);
@@ -113,13 +113,11 @@ test.describe(`Logic-Driven Integration Tests`, () => {
 		const updatedMenu = await waitForMenuUpdate(electronApp, m => {
 			const mTestMenu = m.find(item => item.label.includes(`Test`));
 			if (!mTestMenu || !mTestMenu.submenu) return true;
-			return !mTestMenu.submenu.some(item => item.label.includes(`Test Server running`));
+			return mTestMenu.submenu.some(item => item.label.includes(`Live Test Server`) && item.enabled);
 		});
 
 		const finalTestMenu = updatedMenu.find(item => item.label.includes(`Test`));
-		if (finalTestMenu.submenu) {
-			const runningItem = finalTestMenu.submenu.find(item => item.label.includes(`Test Server running`));
-			expect(runningItem).toBeUndefined();
-		}
+		const runningItem = finalTestMenu.submenu.find(item => item.label.includes(`Live Test Server`));
+		expect(runningItem.enabled).toBe(true);
 	});
 });
