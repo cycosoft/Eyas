@@ -11,6 +11,7 @@
 - Do not display data: URLs in the app window title
 - Display web page titles in the app window title
 - Restructured menu for easier navigation
+- New modal display when the live test server is running
 
 # v26.2.34056
 
