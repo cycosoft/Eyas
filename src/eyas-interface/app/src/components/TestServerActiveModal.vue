@@ -69,8 +69,8 @@
 											v-bind="props"
 											variant="text"
 											icon
-											size="small"
 											id="btn-open-in-browser"
+											size="small"
 											:disabled="isExpired"
 											@click="openInBrowser"
 										>
