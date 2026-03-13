@@ -1,17 +1,17 @@
 <template>
 	<ModalWrapper v-model="visible">
 		<v-card>
-			<v-card-text>
+			<v-card-title class="text-h6 pt-3 px-3" data-qa="settings-title">Settings</v-card-title>
+			<v-card-text class="px-0 pt-0">
 				<v-tabs v-model="activeTab" color="primary">
 					<v-tab value="project" data-qa="settings-tab-project">Project</v-tab>
-					<v-tab value="app" data-qa="settings-tab-app">Eyas</v-tab>
+					<v-tab value="app" data-qa="settings-tab-app">App</v-tab>
 				</v-tabs>
 
 				<v-window v-model="activeTab">
 					<!-- Project-level settings -->
 					<v-window-item value="project">
 						<v-sheet class="pa-4">
-							<p class="text-subtitle-2 mb-3">Settings for the current project</p>
 							<v-checkbox
 								v-model="projectAlwaysChoose"
 								label="Remember Selected Environment"
@@ -26,7 +26,6 @@
 					<!-- App-level settings -->
 					<v-window-item value="app">
 						<v-sheet class="pa-4">
-							<p class="text-subtitle-2 mb-3">Eyas Defaults</p>
 							<v-checkbox
 								v-model="appAlwaysChoose"
 								label="Remember Selected Environment"
@@ -40,9 +39,11 @@
 				</v-window>
 			</v-card-text>
 
-			<v-card-actions class="justify-end px-4 pb-4">
+			<v-card-actions>
+				<v-spacer />
 				<v-btn
-					variant="outlined"
+					color="primary"
+					variant="text"
 					data-qa="settings-close"
 					@click="visible = false"
 				>
