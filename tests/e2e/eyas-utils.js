@@ -109,18 +109,9 @@ async function exitEyas(electronApp) {
 	} catch { /* ignore — app may already be shutting down */ }
 
 	try {
-		await electronApp.evaluate(({ BrowserWindow }) => {
-			const windows = BrowserWindow.getAllWindows();
-			if (windows.length > 0) {
-				const mainWindow = windows[0];
-				const browserViews = mainWindow.getBrowserViews();
-				if (browserViews.length > 0) {
-					browserViews[0].webContents.executeJavaScript(`
-						if (window.eyas && window.eyas.send) {
-							window.eyas.send('app-exit');
-						}
-					`).catch(() => { });
-				}
+		await electronApp.evaluate(({ ipcMain }) => {
+			if (ipcMain && ipcMain.emit) {
+				ipcMain.emit(`app-exit`);
 			}
 		});
 		// Wait a bit for the app to process the exit

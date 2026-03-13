@@ -15,7 +15,9 @@
 			@after-enter="pinDialogWidth"
 			@after-leave="hideUi"
 		>
-			<slot />
+			<div :data-modal-id="id" class="h-100">
+				<slot />
+			</div>
 		</v-dialog>
 	</ModalBackground>
 </template>
@@ -98,7 +100,7 @@ export default {
 
 		pinDialogWidth() {
 			// Find the currently active modal's card natively
-			const activeModalContent = document.querySelector('.v-card');
+			const activeModalContent = document.querySelector(`[data-modal-id="${this.id}"] .v-card`);
 
 			if (activeModalContent) {
 				// set the width of the dialog + 1 to round up and prevent content jumping

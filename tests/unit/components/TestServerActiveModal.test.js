@@ -58,11 +58,11 @@ describe(`TestServerActiveModal`, () => {
 		expect(wrapper.text()).toContain(`Live Test Server`);
 	});
 
-	test(`Close Session button text is correct`, async () => {
+	test(`End Session button text is correct`, async () => {
 		await setup({ domain: `http://localhost` });
 		const stopBtn = wrapper.find(`#btn-close-session`);
 		expect(stopBtn.exists()).toBe(true);
-		expect(stopBtn.text()).toContain(`Close Session`);
+		expect(stopBtn.text()).toContain(`End Session`);
 	});
 
 	test(`Open in Browser button is disabled when expired`, async () => {
@@ -133,7 +133,7 @@ describe(`TestServerActiveModal`, () => {
 		expect(wrapper.vm.isExpired).toBe(false);
 	});
 
-	test(`Close Session resets expired state`, async () => {
+	test(`End Session resets expired state`, async () => {
 		await setup();
 		const cb = callbacks[`show-test-server-resume-modal`];
 		if (cb) cb(`30m`);

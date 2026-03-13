@@ -111,7 +111,7 @@
 					color="error"
 					@click="stopServer"
 				>
-					Close Session
+					End Session
 				</v-btn>
 			</v-card-actions>
 		</v-card>
