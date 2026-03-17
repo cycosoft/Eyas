@@ -1,3 +1,7 @@
+# v26.3.x
+
+- Add SPA fallback route to serve index.html for all unmatched requests
+
 # v26.3.19614
 
 - Global config variables are now prepended with an underscore
