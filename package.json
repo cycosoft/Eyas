@@ -1,6 +1,6 @@
 {
   "name": "@cycosoft/eyas",
-  "version": "26.3.19614",
+  "version": "26.3.25864",
   "description": "Simplified Hands-on Testing for Web Applications",
   "main": "./index.js",
   "packageName": "Eyas",
