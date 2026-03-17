@@ -87,8 +87,8 @@ async function startTestServer(options) {
 	app.use(express.static(rootPath, { index: [`index.html`] }));
 
 	// SPA Fallback: send index.html for non-matched routes
-	app.get('*', (req, res) => {
-		res.sendFile(path.join(rootPath, 'index.html'));
+	app.get(`*path`, (req, res) => {
+		res.sendFile(path.join(rootPath, `index.html`));
 	});
 
 	app.use((req, res) => {

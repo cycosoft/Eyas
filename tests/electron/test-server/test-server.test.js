@@ -55,15 +55,40 @@ describe(`test-server`, () => {
 		expect(res.headers.get(`content-type`)).toMatch(/text\/html/);
 	});
 
-	test(`requests for path outside root return 404`, async () => {
+	test(`requests for non-existent path return index.html (SPA Fallback)`, async () => {
 		const state = await startTestServer({ rootPath: tempDir });
 		const baseUrl = state.url;
 
-		const res1 = await fetch(baseUrl + `/../package.json`, { redirect: `manual` });
-		expect(res1.status).toBe(404);
+		const response = await fetch(baseUrl + `/non/existent/path`);
+		expect(response.status).toBe(200);
+		const body = await response.text();
+		expect(body).toBe(`<html>root</html>`);
+	});
 
-		const res2 = await fetch(baseUrl + `/..%2f..%2fetc%2fpasswd`, { redirect: `manual` });
-		expect(res2.status).toBe(404);
+	test(`non-GET requests for non-existent path still return 404`, async () => {
+		const state = await startTestServer({ rootPath: tempDir });
+		const baseUrl = state.url;
+
+		const response = await fetch(baseUrl + `/non/existent/path`, { method: `POST` });
+		expect(response.status).toBe(404);
+	});
+
+	test(`requests for path with ../ return 200 (normalized to root index.html)`, async () => {
+		const state = await startTestServer({ rootPath: tempDir });
+		const baseUrl = state.url;
+
+		const res = await fetch(baseUrl + `/../package.json`);
+		// This is normalized by the client to /package.json, which is safe and hits SPA fallback
+		expect(res.status).toBe(200);
+		expect(await res.text()).toBe(`<html>root</html>`);
+	});
+
+	test(`requests for encoded path traversal return 404`, async () => {
+		const state = await startTestServer({ rootPath: tempDir });
+		const baseUrl = state.url;
+
+		const res = await fetch(baseUrl + `/..%2f..%2fetc%2fpasswd`);
+		expect(res.status).toBe(404);
 	});
 
 	test(`stopTestServer stops server and getTestServerState returns null`, async () => {
