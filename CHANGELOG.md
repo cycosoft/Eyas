@@ -1,3 +1,7 @@
+# v26.3.x
+
+- Update dependencies
+
 # v26.3.25864
 
 - Add SPA fallback route to serve index.html for all unmatched requests
