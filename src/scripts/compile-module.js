@@ -42,10 +42,6 @@ const paths = {
 	// Prep the .build/ & dist/ directories for module output
 	// await fs.emptyDir(roots.moduleBuild);
 
-	// if(process.env.FORCE_BUILD !== `win32`) {
-	// 	await fs.emptyDir(roots.dist);
-	// }
-
 	// Copy runtime files
 	await fs.copy(paths.eyasAssetsSrc, paths.eyasAssetsDest);
 	await fs.copy(paths.buildAssetsSrc, paths.buildAssetsDest);
