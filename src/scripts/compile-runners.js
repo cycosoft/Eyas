@@ -27,7 +27,7 @@ const paths = {
 
 	// Determine the executables to build
 	const targets = [];
-	if (isWin || process.env.FORCE_BUILD === `win32`) {
+	if (isWin) {
 		targets.push(builder.Platform.WINDOWS);
 	}
 

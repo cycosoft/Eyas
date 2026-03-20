@@ -1,7 +1,7 @@
 # Pre-Deployment Tests
 
 - Test `npm run dev` that app loads
-- Test `npm run dev:win:installer` that installer loads a db file
+- Test `npm run dev:installer` that installer loads a db file
 - Test that version comparator works
 
 # Deployment Process
@@ -10,7 +10,7 @@
 - Run `npm run bump:build`
 - Update `CHANGELOG.md`
 - Draft a new GitHub release; do not publish ( https://github.com/cycosoft/Eyas/releases )
-- Generate Windows artifact -> `npm run compile:win:installer`
+- Generate Windows artifact -> `npm run compile:installer`
 - Add latest.yml to release draft `.runners/latest.yml`
 - Add installer to release draft `.runners/EyasInstaller-win.exe`
 - Generate .pkg -> `npm run compile:mac:installer`
