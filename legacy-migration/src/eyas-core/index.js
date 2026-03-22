@@ -1,0 +1,1424 @@
+/* global __dirname, process */
+
+'use strict';
+
+// global imports _
+const { app: _electronCore, BrowserWindow: _electronWindow } = require(`electron`);
+const _path = require(`path`);
+const _os = require(`os`);
+
+// only allow a single instance of the app to be at a time
+const isPrimaryInstance = _electronCore.requestSingleInstanceLock();
+if (!isPrimaryInstance) {
+	console.log(``);
+	console.log(`Another instance of the app is already running. Exiting.`);
+	console.log(``);
+
+	_electronCore.quit();
+}
+
+// global variables $
+const $isDev = process.argv.includes(`--dev`);
+let $appWindow = null;
+let $eyasLayer = null;
+let $config = null;
+let $configToLoad = {};
+let $testNetworkEnabled = true;
+let $testServerHttpsEnabled = false;
+let $lastTestServerOptions = null;
+let $testServerEndTime = null;
+let $testServerMenuIntervalId = null;
+let $testDomainRaw = null;
+let $testDomain = `eyas://local.test`;
+let $envKey = null;
+const $uiDomain = `ui://eyas.interface`;
+const $defaultViewports = [
+	{ isDefault: true, label: `Desktop`, width: 1366, height: 768 },
+	{ isDefault: true, label: `Tablet`, width: 768, height: 1024 },
+	{ isDefault: true, label: `Mobile`, width: 360, height: 640 }
+];
+let $allViewports = [];
+const $currentViewport = [];
+let $updateStatus = `idle`;
+let $isInitializing = true;
+let $updateCheckUserTriggered = false;
+let $onCheckForUpdates = () => { };
+let $onInstallUpdate = () => { };
+const $roots = require(_path.join(__dirname, `scripts`, `get-roots.js`));
+const { parseURL } = require(_path.join(__dirname, `scripts`, `parse-url.js`));
+const $paths = {
+	icon: _path.join($roots.eyas, `eyas-assets`, `eyas-logo.png`),
+	configLoader: _path.join($roots.eyas, `scripts`, `get-config.js`),
+	packageJson: _path.join($roots.eyas, `package.json`),
+	testPreload: _path.join($roots.eyas, `scripts`, `test-preload.js`),
+	eventBridge: _path.join($roots.eyas, `scripts`, `event-bridge.js`),
+	constants: _path.join($roots.eyas, `scripts`, `constants.js`),
+	pathUtils: _path.join($roots.eyas, `scripts`, `path-utils.js`),
+	timeUtils: _path.join($roots.eyas, `scripts`, `time-utils.js`),
+	testSrc: null,
+	uiSource: _path.join($roots.eyas, `eyas-interface`),
+	eyasInterface: _path.join($roots.eyas, `eyas-interface`, `index.html`),
+	splashScreen: _path.join($roots.eyas, `eyas-interface`, `splash.html`)
+};
+const $operatingSystem = _os.platform();
+const { version: _appVersion } = require($paths.packageJson);
+const { buildMenuTemplate } = require(_path.join(__dirname, `menu-template.js`));
+const { getNoUpdateAvailableDialogOptions } = require(_path.join(__dirname, `update-dialog.js`));
+const { MP_EVENTS } = require(_path.join(__dirname, `metrics-events.js`));
+const testServer = require(_path.join(__dirname, `test-server`, `test-server.js`));
+const testServerCerts = require(_path.join(__dirname, `test-server`, `test-server-certs.js`));
+const testServerTimeout = require(_path.join(__dirname, `test-server`, `test-server-timeout.js`));
+const { safeJoin } = require(_path.join(__dirname, `scripts`, `path-utils.js`));
+const { formatDuration } = require(_path.join(__dirname, `scripts`, `time-utils.js`));
+const { substituteEnvVariables, isVariableLinkValid, hasRemainingVariables } = require(_path.join($roots.eyas, `scripts`, `variable-utils.js`));
+const settingsService = require(_path.join(__dirname, `settings-service.js`));
+const { getAppTitle, sanitizePageTitle } = require(_path.join($roots.eyas, `scripts`, `get-app-title.js`));
+
+
+// constants
+const { LOAD_TYPES, TEST_SERVER_SESSION_DURATION_MS } = require($paths.constants);
+const APP_NAME = `Eyas`;
+
+/**
+ * djb2 hash of a domains array — detects any structural change
+ * (add, remove, reorder, URL edit) without any external dependencies.
+ * @param {object[]} domains
+ * @returns {string} unsigned 32-bit hex string
+ */
+function hashDomains(domains) {
+	const str = JSON.stringify(domains);
+	let h = 5381;
+	for (let i = 0; i < str.length; i++) { h = (h * 33) ^ str.charCodeAt(i); }
+	return (h >>> 0).toString(16);
+}
+
+// APP_ENTRY: initialize the first layer of the app
+initElectronCore();
+
+// wrapped in an async IIFE to allow for "root" await calls
+// (async () => {
+// imports
+// const express = require(`express`);
+// const https = require(`https`);
+// const mkcert = require(`mkcert`);
+//
+//
+
+// // config
+
+// const testServerPort = 3000;
+// const testServerUrl = `https://localhost:${testServerPort}`;
+// const appUrlOverride = parseURL($config.domains);
+// const appUrl = appUrlOverride || testServerUrl;
+// let expressLayer = null;
+
+//
+
+
+
+// Configure Electron to ignore certificate errors
+// _electronCore.commandLine.appendSwitch(`ignore-certificate-errors`);
+
+// // if a custom domain is provided
+// if(appUrlOverride){
+// 	// config
+// 	const { hostname: routeFrom } = new URL(appUrlOverride);
+// 	const { host: routeTo } = new URL(testServerUrl);
+
+// 	// override requests to the custom domain to use the test server
+// 	_electronCore.commandLine.appendSwitch(`host-resolver-rules`, `MAP ${routeFrom} ${routeTo}`);
+// }
+
+// start the test server
+// setupTestServer();
+
+
+
+// Set up Express to serve files from the test directory
+// async function setupTestServer() {
+// 	// Create the Express app
+// 	expressLayer = express();
+
+// 	// Serve static files from the test directory
+// 	expressLayer.use(express.static($paths.testSrc));
+
+// 	// Catch-all for bad requests
+// 	expressLayer.get(`*`, function (req, res) {
+// 		res.redirect(`/`);
+// 	});
+
+// 	// Create a certificate authority
+// 	const ca = await mkcert.createCA({
+// 		organization: `Cycosoft, LLC - Test Server`,
+// 		countryCode: `US`,
+// 		state: `Arizona`,
+// 		locality: `Chandler`,
+// 		validityDays: 7
+// 	});
+
+// 	// Create a certificate for the domain under the certificate authority
+// 	const cert = await mkcert.createCert({
+// 		ca,
+// 		domains: [`localhost`],
+// 		validity: 7
+// 	});
+
+// 	// Start the server
+// 	$testServer = https
+// 		.createServer({ key: cert.key, cert: cert.cert }, expressLayer)
+// 		.listen(testServerPort, initElectronCore);
+// }
+
+// override requests to the custom domain to use the test server
+// _electronCore.commandLine.appendSwitch(`host-resolver-rules`, `MAP ${routeFrom} ${routeTo}`);
+// })();
+
+// start the core of the application
+function initElectronCore() {
+	// imports
+	const {
+		handleEyasProtocolUrl,
+		getEyasUrlFromCommandLine
+	} = require(_path.join(__dirname, `deep-link-handler.js`));
+
+	// register the custom protocol for OS deep linking (native Electron API; macOS dev requires packaged app)
+	if (process.defaultApp) {
+		if (process.argv.length >= 2) {
+			_electronCore.setAsDefaultProtocolClient(
+				`eyas`,
+				process.execPath,
+				[_path.resolve(process.argv[1])]
+			);
+		} else {
+			_electronCore.setAsDefaultProtocolClient(`eyas`);
+		}
+	} else {
+		_electronCore.setAsDefaultProtocolClient(`eyas`);
+	}
+
+	const deepLinkContext = {
+		getAppWindow: () => $appWindow,
+		setConfigToLoad: p => { $configToLoad = p; },
+		loadConfig: async (method, path) => {
+			$config = await require($paths.configLoader)(method, path);
+		},
+		startAFreshTest,
+		LOAD_TYPES
+	};
+
+	// macOS: detect if the app was opened with a file
+	_electronCore.on(`open-file`, async (event, path) => {
+		// ensure the correct file type is being opened
+		if (!path.endsWith(`.eyas`)) { return; }
+
+		// if the $appWindow was already initialized
+		if ($appWindow) {
+			// load the new config
+			$config = await require($paths.configLoader)(LOAD_TYPES.ASSOCIATION, path);
+
+			// start a new test based on the newly loaded config
+			startAFreshTest();
+		} else {
+			// define the config to load when the app is ready
+			$configToLoad = {
+				method: LOAD_TYPES.ASSOCIATION,
+				path
+			};
+		}
+	});
+
+	// macOS: handle eyas:// protocol (open-url); Windows/Linux: handle second instance with protocol URL
+	_electronCore.on(`open-url`, (_event, url) => {
+		_event.preventDefault();
+		handleEyasProtocolUrl(url, deepLinkContext);
+	});
+	_electronCore.on(`second-instance`, (_event, commandLine) => {
+		if ($appWindow) {
+			if ($appWindow.isMinimized()) { $appWindow.restore(); }
+			$appWindow.focus();
+		}
+		const url = getEyasUrlFromCommandLine(commandLine);
+		if (url) {
+			handleEyasProtocolUrl(url, deepLinkContext);
+		}
+	});
+
+	// add support for eyas:// protocol
+	registerInternalProtocols();
+
+	// start the electron layer
+	_electronCore.whenReady()
+		// when the electron layer is ready
+		.then(async () => {
+			// get config based on the context
+			$config = await require($paths.configLoader)($configToLoad.method || LOAD_TYPES.AUTO, $configToLoad.path);
+
+			// load user settings from disk before first test start
+			await settingsService.load();
+
+			// start listening for requests to the custom protocol
+			setupEyasNetworkHandlers();
+
+			// start the UI layer
+			initElectronUi();
+
+			setupAutoUpdater();
+
+			// if Electron receives the `activate` event
+			_electronCore.on(`activate`, () => {
+				// if the window does not already exist, create it
+				!_electronWindow.getAllWindows().length && initElectronUi();
+			});
+		});
+}
+
+// initiate the core electron UI layer
+async function initElectronUi() {
+	// imports
+	const { BrowserView } = require(`electron`);
+
+	// set the current viewport to the first viewport in the list
+	$currentViewport[0] = $defaultViewports[0].width;
+	$currentViewport[1] = $defaultViewports[0].height;
+
+	// Create the app window for this instance
+	$appWindow = new _electronWindow({
+		useContentSize: true,
+		width: $currentViewport[0],
+		height: $currentViewport[1],
+		title: getAppTitleWithContext(),
+		icon: $paths.icon,
+		show: false,
+		webPreferences: {
+			preload: $paths.testPreload,
+			partition: `persist:${$config.meta.testId}`
+		}
+	});
+
+	// intercept all web requests
+	$appWindow.webContents.session.webRequest.onBeforeRequest({ urls: [`<all_urls>`] }, (request, callback) => {
+		// validate this request
+		if (disableNetworkRequest(request.url)) {
+			return callback({ cancel: true });
+		}
+
+		// allow the request to continue
+		callback({ cancel: false });
+	});
+
+	// display the splash screen to the user
+	const splashScreen = createSplashScreen();
+
+	// track the time the splash screen was created as a backup
+	let splashVisible = performance.now();
+
+	// when the splash screen content has loaded, set a new more specific time
+	splashScreen.webContents.on(`did-finish-load`, () => splashVisible = performance.now());
+
+	// load a default page so the app doesn't start black
+	$appWindow.loadURL(`data:text/html,` + encodeURIComponent(`<html><body></body></html>`));
+
+	// track the app launch event
+	trackEvent(MP_EVENTS.core.launch);
+
+	// exit the app if the test has expired
+	// NOTE: THIS NEEDS TO BE MOVED TO THE UI LAYER
+	checkTestExpiration();
+
+	// listen for app events
+	initTestListeners();
+	initUiListeners();
+
+	// Initialize the $eyasLayer
+	$eyasLayer = new BrowserView({
+		webPreferences: {
+			preload: $paths.eventBridge,
+			partition: `persist:${$config.meta.testId}`,
+			backgroundThrottling: false // allow to update even when hidden (e.g. modal close)
+		}
+	});
+	$appWindow.addBrowserView($eyasLayer);
+	$eyasLayer.webContents.loadURL(`${$uiDomain}/index.html`);
+
+	// once the Eyas UI layer is ready, attempt navigation
+	$eyasLayer.webContents.on(`did-finish-load`, async () => {
+		// start the test
+		await startAFreshTest();
+
+		// set a minimum time for the splash screen to be visible
+		const splashMinTime = 750;
+		const splashDelta = performance.now() - splashVisible;
+		const splashTimeout = splashDelta > splashMinTime ? 0 : splashMinTime - splashDelta;
+		setTimeout(() => {
+			// show the app window
+			$appWindow.show();
+
+			// we're done with the splash screen
+			splashScreen.destroy();
+		}, splashTimeout);
+	});
+}
+
+// create a splash screen to display to the user while we wait for the $eyasLayer to load
+function createSplashScreen() {
+	// imports
+	const { BrowserWindow } = require(`electron`);
+
+	// create the splash screen
+	const splashScreen = new BrowserWindow({
+		width: 400,
+		height: 400,
+		frame: false,
+		transparent: true,
+		alwaysOnTop: true,
+		show: false,
+		webPreferences: {
+			partition: `persist:${$config.meta.testId}`
+		}
+	});
+
+	// load the splash screen
+	splashScreen.webContents.loadURL(`${$uiDomain}/splash.html`);
+
+	// when the splash screen content has loaded
+	splashScreen.webContents.on(`did-finish-load`, () => {
+		// center the splash screen
+		splashScreen.center();
+
+		// show the splash screen
+		splashScreen.show();
+	});
+
+	// return the splashscreen handle so it can be later destroyed
+	return splashScreen;
+}
+
+// initialize the listeners on the test content
+function initTestListeners() {
+	// listen for the window to close
+	$appWindow.on(`close`, manageAppClose);
+
+	// listen for changes to the window size
+	$appWindow.on(`resize`, onResize);
+
+	// Whenever a title update is requested
+	$appWindow.on(`page-title-updated`, onTitleUpdate);
+
+	// Whenever the content is loaded on the app window
+	$appWindow.webContents.on(`did-finish-load`, () => {
+		// update the title, preserving the current page title
+		$appWindow.setTitle(getAppTitleWithContext($appWindow.webContents.getTitle()));
+
+		// update the cache menu
+		setMenu();
+	});
+
+	// when navigation starts
+	$appWindow.webContents.on(`did-start-navigation`, (event, url) => {
+		// if the url is not the placeholder data url or about:blank
+		if (!url.startsWith(`data:text/html`) && url !== `about:blank`) {
+			// if the app is still initializing
+			if ($isInitializing) {
+				// update the initialization state
+				$isInitializing = false;
+
+				// update the menu
+				setMenu();
+			}
+		}
+	});
+
+	// when there's a navigation failure
+	$appWindow.webContents.on(`did-fail-load`, (event, errorCode, errorDescription) => {
+		// log the error
+		console.error(`Navigation failed: ${errorCode} - ${errorDescription}`);
+	});
+
+	// when the test content opens a new window (e.g. target="_blank")
+	$appWindow.webContents.on(`did-create-window`, win => {
+		// Apply our title format when the new window's page title updates
+		win.on(`page-title-updated`, (evt, title) => {
+			evt.preventDefault();
+			const rawUrl = win.webContents.getURL();
+			const url = rawUrl?.startsWith(`data:`) ? null : rawUrl;
+			win.setTitle(getAppTitle($config.title, $config.version, url, sanitizePageTitle(title, rawUrl)));
+		});
+
+		// Also apply our format when the new window finishes loading
+		win.webContents.on(`did-finish-load`, () => {
+			const rawUrl = win.webContents.getURL();
+			const url = rawUrl?.startsWith(`data:`) ? null : rawUrl;
+			win.setTitle(getAppTitle($config.title, $config.version, url, sanitizePageTitle(win.webContents.getTitle(), rawUrl)));
+		});
+	});
+}
+
+// initialize the Eyas listeners
+function initUiListeners() {
+	// imports
+	const { ipcMain } = require(`electron`);
+
+	// update the network status
+	ipcMain.on(`network-status`, (event, status) => {
+		$testNetworkEnabled = status;
+		setMenu();
+	});
+
+	// hide the UI when requested
+	ipcMain.on(`hide-ui`, () => toggleEyasUI(false));
+
+	// Whenever the UI layer has requested to close the app
+	ipcMain.on(`app-exit`, () => {
+		// remove the close event listener so we don't get stuck in a loop
+		$appWindow.removeListener(`close`, manageAppClose);
+
+		// track that the app is being closed
+		trackEvent(MP_EVENTS.core.exit);
+
+		// Shut down test server if running, then exit
+		stopTestServer();
+		_electronCore.quit();
+	});
+
+	// listen for the user to select an environment
+	ipcMain.on(`environment-selected`, (event, domain) => {
+		// support both legacy string (url only) and new object {url, key} formats
+		const domainUrl = typeof domain === `string` ? domain : domain.url;
+		const domainKey = typeof domain === `string` ? null : (domain.key ?? null);
+
+		// update the test domain and env key
+		$testDomainRaw = domainUrl;
+		$testDomain = parseURL(domainUrl).toString();
+		$envKey = domainKey;
+
+		// load the test
+		navigate();
+	});
+
+	// listen for a setting to be saved from the UI
+	ipcMain.on(`save-setting`, async (event, { key, value }) => {
+		// Always scope to the currently-loaded project — discard any projectId sent
+		// from the UI so one project can't touch another project's settings bucket.
+		const activeProjectId = $config?.meta?.projectId || null;
+		settingsService.set(key, value, activeProjectId);
+		await settingsService.save();
+		event.reply(`setting-saved`, { key, projectId: activeProjectId });
+	});
+
+	// listen for the UI to request the current settings
+	ipcMain.on(`get-settings`, event => {
+		// Always read from the currently-loaded project; do not accept a projectId
+		// from the renderer to prevent cross-project data leakage.
+		const activeProjectId = $config?.meta?.projectId || null;
+		event.reply(`settings-loaded`, {
+			project: settingsService.getProjectSettings(activeProjectId),
+			app: settingsService.getAppSettings()
+		});
+	});
+
+	// listen for the user to launch a link
+	ipcMain.on(`launch-link`, (event, { url, openInBrowser }) => {
+		// navigate to the requested url
+		navigate(parseURL(url).toString(), openInBrowser);
+	});
+
+	// test server setup modal: user clicked Continue, start the server
+	ipcMain.on(`test-server-setup-continue`, (event, { useHttps, autoOpenBrowser, useCustomDomain }) => {
+		$testServerHttpsEnabled = !!useHttps;
+		const customDomain = useCustomDomain ? (parseURL($testDomain)?.hostname || `test.local`) : null;
+		doStartTestServer(autoOpenBrowser, customDomain);
+	});
+
+	// test server resume modal: user clicked Resume
+	ipcMain.on(`test-server-resume-confirm`, () => {
+		// if there are previous settings, restart with them
+		if ($lastTestServerOptions) {
+			doStartTestServer();
+		} else {
+			// otherwise just start with defaults
+			doStartTestServer();
+		}
+	});
+
+	// test server active modal: user clicked End Session
+	ipcMain.on(`test-server-stop`, stopTestServer);
+
+	// test server active modal: user clicked Open in Browser
+	ipcMain.on(`test-server-open-browser`, openTestServerInBrowserHandler);
+
+	// test server active modal: user clicked Extend Session
+	ipcMain.on(`test-server-extend`, () => {
+		const state = testServer.getTestServerState();
+		if (state) {
+			// Session is actively running — add time without restarting the server
+			$testServerEndTime += TEST_SERVER_SESSION_DURATION_MS;
+			testServerTimeout.cancelTestServerTimeout();
+			testServerTimeout.startTestServerTimeout(onTestServerTimeout, $testServerEndTime - Date.now());
+			uiEvent(`show-test-server-active-modal`, {
+				domain: state.customUrl || state.url,
+				startTime: state.startedAt,
+				endTime: $testServerEndTime
+			});
+		} else if ($lastTestServerOptions) {
+			// Session has expired — restart it fresh
+			doStartTestServer(false, $lastTestServerOptions.customDomain);
+		}
+	});
+}
+
+// method for tracking events
+async function trackEvent(event, extraData) {
+	// setup
+	const MP_KEY_PROD = `07f0475cb429f7de5ebf79a1c418dc5c`;
+	const MP_KEY_DEV = `02b67bb94dd797e9a2cbb31d021c3cef`;
+
+	// imports
+	const Mixpanel = require(`mixpanel`);
+
+	// if mixpanel has not been initialized
+	if (!trackEvent.mixpanel) {
+		// initialize mixpanel to the correct environment
+		trackEvent.mixpanel ||= Mixpanel.init($isDev ? MP_KEY_DEV : MP_KEY_PROD);
+
+		// get information about the user
+		const { machineId } = require(`node-machine-id`);
+		trackEvent.deviceId ||= await machineId();
+
+		// define who the user is in mixpanel
+		trackEvent.mixpanel.people.set(trackEvent.deviceId);
+	}
+
+	// if not running in dev mode
+	trackEvent.mixpanel.track(event, {
+		// core data to send with every request
+		distinct_id: trackEvent.deviceId, // device to link action to
+		$os: $operatingSystem,
+		$app_version_string: _appVersion,
+		companyId: $config.meta.companyId,
+		projectId: $config.meta.projectId,
+		testId: $config.meta.testId,
+
+		// provided data to send with the event
+		...extraData
+	});
+}
+
+// forces an exit if the loaded test has expired
+function checkTestExpiration() {
+	// imports
+	const { isPast } = require(`date-fns/isPast`);
+	const { format } = require(`date-fns/format`);
+	const { dialog } = require(`electron`);
+
+	// setup
+	const expirationDate = new Date($config.meta.expires);
+
+	// stop if the test has not expired
+	if (!isPast(expirationDate)) { return; }
+
+	// alert the user that the test has expired
+	dialog.showMessageBoxSync({
+		title: `🚫 Test Expired`,
+		message: `This test expired on ${format(expirationDate, `PPP`)} and can no longer be used`,
+		buttons: [`Exit`],
+		noLink: true
+	});
+
+	// track that the app is being closed
+	trackEvent(MP_EVENTS.core.exit);
+
+	// Exit the app
+	_electronCore.quit();
+}
+
+// Get the app title
+function getAppTitleWithContext(rawPageTitle) {
+	const rawUrl = $appWindow ? $appWindow.webContents.getURL() : null;
+
+	// ignore data: URLs in the address bar
+	const url = rawUrl?.startsWith(`data:`) ? null : rawUrl;
+
+	// Sanitize the page title against the raw URL (before data: nulling)
+	const pageTitle = sanitizePageTitle(rawPageTitle, rawUrl);
+
+	// Return the built title
+	return getAppTitle($config.title, $config.version, url, pageTitle);
+}
+
+// manage automatic title updates
+function onTitleUpdate(evt, title) {
+	// Disregard the default behavior
+	evt.preventDefault();
+
+	// update the title, passing the new document.title
+	$appWindow.setTitle(getAppTitleWithContext(title));
+}
+
+// when the app resizes
+function onResize() {
+	// get the current viewport dimensions
+	const [newWidth, newHeight] = $appWindow.getContentSize();
+
+	// if the dimensions have not changed
+	if (newWidth === $currentViewport[0] && newHeight === $currentViewport[1]) {
+		return;
+	}
+
+	// update the current dimensions
+	$currentViewport[0] = newWidth;
+	$currentViewport[1] = newHeight;
+
+	// get the $eyasLayer dimensions
+	const { width, height } = $eyasLayer.getBounds();
+
+	// if the Eyas UI layer is visible
+	if (width && height) {
+		// update the Eyas UI layer to match the new dimensions
+		$eyasLayer.setBounds({ x: 0, y: 0, width: newWidth, height: newHeight });
+	}
+
+	// update the menu
+	setMenu();
+}
+
+async function stopTestServer() {
+	if ($isInitializing) return;
+	await testServer.stopTestServer();
+	testServerTimeout.cancelTestServerTimeout();
+	if ($testServerMenuIntervalId) {
+		clearInterval($testServerMenuIntervalId);
+		$testServerMenuIntervalId = null;
+	}
+	setMenu();
+}
+
+function copyTestServerUrlHandler() {
+	if ($isInitializing) return;
+	const state = testServer.getTestServerState();
+	if (state) {
+		const targetUrl = state.customUrl || state.url;
+		if (targetUrl) {
+			require(`electron`).clipboard.writeText(targetUrl);
+		}
+	}
+}
+
+function openTestServerInBrowserHandler(event, url) {
+	if ($isInitializing) return;
+	const state = testServer.getTestServerState();
+
+	// use the provided url, or fall back to the test server state
+	const targetUrl = url || state?.customUrl || state?.url;
+	if (targetUrl) {
+		require(`electron`).shell.openExternal(targetUrl);
+	}
+}
+
+function resetTestServerSettings() {
+	$testServerHttpsEnabled = false;
+	$lastTestServerOptions = null;
+}
+
+async function startTestServerHandler() {
+	if ($isInitializing) return;
+	if (testServer.getTestServerState()) return;
+	if (!$paths.testSrc) return;
+
+	resetTestServerSettings();
+
+	// Show simplified setup modal
+	if ($eyasLayer) {
+		const portHttp = await testServer.getAvailablePort($testDomain, false);
+		const portHttps = await testServer.getAvailablePort($testDomain, true);
+		const parsedTestDomain = parseURL($testDomain);
+		const hostnameForHosts = parsedTestDomain?.hostname || `test.local`;
+		const isWindows = process.platform === `win32`;
+
+		uiEvent(`show-test-server-setup-modal`, {
+			domain: `http://127.0.0.1`,
+			portHttp,
+			portHttps,
+			hostnameForHosts,
+			steps: [],
+			useHttps: $testServerHttpsEnabled,
+			isWindows
+		});
+	}
+}
+
+async function doStartTestServer(autoOpenBrowser = true, customDomain = null) {
+	let certs;
+	if ($testServerHttpsEnabled) {
+		try {
+			certs = await testServerCerts.getCerts([`127.0.0.1`, `localhost`]);
+		} catch (err) {
+			console.error(`Live Test Server HTTPS cert generation failed:`, err);
+			return;
+		}
+	}
+	try {
+		const options = {
+			rootPath: $paths.testSrc,
+			useHttps: $testServerHttpsEnabled,
+			certs: certs || undefined,
+			customDomain
+		};
+		await testServer.startTestServer(options);
+		$lastTestServerOptions = options;
+	} catch (err) {
+		console.error(`Live Test server start failed:`, err);
+		return;
+	}
+	testServerTimeout.startTestServerTimeout(onTestServerTimeout, TEST_SERVER_SESSION_DURATION_MS);
+	$testServerMenuIntervalId = setInterval(() => setMenu(), 60 * 1000);
+	setMenu();
+
+	if (autoOpenBrowser) {
+		openTestServerInBrowserHandler();
+	}
+
+	const state = testServer.getTestServerState();
+	if (state) {
+		$testServerEndTime = state.startedAt + TEST_SERVER_SESSION_DURATION_MS;
+		uiEvent(`show-test-server-active-modal`, {
+			domain: state.customUrl || state.url,
+			startTime: state.startedAt,
+			endTime: $testServerEndTime
+		});
+	}
+}
+
+// whenever the test server automatically shuts down
+function onTestServerTimeout() {
+	if ($appWindow && typeof $appWindow.flashFrame === `function`) {
+		$appWindow.flashFrame(true);
+	}
+	stopTestServer();
+
+	// Signal the UI that the session has expired
+	uiEvent(`show-test-server-resume-modal`, formatDuration(TEST_SERVER_SESSION_DURATION_MS));
+}
+
+// Set up the application menu
+async function setMenu() {
+	const { Menu, dialog } = require(`electron`);
+
+	const sessionAge = getSessionAge();
+	const cacheSize = await $appWindow.webContents.session.getCacheSize();
+
+	const tolerance = 2;
+	const viewportItems = [];
+	let defaultsFound = false;
+	$allViewports.forEach(res => {
+		const [width, height] = $currentViewport || [];
+		const isSizeMatch = Math.abs(res.width - width) <= tolerance && Math.abs(res.height - height) <= tolerance;
+		if (!defaultsFound && res.isDefault) {
+			viewportItems.push({ type: `separator` });
+			defaultsFound = true;
+		}
+		viewportItems.push({
+			label: `${isSizeMatch ? `🔘 ` : ``}${res.label} (${res.width} x ${res.height})`,
+			click: () => $appWindow.setContentSize(res.width, res.height)
+		});
+	});
+	if ($currentViewport && !$allViewports.some(res => Math.abs(res.width - $currentViewport[0]) <= tolerance && Math.abs(res.height - $currentViewport[1]) <= tolerance)) {
+		viewportItems.unshift(
+			{ label: `🔘 Current (${$currentViewport[0]} x ${$currentViewport[1]})`, click: () => $appWindow.setContentSize($currentViewport[0], $currentViewport[1]) },
+			{ type: `separator` }
+		);
+	}
+
+	const linkItems = [];
+	$config.links.forEach(item => {
+		const itemUrl = item.url;
+		let isValid;
+		let validUrl;
+		const hasVariables = itemUrl.match(/{[^{}]+}/g)?.length;
+		if (hasVariables) {
+			isValid = isVariableLinkValid(itemUrl);
+		} else {
+			validUrl = parseURL(itemUrl).toString();
+			isValid = !!validUrl;
+		}
+		linkItems.push({
+			label: `${item.external ? `🌐 ` : ``}${item.label || item.url}${isValid ? `` : ` (invalid entry: "${item.url}")`}`,
+			click: () => hasVariables ? navigateVariable(itemUrl) : navigate(validUrl, item.external),
+			enabled: isValid
+		});
+	});
+
+	const context = {
+		appName: APP_NAME,
+		isDev: $isDev,
+		testNetworkEnabled: $testNetworkEnabled,
+		sessionAge,
+		cacheSize,
+		showAbout: () => {
+			const { format } = require(`date-fns/format`);
+			const { differenceInDays } = require(`date-fns/differenceInDays`);
+			const now = new Date();
+			const expires = new Date($config.meta.expires);
+			const dayCount = differenceInDays(expires, now);
+			const expirationFormatted = format(expires, `MMM do @ p`);
+			const relativeFormatted = dayCount ? `~${dayCount} days` : `soon`;
+			const startYear = 2023;
+			const currentYear = now.getFullYear();
+			const yearRange = startYear === currentYear ? startYear : `${startYear} - ${currentYear}`;
+			dialog.showMessageBox($appWindow, {
+				type: `info`,
+				buttons: [`OK`],
+				title: `About`,
+				icon: $paths.icon,
+				message: `
+Name: ${$config.title}
+Version: ${$config.version}
+Expires: ${expirationFormatted} (${relativeFormatted})
+
+Branch: ${$config.meta.gitBranch} #${$config.meta.gitHash}
+User: ${$config.meta.gitUser}
+Created: ${new Date($config.meta.compiled).toLocaleString()}
+CLI: v${$config.meta.eyas}
+
+Runner: v${_appVersion}
+
+🏢 © ${yearRange} Cycosoft, LLC
+🌐 https://cycosoft.com
+🆘 https://github.com/cycosoft/Eyas/issues
+`
+			});
+		},
+		quit: _electronCore.quit,
+		startAFreshTest: () => startAFreshTest(true),
+		copyUrl: () => {
+			if ($isInitializing) return;
+			require(`electron`).clipboard.writeText($appWindow.webContents.getURL());
+		},
+		openUiDevTools: () => $eyasLayer.webContents.openDevTools(),
+		navigateHome: () => {
+			if ($isInitializing) return;
+			navigate();
+		},
+		reload: () => {
+			if ($isInitializing) return;
+			$appWindow.webContents.reloadIgnoringCache();
+		},
+		back: () => {
+			if ($isInitializing) return;
+			$appWindow.webContents.goBack();
+		},
+		forward: () => {
+			if ($isInitializing) return;
+			$appWindow.webContents.goForward();
+		},
+		toggleNetwork: () => {
+			if ($isInitializing) return;
+			$testNetworkEnabled = !$testNetworkEnabled;
+			setMenu();
+		},
+		clearCache: () => {
+			if ($isInitializing) return;
+			clearCache();
+		},
+		openCacheFolder: () => {
+			if ($isInitializing) return;
+			require(`electron`).shell.openPath($appWindow.webContents.session.getStoragePath());
+		},
+		refreshMenu: setMenu,
+		viewportItems,
+		linkItems,
+		updateStatus: typeof $updateStatus !== `undefined` ? $updateStatus : `idle`,
+		onCheckForUpdates: typeof $onCheckForUpdates === `function` ? $onCheckForUpdates : () => { },
+		onInstallUpdate: typeof $onInstallUpdate === `function` ? $onInstallUpdate : () => { },
+		testServerActive: !!testServer.getTestServerState(),
+		testServerRemainingTime: (() => {
+			const s = testServer.getTestServerState();
+			if (!s) { return ``; }
+			const elapsed = Date.now() - s.startedAt;
+			const remaining = TEST_SERVER_SESSION_DURATION_MS - elapsed;
+			return formatDuration(remaining);
+		})(),
+		onStartTestServer: startTestServerHandler,
+		onStopTestServer: stopTestServer,
+		onCopyTestServerUrl: copyTestServerUrlHandler,
+		onOpenTestServerInBrowser: openTestServerInBrowserHandler,
+		testServerHttpsEnabled: $testServerHttpsEnabled,
+		onToggleTestServerHttps: () => {
+			$testServerHttpsEnabled = !$testServerHttpsEnabled;
+			setMenu();
+		},
+		isInitializing: $isInitializing,
+		onOpenSettings: () => uiEvent(`show-settings-modal`, {
+			project: settingsService.getProjectSettings($config?.meta?.projectId),
+			app: settingsService.getAppSettings(),
+			projectId: $config?.meta?.projectId
+		})
+	};
+
+	const template = buildMenuTemplate(context);
+	Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+}
+
+function setupAutoUpdater() {
+	const { autoUpdater } = require(`electron-updater`);
+	const { dialog } = require(`electron`);
+	const semver = require(`semver`);
+
+	autoUpdater.forceDevUpdateConfig = true;
+	autoUpdater.currentVersion = semver.parse(_appVersion);
+
+	// Silence internal logging to prevent duplicate stack traces
+	autoUpdater.logger = null;
+
+	autoUpdater.setFeedURL({
+		provider: `github`,
+		owner: `cycosoft`,
+		repo: `Eyas`
+	});
+
+	$onCheckForUpdates = () => {
+		$updateCheckUserTriggered = true;
+		autoUpdater.checkForUpdates().catch(() => { });
+	};
+	$onInstallUpdate = () => autoUpdater.quitAndInstall();
+
+	autoUpdater.on(`update-available`, () => {
+		$updateStatus = `downloading`;
+		setMenu();
+	});
+	autoUpdater.on(`update-downloaded`, () => {
+		$updateStatus = `downloaded`;
+		setMenu();
+	});
+	const showNoUpdateIfUserTriggered = () => {
+		if ($updateCheckUserTriggered) {
+			$updateCheckUserTriggered = false;
+			dialog.showMessageBox($appWindow, getNoUpdateAvailableDialogOptions());
+		}
+	};
+	autoUpdater.on(`update-not-available`, showNoUpdateIfUserTriggered);
+	autoUpdater.on(`error`, err => {
+		if (err.message?.includes(`404`)) {
+			console.error(`Auto-update error: update server not found`);
+		} else {
+			console.error(`Auto-update error:`, err);
+		}
+		showNoUpdateIfUserTriggered();
+	});
+
+	autoUpdater.checkForUpdates().catch(() => { });
+}
+
+function getSessionAge() {
+	const { formatDistanceToNow } = require(`date-fns/formatDistanceToNow`);
+	let output = new Date();
+
+	// get the path to the cache
+	const cachePath = $appWindow.webContents.session.getStoragePath();
+
+	// if the cache path was found
+	if (cachePath) {
+		const fs = require(`fs`);
+
+		// create a path to the `Session Storage` folder
+		const sessionFolder = _path.join(cachePath, `Session Storage`);
+
+		// if the session folder exists
+		if (fs.existsSync(sessionFolder)) {
+			// get the date the folder was created
+			output = fs.statSync(sessionFolder).birthtime;
+		}
+	}
+
+	// format the output to a relative time
+	output = formatDistanceToNow(output);
+
+	return output;
+}
+
+// listen for the window to close
+async function manageAppClose(evt) {
+	// stop the window from closing
+	evt.preventDefault();
+
+	// send a message to the UI to show the exit modal with the captured image
+	uiEvent(`modal-exit-visible`, true);
+
+	// track that the modal background content was viewed
+	trackEvent(MP_EVENTS.ui.modalBackgroundContentViewed);
+}
+
+// Toggle the Eyas UI layer so the user can interact with it or their test
+function toggleEyasUI(enable) {
+	if (enable) {
+		// set the bounds to the current viewport
+		$eyasLayer.setBounds({
+			x: 0,
+			y: 0,
+			width: $currentViewport[0],
+			height: $currentViewport[1]
+		});
+
+		// give the layer focus
+		focusUI();
+	} else {
+		// close all modals in the UI
+		$eyasLayer.webContents.send(`close-modals`);
+
+		// shrink the bounds to 0 to hide it
+		$eyasLayer.setBounds({ x: 0, y: 0, width: 0, height: 0 });
+	}
+}
+
+// focus the UI layer
+function focusUI() {
+	// track the number of attempts to focus the UI to prevent infinite loops
+	focusUI.attempts = focusUI.attempts || 0;
+	focusUI.attempts++;
+
+	// if the number of attempts is greater than 5
+	if (focusUI.attempts > 5) {
+		// reset the number of attempts
+		focusUI.attempts = 0;
+
+		// stop trying to focus the UI
+		return;
+	}
+
+	// give the layer focus
+	$eyasLayer.webContents.focus();
+
+	// check if the UI is focused
+	setTimeout(() => {
+		const isFocused = $eyasLayer.webContents.isFocused();
+
+		// if the UI is not focused
+		if (!isFocused) {
+			// call the focus method again
+			focusUI();
+		} else {
+			// reset the number of attempts
+			focusUI.attempts = 0;
+		}
+	}, 250);
+}
+
+// manage navigation
+function navigate(path, openInBrowser) {
+	// setup
+	let runningTestSource = false;
+
+	// if the path wasn't provided (default to local test source)
+	if (!path) {
+		// store that we're running the local test source
+		runningTestSource = true;
+
+		// if there's a custom domain, go there OR default to the local test source
+		path = $testDomain;
+	}
+
+	if (
+		// if requested to open in the browser AND
+		openInBrowser &&
+		(
+			// not running the local test OR
+			!runningTestSource ||
+			// the test server is running AND we're running the local test
+			(testServer.getTestServerState() && runningTestSource)
+		)
+	) {
+		// open the requested url in the default browser
+		const { shell } = require(`electron`);
+		shell.openExternal(path);
+	} else {
+		// otherwise load the requested path in the app window
+		$appWindow.loadURL(path);
+	}
+
+	// ensure the UI is closed so the user can interact with the content
+	toggleEyasUI(false);
+}
+
+// register a custom protocol for loading local test files and the UI
+function registerInternalProtocols() {
+	// imports
+	const { protocol } = require(`electron`);
+
+	// register the custom protocols for relative paths + crypto support
+	protocol.registerSchemesAsPrivileged([
+		{
+			scheme: `eyas`, privileges: {
+				standard: true,
+				secure: true,
+				allowServiceWorkers: true,
+				supportFetchAPI: true,
+				corsEnabled: true,
+				stream: true
+			}
+		},
+
+		{
+			scheme: `ui`, privileges: {
+				standard: true,
+				secure: true
+			}
+		}
+	]);
+}
+
+// handle blocking requests when the user disables the network
+function disableNetworkRequest(url) {
+	const output = false;
+
+	// exit if the network is not disabled
+	if ($testNetworkEnabled) { return output; }
+
+	// don't allow blocking the UI layer
+	if (url.startsWith(`ui://`)) { return output; }
+
+	return true;
+}
+
+// handle requests to the custom protocol
+function setupEyasNetworkHandlers() {
+	// imports
+	const { session } = require(`electron`);
+	const ses = session.fromPartition(`persist:${$config.meta.testId}`);
+
+	// use the "ui" protocol to load the Eyas UI layer
+	ses.protocol.handle(`ui`, request => {
+		const { pathToFileURL } = require(`url`);
+
+		// drop the protocol from the request
+		const { pathname: relativePathToFile } = parseURL(request.url.replace(`ui://`, `https://`));
+
+		// build the expected path to the requested file
+		const localFilePath = safeJoin($paths.uiSource, relativePathToFile);
+
+		// if the path is unsafe
+		if (!localFilePath) {
+			return new Response(`Not Found`, { status: 404 });
+		}
+
+		// return the Eyas UI layer to complete the request
+		return ses.fetch(pathToFileURL(localFilePath).toString());
+	});
+
+	// use this protocol to load files relatively from the local file system
+	ses.protocol.handle(`eyas`, request => {
+		// validate this request
+		if (disableNetworkRequest(request.url)) {
+			return { cancel: true };
+		}
+
+		// imports
+		const { pathToFileURL } = require(`url`);
+		const fs = require(`fs`);
+
+		// grab the pathname from the request
+		const { pathname } = parseURL(request.url.replace(`eyas://`, `https://`));
+
+		// parse expected file attempting to load
+		const fileIfNotDefined = `index.html`;
+
+		// check if the pathname ends with a file + extension
+		const hasExtension = pathname.split(`/`).pop().includes(`.`);
+
+		// build the relative path to the file
+		const relativePathToFile = hasExtension
+			? pathname
+			: _path.join(pathname, fileIfNotDefined);
+
+		// build the expected path to the file
+		let localFilePath = safeJoin($paths.testSrc, relativePathToFile);
+
+		if (
+			// if the file is unsafe OR doesn't exist
+			(!localFilePath || !fs.existsSync(localFilePath))
+			// AND the requested path isn't the root path
+			&& $paths.testSrc !== safeJoin($paths.testSrc, pathname)
+		) {
+			// load root file instead
+			localFilePath = safeJoin($paths.testSrc, fileIfNotDefined);
+		}
+
+		// if the path is still unsafe (shouldn't happen with index.html, but for safety)
+		if (!localFilePath) {
+			return new Response(`Not Found`, { status: 404 });
+		}
+
+		// return the file from the local system to complete the request
+		return ses.fetch(pathToFileURL(localFilePath).toString());
+	});
+
+	// listen for requests to the specified domains and redirect to the custom protocol
+	ses.protocol.handle(`https`, async request => {
+		// setup
+		const { hostname, pathname } = parseURL(request.url);
+		let bypassCustomProtocolHandlers = true;
+
+		// if the request's hostname matches the test domain
+		if (hostname === parseURL($testDomain).hostname) {
+			// check if the config.source is a valid url
+			const sourceOnWeb = parseURL($config.source);
+
+			// if the config.source is a url
+			if (sourceOnWeb) {
+				// redirect to the source domain with the same path
+				request = sourceOnWeb.origin
+					+ (sourceOnWeb.pathname + pathname)
+						.replaceAll(`//`, `/`);
+			} else {
+				// otherwise the config.source is a file, look locally
+				request = request.url.replace(`https://`, `eyas://`);
+				bypassCustomProtocolHandlers = false;
+			}
+		}
+
+		// make the request
+		return ses.fetch(request, { bypassCustomProtocolHandlers });
+	});
+}
+
+// clears the test cache
+function clearCache() {
+	// clear all caches for the session
+	$appWindow.webContents.session.clearCache(); // web cache
+	$appWindow.webContents.session.clearStorageData(); // cookies, filesystem, indexed db, local storage, shader cache, web sql, service workers, cache storage
+
+	// update the menu to reflect the cache changes
+	setMenu();
+}
+
+// refresh the app
+async function startAFreshTest(forceShow = false) {
+	// imports
+	const semver = require(`semver`);
+
+	// stop test server when test changes
+	if (testServer.getTestServerState()) {
+		stopTestServer();
+	}
+
+	// clear the cached port for the test server
+	testServer.clearTestServerPort();
+
+	// reset initialization state
+	$isInitializing = true;
+
+	// set the available viewports
+	$allViewports = [...$config.viewports, ...$defaultViewports];
+
+	// reset the current viewport to the first in the list
+	$currentViewport[0] = $allViewports[0].width;
+	$currentViewport[1] = $allViewports[0].height;
+	$appWindow.setContentSize($currentViewport[0], $currentViewport[1]);
+
+	// Set the application menu
+	setMenu();
+
+	// Reset test server settings
+	resetTestServerSettings();
+
+	// reset the path to the test source
+	$paths.testSrc = $config.source;
+
+	// check if $config.source is a url
+	const sourceOnWeb = parseURL($config.source);
+	if (sourceOnWeb) {
+		$testDomainRaw = $config.source;
+		$testDomain = sourceOnWeb.toString();
+		$envKey = null; // source URLs have no key
+	}
+
+	// if there are no custom domains defined
+	if (!$config.domains.length) {
+		console.log(`No domains defined, navigating...`);
+		// load the test using the default domain
+		navigate();
+	}
+
+	// if the user has a single custom domain
+	if ($config.domains.length === 1) {
+		console.log(`Single domain defined, navigating...`);
+		// update the default domain and env key
+		$testDomainRaw = $config.domains[0].url;
+		$testDomain = parseURL($testDomainRaw).toString();
+		$envKey = $config.domains[0].key ?? null;
+
+		// directly load the user's test using the new default domain
+		navigate();
+	}
+
+	// if the user has multiple custom domains
+	if ($config.domains.length > 1) {
+		const currentHash = hashDomains($config.domains);
+		const envSettings = settingsService.get(`env`, $config.meta.projectId);
+		const alwaysChoose = envSettings?.alwaysChoose;
+		const lastChoice = envSettings?.lastChoice;
+		const lastHash = envSettings?.lastChoiceHash;
+
+		// skip the modal if the user opted out AND the domain list hasn't changed AND it's not a forced show
+		if (!forceShow && alwaysChoose && lastChoice && lastHash === currentHash) {
+			// auto-select the previously chosen environment
+			$testDomainRaw = lastChoice.url;
+			$testDomain = parseURL(lastChoice.url).toString();
+			$envKey = lastChoice.key ?? null;
+			navigate();
+		} else {
+			// display the environment chooser modal
+			uiEvent(`show-environment-modal`, $config.domains, {
+				projectId: $config.meta.projectId,
+				alwaysChoose: !!alwaysChoose,
+				domainsHash: currentHash,
+				forceShow
+			});
+		}
+	}
+
+	// if the runner is older than the version that built the test
+	if ($config.meta.eyas && semver.lt(_appVersion, $config.meta.eyas)) {
+		// send request to the UI layer
+		uiEvent(`show-version-mismatch-modal`, _appVersion, $config.meta.eyas);
+	}
+}
+
+// navigate to a variable url
+function navigateVariable(url) {
+	const env = { url: $testDomainRaw, key: $envKey };
+
+	// substitute all Eyas-managed env variables (_env.url, _env.key, testdomain)
+	const output = substituteEnvVariables(url, env);
+
+	// if substitution returned null, the env url is required but not yet set
+	if (output === null) {
+		const { dialog } = require(`electron`);
+
+		// alert the user that they need to select an environment first
+		dialog.showMessageBoxSync($appWindow, {
+			type: `warning`,
+			buttons: [`OK`],
+			title: `Select an Environment`,
+			message: `You must select an environment before you can use this link`
+		});
+
+		return;
+	}
+
+	// if the url still has user-input variables
+	if (hasRemainingVariables(output)) {
+		// send request to the UI layer
+		uiEvent(`show-variables-modal`, output);
+	} else {
+		// just pass through to navigate
+		navigate(parseURL(output).toString());
+	}
+}
+
+// request the UI layer to launch an event
+function uiEvent(eventName, ...args) {
+	// display the UI layer
+	toggleEyasUI(true);
+
+	// send the interaction to the UI layer
+	$eyasLayer.webContents.send(eventName, ...args);
+}
