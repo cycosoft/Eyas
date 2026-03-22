@@ -1,16 +1,16 @@
-import { contextBridge } from 'electron';
-import { exposeElectronAPI } from '@electron-toolkit/preload';
+import { contextBridge, ipcRenderer } from 'electron';
 
-if (process.contextIsolated) {
-  try {
-    exposeElectronAPI();
-    contextBridge.exposeInMainWorld('electron', {
-       // add custom IPCs here
-    });
-  } catch (error) {
-    console.error(error);
-  }
-} else {
-  // @ts-ignore (define in d.ts)
-  window.electron = exposeElectronAPI();
+try {
+  contextBridge.exposeInMainWorld('electron', {
+    ipcRenderer: {
+      send: (channel: string, data?: any) => ipcRenderer.send(channel, data),
+      on: (channel: string, func: (...args: any[]) => void) => {
+        const subscription = (_event: any, ...args: any[]) => func(...args);
+        ipcRenderer.on(channel, subscription);
+        return () => ipcRenderer.removeListener(channel, subscription);
+      }
+    }
+  });
+} catch (error) {
+  console.error(error);
 }
