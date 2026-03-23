@@ -44,12 +44,12 @@ let $isInitializing = true;
 let $updateCheckUserTriggered = false;
 let $onCheckForUpdates = () => { };
 let $onInstallUpdate = () => { };
-const $roots = require(_path.join(__dirname, `scripts`, `get-roots.js`));
-const { parseURL } = require(_path.join(__dirname, `scripts`, `parse-url.js`));
+const $roots = require(`../scripts/get-roots.js`);
+const { parseURL } = require(`../scripts/parse-url.js`);
 const $paths = {
 	icon: _path.join($roots.eyas, `eyas-assets`, `eyas-logo.png`),
 	configLoader: _path.join($roots.eyas, `scripts`, `get-config.js`),
-	packageJson: _path.join($roots.eyas, `package.json`),
+	packageJson: _path.join($roots.eyas, `..`, `package.json`),
 	testPreload: _path.join($roots.eyas, `scripts`, `test-preload.js`),
 	eventBridge: _path.join($roots.eyas, `scripts`, `event-bridge.js`),
 	constants: _path.join($roots.eyas, `scripts`, `constants.js`),
@@ -61,22 +61,21 @@ const $paths = {
 	splashScreen: _path.join($roots.eyas, `eyas-interface`, `splash.html`)
 };
 const $operatingSystem = _os.platform();
-const { version: _appVersion } = require($paths.packageJson);
-const { buildMenuTemplate } = require(_path.join(__dirname, `menu-template.js`));
-const { getNoUpdateAvailableDialogOptions } = require(_path.join(__dirname, `update-dialog.js`));
-const { MP_EVENTS } = require(_path.join(__dirname, `metrics-events.js`));
-const testServer = require(_path.join(__dirname, `test-server`, `test-server.js`));
-const testServerCerts = require(_path.join(__dirname, `test-server`, `test-server-certs.js`));
-const testServerTimeout = require(_path.join(__dirname, `test-server`, `test-server-timeout.js`));
-const { safeJoin } = require(_path.join(__dirname, `scripts`, `path-utils.js`));
-const { formatDuration } = require(_path.join(__dirname, `scripts`, `time-utils.js`));
-const { substituteEnvVariables, isVariableLinkValid, hasRemainingVariables } = require(_path.join($roots.eyas, `scripts`, `variable-utils.js`));
-const settingsService = require(_path.join(__dirname, `settings-service.js`));
-const { getAppTitle, sanitizePageTitle } = require(_path.join($roots.eyas, `scripts`, `get-app-title.js`));
-
+const { version: _appVersion } = require(`../../package.json`);
+const { buildMenuTemplate } = require(`./menu-template.js`);
+const { getNoUpdateAvailableDialogOptions } = require(`./update-dialog.js`);
+const { MP_EVENTS } = require(`./metrics-events.js`);
+const testServer = require(`./test-server/test-server.js`);
+const testServerCerts = require(`./test-server/test-server-certs.js`);
+const testServerTimeout = require(`./test-server/test-server-timeout.js`);
+const { safeJoin } = require(`../scripts/path-utils.js`);
+const { formatDuration } = require(`../scripts/time-utils.js`);
+const { substituteEnvVariables, isVariableLinkValid, hasRemainingVariables } = require(`../scripts/variable-utils.js`);
+const settingsService = require(`./settings-service.js`);
+const { getAppTitle, sanitizePageTitle } = require(`../scripts/get-app-title.js`);
 
 // constants
-const { LOAD_TYPES, TEST_SERVER_SESSION_DURATION_MS } = require($paths.constants);
+const { LOAD_TYPES, TEST_SERVER_SESSION_DURATION_MS } = require(`../scripts/constants.js`);
 const APP_NAME = `Eyas`;
 
 /**
@@ -179,9 +178,7 @@ function initElectronCore() {
 	const {
 		handleEyasProtocolUrl,
 		getEyasUrlFromCommandLine
-	} = require(_path.join(__dirname, `deep-link-handler.js`));
-
-	// register the custom protocol for OS deep linking (native Electron API; macOS dev requires packaged app)
+	} = require(`./deep-link-handler.js`);
 	if (process.defaultApp) {
 		if (process.argv.length >= 2) {
 			_electronCore.setAsDefaultProtocolClient(
@@ -200,7 +197,7 @@ function initElectronCore() {
 		getAppWindow: () => $appWindow,
 		setConfigToLoad: p => { $configToLoad = p; },
 		loadConfig: async (method, path) => {
-			$config = await require($paths.configLoader)(method, path);
+			$config = await require(`../scripts/get-config.js`)(method, path);
 		},
 		startAFreshTest,
 		LOAD_TYPES
@@ -214,7 +211,7 @@ function initElectronCore() {
 		// if the $appWindow was already initialized
 		if ($appWindow) {
 			// load the new config
-			$config = await require($paths.configLoader)(LOAD_TYPES.ASSOCIATION, path);
+			$config = await require(`../scripts/get-config.js`)(LOAD_TYPES.ASSOCIATION, path);
 
 			// start a new test based on the newly loaded config
 			startAFreshTest();
@@ -251,7 +248,7 @@ function initElectronCore() {
 		// when the electron layer is ready
 		.then(async () => {
 			// get config based on the context
-			$config = await require($paths.configLoader)($configToLoad.method || LOAD_TYPES.AUTO, $configToLoad.path);
+			$config = await require(`../scripts/get-config.js`)($configToLoad.method || LOAD_TYPES.AUTO, $configToLoad.path);
 
 			// load user settings from disk before first test start
 			await settingsService.load();
