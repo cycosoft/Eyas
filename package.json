@@ -14,7 +14,7 @@
     "test:electron:unit": "vitest run --config vitest.config.electron.js",
     "test:interface:unit": "vitest run --config vitest.config.interface.js",
     "compile:prep": "node src/scripts/compile-prep.js",
-    "compile:ui": "vite build --config src/eyas-interface/app/.vite.config.ui.js"
+    "compile:ui": "vite build --config src/eyas-interface/app/.vite.config.ui.js && node src/scripts/copy-assets.js"
   },
   "dependencies": {
     "archiver": "^7.0.1",

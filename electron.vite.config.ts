@@ -1,24 +1,10 @@
 import { resolve } from 'path';
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite';
-import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 export default defineConfig({
   main: {
     plugins: [
-      externalizeDepsPlugin(),
-      viteStaticCopy({
-        targets: [
-          { src: 'src/eyas-assets/*', dest: '../eyas-assets' },
-          { src: 'package.json', dest: '../' },
-          { src: 'src/eyas-interface/splash.html', dest: '../eyas-interface' },
-          { src: 'src/eyas-core/menu-template.js', dest: './' },
-          { src: 'src/eyas-core/update-dialog.js', dest: './' },
-          { src: 'src/eyas-core/metrics-events.js', dest: './' },
-          { src: 'src/eyas-core/settings-service.js', dest: './' },
-          { src: 'src/eyas-core/deep-link-handler.js', dest: './' },
-          { src: 'src/eyas-core/test-server', dest: './' }
-        ]
-      })
+      externalizeDepsPlugin()
     ],
     build: {
       rollupOptions: {
@@ -34,7 +20,8 @@ export default defineConfig({
           'test-server/test-server-timeout': resolve(__dirname, 'src/eyas-core/test-server/test-server-timeout.js')
         },
         external: [/^..\/scripts\//, /^..\/..\/package\.json$/]
-      }
+      },
+      emptyOutDir: false
     }
   },
   preload: {
@@ -54,7 +41,8 @@ export default defineConfig({
           'variable-utils': resolve(__dirname, 'src/scripts/variable-utils.js')
         }
       },
-      outDir: 'out/scripts'
+      outDir: 'out/scripts',
+      emptyOutDir: false
     }
   }
 });

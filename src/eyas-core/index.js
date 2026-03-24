@@ -1,4 +1,4 @@
-/* global __dirname, process */
+/* global process */
 
 'use strict';
 
@@ -1191,8 +1191,9 @@ function setupEyasNetworkHandlers() {
 		// build the expected path to the requested file
 		const localFilePath = safeJoin($paths.uiSource, relativePathToFile);
 
-		// if the path is unsafe
-		if (!localFilePath) {
+		// if the path is unsafe OR the file is missing
+		const fs = require(`fs`);
+		if (!localFilePath || !fs.existsSync(localFilePath)) {
 			return new Response(`Not Found`, { status: 404 });
 		}
 
