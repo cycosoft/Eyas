@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Eyas — Simplified Hands-on Testing for Web Applications</title>
   <meta name="description" content="Eyas lets you bundle your web app at any state and share it with any stakeholder for hands-on testing — no server, no technical knowledge required.">
-  <link rel="stylesheet" href="/assets/demo.css">
+  <link rel="stylesheet" href="./assets/demo.css">
   <style>
     /* Landing-page-only styles */
     .hero {
@@ -193,23 +193,7 @@
 </head>
 <body>
   <!-- Navigation -->
-  <nav class="site-nav" role="navigation" aria-label="Site navigation">
-    <div class="container nav-inner">
-      <a href="/" class="nav-logo" aria-label="Eyas home">
-        <span data-eyas-logo></span>
-        <span>Eyas</span>
-      </a>
-      <ul class="nav-links" role="list">
-        <li><a href="/demo/environments">Environments</a></li>
-        <li><a href="/demo/viewport">Viewport</a></li>
-        <li><a href="/demo/routing">Routing</a></li>
-        <li><a href="/demo/links">Links</a></li>
-        <li><a href="/demo/network">Network</a></li>
-        <li><a href="/demo/external">External</a></li>
-        <li><a href="/demo/window">Window</a></li>
-      </ul>
-    </div>
-  </nav>
+  <eyas-nav root></eyas-nav>
 
   <!-- Hero -->
   <section class="hero" aria-label="Hero">
@@ -298,56 +282,56 @@
 
       <div class="feature-grid">
 
-        <a href="/demo/environments" class="card card-link animate-fade-in-up" id="card-environments">
+        <a href="./demo/environments/index.html" class="card card-link animate-fade-in-up" id="card-environments">
           <span class="card-icon">🌐</span>
           <span class="badge badge-red" style="margin-bottom:var(--space-3);">Multi-env</span>
           <h3 class="card-title">Environment Selector</h3>
           <p class="card-desc">Configure dev, staging, and production domains. Eyas prompts you to choose on startup — or remembers your last choice.</p>
         </a>
 
-        <a href="/demo/viewport" class="card card-link animate-fade-in-up" id="card-viewport">
+        <a href="./demo/viewport/index.html" class="card card-link animate-fade-in-up" id="card-viewport">
           <span class="card-icon">📐</span>
           <span class="badge badge-blue" style="margin-bottom:var(--space-3);">Responsive</span>
           <h3 class="card-title">Viewport Testing</h3>
           <p class="card-desc">Switch between Desktop, Tablet, and Mobile presets, or define custom breakpoints in your config. Live readout on this page.</p>
         </a>
 
-        <a href="/demo/routing" class="card card-link animate-fade-in-up" id="card-routing">
+        <a href="./demo/routing/index.html" class="card card-link animate-fade-in-up" id="card-routing">
           <span class="card-icon">🗺️</span>
           <span class="badge badge-orange" style="margin-bottom:var(--space-3);">SPA Support</span>
           <h3 class="card-title">SPA Routing</h3>
           <p class="card-desc">Eyas serves files from your build directory and falls back to <code>index.html</code> for unmatched routes, just like a real CDN.</p>
         </a>
 
-        <a href="/demo/links" class="card card-link animate-fade-in-up" id="card-links">
+        <a href="./demo/links/index.html" class="card card-link animate-fade-in-up" id="card-links">
           <span class="card-icon">🔗</span>
           <span class="badge badge-purple" style="margin-bottom:var(--space-3);">Dynamic</span>
           <h3 class="card-title">Custom Links</h3>
           <p class="card-desc">Add shortcut links to your menu with variable substitution — integers, strings, booleans, picklists, and environment values.</p>
         </a>
 
-        <a href="/demo/network" class="card card-link animate-fade-in-up" id="card-network">
+        <a href="./demo/network/index.html" class="card card-link animate-fade-in-up" id="card-network">
           <span class="card-icon">📡</span>
           <span class="badge badge-green" style="margin-bottom:var(--space-3);">Isolation</span>
           <h3 class="card-title">Network Control</h3>
           <p class="card-desc">Toggle the network on or off with one menu click. Test offline behaviour or isolate your app from external dependencies.</p>
         </a>
 
-        <a href="/demo/external" class="card card-link animate-fade-in-up" id="card-external">
+        <a href="./demo/external/index.html" class="card card-link animate-fade-in-up" id="card-external">
           <span class="card-icon">🖼️</span>
           <span class="badge badge-orange" style="margin-bottom:var(--space-3);">Resources</span>
           <h3 class="card-title">External Resources</h3>
           <p class="card-desc">See how Eyas loads (and can block) external images, fonts, and APIs. Great for testing your app's offline fallback behaviour.</p>
         </a>
 
-        <a href="/demo/window" class="card card-link animate-fade-in-up" id="card-window">
+        <a href="./demo/window/index.html" class="card card-link animate-fade-in-up" id="card-window">
           <span class="card-icon">🔲</span>
           <span class="badge badge-blue" style="margin-bottom:var(--space-3);">UX Polish</span>
           <h3 class="card-title">Window &amp; Title</h3>
           <p class="card-desc">Eyas reflects your app's page title in the window title bar, including version and URL context. Open pages in new windows too.</p>
         </a>
 
-        <a href="/demo/alt" class="card card-link animate-fade-in-up" id="card-alt">
+        <a href="./demo/alt/index.html" class="card card-link animate-fade-in-up" id="card-alt">
           <span class="card-icon">↗️</span>
           <span class="badge badge-green" style="margin-bottom:var(--space-3);">Navigation</span>
           <h3 class="card-title">Multi-page Navigation</h3>
@@ -441,30 +425,9 @@
   </section>
 
   <!-- Footer -->
-  <footer class="site-footer" role="contentinfo">
-    <div class="container">
-      <p>
-        <a href="https://github.com/cycosoft/Eyas" target="_blank" rel="noopener">GitHub</a>
-        &nbsp;·&nbsp;
-        <a href="https://www.npmjs.com/package/@cycosoft/eyas" target="_blank" rel="noopener">npm</a>
-        &nbsp;·&nbsp;
-        <a href="https://cycosoft.com/eyas/terms" target="_blank" rel="noopener">Terms</a>
-        &nbsp;·&nbsp;
-        <a href="https://cycosoft.com/eyas/privacy" target="_blank" rel="noopener">Privacy</a>
-        &nbsp;·&nbsp;
-        MIT Licensed
-      </p>
-      <p style="margin-top:var(--space-2);">
-        <!-- These links kept for E2E routing compat -->
-        <a href="/demo/alt" id="link-alt" style="font-size:0.75rem;color:var(--text-muted);">Alt page</a>
-        &nbsp;·&nbsp;
-        <a href="/demo/path" id="link-path" style="font-size:0.75rem;color:var(--text-muted);">Path page</a>
-        &nbsp;·&nbsp;
-        <a href="/BAD_ROUTE" id="link-bad-route" style="font-size:0.75rem;color:var(--text-muted);">404 test</a>
-      </p>
-    </div>
-  </footer>
+  <eyas-footer root></eyas-footer>
 
-  <script src="/assets/demo.js"></script>
+  <script src="./assets/components.js"></script>
+  <script src="./assets/demo.js"></script>
 </body>
 </html>

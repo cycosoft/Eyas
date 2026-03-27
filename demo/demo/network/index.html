@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Network Isolation — Eyas Demo</title>
-  <link rel="stylesheet" href="/assets/demo.css">
+  <link rel="stylesheet" href="../../assets/demo.css">
   <style>
     /* Network-specific styles */
     .status-card {
@@ -57,24 +57,7 @@
   </style>
 </head>
 <body>
-  <nav class="site-nav">
-    <div class="container nav-inner">
-      <a href="/" class="nav-logo">
-        <span data-eyas-logo></span>
-        <span>Eyas</span>
-      </a>
-      <ul class="nav-links">
-        <li><a href="/demo/environments">Environments</a></li>
-        <li><a href="/demo/viewport">Viewport</a></li>
-        <li><a href="/demo/routing">Routing</a></li>
-        <li><a href="/demo/links">Links</a></li>
-        <li><a href="/demo/network" class="active">Network</a></li>
-        <li><a href="/demo/external">External</a></li>
-        <li><a href="/demo/window">Window</a></li>
-      </ul>
-      <a href="/" class="nav-home-btn">← Home</a>
-    </div>
-  </nav>
+  <eyas-nav></eyas-nav>
 
   <header class="page-hero container animate-fade-in-up">
     <span class="page-hero-icon">📡</span>
@@ -119,11 +102,10 @@
     </section>
   </main>
 
-  <footer class="site-footer">
-    <p>&copy; 2026 Cycosoft, LLC. All rights reserved.</p>
-  </footer>
+  <eyas-footer></eyas-footer>
 
-  <script src="/assets/demo.js"></script>
+  <script src="../../assets/components.js"></script>
+  <script src="../../assets/demo.js"></script>
   <script>
     eyasDemo.onNetworkChange(online => {
       const card = document.getElementById('status-card');
