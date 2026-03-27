@@ -1,6 +1,7 @@
 # v26.3.x
 
 - Update dependencies
+- Properly support electron-vite implementation
 
 # v26.3.25864
 
