@@ -1,6 +1,7 @@
 {
-	"compilerOptions": {
-		"allowJs": true,
-		"outDir": "./dist/",
-	}
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.node.json" },
+    { "path": "./tsconfig.web.json" }
+  ]
 }

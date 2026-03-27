@@ -2,9 +2,9 @@ import { describe, test, expect } from 'vitest';
 import { getElectronBuilderConfig } from '../../src/scripts/electron-builder-config.js';
 
 const basePaths = {
-	icon: `/fake/build/eyas-assets/eyas-logo.png`,
-	iconDbWin: `/fake/build/eyas-assets/eyas-db.ico`,
-	iconDbMac: `/fake/build/eyas-assets/eyas-db.icns`,
+	icon: `/fake/out/eyas-assets/eyas-logo.png`,
+	iconDbWin: `/fake/out/eyas-assets/eyas-db.ico`,
+	iconDbMac: `/fake/out/eyas-assets/eyas-db.icns`,
 	codesignWin: `/fake/src/scripts/codesign-win.js`
 };
 
@@ -16,7 +16,7 @@ const baseOptions = {
 	paths: basePaths,
 	runnerName: `Eyas`,
 	appleTeamId: ``,
-	buildRoot: `/fake/.build`,
+	buildRoot: `/fake/out`,
 	runnersRoot: `/fake/.runners`
 };
 

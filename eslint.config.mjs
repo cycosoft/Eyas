@@ -5,7 +5,9 @@ import vueEslintParser from 'vue-eslint-parser';
 
 export default [
 	{
-		ignores: [`dist/**`, `.build/**`, `.pre-build/**`, `.test-data/**`],
+		ignores: [`dist/**`, `out/**`, `legacy-migration/**`, `.build/**`, `.pre-build/**`, `.test-data/**`, `playwright-report/**`]
+	},
+	{
 		files: [`**/*.js`],
 		languageOptions: {
 			globals: {

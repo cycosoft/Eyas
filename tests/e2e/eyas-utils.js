@@ -11,7 +11,7 @@ const path = require(`path`);
  */
 async function launchEyas(extraArgs = [], userDataDir = null, cwd = null, env = {}) {
 	const electronPath = require(`electron`);
-	const mainPath = path.join(__dirname, `../../.build/index.js`);
+	const mainPath = path.join(__dirname, `../../out/main/index.js`);
 	const fs = require(`fs-extra`);
 
 	// Use a temporary directory for each test run to ensure isolation
