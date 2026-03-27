@@ -33,6 +33,25 @@ function getElectronBuilderConfig(options) {
 		artifactName: `${runnerName}${isInstaller ? (isWin ? `-win` : `-mac`) : ``}.\${ext}`,
 		copyright: `Copyright © 2023 Cycosoft, LLC`,
 		asarUnpack: [`resources/**`],
+		files: [
+			`!**/.vscode/*`,
+			`!src/*`,
+			`!tests/*`,
+			`!.runners/*`,
+			`!.test-data/*`,
+			`!conductor/*`,
+			`!demo/*`,
+			`!docs/*`,
+			`!dist/*`,
+			`!eyas-dist/*`,
+			`!_design/*`,
+			`!electron.vite.config.{js,ts,mjs,cjs}`,
+			`!{.eslintignore,.eslintrc.cjs,eslint.config.mjs,babel.config.js}`,
+			`!{.env,.env.*,.npmrc,package-lock.json}`,
+			`!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}`,
+			`!{playwright.config.js,vitest.config.*.js,dev-app-update.yml}`,
+			`!{README.md,CHANGELOG.md,LICENSE.TXT}`
+		],
 		directories: {
 			app: buildRoot,
 			output: runnersRoot

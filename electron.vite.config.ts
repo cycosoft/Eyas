@@ -10,11 +10,10 @@ export default defineConfig({
       externalizeDepsPlugin(),
       viteStaticCopy({
         targets: [
-          // UI assets
-          { src: 'src/eyas-interface/splash.html', dest: 'eyas-interface' },
-          { src: 'src/eyas-assets/**/*', dest: 'eyas-assets' },
-          // Root package.json needed by electron-builder and runtime references
-          { src: 'package.json', dest: '' }
+          {
+            src: resolve(__dirname, 'src/eyas-assets/**/*').replace(/\\/g, '/'),
+            dest: '../eyas-assets'
+          }
         ]
       })
     ],
@@ -31,9 +30,12 @@ export default defineConfig({
           'test-server/test-server-certs': resolve(__dirname, 'src/eyas-core/test-server/test-server-certs.js'),
           'test-server/test-server-timeout': resolve(__dirname, 'src/eyas-core/test-server/test-server-timeout.js')
         },
+        output: {
+          entryFileNames: '[name].js'
+        },
         external: [/^..\/scripts\//, /^..\/..\/package\.json$/]
       },
-      emptyOutDir: false
+      emptyOutDir: true
     }
   },
   preload: {
@@ -51,10 +53,13 @@ export default defineConfig({
           'path-utils': resolve(__dirname, 'src/scripts/path-utils.js'),
           'time-utils': resolve(__dirname, 'src/scripts/time-utils.js'),
           'variable-utils': resolve(__dirname, 'src/scripts/variable-utils.js')
+        },
+        output: {
+          entryFileNames: '[name].js'
         }
       },
       outDir: 'out/scripts',
-      emptyOutDir: false
+      emptyOutDir: true
     }
   },
   renderer: {
@@ -74,7 +79,8 @@ export default defineConfig({
         input: resolve(__dirname, 'src/eyas-interface/app/index.html')
       },
       outDir: resolve(__dirname, 'out/eyas-interface'),
-      emptyOutDir: false
+      emptyOutDir: true
     }
   }
 });
+
