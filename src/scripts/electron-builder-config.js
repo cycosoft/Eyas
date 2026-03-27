@@ -53,7 +53,6 @@ function getElectronBuilderConfig(options) {
 			`!{README.md,CHANGELOG.md,LICENSE.TXT}`
 		],
 		directories: {
-			app: buildRoot,
 			output: runnersRoot
 		},
 		compression: isDev ? `store` : `maximum`, // `store` | `normal` | `maximum`
