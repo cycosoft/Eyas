@@ -118,7 +118,7 @@
     "vue": "^3.5.31",
     "vue-eslint-parser": "^10.4.0",
     "vue-tsc": "^3.2.6",
-    "vuetify": "^3.12.0"
+    "vuetify": "^4.0.4"
   },
   "overrides": {
     "package-json": ">6.5.0 <8.0.0",
