@@ -14,9 +14,9 @@ const buildRoot = consumerRoot;
 const runnersRoot = path.join(consumerRoot, `.runners`);
 const distRoot = path.join(consumerRoot, `dist`);
 const paths = {
-	icon: path.join(buildRoot, `eyas-assets`, `eyas-logo.png`),
-	iconDbWin: path.join(buildRoot, `eyas-assets`, `eyas-db.ico`),
-	iconDbMac: path.join(buildRoot, `eyas-assets`, `eyas-db.icns`),
+	icon: path.join(buildRoot, `src`, `eyas-assets`, `eyas-logo.png`),
+	iconDbWin: path.join(buildRoot, `src`, `eyas-assets`, `eyas-db.ico`),
+	iconDbMac: path.join(buildRoot, `src`, `eyas-assets`, `eyas-db.icns`),
 	codesignWin: path.join(consumerRoot, `src`, `scripts`, `codesign-win.js`)
 };
 
