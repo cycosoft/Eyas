@@ -2,6 +2,7 @@
 
 - Update dependencies
 - Properly support electron-vite implementation
+- Migrate to Vuetify v4.0.4
 
 # v26.3.25864
 
