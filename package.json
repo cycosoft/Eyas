@@ -15,7 +15,7 @@
   },
   "scripts": {
     "_______________DEV_______________": "",
-    "dev": "electron-vite dev",
+    "dev": "npm i && npm run update && electron-vite dev",
     "dev:installer": "npm i && cross-env NODE_ENV=dev npm run compile:installer",
     "dev:fixes": "sudo xattr -r -d com.apple.quarantine ./",
     "_____________TEST_______________": "",
