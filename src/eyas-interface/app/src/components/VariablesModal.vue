@@ -5,7 +5,7 @@
 	>
 		<v-card class="pa-3 variables-modal-content">
 			<v-card-text class="pb-0">
-				<p class="font-weight-black text-center text-h6">Link Requires Additional Information</p>
+				<p class="font-weight-black text-center text-title-large">Link Requires Additional Information</p>
 
 				<v-sheet v-if="link" class="my-10">
 					<v-row
@@ -55,7 +55,7 @@
 					</v-row>
 
 					<!-- display the link being updated -->
-					<v-row class="pt-2 d-block">
+					<v-row class="pt-2">
 						<v-icon v-if="linkIsValid" class="mr-2" color="success">mdi-check-circle-outline</v-icon>
 						<v-icon v-else class="mr-2" color="error">mdi-alert-rhombus-outline</v-icon>
 						<small class="parsed-link">{{ parsedLink }}</small>

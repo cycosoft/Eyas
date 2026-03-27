@@ -1,7 +1,7 @@
 <template>
 	<ModalWrapper v-model="visible">
 		<v-card>
-			<v-card-title class="text-h6 pt-3 px-3" data-qa="settings-title">Settings</v-card-title>
+			<v-card-title class="text-title-large pt-3 px-3" data-qa="settings-title">Settings</v-card-title>
 			<v-card-text class="px-0 pt-0">
 				<v-tabs v-model="activeTab" color="primary">
 					<v-tab value="project" data-qa="settings-tab-project">Project</v-tab>

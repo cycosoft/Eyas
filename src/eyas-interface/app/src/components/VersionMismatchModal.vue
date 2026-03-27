@@ -2,7 +2,7 @@
 	<ModalWrapper v-model="visible" type="dialog">
 		<v-card class="pa-3">
 			<v-card-text>
-				<p class="font-weight-black text-center text-h6 mb-10">⚠️ Possible Update Available ⚠️</p>
+				<p class="font-weight-black text-center text-title-large mb-10">⚠️ Possible Update Available ⚠️</p>
 
 				<v-sheet>
 					<v-row class="mt-8 px-14">
@@ -20,7 +20,7 @@
 			</v-card-text>
 
 			<v-card-actions>
-				<v-col class="text-caption">
+				<v-col class="text-body-small">
 					<span v-if="runnerVersion">runner: ({{ runnerVersion }})</span>
 					<span v-if="runnerVersion && testVersion" class="text-grey-lighten-1 mx-1">&lt;</span>
 					<span v-if="testVersion">test ({{ testVersion }})</span>

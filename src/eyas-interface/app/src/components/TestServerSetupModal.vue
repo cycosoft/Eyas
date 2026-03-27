@@ -1,7 +1,7 @@
 <template>
 	<ModalWrapper v-model="visible">
 		<v-card>
-			<v-card-title class="text-h6 pt-3 px-3" data-qa="test-server-setup-title">Live Test Server Setup</v-card-title>
+			<v-card-title class="text-title-large pt-3 px-3" data-qa="test-server-setup-title">Live Test Server Setup</v-card-title>
 			<v-card-text class="overflow-y-auto px-3">
 				<p class="mb-4">Configure your test server settings and click Continue to start.</p>
 
@@ -60,12 +60,12 @@
 				<v-alert v-if="useCustomDomain" type="warning" variant="tonal" class="mt-4" data-qa="hosts-file-instructions">
 					<p class="mb-2"><strong>Custom domain via hosts file</strong></p>
 					<p class="mb-2">If you want to use a custom domain like <code>{{ hostnameForHosts }}</code>, manually add this line to your hosts file:</p>
-					<v-sheet title="Click to copy" class="hosts-copy-block mt-2 pa-2 font-mono text-body2 cursor-pointer d-flex justify-space-between align-center" rounded @click="copyHostsLine">
+					<v-sheet title="Click to copy" class="hosts-copy-block mt-2 pa-2 font-mono text-body-medium cursor-pointer d-flex justify-space-between align-center" rounded @click="copyHostsLine">
 						<code>{{ hostsLine }}</code>
 						<v-icon size="small" :icon="copyIcon" color="warning" />
 					</v-sheet>
-					<p v-if="isWindows" class="mt-2 text-caption">Hosts file location: <code>C:\Windows\System32\drivers\etc\hosts</code></p>
-					<p v-else class="mt-2 text-caption">Hosts file location: <code>/etc/hosts</code></p>
+					<p v-if="isWindows" class="mt-2 text-body-small">Hosts file location: <code>C:\Windows\System32\drivers\etc\hosts</code></p>
+					<p v-else class="mt-2 text-body-small">Hosts file location: <code>/etc/hosts</code></p>
 				</v-alert>
 
 				<v-alert v-if="useHttps" type="info" variant="tonal" class="mt-4">

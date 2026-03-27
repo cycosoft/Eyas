@@ -1,7 +1,7 @@
 <template>
 	<ModalWrapper ref="modal" v-model="visible">
 		<v-card>
-			<v-card-title class="d-flex align-center justify-space-between text-h6 pt-3 px-3" data-qa="test-server-active-title">
+			<v-card-title class="d-flex align-center justify-space-between text-title-large pt-3 px-3" data-qa="test-server-active-title">
 				<span>Live Test Server</span>
 				<v-chip
 					v-if="(endTime || isExpired) && !isExpired"
@@ -24,7 +24,7 @@
 					data-qa="test-server-expired-alert"
 				>
 					<p class="mb-0"><strong>Session Expired</strong></p>
-					<p class="mb-0 text-body-2">This session timed out after {{ duration }}.</p>
+					<p class="mb-0 text-body-medium">This session timed out after {{ duration }}.</p>
 				</v-alert>
 
 				<!-- Active Status Hint -->
@@ -35,7 +35,7 @@
 					class="mb-4"
 				>
 					<p class="mb-0"><strong>Session Active</strong></p>
-					<p class="mb-0 text-body-2">Session expires at {{ formattedEndTime }}</p>
+					<p class="mb-0 text-body-medium">Session expires at {{ formattedEndTime }}</p>
 				</v-alert>
 
 				<v-list density="compact">
