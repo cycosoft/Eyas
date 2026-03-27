@@ -6,7 +6,7 @@
 	>
 		<v-card class="pa-3">
 			<v-card-text>
-				<p class="font-weight-black text-center text-h6 mb-10" data-qa="environment-modal-title">Select Test Environment</p>
+				<p class="font-weight-black text-center text-title-large mb-10" data-qa="environment-modal-title">Select Test Environment</p>
 
 				<v-sheet>
 					<v-row>
@@ -17,7 +17,7 @@
 							<v-badge
 								:color="loadingIndex === index ? `` : `red-lighten-2`"
 								:content="index + 1"
-								location="bottom right"
+								location="bottom-end"
 							>
 								<v-btn
 									v-tooltip:bottom="tooltip(domain)"
@@ -41,7 +41,7 @@
 				</v-sheet>
 
 				<!-- always-choose setting -->
-				<v-row class="mt-4" justify="end">
+				<v-row class="mt-4 justify-end">
 					<v-col cols="auto">
 						<v-checkbox
 							v-model="alwaysChoose"
