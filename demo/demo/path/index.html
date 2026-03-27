@@ -1,18 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Demo Site - Path Page</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Path Page — Eyas Demo</title>
+  <link rel="stylesheet" href="/assets/demo.css">
 </head>
 <body>
-	Loaded `./demo/path/index.html`
-	<br>
-	<a href="/">Go to Home</a>
-	<br>
-	<a href="/demo/alt">Go to demo/alt/index.html</a>
-	<br>
-	<br>
-	<a href="/BAD_ROUTE">Go to BAD_ROUTE</a>
+  <nav class="site-nav">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo">
+        <span data-eyas-logo></span>
+        <span>Eyas</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="/demo/environments">Environments</a></li>
+        <li><a href="/demo/viewport">Viewport</a></li>
+        <li><a href="/demo/routing">Routing</a></li>
+        <li><a href="/demo/links">Links</a></li>
+        <li><a href="/demo/network">Network</a></li>
+        <li><a href="/demo/external">External</a></li>
+        <li><a href="/demo/window">Window</a></li>
+      </ul>
+      <a href="/" class="nav-home-btn">← Home</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="section animate-fade-in-up" style="text-align: center;">
+      <span style="font-size: 4rem; display: block; margin-bottom: var(--space-6);">🧭</span>
+      <h1 class="gradient-text">Loaded <code>./demo/path/index.html</code></h1>
+      <p style="margin-top: var(--space-4);">This page demonstrates deep directory resolution in the Eyas internal static server.</p>
+
+      <div class="route-grid" style="margin-top: var(--space-10);">
+        <div class="route-card">
+          <span class="route-card-icon">🏠</span>
+          <h3 class="route-card-title">Home Page</h3>
+          <p class="route-card-desc">Back to the landing page.</p>
+          <a href="/" class="btn btn-secondary btn-sm" style="font-size: 0.8rem; padding: var(--space-2) var(--space-6);">GO HOME</a>
+        </div>
+
+        <div class="route-card">
+          <span class="route-card-icon">↗️</span>
+          <h3 class="route-card-title">Alt Page</h3>
+          <p class="route-card-desc">Navigate to another sub-page.</p>
+          <a href="/demo/alt" class="btn btn-secondary btn-sm" style="font-size: 0.8rem; padding: var(--space-2) var(--space-6);">GO TO ALT</a>
+        </div>
+
+        <div class="route-card">
+          <span class="route-card-icon">⚠️</span>
+          <h3 class="route-card-title">404 Test</h3>
+          <p class="route-card-desc">Navigate to a missing route.</p>
+          <a href="/BAD_ROUTE" class="btn btn-primary btn-sm" style="font-size: 0.8rem; padding: var(--space-2) var(--space-6);">GO TO 404</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; 2026 Cycosoft, LLC. All rights reserved.</p>
+  </footer>
+
+  <script src="/assets/demo.js"></script>
 </body>
 </html>

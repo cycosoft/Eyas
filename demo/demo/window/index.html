@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Window &amp; Title — Eyas Demo</title>
+  <link rel="stylesheet" href="/assets/demo.css">
+  <style>
+    /* Window-specific styles */
+    .title-demo {
+      padding: var(--space-8);
+      background: var(--bg-surface);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      margin-bottom: var(--space-8);
+      text-align: center;
+    }
+
+    .title-input-group {
+      display: flex;
+      gap: var(--space-4);
+      justify-content: center;
+      margin-top: var(--space-6);
+    }
+
+    .title-input {
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      font-family: inherit;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .window-examples {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: var(--space-6);
+      margin-top: var(--space-10);
+    }
+  </style>
+</head>
+<body>
+  <nav class="site-nav">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo">
+        <span data-eyas-logo></span>
+        <span>Eyas</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="/demo/environments">Environments</a></li>
+        <li><a href="/demo/viewport">Viewport</a></li>
+        <li><a href="/demo/routing">Routing</a></li>
+        <li><a href="/demo/links">Links</a></li>
+        <li><a href="/demo/network">Network</a></li>
+        <li><a href="/demo/external">External</a></li>
+        <li><a href="/demo/window" class="active">Window</a></li>
+      </ul>
+      <a href="/" class="nav-home-btn">← Home</a>
+    </div>
+  </nav>
+
+  <header class="page-hero container animate-fade-in-up">
+    <span class="page-hero-icon">🔲</span>
+    <h1 class="gradient-text">Window UX</h1>
+    <p>Eyas provides a polished user experience by automatically synchronizing your app's state with the runner window.</p>
+  </header>
+
+  <main class="container">
+    <section class="section-sm animate-fade-in-up">
+      <div class="card">
+        <h3 class="card-title">Dynamic Title Updates</h3>
+        <p style="margin-bottom: var(--space-4);">Eyas keeps the window title in sync with your <code>document.title</code>, appending the project title, version, and current URL for full context.</p>
+
+        <div class="title-demo">
+          <p class="status-label">Update Window Title</p>
+          <div class="title-input-group">
+            <input type="text" id="title-input" class="title-input" placeholder="New page title..." value="Eyas Showcase">
+            <button id="title-submit" class="btn btn-primary">SET TITLE</button>
+          </div>
+          <p class="card-desc" style="margin-top: var(--space-4);">Watch the top of your Eyas window change as you type!</p>
+        </div>
+
+        <div class="code-block">
+          <pre><span class="cmt">// Format</span>
+{AppTitle} {version} - {PageTitle} - {URL}</pre>
+        </div>
+      </div>
+    </section>
+
+    <div class="window-examples animate-fade-in-up">
+      <div class="card">
+        <h3 class="card-title">New Window Support</h3>
+        <p class="card-desc" style="margin-bottom: var(--space-4);">Eyas supports opening links in new windows via <code>target="_blank"</code>.</p>
+        <a href="/demo/alt" target="_blank" class="btn btn-secondary">OPEN ALT IN NEW WINDOW</a>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">External Browser</h3>
+        <p class="card-desc" style="margin-bottom: var(--space-4);">Need to escape the runner? Mark links as <code>external: true</code> in your config.</p>
+        <a href="https://cycosoft.com" target="_blank" class="btn btn-ghost" style="border: 1px solid var(--border);">CYCOSOFT.COM</a>
+      </div>
+    </div>
+
+    <section class="section animate-fade-in-up" style="text-align: center;">
+      <h3 style="margin-bottom: var(--space-4);">Try it now</h3>
+      <p style="margin-bottom: var(--space-4);">Experiment with the title field above to see how Eyas formats your page context in the window header.</p>
+      <div class="btn-group" style="display: flex; gap: var(--space-4); justify-content: center;">
+        <a href="/" class="btn btn-secondary">Back to Features</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; 2026 Cycosoft, LLC. All rights reserved.</p>
+  </footer>
+
+  <script src="/assets/demo.js"></script>
+  <script>
+    const input = document.getElementById('title-input');
+    const submit = document.getElementById('title-submit');
+
+    submit.addEventListener('click', () => {
+      document.title = input.value;
+    });
+
+    input.addEventListener('keyup', (e) => {
+      if (e.key === 'Enter') {
+        document.title = input.value;
+      }
+    });
+
+    // Initial sync
+    document.title = "Window & Title — Eyas Demo";
+  </script>
+</body>
+</html>

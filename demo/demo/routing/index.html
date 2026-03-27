@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPA Routing — Eyas Demo</title>
+  <link rel="stylesheet" href="/assets/demo.css">
+  <style>
+    /* Routing-specific styles */
+    .route-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: var(--space-6);
+      margin-top: var(--space-10);
+      margin-bottom: var(--space-16);
+    }
+
+    .route-card {
+      text-align: center;
+      padding: var(--space-8);
+      background: var(--bg-surface);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      transition: all var(--duration-mid) var(--ease);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .route-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--border-hover);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .route-card-icon {
+      font-size: 2.5rem;
+      margin-bottom: var(--space-4);
+      display: block;
+    }
+
+    .route-card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: var(--space-2);
+    }
+
+    .route-card-desc {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-6);
+    }
+  </style>
+</head>
+<body>
+  <nav class="site-nav">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo">
+        <span data-eyas-logo></span>
+        <span>Eyas</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="/demo/environments">Environments</a></li>
+        <li><a href="/demo/viewport">Viewport</a></li>
+        <li><a href="/demo/routing" class="active">Routing</a></li>
+        <li><a href="/demo/links">Links</a></li>
+        <li><a href="/demo/network">Network</a></li>
+        <li><a href="/demo/external">External</a></li>
+        <li><a href="/demo/window">Window</a></li>
+      </ul>
+      <a href="/" class="nav-home-btn">← Home</a>
+    </div>
+  </nav>
+
+  <header class="page-hero container animate-fade-in-up">
+    <span class="page-hero-icon">🗺️</span>
+    <h1 class="gradient-text">SPA &amp; Routing Support</h1>
+    <p>Eyas provides native support for Single Page Applications (SPAs) by automatically falling back to <code>index.html</code> for any unmatched routes.</p>
+  </header>
+
+  <main class="container">
+    <div class="route-grid animate-fade-in-up">
+      <div class="route-card">
+        <span class="route-card-icon">🏠</span>
+        <h3 class="route-card-title">Home Page</h3>
+        <p class="route-card-desc" style="margin-bottom: var(--space-4);">The entry point of your test build.</p>
+        <a href="/" class="btn btn-secondary btn-sm" style="font-size: 0.8rem; padding: var(--space-2) var(--space-6);">GO HOME</a>
+      </div>
+
+      <div class="route-card">
+        <span class="route-card-icon">↗️</span>
+        <h3 class="route-card-title">Valid Sub-route</h3>
+        <p class="route-card-desc" style="margin-bottom: var(--space-4);">A pre-defined page in your build.</p>
+        <a href="/demo/alt" class="btn btn-secondary btn-sm" style="font-size: 0.8rem; padding: var(--space-2) var(--space-6);">GO TO ALT</a>
+      </div>
+
+      <div class="route-card">
+        <span class="route-card-icon">⚠️</span>
+        <h3 class="route-card-title">404 Fallback</h3>
+        <p class="route-card-desc" style="margin-bottom: var(--space-4);">A route that doesn't exist.</p>
+        <a href="/BAD_ROUTE" class="btn btn-primary btn-sm" style="font-size: 0.8rem; padding: var(--space-2) var(--space-6);">GO TO 404</a>
+      </div>
+    </div>
+
+    <section class="section animate-fade-in-up">
+      <div class="card">
+        <h3 class="card-title">How it works</h3>
+        <p style="margin-bottom: var(--space-6);">Eyas's internal static server acts like a real production CDN. It's pre-configured to handle SPA routing patterns out of the box — no complex Nginx or Docker configuration required for your tests.</p>
+        
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: var(--space-4);">
+          <li style="display: flex; gap: var(--space-4); align-items: start;">
+            <span style="color: var(--color-online); font-weight: bold;">✔</span>
+            <p><strong>Path resolution:</strong> Checks your build directory for an exact match (e.g. <code>/demo/path/</code>).</p>
+          </li>
+          <li style="display: flex; gap: var(--space-4); align-items: start;">
+            <span style="color: var(--color-online); font-weight: bold;">✔</span>
+            <p><strong>File resolution:</strong> Appends <code>index.html</code> to directory requests.</p>
+          </li>
+          <li style="display: flex; gap: var(--space-4); align-items: start;">
+            <span style="color: var(--eyas-orange); font-weight: bold;">✔</span>
+            <p><strong>SPA Fallback:</strong> If no file or directory is found, it serves the root <code>index.html</code> file. This allows client-side routers (like Vue Router or React Router) to take over and show a custom error page.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; 2026 Cycosoft, LLC. All rights reserved.</p>
+  </footer>
+
+  <script src="/assets/demo.js"></script>
+</body>
+</html>

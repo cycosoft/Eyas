@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Viewport Testing — Eyas Demo</title>
+  <link rel="stylesheet" href="/assets/demo.css">
+  <style>
+    /* Viewport-specific styles */
+    .viewport-status {
+      text-align: center;
+      padding-block: var(--space-10);
+      background: var(--bg-surface);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: var(--space-8);
+    }
+    
+    .viewport-status::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(77, 166, 255, 0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .viewport-details {
+      display: flex;
+      gap: var(--space-8);
+      justify-content: center;
+      margin-top: var(--space-6);
+    }
+
+    .viewport-card {
+      text-align: left;
+      padding: var(--space-3);
+      width: 140px;
+    }
+
+    .viewport-label-text {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: var(--space-1);
+    }
+
+    .viewport-value-text {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+  </style>
+</head>
+<body>
+  <nav class="site-nav">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo">
+        <span data-eyas-logo></span>
+        <span>Eyas</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="/demo/environments">Environments</a></li>
+        <li><a href="/demo/viewport" class="active">Viewport</a></li>
+        <li><a href="/demo/routing">Routing</a></li>
+        <li><a href="/demo/links">Links</a></li>
+        <li><a href="/demo/network">Network</a></li>
+        <li><a href="/demo/external">External</a></li>
+        <li><a href="/demo/window">Window</a></li>
+      </ul>
+      <a href="/" class="nav-home-btn">← Home</a>
+    </div>
+  </nav>
+
+  <header class="page-hero container animate-fade-in-up">
+    <span class="page-hero-icon">📐</span>
+    <h1 class="gradient-text">Viewport Testing</h1>
+    <p>Eyas provides built-in desktop, tablet, and mobile presets for quickly verifying responsive layouts. You can also define your own custom breakpoints.</p>
+  </header>
+
+  <main class="container">
+    <section class="section-sm animate-fade-in-up">
+      <div class="viewport-status">
+        <p class="viewport-label-text">Current dimensions</p>
+        <div id="viewport-readout" class="viewport-display">0 × 0</div>
+        
+        <div class="viewport-details">
+          <div class="viewport-card">
+            <p class="viewport-label-text">Category</p>
+            <p id="viewport-category" class="viewport-value-text">UNKNOWN</p>
+          </div>
+          <div class="viewport-card">
+            <p class="viewport-label-text">Responsive State</p>
+            <p id="viewport-state" class="viewport-value-text">DETECTING</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-sm animate-fade-in-up">
+      <div class="card">
+        <h3 class="card-title">Default Breakpoints</h3>
+        <p class="card-desc" style="margin-bottom: var(--space-6);">Eyas comes pre-configured with industry-standard viewports for high-fidelity testing.</p>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Label</th>
+              <th>Dimensions</th>
+              <th>Aspect Ratio</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Desktop</strong></td>
+              <td><code>1366 × 768</code></td>
+              <td>16:9</td>
+            </tr>
+            <tr>
+              <td><strong>Tablet</strong></td>
+              <td><code>768 × 1024</code></td>
+              <td>3:4</td>
+            </tr>
+            <tr>
+              <td><strong>Mobile</strong></td>
+              <td><code>360 × 640</code></td>
+              <td>9:16</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section-sm animate-fade-in-up">
+      <div class="card">
+        <h3 class="card-title">Custom Breakpoints</h3>
+        <p class="card-desc" style="margin-bottom: var(--space-4);">Need to test a specific device like an iPad Pro? Just add it to your <code>.eyas.config.js</code>.</p>
+
+        <div class="code-block">
+          <pre><span class="cmt">// .eyas.config.js</span>
+<span class="kw">module.exports</span> = {
+  <span class="key">viewports</span>: [
+    { <span class="key">label</span>: <span class="str">`iPad Pro`</span>, <span class="key">width</span>: <span class="num">1024</span>, <span class="key">height</span>: <span class="num">1366</span> }
+  ]
+};</pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-sm animate-fade-in-up" style="text-align: center;">
+      <h3 style="margin-bottom: var(--space-4);">Try it now</h3>
+      <p style="margin-bottom: var(--space-4);">In the <strong>Browser</strong> menu, select <strong>Viewport</strong> to switch between different device sizes instantly.</p>
+      <div class="btn-group" style="display: flex; gap: var(--space-4); justify-content: center;">
+        <a href="/" class="btn btn-secondary">Back to Features</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; 2026 Cycosoft, LLC. All rights reserved.</p>
+  </footer>
+
+  <script src="/assets/demo.js"></script>
+  <script>
+    function updateViewportInfo() {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const category = eyasDemo.getViewportLabel(w);
+
+      document.getElementById('viewport-readout').textContent = `${w} × ${h}`;
+      document.getElementById('viewport-category').textContent = category.label;
+      document.getElementById('viewport-state').textContent = w <= 640 ? 'MOBILE GRID' : 'FULL GRID';
+      
+      const categoryText = document.getElementById('viewport-category');
+      categoryText.className = 'viewport-value-text';
+      if(category.label === 'Mobile') categoryText.classList.add('gradient-text');
+    }
+
+    updateViewportInfo();
+    window.addEventListener('resize', updateViewportInfo);
+  </script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Links — Eyas Demo</title>
+  <link rel="stylesheet" href="/assets/demo.css">
+  <style>
+    /* Links-specific styles */
+    .link-demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: var(--space-8);
+      margin-top: var(--space-10);
+      margin-bottom: var(--space-16);
+    }
+
+    .link-demo-card {
+      padding: var(--space-6);
+      background: var(--bg-surface);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+
+    .link-demo-card-title {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .link-demo-item {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      gap: var(--space-3);
+      align-items: center;
+      padding-block: var(--space-3);
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+
+    .link-demo-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .link-demo-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <nav class="site-nav">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo">
+        <span data-eyas-logo></span>
+        <span>Eyas</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="/demo/environments">Environments</a></li>
+        <li><a href="/demo/viewport">Viewport</a></li>
+        <li><a href="/demo/routing">Routing</a></li>
+        <li><a href="/demo/links" class="active">Links</a></li>
+        <li><a href="/demo/network">Network</a></li>
+        <li><a href="/demo/external">External</a></li>
+        <li><a href="/demo/window">Window</a></li>
+      </ul>
+      <a href="/" class="nav-home-btn">← Home</a>
+    </div>
+  </nav>
+
+  <header class="page-hero container animate-fade-in-up">
+    <span class="page-hero-icon">🔗</span>
+    <h1 class="gradient-text">Custom Menu Links</h1>
+    <p>Eyas lets you add short-cut links to the app menu with built-in support for variable substitution. Great for bypassing login screens or pre-filling forms.</p>
+  </header>
+
+  <main class="container">
+    <section class="section animate-fade-in-up">
+      <div class="card">
+        <h3 class="card-title">How variables work</h3>
+        <p>You define templates in your config using <code>{curlyBrackets}</code>. When a user clicks the link in the menu, Eyas shows a modal to gather the required information before navigating.</p>
+        
+        <div class="link-demo-grid">
+          <div class="link-demo-card">
+            <h3 class="link-demo-card-title">Integer Substitution</h3>
+            <div class="link-demo-item">
+              <span class="link-demo-label">Template</span>
+              <code class="link-demo-value">/orders?id={int}</code>
+            </div>
+            <div class="link-demo-item">
+              <span class="link-demo-label">Result</span>
+              <code class="link-demo-value">/orders?id=42</code>
+            </div>
+            <p class="card-desc">Asks the user for a number. Perfect for pre-filling specific resource IDs.</p>
+          </div>
+
+          <div class="link-demo-card">
+            <h3 class="link-demo-card-title">String Substitution</h3>
+            <div class="link-demo-item">
+              <span class="link-demo-label">Template</span>
+              <code class="link-demo-value">/search?q={str}</code>
+            </div>
+            <div class="link-demo-item">
+              <span class="link-demo-label">Result</span>
+              <code class="link-demo-value">/search?q=test</code>
+            </div>
+            <p class="card-desc">Gathers arbitrary text from the user. Handy for search and filtering tests.</p>
+          </div>
+
+          <div class="link-demo-card">
+            <h3 class="link-demo-card-title">Boolean Toggle</h3>
+            <div class="link-demo-item">
+              <span class="link-demo-label">Template</span>
+              <code class="link-demo-value">/?debug={bool}</code>
+            </div>
+            <div class="link-demo-item">
+              <span class="link-demo-label">Result</span>
+              <code class="link-demo-value">/?debug=true</code>
+            </div>
+            <p class="card-desc">Shows a simple true/false toggle to the user before navigating.</p>
+          </div>
+
+          <div class="link-demo-card">
+            <h3 class="link-demo-card-title">Select List</h3>
+            <div class="link-demo-item">
+              <span class="link-demo-label">Template</span>
+              <code class="link-demo-value">/?theme={light|dark|}</code>
+            </div>
+            <div class="link-demo-item">
+              <span class="link-demo-label">Result</span>
+              <code class="link-demo-value">/?theme=dark</code>
+            </div>
+            <p class="card-desc">Generates a dropdown with specific options for the user to choose from.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-sm animate-fade-in-up">
+      <div class="card">
+        <h3 class="card-title">Eyas Environment Variables</h3>
+        <p>You can also use global environment variables prefixed with <code>_</code> to dynamically resolve the current environment's domain or sub-domain.</p>
+        <div class="code-block" style="margin-top: var(--space-4);">
+          <pre><span class="cmt">// Example: dynamically resolving staging vs prod</span>
+{ <span class="key">label</span>: <span class="str">`Deep Link`</span>, <span class="key">url</span>: <span class="str">`https://{_env.key}example.com/api`</span> }</pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-sm animate-fade-in-up" style="text-align: center;">
+      <h3 style="margin-bottom: var(--space-4);">Try it now</h3>
+      <p style="margin-bottom: var(--space-4);">Check the <strong>Test</strong> → <strong>Links</strong> menu to see these shortcuts in action within the Eyas runner.</p>
+      <div class="btn-group" style="display: flex; gap: var(--space-4); justify-content: center;">
+        <a href="/" class="btn btn-secondary">Back to Features</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; 2026 Cycosoft, LLC. All rights reserved.</p>
+  </footer>
+
+  <script src="/assets/demo.js"></script>
+</body>
+</html>

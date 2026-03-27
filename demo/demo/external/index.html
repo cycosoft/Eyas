@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>External Resources — Eyas Demo</title>
+  <link rel="stylesheet" href="/assets/demo.css">
+  <style>
+    /* External-specific styles */
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: var(--space-8);
+      margin-top: var(--space-10);
+      margin-bottom: var(--space-16);
+    }
+
+    .image-card {
+      padding: var(--space-4);
+      background: var(--bg-surface);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      overflow: hidden;
+    }
+
+    .image-container {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: var(--bg-elevated);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity var(--duration-mid) var(--ease);
+    }
+
+    .image-container.loaded img {
+      opacity: 1;
+    }
+
+    .image-status {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .image-status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-muted);
+    }
+
+    .image-status-loaded .image-status-dot { background: var(--color-online); }
+    .image-status-error .image-status-dot  { background: var(--color-offline); }
+  </style>
+</head>
+<body>
+  <nav class="site-nav">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo">
+        <span data-eyas-logo></span>
+        <span>Eyas</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="/demo/environments">Environments</a></li>
+        <li><a href="/demo/viewport">Viewport</a></li>
+        <li><a href="/demo/routing">Routing</a></li>
+        <li><a href="/demo/links">Links</a></li>
+        <li><a href="/demo/network">Network</a></li>
+        <li><a href="/demo/external" class="active">External</a></li>
+        <li><a href="/demo/window">Window</a></li>
+      </ul>
+      <a href="/" class="nav-home-btn">← Home</a>
+    </div>
+  </nav>
+
+  <header class="page-hero container animate-fade-in-up">
+    <span class="page-hero-icon">🖼️</span>
+    <h1 class="gradient-text">External Resources</h1>
+    <p>Eyas can load images, fonts, and scripts from external domains just like a standard browser. You can test this by enabling/disabling the network.</p>
+  </header>
+
+  <main class="container">
+    <section class="section-sm animate-fade-in-up">
+      <div id="status-alert" class="alert alert-info" style="margin-bottom: var(--space-8);">
+        <strong>Current state:</strong> External images will be loaded from <code>dummyimage.com</code> after a delay.
+      </div>
+
+      <div class="image-grid">
+        <div class="image-card">
+          <div id="container-1" class="image-container skeleton">
+            <img id="image-1" alt="External Resource 1">
+          </div>
+          <div id="status-1" class="image-status">
+            <span class="image-status-dot"></span>
+            <span>WAITING (1s)</span>
+          </div>
+          <p class="card-desc">Small resource test.</p>
+        </div>
+
+        <div class="image-card">
+          <div id="container-2" class="image-container skeleton">
+            <img id="image-2" alt="External Resource 2">
+          </div>
+          <div id="status-2" class="image-status">
+            <span class="image-status-dot"></span>
+            <span>WAITING (3s)</span>
+          </div>
+          <p class="card-desc">Medium resource test.</p>
+        </div>
+
+        <div class="image-card">
+          <div id="container-3" class="image-container skeleton">
+            <!-- This is the #demo-image element requested in the plan -->
+            <img id="demo-image" alt="Demo Image">
+          </div>
+          <div id="status-3" class="image-status">
+            <span class="image-status-dot"></span>
+            <span>WAITING (5s)</span>
+          </div>
+          <p class="card-desc">Showcase for Eyas's network blocking.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-sm animate-fade-in-up" style="text-align: center;">
+      <h3 style="margin-bottom: var(--space-4);">Try it now</h3>
+      <p style="margin-bottom: var(--space-4);">Go to <strong>Developer Tools</strong> → <strong>Go Offline</strong> and then <strong>Reload</strong> this page to see how the runner blocks external resources while keeping your build directory reachable.</p>
+      <div class="btn-group" style="display: flex; gap: var(--space-4); justify-content: center;">
+        <a href="/" class="btn btn-secondary">Back to Features</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; 2026 Cycosoft, LLC. All rights reserved.</p>
+  </footer>
+
+  <script src="/assets/demo.js"></script>
+  <script>
+    function loadImage(id, containerId, statusId, delay, text) {
+      setTimeout(() => {
+        const img = document.getElementById(id);
+        const container = document.getElementById(containerId);
+        const status = document.getElementById(statusId);
+
+        img.onload = () => {
+          container.classList.remove('skeleton');
+          container.classList.add('loaded');
+          status.className = 'image-status image-status-loaded';
+          status.querySelector('span:last-child').textContent = 'LOADED';
+        };
+
+        img.onerror = () => {
+          container.classList.remove('skeleton');
+          status.className = 'image-status image-status-error';
+          status.querySelector('span:last-child').textContent = 'ERROR (OFFLINE?)';
+        };
+
+        img.src = `https://dummyimage.com/600x400/161c2a/f0f4ff&text=${text}`;
+      }, delay);
+    }
+
+    loadImage('image-1', 'container-1', 'status-1', 1000, 'Small+Resource');
+    loadImage('image-2', 'container-2', 'status-2', 3000, 'Medium+Resource');
+    loadImage('demo-image', 'container-3', 'status-3', 5000, 'Network+Demo');
+
+    eyasDemo.onNetworkChange(online => {
+      const alert = document.getElementById('status-alert');
+      if (!online) {
+        alert.className = 'alert alert-error';
+        alert.innerHTML = '<strong>NETWORK DISABLED:</strong> Eyas is currently blocking external requests.';
+      } else {
+        alert.className = 'alert alert-info';
+        alert.innerHTML = '<strong>NETWORK ENABLED:</strong> External images will be loaded after a delay.';
+      }
+    });
+  </script>
+</body>
+</html>
