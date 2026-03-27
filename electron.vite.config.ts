@@ -1,10 +1,22 @@
 import { resolve } from 'path';
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
+import vue from '@vitejs/plugin-vue';
+import vuetify from 'vite-plugin-vuetify';
 
 export default defineConfig({
   main: {
     plugins: [
-      externalizeDepsPlugin()
+      externalizeDepsPlugin(),
+      viteStaticCopy({
+        targets: [
+          // UI assets
+          { src: 'src/eyas-interface/splash.html', dest: 'eyas-interface' },
+          { src: 'src/eyas-assets/**/*', dest: 'eyas-assets' },
+          // Root package.json needed by electron-builder and runtime references
+          { src: 'package.json', dest: '' }
+        ]
+      })
     ],
     build: {
       rollupOptions: {
@@ -42,6 +54,26 @@ export default defineConfig({
         }
       },
       outDir: 'out/scripts',
+      emptyOutDir: false
+    }
+  },
+  renderer: {
+    plugins: [
+      vue(),
+      vuetify({ autoImport: true })
+    ],
+    root: resolve(__dirname, 'src/eyas-interface/app'),
+    resolve: {
+      alias: {
+        vue: 'vue/dist/vue.esm-bundler.js',
+        '@': resolve(__dirname, 'src/eyas-interface/app/src')
+      }
+    },
+    build: {
+      rollupOptions: {
+        input: resolve(__dirname, 'src/eyas-interface/app/index.html')
+      },
+      outDir: resolve(__dirname, 'out/eyas-interface'),
       emptyOutDir: false
     }
   }

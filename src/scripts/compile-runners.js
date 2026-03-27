@@ -10,7 +10,7 @@ const isInstaller = process.env.PUBLISH_TYPE === `installer`;
 const isMac = process.platform === `darwin`;
 const isWin = process.platform === `win32`;
 const consumerRoot = process.cwd();
-const buildRoot = path.join(consumerRoot, `.build`);
+const buildRoot = path.join(consumerRoot, `out`);
 const runnersRoot = path.join(consumerRoot, `.runners`);
 const distRoot = path.join(consumerRoot, `dist`);
 const paths = {
