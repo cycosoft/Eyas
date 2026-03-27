@@ -22,7 +22,6 @@ function getElectronBuilderConfig(options) {
 		paths,
 		runnerName,
 		appleTeamId = ``,
-		buildRoot,
 		runnersRoot,
 		provisioningProfile = ``
 	} = options;
