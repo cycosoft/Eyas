@@ -3,6 +3,7 @@
 - Update dependencies
 - Properly support electron-vite implementation
 - Migrate to Vuetify v4.0.4
+- Refactor the demo page to better reflect the capabilities of Eyas
 
 # v26.3.25864
 
