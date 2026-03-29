@@ -253,7 +253,7 @@
         <div class="step">
           <span class="step-number">2</span>
           <h3>Get a shareable file</h3>
-          <p>Eyas bundles everything into a single <code>.eyas</code> database file — or a self-contained ZIP that needs no install.</p>
+          <p>Eyas bundles everything into a single <code>.eyas</code> database file that needs no install.</p>
         </div>
         <div class="arrow" aria-hidden="true">→</div>
         <div class="step">
@@ -267,7 +267,7 @@
         <div class="pitch-item">🎨 <span>A/B test design changes</span></div>
         <div class="pitch-item">👩‍💻 <span>Let POs test UX</span></div>
         <div class="pitch-item">🚀 <span>Pre-merge QA sign-off</span></div>
-        <div class="pitch-item">🌍 <span>Test against any environment</span></div>
+        <div class="pitch-item">🌍 <span>Test against any API environment</span></div>
         <div class="pitch-item">📢 <span>Early customer feedback</span></div>
       </div>
     </div>
@@ -278,7 +278,7 @@
     <div class="container">
       <p class="features-label">Runner features</p>
       <h2 class="features-heading">Everything you need for confident testing</h2>
-      <p class="features-intro">This demo is itself an Eyas test. Each card links to a live feature demo — explore them inside the Eyas runner for the full experience.</p>
+      <p class="features-intro">This demo is itself an Eyas test. Each card links to a live feature demo.</p>
 
       <div class="feature-grid">
 
@@ -286,21 +286,21 @@
           <span class="card-icon">🌐</span>
           <span class="badge badge-red" style="margin-bottom:var(--space-3);">Multi-env</span>
           <h3 class="card-title">Environment Selector</h3>
-          <p class="card-desc">Configure dev, staging, and production domains. Eyas prompts you to choose on startup — or remembers your last choice.</p>
+          <p class="card-desc">Configure dev, staging, and production domains. Eyas prompts you to choose on startup, and can remember your last choice.</p>
         </a>
 
         <a href="./demo/viewport/index.html" class="card card-link animate-fade-in-up" id="card-viewport">
           <span class="card-icon">📐</span>
           <span class="badge badge-blue" style="margin-bottom:var(--space-3);">Responsive</span>
           <h3 class="card-title">Viewport Testing</h3>
-          <p class="card-desc">Switch between Desktop, Tablet, and Mobile presets, or define custom breakpoints in your config. Live readout on this page.</p>
+          <p class="card-desc">Switch between Desktop, Tablet, and Mobile presets, or define custom breakpoints in your config.</p>
         </a>
 
         <a href="./demo/routing/index.html" class="card card-link animate-fade-in-up" id="card-routing">
           <span class="card-icon">🗺️</span>
           <span class="badge badge-orange" style="margin-bottom:var(--space-3);">SPA Support</span>
           <h3 class="card-title">SPA Routing</h3>
-          <p class="card-desc">Eyas serves files from your build directory and falls back to <code>index.html</code> for unmatched routes, just like a real CDN.</p>
+          <p class="card-desc">Eyas serves files from your build directory and falls back to <code>index.html</code> for unmatched routes, just like a production web server.</p>
         </a>
 
         <a href="./demo/links/index.html" class="card card-link animate-fade-in-up" id="card-links">
@@ -313,15 +313,15 @@
         <a href="./demo/network/index.html" class="card card-link animate-fade-in-up" id="card-network">
           <span class="card-icon">📡</span>
           <span class="badge badge-green" style="margin-bottom:var(--space-3);">Isolation</span>
-          <h3 class="card-title">Network Control</h3>
-          <p class="card-desc">Toggle the network on or off with one menu click. Test offline behaviour or isolate your app from external dependencies.</p>
+          <h3 class="card-title">Network Access</h3>
+          <p class="card-desc">Simulate a completely disconnected environment with a single click. Verify your app's offline fallback behavior and air-gapped security compliance.</p>
         </a>
 
         <a href="./demo/external/index.html" class="card card-link animate-fade-in-up" id="card-external">
           <span class="card-icon">🖼️</span>
           <span class="badge badge-orange" style="margin-bottom:var(--space-3);">Resources</span>
-          <h3 class="card-title">External Resources</h3>
-          <p class="card-desc">See how Eyas loads (and can block) external images, fonts, and APIs. Great for testing your app's offline fallback behaviour.</p>
+          <h3 class="card-title">Resource Management</h3>
+          <p class="card-desc">Identify how your app handles missing assets, scripts, or third-party CDNs. Test site stability under failure conditions without changing code.</p>
         </a>
 
         <a href="./demo/window/index.html" class="card card-link animate-fade-in-up" id="card-window">
@@ -346,9 +346,9 @@
   <section class="outputs-section section" aria-label="Output types">
     <div class="container">
       <div class="output-heading">
-        <p class="features-label">Three ways to share</p>
+        <p class="features-label">Two ways to share</p>
         <h2 style="margin-bottom:var(--space-3);">Pick the format that fits your workflow</h2>
-        <p style="max-width:540px;margin-inline:auto;">One CLI, three outputs. Each method reaches a different audience.</p>
+        <p style="max-width:540px;margin-inline:auto;">One CLI, two outputs. Each method reaches a different audience.</p>
       </div>
 
       <div class="output-cards">
@@ -356,21 +356,14 @@
           <span class="output-card-command">npx eyas web</span>
           <span class="output-icon">🌐</span>
           <h3 class="output-title">Web Link</h3>
-          <p class="card-desc">Outputs a small <code>eyas.json</code> to your build directory. Deploy alongside your build artifact and share an <code>eyas://</code> link. Best for teams with a staging server.</p>
+          <p class="card-desc">Deploy a small <code>eyas.json</code> alongside your build. Stakeholders launch the <code>eyas://</code> link with the installed Eyas runner. Best for teams with a staging server.</p>
         </div>
 
         <div class="output-card">
           <span class="output-card-command">npx eyas db</span>
           <span class="output-icon">💾</span>
           <h3 class="output-title">Database File</h3>
-          <p class="card-desc">Bundles your entire build into a single <code>.eyas</code> file. Recipients open it with the installed Eyas runner. Roughly the same size as your production build.</p>
-        </div>
-
-        <div class="output-card">
-          <span class="output-card-command">npx eyas bundle</span>
-          <span class="output-icon">📦</span>
-          <h3 class="output-title">Self-contained Bundle</h3>
-          <p class="card-desc">Packages your app <em>and</em> the Eyas runner into one ZIP. No installation needed. Ideal for one-off reviews and external stakeholders. ~60–100 MB.</p>
+          <p class="card-desc">Package your entire build into a single <code>.eyas</code> file for offline sharing. Recipients open it with the installed Eyas runner. Roughly the same size as your production build.</p>
         </div>
       </div>
     </div>
@@ -390,7 +383,6 @@
             <div class="pitch-item">✅ <span>Custom viewport presets</span></div>
             <div class="pitch-item">✅ <span>Dynamic shortcut links with variables</span></div>
             <div class="pitch-item">✅ <span>Configurable expiry (1–720 hours)</span></div>
-            <div class="pitch-item">✅ <span>Windows &amp; macOS output control</span></div>
           </div>
         </div>
 

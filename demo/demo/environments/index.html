@@ -27,12 +27,16 @@
           <pre><span class="cmt">// .eyas.config.js</span>
 <span class="kw">module.exports</span> = {
   <span class="key">domains</span>: [
-    { <span class="key">url</span>: <span class="str">`dev.eyas.cycosoft.com`</span>,     <span class="key">title</span>: <span class="str">`Development`</span> },
-    { <span class="key">url</span>: <span class="str">`staging.eyas.cycosoft.com`</span>, <span class="key">title</span>: <span class="str">`Staging`</span>     },
-    { <span class="key">url</span>: <span class="str">`eyas.cycosoft.com`</span>,         <span class="key">title</span>: <span class="str">`Production`</span>  }
+    { <span class="key">url</span>: <span class="str">`dev.eyas.cycosoft.com`</span>,     <span class="key">title</span>: <span class="str">`Development`</span>, <span class="key">key</span>: <span class="str">`dev.`</span>     },
+    { <span class="key">url</span>: <span class="str">`staging.eyas.cycosoft.com`</span>, <span class="key">title</span>: <span class="str">`Staging`</span>,     <span class="key">key</span>: <span class="str">`staging.`</span> },
+    { <span class="key">url</span>: <span class="str">`eyas.cycosoft.com`</span>,         <span class="key">title</span>: <span class="str">`Production`</span>                  }
   ]
 };</pre>
         </div>
+
+        <p class="card-desc" style="margin-top: var(--space-6);">
+          The optional <code>key</code> property is accessible via the <code>{_env.key}</code> variable in your custom links. This is powerful for building maintenance shortcuts (like auth or debug portals) that automatically track with your current environment selection.
+        </p>
       </div>
     </section>
 

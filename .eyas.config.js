@@ -20,6 +20,7 @@ module.exports = {
 		{ label: `Eyas Home`, url: `/` },
 		{ label: `Environments Demo`, url: `/demo/environments` },
 		{ label: `Dynamic Vars Demo`, url: `{_env.url}/demo/links?id={int}&msg={str}&go={bool}&theme={dark|light|}` },
+		{ label: `Custom Auth Link`, url: `https://{_env.key}auth.eyas.cycosoft.com` },
 		{ label: `External Browser Test`, url: `https://cycosoft.com`, external: true },
 		{ label: `Upload Progress Demo`, url: `https://tus.io/demo` }
 	],

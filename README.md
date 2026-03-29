@@ -75,12 +75,8 @@ module.exports = {
     { label: `Cycosoft, LLC`, url: `cycosoft.com`, external: true (open in browser) },
     { label: `Variables Demo`, url: `{_env.url}?id={int}&msg={str}&go={bool}&list={item1|item2|}` }
   */]
-  // File outputs
+  // Options for output
   outputs: {
-    // Build a Windows distributable for `eyas bundle` command (auto-detected if not set)
-    windows: true,
-    // Build a MacOS distributable for `eyas bundle` command (auto-detected if not set)
-    mac: true,
     // The number of hours from build time until the distributable expires
     expires: 168 // (range: 1-720 hours)
   }
@@ -99,11 +95,6 @@ npm run build-my-project && npx eyas web
 npm run build-my-project && npx eyas db
 ```
 
-```bash
-# Packages the configured app to a distributable zip
-npm run build-my-project && npx eyas bundle
-```
-
 ## Outputs
 
 - `web`: Outputs `eyas.json` to your `config.source` directory for deployment to a web server
@@ -117,11 +108,6 @@ npm run build-my-project && npx eyas bundle
   - Outputs to `./eyas-dist/`
   - About the size of the project production output
   - Recommended for end-users who do frequent testing, and do not have the benefit of hosting build artifacts on a server.
-- `bundle`: Packages project production output, test config & Eyas for each enabled platform
-  - Does not require Eyas to be installed
-  - Outputs to `./eyas-dist/${title} - ${version}.${platform}.zip`
-  - 60mb - 100mb range
-  - Recommended for one-off testing without installing Eyas to your local machine.
 
 ## Tips
 
