@@ -9,85 +9,84 @@ const EYAS_LOGO_SVG = `<svg width="28" height="28" viewBox="0 0 1024 1024" xmlns
  * <eyas-nav> component
  */
 class EyasNav extends HTMLElement {
-  connectedCallback() {
-    const isRoot = this.hasAttribute('root');
-    const prefix = isRoot ? './' : '../../';
-    const home   = isRoot ? './index.html' : '../../index.html';
+	connectedCallback() {
+		const isRoot = this.hasAttribute(`root`);
+		const prefix = isRoot ? `./` : `../../`;
+		const home = isRoot ? `./index.html` : `../../index.html`;
 
-    this.innerHTML = `
-      <nav class="site-nav" role="navigation" aria-label="Site navigation">
-        <div class="container nav-inner">
-          <a href="${home}" class="nav-logo" aria-label="Eyas home">
-            <span>${EYAS_LOGO_SVG}</span>
-            <span>Eyas</span>
-          </a>
-          <ul class="nav-links" role="list">
-            <li><a href="${prefix}demo/environments/index.html">Environments</a></li>
-            <li><a href="${prefix}demo/viewport/index.html">Viewport</a></li>
-            <li><a href="${prefix}demo/routing/index.html">Routing</a></li>
-            <li><a href="${prefix}demo/links/index.html">Links</a></li>
-            <li><a href="${prefix}demo/network/index.html">Network</a></li>
-            <li><a href="${prefix}demo/external/index.html">External</a></li>
-            <li><a href="${prefix}demo/window/index.html">Window</a></li>
-          </ul>
-          ${!isRoot ? `<a href="${home}" class="nav-home-btn">← Home</a>` : ''}
-        </div>
-      </nav>
-    `;
+		this.innerHTML = `
+			<nav class="site-nav" role="navigation" aria-label="Site navigation">
+				<div class="container nav-inner">
+					<a href="${home}" class="nav-logo" aria-label="Eyas home">
+						<span>${EYAS_LOGO_SVG}</span>
+						<span>Eyas</span>
+					</a>
+					<ul class="nav-links" role="list">
+						<li><a href="${prefix}demo/environments/index.html">Environments</a></li>
+						<li><a href="${prefix}demo/viewport/index.html">Viewport</a></li>
+						<li><a href="${prefix}demo/routing/index.html">Routing</a></li>
+						<li><a href="${prefix}demo/links/index.html">Links</a></li>
+						<li><a href="${prefix}demo/network/index.html">Network</a></li>
+						<li><a href="${prefix}demo/external/index.html">External</a></li>
+						<li><a href="${prefix}demo/window/index.html">Window</a></li>
+					</ul>
+					${!isRoot ? `<a href="${home}" class="nav-home-btn">← Home</a>` : ``}
+				</div>
+			</nav>
+		`;
 
-    // Highlighting active link
-    const currentPath = window.location.pathname;
-    this.querySelectorAll('.nav-links a').forEach(link => {
-      const href = link.getAttribute('href');
-      // Simple match for demo purposes
-      if (currentPath.includes(href.replace('../../', '').replace('./', ''))) {
-        link.classList.add('active');
-      }
-    });
-  }
+		// Highlighting active link
+		const currentPath = window.location.pathname;
+		this.querySelectorAll(`.nav-links a`).forEach(link => {
+			const href = link.getAttribute(`href`);
+			// Simple match for demo purposes
+			if (currentPath.includes(href.replace(`../../`, ``).replace(`./`, ``))) {
+				link.classList.add(`active`);
+			}
+		});
+	}
 }
 
 /**
  * <eyas-footer> component
  */
 class EyasFooter extends HTMLElement {
-  connectedCallback() {
-    const isRoot = this.hasAttribute('root');
-    const home   = isRoot ? './index.html' : '../../index.html';
-    const alt    = isRoot ? './demo/alt/index.html' : '../../demo/alt/index.html';
-    const path   = isRoot ? './demo/path/index.html' : '../../demo/path/index.html';
+	connectedCallback() {
+		const isRoot = this.hasAttribute(`root`);
+		const alt = isRoot ? `./demo/alt/index.html` : `../../demo/alt/index.html`;
+		const path = isRoot ? `./demo/path/index.html` : `../../demo/path/index.html`;
 
-    this.innerHTML = `
-      <footer class="site-footer" role="contentinfo">
-        <div class="container">
-          <p>
-            <a href="https://github.com/cycosoft/Eyas" target="_blank" rel="noopener">GitHub</a>
-            &nbsp;·&nbsp;
-            <a href="https://www.npmjs.com/package/@cycosoft/eyas" target="_blank" rel="noopener">npm</a>
-            &nbsp;·&nbsp;
-            <a href="https://cycosoft.com/eyas/terms" target="_blank" rel="noopener">Terms</a>
-            &nbsp;·&nbsp;
-            <a href="https://cycosoft.com/eyas/privacy" target="_blank" rel="noopener">Privacy</a>
-            &nbsp;·&nbsp;
-            MIT Licensed
-          </p>
-          <p style="margin-top:var(--space-2);">
-            <!-- These links kept for E2E routing compat -->
-            <a href="${alt}" id="link-alt" style="font-size:0.75rem;color:var(--text-muted);">Alt page</a>
-            &nbsp;·&nbsp;
-            <a href="${path}" id="link-path" style="font-size:0.75rem;color:var(--text-muted);">Path page</a>
-            &nbsp;·&nbsp;
-            <a href="/BAD_ROUTE" id="link-bad-route" style="font-size:0.75rem;color:var(--text-muted);">404 test</a>
-          </p>
-          <p style="margin-top:var(--space-4); font-size: 0.75rem; color: var(--text-muted);">
-            &copy; 2026 Cycosoft, LLC. All rights reserved.
-          </p>
-        </div>
-      </footer>
-    `;
-  }
+		this.innerHTML = `
+			<footer class="site-footer" role="contentinfo">
+				<div class="container">
+					<p>
+						<a href="https://github.com/cycosoft/Eyas" target="_blank" rel="noopener">GitHub</a>
+						&nbsp;·&nbsp;
+						<a href="https://www.npmjs.com/package/@cycosoft/eyas" target="_blank" rel="noopener">npm</a>
+						&nbsp;·&nbsp;
+						<a href="https://cycosoft.com/eyas/terms" target="_blank" rel="noopener">Terms</a>
+						&nbsp;·&nbsp;
+						<a href="https://cycosoft.com/eyas/privacy" target="_blank" rel="noopener">Privacy</a>
+						&nbsp;·&nbsp;
+						MIT Licensed
+					</p>
+					<p style="margin-top:var(--space-2);">
+						<!-- These links kept for E2E routing compat -->
+						<a href="${alt}" id="link-alt" style="font-size:0.75rem;color:var(--text-muted);">Alt page</a>
+						&nbsp;·&nbsp;
+						<a href="${path}" id="link-path" style="font-size:0.75rem;color:var(--text-muted);">Path page</a>
+						&nbsp;·&nbsp;
+						<a href="/BAD_ROUTE" id="link-bad-route" style="font-size:0.75rem;color:var(--text-muted);">404 test</a>
+					</p>
+					<p style="margin-top:var(--space-4); font-size: 0.75rem; color: var(--text-muted);">
+						&copy; 2026 Cycosoft, LLC. All rights reserved.
+					</p>
+				</div>
+			</footer>
+		`;
+	}
 }
 
 // Register components
-customElements.define('eyas-nav', EyasNav);
-customElements.define('eyas-footer', EyasFooter);
+customElements.define(`eyas-nav`, EyasNav);
+customElements.define(`eyas-footer`, EyasFooter);

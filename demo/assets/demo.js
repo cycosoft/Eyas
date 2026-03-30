@@ -4,9 +4,9 @@
 
 /* ── Viewport ─────────────────────────────────────────────────────────────── */
 const EYAS_VIEWPORTS = [
-  { label: 'Mobile',  width: 360,  height: 640  },
-  { label: 'Tablet',  width: 768,  height: 1024 },
-  { label: 'Desktop', width: 1366, height: 768  }
+	{ label: `Mobile`, width: 360, height: 640 },
+	{ label: `Tablet`, width: 768, height: 1024 },
+	{ label: `Desktop`, width: 1366, height: 768 }
 ];
 
 /**
@@ -15,9 +15,9 @@ const EYAS_VIEWPORTS = [
  * @returns {{ label: string, default: boolean }}
  */
 function getViewportLabel(w = window.innerWidth) {
-  if (w <= 480) return { label: 'Mobile', default: true };
-  if (w <= 900) return { label: 'Tablet', default: true };
-  return { label: 'Desktop', default: true };
+	if (w <= 480) return { label: `Mobile`, default: true };
+	if (w <= 900) return { label: `Tablet`, default: true };
+	return { label: `Desktop`, default: true };
 }
 
 /* ── Network status ──────────────────────────────────────────────────────── */
@@ -29,20 +29,20 @@ function getViewportLabel(w = window.innerWidth) {
  * @returns {() => void} cleanup function
  */
 function onNetworkChange(callback) {
-  const onOnline  = () => callback(true);
-  const onOffline = () => callback(false);
-  window.addEventListener('online',  onOnline);
-  window.addEventListener('offline', onOffline);
-  // report initial state
-  callback(navigator.onLine);
-  return () => {
-    window.removeEventListener('online',  onOnline);
-    window.removeEventListener('offline', onOffline);
-  };
+	const onOnline = () => callback(true);
+	const onOffline = () => callback(false);
+	window.addEventListener(`online`, onOnline);
+	window.addEventListener(`offline`, onOffline);
+	// report initial state
+	callback(navigator.onLine);
+	return () => {
+		window.removeEventListener(`online`, onOnline);
+		window.removeEventListener(`offline`, onOffline);
+	};
 }
 
 window.eyasDemo = {
-  getViewportLabel,
-  onNetworkChange,
-  EYAS_VIEWPORTS
+	getViewportLabel,
+	onNetworkChange,
+	EYAS_VIEWPORTS
 };
