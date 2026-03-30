@@ -26,7 +26,7 @@ class EyasNav extends HTMLElement {
 						<li><a href="${prefix}demo/viewport/index.html">Viewport</a></li>
 						<li><a href="${prefix}demo/routing/index.html">Routing</a></li>
 						<li><a href="${prefix}demo/links/index.html">Links</a></li>
-						<li><a href="${prefix}demo/network/index.html">Network</a></li>
+						<li><a href="${prefix}demo/network/index.html">Security</a></li>
 						<li><a href="${prefix}demo/external/index.html">External</a></li>
 						<li><a href="${prefix}demo/window/index.html">Window</a></li>
 					</ul>
