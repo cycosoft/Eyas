@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security & Isolation — Eyas Demo</title>
+  <link rel="stylesheet" href="../../assets/demo.css">
+  <style>
+    /* Security-specific styles */
+    .security-card {
+      padding: var(--space-10);
+      text-align: center;
+      background: var(--bg-surface);
+      border-radius: var(--radius-xl);
+      border: 2px solid rgba(34, 212, 122, 0.3);
+      box-shadow: 0 0 40px rgba(34, 212, 122, 0.1);
+      max-width: 480px;
+      margin-inline: auto;
+      margin-bottom: var(--space-8);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .security-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 4px;
+      background: var(--color-online);
+      box-shadow: 0 0 12px var(--color-online);
+    }
+
+    .security-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: var(--space-3);
+    }
+
+    .security-status {
+      font-size: 2.5rem;
+      font-weight: 900;
+      margin-bottom: var(--space-2);
+      line-height: 1;
+      color: var(--color-online);
+    }
+
+    .security-icon {
+      font-size: 4rem;
+      margin-bottom: var(--space-4);
+      display: block;
+    }
+
+    .integrity-list {
+      list-style: none;
+      text-align: left;
+      max-width: 320px;
+      margin-inline: auto;
+      margin-top: var(--space-6);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .integrity-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .integrity-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--color-online);
+      box-shadow: 0 0 8px var(--color-online);
+    }
+  </style>
+</head>
+<body>
+  <eyas-nav></eyas-nav>
+
+  <header class="page-hero container animate-fade-in-up">
+    <span class="page-hero-icon">🛡️</span>
+    <h1 class="gradient-text">Security & Isolation</h1>
+    <p>Eyas provides a completely isolated, air-gapped testing environment. By intercepting network requests at the application level, Eyas ensures your data stays exactly where it belongs.</p>
+  </header>
+
+  <main class="container">
+    <section class="section-sm animate-fade-in-up">
+      <div class="security-card">
+        <p class="security-label">Environment Status</p>
+        <span class="security-icon">🔒</span>
+        <h3 class="security-status">ISOLATED</h3>
+        <p class="card-desc">This test environment is currently protected. External network requests are intercepted and governed by your Eyas configuration.</p>
+        
+        <ul class="integrity-list">
+          <li class="integrity-item"><span class="integrity-dot"></span> Local Asset Integrity</li>
+          <li class="integrity-item"><span class="integrity-dot"></span> Air-Gapped Compliance</li>
+          <li class="integrity-item"><span class="integrity-dot"></span> Third-Party Request Blocking</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section-sm animate-fade-in-up">
+      <div class="card">
+        <h3 class="card-title">How isolation works</h3>
+        <p style="margin-bottom: var(--space-6);">When "Network Isolation" is active, Eyas acts as an application-level firewall. For maximum accuracy, it severs the network stack for the entire test—including your local assets—simulating a total disconnect just like Chrome's "Offline" devtools mode.</p>
+        
+        <div class="feature-grid-2">
+          <div class="alert alert-ok">
+            <strong>Controlled Access</strong><br>
+            Eyas only permits requests that match your defined environment domains or local static assets. Everything else is culled.
+          </div>
+          <div class="alert alert-info">
+            <strong>Privacy First</strong><br>
+            Unlike a normal browser, Eyas does not share cookies or cache between different project IDs, ensuring a clean-room state every time.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section animate-fade-in-up" style="text-align: center;">
+      <h3 style="margin-bottom: var(--space-4);">Conceptual Exercise</h3>
+      <p style="margin-bottom: var(--space-4);">To experience a total network disconnect, open the <strong>Developer Tools</strong> menu and click <strong>Go Offline</strong>. Note that since Eyas blocks all network traffic, the test application itself will become inaccessible until you go back online.</p>
+      <div class="btn-group" style="display: flex; gap: var(--space-4); justify-content: center;">
+        <a href="/" class="btn btn-secondary">Back to Features</a>
+      </div>
+    </section>
+  </main>
+
+  <eyas-footer></eyas-footer>
+
+  <script src="../../assets/components.js"></script>
+  <script src="../../assets/demo.js"></script>
+</body>
+</html>

@@ -1,35 +1,425 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Demo Site - Main Page</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eyas — Simplified Hands-on Testing for Web Applications</title>
+  <meta name="description" content="Eyas lets you bundle your web app at any state and share it with any stakeholder for hands-on testing — no server, no technical knowledge required.">
+  <link rel="stylesheet" href="./assets/demo.css">
+  <style>
+    /* Landing-page-only styles */
+    .hero {
+      padding-top: var(--space-20);
+      padding-bottom: var(--space-16);
+      text-align: center;
+      position: relative;
+    }
+
+    .hero-glow {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 400px;
+      background: radial-gradient(ellipse at center, rgba(249,0,35,0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hero-logo {
+      width: 96px;
+      height: 96px;
+      margin-bottom: var(--space-6);
+      filter: drop-shadow(0 0 32px rgba(249,0,35,0.4));
+      animation: fadeInUp 0.6s var(--ease) both;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      margin-bottom: var(--space-4);
+      animation: fadeInUp 0.6s var(--ease) 0.1s both;
+    }
+
+    .hero-tagline {
+      font-size: clamp(1rem, 2.5vw, 1.3rem);
+      color: var(--text-secondary);
+      max-width: 520px;
+      margin-inline: auto;
+      margin-bottom: var(--space-8);
+      animation: fadeInUp 0.6s var(--ease) 0.2s both;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: var(--space-3);
+      justify-content: center;
+      flex-wrap: wrap;
+      animation: fadeInUp 0.6s var(--ease) 0.3s both;
+    }
+
+    .hero-version {
+      margin-top: var(--space-6);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      animation: fadeInUp 0.6s var(--ease) 0.4s both;
+    }
+
+    .hero-version a { color: var(--text-secondary); }
+    .hero-version a:hover { color: var(--eyas-orange); }
+
+    /* Gradient animated underline on "Eyas" */
+    .hero-name {
+      position: relative;
+    }
+    .hero-name::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--eyas-gradient);
+      background-size: 200% 100%;
+      animation: gradientShift 3s ease infinite;
+      border-radius: 2px;
+    }
+
+    /* How it works */
+    .how-section {
+      background: var(--bg-surface);
+      border-block: 1px solid var(--border);
+    }
+
+    .how-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: var(--space-8);
+    }
+
+    .arrow {
+      font-size: 1.5rem;
+      color: var(--text-muted);
+      align-self: center;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 640px) { .arrow { display: none; } }
+
+    /* Feature section */
+    .features-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: var(--space-3);
+    }
+
+    .features-heading {
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      margin-bottom: var(--space-5);
+    }
+
+    .features-intro {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      max-width: 560px;
+      margin-bottom: var(--space-10);
+    }
+
+    /* Output types */
+    .outputs-section {
+      background: var(--bg-surface);
+      border-block: 1px solid var(--border);
+    }
+
+    .output-heading {
+      text-align: center;
+      margin-bottom: var(--space-8);
+    }
+
+    .output-icon {
+      font-size: 2.5rem;
+      display: block;
+      margin-bottom: var(--space-4);
+    }
+
+    .output-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: var(--space-2);
+      color: var(--text-primary);
+    }
+
+    /* Config preview */
+    .config-section {
+      padding-block: var(--space-16);
+    }
+
+    .config-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-10);
+      align-items: start;
+    }
+
+    @media (max-width: 768px) {
+      .config-inner { grid-template-columns: 1fr; }
+    }
+
+    /* Pitch strip */
+    .pitch-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      margin-top: var(--space-5);
+    }
+
+    .pitch-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+  </style>
 </head>
 <body>
-	Loading the main page
-	<br>
-	<a href="/demo/path">Go to demo/path/index.html</a>
-	<br>
-	<a href="/demo/alt">Go to demo/alt/index.html</a>
-	<br>
-	<a href="/demo/alt" target="_blank">Open ALT in new window</a>
-	<br>
-	<br>
-	<a href="/BAD_ROUTE">Go to BAD_ROUTE</a>
-	<br>
-	<a href="../../README.md">Test ESCAPE</a>
+  <!-- Navigation -->
+  <eyas-nav root></eyas-nav>
 
-	<br>
-	<br>
+  <!-- Hero -->
+  <section class="hero" aria-label="Hero">
+    <div class="hero-glow"></div>
+    <div class="container" style="position:relative;z-index:1;">
+      <!-- Logo SVG inline -->
+      <svg class="hero-logo" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="g1" x2="1" gradientTransform="matrix(483,676,-720,514,577,77)" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#9d0620"/>
+            <stop offset="1" stop-color="#ffc610" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="g2" x2="1" gradientTransform="matrix(761,1065,-792,565,83,-2)" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#f90023"/>
+            <stop offset="1" stop-color="#ffc610"/>
+          </linearGradient>
+        </defs>
+        <path fill="#d05454" fill-rule="evenodd" d="m982 512c0 252-185 471-469 471-284 0-406-244-367-433 37-176 171-240 171-240-20 5-59-33-59-33 97 28 215 0 295 17 80 17 87 76 87 76 173 24 152 149 152 149-335-130-347 296-125 290 221-7 248-239 248-298 0-58-43-404-406-404-362 0-405 381-405 421 0 11 0 20 0 28 1 22-1 44-3 66-7 65 2 111 10 135 1 3-4 5-5 2-22-34-65-122-65-275 0-204 205-444 471-444 265 0 469 219 469 471zm-437-104c12 8 28 4 35-8l17-30c2-4-1-9-6-9h-104c-3 0-5 4-2 6z"/>
+        <path fill="#58a1d6" d="m982 512c0-252-204-471-469-471-266 0-471 240-471 444 0 153 43 240 65 275 2 3 6 1 5-2-7-24-17-70-10-135 2-22 4-44 3-66 0-8 0-17 0-28 0-40 43-421 405-421 363 0 406 346 406 404 0 34-9 124-58 196l32 92c60-81 93-181 93-288z"/>
+        <path fill="#58a1d6" d="m889 800-32-92c-37 54-96 99-191 101-221 6-209-419 126-290 0 0-284-133-398 94-115 227 118 370 118 370 164 0 295-73 377-183z"/>
+        <path fill="url(#g1)" d="m889 800-32-92c-37 54-96 99-191 101-221 6-209-419 126-290 0 0-284-133-398 94-115 227 118 370 118 370 164 0 295-73 377-183z"/>
+        <path fill="url(#g2)" d="m310 311-11-4c4 2 7 3 11 4z"/>
+      </svg>
 
-	Setting in 5 seconds after loading the page
-	<img id="demo-image" alt="Demo Image">
+      <h1>
+        <span class="hero-name gradient-text">Eyas</span>
+      </h1>
+      <p class="hero-tagline">Simplified hands-on testing for web applications. Bundle your app, share a file, let anyone test it.</p>
 
-	<script>
-		// set #demo-image src to https://dummyimage.com/400x200/000/fff&text=demo+external+image after 1s
-		setTimeout(() => {
-			document.getElementById('demo-image').src = 'https://dummyimage.com/400x200/000/fff&text=demo+external+image';
-		}, 5000);
-	</script>
+      <div class="hero-cta">
+        <a href="https://www.npmjs.com/package/@cycosoft/eyas" class="btn btn-primary" target="_blank" rel="noopener">
+          📦 Install via npm
+        </a>
+        <a href="https://github.com/cycosoft/Eyas" class="btn btn-secondary" target="_blank" rel="noopener">
+          GitHub →
+        </a>
+      </div>
+
+      <p class="hero-version">
+        Open source · Free · Works on macOS &amp; Windows ·
+        <a href="https://github.com/cycosoft/Eyas/releases">View releases</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="how-section section" aria-label="How it works">
+    <div class="container">
+      <p class="how-label">How it works</p>
+      <div class="steps">
+        <div class="step">
+          <span class="step-number">1</span>
+          <h3>Build your app</h3>
+          <p>Run your normal production build (<code>npm run build</code>), then invoke Eyas CLI with one command.</p>
+        </div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="step">
+          <span class="step-number">2</span>
+          <h3>Get a shareable file</h3>
+          <p>Eyas bundles everything into a single <code>.eyas</code> database file that needs no install.</p>
+        </div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="step">
+          <span class="step-number">3</span>
+          <h3>Anyone can test it</h3>
+          <p>Share the file. Recipients open it in the Eyas runner and get a full browser experience — no build tools, no servers.</p>
+        </div>
+      </div>
+
+      <div class="pitch-strip" style="margin-top:var(--space-8);">
+        <div class="pitch-item">🎨 <span>A/B test design changes</span></div>
+        <div class="pitch-item">👩‍💻 <span>Let POs test UX</span></div>
+        <div class="pitch-item">🚀 <span>Pre-merge QA sign-off</span></div>
+        <div class="pitch-item">🌍 <span>Test against any API environment</span></div>
+        <div class="pitch-item">📢 <span>Early customer feedback</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" aria-label="Feature showcase">
+    <div class="container">
+      <p class="features-label">Runner features</p>
+      <h2 class="features-heading">Everything you need for confident testing</h2>
+      <p class="features-intro">This demo is itself an Eyas test. Each card links to a live feature demo.</p>
+
+      <div class="feature-grid">
+
+        <a href="./demo/environments/index.html" class="card card-link animate-fade-in-up" id="card-environments">
+          <span class="card-icon">🌐</span>
+          <span class="badge badge-red" style="margin-bottom:var(--space-3);">Multi-env</span>
+          <h3 class="card-title">Environment Selector</h3>
+          <p class="card-desc">Configure dev, staging, and production domains. Eyas prompts you to choose on startup, and can remember your last choice.</p>
+        </a>
+
+        <a href="./demo/viewport/index.html" class="card card-link animate-fade-in-up" id="card-viewport">
+          <span class="card-icon">📐</span>
+          <span class="badge badge-blue" style="margin-bottom:var(--space-3);">Responsive</span>
+          <h3 class="card-title">Viewport Testing</h3>
+          <p class="card-desc">Switch between Desktop, Tablet, and Mobile presets, or define custom breakpoints in your config.</p>
+        </a>
+
+        <a href="./demo/routing/index.html" class="card card-link animate-fade-in-up" id="card-routing">
+          <span class="card-icon">🗺️</span>
+          <span class="badge badge-orange" style="margin-bottom:var(--space-3);">SPA Support</span>
+          <h3 class="card-title">SPA Routing</h3>
+          <p class="card-desc">Eyas serves files from your build directory and falls back to <code>index.html</code> for unmatched routes, just like a production web server.</p>
+        </a>
+
+        <a href="./demo/links/index.html" class="card card-link animate-fade-in-up" id="card-links">
+          <span class="card-icon">🔗</span>
+          <span class="badge badge-purple" style="margin-bottom:var(--space-3);">Dynamic</span>
+          <h3 class="card-title">Custom Links</h3>
+          <p class="card-desc">Add shortcut links to your menu with variable substitution — integers, strings, booleans, picklists, and environment values.</p>
+        </a>
+
+        <a href="./demo/network/index.html" class="card card-link animate-fade-in-up" id="card-network">
+          <span class="card-icon">🛡️</span>
+          <span class="badge badge-green" style="margin-bottom:var(--space-3);">Security</span>
+          <h3 class="card-title">Security &amp; Isolation</h3>
+          <p class="card-desc">Eyas provides a completely isolated, air-gapped testing environment. Simulate a total network disconnect—including the test itself—to verify offline behavior and air-gapped security compliance.</p>
+        </a>
+
+        <a href="./demo/external/index.html" class="card card-link animate-fade-in-up" id="card-external">
+          <span class="card-icon">🖼️</span>
+          <span class="badge badge-orange" style="margin-bottom:var(--space-3);">Resources</span>
+          <h3 class="card-title">Resource Management</h3>
+          <p class="card-desc">Identify how your app handles missing assets, scripts, or third-party CDNs. Test site stability under failure conditions without changing code.</p>
+        </a>
+
+        <a href="./demo/window/index.html" class="card card-link animate-fade-in-up" id="card-window">
+          <span class="card-icon">🔲</span>
+          <span class="badge badge-blue" style="margin-bottom:var(--space-3);">UX Polish</span>
+          <h3 class="card-title">Window &amp; Title</h3>
+          <p class="card-desc">Eyas reflects your app's page title in the window title bar, including version and URL context. Open pages in new windows too.</p>
+        </a>
+
+        <a href="./demo/alt/index.html" class="card card-link animate-fade-in-up" id="card-alt">
+          <span class="card-icon">↗️</span>
+          <span class="badge badge-green" style="margin-bottom:var(--space-3);">Navigation</span>
+          <h3 class="card-title">Multi-page Navigation</h3>
+          <p class="card-desc">Navigate between pages just as your users would. Eyas fully supports multi-page apps built on traditional HTML routing.</p>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Output types -->
+  <section class="outputs-section section" aria-label="Output types">
+    <div class="container">
+      <div class="output-heading">
+        <p class="features-label">Two ways to share</p>
+        <h2 style="margin-bottom:var(--space-3);">Pick the format that fits your workflow</h2>
+        <p style="max-width:540px;margin-inline:auto;">One CLI, two outputs. Each method reaches a different audience.</p>
+      </div>
+
+      <div class="output-cards">
+        <div class="output-card">
+          <span class="output-card-command">npx eyas web</span>
+          <span class="output-icon">🌐</span>
+          <h3 class="output-title">Web Link</h3>
+          <p class="card-desc">Deploy a small <code>eyas.json</code> alongside your build. Stakeholders launch the <code>eyas://</code> link with the installed Eyas runner. Best for teams with a staging server.</p>
+        </div>
+
+        <div class="output-card">
+          <span class="output-card-command">npx eyas db</span>
+          <span class="output-icon">💾</span>
+          <h3 class="output-title">Database File</h3>
+          <p class="card-desc">Package your entire build into a single <code>.eyas</code> file for offline sharing. Recipients open it with the installed Eyas runner. Roughly the same size as your production build.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Config preview -->
+  <section class="config-section" aria-label="Configuration example">
+    <div class="container">
+      <div class="config-inner">
+        <div>
+          <p class="features-label">Simple config</p>
+          <h2 style="margin-bottom:var(--space-4);">Zero friction setup</h2>
+          <p style="margin-bottom:var(--space-6);">Drop a single <code>.eyas.config.js</code> file at your project root. Eyas works without one too — sensible defaults out of the box.</p>
+
+          <div style="display:flex;flex-direction:column;gap:var(--space-3);">
+            <div class="pitch-item">✅ <span>Multi-domain environments</span></div>
+            <div class="pitch-item">✅ <span>Custom viewport presets</span></div>
+            <div class="pitch-item">✅ <span>Dynamic shortcut links with variables</span></div>
+            <div class="pitch-item">✅ <span>Configurable expiry (1–720 hours)</span></div>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <pre><span class="cmt">// .eyas.config.js</span>
+<span class="kw">module.exports</span> = {
+  <span class="key">source</span>:  <span class="str">`dist`</span>,
+  <span class="key">title</span>:   <span class="str">`My App`</span>,
+
+  <span class="key">domains</span>: [
+    { <span class="key">url</span>: <span class="str">`dev.example.com`</span>,  <span class="key">title</span>: <span class="str">`Dev`</span>     },
+    { <span class="key">url</span>: <span class="str">`stage.example.com`</span>, <span class="key">title</span>: <span class="str">`Staging`</span> },
+    { <span class="key">url</span>: <span class="str">`example.com`</span>,       <span class="key">title</span>: <span class="str">`Prod`</span>    },
+  ],
+
+  <span class="key">viewports</span>: [
+    { <span class="key">label</span>: <span class="str">`iPad Pro`</span>, <span class="key">width</span>: <span class="num">1024</span>, <span class="key">height</span>: <span class="num">1366</span> }
+  ],
+
+  <span class="key">links</span>: [
+    { <span class="key">label</span>: <span class="str">`Dashboard`</span>, <span class="key">url</span>: <span class="str">`{_env.url}/dashboard`</span> },
+    { <span class="key">label</span>: <span class="str">`User #`</span>,    <span class="key">url</span>: <span class="str">`{_env.url}?userId={int}`</span> },
+  ],
+
+  <span class="key">outputs</span>: {
+    <span class="key">expires</span>: <span class="num">168</span> <span class="cmt">// 1 week</span>
+  }
+};</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <eyas-footer root></eyas-footer>
+
+  <script src="./assets/components.js"></script>
+  <script src="./assets/demo.js"></script>
 </body>
 </html>

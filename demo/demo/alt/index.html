@@ -1,18 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Demo Site - Alt Page</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alt Page — Eyas Demo</title>
+  <link rel="stylesheet" href="../../assets/demo.css">
 </head>
 <body>
-	Loaded `./demo/alt/index.html`
-	<br>
-	<a href="/">Go to Home</a>
-	<br>
-	<a href="/demo/path">Go to demo/path/index.html</a>
-	<br>
-	<br>
-	<a href="/BAD_ROUTE">Go to BAD_ROUTE</a>
+  <eyas-nav></eyas-nav>
+
+  <main class="container">
+    <section class="section animate-fade-in-up" style="text-align: center;">
+      <span style="font-size: 4rem; display: block; margin-bottom: var(--space-6);">↗️</span>
+      <h1 class="gradient-text">Loaded <code>./demo/alt/index.html</code></h1>
+      <p style="margin-top: var(--space-4);">This page exists to demonstrate Eyas's ability to navigate between files in the build directory.</p>
+
+      <div class="route-grid" style="margin-top: var(--space-10);">
+        <div class="route-card">
+          <span class="route-card-icon">🏠</span>
+          <h3 class="route-card-title">Home Page</h3>
+          <p class="route-card-desc">Back to the landing page.</p>
+          <a href="/" class="btn btn-secondary btn-sm" style="font-size: 0.8rem; padding: var(--space-2) var(--space-6);">GO HOME</a>
+        </div>
+
+        <div class="route-card">
+          <span class="route-card-icon">↗️</span>
+          <h3 class="route-card-title">Path Page</h3>
+          <p class="route-card-desc">Navigate to another sub-page.</p>
+          <a href="/demo/path" class="btn btn-secondary btn-sm" style="font-size: 0.8rem; padding: var(--space-2) var(--space-6);">GO TO PATH</a>
+        </div>
+
+        <div class="route-card">
+          <span class="route-card-icon">⚠️</span>
+          <h3 class="route-card-title">404 Test</h3>
+          <p class="route-card-desc">Navigate to a missing route.</p>
+          <a href="/BAD_ROUTE" class="btn btn-primary btn-sm" style="font-size: 0.8rem; padding: var(--space-2) var(--space-6);">GO TO 404</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <eyas-footer></eyas-footer>
+
+  <script src="../../assets/components.js"></script>
+  <script src="../../assets/demo.js"></script>
 </body>
 </html>

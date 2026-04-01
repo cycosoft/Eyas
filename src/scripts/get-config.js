@@ -252,12 +252,6 @@ function validateConfig(loadedConfig) {
 		links: loadedConfig.links || [/* { label: ``, url: `` } */],
 
 		outputs: {
-			// platform
-			windows: loadedConfig.outputs.windows || false,
-			mac: loadedConfig.outputs.mac || false,
-			linux: loadedConfig.outputs.linux || false,
-
-			// options
 			expires: expiresIn // hours
 		},
 
@@ -275,15 +269,6 @@ function validateConfig(loadedConfig) {
 		}
 	};
 
-	// set the default platform if none are specified
-	if (!validatedConfig.outputs.windows && !validatedConfig.outputs.mac && !validatedConfig.outputs.linux) {
-		if (process.platform === `win32`) { validatedConfig.outputs.windows = true; }
-		if (process.platform === `darwin`) { validatedConfig.outputs.mac = true; }
-		if (process.platform === `linux`) { validatedConfig.outputs.linux = true; }
-	}
-
-	// OVERRIDE - linux support is not currently supported
-	validatedConfig.outputs.linux = false;
 
 	return validatedConfig;
 }

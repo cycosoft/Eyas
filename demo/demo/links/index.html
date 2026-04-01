@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Links — Eyas Demo</title>
+  <link rel="stylesheet" href="../../assets/demo.css">
+  <style>
+    /* Links-specific styles */
+    .link-demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: var(--space-8);
+      margin-top: var(--space-10);
+      margin-bottom: var(--space-16);
+    }
+
+    .link-demo-card {
+      padding: var(--space-6);
+      background: var(--bg-surface);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+
+    .link-demo-card-title {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .link-demo-item {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      gap: var(--space-3);
+      align-items: center;
+      padding-block: var(--space-3);
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+
+    .link-demo-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .link-demo-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <eyas-nav></eyas-nav>
+
+  <header class="page-hero container animate-fade-in-up">
+    <span class="page-hero-icon">🔗</span>
+    <h1 class="gradient-text">Custom Menu Links</h1>
+    <p>Eyas lets you add short-cut links to the app menu with built-in support for variable substitution. Great for bypassing login screens or pre-filling forms.</p>
+  </header>
+
+  <main class="container">
+    <section class="section animate-fade-in-up">
+      <div class="card">
+        <h3 class="card-title">How variables work</h3>
+        <p>You define templates in your config using <code>{curlyBrackets}</code>. When a user clicks the link in the menu, Eyas shows a modal to gather the required information before navigating.</p>
+        
+        <div class="link-demo-grid">
+          <div class="link-demo-card">
+            <h3 class="link-demo-card-title">Integer Substitution</h3>
+            <div class="link-demo-item">
+              <span class="link-demo-label">Template</span>
+              <code class="link-demo-value">/orders?id={int}</code>
+            </div>
+            <div class="link-demo-item">
+              <span class="link-demo-label">Result</span>
+              <code class="link-demo-value">/orders?id=42</code>
+            </div>
+            <p class="card-desc">Asks the user for a number. Perfect for pre-filling specific resource IDs.</p>
+          </div>
+
+          <div class="link-demo-card">
+            <h3 class="link-demo-card-title">String Substitution</h3>
+            <div class="link-demo-item">
+              <span class="link-demo-label">Template</span>
+              <code class="link-demo-value">/search?q={str}</code>
+            </div>
+            <div class="link-demo-item">
+              <span class="link-demo-label">Result</span>
+              <code class="link-demo-value">/search?q=test</code>
+            </div>
+            <p class="card-desc">Gathers arbitrary text from the user. Handy for search and filtering tests.</p>
+          </div>
+
+          <div class="link-demo-card">
+            <h3 class="link-demo-card-title">Boolean Toggle</h3>
+            <div class="link-demo-item">
+              <span class="link-demo-label">Template</span>
+              <code class="link-demo-value">/?debug={bool}</code>
+            </div>
+            <div class="link-demo-item">
+              <span class="link-demo-label">Result</span>
+              <code class="link-demo-value">/?debug=true</code>
+            </div>
+            <p class="card-desc">Shows a simple true/false toggle to the user before navigating.</p>
+          </div>
+
+          <div class="link-demo-card">
+            <h3 class="link-demo-card-title">Select List</h3>
+            <div class="link-demo-item">
+              <span class="link-demo-label">Template</span>
+              <code class="link-demo-value">/?theme={light|dark|}</code>
+            </div>
+            <div class="link-demo-item">
+              <span class="link-demo-label">Result</span>
+              <code class="link-demo-value">/?theme=dark</code>
+            </div>
+            <p class="card-desc">Generates a dropdown with specific options for the user to choose from.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-sm animate-fade-in-up">
+      <div class="card">
+        <h2 class="card-title">Project Environment Variables</h2>
+        <p>Eyas provides global variables prefixed with <code>_</code> that dynamically resolve to the user's currently selected environment URL or custom key.</p>
+        
+        <div class="link-demo-grid">
+          <div class="link-demo-card">
+            <h3 class="link-demo-card-title">Current Environment URL</h3>
+            <div class="link-demo-item">
+              <span class="link-demo-label">Template</span>
+              <code class="link-demo-value">{_env.url}/api/status</code>
+            </div>
+            <div class="link-demo-item">
+              <span class="link-demo-label">Production</span>
+              <code class="link-demo-value">eyas.cycosoft.com/api/status</code>
+            </div>
+            <p class="card-desc">Resolves to the full URL of the active environment. Use it for deep links within the same domain.</p>
+          </div>
+
+          <div class="link-demo-card">
+            <h3 class="link-demo-card-title">Environment Key</h3>
+            <div class="link-demo-item">
+              <span class="link-demo-label">Template</span>
+              <code class="link-demo-value">https://{_env.key}auth.eyas.com</code>
+            </div>
+            <div class="link-demo-item">
+              <span class="link-demo-label">Staging</span>
+              <code class="link-demo-value">https://staging.auth.eyas.com</code>
+            </div>
+            <p class="card-desc">Resolves to the <code>key</code> property defined in your config. Perfect for cross-subdomain logins that must match the user's test environment.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-sm animate-fade-in-up" style="text-align: center;">
+      <h3 style="margin-bottom: var(--space-4);">Try it now</h3>
+      <p style="margin-bottom: var(--space-4);">Check the <strong>Test</strong> → <strong>Links</strong> menu to see these shortcuts in action within the Eyas runner.</p>
+      <div class="btn-group" style="display: flex; gap: var(--space-4); justify-content: center;">
+        <a href="/" class="btn btn-secondary">Back to Features</a>
+      </div>
+    </section>
+  </main>
+
+  <eyas-footer></eyas-footer>
+
+  <script src="../../assets/components.js"></script>
+  <script src="../../assets/demo.js"></script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Environments Showcase — Eyas Demo</title>
+  <link rel="stylesheet" href="../../assets/demo.css">
+</head>
+<body>
+  <eyas-nav></eyas-nav>
+
+  <header class="page-hero container animate-fade-in-up">
+    <span class="page-hero-icon">🌐</span>
+    <h1 class="gradient-text">Environment Selector</h1>
+    <p>Eyas allows you to define multiple testing environments (like Dev, Staging, and Production) in your configuration. The runner will prompt you to select one on startup.</p>
+  </header>
+
+  <main class="container">
+    <section class="section-sm animate-fade-in-up">
+      <div class="card">
+        <h3 class="card-title">How it works</h3>
+        <p class="card-desc" style="margin-bottom: var(--space-4);">
+          When you configure the <code>domains</code> array in your <code>.eyas.config.js</code>, Eyas creates a dedicated selection modal. This is perfect for QA teams who need to switch between different deployment stages quickly.
+        </p>
+
+        <div class="code-block">
+          <pre><span class="cmt">// .eyas.config.js</span>
+<span class="kw">module.exports</span> = {
+  <span class="key">domains</span>: [
+    { <span class="key">url</span>: <span class="str">`dev.eyas.cycosoft.com`</span>,     <span class="key">title</span>: <span class="str">`Development`</span>, <span class="key">key</span>: <span class="str">`dev.`</span>     },
+    { <span class="key">url</span>: <span class="str">`staging.eyas.cycosoft.com`</span>, <span class="key">title</span>: <span class="str">`Staging`</span>,     <span class="key">key</span>: <span class="str">`staging.`</span> },
+    { <span class="key">url</span>: <span class="str">`eyas.cycosoft.com`</span>,         <span class="key">title</span>: <span class="str">`Production`</span>                  }
+  ]
+};</pre>
+        </div>
+
+        <p class="card-desc" style="margin-top: var(--space-6);">
+          The optional <code>key</code> property is accessible via the <code>{_env.key}</code> variable in your custom links. This is powerful for building maintenance shortcuts (like auth or debug portals) that automatically track with your current environment selection.
+        </p>
+      </div>
+    </section>
+
+    <section class="section-sm animate-fade-in-up">
+      <div class="alert alert-info">
+        <strong>Pro Tip:</strong> You can tell Eyas to "Remember this choice" so it skips the modal next time you open the same project. This can be toggled in the <strong>Settings</strong> menu.
+      </div>
+    </section>
+
+    <section class="section-sm animate-fade-in-up" style="text-align: center;">
+      <h3 style="margin-bottom: var(--space-4);">Try it now</h3>
+      <p style="margin-bottom: var(--space-6);">Go to the <strong>Test</strong> menu and select <strong>Reset Test Environment</strong> to see the selector in action.</p>
+      <div class="btn-group" style="display: flex; gap: var(--space-4); justify-content: center;">
+        <a href="/" class="btn btn-secondary">Back to Features</a>
+      </div>
+    </section>
+  </main>
+
+  <eyas-footer></eyas-footer>
+
+  <script src="../../assets/components.js"></script>
+  <script src="../../assets/demo.js"></script>
+</body>
+</html>
