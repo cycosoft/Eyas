@@ -14,9 +14,17 @@ export const EXTENSION = `.eyas`;
 // The duration in milliseconds before the test server automatically shuts down
 export const TEST_SERVER_SESSION_DURATION_MS = 30 * 60 * 1000; // 30 minutes
 
+// Theme modes for the UI
+export const THEME_MODES = {
+	LIGHT: `light`,
+	DARK: `dark`,
+	SYSTEM: `system`
+};
+
 // Default values for user settings (used as the final fallback in the cascade)
 export const SETTINGS_DEFAULTS = {
 	env: {
 		alwaysChoose: false
-	}
+	},
+	theme: THEME_MODES.LIGHT
 };

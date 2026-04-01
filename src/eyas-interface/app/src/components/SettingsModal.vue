@@ -18,21 +18,37 @@
 								density="compact"
 								hide-details
 								data-qa="settings-project-always-choose"
-								@update:model-value="saveProjectSetting('env.alwaysChoose', $event)"
+								@update:model-value="saveProjectSetting('env.alwaysChoose', !!$event)"
 							/>
 						</v-sheet>
 					</v-window-item>
 
 					<!-- App-level settings -->
 					<v-window-item value="app">
-						<v-sheet class="pa-4">
+						<v-sheet class="pa-4 pt-0">
+							<v-label class="text-caption mb-1">Theme Mode</v-label>
+							<v-radio-group
+								v-model="appTheme"
+								inline
+								density="compact"
+								hide-details
+								data-qa="settings-app-theme"
+								@update:model-value="saveAppSetting('theme', $event)"
+							>
+								<v-radio label="Light" :value="THEME_MODES.LIGHT" />
+								<v-radio label="Dark" :value="THEME_MODES.DARK" />
+								<v-radio label="System" :value="THEME_MODES.SYSTEM" />
+							</v-radio-group>
+
+							<v-divider class="my-4" />
+
 							<v-checkbox
 								v-model="appAlwaysChoose"
 								label="Remember Selected Environment"
 								density="compact"
 								hide-details
 								data-qa="settings-app-always-choose"
-								@update:model-value="saveAppSetting('env.alwaysChoose', $event)"
+								@update:model-value="saveAppSetting('env.alwaysChoose', !!$event)"
 							/>
 						</v-sheet>
 					</v-window-item>
@@ -66,6 +82,7 @@
 </template>
 
 <script>
+import { THEME_MODES } from '@/../../../scripts/constants.js';
 import ModalWrapper from '@/components/ModalWrapper.vue';
 
 export default {
@@ -74,11 +91,13 @@ export default {
 	},
 
 	data: () => ({
+		THEME_MODES,
 		visible: false,
 		activeTab: `project`,
 		projectId: null,
 		projectAlwaysChoose: false,
 		appAlwaysChoose: false,
+		appTheme: THEME_MODES.LIGHT,
 		toastVisible: false
 	}),
 
@@ -88,6 +107,7 @@ export default {
 			this.projectId = projectId;
 			this.projectAlwaysChoose = !!(project?.env?.alwaysChoose);
 			this.appAlwaysChoose = !!(app?.env?.alwaysChoose);
+			this.appTheme = app?.theme || THEME_MODES.LIGHT;
 			this.activeTab = `project`;
 			this.toastVisible = false;
 			this.visible = true;
@@ -103,11 +123,11 @@ export default {
 
 	methods: {
 		saveProjectSetting(key, value) {
-			window.eyas?.send(`save-setting`, { key, value: !!value, projectId: this.projectId });
+			window.eyas?.send(`save-setting`, { key, value, projectId: this.projectId });
 		},
 
 		saveAppSetting(key, value) {
-			window.eyas?.send(`save-setting`, { key, value: !!value, projectId: null });
+			window.eyas?.send(`save-setting`, { key, value, projectId: null });
 		}
 	}
 };

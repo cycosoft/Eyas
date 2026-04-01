@@ -14,6 +14,9 @@
 </template>
 
 <script>
+import { useTheme } from 'vuetify';
+import { THEME_MODES } from '@/../../../scripts/constants.js';
+import useSettingsStore from '@/stores/settings';
 import ExitModal from '@/components/ExitModal.vue';
 import EnvironmentModal from '@/components/EnvironmentModal.vue';
 import VariablesModal from '@/components/VariablesModal.vue';
@@ -31,6 +34,31 @@ export default {
 		TestServerSetupModal,
 		TestServerActiveModal,
 		SettingsModal
+	},
+
+	setup() {
+		const theme = useTheme();
+		const settingsStore = useSettingsStore();
+
+		return {
+			theme,
+			settingsStore
+		};
+	},
+
+	computed: {
+		currentTheme() {
+			return this.settingsStore.appSettings.theme || THEME_MODES.LIGHT;
+		}
+	},
+
+	watch: {
+		currentTheme: {
+			immediate: true,
+			handler(newVal) {
+				this.theme.global.name.value = newVal;
+			}
+		}
 	}
 };
 

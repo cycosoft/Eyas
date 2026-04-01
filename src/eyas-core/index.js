@@ -493,13 +493,15 @@ function initUiListeners() {
 	});
 
 	// listen for a setting to be saved from the UI
-	ipcMain.on(`save-setting`, async (event, { key, value }) => {
-		// Always scope to the currently-loaded project — discard any projectId sent
-		// from the UI so one project can't touch another project's settings bucket.
+	ipcMain.on(`save-setting`, async (event, { key, value, projectId }) => {
+		// 1. If a projectId is provided, it must match the currently-active project.
+		// 2. If no (or mismatching) projectId is provided, it's an app-level (global) setting.
 		const activeProjectId = $config?.meta?.projectId || null;
-		settingsService.set(key, value, activeProjectId);
+		const targetProjectId = (projectId && projectId === activeProjectId) ? activeProjectId : null;
+
+		settingsService.set(key, value, targetProjectId);
 		await settingsService.save();
-		event.reply(`setting-saved`, { key, projectId: activeProjectId });
+		event.reply(`setting-saved`, { key, projectId: targetProjectId });
 	});
 
 	// listen for the UI to request the current settings
