@@ -1,5 +1,5 @@
 <template>
-	<v-app :theme="currentTheme" data-qa="app-container">
+	<v-app data-qa="app-container">
 		<!-- always display the blur so the user knows if the UI is active -->
 		<v-overlay :model-value="true" persistent />
 
@@ -45,6 +45,10 @@ export default {
 			const setting = settingsStore.appSettings.theme || THEME_MODES.LIGHT;
 			return setting === THEME_MODES.SYSTEM ? settingsStore.systemTheme : setting;
 		});
+
+		watch(currentTheme, (newVal) => {
+			theme.global.name.value = newVal;
+		}, { immediate: true });
 
 		onMounted(() => {
 			// listen for settings to be loaded from the main process
