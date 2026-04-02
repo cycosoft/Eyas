@@ -3,7 +3,7 @@
 'use strict';
 
 // global imports _
-const { app: _electronCore, BrowserWindow: _electronWindow } = require(`electron`);
+const { app: _electronCore, BrowserWindow: _electronWindow, nativeTheme } = require(`electron`);
 const _path = require(`path`);
 const _os = require(`os`);
 
@@ -90,6 +90,23 @@ function hashDomains(domains) {
 	for (let i = 0; i < str.length; i++) { h = (h * 33) ^ str.charCodeAt(i); }
 	return (h >>> 0).toString(16);
 }
+
+// ─── helpers ──────────────────────────────────────────────────────────────────
+/**
+ * update the native theme of the app to match the theme source
+ * @param {string} themeSource - the theme source to apply (e.g. 'light', 'dark', 'system')
+ */
+function updateNativeTheme(themeSource) {
+	nativeTheme.themeSource = themeSource || `system`;
+}
+
+// OS Listener
+nativeTheme.on(`updated`, () => {
+	const currentSetting = settingsService.get(`theme`);
+	if (currentSetting === `system`) {
+		$eyasLayer?.webContents?.send(`system-theme-updated`, nativeTheme.shouldUseDarkColors ? `dark` : `light`);
+	}
+});
 
 // APP_ENTRY: initialize the first layer of the app
 initElectronCore();
@@ -252,6 +269,7 @@ function initElectronCore() {
 
 			// load user settings from disk before first test start
 			await settingsService.load();
+			updateNativeTheme(settingsService.get(`theme`));
 
 			// start listening for requests to the custom protocol
 			setupEyasNetworkHandlers();
@@ -502,6 +520,14 @@ function initUiListeners() {
 		settingsService.set(key, value, targetProjectId);
 		await settingsService.save();
 		event.reply(`setting-saved`, { key, projectId: targetProjectId });
+
+		// if the theme was updated, update the native theme
+		if (key === `theme`) {
+			updateNativeTheme(value);
+		}
+
+		// notify the UI that a setting has changed
+		$eyasLayer.webContents.send(`settings-updated`, { key, value, projectId: targetProjectId });
 	});
 
 	// listen for the UI to request the current settings
@@ -511,7 +537,8 @@ function initUiListeners() {
 		const activeProjectId = $config?.meta?.projectId || null;
 		event.reply(`settings-loaded`, {
 			project: settingsService.getProjectSettings(activeProjectId),
-			app: settingsService.getAppSettings()
+			app: settingsService.getAppSettings(),
+			systemTheme: nativeTheme.shouldUseDarkColors ? `dark` : `light`
 		});
 	});
 

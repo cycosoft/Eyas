@@ -14,6 +14,7 @@
 </template>
 
 <script>
+import { onMounted } from 'vue';
 import { useTheme } from 'vuetify';
 import { THEME_MODES } from '@/../../../scripts/constants.js';
 import useSettingsStore from '@/stores/settings';
@@ -40,6 +41,26 @@ export default {
 		const theme = useTheme();
 		const settingsStore = useSettingsStore();
 
+		onMounted(() => {
+			// listen for settings to be loaded from the main process
+			window.eyas?.receive(`settings-loaded`, data => {
+				settingsStore.loadFromPayload(data);
+			});
+
+			// listen for setting updates from the main process
+			window.eyas?.receive(`settings-updated`, ({ key, value, projectId }) => {
+				settingsStore.setSetting(key, value, projectId);
+			});
+
+			// listen for system theme updates
+			window.eyas?.receive(`system-theme-updated`, theme => {
+				settingsStore.setSystemTheme(theme);
+			});
+
+			// request initial settings
+			window.eyas?.send(`get-settings`);
+		});
+
 		return {
 			theme,
 			settingsStore
@@ -48,7 +69,8 @@ export default {
 
 	computed: {
 		currentTheme() {
-			return this.settingsStore.appSettings.theme || THEME_MODES.LIGHT;
+			const setting = this.settingsStore.appSettings.theme || THEME_MODES.LIGHT;
+			return setting === THEME_MODES.SYSTEM ? this.settingsStore.systemTheme : setting;
 		}
 	},
 
