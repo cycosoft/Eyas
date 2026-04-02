@@ -22,14 +22,20 @@ export default defineStore(`settings`, {
 		},
 
 		setSetting(keyPath, value, projectId) {
-			const target = projectId ? this.projectSettings : this.appSettings;
-			const keys = keyPath.split(`.`);
-			const last = keys.pop();
-			const obj = keys.reduce((acc, k) => {
-				if (acc[k] === undefined || typeof acc[k] !== `object`) { acc[k] = {}; }
-				return acc[k];
-			}, target);
-			obj[last] = value;
+			this.$patch(state => {
+				const target = projectId ? state.projectSettings : state.appSettings;
+				const keys = keyPath.split(`.`);
+				const last = keys.pop();
+				const obj = keys.reduce((acc, k) => {
+					if (acc[k] === undefined || typeof acc[k] !== `object`) { acc[k] = {}; }
+					return acc[k];
+				}, target);
+
+				// only update if the value has changed
+				if (obj[last] !== value) {
+					obj[last] = value;
+				}
+			});
 		},
 
 		setSystemTheme(theme) {

@@ -1,5 +1,5 @@
 <template>
-	<v-app>
+	<v-app :theme="currentTheme" data-qa="app-container">
 		<!-- always display the blur so the user knows if the UI is active -->
 		<v-overlay :model-value="true" persistent />
 
@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import { onMounted } from 'vue';
+import { onMounted, watch, computed } from 'vue';
 import { useTheme } from 'vuetify';
 import { THEME_MODES } from '@/../../../scripts/constants.js';
 import useSettingsStore from '@/stores/settings';
@@ -41,6 +41,11 @@ export default {
 		const theme = useTheme();
 		const settingsStore = useSettingsStore();
 
+		const currentTheme = computed(() => {
+			const setting = settingsStore.appSettings.theme || THEME_MODES.LIGHT;
+			return setting === THEME_MODES.SYSTEM ? settingsStore.systemTheme : setting;
+		});
+
 		onMounted(() => {
 			// listen for settings to be loaded from the main process
 			window.eyas?.receive(`settings-loaded`, data => {
@@ -63,24 +68,9 @@ export default {
 
 		return {
 			theme,
-			settingsStore
+			settingsStore,
+			currentTheme
 		};
-	},
-
-	computed: {
-		currentTheme() {
-			const setting = this.settingsStore.appSettings.theme || THEME_MODES.LIGHT;
-			return setting === THEME_MODES.SYSTEM ? this.settingsStore.systemTheme : setting;
-		}
-	},
-
-	watch: {
-		currentTheme: {
-			immediate: true,
-			handler(newVal) {
-				this.theme.global.name.value = newVal;
-			}
-		}
 	}
 };
 

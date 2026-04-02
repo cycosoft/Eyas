@@ -76,5 +76,9 @@ describe(`App`, () => {
 		call[1](payload);
 
 		expect(settingsStore.appSettings.theme).toBe('dark');
+		expect(vuetify.theme.global.name.value).toBe('dark');
+
+		// Check if the DOM has the class
+		expect(wrapper.get(`.v-theme--dark`)).toBeDefined();
 	});
 });

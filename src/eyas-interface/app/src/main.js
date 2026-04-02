@@ -7,12 +7,29 @@ import 'vuetify/styles';
 import '@mdi/font/css/materialdesignicons.css';
 import { createVuetify } from 'vuetify';
 
+// Vuetify
+const vuetify = createVuetify({
+	theme: {
+		defaultTheme: `light`,
+		themes: {
+			dark: {
+				dark: true,
+				colors: {
+					background: `#1A1C1E`,
+					surface: `#212325`,
+					primary: `#2196F3`
+				}
+			}
+		}
+	}
+});
+
 // create a new app instance to work with
 const app = createApp(App);
 
 // attach imports to the app instance
 app.use(createPinia());
-app.use(createVuetify());
+app.use(vuetify);
 
 // mount the app to the html
 app.mount(`#app`);
