@@ -1,5 +1,6 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { createPinia, setActivePinia } from 'pinia';
 import SettingsModal from '@/components/SettingsModal.vue';
 
 describe(`SettingsModal`, () => {
@@ -8,12 +9,17 @@ describe(`SettingsModal`, () => {
 	let mockReceive;
 
 	beforeEach(() => {
+		setActivePinia(createPinia());
 		mockSend = vi.fn();
 		mockReceive = vi.fn();
 		global.window.eyas.send = mockSend;
 		global.window.eyas.receive = mockReceive;
 
-		wrapper = mount(SettingsModal);
+		wrapper = mount(SettingsModal, {
+			global: {
+				plugins: [createPinia()]
+			}
+		});
 	});
 
 	afterEach(() => {

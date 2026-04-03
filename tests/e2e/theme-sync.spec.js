@@ -19,13 +19,13 @@ test.describe(`Theme Synchronization`, () => {
 
 	test(`changing theme to Dark updates the UI class and colors`, async () => {
 		const uiPage = await getUiView(electronApp);
-		
+
 		// Capture console logs for debugging
 		uiPage.on(`console`, msg => console.log(`RENDERER LOG: ${msg.text()}`));
 
 		// Open Settings modal
 		await clickSubMenuItem(electronApp, `Eyas`, `Settings`);
-		
+
 		// Wait for modal to appear and switch to App tab
 		const appTab = uiPage.locator(`[data-qa="settings-tab-app"]`);
 		await appTab.click();

@@ -102,23 +102,6 @@ export default {
 		toastVisible: false
 	}),
 
-	mounted() {
-		// Show this modal when requested by the main process
-		window.eyas?.receive(`show-settings-modal`, ({ projectId = null } = {}) => {
-			this.projectId = projectId;
-			this.activeTab = `project`;
-			this.toastVisible = false;
-			this.visible = true;
-		});
-
-		// Show toast when a setting is acknowledged by the main process
-		window.eyas?.receive(`setting-saved`, () => {
-			if (this.visible) {
-				this.toastVisible = true;
-			}
-		});
-	},
-
 	computed: {
 		appTheme: {
 			get() {
@@ -151,6 +134,24 @@ export default {
 				this.saveProjectSetting(`env.alwaysChoose`, !!val);
 			}
 		}
+	},
+
+	mounted() {
+		// Show this modal when requested by the main process
+		window.eyas?.receive(`show-settings-modal`, ({ project, app, projectId = null, systemTheme } = {}) => {
+			this.projectId = projectId;
+			this.settingsStore.loadFromPayload({ project, app, projectId, systemTheme });
+			this.activeTab = `project`;
+			this.toastVisible = false;
+			this.visible = true;
+		});
+
+		// Show toast when a setting is acknowledged by the main process
+		window.eyas?.receive(`setting-saved`, () => {
+			if (this.visible) {
+				this.toastVisible = true;
+			}
+		});
 	},
 
 	methods: {

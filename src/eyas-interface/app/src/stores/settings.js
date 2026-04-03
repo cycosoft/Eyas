@@ -5,7 +5,7 @@ export default defineStore(`settings`, {
 		projectSettings: {},
 		appSettings: {},
 		projectId: null,
-		systemTheme: 'light'
+		systemTheme: `light`
 	}),
 
 	actions: {

@@ -55,12 +55,12 @@ describe(`App`, () => {
 
 		const payload = {
 			project: { test: 123 },
-			app: { theme: 'dark' }
+			app: { theme: `dark` }
 		};
 		call[1](payload);
 
 		expect(settingsStore.projectSettings).toEqual(payload.project);
-		expect(settingsStore.appSettings.theme).toBe('dark');
+		expect(settingsStore.appSettings.theme).toBe(`dark`);
 	});
 
 	test(`updates store when settings-updated is received`, () => {
@@ -69,14 +69,14 @@ describe(`App`, () => {
 		expect(call).toBeDefined();
 
 		const payload = {
-			key: 'theme',
-			value: 'dark',
+			key: `theme`,
+			value: `dark`,
 			projectId: null
 		};
 		call[1](payload);
 
-		expect(settingsStore.appSettings.theme).toBe('dark');
-		expect(vuetify.theme.global.name.value).toBe('dark');
+		expect(settingsStore.appSettings.theme).toBe(`dark`);
+		expect(vuetify.theme.global.name.value).toBe(`dark`);
 
 		// Check if the DOM has the class
 		expect(wrapper.get(`.v-theme--dark`)).toBeDefined();
