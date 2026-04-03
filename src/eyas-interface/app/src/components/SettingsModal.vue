@@ -18,21 +18,34 @@
 								density="compact"
 								hide-details
 								data-qa="settings-project-always-choose"
-								@update:model-value="saveProjectSetting('env.alwaysChoose', $event)"
 							/>
 						</v-sheet>
 					</v-window-item>
 
 					<!-- App-level settings -->
 					<v-window-item value="app">
-						<v-sheet class="pa-4">
+						<v-sheet class="pa-4 pt-0">
+							<v-label class="text-caption mb-1">Theme Mode</v-label>
+							<v-radio-group
+								v-model="appTheme"
+								inline
+								density="compact"
+								hide-details
+								data-qa="settings-app-theme"
+							>
+								<v-radio label="Light" :value="THEME_MODES.LIGHT" data-qa="settings-app-theme-light" />
+								<v-radio label="Dark" :value="THEME_MODES.DARK" data-qa="settings-app-theme-dark" />
+								<v-radio label="System" :value="THEME_MODES.SYSTEM" data-qa="settings-app-theme-system" />
+							</v-radio-group>
+
+							<v-divider class="my-4" />
+
 							<v-checkbox
 								v-model="appAlwaysChoose"
 								label="Remember Selected Environment"
 								density="compact"
 								hide-details
 								data-qa="settings-app-always-choose"
-								@update:model-value="saveAppSetting('env.alwaysChoose', $event)"
 							/>
 						</v-sheet>
 					</v-window-item>
@@ -66,6 +79,8 @@
 </template>
 
 <script>
+import { THEME_MODES } from '@/../../../scripts/constants.js';
+import useSettingsStore from '@/stores/settings';
 import ModalWrapper from '@/components/ModalWrapper.vue';
 
 export default {
@@ -73,21 +88,59 @@ export default {
 		ModalWrapper
 	},
 
+	setup() {
+		return {
+			settingsStore: useSettingsStore()
+		};
+	},
+
 	data: () => ({
+		THEME_MODES,
 		visible: false,
 		activeTab: `project`,
 		projectId: null,
-		projectAlwaysChoose: false,
-		appAlwaysChoose: false,
 		toastVisible: false
 	}),
 
+	computed: {
+		appTheme: {
+			get() {
+				return this.settingsStore.appSettings.theme || THEME_MODES.LIGHT;
+			},
+			set(val) {
+				// Update local store instantly for immediate UI reaction
+				this.settingsStore.setSetting(`theme`, val);
+				// Synchronize with main process in the background
+				this.saveAppSetting(`theme`, val);
+			}
+		},
+
+		appAlwaysChoose: {
+			get() {
+				return !!(this.settingsStore.appSettings.env?.alwaysChoose);
+			},
+			set(val) {
+				this.settingsStore.setSetting(`env.alwaysChoose`, !!val);
+				this.saveAppSetting(`env.alwaysChoose`, !!val);
+			}
+		},
+
+		projectAlwaysChoose: {
+			get() {
+				return !!(this.settingsStore.projectSettings.env?.alwaysChoose);
+			},
+			set(val) {
+				this.settingsStore.setSetting(`env.alwaysChoose`, !!val, this.projectId);
+				this.saveProjectSetting(`env.alwaysChoose`, !!val);
+			}
+		}
+	},
+
 	mounted() {
 		// Show this modal when requested by the main process
-		window.eyas?.receive(`show-settings-modal`, ({ project = {}, app = {}, projectId = null } = {}) => {
+		window.eyas?.receive(`show-settings-modal`, ({ project, app, projectId = null, systemTheme } = {}) => {
 			this.projectId = projectId;
-			this.projectAlwaysChoose = !!(project?.env?.alwaysChoose);
-			this.appAlwaysChoose = !!(app?.env?.alwaysChoose);
+			this.settingsStore.loadFromPayload({ project, app, projectId, systemTheme });
 			this.activeTab = `project`;
 			this.toastVisible = false;
 			this.visible = true;
@@ -103,11 +156,11 @@ export default {
 
 	methods: {
 		saveProjectSetting(key, value) {
-			window.eyas?.send(`save-setting`, { key, value: !!value, projectId: this.projectId });
+			window.eyas?.send(`save-setting`, { key, value, projectId: this.projectId });
 		},
 
 		saveAppSetting(key, value) {
-			window.eyas?.send(`save-setting`, { key, value: !!value, projectId: null });
+			window.eyas?.send(`save-setting`, { key, value, projectId: null });
 		}
 	}
 };

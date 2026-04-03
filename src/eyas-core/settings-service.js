@@ -92,13 +92,8 @@ async function save() {
 	return _saveQueue;
 }
 
-// Inline copy of SETTINGS_DEFAULTS — avoids crossing the ESM/CJS boundary
-// with constants.js. Keep in sync with src/scripts/constants.js.
-const SETTINGS_DEFAULTS = {
-	env: {
-		alwaysChoose: false
-	}
-};
+// imports
+const { SETTINGS_DEFAULTS } = require(`../scripts/constants.js`);
 
 /**
  * Get a setting value using the cascade: project → app → SETTINGS_DEFAULTS.

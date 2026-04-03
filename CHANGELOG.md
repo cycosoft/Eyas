@@ -4,6 +4,7 @@
 - Properly support electron-vite implementation
 - Migrate to Vuetify v4.0.4
 - Refactor the demo page to better reflect the capabilities of Eyas
+- Add a toggle for dark mode that defaults to light mode
 
 # v26.3.25864
 

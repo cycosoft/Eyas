@@ -4,7 +4,8 @@ export default defineStore(`settings`, {
 	state: () => ({
 		projectSettings: {},
 		appSettings: {},
-		projectId: null
+		projectId: null,
+		systemTheme: `light`
 	}),
 
 	actions: {
@@ -20,10 +21,32 @@ export default defineStore(`settings`, {
 			this.projectId = id;
 		},
 
-		loadFromPayload({ project, app, projectId } = {}) {
+		setSetting(keyPath, value, projectId) {
+			this.$patch(state => {
+				const target = projectId ? state.projectSettings : state.appSettings;
+				const keys = keyPath.split(`.`);
+				const last = keys.pop();
+				const obj = keys.reduce((acc, k) => {
+					if (acc[k] === undefined || typeof acc[k] !== `object`) { acc[k] = {}; }
+					return acc[k];
+				}, target);
+
+				// only update if the value has changed
+				if (obj[last] !== value) {
+					obj[last] = value;
+				}
+			});
+		},
+
+		setSystemTheme(theme) {
+			this.systemTheme = theme;
+		},
+
+		loadFromPayload({ project, app, projectId, systemTheme } = {}) {
 			if (project !== undefined) { this.projectSettings = project; }
 			if (app !== undefined) { this.appSettings = app; }
 			if (projectId !== undefined) { this.projectId = projectId; }
+			if (systemTheme !== undefined) { this.systemTheme = systemTheme; }
 		}
 	}
 });

@@ -1,5 +1,5 @@
 <template>
-	<v-app>
+	<v-app data-qa="app-container">
 		<!-- always display the blur so the user knows if the UI is active -->
 		<v-overlay :model-value="true" persistent />
 
@@ -14,6 +14,10 @@
 </template>
 
 <script>
+import { onMounted, watch, computed } from 'vue';
+import { useTheme } from 'vuetify';
+import { THEME_MODES } from '@/../../../scripts/constants.js';
+import useSettingsStore from '@/stores/settings';
 import ExitModal from '@/components/ExitModal.vue';
 import EnvironmentModal from '@/components/EnvironmentModal.vue';
 import VariablesModal from '@/components/VariablesModal.vue';
@@ -31,6 +35,46 @@ export default {
 		TestServerSetupModal,
 		TestServerActiveModal,
 		SettingsModal
+	},
+
+	setup() {
+		const theme = useTheme();
+		const settingsStore = useSettingsStore();
+
+		const currentTheme = computed(() => {
+			const setting = settingsStore.appSettings.theme || THEME_MODES.LIGHT;
+			return setting === THEME_MODES.SYSTEM ? settingsStore.systemTheme : setting;
+		});
+
+		watch(currentTheme, (newVal) => {
+			theme.global.name.value = newVal;
+		}, { immediate: true });
+
+		onMounted(() => {
+			// listen for settings to be loaded from the main process
+			window.eyas?.receive(`settings-loaded`, data => {
+				settingsStore.loadFromPayload(data);
+			});
+
+			// listen for setting updates from the main process
+			window.eyas?.receive(`settings-updated`, ({ key, value, projectId }) => {
+				settingsStore.setSetting(key, value, projectId);
+			});
+
+			// listen for system theme updates
+			window.eyas?.receive(`system-theme-updated`, theme => {
+				settingsStore.setSystemTheme(theme);
+			});
+
+			// request initial settings
+			window.eyas?.send(`get-settings`);
+		});
+
+		return {
+			theme,
+			settingsStore,
+			currentTheme
+		};
 	}
 };
 
