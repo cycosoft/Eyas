@@ -23,35 +23,49 @@ export function getAggregatedChanges(changelog, fromVersion, toVersion) {
 }
 
 /**
- * Basic markdown-to-html converter for a specific subset:
- * - `code` -> <code>code</code>
- * - [text](url) -> <a href="url" target="_blank" rel="noopener noreferrer">text</a>
- * - HTML entity escaping for security.
+ * Basic markdown tokenization for a specific subset:
+ * - `code` -> { type: 'code', content: 'code' }
+ * - [text](url) -> { type: 'link', content: 'text', url: 'url' }
+ * - Plain text -> { type: 'text', content: '...' }
  * @param {string} text - The input text.
- * @returns {string} - The formatted HTML string.
+ * @returns {Array} - List of tokens.
  */
-export function formatMarkdownSubset(text) {
-	if (!text) { return ``; }
+export function tokenizeMarkdownSubset(text) {
+	if (!text) { return []; }
 
-	// 1. Escape HTML for security
-	let html = text
-		.replace(/&/g, `&amp;`)
-		.replace(/</g, `&lt;`)
-		.replace(/>/g, `&gt;`)
-		.replace(/"/g, `&quot;`)
-		.replace(/'/g, `&#039;`);
+	const tokens = [];
+	const regex = /(`[^`]+`|\[[^\]]+\]\([^)]+\))/g;
+	let lastIndex = 0;
+	let match;
 
-	// 2. Inline code: `code` -> <code>code</code>
-	// We use [^`]+ to match content between backticks.
-	html = html.replace(/`([^`]+)`/g, `<code>$1</code>`);
+	while ((match = regex.exec(text)) !== null) {
+		// add plain text before the match
+		if (match.index > lastIndex) {
+			tokens.push({ type: `text`, content: text.substring(lastIndex, match.index) });
+		}
 
-	// 3. Links: [text](url) -> <a href="url" target="_blank" rel="noopener noreferrer">text</a>
-	// We need to un-escape the entities inside the URL part for validator.isURL if we were using it,
-	// but here we trust the schema/conversion for now.
-	// Actually, let's just use a regex.
-	html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
-		return `<a href="${url}" target="_blank" rel="noopener noreferrer">${text}</a>`;
-	});
+		const chunk = match[0];
+		if (chunk.startsWith(`\``)) {
+			// inline code
+			tokens.push({ type: `code`, content: chunk.substring(1, chunk.length - 1) });
+		} else if (chunk.startsWith(`[`)) {
+			// link
+			const linkMatch = chunk.match(/\[([^\]]+)\]\(([^)]+)\)/);
+			if (linkMatch) {
+				tokens.push({ type: `link`, content: linkMatch[1], url: linkMatch[2] });
+			} else {
+				// fallback to text if malformed
+				tokens.push({ type: `text`, content: chunk });
+			}
+		}
 
-	return html;
+		lastIndex = regex.lastIndex;
+	}
+
+	// add remaining text
+	if (lastIndex < text.length) {
+		tokens.push({ type: `text`, content: text.substring(lastIndex) });
+	}
+
+	return tokens;
 }

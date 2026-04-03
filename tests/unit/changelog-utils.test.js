@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getAggregatedChanges, formatMarkdownSubset } from '@/utils/changelog-utils';
+import { getAggregatedChanges, tokenizeMarkdownSubset } from '@/utils/changelog-utils';
 
 describe(`changelog-utils`, () => {
 	describe(`getAggregatedChanges`, () => {
@@ -33,31 +33,43 @@ describe(`changelog-utils`, () => {
 		});
 	});
 
-	describe(`formatMarkdownSubset`, () => {
-		it(`should convert backticks to <code> tags`, () => {
+	describe(`tokenizeMarkdownSubset`, () => {
+		it(`should convert backticks to code tokens`, () => {
 			const input = `Use \`_env.url\` for navigation`;
-			const output = formatMarkdownSubset(input);
-			expect(output).toBe(`Use <code>_env.url</code> for navigation`);
+			const output = tokenizeMarkdownSubset(input);
+			expect(output).toEqual([
+				{ type: `text`, content: `Use ` },
+				{ type: `code`, content: `_env.url` },
+				{ type: `text`, content: ` for navigation` }
+			]);
 		});
 
-		it(`should convert markdown links to <a> tags`, () => {
+		it(`should convert markdown links to link tokens`, () => {
 			const input = `Visit [Eyas](https://eyas.dev)`;
-			const output = formatMarkdownSubset(input);
-			expect(output).toBe(`Visit <a href="https://eyas.dev" target="_blank" rel="noopener noreferrer">Eyas</a>`);
+			const output = tokenizeMarkdownSubset(input);
+			expect(output).toEqual([
+				{ type: `text`, content: `Visit ` },
+				{ type: `link`, content: `Eyas`, url: `https://eyas.dev` }
+			]);
 		});
 
 		it(`should handle multiple links and code blocks`, () => {
 			const input = `Check \`code\` and [link](url) here \`more\``;
-			const output = formatMarkdownSubset(input);
-			expect(output).toContain(`<code>code</code>`);
-			expect(output).toContain(`<code>more</code>`);
-			expect(output).toContain(`<a href="url"`);
+			const output = tokenizeMarkdownSubset(input);
+			expect(output).toEqual([
+				{ type: `text`, content: `Check ` },
+				{ type: `code`, content: `code` },
+				{ type: `text`, content: ` and ` },
+				{ type: `link`, content: `link`, url: `url` },
+				{ type: `text`, content: ` here ` },
+				{ type: `code`, content: `more` }
+			]);
 		});
 
-		it(`should escape HTML tags to prevent XSS`, () => {
+		it(`should NOT escape HTML tags (Vue handles it)`, () => {
 			const input = `<b>Not Bold</b> \`code\``;
-			const output = formatMarkdownSubset(input);
-			expect(output).toBe(`&lt;b&gt;Not Bold&lt;/b&gt; <code>code</code>`);
+			const output = tokenizeMarkdownSubset(input);
+			expect(output[0].content).toBe(`<b>Not Bold</b> `);
 		});
 	});
 });

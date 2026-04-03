@@ -48,8 +48,13 @@
 							<div
 								v-if="entry.notes"
 								class="text-body-2 mb-4 font-italic"
-								v-html="formatMarkdown(entry.notes)"
-							/>
+							>
+								<template v-for="(token, i) in tokenize(entry.notes)" :key="i">
+									<code v-if="token.type === `code`" class="mx-1 px-1 rounded bg-grey-lighten-4 text-primary">{{ token.content }}</code>
+									<a v-else-if="token.type === `link`" :href="token.url" target="_blank" rel="noopener noreferrer">{{ token.content }}</a>
+									<template v-else>{{ token.content }}</template>
+								</template>
+							</div>
 
 							<!-- Items -->
 							<component
@@ -61,7 +66,13 @@
 									:key="index"
 									class="mb-2"
 								>
-									<span v-html="formatMarkdown(item.text)" />
+									<span>
+										<template v-for="(token, i) in tokenize(item.text)" :key="i">
+											<code v-if="token.type === `code`" class="mx-1 px-1 rounded bg-grey-lighten-4 text-primary">{{ token.content }}</code>
+											<a v-else-if="token.type === `link`" :href="token.url" target="_blank" rel="noopener noreferrer">{{ token.content }}</a>
+											<template v-else>{{ token.content }}</template>
+										</template>
+									</span>
 									
 									<!-- Sub-items -->
 									<component
@@ -72,8 +83,13 @@
 										<li
 											v-for="(sub, subIndex) in item.subItems"
 											:key="subIndex"
-											v-html="formatMarkdown(sub)"
-										/>
+										>
+											<template v-for="(token, i) in tokenize(sub)" :key="i">
+												<code v-if="token.type === `code`" class="mx-1 px-1 rounded bg-grey-lighten-4 text-primary">{{ token.content }}</code>
+												<a v-else-if="token.type === `link`" :href="token.url" target="_blank" rel="noopener noreferrer">{{ token.content }}</a>
+												<template v-else>{{ token.content }}</template>
+											</template>
+										</li>
 									</component>
 								</li>
 							</component>
@@ -102,7 +118,8 @@
 import { ref, computed, onMounted } from 'vue';
 import useSettingsStore from '@/stores/settings';
 import ModalWrapper from '@/components/ModalWrapper.vue';
-import { getAggregatedChanges, formatMarkdownSubset } from '@/utils/changelog-utils';
+import { getAggregatedChanges, tokenizeMarkdownSubset } from '@/utils/changelog-utils';
+import changelogData from '../../public/CHANGELOG.json';
 
 export default {
 	components: {
@@ -120,12 +137,7 @@ export default {
 		const lastSeenVersion = computed(() => settingsStore.appSettings.lastSeenVersion || `0.0.0`);
 
 		const fetchChangelog = async () => {
-			try {
-				const response = await fetch(`/CHANGELOG.json`);
-				changelog.value = await response.json();
-			} catch (err) {
-				console.error(`Failed to load changelog:`, err);
-			}
+			changelog.value = changelogData;
 		};
 
 		const showOnLaunch = async () => {
@@ -179,7 +191,7 @@ export default {
 			changelog,
 			expandedPanels,
 			currentVersion,
-			formatMarkdown: formatMarkdownSubset,
+			tokenize: tokenizeMarkdownSubset,
 			close
 		};
 	}
