@@ -10,24 +10,20 @@ describe(`changelog-utils`, () => {
 			{ version: `1.0.0`, items: [{ text: `v1.0.0 change` }] }
 		];
 
-		it(`should return changes between two versions (inclusive of toVersion, exclusive of fromVersion)`, () => {
+		it(`should return all changes newer than fromVersion`, () => {
 			const result = getAggregatedChanges(mockChangelog, `1.0.0`, `1.1.0`);
-			expect(result).toHaveLength(2);
-			expect(result[0].version).toBe(`1.1.0`);
-			expect(result[1].version).toBe(`1.0.1`);
+			expect(result).toHaveLength(3); // 2.0.0, 1.1.0, 1.0.1
+			expect(result[0].version).toBe(`2.0.0`);
+			expect(result[1].version).toBe(`1.1.0`);
+			expect(result[2].version).toBe(`1.0.1`);
 		});
 
 		it(`should return all changes if fromVersion is 0.0.0`, () => {
 			const result = getAggregatedChanges(mockChangelog, `0.0.0`, `1.1.0`);
-			expect(result).toHaveLength(3);
+			expect(result).toHaveLength(4);
 		});
 
-		it(`should handle toVersion being later than the latest in changelog`, () => {
-			const result = getAggregatedChanges(mockChangelog, `1.1.0`, `3.0.0`);
-			expect(result[0].version).toBe(`2.0.0`);
-		});
-
-		it(`should return an empty array if current version is already seen`, () => {
+		it(`should return an empty array if all versions are already seen`, () => {
 			const result = getAggregatedChanges(mockChangelog, `2.0.0`, `2.0.0`);
 			expect(result).toHaveLength(0);
 		});

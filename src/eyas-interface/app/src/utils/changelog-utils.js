@@ -12,12 +12,12 @@ export function getAggregatedChanges(changelog, fromVersion, toVersion) {
 
 	return changelog.filter(entry => {
 		const v = entry.version;
-		// Include if version > fromVersion AND version <= toVersion
+		// Include if version > fromVersion
 		try {
-			return semver.gt(v, fromVersion) && semver.lte(v, toVersion);
+			return semver.gt(v, fromVersion);
 		} catch {
 			// fallback to simple comparison if semver fails (e.g. invalid string)
-			return v > fromVersion && v <= toVersion;
+			return v > fromVersion;
 		}
 	});
 }
