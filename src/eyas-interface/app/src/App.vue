@@ -10,6 +10,7 @@
 		<TestServerSetupModal />
 		<TestServerActiveModal />
 		<SettingsModal />
+		<WhatsNewModal />
 	</v-app>
 </template>
 
@@ -25,6 +26,7 @@ import VersionMismatchModal from '@/components/VersionMismatchModal.vue';
 import TestServerSetupModal from '@/components/TestServerSetupModal.vue';
 import TestServerActiveModal from '@/components/TestServerActiveModal.vue';
 import SettingsModal from '@/components/SettingsModal.vue';
+import WhatsNewModal from '@/components/WhatsNewModal.vue';
 
 export default {
 	components: {
@@ -34,7 +36,8 @@ export default {
 		VersionMismatchModal,
 		TestServerSetupModal,
 		TestServerActiveModal,
-		SettingsModal
+		SettingsModal,
+		WhatsNewModal
 	},
 
 	setup() {

@@ -538,7 +538,8 @@ function initUiListeners() {
 		event.reply(`settings-loaded`, {
 			project: settingsService.getProjectSettings(activeProjectId),
 			app: settingsService.getAppSettings(),
-			systemTheme: nativeTheme.shouldUseDarkColors ? `dark` : `light`
+			systemTheme: nativeTheme.shouldUseDarkColors ? `dark` : `light`,
+			version: _appVersion
 		});
 	});
 
@@ -973,11 +974,10 @@ Runner: v${_appVersion}
 			setMenu();
 		},
 		isInitializing: $isInitializing,
-		onOpenSettings: () => uiEvent(`show-settings-modal`, {
-			project: settingsService.getProjectSettings($config?.meta?.projectId),
 			app: settingsService.getAppSettings(),
 			projectId: $config?.meta?.projectId
-		})
+		}),
+		onShowWhatsNew: () => uiEvent(`show-whats-new`)
 	};
 
 	const template = buildMenuTemplate(context);
