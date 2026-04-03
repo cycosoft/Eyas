@@ -31,19 +31,19 @@ export function getAggregatedChanges(changelog, fromVersion, toVersion) {
  * @returns {string} - The formatted HTML string.
  */
 export function formatMarkdownSubset(text) {
-	if (!text) { return ''; }
+	if (!text) { return ``; }
 
 	// 1. Escape HTML for security
 	let html = text
-		.replace(/&/g, '&amp;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;')
-		.replace(/"/g, '&quot;')
-		.replace(/'/g, '&#039;');
+		.replace(/&/g, `&amp;`)
+		.replace(/</g, `&lt;`)
+		.replace(/>/g, `&gt;`)
+		.replace(/"/g, `&quot;`)
+		.replace(/'/g, `&#039;`);
 
 	// 2. Inline code: `code` -> <code>code</code>
 	// We use [^`]+ to match content between backticks.
-	html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+	html = html.replace(/`([^`]+)`/g, `<code>$1</code>`);
 
 	// 3. Links: [text](url) -> <a href="url" target="_blank" rel="noopener noreferrer">text</a>
 	// We need to un-escape the entities inside the URL part for validator.isURL if we were using it,

@@ -974,6 +974,8 @@ Runner: v${_appVersion}
 			setMenu();
 		},
 		isInitializing: $isInitializing,
+		onOpenSettings: () => uiEvent(`show-settings-modal`, {
+			project: settingsService.getProjectSettings($config?.meta?.projectId),
 			app: settingsService.getAppSettings(),
 			projectId: $config?.meta?.projectId
 		}),

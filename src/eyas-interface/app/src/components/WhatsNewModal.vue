@@ -114,17 +114,17 @@ export default {
 		const isVisible = ref(false);
 		const changelog = ref([]);
 		const expandedPanels = ref([]);
-		const mode = ref('launch'); // 'launch' or 'manual'
+		const mode = ref(`launch`); // `launch` or `manual`
 
 		const currentVersion = computed(() => settingsStore.version);
-		const lastSeenVersion = computed(() => settingsStore.appSettings.lastSeenVersion || '0.0.0');
+		const lastSeenVersion = computed(() => settingsStore.appSettings.lastSeenVersion || `0.0.0`);
 
 		const fetchChangelog = async () => {
 			try {
-				const response = await fetch('/CHANGELOG.json');
+				const response = await fetch(`/CHANGELOG.json`);
 				changelog.value = await response.json();
 			} catch (err) {
-				console.error('Failed to load changelog:', err);
+				console.error(`Failed to load changelog:`, err);
 			}
 		};
 
@@ -134,7 +134,7 @@ export default {
 			const unseen = getAggregatedChanges(changelog.value, lastSeenVersion.value, currentVersion.value);
 			
 			if (unseen.length > 0) {
-				mode.value = 'launch';
+				mode.value = `launch`;
 				expandedPanels.value = unseen.map(u => u.version);
 				isVisible.value = true;
 			}
@@ -142,7 +142,7 @@ export default {
 
 		const showManual = async () => {
 			await fetchChangelog();
-			mode.value = 'manual';
+			mode.value = `manual`;
 			// Only expand the latest version
 			if (changelog.value.length > 0) {
 				expandedPanels.value = [changelog.value[0].version];
@@ -154,8 +154,8 @@ export default {
 			isVisible.value = false;
 			// Update last seen version if we are in launch mode or if we manually viewed the latest
 			if (currentVersion.value !== lastSeenVersion.value) {
-				window.eyas?.send('save-setting', {
-					key: 'lastSeenVersion',
+				window.eyas?.send(`save-setting`, {
+					key: `lastSeenVersion`,
 					value: currentVersion.value
 				});
 			}
@@ -163,11 +163,11 @@ export default {
 
 		onMounted(() => {
 			// Listen for manual trigger from menu
-			window.eyas?.receive('show-whats-new', showManual);
+			window.eyas?.receive(`show-whats-new`, showManual);
 
 			// Check for launch trigger once settings are loaded
 			const unwatch = settingsStore.$subscribe((mutation, state) => {
-				if (state.version !== '0.0.0' && Object.keys(state.appSettings).length > 0) {
+				if (state.version !== `0.0.0` && Object.keys(state.appSettings).length > 0) {
 					showOnLaunch();
 					unwatch();
 				}
