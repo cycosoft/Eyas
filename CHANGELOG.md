@@ -1,0 +1,1 @@
+See [CHANGELOG.json](src/eyas-interface/app/public/CHANGELOG.json)
