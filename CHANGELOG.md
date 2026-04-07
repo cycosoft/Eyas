@@ -1,1 +1,1 @@
-See [CHANGELOG.json](src/eyas-interface/app/public/CHANGELOG.json)
+See [CHANGELOG.json](src/eyas-interface/app/src/CHANGELOG.json)

@@ -6,9 +6,7 @@
 	>
 		<v-card class="h-100 d-flex flex-column overflow-hidden">
 			<v-card-title class="d-flex align-center">
-				<v-icon icon="mdi-sparkles" class="mr-2" color="primary" />
-				What's New in Eyas
-				<v-spacer />
+				{{ title }}<v-spacer />
 				<v-btn
 					icon="mdi-close"
 					variant="text"
@@ -119,7 +117,7 @@ import { ref, computed, onMounted } from 'vue';
 import useSettingsStore from '@/stores/settings';
 import ModalWrapper from '@/components/ModalWrapper.vue';
 import { getAggregatedChanges, tokenizeMarkdownSubset } from '@/utils/changelog-utils';
-import changelogData from '../../public/CHANGELOG.json';
+import changelogData from '../CHANGELOG.json';
 
 export default {
 	components: {
@@ -133,14 +131,16 @@ export default {
 		const expandedPanels = ref([]);
 		const mode = ref(`launch`); // `launch` or `manual`
 
-		const currentVersion = computed(() => settingsStore.version);
+		const currentVersion = computed(() => changelogData[0]?.version);
 		const lastSeenVersion = computed(() => settingsStore.appSettings.lastSeenVersion || `0.0.0`);
+
+		const title = computed(() => mode.value === `manual` ? `Changelog` : `What's New`);
 
 		const fetchChangelog = async () => {
 			changelog.value = changelogData;
 		};
 
-		const showOnLaunch = async () => {
+		const showFromMain = async () => {
 			await fetchChangelog();
 			
 			const unseen = getAggregatedChanges(changelog.value, lastSeenVersion.value, currentVersion.value);
@@ -149,6 +149,9 @@ export default {
 				mode.value = `launch`;
 				expandedPanels.value = unseen.map(u => u.version);
 				isVisible.value = true;
+			} else {
+				// if there are no new changes to show, notify the main process to continue
+				window.eyas?.send(`whats-new-closed`);
 			}
 		};
 
@@ -171,17 +174,18 @@ export default {
 					value: currentVersion.value
 				});
 			}
+
+			// notify the main process that the modal is closed so it can release the next modal
+			window.eyas?.send(`whats-new-closed`);
 		};
 
 		onMounted(() => {
-			// Listen for manual trigger from menu
-			window.eyas?.receive(`show-whats-new`, showManual);
-
-			// Check for launch trigger once settings are loaded
-			const unwatch = settingsStore.$subscribe((mutation, state) => {
-				if (state.version !== `0.0.0` && Object.keys(state.appSettings).length > 0) {
-					showOnLaunch();
-					unwatch();
+			// Listen for trigger from main process (manual or launch)
+			window.eyas?.receive(`show-whats-new`, (isManual) => {
+				if (isManual) {
+					showManual();
+				} else {
+					showFromMain();
 				}
 			});
 		});
@@ -192,7 +196,9 @@ export default {
 			expandedPanels,
 			currentVersion,
 			tokenize: tokenizeMarkdownSubset,
-			close
+			close,
+			mode,
+			title
 		};
 	}
 };

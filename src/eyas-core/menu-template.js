@@ -47,7 +47,7 @@ function buildMenuTemplate(context) {
 	const appSubmenu = [
 		{ label: `ℹ️ &About`, click: showAbout },
 		{ label: `⚙️ &Settings`, click: onOpenSettings },
-		{ label: `✨ &What's New`, click: onShowWhatsNew },
+		{ label: `✨ &Changelog`, click: onShowWhatsNew },
 		updateStatusItem,
 		{ type: `separator` },
 		{ label: `🚪 &Exit`, accelerator: `CmdOrCtrl+Q`, click: quit }

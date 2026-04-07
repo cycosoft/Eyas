@@ -30,7 +30,9 @@ async function launchEyas(extraArgs = [], userDataDir = null, cwd = null, env = 
 			mainPath,
 			`--dev`,
 			`--user-data-dir=${userDataDir}`,
-			...extraArgs
+			// bypass What's New by default during tests unless explicitly requested
+			...(extraArgs.includes(`--show-whats-new`) ? [] : [`--skip-whats-new`]),
+			...extraArgs.filter(a => a !== `--show-whats-new`)
 		],
 		timeout: 30000
 	});

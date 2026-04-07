@@ -20,7 +20,9 @@ contextBridge.exposeInMainWorld(`eyas`, {
 			`test-server-open-browser`,
 			`test-server-extend`,
 			`save-setting`,
-			`get-settings`
+			`get-settings`,
+			`renderer-ready-for-modals`,
+			`whats-new-closed`
 		];
 
 		if (validChannels.includes(channel)) {

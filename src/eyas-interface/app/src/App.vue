@@ -27,6 +27,7 @@ import TestServerSetupModal from '@/components/TestServerSetupModal.vue';
 import TestServerActiveModal from '@/components/TestServerActiveModal.vue';
 import SettingsModal from '@/components/SettingsModal.vue';
 import WhatsNewModal from '@/components/WhatsNewModal.vue';
+import changelogData from '@/CHANGELOG.json';
 
 export default {
 	components: {
@@ -57,9 +58,10 @@ export default {
 			// listen for settings to be loaded from the main process
 			window.eyas?.receive(`settings-loaded`, data => {
 				settingsStore.loadFromPayload(data);
+				// once settings are loaded, signal that we are ready for startup modals
+				window.eyas?.send(`renderer-ready-for-modals`, changelogData[0]?.version);
 			});
 
-			// listen for setting updates from the main process
 			window.eyas?.receive(`settings-updated`, ({ key, value, projectId }) => {
 				settingsStore.setSetting(key, value, projectId);
 			});

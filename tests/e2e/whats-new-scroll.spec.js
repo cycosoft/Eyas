@@ -6,20 +6,24 @@ test(`WhatsNew modal should be scrollable`, async () => {
 	const uiPage = await getUiView(electronApp);
 
 	try {
-		// Find the app menu (first item usually contains "What's New")
+		// Find the app menu (first item usually contains "Changelog")
 		const menuStructure = await getMenuStructure(electronApp);
-		const appMenu = menuStructure.find(m => m.submenu && m.submenu.some(si => si.label.includes(`What's New`)));
+		const appMenu = menuStructure.find(m => m.submenu && m.submenu.some(si => si.label.includes(`Changelog`)));
 
 		if (!appMenu) {
-			throw new Error(`Could not find "What's New" in the application menu.`);
+			throw new Error(`Could not find "Changelog" in the application menu.`);
 		}
 
-		// Click "What's New"
-		await clickSubMenuItem(electronApp, appMenu.label, `What's New`);
+		// Click "Changelog"
+		await clickSubMenuItem(electronApp, appMenu.label, `Changelog`);
 
 		// Wait for the modal to appear
 		const modalContent = uiPage.locator(`[data-qa="whats-new-modal"]`);
 		await expect(modalContent).toBeVisible({ timeout: 10000 });
+
+		// Verify title is "Changelog"
+		const title = modalContent.locator(`.v-card-title`);
+		await expect(title).toHaveText(/Changelog/i);
 
 		// Give it a moment to expand/render
 		await new Promise(resolve => setTimeout(resolve, 1000));
