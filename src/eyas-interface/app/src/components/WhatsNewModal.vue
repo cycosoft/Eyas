@@ -4,7 +4,7 @@
 		min-width="600"
 		data-qa="whats-new-modal"
 	>
-		<v-card>
+		<v-card class="h-100 d-flex flex-column overflow-hidden">
 			<v-card-title class="d-flex align-center">
 				<v-icon icon="mdi-sparkles" class="mr-2" color="primary" />
 				What's New in Eyas
@@ -18,7 +18,7 @@
 
 			<v-divider />
 
-			<v-card-text class="pa-0">
+			<v-card-text class="pa-0 flex-grow-1 overflow-y-auto">
 				<v-expansion-panels
 					v-model="expandedPanels"
 					variant="accordion"

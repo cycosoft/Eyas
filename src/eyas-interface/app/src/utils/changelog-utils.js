@@ -4,10 +4,9 @@ import semver from 'semver';
  * Filter and aggregate changelog entries between two versions.
  * @param {Array} changelog - The parsed CHANGELOG.json array.
  * @param {string} fromVersion - The last seen version.
- * @param {string} toVersion - The current app version.
  * @returns {Array} - Aggregated changelog entries.
  */
-export function getAggregatedChanges(changelog, fromVersion, toVersion) {
+export function getAggregatedChanges(changelog, fromVersion) {
 	if (!changelog || !Array.isArray(changelog)) { return []; }
 
 	return changelog.filter(entry => {
