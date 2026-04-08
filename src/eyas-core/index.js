@@ -41,6 +41,7 @@ let $allViewports = [];
 const $currentViewport = [];
 let $updateStatus = `idle`;
 let $isInitializing = true;
+let $isEnvironmentPending = false;
 let $updateCheckUserTriggered = false;
 let $onCheckForUpdates = () => { };
 let $onInstallUpdate = () => { };
@@ -516,6 +517,7 @@ function initUiListeners() {
 		$envKey = domainKey;
 
 		// load the test
+		$isEnvironmentPending = false;
 		navigate();
 	});
 
@@ -960,11 +962,9 @@ Runner: v${_appVersion}
 			setMenu();
 		},
 		clearCache: () => {
-			if ($isInitializing) return;
 			clearCache();
 		},
 		openCacheFolder: () => {
-			if ($isInitializing) return;
 			require(`electron`).shell.openPath($appWindow.webContents.session.getStoragePath());
 		},
 		refreshMenu: setMenu,
@@ -990,7 +990,10 @@ Runner: v${_appVersion}
 			$testServerHttpsEnabled = !$testServerHttpsEnabled;
 			setMenu();
 		},
+		toggleTestDevTools: () => $appWindow.webContents.toggleDevTools(),
 		isInitializing: $isInitializing,
+		isConfigLoaded: !!$config?.meta?.isConfigLoaded,
+		isEnvironmentPending: $isEnvironmentPending,
 		onOpenSettings: () => uiEvent(`show-settings-modal`, {
 			project: settingsService.getProjectSettings($config?.meta?.projectId),
 			app: settingsService.getAppSettings(),
@@ -1412,12 +1415,14 @@ async function startAFreshTest(forceShow = false) {
 			navigate();
 		} else {
 			// display the environment chooser modal
+			$isEnvironmentPending = true;
 			uiEvent(`show-environment-modal`, $config.domains, {
 				projectId: $config.meta.projectId,
 				alwaysChoose: !!alwaysChoose,
 				domainsHash: currentHash,
 				forceShow
 			});
+			setMenu();
 		}
 	}
 

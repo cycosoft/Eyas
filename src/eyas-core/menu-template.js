@@ -35,7 +35,10 @@ function buildMenuTemplate(context) {
 		onInstallUpdate,
 		testServerActive = false,
 		onStartTestServer,
-		isInitializing = false
+		toggleTestDevTools,
+		isInitializing = false,
+		isConfigLoaded = false,
+		isEnvironmentPending = false
 	} = context;
 
 
@@ -55,14 +58,14 @@ function buildMenuTemplate(context) {
 
 	// ── 2. Test ──────────────────────────────────────────────────────────────
 	const testSubmenu = [
-		{ label: `🔄 &Reset Test Environment`, click: startAFreshTest, enabled: !isInitializing }
+		{ label: `🔄 &Reset Test Environment`, click: startAFreshTest, enabled: isConfigLoaded && !isEnvironmentPending }
 	];
 
-	testSubmenu.push({ label: `🏠 Test &Home`, click: navigateHome, enabled: !isInitializing });
+	testSubmenu.push({ label: `🏠 Test &Home`, click: navigateHome, enabled: isConfigLoaded && !isEnvironmentPending });
 
 	if (linkItems.length) {
 		testSubmenu.push({ type: `separator` });
-		testSubmenu.push({ label: `🔗 &Links`, submenu: linkItems });
+		testSubmenu.push({ label: `🔗 &Links`, submenu: linkItems, enabled: isConfigLoaded && !isEnvironmentPending });
 	}
 
 	testSubmenu.push({ type: `separator` });
@@ -70,39 +73,44 @@ function buildMenuTemplate(context) {
 	testSubmenu.push({
 		label: `📡 Live Test Server`,
 		click: onStartTestServer,
-		enabled: !isInitializing && !testServerActive
+		enabled: isConfigLoaded && !isEnvironmentPending && !isInitializing && !testServerActive
 	});
 
 	// ── 3. Browser ───────────────────────────────────────────────────────────
 	const browserSubmenu = [
-		{ label: `📋 &Copy URL`, click: copyUrl, enabled: !isInitializing },
+		{ label: `📋 &Copy URL`, click: copyUrl, enabled: isConfigLoaded && !isInitializing },
 		{ type: `separator` },
-		{ label: `🔄 &Reload`, accelerator: `CmdOrCtrl+R`, click: reload, enabled: !isInitializing },
-		{ label: `◀️ &Back`, accelerator: `CmdOrCtrl+Left`, click: back, enabled: !isInitializing },
-		{ label: `▶️ &Forward`, accelerator: `CmdOrCtrl+Right`, click: forward, enabled: !isInitializing },
+		{ label: `🔄 &Reload`, accelerator: `CmdOrCtrl+R`, click: reload, enabled: isConfigLoaded && !isInitializing },
+		{ label: `◀️ &Back`, accelerator: `CmdOrCtrl+Left`, click: back, enabled: isConfigLoaded && !isInitializing },
+		{ label: `▶️ &Forward`, accelerator: `CmdOrCtrl+Right`, click: forward, enabled: isConfigLoaded && !isInitializing },
 		{ type: `separator` },
 		{ label: `📐 &Viewport`, submenu: viewportItems }
 	];
 
 	// ── 4. Tools ─────────────────────────────────────────────────────────────
 	const cacheSubmenu = [
-		{ label: `⏳ Age: ${sessionAge}`, click: refreshMenu, enabled: !isInitializing },
-		{ label: `💾 Size: ${cacheSize} bytes`, click: refreshMenu, enabled: !isInitializing },
-		{ label: `🗑️ &Clear`, click: clearCache, enabled: !isInitializing },
-		...(isDev ? [{ label: `📂 Open Cache Folder`, click: openCacheFolder, enabled: !isInitializing }] : [])
+		{ label: `⏳ Age: ${sessionAge}`, click: refreshMenu },
+		{ label: `💾 Size: ${cacheSize} bytes`, click: refreshMenu },
+		{ label: `🗑️ &Clear`, click: clearCache },
+		...(isDev ? [{ label: `📂 Open Cache Folder`, click: openCacheFolder }] : [])
 	];
 
 	const toolsSubmenu = [
-		{ label: `${testNetworkEnabled ? `🚫 &Go Offline` : `📶 &Go Online`}`, click: toggleNetwork, enabled: !isInitializing },
+		{ label: `${testNetworkEnabled ? `🚫 &Go Offline` : `📶 &Go Online`}`, click: toggleNetwork, enabled: isConfigLoaded },
 		{ type: `separator` },
-		{ label: `📦 &Cache`, submenu: cacheSubmenu },
+		{ label: `📦 &Cache`, submenu: cacheSubmenu, enabled: isConfigLoaded },
 		{ type: `separator` },
-		{ role: `toggleDevTools`, accelerator: `F12`, label: `⚙️ &Developer Tools${isDev ? ` (Test)` : ``}` }
+		{
+			label: `⚙️ &Developer Tools${isDev ? ` (Test)` : ``}`,
+			accelerator: `F12`,
+			click: toggleTestDevTools,
+			enabled: isConfigLoaded
+		}
 	];
 
 	if (isDev) {
 		toolsSubmenu.push({
-			label: `⚙️ Developer Tools (&UI)`,
+			label: `⚙️ Developer Tools (&eyas)`,
 			accelerator: `CmdOrCtrl+Shift+J`,
 			click: openUiDevTools
 		});
@@ -111,9 +119,9 @@ function buildMenuTemplate(context) {
 	// ── Assemble root menu ────────────────────────────────────────────────────
 	const menu = [
 		{ label: `&${appName}`, submenu: appSubmenu },
-		{ label: `🧪 &Test`, enabled: !isInitializing, submenu: testSubmenu },
-		{ label: `🌐 &Browser`, enabled: !isInitializing, submenu: browserSubmenu },
-		{ label: `🔧 &Developer Tools`, enabled: !isInitializing, submenu: toolsSubmenu }
+		{ label: `🧪 &Test`, enabled: isConfigLoaded, submenu: testSubmenu },
+		{ label: `🌐 &Browser`, enabled: isConfigLoaded, submenu: browserSubmenu },
+		{ label: `🔧 &Development Tools`, enabled: isConfigLoaded || isDev, submenu: toolsSubmenu }
 	];
 
 
