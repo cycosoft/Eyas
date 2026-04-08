@@ -5,13 +5,8 @@
 		data-qa="whats-new-modal"
 	>
 		<v-card class="h-100 d-flex flex-column overflow-hidden">
-			<v-card-title class="d-flex align-center">
-				{{ title }}<v-spacer />
-				<v-btn
-					icon="mdi-close"
-					variant="text"
-					@click="close"
-				/>
+			<v-card-title class="text-title-large pt-3 px-3">
+				{{ title }}
 			</v-card-title>
 
 			<v-divider />
@@ -102,10 +97,10 @@
 				<v-spacer />
 				<v-btn
 					color="primary"
-					variant="flat"
+					variant="text"
 					@click="close"
 				>
-					Got it!
+					Close
 				</v-btn>
 			</v-card-actions>
 		</v-card>
