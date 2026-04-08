@@ -20,7 +20,9 @@ contextBridge.exposeInMainWorld(`eyas`, {
 			`test-server-open-browser`,
 			`test-server-extend`,
 			`save-setting`,
-			`get-settings`
+			`get-settings`,
+			`renderer-ready-for-modals`,
+			`whats-new-closed`
 		];
 
 		if (validChannels.includes(channel)) {
@@ -40,7 +42,8 @@ contextBridge.exposeInMainWorld(`eyas`, {
 			`close-modals`,
 			`show-settings-modal`,
 			`setting-saved`,
-			`settings-loaded`
+			`settings-loaded`,
+			`show-whats-new`
 		];
 		if (validChannels.includes(channel)) {
 			// Deliberately strip event as it includes `sender`

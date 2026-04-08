@@ -1,0 +1,246 @@
+[
+	{
+		"version": "26.4.14",
+		"items": [
+			{ "text": "Update dependencies" },
+			{ "text": "Properly support electron-vite implementation" },
+			{ "text": "Migrate to Vuetify v4.0.4" },
+			{ "text": "Refactor the demo page to better reflect the capabilities of Eyas" },
+			{ "text": "Add a toggle for dark mode that defaults to light mode" },
+			{ "text": "Now displays the changelog on first run, and is also accessible from the `Eyas` menu." }
+		]
+	},
+	{
+		"version": "26.3.25864",
+		"items": [
+			{ "text": "Add SPA fallback route to serve index.html for all unmatched requests" }
+		]
+	},
+	{
+		"version": "26.3.19614",
+		"items": [
+			{ "text": "Global config variables are now prepended with an underscore" },
+			{
+				"text": "Add support for getting environment data from the `_env` variable",
+				"subItems": ["_env.url", "_env.key"]
+			},
+			{ "text": "`testdomain` variable is now deprecated in favor of `_env.url`" },
+			{ "text": "Add the ability to always remember the selected environment at the project level" },
+			{ "text": "Added a new settings modal for managing this new project-level setting, along with the app-wide default for all projects." },
+			{ "text": "Remove prepended \"Eyas\" title from the app window title" },
+			{ "text": "Do not display data: URLs in the app window title" },
+			{ "text": "Display web page titles in the app window title" },
+			{ "text": "Restructured menu for easier navigation" },
+			{ "text": "New modal display when the live test server is running" }
+		]
+	},
+	{
+		"version": "26.2.34056",
+		"listType": "unordered",
+		"items": [
+			{ "text": "Fixed auto-update version comparison" }
+		]
+	},
+	{
+		"version": "26.2.32810",
+		"notes": "⚠️ To support auto updates, the Windows installer was switched from MSI to NSIS. You should first uninstall any previous versions of Eyas before installing this version so that you don't have two versions of Eyas installed.",
+		"listType": "unordered",
+		"items": [
+			{ "text": "New versioning scheme ( v{YY}.{M}.{MinutesIntoMonth} )" },
+			{ "text": "Auto update support" },
+			{ "text": "Dependency updates" },
+			{ "text": "Remove some deprecated CLI code" },
+			{ "text": "Project linting" },
+			{ "text": "Add \"Live Test Server\" to run tests in external browsers" }
+		]
+	},
+	{
+		"version": "4.0.0",
+		"listType": "unordered",
+		"items": [
+			{ "text": "Update some dependencies" },
+			{ "text": "Implement basic test coverage" },
+			{ "text": "Bump version to account for recent CLI update" }
+		]
+	},
+	{
+		"version": "3.5.1",
+		"listType": "unordered",
+		"items": [
+			{ "text": "Update dependencies" },
+			{ "text": "Fix loading config files when the consumer is type module. Add an alert on how to fix." }
+		]
+	},
+	{
+		"version": "3.5.0",
+		"listType": "unordered",
+		"items": [
+			{ "text": "Added support for loading tests via the web using a custom protocol. An `eyas.json` will be created in the source directory to deploy with your build. Share tests with users by swapping the https protocol for eyas. (e.g. `https://branch-42.example.com/test` becomes `eyas://branch-42.example.com/test`). This will open Eyas and load the test." },
+			{ "text": "Added a demo at [eyas://demo.eyas.dev](eyas://demo.eyas.dev) to showcase the new feature." },
+			{ "text": "Created [launch.eyas.dev](https://launch.eyas.dev) to allow users to open tests in Eyas via a shareable URL. An example using the above demo would be [https://launch.eyas.dev/demo.eyas.dev](https://launch.eyas.dev/demo.eyas.dev)." },
+			{ "text": "Fix loading resources that use other non-active test domains in an Eyas." }
+		]
+	},
+	{
+		"version": "3.4.1",
+		"listType": "unordered",
+		"items": [
+			{ "text": "As Electron@31.3.1 does not support the file upload progress event in the renderer process, Eyas will polyfill this event to simulate the progress bar. It attempts to get more accurate after each use, but will never match the actual progress." },
+			{ "text": "Dependency updates" },
+			{ "text": "Fix animations freezing when hiding the UI layer" },
+			{ "text": "Hide the UI whenever navigating to a new url" },
+			{ "text": "Request to close all modals when hiding the UI layer" },
+			{ "text": "Stop outputting the local path to the test in the config" },
+			{ "text": "Do not look for sibling asar files when getting the user's config via the CLI build step" }
+		]
+	},
+	{
+		"version": "3.4.0",
+		"listType": "unordered",
+		"items": [
+			{ "text": "Prevent a second instance of Eyas from running" },
+			{ "text": "Added shortcut keys for menu items" },
+			{ "text": "Fix the version modal not displaying on open if there aren't multiple given test domains" },
+			{ "text": "Change the devtools for the test to work on any open window" },
+			{ "text": "Show a globe icon for external links in the \"Links\" menu" },
+			{ "text": "Allow escape to close the exit modal" },
+			{ "text": "Allow enter to exit the app from the exit modal" },
+			{ "text": "Add numbered hotkeys to the environment selection modal" },
+			{ "text": "Refactor how modals and their background content is managed" },
+			{ "text": "General README.md updates" },
+			{ "text": "Updated analytics information gathered. See [METRICS.md](docs/METRICS.md)" },
+			{ "text": "Move the UI layer to its own protocol" },
+			{ "text": "Fix devtools \"network offline\" mode not working" },
+			{ "text": "Added a new Network menu with navigation options and ability to disable network" },
+			{ "text": "Add new \"tool\" menu item to copy the current URL to the clipboard" },
+			{ "text": "Give each testId its own session and cache that can be cleared independently. Cache is now maintained between test runs." }
+		]
+	},
+	{
+		"version": "3.3.0",
+		"items": [
+			{ "text": "Disable \"one-click\" install for Windows installer" },
+			{ "text": "Update project dependencies" },
+			{ "text": "Add WebdriverIO test runner" },
+			{ "text": "Set the UI layer to always have blurred background when set as visible" },
+			{ "text": "Fix issue displaying the UI layer without controls when the window is resized, making Eyas appear unresponsive." },
+			{ "text": "Make the file name safe when creating the artifact name" },
+			{ "text": "Support \"Single Page Apps\" by falling back to root index file if the given path + file doesn't exist" },
+			{ "text": "Add a splash screen on app load" },
+			{ "text": "Fix version mismatch checking" }
+		]
+	},
+	{
+		"version": "3.2.2",
+		"items": [
+			{ "text": "Fix all custom links with variables only being opened externally" },
+			{ "text": "Fix UI layer hiding when app in resized" },
+			{ "text": "Address unsanitized user input concern via ( https://github.com/cycosoft/Eyas/security/code-scanning/1 )" }
+		]
+	},
+	{
+		"version": "3.2.1",
+		"items": [
+			{ "text": "Fix compiled runner failing to load test due to missing dependency" }
+		]
+	},
+	{
+		"version": "3.2.0",
+		"items": [
+			{ "text": "Rename menu item \"New Test\" to \"Reset Test\"" },
+			{ "text": "Add ability to generate `.msi` and `.pkg` installers (module development)" },
+			{ "text": "Associated `*.eyas` files with installed version of Eyas" },
+			{ "text": "Refactor config load order (via user click, sibling *.eyas to runner, or via sibling config + defined source)" },
+			{ "text": "Allow CLI to generate just *.eyas files without bundling a runner" },
+			{ "text": "Alert user to possible Eyas update if test was built with newer version" },
+			{ "text": "Fix the UI hiding when there are multiple modals visible" }
+		]
+	},
+	{
+		"version": "3.1.0",
+		"items": [
+			{ "text": "Test files and user config are now bundled together in a read-only archive with an `*.eyas` extension. Eyas will automatically load the first archive it finds in the current working directory, with a fallback to previous behavior." },
+			{ "text": "Update to electron@31.0.0" },
+			{ "text": "Update readme with tip and warnings for production testing." },
+			{ "text": "Fix interface modals being visible at incorrect times" }
+		]
+	},
+	{
+		"version": "3.0.0",
+		"items": [
+			{ "text": "General menu adjustments" },
+			{ "text": "Display an alert about `etc/hosts` when user tries to load test files in the browser" },
+			{ "text": "Add a spinner to the app close button" },
+			{ "text": "Support for multiple domains via config" },
+			{ "text": "Complete restructure of the core app code" },
+			{ "text": "Run user test via custom protocol instead of http server" },
+			{ "text": "Removed ability to run user test in the browser" },
+			{ "text": "Add support for custom links with variables" },
+			{ "text": "Swap the \"viewport\" and \"links\" button positions in the menu" },
+			{ "text": "Removed the ability to set custom redirect rules" },
+			{ "text": "Fix inability to load a test url with a port" },
+			{ "text": "Removed the ability to explicitly set a custom port" },
+			{ "text": "Updated support references to GitHub ( https://github.com/cycosoft/Eyas/issues )" },
+			{ "text": "The version of Eyas that built the bundle is now appended to the bundled config file" },
+			{ "text": "Updated automatic build version to include short commit hash" },
+			{ "text": "Ensure the test cache is always cleared when Eyas starts or test is reloaded" }
+		]
+	},
+	{
+		"version": "2.0.0",
+		"notes": "Eyas now ships with a pre-built executable, rather than requiring the user to build it. Bundling your app is now a much faster and simpler process.",
+		"items": [
+			{ "text": "Removed Linux support" },
+			{ "text": "Removed config settings for \"executable\" and \"portable\" builds" },
+			{ "text": "Changed CLI command from `compile` to `bundle`" },
+			{ "text": "Removed CLI command `preview`" },
+			{ "text": "Updated dependencies" },
+			{ "text": "Flatten config options" },
+			{ "text": "Rename runners from `Eyas` to `Start`" }
+		]
+	},
+	{
+		"version": "1.1.2",
+		"items": [
+			{ "text": "Updated: Dependencies" },
+			{ "text": "Link package.json to GitHub repo" }
+		]
+	},
+	{
+		"version": "1.1.1",
+		"items": [
+			{ "text": "Updated: Dependencies" },
+			{ "text": "Updated: Readme clarification" },
+			{ "text": "Removed: `bytenode` dependency and usage of" }
+		]
+	},
+	{
+		"version": "1.1.0",
+		"items": [
+			{ "text": "Added: \"Portable\" output type" },
+			{ "text": "Added: Build expiration for every build with optional override" },
+			{ "text": "Added: Build metadata to the about dialog" },
+			{ "text": "Updated: Eyas exit dialog" },
+			{ "text": "Updated: Outputs are always zipped" },
+			{ "text": "Removed: Ability to set compression level for outputs" }
+		]
+	},
+	{
+		"version": "1.0.1",
+		"items": [
+			{ "text": "Updated: Rebuilt CLI" }
+		]
+	},
+	{
+		"version": "1.0.0",
+		"items": [
+			{ "text": "Added: User configuration. See [README.md](README.md)" },
+			{ "text": "Added: CLI" },
+			{ "text": "Added: Ability to preview app without building distributables" },
+			{ "text": "Added: Ability to build platform specific distributables" },
+			{ "text": "Added: Custom viewports" },
+			{ "text": "Added: Custom menu item of associated URLs" },
+			{ "text": "Open any link in external browser" }
+		]
+	}
+]

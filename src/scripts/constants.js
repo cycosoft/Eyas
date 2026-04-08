@@ -26,5 +26,6 @@ export const SETTINGS_DEFAULTS = {
 	env: {
 		alwaysChoose: false
 	},
-	theme: THEME_MODES.LIGHT
+	theme: THEME_MODES.LIGHT,
+	lastSeenVersion: `0.0.0`
 };

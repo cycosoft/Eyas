@@ -1,0 +1,51 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"title": "Eyas Changelog",
+	"description": "A structured version history for the Eyas application.",
+	"type": "array",
+	"items": {
+		"type": "object",
+		"properties": {
+			"version": {
+				"type": "string",
+				"description": "The semver-compatible version string (e.g., '1.2.3')."
+			},
+			"notes": {
+				"type": "string",
+				"description": "Overall summary or highlight for this release. Supports inline code (backticks) and links [text](url)."
+			},
+			"listType": {
+				"type": "string",
+				"enum": ["unordered", "ordered"],
+				"default": "unordered",
+				"description": "The type of list to use for the main items."
+			},
+			"items": {
+				"type": "array",
+				"description": "A list of changes for this version.",
+				"items": {
+					"type": "object",
+					"properties": {
+						"text": {
+							"type": "string",
+							"description": "The change description. Supports inline code (backticks) and links [text](url)."
+						},
+						"subItems": {
+							"type": "array",
+							"description": "Nested changes under this item.",
+							"items": { "type": "string" }
+						},
+						"subItemsType": {
+							"type": "string",
+							"enum": ["unordered", "ordered"],
+							"default": "unordered",
+							"description": "The type of list to use for the sub-items."
+						}
+					},
+					"required": ["text"]
+				}
+			}
+		},
+		"required": ["version"]
+	}
+}

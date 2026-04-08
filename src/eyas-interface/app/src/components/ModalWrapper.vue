@@ -15,7 +15,7 @@
 			@after-enter="pinDialogWidth"
 			@after-leave="hideUi"
 		>
-			<div :data-modal-id="id" class="h-100">
+			<div :data-modal-id="id" class="modal-wrapper__content">
 				<slot />
 			</div>
 		</v-dialog>
@@ -35,8 +35,8 @@ export default {
 		modelValue: Boolean,
 		type: {
 			type: String,
-			default: 'modal',
-			validator: (value) => ['modal', 'dialog'].includes(value)
+			default: `modal`,
+			validator: value => [`modal`, `dialog`].includes(value)
 		},
 		minWidth: {
 			type: [Number, String],
@@ -47,19 +47,19 @@ export default {
 	data() {
 		return {
 			id: window.crypto.randomUUID(), // generate a unique ID for this modal
-			dialogWidth: 'auto'
+			dialogWidth: `auto`
 		};
 	},
 
 	computed: {
-		backgroundContentVisible () {
+		backgroundContentVisible() {
 			return ModalStore().lastOpenedById === this.id;
 		},
 		calculatedMinWidth() {
 			if (this.minWidth !== undefined) {
 				return this.minWidth;
 			}
-			return this.type === 'modal' ? 500 : undefined;
+			return this.type === `modal` ? 500 : undefined;
 		}
 	},
 
@@ -80,9 +80,9 @@ export default {
 
 	methods: {
 		trackModalState(isTrue) {
-			if(isTrue) {
+			if (isTrue) {
 				// reset width to the initial auto state so it can calculate the new initial width
-				this.dialogWidth = 'auto';
+				this.dialogWidth = `auto`;
 				// track this modal as the last opened modal
 				ModalStore().track(this.id);
 			} else {
@@ -93,8 +93,8 @@ export default {
 
 		hideUi() {
 			// hide the UI if there are no other dialogs open
-			if(document.querySelectorAll(`.v-dialog`).length <= 1) {
-				window.eyas?.send(`hide-ui`);
+			if (document.querySelectorAll('.v-dialog').length <= 1) {
+				window.eyas?.send('hide-ui');
 			}
 		},
 
@@ -110,3 +110,12 @@ export default {
 	}
 };
 </script>
+
+<style scoped>
+.modal-wrapper__content {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	min-height: 0;
+}
+</style>

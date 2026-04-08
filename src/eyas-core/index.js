@@ -3,7 +3,7 @@
 'use strict';
 
 // global imports _
-const { app: _electronCore, BrowserWindow: _electronWindow, nativeTheme } = require(`electron`);
+const { app: _electronCore, BrowserWindow: _electronWindow, nativeTheme, ipcMain } = require(`electron`);
 const _path = require(`path`);
 const _os = require(`os`);
 
@@ -44,6 +44,9 @@ let $isInitializing = true;
 let $updateCheckUserTriggered = false;
 let $onCheckForUpdates = () => { };
 let $onInstallUpdate = () => { };
+let $pendingStartupModal = null;
+let $isStartupSequenceChecked = false;
+let $latestChangelogVersion = null;
 const $roots = require(`../scripts/get-roots.js`);
 const { parseURL } = require(`../scripts/parse-url.js`);
 const $paths = {
@@ -353,7 +356,10 @@ async function initElectronUi() {
 		}
 	});
 	$appWindow.addBrowserView($eyasLayer);
-	$eyasLayer.webContents.loadURL(`${$uiDomain}/index.html`);
+	const url = ($isDev && process.env[`ELECTRON_RENDERER_URL`])
+		? `${process.env[`ELECTRON_RENDERER_URL`]}/index.html`
+		: `${$uiDomain}/index.html`;
+	$eyasLayer.webContents.loadURL(url);
 
 	// once the Eyas UI layer is ready, attempt navigation
 	$eyasLayer.webContents.on(`did-finish-load`, async () => {
@@ -393,7 +399,10 @@ function createSplashScreen() {
 	});
 
 	// load the splash screen
-	splashScreen.webContents.loadURL(`${$uiDomain}/splash.html`);
+	const splashUrl = ($isDev && process.env[`ELECTRON_RENDERER_URL`])
+		? `${process.env[`ELECTRON_RENDERER_URL`]}/splash.html`
+		: `${$uiDomain}/splash.html`;
+	splashScreen.webContents.loadURL(splashUrl);
 
 	// when the splash screen content has loaded
 	splashScreen.webContents.on(`did-finish-load`, () => {
@@ -538,8 +547,17 @@ function initUiListeners() {
 		event.reply(`settings-loaded`, {
 			project: settingsService.getProjectSettings(activeProjectId),
 			app: settingsService.getAppSettings(),
-			systemTheme: nativeTheme.shouldUseDarkColors ? `dark` : `light`
+			systemTheme: nativeTheme.shouldUseDarkColors ? `dark` : `light`,
+			version: _appVersion
 		});
+	});
+
+	ipcMain.on(`renderer-ready-for-modals`, (event, latestChangelogVersion) => {
+		$latestChangelogVersion = latestChangelogVersion;
+		if (!$isStartupSequenceChecked) {
+			$isStartupSequenceChecked = true;
+			checkStartupSequence();
+		}
 	});
 
 	// listen for the user to launch a link
@@ -977,7 +995,8 @@ Runner: v${_appVersion}
 			project: settingsService.getProjectSettings($config?.meta?.projectId),
 			app: settingsService.getAppSettings(),
 			projectId: $config?.meta?.projectId
-		})
+		}),
+		onShowWhatsNew: () => uiEvent(`show-whats-new`, true)
 	};
 
 	const template = buildMenuTemplate(context);
@@ -1402,11 +1421,51 @@ async function startAFreshTest(forceShow = false) {
 		}
 	}
 
+	// ─── Version Mismatch check ──────────────────────────────────────────────────
 	// if the runner is older than the version that built the test
 	if ($config.meta.eyas && semver.lt(_appVersion, $config.meta.eyas)) {
 		// send request to the UI layer
 		uiEvent(`show-version-mismatch-modal`, _appVersion, $config.meta.eyas);
 	}
+}
+
+/**
+ * Check if the user needs to see the "What's New" modal on startup.
+ */
+function checkStartupSequence() {
+	if (isWhatsNewRequired()) {
+		// request to show the "What's New" modal
+		uiEvent(`show-whats-new`);
+	} else {
+		// if the modal is not needed, release any other modal that might have been buffered
+		triggerBufferedModal();
+	}
+}
+
+/**
+ * Single source of truth for whether the "What's New" modal is required.
+ */
+function isWhatsNewRequired() {
+	// check if the user has requested to skip the "What's New" modal
+	if (process.argv.includes(`--skip-whats-new`)) {
+		return false;
+	}
+
+	const appSettings = settingsService.getAppSettings();
+	const lastSeenVersion = appSettings?.lastSeenVersion || `0.0.0`;
+	return $latestChangelogVersion && ($latestChangelogVersion !== lastSeenVersion);
+}
+
+/**
+ * Trigger any modal that was buffered during the startup sequence.
+ */
+function triggerBufferedModal() {
+	if (!$pendingStartupModal) { return; }
+
+	// trigger the buffered modal event
+	const { eventName, args } = $pendingStartupModal;
+	$pendingStartupModal = null;
+	uiEvent(eventName, ...args);
 }
 
 // navigate to a variable url
@@ -1443,9 +1502,25 @@ function navigateVariable(url) {
 
 // request the UI layer to launch an event
 function uiEvent(eventName, ...args) {
+	// if the "What's New" modal is currently active, buffer this event
+	// (Except for the "What's New" modal itself)
+	if ($pendingStartupModal === null && eventName !== `show-whats-new`) {
+		// if we haven't seen the current version, buffer the first modal request
+		if (isWhatsNewRequired()) {
+			$pendingStartupModal = { eventName, args };
+			return;
+		}
+	}
+
 	// display the UI layer
 	toggleEyasUI(true);
 
 	// send the interaction to the UI layer
 	$eyasLayer.webContents.send(eventName, ...args);
 }
+
+// ─── IPC Handlers ─────────────────────────────────────────────────────────────
+ipcMain.on(`whats-new-closed`, () => {
+	// once the "What's New" modal is closed, trigger the next modal in the sequence
+	triggerBufferedModal();
+});

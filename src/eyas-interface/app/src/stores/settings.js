@@ -5,7 +5,8 @@ export default defineStore(`settings`, {
 		projectSettings: {},
 		appSettings: {},
 		projectId: null,
-		systemTheme: `light`
+		systemTheme: `light`,
+		version: `0.0.0`
 	}),
 
 	actions: {
@@ -42,11 +43,12 @@ export default defineStore(`settings`, {
 			this.systemTheme = theme;
 		},
 
-		loadFromPayload({ project, app, projectId, systemTheme } = {}) {
+		loadFromPayload({ project, app, projectId, systemTheme, version } = {}) {
 			if (project !== undefined) { this.projectSettings = project; }
 			if (app !== undefined) { this.appSettings = app; }
 			if (projectId !== undefined) { this.projectId = projectId; }
 			if (systemTheme !== undefined) { this.systemTheme = systemTheme; }
+			if (version !== undefined) { this.version = version; }
 		}
 	}
 });
