@@ -1,14 +1,14 @@
 [
 	{
-		"version": "26.4.14",
+		"version": "26.4.15",
 		"items": [
-			{ "text": "Update dependencies" },
-			{ "text": "Properly support electron-vite implementation" },
-			{ "text": "Migrate to Vuetify v4.x (from 3.x)" },
-			{ "text": "Refactor the demo page to better reflect the capabilities of Eyas" },
-			{ "text": "Add a toggle for dark mode that defaults to light mode" },
-			{ "text": "Now displays the changelog on first run, and is also accessible from the `Eyas` menu." },
-			{ "text": "Update gating of navigation menu items based on test status"}
+			{ "text": "🟢 Add a toggle for dark mode that defaults to light mode" },
+			{ "text": "🟢 Now displays the changelog on first run, and is also accessible from the `Eyas` menu." },
+			{ "text": "🟣 Update dependencies" },
+			{ "text": "🟣 Properly support electron-vite implementation" },
+			{ "text": "🟣 Migrate to Vuetify v4.x (from 3.x)" },
+			{ "text": "🟣 Refactor the demo page to better reflect the capabilities of Eyas" },
+			{ "text": "🟣 Update gating of navigation menu items based on test status"}
 		]
 	},
 	{
