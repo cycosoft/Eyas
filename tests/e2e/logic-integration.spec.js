@@ -42,22 +42,22 @@ test.describe(`Logic-Driven Integration Tests`, () => {
 
 		// Verify menu updates to reflect offline status
 		const menu = await waitForMenuUpdate(electronApp, m => {
-			const devTools = m.find(item => item.label.includes(`Developer Tools`));
+			const devTools = m.find(item => item.label.includes(`Development Tools`));
 			return devTools && devTools.submenu && devTools.submenu.some(item => item.label.includes(`&Go Online`));
 		});
 
-		const devTools = menu.find(item => item.label.includes(`Developer Tools`));
+		const devTools = menu.find(item => item.label.includes(`Development Tools`));
 		const toggleItem = devTools.submenu.find(item => item.label.includes(`&Go Online`));
 		expect(toggleItem).toBeDefined();
 
 		// Toggle back
 		await emitIpcMessage(electronApp, `network-status`, true);
 		const menuOnline = await waitForMenuUpdate(electronApp, m => {
-			const devTools = m.find(item => item.label.includes(`Developer Tools`));
+			const devTools = m.find(item => item.label.includes(`Development Tools`));
 			return devTools && devTools.submenu && devTools.submenu.some(item => item.label.includes(`&Go Offline`));
 		});
 
-		const toggleItemOnline = menuOnline.find(item => item.label.includes(`Developer Tools`)).submenu.find(item => item.label.includes(`&Go Offline`));
+		const toggleItemOnline = menuOnline.find(item => item.label.includes(`Development Tools`)).submenu.find(item => item.label.includes(`&Go Offline`));
 		expect(toggleItemOnline).toBeDefined();
 	});
 

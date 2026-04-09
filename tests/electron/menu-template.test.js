@@ -54,12 +54,12 @@ describe(`Root menu structure`, () => {
 		expect(template.length).toBeGreaterThan(1);
 	});
 
-	test(`root menus are in order: Eyas, Test, Browser, Developer Tools`, () => {
+	test(`root menus are in order: Eyas, Test, Browser, Development Tools`, () => {
 		const template = buildMenuTemplate(minimalContext);
 		expect(template[0].label).toContain(`Eyas`);
 		expect(template[1].label).toContain(`Test`);
 		expect(template[2].label).toContain(`Browser`);
-		expect(template[3].label).toContain(`Developer Tools`);
+		expect(template[3].label).toContain(`Development Tools`);
 	});
 });
 
@@ -222,7 +222,7 @@ describe(`Test menu`, () => {
 
 	test(`when testServerActive is false, Test menu includes Live Test Server item as enabled`, () => {
 		const onStartTestServer = () => { };
-		const ctx = { ...minimalContext, testServerActive: false, onStartTestServer };
+		const ctx = { ...minimalContext, testServerActive: false, isConfigLoaded: true, onStartTestServer };
 		const template = buildMenuTemplate(ctx);
 		const testMenu = template[1];
 		const startItem = testMenu.submenu.find(item => item.label && item.label.includes(`Live Test Server`));
@@ -349,16 +349,16 @@ describe(`Browser menu`, () => {
 
 // ─── Tools menu ───────────────────────────────────────────────────────────
 
-describe(`Developer Tools menu`, () => {
-	test(`Developer Tools menu exists as fourth root item`, () => {
+describe(`Development Tools menu`, () => {
+	test(`Development Tools menu exists as fourth root item`, () => {
 		const template = buildMenuTemplate(minimalContext);
 		const toolsMenu = template[3];
 		expect(toolsMenu).toBeDefined();
-		expect(toolsMenu.label).toContain(`Developer Tools`);
+		expect(toolsMenu.label).toContain(`Development Tools`);
 		expect(Array.isArray(toolsMenu.submenu)).toBe(true);
 	});
 
-	test(`Developer Tools submenu does NOT contain Copy URL`, () => {
+	test(`Development Tools submenu does NOT contain Copy URL`, () => {
 		const template = buildMenuTemplate(minimalContext);
 		const toolsMenu = template[3];
 		const item = toolsMenu.submenu.find(i => i.label && i.label.toLowerCase().includes(`copy url`));
@@ -397,7 +397,7 @@ describe(`Developer Tools menu`, () => {
 		expect(devToolsItem).toBeDefined();
 	});
 
-	test(`template does NOT include Enable HTTPS option in Developer Tools menu`, () => {
+	test(`template does NOT include Enable HTTPS option in Development Tools menu`, () => {
 		const onToggle = () => { };
 		const ctx = { ...minimalContext, testServerHttpsEnabled: true, onToggleTestServerHttps: onToggle };
 		const template = buildMenuTemplate(ctx);
@@ -407,7 +407,7 @@ describe(`Developer Tools menu`, () => {
 		expect(httpsItem).toBeUndefined();
 	});
 
-	test(`when isInitializing is true, Developer Tools menu is disabled`, () => {
+	test(`when isInitializing is true, Development Tools menu is disabled`, () => {
 		const ctx = { ...minimalContext, isInitializing: true };
 		const template = buildMenuTemplate(ctx);
 		const toolsMenu = template[3];

@@ -72,8 +72,11 @@ async function getConfig(method, path) {
 	}
 
 	// pass the loaded config data to the parser for validation
+	if (loadedConfig && Object.keys(loadedConfig).length > 0) {
+		loadedConfig._isConfigLoaded = true;
+	}
 	return validateConfig(loadedConfig);
-};
+}
 
 // get the config via web requests ( supports both eyas:// and https:// protocols )
 async function getConfigViaUrl(path) {
@@ -265,7 +268,8 @@ function validateConfig(loadedConfig) {
 			eyas: loadedConfig.meta.eyas || getCliVersion(),
 			companyId: loadedConfig.meta.companyId || getCompanyId(),
 			projectId: loadedConfig.meta.projectId || getProjectId(),
-			testId: loadedConfig.meta.testId || getTestId()
+			testId: loadedConfig.meta.testId || getTestId(),
+			isConfigLoaded: !!loadedConfig._isConfigLoaded
 		}
 	};
 
