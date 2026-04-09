@@ -106,7 +106,7 @@ describe(`TestServerSetupModal`, () => {
 		await wrapper.vm.$nextTick();
 
 		expect(document.querySelector(`[data-qa="hosts-file-instructions"]`)).toBeNull();
-		await wrapper.setData({ useCustomDomain: true });
+		await wrapper.setData({ internalUseCustomDomain: true });
 		expect(document.querySelector(`[data-qa="hosts-file-instructions"]`)).not.toBeNull();
 	});
 
@@ -114,7 +114,7 @@ describe(`TestServerSetupModal`, () => {
 		vi.useFakeTimers();
 		receiveCallback({ domain: `http://127.0.0.1`, hostnameForHosts: `my.custom.url`, steps: [] });
 		await wrapper.vm.$nextTick();
-		await wrapper.setData({ useCustomDomain: true });
+		await wrapper.setData({ internalUseCustomDomain: true });
 
 		const mockClipboard = { writeText: vi.fn() };
 		Object.assign(navigator, { clipboard: mockClipboard });
@@ -142,7 +142,7 @@ describe(`TestServerSetupModal`, () => {
 	test(`displayDomain returns custom hostname when useCustomDomain is true`, async () => {
 		receiveCallback({ domain: `http://127.0.0.1`, hostnameForHosts: `my.custom.url`, steps: [] });
 		await wrapper.vm.$nextTick();
-		wrapper.vm.useCustomDomain = true;
+		wrapper.vm.internalUseCustomDomain = true;
 		await wrapper.vm.$nextTick();
 		expect(wrapper.vm.displayDomain).toBe(`my.custom.url`);
 	});
@@ -153,14 +153,14 @@ describe(`TestServerSetupModal`, () => {
 		expect(wrapper.vm.useHttps).toBe(false);
 		expect(wrapper.vm.displayPort).toBe(``);
 
-		await wrapper.setData({ useHttps: true });
+		await wrapper.setData({ internalUseHttps: true });
 		expect(wrapper.vm.useHttps).toBe(true);
 		expect(wrapper.vm.displayPort).toBe(``);
 
-		await wrapper.setData({ useHttps: false, portHttp: 8080 });
+		await wrapper.setData({ internalUseHttps: false, portHttp: 8080 });
 		expect(wrapper.vm.displayPort).toBe(`:8080`);
 
-		await wrapper.setData({ useHttps: true, portHttps: 8443 });
+		await wrapper.setData({ internalUseHttps: true, portHttps: 8443 });
 		expect(wrapper.vm.displayPort).toBe(`:8443`);
 	});
 });

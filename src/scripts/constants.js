@@ -27,5 +27,10 @@ export const SETTINGS_DEFAULTS = {
 		alwaysChoose: false
 	},
 	theme: THEME_MODES.LIGHT,
-	lastSeenVersion: `0.0.0`
+	lastSeenVersion: `0.0.0`,
+	testServer: {
+		useHttps: false,
+		autoOpenBrowser: true,
+		useCustomDomain: false
+	}
 };

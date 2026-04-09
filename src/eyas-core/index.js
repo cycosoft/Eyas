@@ -761,7 +761,6 @@ function openTestServerInBrowserHandler(event, url) {
 }
 
 function resetTestServerSettings() {
-	$testServerHttpsEnabled = false;
 	$lastTestServerOptions = null;
 }
 
@@ -780,6 +779,11 @@ async function startTestServerHandler() {
 		const hostnameForHosts = parsedTestDomain?.hostname || `test.local`;
 		const isWindows = process.platform === `win32`;
 
+		const projectId = $config?.meta?.projectId || null;
+		$testServerHttpsEnabled = settingsService.get(`testServer.useHttps`, projectId);
+		const autoOpenBrowser = settingsService.get(`testServer.autoOpenBrowser`, projectId);
+		const useCustomDomain = settingsService.get(`testServer.useCustomDomain`, projectId);
+
 		uiEvent(`show-test-server-setup-modal`, {
 			domain: `http://127.0.0.1`,
 			portHttp,
@@ -787,6 +791,9 @@ async function startTestServerHandler() {
 			hostnameForHosts,
 			steps: [],
 			useHttps: $testServerHttpsEnabled,
+			autoOpenBrowser,
+			useCustomDomain,
+			projectId,
 			isWindows
 		});
 	}

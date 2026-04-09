@@ -100,9 +100,6 @@ const defaults = {
 	domain: '',
 	hostnameForHosts: 'test.local',
 	steps: [],
-	useHttps: false,
-	autoOpenBrowser: true,
-	useCustomDomain: false,
 	portHttp: 12701,
 	portHttps: 12701,
 	isWindows: false,
@@ -114,9 +111,36 @@ export default {
 		ModalWrapper
 	},
 
-	data: () => ({ ...defaults }),
+	data: () => ({
+		...defaults,
+		internalUseHttps: false,
+		internalAutoOpenBrowser: true,
+		internalUseCustomDomain: false,
+		projectId: null
+	}),
 
 	computed: {
+		useHttps: {
+			get() { return this.internalUseHttps; },
+			set(val) {
+				this.internalUseHttps = val;
+				this.saveSetting(`testServer.useHttps`, val);
+			}
+		},
+		autoOpenBrowser: {
+			get() { return this.internalAutoOpenBrowser; },
+			set(val) {
+				this.internalAutoOpenBrowser = val;
+				this.saveSetting(`testServer.autoOpenBrowser`, val);
+			}
+		},
+		useCustomDomain: {
+			get() { return this.internalUseCustomDomain; },
+			set(val) {
+				this.internalUseCustomDomain = val;
+				this.saveSetting(`testServer.useCustomDomain`, val);
+			}
+		},
 		hostsLine() {
 			const ip = '127.0.0.1';
 			const host = this.hostnameForHosts || 'test.local';
@@ -138,7 +162,13 @@ export default {
 			this.domain = payload.domain || '';
 			this.hostnameForHosts = payload.hostnameForHosts || 'test.local';
 			this.steps = Array.isArray(payload.steps) ? payload.steps : [];
-			this.useHttps = !!payload.useHttps;
+
+			// Set internal values directly to avoid triggering setters unnecessarily
+			this.internalUseHttps = !!payload.useHttps;
+			this.internalAutoOpenBrowser = payload.autoOpenBrowser !== undefined ? !!payload.autoOpenBrowser : true;
+			this.internalUseCustomDomain = !!payload.useCustomDomain;
+			this.projectId = payload.projectId || null;
+
 			this.portHttp = payload.portHttp || 12701;
 			this.portHttps = payload.portHttps || 12701;
 			this.isWindows = !!payload.isWindows;
@@ -165,7 +195,13 @@ export default {
 
 		cancel() {
 			this.visible = false;
-			Object.assign(this.$data, defaults);
+			Object.assign(this.$data, {
+				...defaults,
+				internalUseHttps: false,
+				internalAutoOpenBrowser: true,
+				internalUseCustomDomain: false,
+				projectId: null
+			});
 		},
 
 		continueStart() {
@@ -175,7 +211,17 @@ export default {
 				useCustomDomain: this.useCustomDomain
 			});
 			this.visible = false;
-			Object.assign(this.$data, defaults);
+			Object.assign(this.$data, {
+				...defaults,
+				internalUseHttps: false,
+				internalAutoOpenBrowser: true,
+				internalUseCustomDomain: false,
+				projectId: null
+			});
+		},
+
+		saveSetting(key, value) {
+			window.eyas?.send(`save-setting`, { key, value, projectId: this.projectId });
 		}
 	}
 };
