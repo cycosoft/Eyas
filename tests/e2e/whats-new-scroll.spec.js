@@ -29,8 +29,7 @@ test(`WhatsNew modal should be scrollable`, async () => {
 		await new Promise(resolve => setTimeout(resolve, 1000));
 
 		// Find the scrollable container (v-card-text)
-		// I added .overflow-y-auto to it in the previous step
-		const scrollArea = uiPage.locator(`.v-card-text.overflow-y-auto`);
+		const scrollArea = modalContent.locator(`.v-card-text`);
 		await expect(scrollArea).toBeVisible();
 
 		// Check scroll properties
