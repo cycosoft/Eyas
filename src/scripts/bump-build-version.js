@@ -21,6 +21,14 @@ async function bumpBuildVersion(packageJsonPath = path.join(process.cwd(), `pack
 	// Write back to package.json
 	await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
 
+	// Update CHANGELOG.json
+	const changelogPath = path.join(process.cwd(), `src`, `eyas-interface`, `app`, `src`, `CHANGELOG.json`);
+	if (await fs.pathExists(changelogPath)) {
+		const changelogText = await fs.readFile(changelogPath, `utf8`);
+		const updatedText = changelogText.replace(/"version":\s*"[^"]*"/, `"version": "${newVersion}"`);
+		await fs.writeFile(changelogPath, updatedText);
+	}
+
 	// Output instructions
 	console.log(`\n✅ Version updated to: ${newVersion}`);
 	console.log(`\nTo tag this version, run:`);
