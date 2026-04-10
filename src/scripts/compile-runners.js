@@ -71,7 +71,7 @@ const paths = {
 	// open the output folder if requested
 	if (process.env.EYAS_OPEN_RUNNERS === `true`) {
 		const { exec } = require(`child_process`);
-		const folderPath = path.join(distRoot, `runners`);
+		const folderPath = runnersRoot;
 		const command = isWin ? `explorer "${folderPath}"` : `open "${folderPath}"`;
 
 		exec(command);
