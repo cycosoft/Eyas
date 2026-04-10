@@ -2,7 +2,6 @@
 
 - Test `npm run dev` that app loads
 - Test `npm run dev:installer` that installer loads a db file
-- Test that version comparator works
 
 # Deployment Process
 
