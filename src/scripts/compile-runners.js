@@ -59,12 +59,21 @@ const paths = {
 
 
 	// copy just the final windows executables to the dist folder
-	builtFiles.forEach(file => {
+	for (const file of builtFiles) {
 		// skip anything not an exe
-		if (!file.endsWith(`.exe`)) { return; }
+		if (!file.endsWith(`.exe`)) { continue; }
 
 		const dest = path.join(distRoot, `runners`, `Start.exe`);
 		console.log(`copying ${file} to ${dest}`);
-		fs.copy(file, dest);
-	});
+		await fs.copy(file, dest);
+	}
+
+	// open the output folder if requested
+	if (process.env.EYAS_OPEN_RUNNERS === `true`) {
+		const { exec } = require(`child_process`);
+		const folderPath = path.join(distRoot, `runners`);
+		const command = isWin ? `explorer "${folderPath}"` : `open "${folderPath}"`;
+
+		exec(command);
+	}
 })();
