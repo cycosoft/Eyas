@@ -4,6 +4,7 @@
 		"items": [
 			{ "text": "🟢 Add a toggle for dark mode that defaults to light mode" },
 			{ "text": "🟢 Now displays the changelog on first run, and is also accessible from the `Eyas` menu." },
+			{ "text": "🟢 Remember the last used settings for the test server, per project." },
 			{ "text": "🟣 Update dependencies" },
 			{ "text": "🟣 Properly support electron-vite implementation" },
 			{ "text": "🟣 Migrate to Vuetify v4.x (from 3.x)" },

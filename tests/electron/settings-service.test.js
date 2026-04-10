@@ -113,6 +113,17 @@ describe(`set()`, () => {
 		expect(service.get(`env.alwaysChoose`, `proj-d`)).toBe(true);
 		expect(service.get(`env.alwaysChoose`, `proj-e`)).toBe(false);
 	});
+
+	test(`saves and retrieves testServer settings per project`, () => {
+		service.set(`testServer.useHttps`, true, `proj-https`);
+		service.set(`testServer.useHttps`, false, `proj-http`);
+
+		expect(service.get(`testServer.useHttps`, `proj-https`)).toBe(true);
+		expect(service.get(`testServer.useHttps`, `proj-http`)).toBe(false);
+
+		// Fallback to default
+		expect(service.get(`testServer.useHttps`, `proj-new`)).toBe(false);
+	});
 });
 
 // ─── getProjectSettings() ─────────────────────────────────────────────────────
