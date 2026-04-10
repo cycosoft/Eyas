@@ -66,4 +66,24 @@ describe(`ModalWrapper`, () => {
 		// Assert the data property has been pinned based on offsetWidth + 1
 		expect(wrapper.vm.dialogWidth).toBe(701);
 	});
+
+	test(`ensures v-card-text inside the slot is identifyable`, async () => {
+		wrapper = mount(ModalWrapper, {
+			global: { plugins: [vuetify] },
+			props: { modelValue: true },
+			slots: { default: `
+				<div class="v-card">
+					<div class="v-card-title">Title</div>
+					<div class="v-card-text test-content">Long content</div>
+					<div class="v-card-actions">
+						<button>Action</button>
+					</div>
+				</div>
+			` }
+		});
+
+		expect(document.querySelector(`.v-card`)).not.toBeNull();
+		expect(document.querySelector(`.test-content`)).not.toBeNull();
+		expect(document.querySelector(`.v-card-actions`)).not.toBeNull();
+	});
 });

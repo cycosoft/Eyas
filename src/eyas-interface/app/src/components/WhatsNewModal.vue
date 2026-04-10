@@ -4,14 +4,14 @@
 		min-width="600"
 		data-qa="whats-new-modal"
 	>
-		<v-card class="h-100 d-flex flex-column overflow-hidden">
+		<v-card>
 			<v-card-title class="text-title-large pt-3 px-3">
 				{{ title }}
 			</v-card-title>
 
 			<v-divider />
 
-			<v-card-text class="pa-0 flex-grow-1 overflow-y-auto">
+			<v-card-text class="pa-0">
 				<v-expansion-panels
 					v-model="expandedPanels"
 					variant="accordion"

@@ -118,4 +118,17 @@ export default {
 	height: 100%;
 	min-height: 0;
 }
-</style>
+
+/* Enforce consistent modal body scrolling across all Eyas modals */
+.modal-wrapper__content :deep(.v-card) {
+	display: flex !important;
+	flex-direction: column !important;
+	max-height: 100% !important;
+	overflow: hidden !important;
+}
+
+.modal-wrapper__content :deep(.v-card-text) {
+	flex-grow: 1 !important;
+	overflow-y: auto !important;
+}
+</style>

@@ -49,21 +49,18 @@ describe(`WhatsNewModal`, () => {
 		vi.clearAllMocks();
 	});
 
-	test(`v-card has flex and height classes for scrolling`, () => {
-		const card = wrapper.findComponent({ name: `VCard` });
-		expect(card.exists()).toBe(true);
-
-		expect(card.classes()).toContain(`h-100`);
-		expect(card.classes()).toContain(`d-flex`);
-		expect(card.classes()).toContain(`flex-column`);
-		expect(card.classes()).toContain(`overflow-hidden`);
+	test(`uses ModalWrapper as the root`, () => {
+		const modalWrapper = wrapper.findComponent({ name: `ModalWrapper` });
+		expect(modalWrapper.exists()).toBe(true);
 	});
 
-	test(`v-card-text has flex-grow and overflow classes`, () => {
+	test(`v-card exists within the modal`, () => {
+		const card = wrapper.findComponent({ name: `VCard` });
+		expect(card.exists()).toBe(true);
+	});
+
+	test(`v-card-text exists within the card`, () => {
 		const cardText = wrapper.findComponent({ name: `VCardText` });
 		expect(cardText.exists()).toBe(true);
-
-		expect(cardText.classes()).toContain(`flex-grow-1`);
-		expect(cardText.classes()).toContain(`overflow-y-auto`);
 	});
 });
