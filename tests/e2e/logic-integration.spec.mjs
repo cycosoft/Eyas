@@ -1,12 +1,12 @@
-const { test, expect } = require(`@playwright/test`);
-const {
+import { test, expect } from '@playwright/test';
+import {
 	launchEyas,
 	exitEyas,
 	emitIpcMessage,
 	getAppWindowUrl,
 	waitForMenuUpdate,
 	getUiView
-} = require(`./eyas-utils`);
+} from './eyas-utils.mjs';
 
 test.describe(`Logic-Driven Integration Tests`, () => {
 	let electronApp;

@@ -6,8 +6,11 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const fs = require('fs-extra');
-const electronPath = require('electron');
+import fs from 'fs-extra';
+
+/* eslint-disable import/no-commonjs */
+const electronPath = require(`electron`);
+/* eslint-enable import/no-commonjs */
 
 /**
  * Launches the Eyas application and waits for the initial window.

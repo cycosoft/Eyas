@@ -1,10 +1,10 @@
-const { test, expect } = require(`@playwright/test`);
-const {
+import { test, expect } from '@playwright/test';
+import {
 	launchEyas,
 	exitEyas,
 	getUiView,
 	clickSubMenuItem
-} = require(`./eyas-utils`);
+} from './eyas-utils.mjs';
 
 test.describe(`Theme Synchronization`, () => {
 	let electronApp;
