@@ -124,6 +124,9 @@
   },
   "overrides": {
     "package-json": ">6.5.0 <8.0.0",
-    "ws": "^7.0.0"
+    "ws": "^7.0.0",
+    "eslint-plugin-import": {
+      "eslint": "$eslint"
+    }
   }
 }
