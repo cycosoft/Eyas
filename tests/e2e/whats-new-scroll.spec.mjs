@@ -1,5 +1,5 @@
-const { test, expect } = require(`@playwright/test`);
-const { launchEyas, exitEyas, getUiView, clickSubMenuItem, getMenuStructure } = require(`./eyas-utils`);
+import { test, expect } from '@playwright/test';
+import { launchEyas, exitEyas, getUiView, clickSubMenuItem, getMenuStructure } from './eyas-utils.mjs';
 
 test(`WhatsNew modal should be scrollable`, async () => {
 	const electronApp = await launchEyas();
