@@ -1,8 +1,12 @@
 'use strict';
 
 // imports
-const { app } = require(`electron`);
-const _path = require(`path`);
+import { app } from 'electron';
+import _path from 'path';
+import fsExtra from 'fs-extra';
+import { SETTINGS_DEFAULTS } from '../scripts/constants.js';
+
+const { readJson, outputJson } = fsExtra;
 
 // ─── internal state ────────────────────────────────────────────────────────────
 
@@ -58,9 +62,8 @@ async function load() {
 		_storagePath = _path.join(app.getPath(`userData`), `settings.json`);
 	}
 
-	const fsExtra = require(`fs-extra`);
 	try {
-		const raw = await fsExtra.readJson(_storagePath);
+		const raw = await readJson(_storagePath);
 		_data = raw || { app: {}, projects: {} };
 	} catch {
 		// file does not exist yet, or contains invalid JSON — start fresh
@@ -83,8 +86,7 @@ async function save() {
 			_storagePath = _path.join(app.getPath(`userData`), `settings.json`);
 		}
 
-		const fsExtra = require(`fs-extra`);
-		await fsExtra.outputJson(_storagePath, _data, { spaces: 2 });
+		await outputJson(_storagePath, _data, { spaces: 2 });
 	}).catch(err => {
 		console.error(`[SETTINGS-SERVICE] save failed:`, err);
 	});
@@ -92,8 +94,6 @@ async function save() {
 	return _saveQueue;
 }
 
-// imports
-const { SETTINGS_DEFAULTS } = require(`../scripts/constants.js`);
 
 /**
  * Get a setting value using the cascade: project → app → SETTINGS_DEFAULTS.
@@ -155,7 +155,17 @@ function getAppSettings() {
 
 // ─── exports ──────────────────────────────────────────────────────────────────
 
-module.exports = {
+export {
+	load,
+	save,
+	get,
+	set,
+	getProjectSettings,
+	getAppSettings,
+	_setStoragePath
+};
+
+export default {
 	load,
 	save,
 	get,

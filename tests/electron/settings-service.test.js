@@ -3,8 +3,8 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { remove, readJson } from 'fs-extra';
 
-// We use require() so we can re-require after resetting storage path
-const service = require(`../../src/eyas-core/settings-service.js`);
+// We use import so we can stay native to ESM
+import service from '../../src/eyas-core/settings-service.js';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
