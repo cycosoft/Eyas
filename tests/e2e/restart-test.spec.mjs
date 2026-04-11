@@ -1,12 +1,12 @@
-const { test, expect } = require(`@playwright/test`);
-const {
+import { test, expect } from '@playwright/test';
+import {
 	launchEyas,
 	exitEyas,
 	clickSubMenuItem,
 	getUiView
-} = require(`./eyas-utils`);
+} from './eyas-utils.mjs';
 
-test.describe(`Restart Test`, () => {
+test.describe('Restart Test', () => {
 	let electronApp;
 
 	test.beforeEach(async () => {
@@ -17,19 +17,19 @@ test.describe(`Restart Test`, () => {
 		await exitEyas(electronApp);
 	});
 
-	test(`"Test > Reset Test Environment" always displays the environment chooser`, async () => {
+	test('"Test > Reset Test Environment" always displays the environment chooser', async () => {
 		const uiPage = await getUiView(electronApp);
 
 		// 1. Persist an environment choice with "Always choose"
-		const envModalTitle = uiPage.locator(`[data-qa="environment-modal-title"]`);
+		const envModalTitle = uiPage.locator('[data-qa="environment-modal-title"]');
 		await expect(envModalTitle).toBeVisible();
 
 		// Check the "Always choose" checkbox
-		const alwaysChooseCheckbox = uiPage.locator(`[data-qa="checkbox-always-choose"] input`);
+		const alwaysChooseCheckbox = uiPage.locator('[data-qa="checkbox-always-choose"] input');
 		await alwaysChooseCheckbox.check();
 
 		// Select an environment
-		const firstEnvBtn = uiPage.locator(`[data-qa="btn-env"]`).first();
+		const firstEnvBtn = uiPage.locator('[data-qa="btn-env"]').first();
 		await firstEnvBtn.click();
 
 		// Wait for modal to disappear
@@ -37,7 +37,7 @@ test.describe(`Restart Test`, () => {
 
 		// 2. Trigger "Test > Reset Test Environment" from the menu
 		// This should show the modal again despite "Always choose" being set
-		const restartTriggered = await clickSubMenuItem(electronApp, `Test`, `Reset Test Environment`);
+		const restartTriggered = await clickSubMenuItem(electronApp, 'Test', 'Reset Test Environment');
 		expect(restartTriggered).toBe(true);
 
 		// 3. Verify the environment modal is visible again
