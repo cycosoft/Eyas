@@ -3,6 +3,7 @@ import pluginJs from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import pluginVue from 'eslint-plugin-vue';
 import vueEslintParser from 'vue-eslint-parser';
+import pluginImport from 'eslint-plugin-import';
 
 export default tseslint.config(
 	{
@@ -66,7 +67,8 @@ export default tseslint.config(
 		// Global Plugins and Rules
 		plugins: {
 			vue: pluginVue,
-			'@typescript-eslint': tseslint.plugin
+			'@typescript-eslint': tseslint.plugin,
+			import: pluginImport
 		},
 		rules: {
 			// Basic Rules
@@ -81,8 +83,11 @@ export default tseslint.config(
 				varsIgnorePattern: `^_`
 			}],
 			'@typescript-eslint/no-explicit-any': `warn`, // Relaxed for the refactor
-			'@typescript-eslint/no-require-imports': `off`,
-			'@typescript-eslint/no-var-requires': `off`,
+			'@typescript-eslint/no-require-imports': `error`,
+			'@typescript-eslint/no-var-requires': `error`,
+
+			// Import Rules
+			'import/no-commonjs': `error`,
 
 			// Formatting Rules (User Preference: Tabs, Backticks, Always Semi)
 			indent: [`error`, `tab`],
