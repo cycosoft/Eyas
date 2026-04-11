@@ -1,7 +1,7 @@
-const { test, expect } = require(`@playwright/test`);
-const { launchEyas, exitEyas } = require(`./eyas-utils`);
+import { test, expect } from '@playwright/test';
+import { launchEyas, exitEyas } from './eyas-utils.mjs';
 
-test(`app launches and displays UI`, async () => {
+test('app launches and displays UI', async () => {
 	const electronApp = await launchEyas();
 
 	// Verify the Electron app is running
@@ -19,8 +19,8 @@ test(`app launches and displays UI`, async () => {
 	await exitEyas(electronApp);
 });
 
-test(`app launches with eyas:// URL in argv (start-up request path)`, async () => {
-	const electronApp = await launchEyas([`eyas://example.com/test`]);
+test('app launches with eyas:// URL in argv (start-up request path)', async () => {
+	const electronApp = await launchEyas(['eyas://example.com/test']);
 
 	expect(electronApp.process()).not.toBeNull();
 	expect(electronApp.process().pid).toBeGreaterThan(0);
