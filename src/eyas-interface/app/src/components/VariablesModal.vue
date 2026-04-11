@@ -31,8 +31,8 @@
 							:label="getFieldLabel(`Select value`, variable.field)"
 						>
 							<v-radio
-								v-for="(option, index) in [`false`, `true`]"
-								:key="index"
+								v-for="(option, optIndex) in [`false`, `true`]"
+								:key="optIndex"
 								:value="option"
 								:label="option"
 								class="text-capitalize"
@@ -141,7 +141,7 @@ export default {
 
 			// check if the link has any variables
 			const variables = this.parsedLink.matchAll(new RegExp(REGEX_VARIABLES_AND_FIELDS));
-			for (const variable of variables) {
+			for (const _ of variables) {
 				hasVariables = true;
 				break;
 			}

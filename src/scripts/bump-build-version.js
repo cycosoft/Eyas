@@ -45,7 +45,7 @@ async function bumpBuildVersion(
 			let previousVersion = ``;
 			try {
 				previousVersion = execSync(`git describe --tags --abbrev=0`, { encoding: `utf8` }).trim().replace(/^v/, ``);
-			} catch (e) {
+			} catch {
 				// Fallback to changelog if git fails
 				previousVersion = changelog[1] ? changelog[1].version : ``;
 			}
@@ -59,7 +59,7 @@ async function bumpBuildVersion(
 				}
 				console.log(`---------------------------\n`);
 			}
-		} catch (e) {
+		} catch {
 			// Fail silently
 		}
 	}

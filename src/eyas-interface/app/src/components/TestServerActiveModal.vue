@@ -189,7 +189,7 @@ export default {
 					return `${url.protocol}//${url.hostname}${url.pathname === `/` ? `` : url.pathname}`;
 				}
 				return this.domain;
-			} catch (e) {
+			} catch {
 				return this.domain;
 			}
 		},
