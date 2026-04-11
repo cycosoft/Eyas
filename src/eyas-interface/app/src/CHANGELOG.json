@@ -2,6 +2,7 @@
 	{
 		"version": "26.5.0",
 		"items": [
+			{ "text": "🟣 Full migration to TypeScript" },
 			{ "text": "🟣 Strict linting of project code" }
 		]
 	},
