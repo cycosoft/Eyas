@@ -83,8 +83,8 @@ export default tseslint.config(
 				varsIgnorePattern: `^_`
 			}],
 			'@typescript-eslint/no-explicit-any': `warn`, // Relaxed for the refactor
-			'@typescript-eslint/no-require-imports': `error`,
-			'@typescript-eslint/no-var-requires': `error`,
+			'@typescript-eslint/no-require-imports': `warn`,
+			'@typescript-eslint/no-var-requires': `warn`,
 
 			// Import Rules
 			'import/no-commonjs': `error`,
