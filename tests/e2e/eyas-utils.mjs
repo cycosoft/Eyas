@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 import fs from 'fs-extra';
 
 /* eslint-disable import/no-commonjs */
-const electronPath = require(`electron`);
+export const electronPath = require(`electron`);
 /* eslint-enable import/no-commonjs */
 
 /**

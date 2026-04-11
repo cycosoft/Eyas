@@ -1,7 +1,13 @@
-const { _electron: electron, test, expect } = require(`@playwright/test`);
-const path = require(`path`);
-const fs = require(`fs-extra`);
-const { exitEyas } = require(`./eyas-utils`);
+import { _electron as electron, test, expect } from '@playwright/test';
+import * as path from 'path';
+import fs from 'fs-extra';
+import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
+import { exitEyas, electronPath } from './eyas-utils.mjs';
+
+const require = createRequire(import.meta.url);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 test(`Splash screen file should exist in the build output`, async () => {
 	const splashPath = path.join(__dirname, `../../out/eyas-interface/splash.html`);
@@ -10,7 +16,6 @@ test(`Splash screen file should exist in the build output`, async () => {
 });
 
 test(`App should load the splash screen via the ui:// protocol`, async () => {
-	const electronPath = require(`electron`);
 	const mainPath = path.join(__dirname, `../../out/main/index.js`);
 
 	// Standard project isolation: Use a unique temporary directory for each test

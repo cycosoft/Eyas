@@ -101,6 +101,15 @@ export default tseslint.config(
 			'no-trailing-spaces': [`error`],
 			'spaced-comment': [`error`, `always`],
 
+			// Restrict require('electron') with a helpful message
+			'no-restricted-syntax': [
+				`error`,
+				{
+					selector: `CallExpression[callee.name='require'][arguments.0.value='electron']`,
+					message: `Do not use require('electron'). Import 'electronPath' from 'tests/e2e/eyas-utils.mjs' instead.`
+				}
+			],
+
 			// Vue Specific Formatting
 			'vue/html-indent': [`error`, `tab`, {
 				alignAttributesVertically: false
@@ -115,6 +124,13 @@ export default tseslint.config(
 		files: [`**/*.d.ts`],
 		rules: {
 			quotes: `off`
+		}
+	},
+	{
+		// Exempt the centralized utility from the restricted syntax rule
+		files: [`tests/e2e/eyas-utils.mjs`],
+		rules: {
+			'no-restricted-syntax': `off`
 		}
 	}
 );
