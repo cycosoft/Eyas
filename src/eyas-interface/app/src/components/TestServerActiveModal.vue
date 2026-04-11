@@ -23,8 +23,12 @@
 					class="mb-4"
 					data-qa="test-server-expired-alert"
 				>
-					<p class="mb-0"><strong>Session Expired</strong></p>
-					<p class="mb-0 text-body-medium">This session timed out after {{ duration }}.</p>
+					<p class="mb-0">
+						<strong>Session Expired</strong>
+					</p>
+					<p class="mb-0 text-body-medium">
+						This session timed out after {{ duration }}.
+					</p>
 				</v-alert>
 
 				<!-- Active Status Hint -->
@@ -34,22 +38,28 @@
 					variant="tonal"
 					class="mb-4"
 				>
-					<p class="mb-0"><strong>Session Active</strong></p>
-					<p class="mb-0 text-body-medium">Session expires at {{ formattedEndTime }}</p>
+					<p class="mb-0">
+						<strong>Session Active</strong>
+					</p>
+					<p class="mb-0 text-body-medium">
+						Session expires at {{ formattedEndTime }}
+					</p>
 				</v-alert>
 
 				<v-list density="compact">
 					<!-- Server Address -->
 					<v-list-item>
-						<template v-slot:prepend>
+						<template #prepend>
 							<v-icon>mdi-earth</v-icon>
 						</template>
-						<v-list-item-title class="font-weight-bold">{{ isExpired ? 'Last session served at' : 'Test served at' }}</v-list-item-title>
+						<v-list-item-title class="font-weight-bold">
+							{{ isExpired ? 'Last session served at' : 'Test served at' }}
+						</v-list-item-title>
 						<v-list-item-subtitle>{{ displayUrl }}</v-list-item-subtitle>
-						<template v-slot:append>
+						<template #append>
 							<div class="d-flex ga-1">
 								<v-tooltip location="top" :text="tooltipText">
-									<template v-slot:activator="{ props }">
+									<template #activator="{ props }">
 										<v-btn
 											v-bind="props"
 											variant="text"
@@ -64,7 +74,7 @@
 								</v-tooltip>
 
 								<v-tooltip location="top" text="Open in Browser">
-									<template v-slot:activator="{ props }">
+									<template #activator="{ props }">
 										<v-btn
 											v-bind="props"
 											id="btn-open-in-browser"
@@ -84,10 +94,12 @@
 
 					<!-- Session Started -->
 					<v-list-item v-if="startTime">
-						<template v-slot:prepend>
+						<template #prepend>
 							<v-icon>mdi-clock-outline</v-icon>
 						</template>
-						<v-list-item-title class="font-weight-bold">{{ isExpired ? 'Last session started at' : 'Session started at' }}</v-list-item-title>
+						<v-list-item-title class="font-weight-bold">
+							{{ isExpired ? 'Last session started at' : 'Session started at' }}
+						</v-list-item-title>
 						<v-list-item-subtitle>{{ formattedStartTime }}</v-list-item-subtitle>
 					</v-list-item>
 				</v-list>
@@ -124,12 +136,12 @@ import { TEST_SERVER_SESSION_DURATION_MS } from '@/../../../scripts/constants.js
 
 const defaults = {
 	visible: false,
-	domain: '',
+	domain: ``,
 	startTime: null,
 	endTime: null,
-	copyIcon: 'mdi-content-copy',
+	copyIcon: `mdi-content-copy`,
 	isExpired: false,
-	duration: ''
+	duration: ``
 };
 
 export default {
@@ -141,40 +153,40 @@ export default {
 
 	computed: {
 		tooltipText() {
-			return this.copyIcon === 'mdi-check' ? 'Copied!' : 'Copy URL';
+			return this.copyIcon === `mdi-check` ? `Copied!` : `Copy URL`;
 		},
 		formattedStartTime() {
-			if (!this.startTime) return '';
-			return new Date(this.startTime).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase();
+			if (!this.startTime) return ``;
+			return new Date(this.startTime).toLocaleTimeString([], { hour: `numeric`, minute: `2-digit` }).toLowerCase();
 		},
 		formattedEndTime() {
-			if (!this.endTime) return '';
-			return new Date(this.endTime).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase();
+			if (!this.endTime) return ``;
+			return new Date(this.endTime).toLocaleTimeString([], { hour: `numeric`, minute: `2-digit` }).toLowerCase();
 		},
 		countdownText() {
-			if (!this.endTime) return '';
+			if (!this.endTime) return ``;
 			const diff = Math.max(0, this.endTime - this.now);
 			const mins = Math.floor(diff / 60000);
 			const secs = Math.floor((diff % 60000) / 1000);
 			return `${mins}m${secs}s`;
 		},
 		displayUrl() {
-			if (!this.domain) return '';
+			if (!this.domain) return ``;
 			try {
 				const url = new URL(this.domain);
 				// Hide port 90, 80 (http), 443 (https)
-				const isHttp = url.protocol === 'http:';
-				const isHttps = url.protocol === 'https:';
-				const hidePorts = ['90'];
-				if (isHttp && url.port === '80') hidePorts.push('80');
-				if (isHttps && url.port === '443') hidePorts.push('443');
+				const isHttp = url.protocol === `http:`;
+				const isHttps = url.protocol === `https:`;
+				const hidePorts = [`90`];
+				if (isHttp && url.port === `80`) hidePorts.push(`80`);
+				if (isHttps && url.port === `443`) hidePorts.push(`443`);
 
 				// If port is empty string (because it's default for protocol),
 				// or if it's in our hidePorts list, we hide it.
 				// Note: new URL('http://localhost:80').port is '80'
 				// new URL('http://localhost').port is ''
-				if (hidePorts.includes(url.port) || url.port === '') {
-					return `${url.protocol}//${url.hostname}${url.pathname === '/' ? '' : url.pathname}`;
+				if (hidePorts.includes(url.port) || url.port === ``) {
+					return `${url.protocol}//${url.hostname}${url.pathname === `/` ? `` : url.pathname}`;
 				}
 				return this.domain;
 			} catch (e) {
@@ -204,8 +216,8 @@ export default {
 	},
 
 	mounted() {
-		window.eyas?.receive(`show-test-server-active-modal`, (payload) => {
-			this.domain = payload.domain || '';
+		window.eyas?.receive(`show-test-server-active-modal`, payload => {
+			this.domain = payload.domain || ``;
 			this.startTime = payload.startTime || null;
 			this.endTime = payload.endTime || null;
 			this.isExpired = false;
@@ -217,7 +229,7 @@ export default {
 			}
 		});
 
-		window.eyas?.receive(`show-test-server-resume-modal`, (duration) => {
+		window.eyas?.receive(`show-test-server-resume-modal`, duration => {
 			this.duration = duration || `the session limit`;
 			this.isExpired = true;
 			this.visible = true;
@@ -249,9 +261,9 @@ export default {
 
 		copyDomain() {
 			navigator.clipboard.writeText(this.domain);
-			this.copyIcon = 'mdi-check';
+			this.copyIcon = `mdi-check`;
 			setTimeout(() => {
-				this.copyIcon = 'mdi-content-copy';
+				this.copyIcon = `mdi-content-copy`;
 			}, 2000);
 		},
 

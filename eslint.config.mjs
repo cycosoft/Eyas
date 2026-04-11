@@ -1,35 +1,90 @@
 import globals from 'globals';
 import pluginJs from '@eslint/js';
+import tseslint from 'typescript-eslint';
 import pluginVue from 'eslint-plugin-vue';
 import vueEslintParser from 'vue-eslint-parser';
 
-export default [
+export default tseslint.config(
 	{
-		ignores: [`dist/**`, `out/**`, `legacy-migration/**`, `.build/**`, `.pre-build/**`, `.test-data/**`, `playwright-report/**`]
+		// Global ignores
+		ignores: [
+			`dist/**`,
+			`out/**`,
+			`legacy-migration/**`,
+			`.build/**`,
+			`.pre-build/**`,
+			`.test-data/**`,
+			`playwright-report/**`
+		]
 	},
+
+	// Base JS configuration
+	pluginJs.configs.recommended,
+
 	{
-		files: [`**/*.js`],
+		// Global Language Options
 		languageOptions: {
 			globals: {
 				...globals.commonjs,
 				...globals.browser,
-				// ...globals.es2021,
+				...globals.node,
 				eyas: `readonly`
 			},
 			parserOptions: {
 				ecmaVersion: `latest`,
 				sourceType: `module`
 			}
-		},
+		}
+	},
+
+	// TypeScript Configurations
+	...tseslint.configs.recommended.map(config => ({
+		...config,
+		files: [`**/*.ts`, `**/*.vue`]
+	})),
+
+	// Vue Configurations
+	...pluginVue.configs[`flat/recommended`].map(config => ({
+		...config,
+		files: [`**/*.vue`]
+	})),
+
+	{
+		// TypeScript and Vue parser setup
+		files: [`**/*.ts`, `**/*.vue`],
+		languageOptions: {
+			parser: vueEslintParser,
+			parserOptions: {
+				parser: tseslint.parser,
+				sourceType: `module`,
+				extraFileExtensions: [`.vue`]
+			}
+		}
+	},
+
+	{
+		// Global Plugins and Rules
 		plugins: {
-			vue: pluginVue
+			vue: pluginVue,
+			'@typescript-eslint': tseslint.plugin
 		},
 		rules: {
-			...pluginJs.configs.recommended.rules,
-			// Existing custom rules
-			'no-console': `off`, // Changed to off to allow console statements
+			// Basic Rules
+			'no-console': `off`,
 			'no-debugger': process.env.NODE_ENV === `production` ? `error` : `off`,
-			'no-unused-vars': `warn`,
+			'no-unused-vars': `off`, // Handled by @typescript-eslint version
+			'no-redeclare': `off`, // Can be noisy with globals in separate configs
+
+			// TS specific rule overrides
+			'@typescript-eslint/no-unused-vars': [`warn`, {
+				argsIgnorePattern: `^_`,
+				varsIgnorePattern: `^_`
+			}],
+			'@typescript-eslint/no-explicit-any': `warn`, // Relaxed for the refactor
+			'@typescript-eslint/no-require-imports': `off`,
+			'@typescript-eslint/no-var-requires': `off`,
+
+			// Formatting Rules (User Preference: Tabs, Backticks, Always Semi)
 			indent: [`error`, `tab`],
 			quotes: [`error`, `backtick`],
 			semi: [`error`, `always`],
@@ -40,58 +95,21 @@ export default [
 			'no-spaced-func': [`error`],
 			'no-trailing-spaces': [`error`],
 			'spaced-comment': [`error`, `always`],
+
+			// Vue Specific Formatting
 			'vue/html-indent': [`error`, `tab`, {
 				alignAttributesVertically: false
 			}],
-			'vue/max-attributes-per-line': `off`
+			'vue/max-attributes-per-line': `off`,
+			'vue/multi-word-component-names': `off`
 		}
 	},
+
 	{
-		files: [`**/*.vue`],
-		languageOptions: {
-			globals: {
-				...globals.browser
-			},
-			parser: vueEslintParser,
-			parserOptions: {
-				ecmaVersion: `latest`,
-				sourceType: `module`,
-				parser: {
-					js: `espree`,
-					ts: `@typescript-eslint/parser`
-				}
-			}
-		},
-		plugins: {
-			vue: pluginVue
-		},
+		// Overrides for Declaration Files (TS requirement for quotes)
+		files: [`**/*.d.ts`],
 		rules: {
-			...pluginVue.configs.recommended.rules
-		}
-	},
-	{
-		files: [`tests/**/*.js`],
-		languageOptions: {
-			globals: {
-				...globals.node
-			}
-		}
-	},
-	{
-		files: [
-			`eslint.config.js`,
-			`src/scripts/**/*.js`,
-			`electron.vite.config.js`,
-			`src/eyas-interface/app/.vite.config.ui.js`,
-			`src/scripts/test-preload.js`
-		],
-		languageOptions: {
-			globals: {
-				...globals.node
-			},
-			parserOptions: {
-				sourceType: `script`
-			}
+			quotes: `off`
 		}
 	}
-];
+);

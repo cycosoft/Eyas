@@ -1,11 +1,17 @@
 <template>
 	<ModalWrapper v-model="visible">
 		<v-card>
-			<v-card-title class="text-title-large pt-3 px-3" data-qa="settings-title">Settings</v-card-title>
+			<v-card-title class="text-title-large pt-3 px-3" data-qa="settings-title">
+				Settings
+			</v-card-title>
 			<v-card-text class="px-0 pt-0">
 				<v-tabs v-model="activeTab" color="primary">
-					<v-tab value="project" data-qa="settings-tab-project">Project</v-tab>
-					<v-tab value="app" data-qa="settings-tab-app">App</v-tab>
+					<v-tab value="project" data-qa="settings-tab-project">
+						Project
+					</v-tab>
+					<v-tab value="app" data-qa="settings-tab-app">
+						App
+					</v-tab>
 				</v-tabs>
 
 				<v-window v-model="activeTab">
@@ -25,7 +31,9 @@
 					<!-- App-level settings -->
 					<v-window-item value="app">
 						<v-sheet class="pa-4 pt-0">
-							<v-label class="text-caption mb-1">Theme Mode</v-label>
+							<v-label class="text-caption mb-1">
+								Theme Mode
+							</v-label>
 							<v-radio-group
 								v-model="appTheme"
 								inline

@@ -2,7 +2,9 @@
 	<ModalWrapper v-model="visible" type="dialog">
 		<v-card class="pa-3">
 			<v-card-text>
-				<p class="font-weight-black text-center text-title-large mb-10">⚠️ Possible Update Available ⚠️</p>
+				<p class="font-weight-black text-center text-title-large mb-10">
+					⚠️ Possible Update Available ⚠️
+				</p>
 
 				<v-sheet>
 					<v-row class="mt-8 px-14">
@@ -13,7 +15,9 @@
 							<v-btn
 								color="primary"
 								@click="checkForUpdate"
-							>Check For Update</v-btn>
+							>
+								Check For Update
+							</v-btn>
 						</v-col>
 					</v-row>
 				</v-sheet>
@@ -28,7 +32,9 @@
 				<v-btn
 					color="primary"
 					@click="visible = false"
-				>Later</v-btn>
+				>
+					Later
+				</v-btn>
 			</v-card-actions>
 		</v-card>
 	</ModalWrapper>
@@ -63,5 +69,5 @@ export default {
 			window.eyas?.send(`launch-link`, { url, openInBrowser: true });
 		}
 	}
-}
+};
 </script>

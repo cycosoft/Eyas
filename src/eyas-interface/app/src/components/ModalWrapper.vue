@@ -93,8 +93,8 @@ export default {
 
 		hideUi() {
 			// hide the UI if there are no other dialogs open
-			if (document.querySelectorAll('.v-dialog').length <= 1) {
-				window.eyas?.send('hide-ui');
+			if (document.querySelectorAll(`.v-dialog`).length <= 1) {
+				window.eyas?.send(`hide-ui`);
 			}
 		},
 

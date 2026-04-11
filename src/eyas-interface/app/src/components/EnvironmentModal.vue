@@ -6,7 +6,9 @@
 	>
 		<v-card class="pa-3">
 			<v-card-text>
-				<p class="font-weight-black text-center text-title-large mb-10" data-qa="environment-modal-title">Select Test Environment</p>
+				<p class="font-weight-black text-center text-title-large mb-10" data-qa="environment-modal-title">
+					Select Test Environment
+				</p>
 
 				<v-sheet>
 					<v-row>
@@ -29,8 +31,10 @@
 									data-qa="btn-env"
 									@click="choose(domain, index)"
 								>
-									<template v-slot:prepend>
-										<v-icon size="40">mdi-database</v-icon>
+									<template #prepend>
+										<v-icon size="40">
+											mdi-database
+										</v-icon>
 									</template>
 
 									<p>{{ domain.title }}</p>
@@ -153,5 +157,5 @@ export default {
 			Object.assign(this.$data, JSON.parse(defaults));
 		}
 	}
-}
+};
 </script>

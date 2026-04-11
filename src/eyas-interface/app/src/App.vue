@@ -50,7 +50,7 @@ export default {
 			return setting === THEME_MODES.SYSTEM ? settingsStore.systemTheme : setting;
 		});
 
-		watch(currentTheme, (newVal) => {
+		watch(currentTheme, newVal => {
 			theme.global.name.value = newVal;
 		}, { immediate: true });
 

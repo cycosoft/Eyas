@@ -45,7 +45,9 @@
 								<template v-for="(token, i) in tokenize(entry.notes)" :key="i">
 									<code v-if="token.type === `code`" class="mx-1 px-1 rounded bg-grey-lighten-4 text-primary">{{ token.content }}</code>
 									<a v-else-if="token.type === `link`" :href="token.url" target="_blank" rel="noopener noreferrer">{{ token.content }}</a>
-									<template v-else>{{ token.content }}</template>
+									<template v-else>
+										{{ token.content }}
+									</template>
 								</template>
 							</div>
 
@@ -66,7 +68,7 @@
 											<template v-else>{{ token.content }}</template>
 										</template>
 									</span>
-									
+
 									<!-- Sub-items -->
 									<component
 										:is="item.subItemsType === 'ordered' ? 'ol' : 'ul'"
@@ -80,7 +82,9 @@
 											<template v-for="(token, i) in tokenize(sub)" :key="i">
 												<code v-if="token.type === `code`" class="mx-1 px-1 rounded bg-grey-lighten-4 text-primary">{{ token.content }}</code>
 												<a v-else-if="token.type === `link`" :href="token.url" target="_blank" rel="noopener noreferrer">{{ token.content }}</a>
-												<template v-else>{{ token.content }}</template>
+												<template v-else>
+													{{ token.content }}
+												</template>
 											</template>
 										</li>
 									</component>
@@ -137,9 +141,9 @@ export default {
 
 		const showFromMain = async () => {
 			await fetchChangelog();
-			
+
 			const unseen = getAggregatedChanges(changelog.value, lastSeenVersion.value, currentVersion.value);
-			
+
 			if (unseen.length > 0) {
 				mode.value = `launch`;
 				expandedPanels.value = unseen.map(u => u.version);
@@ -176,7 +180,7 @@ export default {
 
 		onMounted(() => {
 			// Listen for trigger from main process (manual or launch)
-			window.eyas?.receive(`show-whats-new`, (isManual) => {
+			window.eyas?.receive(`show-whats-new`, isManual => {
 				if (isManual) {
 					showManual();
 				} else {

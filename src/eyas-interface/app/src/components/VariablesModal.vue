@@ -5,7 +5,9 @@
 	>
 		<v-card class="pa-3 variables-modal-content">
 			<v-card-text class="pb-0">
-				<p class="font-weight-black text-center text-title-large">Link Requires Additional Information</p>
+				<p class="font-weight-black text-center text-title-large">
+					Link Requires Additional Information
+				</p>
 
 				<v-sheet v-if="link" class="my-10">
 					<v-row
@@ -56,15 +58,21 @@
 
 					<!-- display the link being updated -->
 					<v-row class="pt-2">
-						<v-icon v-if="linkIsValid" class="mr-2" color="success">mdi-check-circle-outline</v-icon>
-						<v-icon v-else class="mr-2" color="error">mdi-alert-rhombus-outline</v-icon>
+						<v-icon v-if="linkIsValid" class="mr-2" color="success">
+							mdi-check-circle-outline
+						</v-icon>
+						<v-icon v-else class="mr-2" color="error">
+							mdi-alert-rhombus-outline
+						</v-icon>
 						<small class="parsed-link">{{ parsedLink }}</small>
 					</v-row>
 				</v-sheet>
 
 				<!-- Error for missing link data state -->
 				<v-sheet v-else class="mt-10 mb-4 text-center">
-					<v-icon class="mr-2" color="error">mdi-alert-rhombus-outline</v-icon>
+					<v-icon class="mr-2" color="error">
+						mdi-alert-rhombus-outline
+					</v-icon>
 					<small>No link received</small>
 				</v-sheet>
 			</v-card-text>
@@ -93,12 +101,12 @@
 import ModalWrapper from '@/components/ModalWrapper.vue';
 import isURL from 'validator/lib/isURL';
 
-const REGEX_VARIABLES_AND_FIELDS = /([\?|&](\w*)=)?{([^{}]+)}/g;
+const REGEX_VARIABLES_AND_FIELDS = /([?|&](\w*)=)?{([^{}]+)}/g;
 const REGEX_VARIABLES_ONLY = /{([^{}]+)}/g;
 
 const componentDefaults = JSON.stringify({
 	visible: false,
-	link: ``, //`https://{dev.|staging.|}cycosoft.com?id={int}&message={str}&enabled={bool}`,
+	link: ``, // `https://{dev.|staging.|}cycosoft.com?id={int}&message={str}&enabled={bool}`,
 	form: []
 });
 
@@ -114,13 +122,13 @@ export default {
 	computed: {
 		parsedLink () {
 			// copy for manipulation
-			let output = this.link;
+			const output = this.link;
 			const form = [...this.form];
 
 			// replace all variables with form data
 			return output?.replace(REGEX_VARIABLES_ONLY, originalMatch => {
 				const value = form.shift();
-				return value || value === '' ? encodeURIComponent(value) : originalMatch;
+				return value || value === `` ? encodeURIComponent(value) : originalMatch;
 			});
 		},
 
@@ -219,7 +227,7 @@ export default {
 			return `${prefix}${field ? ` for "${field}" field` : ``}`;
 		}
 	}
-}
+};
 </script>
 
 <style>
