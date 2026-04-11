@@ -12,7 +12,10 @@ const { getBuildVersion } = require(`./get-build-version.js`);
  * @param {string} [packageJsonPath] - Optional path to package.json; defaults to the one in CWD.
  * @returns {Promise<string>} The new version.
  */
-async function bumpBuildVersion(packageJsonPath = path.join(process.cwd(), `package.json`)) {
+async function bumpBuildVersion(
+	packageJsonPath = path.join(process.cwd(), `package.json`),
+	changelogPath = path.join(process.cwd(), `src`, `eyas-interface`, `app`, `src`, `CHANGELOG.json`)
+) {
 	const packageJson = await fs.readJson(packageJsonPath);
 
 	// Generate the new version
@@ -23,7 +26,6 @@ async function bumpBuildVersion(packageJsonPath = path.join(process.cwd(), `pack
 	await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
 
 	// Update CHANGELOG.json
-	const changelogPath = path.join(process.cwd(), `src`, `eyas-interface`, `app`, `src`, `CHANGELOG.json`);
 	if (await fs.pathExists(changelogPath)) {
 		const changelogText = await fs.readFile(changelogPath, `utf8`);
 		const updatedText = changelogText.replace(/"version":\s*"[^"]*"/, `"version": "${newVersion}"`);
