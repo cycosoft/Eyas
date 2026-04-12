@@ -1,9 +1,9 @@
-const { test, expect } = require(`@playwright/test`);
-const {
+import { test, expect } from '@playwright/test';
+import {
 	launchEyas,
 	exitEyas,
 	getMenuStructure
-} = require(`./eyas-utils`);
+} from './eyas-utils.mjs';
 
 test.describe(`Application Menu`, () => {
 	let electronApp;
