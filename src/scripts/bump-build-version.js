@@ -1,11 +1,8 @@
-#!/usr/bin/env node
-
-'use strict';
-
-const fs = require(`fs-extra`);
-const path = require(`path`);
-const { execSync } = require(`child_process`);
-const { getBuildVersion } = require(`./get-build-version.js`);
+import fs from 'fs-extra';
+import path from 'path';
+import { execSync } from 'child_process';
+import { getBuildVersion } from './get-build-version.js';
+import { fileURLToPath } from 'url';
 
 /**
  * Updates the version in the specified package.json and outputs tagging instructions.
@@ -71,7 +68,8 @@ async function bumpBuildVersion(
 }
 
 // Run if called directly
-if (require.main === module) {
+const isMain = process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);
+if (isMain) {
 	(async () => {
 		try {
 			await bumpBuildVersion();
@@ -82,4 +80,5 @@ if (require.main === module) {
 	})();
 }
 
-module.exports = { bumpBuildVersion };
+export { bumpBuildVersion };
+

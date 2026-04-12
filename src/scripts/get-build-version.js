@@ -19,4 +19,5 @@ function getBuildVersion(date) {
 	return `${year}.${month}.${minutesIntoMonth}`;
 }
 
-module.exports = { getBuildVersion };
+export { getBuildVersion };
+
