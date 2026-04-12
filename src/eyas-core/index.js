@@ -218,7 +218,8 @@ function initElectronCore() {
 		getAppWindow: () => $appWindow,
 		setConfigToLoad: p => { $configToLoad = p; },
 		loadConfig: async (method, path) => {
-			$config = await require(`../scripts/get-config.js`)(method, path);
+			const getConfig = (await import(`../scripts/get-config.js`)).default;
+			$config = await getConfig(method, path);
 		},
 		startAFreshTest,
 		LOAD_TYPES
@@ -232,7 +233,8 @@ function initElectronCore() {
 		// if the $appWindow was already initialized
 		if ($appWindow) {
 			// load the new config
-			$config = await require(`../scripts/get-config.js`)(LOAD_TYPES.ASSOCIATION, path);
+			const getConfig = (await import(`../scripts/get-config.js`)).default;
+			$config = await getConfig(LOAD_TYPES.ASSOCIATION, path);
 
 			// start a new test based on the newly loaded config
 			startAFreshTest();
@@ -269,7 +271,8 @@ function initElectronCore() {
 		// when the electron layer is ready
 		.then(async () => {
 			// get config based on the context
-			$config = await require(`../scripts/get-config.js`)($configToLoad.method || LOAD_TYPES.AUTO, $configToLoad.path);
+			const getConfig = (await import(`../scripts/get-config.js`)).default;
+			$config = await getConfig($configToLoad.method || LOAD_TYPES.AUTO, $configToLoad.path);
 
 			// load user settings from disk before first test start
 			await settingsService.load();

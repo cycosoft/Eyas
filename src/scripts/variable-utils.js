@@ -1,4 +1,5 @@
-import { isURL } from "validator";
+import validator from "validator";
+const { isURL } = validator;
 
 // Regex patterns mirroring those used in setMenu() and navigateVariable()
 const REGEX_ENV_URL = /{_env\.url}/g;

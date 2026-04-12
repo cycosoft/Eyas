@@ -1,9 +1,8 @@
-#!/usr/bin/env node
+import path from "path";
+import { fileURLToPath } from "url";
 
-'use strict';
-
-// imports
-const path = require(`path`);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // setup
 const isProd = __dirname.includes(`node_modules`);
@@ -32,4 +31,4 @@ const roots = {
 };
 
 // export the config for the project
-module.exports = roots;
+export default roots;

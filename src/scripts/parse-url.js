@@ -1,8 +1,8 @@
+import validator from "validator";
+const { isURL } = validator;
+
 // format the url for electron consumption
 function parseURL(url) {
-	// imports
-	const { isURL } = require(`validator`);
-
 	// config
 	const output = ``;
 
@@ -19,4 +19,4 @@ function parseURL(url) {
 	return new URL(url);
 }
 
-module.exports = { parseURL };
+export { parseURL };

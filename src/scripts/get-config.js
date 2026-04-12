@@ -1,13 +1,19 @@
-#!/usr/bin/env node
-
-'use strict';
-
 // imports
-const _path = require(`path`);
-const roots = require(`./get-roots.js`);
-const { LOAD_TYPES, EXTENSION } = require(`./constants.js`);
+import _path from 'path';
+import roots from './get-roots.js';
+import { LOAD_TYPES, EXTENSION } from './constants.js';
+import validator from 'validator';
+import _fs from 'fs';
+import _os from 'os';
+import { execSync } from 'child_process';
+import crypto from 'crypto';
+import * as dateFns from 'date-fns';
+import { createRequire } from 'module';
 
 // setup
+const require = createRequire(import.meta.url);
+const { isURL } = validator;
+const { addHours } = dateFns;
 const baseConfigName = `.eyas.config`;
 
 /*
@@ -80,9 +86,6 @@ async function getConfig(method, path) {
 
 // get the config via web requests ( supports both eyas:// and https:// protocols )
 async function getConfigViaUrl(path) {
-	// imports
-	const { isURL } = require(`validator`);
-
 	// setup
 	const defaultConfigName = `eyas.json`;
 
@@ -139,9 +142,6 @@ function getConfigViaAssociation(path) {
 
 // get the config via a sibling file
 function getConfigViaRoot() {
-	// imports
-	const _fs = require(`fs`);
-
 	// look for tests in the same directory as the runner
 	const fileInRoot = _fs.readdirSync(roots.config).find(file => file.endsWith(EXTENSION));
 
@@ -207,10 +207,6 @@ function getConfigViaCli() {
 // * config cannot be loaded from custom extension
 // * renaming the file to *.asar in-place is poor UX
 function getConfigFromAsar(path) {
-	// imports
-	const _fs = require(`fs`);
-	const _os = require(`os`);
-
 	// setup
 	const tempFileName = `converted_test.asar`;
 	let loadedConfig;
@@ -313,7 +309,7 @@ function validateCustomDomain(input) {
 // get the version of the cli
 function getCliVersion() {
 	try {
-		const { version } = require(_path.join(roots.module, `package.json`));
+		const { version } = JSON.parse(_fs.readFileSync(_path.join(roots.module, `package.json`), `utf-8`));
 		return version;
 	} catch (error) {
 		console.error(`Error getting CLI version:`, error);
@@ -323,8 +319,6 @@ function getCliVersion() {
 
 // attempts to return the current short hash
 function getCommitHash() {
-	const { execSync } = require(`child_process`);
-
 	try {
 		return execSync(`git rev-parse --short HEAD`).toString().trim();
 	} catch (error) {
@@ -336,8 +330,6 @@ function getCommitHash() {
 
 // attempts to return the current branch name
 function getBranchName() {
-	const { execSync } = require(`child_process`);
-
 	try {
 		return execSync(`git rev-parse --abbrev-ref HEAD`).toString().trim();
 	} catch (error) {
@@ -349,8 +341,6 @@ function getBranchName() {
 
 // attempts to return the current user name
 function getUserName() {
-	const { execSync } = require(`child_process`);
-
 	try {
 		return execSync(`git config user.name`).toString().trim();
 	} catch (error) {
@@ -362,10 +352,7 @@ function getUserName() {
 
 // attempt to hash the user's email domain
 function getCompanyId() {
-	const { execSync } = require(`child_process`);
-
 	try {
-		const crypto = require(`crypto`);
 		const email = execSync(`git config user.email`).toString().trim();
 
 		// get the root domain of the email without subdomains
@@ -386,11 +373,7 @@ function getCompanyId() {
 
 // get the project id from the git remote
 function getProjectId() {
-	const { execSync } = require(`child_process`);
-
 	try {
-		const crypto = require(`crypto`);
-
 		// Split output into lines and filter out empty lines
 		const remotes = execSync(`git remote`, { encoding: `utf-8` })
 			.split(`\n`)
@@ -410,7 +393,7 @@ function getProjectId() {
 
 // create a unique id for the test
 function getTestId() {
-	return require(`crypto`).randomUUID();
+	return crypto.randomUUID();
 }
 
 // validate the user input for the expiration
@@ -449,10 +432,9 @@ function validateExpiration(hours) {
 
 // get the default preview expiration
 function getExpirationDate(expiresInHours) {
-	const { addHours } = require(`date-fns/addHours`);
 	const now = new Date();
 	return addHours(now, expiresInHours);
 }
 
 // export the config for the project
-module.exports = getConfig;
+export default getConfig;
