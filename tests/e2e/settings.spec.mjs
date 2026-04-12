@@ -7,7 +7,7 @@ import {
 	getUiView
 } from './eyas-utils.mjs';
 
-test.describe('User Settings', () => {
+test.describe(`User Settings`, () => {
 	let electronApp;
 
 	test.beforeEach(async () => {
@@ -18,49 +18,49 @@ test.describe('User Settings', () => {
 		await exitEyas(electronApp);
 	});
 
-	test('Settings menu item exists in the Eyas menu', async () => {
+	test(`Settings menu item exists in the Eyas menu`, async () => {
 		const menuStructure = await getMenuStructure(electronApp);
-		const appMenu = menuStructure.find(m => m.submenu && m.submenu.some(si => si.label.includes('About')));
+		const appMenu = menuStructure.find(m => m.submenu && m.submenu.some(si => si.label.includes(`About`)));
 		expect(appMenu).toBeDefined();
 
-		const settingsItem = appMenu.submenu.find(item => item.label.includes('Settings'));
+		const settingsItem = appMenu.submenu.find(item => item.label.includes(`Settings`));
 		expect(settingsItem).toBeDefined();
-		expect(settingsItem.label).toContain('Settings');
+		expect(settingsItem.label).toContain(`Settings`);
 	});
 
-	test('clicking Settings opens the Settings modal', async () => {
+	test(`clicking Settings opens the Settings modal`, async () => {
 		const uiPage = await getUiView(electronApp);
 
 		// Optional: log renderer console to help debugging
-		uiPage.on('console', msg => console.log(`RENDERER: ${msg.text()}`));
+		uiPage.on(`console`, msg => console.log(`RENDERER: ${msg.text()}`));
 
 		// Open the settings modal from the menu
-		await clickSubMenuItem(electronApp, 'Eyas', 'Settings');
+		await clickSubMenuItem(electronApp, `Eyas`, `Settings`);
 
-		const settingsTabProject = uiPage.locator('[data-qa="settings-tab-project"]');
+		const settingsTabProject = uiPage.locator(`[data-qa="settings-tab-project"]`);
 
 		// Wait for visibility
 		await expect(settingsTabProject).toBeVisible({ timeout: 10000 });
-		await expect(settingsTabProject).toHaveText('Project');
+		await expect(settingsTabProject).toHaveText(`Project`);
 
 		// Close it
-		await uiPage.locator('[data-qa="settings-close"]').click();
+		await uiPage.locator(`[data-qa="settings-close"]`).click();
 		await expect(settingsTabProject).not.toBeVisible();
 	});
 
-	test('Always choose checkbox preserves selection on next launch', async () => {
+	test(`Always choose checkbox preserves selection on next launch`, async () => {
 		let uiPage = await getUiView(electronApp);
-		uiPage.on('console', msg => console.log(`RENDERER: ${msg.text()}`));
+		uiPage.on(`console`, msg => console.log(`RENDERER: ${msg.text()}`));
 
-		const envModalTitle = uiPage.locator('[data-qa="environment-modal-title"]');
+		const envModalTitle = uiPage.locator(`[data-qa="environment-modal-title"]`);
 		await expect(envModalTitle).toBeVisible();
 
 		// Check the "Always choose" checkbox (corrected data-qa)
-		const alwaysChooseCheckbox = uiPage.locator('[data-qa="checkbox-always-choose"] input');
+		const alwaysChooseCheckbox = uiPage.locator(`[data-qa="checkbox-always-choose"] input`);
 		await alwaysChooseCheckbox.check();
 
 		// Select the first environment
-		const firstEnvBtn = uiPage.locator('[data-qa="btn-env"]').first();
+		const firstEnvBtn = uiPage.locator(`[data-qa="btn-env"]`).first();
 		await firstEnvBtn.click();
 
 		// Wait for both visibility to go away and navigation to finish
@@ -73,9 +73,9 @@ test.describe('User Settings', () => {
 
 		electronApp = await launchEyas([], userDataDir);
 		uiPage = await getUiView(electronApp);
-		uiPage.on('console', msg => console.log(`RENDERER (launch 2): ${msg.text()}`));
+		uiPage.on(`console`, msg => console.log(`RENDERER (launch 2): ${msg.text()}`));
 
-		const envModalTitle2 = uiPage.locator('[data-qa="environment-modal-title"]');
+		const envModalTitle2 = uiPage.locator(`[data-qa="environment-modal-title"]`);
 
 		// Wait and ensure it DOES NOT appear
 		await new Promise(resolve => setTimeout(resolve, 3000));
