@@ -1,5 +1,5 @@
 // imports
-const { contextBridge, ipcRenderer } = require(`electron`);
+import { contextBridge, ipcRenderer } from 'electron';
 
 // via ( https://stackoverflow.com/a/59814127 )
 // Expose protected methods that allow the renderer process to use
