@@ -1,6 +1,4 @@
-'use strict';
-
-const path = require(`path`);
+import path from "path";
 
 /**
  * Joins a root path with a sub-path and ensures the result is within the root.
@@ -39,4 +37,4 @@ function safeJoin(root, subPath) {
 	return null;
 }
 
-module.exports = { safeJoin };
+export { safeJoin };

@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Formats a duration in milliseconds to a human-readable string.
  * @param {number} ms - Duration in milliseconds
@@ -21,4 +19,4 @@ function formatDuration(ms) {
 	return `${seconds}s`;
 }
 
-module.exports = { formatDuration };
+export { formatDuration };

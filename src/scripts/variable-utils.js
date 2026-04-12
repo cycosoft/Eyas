@@ -1,6 +1,4 @@
-'use strict';
-
-const { isURL } = require(`validator`);
+import { isURL } from "validator";
 
 // Regex patterns mirroring those used in setMenu() and navigateVariable()
 const REGEX_ENV_URL = /{_env\.url}/g;
@@ -78,4 +76,4 @@ function hasRemainingVariables(url) {
 	return !!url.match(REGEX_ALL_VARIABLES)?.length;
 }
 
-module.exports = { substituteEnvVariables, isVariableLinkValid, hasRemainingVariables };
+export { substituteEnvVariables, isVariableLinkValid, hasRemainingVariables };
