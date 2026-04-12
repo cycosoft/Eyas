@@ -1,4 +1,4 @@
-'use strict';
+
 
 /**
  * Builds the electron-builder config object for compile-runners.
@@ -114,4 +114,4 @@ function getElectronBuilderConfig(options) {
 	};
 }
 
-module.exports = { getElectronBuilderConfig };
+export { getElectronBuilderConfig };
