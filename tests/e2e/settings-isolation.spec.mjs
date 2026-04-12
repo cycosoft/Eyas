@@ -1,11 +1,17 @@
-const { test, expect } = require(`@playwright/test`);
-const path = require(`path`);
-const fs = require(`fs-extra`);
-const {
+import { test, expect } from '@playwright/test';
+import * as path from 'path';
+import fs from 'fs-extra';
+import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
+import {
 	launchEyas,
 	exitEyas,
 	getUiView
-} = require(`./eyas-utils`);
+} from './eyas-utils.mjs';
+
+const require = createRequire(import.meta.url);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helper: create a minimal temporary project directory with its own config
