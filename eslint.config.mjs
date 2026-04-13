@@ -113,6 +113,14 @@ export default tseslint.config(
 				{
 					selector: `CallExpression[callee.name='require'][arguments.0.value='electron']`,
 					message: `Do not use require('electron'). Import 'electronPath' from 'tests/e2e/eyas-utils.mjs' instead.`
+				},
+				{
+					selector: `ImportDeclaration[source.type='TemplateLiteral']`,
+					message: `Static imports must use standard quotes (single or double), not backticks.`
+				},
+				{
+					selector: `Identifier[name='__dirname']`,
+					message: `__dirname is not defined in ESM. Use import.meta.url or a helper instead.`
 				}
 			],
 
