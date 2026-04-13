@@ -1,5 +1,4 @@
-// export the config for the project
-module.exports = {
+export default {
 	source: `demo`,
 
 	domains: [

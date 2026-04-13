@@ -9,6 +9,7 @@ import { execSync } from 'child_process';
 import crypto from 'crypto';
 import * as dateFns from 'date-fns';
 import { createRequire } from 'module';
+import { pathToFileURL } from 'url';
 
 // setup
 const require = createRequire(import.meta.url);
@@ -58,12 +59,12 @@ async function getConfig(method, path) {
 
 	// if requesting a config via a file association
 	if (method === LOAD_TYPES.ASSOCIATION) {
-		loadedConfig = getConfigViaAssociation(path);
+		loadedConfig = await getConfigViaAssociation(path);
 	}
 
 	// if requesting a config via a sibling file
 	if (method === LOAD_TYPES.ROOT) {
-		loadedConfig = getConfigViaRoot();
+		loadedConfig = await getConfigViaRoot();
 
 		// if no *.eyas file was found
 		if (!loadedConfig) {
@@ -74,14 +75,11 @@ async function getConfig(method, path) {
 
 	// if requesting a config via the CLI
 	if (method === LOAD_TYPES.CLI) {
-		loadedConfig = getConfigViaCli();
+		loadedConfig = await getConfigViaCli();
 	}
 
 	// pass the loaded config data to the parser for validation
-	if (loadedConfig && Object.keys(loadedConfig).length > 0) {
-		loadedConfig._isConfigLoaded = true;
-	}
-	return validateConfig(loadedConfig);
+	return validateConfig(loadedConfig, !!loadedConfig?._isConfigLoaded);
 }
 
 // get the config via web requests ( supports both eyas:// and https:// protocols )
@@ -127,21 +125,25 @@ async function getConfigViaUrl(path) {
 		return {};
 	}
 
+	// create an extensible copy of the config
+	const validatedConfig = { ...loadedConfig };
+
 	// update the source path to the test
-	loadedConfig.source = urlAndPathOnly;
+	validatedConfig.source = urlAndPathOnly;
+	validatedConfig._isConfigLoaded = true;
 
 	// send back the data
-	return loadedConfig;
+	return validatedConfig;
 }
 
 // get the config via file association
-function getConfigViaAssociation(path) {
+async function getConfigViaAssociation(path) {
 	// pass the path through to the asar loader AND return the config object
-	return getConfigFromAsar(path);
+	return await getConfigFromAsar(path);
 }
 
 // get the config via a sibling file
-function getConfigViaRoot() {
+async function getConfigViaRoot() {
 	// look for tests in the same directory as the runner
 	const fileInRoot = _fs.readdirSync(roots.config).find(file => file.endsWith(EXTENSION));
 
@@ -151,11 +153,11 @@ function getConfigViaRoot() {
 	}
 
 	// pass the path through to the asar loader AND return the config
-	return getConfigFromAsar(_path.join(roots.config, fileInRoot));
+	return await getConfigFromAsar(_path.join(roots.config, fileInRoot));
 }
 
 // get the config via the CLI
-function getConfigViaCli() {
+async function getConfigViaCli() {
 	// setup
 	let loadedConfig = null;
 	const consumerPackageJsonPath = _path.join(roots.config, `package.json`);
@@ -186,11 +188,17 @@ function getConfigViaCli() {
 	if (!loadedConfig) {
 		// attempt to load the *.js config
 		try {
-			loadedConfig = require(jsConfigPath);
+			const loadedModule = await import(pathToFileURL(jsConfigPath).href);
+			loadedConfig = loadedModule?.default || loadedModule;
+			loadedConfig = { ...loadedConfig }; // ensure the object is extensible
+			loadedConfig._isConfigLoaded = true;
 		} catch (error) {
 			console.error(`CLI: Error loading config: ${error.message}`);
 			loadedConfig = {};
 		}
+	} else {
+		// ensure cjs config is also extensible and marked
+		loadedConfig = { ...loadedConfig };
 	}
 
 	// if a source was provided
@@ -199,6 +207,9 @@ function getConfigViaCli() {
 		loadedConfig.source = _path.resolve(roots.config, loadedConfig.source);
 	}
 
+	// mark the config as loaded
+	loadedConfig._isConfigLoaded = true;
+
 	// send back the data
 	return loadedConfig;
 }
@@ -206,9 +217,9 @@ function getConfigViaCli() {
 // copy the *.eyas file to a temporary location as an *.asar and load the config directly
 // * config cannot be loaded from custom extension
 // * renaming the file to *.asar in-place is poor UX
-function getConfigFromAsar(path) {
+async function getConfigFromAsar(path) {
 	// setup
-	const tempFileName = `converted_test.asar`;
+	const tempFileName = `eyas-config-${crypto.randomUUID()}.asar`;
 	let loadedConfig;
 
 	// determine the path to where a copy of the *.eyas file will live
@@ -219,7 +230,11 @@ function getConfigFromAsar(path) {
 
 	// attempt to load the test config
 	try {
-		loadedConfig = require(_path.join(tempPath, `${baseConfigName}.js`));
+		const configPath = _path.join(tempPath, `${baseConfigName}.js`);
+		// Use require for ASAR paths as import() does not support them
+		const tempConfig = require(configPath);
+		loadedConfig = tempConfig?.default || tempConfig;
+		loadedConfig = { ...loadedConfig }; // ensure the object is extensible
 	} catch (error) {
 		console.error(`FILE: Error loading config: ${error.message}`);
 		loadedConfig = {};
@@ -227,18 +242,19 @@ function getConfigFromAsar(path) {
 
 	// set the path to the test in the config
 	loadedConfig.source = tempPath;
+	loadedConfig._isConfigLoaded = true;
 
 	// send back the data
 	return loadedConfig;
 }
 
 // returns the validated configuration based on the loaded config
-function validateConfig(loadedConfig) {
-	// object validation
-	loadedConfig ||= {};
-	loadedConfig.outputs ||= {};
-	loadedConfig.meta ||= {};
-	const expiresIn = validateExpiration(loadedConfig.outputs.expires);
+function validateConfig(rawConfig, isConfigLoaded = false) {
+	// setup
+	const loadedConfig = rawConfig || {};
+	const outputs = loadedConfig.outputs || {};
+	const meta = loadedConfig.meta || {};
+	const expiresIn = validateExpiration(outputs.expires);
 
 	// configuration merge and validation step
 	const validatedConfig = {
@@ -256,16 +272,16 @@ function validateConfig(loadedConfig) {
 
 		// data that is provided by the CLI step, not the user.
 		meta: {
-			expires: loadedConfig.meta.expires || getExpirationDate(expiresIn),
-			gitBranch: loadedConfig.meta.gitBranch || getBranchName(),
-			gitHash: loadedConfig.meta.gitHash || getCommitHash(),
-			gitUser: loadedConfig.meta.gitUser || getUserName(),
-			compiled: loadedConfig.meta.compiled || new Date(),
-			eyas: loadedConfig.meta.eyas || getCliVersion(),
-			companyId: loadedConfig.meta.companyId || getCompanyId(),
-			projectId: loadedConfig.meta.projectId || getProjectId(),
-			testId: loadedConfig.meta.testId || getTestId(),
-			isConfigLoaded: !!loadedConfig._isConfigLoaded
+			expires: meta.expires || getExpirationDate(expiresIn),
+			gitBranch: meta.gitBranch || getBranchName(),
+			gitHash: meta.gitHash || getCommitHash(),
+			gitUser: meta.gitUser || getUserName(),
+			compiled: meta.compiled || new Date(),
+			eyas: meta.eyas || getCliVersion(),
+			companyId: meta.companyId || getCompanyId(),
+			projectId: meta.projectId || getProjectId(),
+			testId: meta.testId || getTestId(),
+			isConfigLoaded
 		}
 	};
 
