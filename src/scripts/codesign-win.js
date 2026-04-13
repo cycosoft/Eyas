@@ -2,16 +2,18 @@
 
 'use strict';
 
-const util = require(`util`);
-const exec = util.promisify(require(`child_process`).exec);
+import util from 'node:util';
+import { exec as childProcessExec } from 'node:child_process';
+
+const exec = util.promisify(childProcessExec);
+
 
 const OwnerName = `"Open Source Developer, Eric Higginson"`;
 const TimeStampServer = `http://time.certum.pl/`;
-const Verbose = (process.env.CERT_VERBOSE && process.env.CERT_VERBOSE === `true`) || false;
-const Debug = (process.env.CERT_DEBUG && process.env.CERT_DEBUG === `true`) || false;
-const Skip = (process.env.CERT_SKIP && process.env.CERT_SKIP === `true`) || false;
 
 async function doSign (file, hash, owner) {
+	const Debug = (process.env.CERT_DEBUG && process.env.CERT_DEBUG === `true`) || false;
+	const Verbose = (process.env.CERT_VERBOSE && process.env.CERT_VERBOSE === `true`) || false;
 	const sha256 = hash === `sha256`;
 	const appendCert = sha256 ? `/as` : null;
 	const timestamp = sha256 ? `/tr` : `/t`;
@@ -35,15 +37,16 @@ async function doSign (file, hash, owner) {
 		`"${file}"`
 	];
 
-	const { stdout } = await exec(args.join(` `));
+	const { stdout } = await exec(args.filter(Boolean).join(` `));
 	if (Verbose) {
 		console.log(stdout);
 	}
 }
 
-exports.default = async function (config) {
+export default async function (config) {
+	const Skip = (process.env.CERT_SKIP && process.env.CERT_SKIP === `true`) || false;
 	if (!Skip) {
 		console.info(`Signing ${config.path} with ${config.hash} to ${OwnerName}`);
 		await doSign(config.path, config.hash, OwnerName);
 	}
-};
+}
