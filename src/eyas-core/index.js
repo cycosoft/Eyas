@@ -194,12 +194,12 @@ initElectronCore();
 // })();
 
 // start the core of the application
-function initElectronCore() {
+async function initElectronCore() {
 	// imports
 	const {
 		handleEyasProtocolUrl,
 		getEyasUrlFromCommandLine
-	} = require(`./deep-link-handler.js`);
+	} = await import(`./deep-link-handler.js`);
 	if (process.defaultApp) {
 		if (process.argv.length >= 2) {
 			_electronCore.setAsDefaultProtocolClient(

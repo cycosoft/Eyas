@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Returns true only when url is a non-empty string starting with eyas://.
  * @param {unknown} url
@@ -51,7 +49,7 @@ function getEyasUrlFromCommandLine(argv) {
 	return undefined;
 }
 
-module.exports = {
+export {
 	isEyasProtocolUrl,
 	handleEyasProtocolUrl,
 	getEyasUrlFromCommandLine
