@@ -3,7 +3,7 @@
 let timeoutId = null;
 let expired = false;
 
-function startTestServerTimeout(onExpire, expireMs) {
+export function startTestServerTimeout(onExpire, expireMs) {
 	cancelTestServerTimeout();
 	expired = false;
 	timeoutId = setTimeout(() => {
@@ -15,24 +15,18 @@ function startTestServerTimeout(onExpire, expireMs) {
 	}, expireMs);
 }
 
-function cancelTestServerTimeout() {
+export function cancelTestServerTimeout() {
 	if (timeoutId) {
 		clearTimeout(timeoutId);
 		timeoutId = null;
 	}
 }
 
-function isTestServerTimeoutExpired() {
+export function isTestServerTimeoutExpired() {
 	return expired;
 }
 
-function resetTestServerTimeout(onExpire, expireMs) {
+export function resetTestServerTimeout(onExpire, expireMs) {
 	startTestServerTimeout(onExpire, expireMs);
 }
 
-module.exports = {
-	startTestServerTimeout,
-	cancelTestServerTimeout,
-	isTestServerTimeoutExpired,
-	resetTestServerTimeout
-};
