@@ -1,28 +1,18 @@
-/* global __dirname */
+import path from 'node:path';
+import express from 'express';
+import getPortModule from 'get-port';
+import http from 'node:http';
+import https from 'node:https';
+import fs from 'node:fs';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-'use strict';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const path = require(`path`);
-const express = require(`express`);
-const getPortModule = require(`get-port`);
 const getPort = typeof getPortModule === `function` ? getPortModule : getPortModule.default;
-const http = require(`http`);
-const https = require(`https`);
 
-// Resolve path-utils.js robustly for both src and .build structures
-const pathUtilsPath = [
-	path.join(__dirname, `..`, `..`, `scripts`, `path-utils.js`),
-	path.join(__dirname, `..`, `scripts`, `path-utils.js`)
-].find(p => require(`fs`).existsSync(p));
-
-const { safeJoin } = require(pathUtilsPath);
-
-const parseUrlPath = [
-	path.join(__dirname, `..`, `..`, `scripts`, `parse-url.js`),
-	path.join(__dirname, `..`, `scripts`, `parse-url.js`)
-].find(p => require(`fs`).existsSync(p));
-
-const { parseURL } = require(parseUrlPath);
+let safeJoin = null;
+let parseURL = null;
 
 let server = null;
 let state = null;
@@ -31,7 +21,17 @@ const HOST = `127.0.0.1`;
 const DEFAULT_PORT = 12701;
 
 async function getAvailablePort(urlStr, useHttps) {
+	if (!parseURL) {
+		const parseUrlPath = [
+			path.join(__dirname, `..`, `..`, `scripts`, `parse-url.js`),
+			path.join(__dirname, `..`, `scripts`, `parse-url.js`)
+		].find(p => fs.existsSync(p));
+
+		({ parseURL } = await import(pathToFileURL(parseUrlPath)));
+	}
+
 	const protoKey = useHttps ? `https` : `http`;
+
 	if (cachedPorts[protoKey]) {
 		return cachedPorts[protoKey];
 	}
@@ -66,6 +66,15 @@ async function getAvailablePort(urlStr, useHttps) {
 
 
 async function startTestServer(options) {
+	if (!safeJoin) {
+		const pathUtilsPath = [
+			path.join(__dirname, `..`, `..`, `scripts`, `path-utils.js`),
+			path.join(__dirname, `..`, `scripts`, `path-utils.js`)
+		].find(p => fs.existsSync(p));
+
+		({ safeJoin } = await import(pathToFileURL(pathUtilsPath)));
+	}
+
 	const { rootPath, useHttps = false, certs, customDomain } = options;
 	if (server) {
 		return getTestServerState();
@@ -153,7 +162,7 @@ function getTestServerState() {
 	return state;
 }
 
-module.exports = {
+export {
 	startTestServer,
 	stopTestServer,
 	getTestServerState,
