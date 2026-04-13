@@ -1,23 +1,19 @@
 import { _electron as electron, test, expect } from '@playwright/test';
 import * as path from 'path';
 import fs from 'fs-extra';
-import { fileURLToPath } from 'url';
 import { exitEyas, electronPath } from './eyas-utils.mjs';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 test(`Splash screen file should exist in the build output`, async () => {
-	const splashPath = path.join(__dirname, `../../out/eyas-interface/splash.html`);
+	const splashPath = path.join(import.meta.dirname, `../../out/eyas-interface/splash.html`);
 	const exists = await fs.pathExists(splashPath);
 	expect(exists).toBe(true);
 });
 
 test(`App should load the splash screen via the ui:// protocol`, async () => {
-	const mainPath = path.join(__dirname, `../../out/main/index.js`);
+	const mainPath = path.join(import.meta.dirname, `../../out/main/index.js`);
 
 	// Standard project isolation: Use a unique temporary directory for each test
-	const userDataDir = path.join(__dirname, `../../.test-data`, `user-data-splash-${Date.now()}-${Math.floor(Math.random() * 1000)}`);
+	const userDataDir = path.join(import.meta.dirname, `../../.test-data`, `user-data-splash-${Date.now()}-${Math.floor(Math.random() * 1000)}`);
 	await fs.ensureDir(userDataDir);
 
 	const electronApp = await electron.launch({

@@ -1,11 +1,9 @@
 import { describe, test, expect } from 'vitest';
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const bridgeSrc = fs.readFileSync(
-	path.join(__dirname, `../../src/scripts/event-bridge.js`),
+	path.join(import.meta.dirname, `../../src/scripts/event-bridge.js`),
 	`utf8`
 );
 

@@ -4,10 +4,7 @@ import getPortModule from 'get-port';
 import http from 'node:http';
 import https from 'node:https';
 import fs from 'node:fs';
-import { fileURLToPath, pathToFileURL } from 'node:url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { pathToFileURL } from 'node:url';
 
 const getPort = typeof getPortModule === `function` ? getPortModule : getPortModule.default;
 
@@ -23,8 +20,8 @@ const DEFAULT_PORT = 12701;
 async function getAvailablePort(urlStr, useHttps) {
 	if (!parseURL) {
 		const parseUrlPath = [
-			path.join(__dirname, `..`, `..`, `scripts`, `parse-url.js`),
-			path.join(__dirname, `..`, `scripts`, `parse-url.js`)
+			path.join(import.meta.dirname, `..`, `..`, `scripts`, `parse-url.js`),
+			path.join(import.meta.dirname, `..`, `scripts`, `parse-url.js`)
 		].find(p => fs.existsSync(p));
 
 		({ parseURL } = await import(pathToFileURL(parseUrlPath)));
@@ -68,8 +65,8 @@ async function getAvailablePort(urlStr, useHttps) {
 async function startTestServer(options) {
 	if (!safeJoin) {
 		const pathUtilsPath = [
-			path.join(__dirname, `..`, `..`, `scripts`, `path-utils.js`),
-			path.join(__dirname, `..`, `scripts`, `path-utils.js`)
+			path.join(import.meta.dirname, `..`, `..`, `scripts`, `path-utils.js`),
+			path.join(import.meta.dirname, `..`, `scripts`, `path-utils.js`)
 		].find(p => fs.existsSync(p));
 
 		({ safeJoin } = await import(pathToFileURL(pathUtilsPath)));

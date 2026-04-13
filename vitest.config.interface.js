@@ -1,5 +1,3 @@
-/* global __dirname */
-
 import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
 import vuetify from 'vite-plugin-vuetify';
@@ -12,7 +10,7 @@ export default defineConfig({
 	],
 	resolve: {
 		alias: {
-			'@': resolve(__dirname, `src/eyas-interface/app/src`)
+			'@': resolve(import.meta.dirname, `src/eyas-interface/app/src`)
 		}
 	},
 	css: {

@@ -1,15 +1,11 @@
 import { test, expect } from '@playwright/test';
 import * as path from 'path';
 import fs from 'fs-extra';
-import { fileURLToPath } from 'url';
 import {
 	launchEyas,
 	exitEyas,
 	getUiView
 } from './eyas-utils.mjs';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helper: create a minimal temporary project directory with its own config
@@ -24,7 +20,7 @@ const __dirname = path.dirname(__filename);
  * @returns {Promise<string>} Absolute path to the created temp directory
  */
 async function createTempProject(projectId) {
-	const dir = path.join(__dirname, `../../.test-data`, `project-${projectId}-${Date.now()}`);
+	const dir = path.join(import.meta.dirname, `../../.test-data`, `project-${projectId}-${Date.now()}`);
 	await fs.ensureDir(dir);
 
 	// Minimal config that provides a distinguishable projectId in meta.
@@ -62,7 +58,7 @@ test.describe(`Project Settings Isolation`, () => {
 	test.beforeAll(async () => {
 		// Create a shared user-data dir (simulates a single user's machine having
 		// settings for multiple projects stored in one place).
-		sharedUserDataDir = path.join(__dirname, `../../.test-data`, `shared-user-data-${Date.now()}`);
+		sharedUserDataDir = path.join(import.meta.dirname, `../../.test-data`, `shared-user-data-${Date.now()}`);
 		await fs.ensureDir(sharedUserDataDir);
 
 		// Build the two project directories with distinct projectIds

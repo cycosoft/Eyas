@@ -2,15 +2,11 @@ import { test, expect } from "@playwright/test";
 import { launchEyas, exitEyas, getUiView } from "./eyas-utils.mjs";
 import fs from "fs-extra";
 import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 test.describe(`Modal Sequencing`, () => {
 	let electronApp;
 	let uiPage;
-	const userDataDir = path.join(__dirname, `..`, `.test-user-data-sequencing`);
+	const userDataDir = path.join(import.meta.dirname, `..`, `.test-user-data-sequencing`);
 	const settingsPath = path.join(userDataDir, `settings.json`);
 
 	test.beforeEach(async () => {

@@ -1,20 +1,16 @@
 import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // setup
-const isProd = __dirname.includes(`node_modules`);
+const isProd = import.meta.dirname.includes(`node_modules`);
 const consumerRoot = process.cwd();
 const moduleRoot = isProd
 	? path.join(consumerRoot, `node_modules`, `@cycosoft`, `eyas`)
 	: consumerRoot;
-const eyasRoot = path.join(__dirname, `..`);
+const eyasRoot = path.join(import.meta.dirname, `..`);
 const macExecutable = `.app/`;
 const configRoot = process.platform === `win32`
 	? process.env.PORTABLE_EXECUTABLE_DIR || consumerRoot
-	: path.join(__dirname.slice(0, __dirname.indexOf(macExecutable) + macExecutable.length), `..`);
+	: path.join(import.meta.dirname.slice(0, import.meta.dirname.indexOf(macExecutable) + macExecutable.length), `..`);
 
 // base paths
 const roots = {
