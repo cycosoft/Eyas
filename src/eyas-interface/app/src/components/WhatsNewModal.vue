@@ -113,9 +113,9 @@
 
 <script>
 import { ref, computed, onMounted } from 'vue';
-import useSettingsStore from '@/stores/settings';
+import useSettingsStore from '@/stores/settings.js';
 import ModalWrapper from '@/components/ModalWrapper.vue';
-import { getAggregatedChanges, tokenizeMarkdownSubset } from '@/utils/changelog-utils';
+import { getAggregatedChanges, tokenizeMarkdownSubset } from '@/utils/changelog-utils.js';
 import changelogData from '../CHANGELOG.json';
 
 export default {

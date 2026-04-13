@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getAggregatedChanges, tokenizeMarkdownSubset } from '@/utils/changelog-utils';
+import { getAggregatedChanges, tokenizeMarkdownSubset } from '@/utils/changelog-utils.js';
 
 describe(`changelog-utils`, () => {
 	describe(`getAggregatedChanges`, () => {

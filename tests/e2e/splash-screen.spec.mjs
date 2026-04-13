@@ -2,10 +2,8 @@ import { _electron as electron, test, expect } from '@playwright/test';
 import * as path from 'path';
 import fs from 'fs-extra';
 import { fileURLToPath } from 'url';
-import { createRequire } from 'module';
 import { exitEyas, electronPath } from './eyas-utils.mjs';
 
-const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 

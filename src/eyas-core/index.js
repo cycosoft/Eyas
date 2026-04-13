@@ -1,11 +1,30 @@
-/* global process */
-
-'use strict';
-
-// global imports _
-const { app: _electronCore, BrowserWindow: _electronWindow, nativeTheme, ipcMain } = require(`electron`);
-const _path = require(`path`);
-const _os = require(`os`);
+import {
+	app,
+	BrowserWindow,
+	Menu,
+	nativeTheme,
+	ipcMain,
+	BrowserView,
+	dialog,
+	shell,
+	clipboard,
+	session,
+	protocol
+} from 'electron';
+const _electronCore = app;
+const _electronWindow = BrowserWindow;
+import _path from 'path';
+import _os from 'os';
+import fs from 'node:fs';
+import { pathToFileURL } from 'node:url';
+import Mixpanel from 'mixpanel';
+import { machineId } from 'node-machine-id';
+import { isPast } from 'date-fns/isPast';
+import { format } from 'date-fns/format';
+import { differenceInDays } from 'date-fns/differenceInDays';
+import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
+import { autoUpdater } from 'electron-updater';
+import semver from 'semver';
 
 // only allow a single instance of the app to be at a time
 const isPrimaryInstance = _electronCore.requestSingleInstanceLock();
@@ -48,8 +67,8 @@ let $onInstallUpdate = () => { };
 let $pendingStartupModal = null;
 let $isStartupSequenceChecked = false;
 let $latestChangelogVersion = null;
-const $roots = require(`../scripts/get-roots.js`);
-const { parseURL } = require(`../scripts/parse-url.js`);
+import $roots from '../scripts/get-roots.js';
+import { parseURL } from '../scripts/parse-url.js';
 const $paths = {
 	icon: _path.join($roots.eyas, `eyas-assets`, `eyas-logo.png`),
 	configLoader: _path.join($roots.eyas, `scripts`, `get-config.js`),
@@ -65,21 +84,23 @@ const $paths = {
 	splashScreen: _path.join($roots.eyas, `eyas-interface`, `splash.html`)
 };
 const $operatingSystem = _os.platform();
-const { version: _appVersion } = require(`../../package.json`);
-const { buildMenuTemplate } = require(`./menu-template.js`);
-const { getNoUpdateAvailableDialogOptions } = require(`./update-dialog.js`);
-const { MP_EVENTS } = require(`./metrics-events.js`);
-const testServer = require(`./test-server/test-server.js`);
-const testServerCerts = require(`./test-server/test-server-certs.js`);
-const testServerTimeout = require(`./test-server/test-server-timeout.js`);
-const { safeJoin } = require(`../scripts/path-utils.js`);
-const { formatDuration } = require(`../scripts/time-utils.js`);
-const { substituteEnvVariables, isVariableLinkValid, hasRemainingVariables } = require(`../scripts/variable-utils.js`);
-const settingsService = require(`./settings-service.js`);
-const { getAppTitle, sanitizePageTitle } = require(`../scripts/get-app-title.js`);
+// eslint-disable-next-line quotes
+import _package from "../../package.json" with { type: "json" };
+const _appVersion = _package.version;
+import { buildMenuTemplate } from './menu-template.js';
+import { getNoUpdateAvailableDialogOptions } from './update-dialog.js';
+import { MP_EVENTS } from './metrics-events.js';
+import * as testServer from './test-server/test-server.js';
+import * as testServerCerts from './test-server/test-server-certs.js';
+import * as testServerTimeout from './test-server/test-server-timeout.js';
+import { safeJoin } from '../scripts/path-utils.js';
+import { formatDuration } from '../scripts/time-utils.js';
+import { substituteEnvVariables, isVariableLinkValid, hasRemainingVariables } from '../scripts/variable-utils.js';
+import * as settingsService from './settings-service.js';
+import { getAppTitle, sanitizePageTitle } from '../scripts/get-app-title.js';
 
 // constants
-const { LOAD_TYPES, TEST_SERVER_SESSION_DURATION_MS } = require(`../scripts/constants.js`);
+import { LOAD_TYPES, TEST_SERVER_SESSION_DURATION_MS } from '../scripts/constants.js';
 const APP_NAME = `Eyas`;
 
 /**
@@ -296,8 +317,6 @@ async function initElectronCore() {
 
 // initiate the core electron UI layer
 async function initElectronUi() {
-	// imports
-	const { BrowserView } = require(`electron`);
 
 	// set the current viewport to the first viewport in the list
 	$currentViewport[0] = $defaultViewports[0].width;
@@ -386,8 +405,6 @@ async function initElectronUi() {
 
 // create a splash screen to display to the user while we wait for the $eyasLayer to load
 function createSplashScreen() {
-	// imports
-	const { BrowserWindow } = require(`electron`);
 
 	// create the splash screen
 	const splashScreen = new BrowserWindow({
@@ -483,8 +500,6 @@ function initTestListeners() {
 
 // initialize the Eyas listeners
 function initUiListeners() {
-	// imports
-	const { ipcMain } = require(`electron`);
 
 	// update the network status
 	ipcMain.on(`network-status`, (event, status) => {
@@ -621,16 +636,12 @@ async function trackEvent(event, extraData) {
 	const MP_KEY_PROD = `07f0475cb429f7de5ebf79a1c418dc5c`;
 	const MP_KEY_DEV = `02b67bb94dd797e9a2cbb31d021c3cef`;
 
-	// imports
-	const Mixpanel = require(`mixpanel`);
-
 	// if mixpanel has not been initialized
 	if (!trackEvent.mixpanel) {
 		// initialize mixpanel to the correct environment
 		trackEvent.mixpanel ||= Mixpanel.init($isDev ? MP_KEY_DEV : MP_KEY_PROD);
 
 		// get information about the user
-		const { machineId } = require(`node-machine-id`);
 		trackEvent.deviceId ||= await machineId();
 
 		// define who the user is in mixpanel
@@ -654,11 +665,6 @@ async function trackEvent(event, extraData) {
 
 // forces an exit if the loaded test has expired
 function checkTestExpiration() {
-	// imports
-	const { isPast } = require(`date-fns/isPast`);
-	const { format } = require(`date-fns/format`);
-	const { dialog } = require(`electron`);
-
 	// setup
 	const expirationDate = new Date($config.meta.expires);
 
@@ -747,7 +753,7 @@ function copyTestServerUrlHandler() {
 	if (state) {
 		const targetUrl = state.customUrl || state.url;
 		if (targetUrl) {
-			require(`electron`).clipboard.writeText(targetUrl);
+			clipboard.writeText(targetUrl);
 		}
 	}
 }
@@ -759,7 +765,7 @@ function openTestServerInBrowserHandler(event, url) {
 	// use the provided url, or fall back to the test server state
 	const targetUrl = url || state?.customUrl || state?.url;
 	if (targetUrl) {
-		require(`electron`).shell.openExternal(targetUrl);
+		shell.openExternal(targetUrl);
 	}
 }
 
@@ -857,7 +863,6 @@ function onTestServerTimeout() {
 
 // Set up the application menu
 async function setMenu() {
-	const { Menu, dialog } = require(`electron`);
 
 	const sessionAge = getSessionAge();
 	const cacheSize = await $appWindow.webContents.session.getCacheSize();
@@ -910,8 +915,6 @@ async function setMenu() {
 		sessionAge,
 		cacheSize,
 		showAbout: () => {
-			const { format } = require(`date-fns/format`);
-			const { differenceInDays } = require(`date-fns/differenceInDays`);
 			const now = new Date();
 			const expires = new Date($config.meta.expires);
 			const dayCount = differenceInDays(expires, now);
@@ -947,7 +950,7 @@ Runner: v${_appVersion}
 		startAFreshTest: () => startAFreshTest(true),
 		copyUrl: () => {
 			if ($isInitializing) return;
-			require(`electron`).clipboard.writeText($appWindow.webContents.getURL());
+			clipboard.writeText($appWindow.webContents.getURL());
 		},
 		openUiDevTools: () => $eyasLayer.webContents.openDevTools(),
 		navigateHome: () => {
@@ -975,7 +978,7 @@ Runner: v${_appVersion}
 			clearCache();
 		},
 		openCacheFolder: () => {
-			require(`electron`).shell.openPath($appWindow.webContents.session.getStoragePath());
+			shell.openPath($appWindow.webContents.session.getStoragePath());
 		},
 		refreshMenu: setMenu,
 		viewportItems,
@@ -1017,10 +1020,6 @@ Runner: v${_appVersion}
 }
 
 function setupAutoUpdater() {
-	const { autoUpdater } = require(`electron-updater`);
-	const { dialog } = require(`electron`);
-	const semver = require(`semver`);
-
 	autoUpdater.forceDevUpdateConfig = true;
 	autoUpdater.currentVersion = semver.parse(_appVersion);
 
@@ -1067,7 +1066,6 @@ function setupAutoUpdater() {
 }
 
 function getSessionAge() {
-	const { formatDistanceToNow } = require(`date-fns/formatDistanceToNow`);
 	let output = new Date();
 
 	// get the path to the cache
@@ -1075,8 +1073,6 @@ function getSessionAge() {
 
 	// if the cache path was found
 	if (cachePath) {
-		const fs = require(`fs`);
-
 		// create a path to the `Session Storage` folder
 		const sessionFolder = _path.join(cachePath, `Session Storage`);
 
@@ -1185,7 +1181,6 @@ function navigate(path, openInBrowser) {
 		)
 	) {
 		// open the requested url in the default browser
-		const { shell } = require(`electron`);
 		shell.openExternal(path);
 	} else {
 		// otherwise load the requested path in the app window
@@ -1198,9 +1193,6 @@ function navigate(path, openInBrowser) {
 
 // register a custom protocol for loading local test files and the UI
 function registerInternalProtocols() {
-	// imports
-	const { protocol } = require(`electron`);
-
 	// register the custom protocols for relative paths + crypto support
 	protocol.registerSchemesAsPrivileged([
 		{
@@ -1238,13 +1230,10 @@ function disableNetworkRequest(url) {
 
 // handle requests to the custom protocol
 function setupEyasNetworkHandlers() {
-	// imports
-	const { session } = require(`electron`);
 	const ses = session.fromPartition(`persist:${$config.meta.testId}`);
 
 	// use the "ui" protocol to load the Eyas UI layer
 	ses.protocol.handle(`ui`, request => {
-		const { pathToFileURL } = require(`url`);
 
 		// drop the protocol from the request
 		const { pathname: relativePathToFile } = parseURL(request.url.replace(`ui://`, `https://`));
@@ -1253,7 +1242,6 @@ function setupEyasNetworkHandlers() {
 		const localFilePath = safeJoin($paths.uiSource, relativePathToFile);
 
 		// if the path is unsafe OR the file is missing
-		const fs = require(`fs`);
 		if (!localFilePath || !fs.existsSync(localFilePath)) {
 			return new Response(`Not Found`, { status: 404 });
 		}
@@ -1268,10 +1256,6 @@ function setupEyasNetworkHandlers() {
 		if (disableNetworkRequest(request.url)) {
 			return { cancel: true };
 		}
-
-		// imports
-		const { pathToFileURL } = require(`url`);
-		const fs = require(`fs`);
 
 		// grab the pathname from the request
 		const { pathname } = parseURL(request.url.replace(`eyas://`, `https://`));
@@ -1350,8 +1334,6 @@ function clearCache() {
 
 // refresh the app
 async function startAFreshTest(forceShow = false) {
-	// imports
-	const semver = require(`semver`);
 
 	// stop test server when test changes
 	if (testServer.getTestServerState()) {
@@ -1492,7 +1474,6 @@ function navigateVariable(url) {
 
 	// if substitution returned null, the env url is required but not yet set
 	if (output === null) {
-		const { dialog } = require(`electron`);
 
 		// alert the user that they need to select an environment first
 		dialog.showMessageBoxSync($appWindow, {

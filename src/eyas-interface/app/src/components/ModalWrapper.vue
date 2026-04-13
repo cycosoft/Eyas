@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import ModalStore from '@/stores/modals';
+import ModalStore from '@/stores/modals.js';
 import ModalBackground from '@/components/ModalBackground.vue';
 
 export default {

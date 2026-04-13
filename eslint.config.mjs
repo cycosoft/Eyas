@@ -88,6 +88,12 @@ export default tseslint.config(
 
 			// Import Rules
 			'import/no-commonjs': `error`,
+			'import/extensions': [`error`, `always`, {
+				ignorePackages: true,
+				ts: `never`,
+				tsx: `never`,
+				js: `always`
+			}],
 
 			// Formatting Rules (User Preference: Tabs, Backticks, Always Semi)
 			indent: [`error`, `tab`],

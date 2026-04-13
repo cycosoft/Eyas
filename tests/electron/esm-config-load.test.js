@@ -4,45 +4,45 @@ import { LOAD_TYPES } from '../../src/scripts/constants.js';
 import fs from 'fs';
 import path from 'path';
 
-describe('getConfig - ESM', () => {
-    const tempDir = path.resolve('tests/tmp/esm');
-    const testConfigPath = path.join(tempDir, '.eyas.config.js');
+describe(`getConfig - ESM`, () => {
+	const tempDir = path.resolve(`tests/tmp/esm`);
+	const testConfigPath = path.join(tempDir, `.eyas.config.js`);
 
-    test('should load an ESM config correctly', async () => {
-        // Create temp dir
-        if (!fs.existsSync(tempDir)) { fs.mkdirSync(tempDir, { recursive: true }); }
+	test(`should load an ESM config correctly`, async () => {
+		// Create temp dir
+		if (!fs.existsSync(tempDir)) { fs.mkdirSync(tempDir, { recursive: true }); }
 
-        // Create an ESM config
-        const esmContent = "export default { title: 'ESM Test App', source: 'esm-demo' };";
-        fs.writeFileSync(testConfigPath, esmContent);
+		// Create an ESM config
+		const esmContent = `export default { title: 'ESM Test App', source: 'esm-demo' };`;
+		fs.writeFileSync(testConfigPath, esmContent);
 
-        // Mock roots.config
-        vi.doMock('../../src/scripts/get-roots.js', async () => {
-            const actual = await vi.importActual('../../src/scripts/get-roots.js');
-            return {
-                default: {
-                    ...actual.default,
-                    config: tempDir
-                }
-            };
-        });
+		// Mock roots.config
+		vi.doMock(`../../src/scripts/get-roots.js`, async () => {
+			const actual = await vi.importActual(`../../src/scripts/get-roots.js`);
+			return {
+				default: {
+					...actual.default,
+					config: tempDir
+				}
+			};
+		});
 
-        // Import getConfig after mocking
-        const { default: getConfig } = await import('../../src/scripts/get-config.js');
+		// Import getConfig after mocking
+		const { default: getConfig } = await import(`../../src/scripts/get-config.js`);
 
-        try {
-            const config = await getConfig(LOAD_TYPES.CLI);
-            expect(config.title).toBe('ESM Test App');
-            expect(config.source).toContain('esm-demo');
-            expect(config.meta.isConfigLoaded).toBe(true);
-        } finally {
-            // Cleanup
-            if (fs.existsSync(testConfigPath)) {
-                fs.unlinkSync(testConfigPath);
-            }
-            if (fs.existsSync(tempDir)) {
-                fs.rmdirSync(tempDir);
-            }
-        }
-    });
+		try {
+			const config = await getConfig(LOAD_TYPES.CLI);
+			expect(config.title).toBe(`ESM Test App`);
+			expect(config.source).toContain(`esm-demo`);
+			expect(config.meta.isConfigLoaded).toBe(true);
+		} finally {
+			// Cleanup
+			if (fs.existsSync(testConfigPath)) {
+				fs.unlinkSync(testConfigPath);
+			}
+			if (fs.existsSync(tempDir)) {
+				fs.rmdirSync(tempDir);
+			}
+		}
+	});
 });

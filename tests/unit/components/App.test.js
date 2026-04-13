@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { createVuetify } from 'vuetify';
 import App from '@/App.vue';
-import useSettingsStore from '@/stores/settings';
+import useSettingsStore from '@/stores/settings.js';
 
 // Mock Vuetify
 const vuetify = createVuetify();
