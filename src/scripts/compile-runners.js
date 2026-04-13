@@ -1,29 +1,32 @@
 #!/usr/bin/env node
 
-'use strict';
+import dotenv from 'dotenv';
+dotenv.config({ path: [`.env.local`, `.env`] });
+import path from 'path';
+import fs from 'fs-extra';
+import builder from 'electron-builder';
+import { exec } from 'child_process';
+import { getElectronBuilderConfig } from './electron-builder-config.js';
 
-require(`dotenv`).config({ path: [`.env.local`, `.env`] });
-const path = require(`path`);
-const { getElectronBuilderConfig } = require(`./electron-builder-config.js`);
-const isDev = process.env.NODE_ENV === `dev`;
-const isInstaller = process.env.PUBLISH_TYPE === `installer`;
-const isMac = process.platform === `darwin`;
-const isWin = process.platform === `win32`;
-const consumerRoot = process.cwd();
-const buildRoot = consumerRoot;
-const runnersRoot = path.join(consumerRoot, `.runners`);
-const distRoot = path.join(consumerRoot, `dist`);
-const paths = {
-	icon: path.join(buildRoot, `src`, `eyas-assets`, `eyas-logo.png`),
-	iconDbWin: path.join(buildRoot, `src`, `eyas-assets`, `eyas-db.ico`),
-	iconDbMac: path.join(buildRoot, `src`, `eyas-assets`, `eyas-db.icns`),
-	codesignWin: path.join(consumerRoot, `src`, `scripts`, `codesign-win.js`)
-};
-
-// Entry Point
-(async () => {
-	const fs = require(`fs-extra`);
-	const builder = require(`electron-builder`);
+/**
+ * Compiles the runners for the project.
+ * @returns {Promise<void>}
+ */
+export async function compileRunners() {
+	const isDev = process.env.NODE_ENV === `dev`;
+	const isInstaller = process.env.PUBLISH_TYPE === `installer`;
+	const isMac = process.platform === `darwin`;
+	const isWin = process.platform === `win32`;
+	const consumerRoot = process.cwd();
+	const buildRoot = consumerRoot;
+	const runnersRoot = path.join(consumerRoot, `.runners`);
+	const distRoot = path.join(consumerRoot, `dist`);
+	const paths = {
+		icon: path.join(buildRoot, `src`, `eyas-assets`, `eyas-logo.png`),
+		iconDbWin: path.join(buildRoot, `src`, `eyas-assets`, `eyas-db.ico`),
+		iconDbMac: path.join(buildRoot, `src`, `eyas-assets`, `eyas-db.icns`),
+		codesignWin: path.join(consumerRoot, `src`, `scripts`, `codesign-win.js`)
+	};
 
 	// Determine the executables to build
 	const targets = [];
@@ -70,10 +73,14 @@ const paths = {
 
 	// open the output folder if requested
 	if (process.env.EYAS_OPEN_RUNNERS === `true`) {
-		const { exec } = require(`child_process`);
 		const folderPath = runnersRoot;
 		const command = isWin ? `explorer "${folderPath}"` : `open "${folderPath}"`;
 
 		exec(command);
 	}
-})();
+}
+
+// Entry Point
+if (!process.env.VITEST) {
+	compileRunners();
+}
