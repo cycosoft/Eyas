@@ -1,6 +1,4 @@
-'use strict';
-
-const MP_EVENTS = {
+export const MP_EVENTS = {
 	core: {
 		launch: `App Launch`,
 		exit: `App Exit`
@@ -9,5 +7,3 @@ const MP_EVENTS = {
 		modalBackgroundContentViewed: `Modal Background Content Viewed`
 	}
 };
-
-module.exports = { MP_EVENTS };
