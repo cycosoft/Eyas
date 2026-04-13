@@ -135,4 +135,5 @@ function buildMenuTemplate(context) {
 	return menu;
 }
 
-module.exports = { buildMenuTemplate };
+export { buildMenuTemplate };
+
