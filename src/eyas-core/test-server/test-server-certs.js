@@ -1,4 +1,4 @@
-'use strict';
+import selfsigned from 'selfsigned';
 
 const certCache = new Map();
 
@@ -6,13 +6,12 @@ function getCacheKey(domains) {
 	return Array.isArray(domains) ? domains.slice().sort().join(`,`) : String(domains);
 }
 
-async function getCerts(domains, options = {}) {
+export async function getCerts(domains, options = {}) {
 	const key = getCacheKey(domains);
 	if (certCache.has(key)) {
 		return certCache.get(key);
 	}
 
-	const selfsigned = require(`selfsigned`);
 	const validity = options.validityDays ?? 7;
 
 	const attrs = [
@@ -59,7 +58,3 @@ async function getCerts(domains, options = {}) {
 	certCache.set(key, cert);
 	return cert;
 }
-
-module.exports = {
-	getCerts
-};
