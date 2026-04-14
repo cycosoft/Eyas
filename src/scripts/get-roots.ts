@@ -24,7 +24,7 @@ const roots = {
 	config: configRoot === `/` ? consumerRoot : configRoot,
 	eyas: eyasRoot,
 	module: moduleRoot
-};
+} as const;
 
 // export the config for the project
 export default roots;

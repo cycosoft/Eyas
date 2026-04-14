@@ -1,19 +1,34 @@
-import fs from 'fs-extra';
-import path from 'path';
-import { execSync } from 'child_process';
-import { getBuildVersion } from './get-build-version.js';
-import { fileURLToPath } from 'url';
+import fs from "fs-extra";
+import path from "path";
+import { execSync } from "child_process";
+import { getBuildVersion } from "./get-build-version.js";
+import { fileURLToPath } from "url";
+
+interface PackageJson {
+	version: string;
+	[key: string]: unknown;
+}
+
+interface ChangelogItem {
+	text: string;
+}
+
+interface ChangelogEntry {
+	version: string;
+	items?: ChangelogItem[];
+}
 
 /**
  * Updates the version in the specified package.json and outputs tagging instructions.
  * @param {string} [packageJsonPath] - Optional path to package.json; defaults to the one in CWD.
+ * @param {string} [changelogPath] - Optional path to changelog.json.
  * @returns {Promise<string>} The new version.
  */
-async function bumpBuildVersion(
-	packageJsonPath = path.join(process.cwd(), `package.json`),
-	changelogPath = path.join(process.cwd(), `src`, `eyas-interface`, `app`, `src`, `CHANGELOG.json`)
-) {
-	const packageJson = await fs.readJson(packageJsonPath);
+export async function bumpBuildVersion(
+	packageJsonPath: string = path.join(process.cwd(), `package.json`),
+	changelogPath: string = path.join(process.cwd(), `src`, `eyas-interface`, `app`, `src`, `CHANGELOG.json`)
+): Promise<string> {
+	const packageJson: PackageJson = await fs.readJson(packageJsonPath);
 
 	// Generate the new version
 	const newVersion = getBuildVersion();
@@ -24,7 +39,7 @@ async function bumpBuildVersion(
 
 	// Update CHANGELOG.json
 	if (await fs.pathExists(changelogPath)) {
-		const changelogText = await fs.readFile(changelogPath, `utf8`);
+		const changelogText: string = await fs.readFile(changelogPath, `utf8`);
 		const updatedText = changelogText.replace(/"version":\s*"[^"]*"/, `"version": "${newVersion}"`);
 		await fs.writeFile(changelogPath, updatedText);
 	}
@@ -35,7 +50,7 @@ async function bumpBuildVersion(
 	// Output GitHub Release format
 	if (await fs.pathExists(changelogPath)) {
 		try {
-			const changelog = await fs.readJson(changelogPath);
+			const changelog: ChangelogEntry[] = await fs.readJson(changelogPath);
 			const current = changelog[0];
 
 			// Determine the previous version from git tags
@@ -74,11 +89,9 @@ if (isMain) {
 		try {
 			await bumpBuildVersion();
 		} catch (err) {
-			console.error(`❌ Error updating version:`, err.message);
+			console.error(`❌ Error updating version:`, err instanceof Error ? err.message : String(err));
 			process.exit(1);
 		}
 	})();
 }
-
-export { bumpBuildVersion };
 

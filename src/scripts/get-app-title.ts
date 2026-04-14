@@ -2,9 +2,9 @@
  * Sanitizes the page title before including it in the window title.
  * @param {string} rawPageTitle - The raw value from webContents.getTitle().
  * @param {string} rawUrl - The raw URL (before data: filtering) from webContents.getURL().
- * @returns {string|null} The trimmed page title, or null if it should be omitted.
+ * @returns {string | null} The trimmed page title, or null if it should be omitted.
  */
-export function sanitizePageTitle(rawPageTitle, rawUrl) {
+export function sanitizePageTitle(rawPageTitle: string | null | undefined, rawUrl: string | null | undefined): string | null {
 	// Omit empty or whitespace-only titles
 	if (!rawPageTitle?.trim()) { return null; }
 
@@ -16,8 +16,10 @@ export function sanitizePageTitle(rawPageTitle, rawUrl) {
 
 	// Omit when the title is just the hostname (Electron's fallback on failed page loads)
 	try {
-		const { hostname } = new URL(rawUrl);
-		if (rawPageTitle === hostname) { return null; }
+		if (rawUrl) {
+			const { hostname } = new URL(rawUrl);
+			if (rawPageTitle === hostname) { return null; }
+		}
 	} catch {
 		// rawUrl is not a parseable URL — skip this check
 	}
@@ -33,7 +35,7 @@ export function sanitizePageTitle(rawPageTitle, rawUrl) {
  * @param {string} [pageTitle] The document.title set by the web page (optional).
  * @returns {string} The formatted application title.
  */
-export function getAppTitle(title, version, url, pageTitle) {
+export function getAppTitle(title: string, version: string, url?: string, pageTitle?: string): string {
 	let output = `${title} :: ${version} ✨`;
 
 	// Add the page title if it's a non-empty, non-whitespace string

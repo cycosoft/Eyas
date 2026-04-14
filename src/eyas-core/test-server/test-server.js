@@ -21,7 +21,9 @@ async function getAvailablePort(urlStr, useHttps) {
 	if (!parseURL) {
 		const parseUrlPath = [
 			path.join(import.meta.dirname, `..`, `..`, `scripts`, `parse-url.js`),
-			path.join(import.meta.dirname, `..`, `scripts`, `parse-url.js`)
+			path.join(import.meta.dirname, `..`, `scripts`, `parse-url.js`),
+			path.join(import.meta.dirname, `..`, `..`, `scripts`, `parse-url.ts`),
+			path.join(import.meta.dirname, `..`, `scripts`, `parse-url.ts`)
 		].find(p => fs.existsSync(p));
 
 		({ parseURL } = await import(pathToFileURL(parseUrlPath)));
@@ -66,7 +68,9 @@ async function startTestServer(options) {
 	if (!safeJoin) {
 		const pathUtilsPath = [
 			path.join(import.meta.dirname, `..`, `..`, `scripts`, `path-utils.js`),
-			path.join(import.meta.dirname, `..`, `scripts`, `path-utils.js`)
+			path.join(import.meta.dirname, `..`, `scripts`, `path-utils.js`),
+			path.join(import.meta.dirname, `..`, `..`, `scripts`, `path-utils.ts`),
+			path.join(import.meta.dirname, `..`, `scripts`, `path-utils.ts`)
 		].find(p => fs.existsSync(p));
 
 		({ safeJoin } = await import(pathToFileURL(pathUtilsPath)));

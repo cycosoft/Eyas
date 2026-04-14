@@ -7,6 +7,11 @@ const REGEX_ENV_KEY = /{_env\.key}/g;
 const REGEX_TESTDOMAIN = /{testdomain}/g;  // deprecated alias for _env.url
 const REGEX_ALL_VARIABLES = /{[^{}]+}/g;
 
+interface Environment {
+	url: string | null;
+	key?: string | null;
+}
+
 /**
  * Replaces all Eyas-managed (_env.*) and deprecated (testdomain) variable
  * tokens in a URL with the values from the currently selected environment.
@@ -18,10 +23,10 @@ const REGEX_ALL_VARIABLES = /{[^{}]+}/g;
  * always proceeds (a domain without a key is valid).
  *
  * @param {string} url - The raw URL template containing variable tokens
- * @param {{ url: string|null, key: string|null|undefined }|null} env - Selected environment
+ * @param {Environment | null} env - Selected environment
  * @returns {string|null} The substituted URL, or null if env.url is required but missing
  */
-function substituteEnvVariables(url, env) {
+function substituteEnvVariables(url: string, env: Environment | null): string | null {
 	const needsDomain = REGEX_ENV_URL.test(url) || REGEX_TESTDOMAIN.test(url);
 
 	// Reset lastIndex after test() calls (global regex is stateful)
@@ -56,7 +61,7 @@ function substituteEnvVariables(url, env) {
  * @param {string} url - The raw URL template to validate
  * @returns {boolean} Whether the stub-replaced URL is a valid URL
  */
-function isVariableLinkValid(url) {
+function isVariableLinkValid(url: string): boolean {
 	const testUrl = url
 		.replace(/{_env\.url}/g, `validating.com`)
 		.replace(/{_env\.key}/g, `validating`)
@@ -73,8 +78,9 @@ function isVariableLinkValid(url) {
  * @param {string} url - The URL after substituteEnvVariables() has run
  * @returns {boolean} True if user-input variables remain; false if ready to navigate
  */
-function hasRemainingVariables(url) {
-	return !!url.match(REGEX_ALL_VARIABLES)?.length;
+function hasRemainingVariables(url: string): boolean {
+	const match = url.match(REGEX_ALL_VARIABLES);
+	return !!match && match.length > 0;
 }
 
 export { substituteEnvVariables, isVariableLinkValid, hasRemainingVariables };

@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 const bridgeSrc = fs.readFileSync(
-	path.join(import.meta.dirname, `../../src/scripts/event-bridge.js`),
+	path.join(import.meta.dirname, `../../src/scripts/event-bridge.ts`),
 	`utf8`
 );
 

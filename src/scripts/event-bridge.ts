@@ -1,11 +1,11 @@
 // imports
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer } from "electron";
 
 // via ( https://stackoverflow.com/a/59814127 )
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld(`eyas`, {
-	send: (channel, data) => {
+	send: (channel: string, data?: unknown) => {
 		// whitelist channels
 		const validChannels = [
 			`app-exit`,
@@ -30,7 +30,7 @@ contextBridge.exposeInMainWorld(`eyas`, {
 		}
 	},
 
-	receive: (channel, func) => {
+	receive: (channel: string, func: (...args: any[]) => void) => {
 		const validChannels = [
 			`modal-exit-visible`,
 			`show-environment-modal`,
@@ -47,7 +47,7 @@ contextBridge.exposeInMainWorld(`eyas`, {
 		];
 		if (validChannels.includes(channel)) {
 			// Deliberately strip event as it includes `sender`
-			ipcRenderer.on(channel, (event, ...args) => func(...args));
+			ipcRenderer.on(channel, (_event, ...args: any[]) => func(...args));
 		}
 	}
 });

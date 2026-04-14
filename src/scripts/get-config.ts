@@ -1,21 +1,62 @@
 // imports
-import _path from 'path';
-import roots from './get-roots.js';
-import { LOAD_TYPES, EXTENSION } from './constants.js';
-import validator from 'validator';
-import _fs from 'fs';
-import _os from 'os';
-import { execSync } from 'child_process';
-import crypto from 'crypto';
-import * as dateFns from 'date-fns';
-import { createRequire } from 'module';
-import { pathToFileURL } from 'url';
+import _path from "node:path";
+import roots from "./get-roots.js";
+import { LOAD_TYPES, EXTENSION } from "./constants.js";
+import validator from "validator";
+import _fs from "node:fs";
+import _os from "node:os";
+import { execSync } from "node:child_process";
+import crypto from "node:crypto";
+import * as dateFns from "date-fns";
+import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
 
 // setup
 const require = createRequire(import.meta.url);
 const { isURL } = validator;
 const { addHours } = dateFns;
 const baseConfigName = `.eyas.config`;
+
+interface EyasConfig {
+	source?: string;
+	domain?: string | string[] | { url: string; title?: string }[];
+	domains?: string | string[] | { url: string; title?: string }[];
+	title?: string;
+	version?: string;
+	viewports?: { label: string; width: number; height: number }[];
+	links?: { label: string; url: string }[];
+	outputs?: {
+		expires?: number;
+	};
+	meta?: Partial<EyasMeta>;
+	_isConfigLoaded?: boolean;
+}
+
+interface EyasMeta {
+	expires: Date;
+	gitBranch: string | null;
+	gitHash: string | null;
+	gitUser: string | null;
+	compiled: Date;
+	eyas: string;
+	companyId: string | null;
+	projectId: string | null;
+	testId: string;
+	isConfigLoaded: boolean;
+}
+
+interface ValidatedConfig {
+	source: string;
+	domains: { url: string; title?: string }[];
+	title: string;
+	version: string;
+	viewports: { label: string; width: number; height: number }[];
+	links: { label: string; url: string }[];
+	outputs: {
+		expires: number;
+	};
+	meta: EyasMeta;
+}
 
 /*
 Retrieves the configuration for the test by one of the following methods
@@ -25,9 +66,9 @@ Retrieves the configuration for the test by one of the following methods
 - Path to *.eyas found in the same directory as the runner
 - Path to .eyas.config.js loaded via the CLI
 */
-async function getConfig(method, path) {
+async function getConfig(method: string, path?: string): Promise<ValidatedConfig> {
 	// setup
-	let loadedConfig = null;
+	let loadedConfig: EyasConfig | null = null;
 
 	// if auto-detecting the method
 	if (method === LOAD_TYPES.AUTO) {
@@ -54,12 +95,12 @@ async function getConfig(method, path) {
 
 	// if requesting a config via the web
 	if (method === LOAD_TYPES.WEB) {
-		loadedConfig = await getConfigViaUrl(path);
+		loadedConfig = await getConfigViaUrl(path!);
 	}
 
 	// if requesting a config via a file association
 	if (method === LOAD_TYPES.ASSOCIATION) {
-		loadedConfig = await getConfigViaAssociation(path);
+		loadedConfig = await getConfigViaAssociation(path!);
 	}
 
 	// if requesting a config via a sibling file
@@ -83,18 +124,18 @@ async function getConfig(method, path) {
 }
 
 // get the config via web requests ( supports both eyas:// and https:// protocols )
-async function getConfigViaUrl(path) {
+async function getConfigViaUrl(path: string): Promise<EyasConfig> {
 	// setup
 	const defaultConfigName = `eyas.json`;
 
 	// convert the eyas protocol to https if it's not already
-	let url = path.replace(`eyas://`, `https://`);
+	let urlString = path.replace(`eyas://`, `https://`);
 
 	// trim any trailing slashes
-	url = url.replace(/\/+$/, ``);
+	urlString = urlString.replace(/\/+$/, ``);
 
 	// convert the path to a URL object
-	url = new URL(url);
+	const url = new URL(urlString);
 
 	// the url must be valid
 	if (!isURL(url.toString())) {
@@ -108,7 +149,7 @@ async function getConfigViaUrl(path) {
 	url.pathname = `${url.pathname}/${defaultConfigName}`;
 
 	// fetch the config file from the parsed url
-	const loadedConfig = await fetch(url.toString())
+	const loadedConfig: EyasConfig = await fetch(url.toString())
 		.then(response => {
 			if (!response.ok) {
 				throw new Error(`HTTP status ${response.status}`);
@@ -137,13 +178,13 @@ async function getConfigViaUrl(path) {
 }
 
 // get the config via file association
-async function getConfigViaAssociation(path) {
+async function getConfigViaAssociation(path: string): Promise<EyasConfig> {
 	// pass the path through to the asar loader AND return the config object
 	return await getConfigFromAsar(path);
 }
 
 // get the config via a sibling file
-async function getConfigViaRoot() {
+async function getConfigViaRoot(): Promise<EyasConfig | null> {
 	// look for tests in the same directory as the runner
 	const fileInRoot = _fs.readdirSync(roots.config).find(file => file.endsWith(EXTENSION));
 
@@ -157,13 +198,13 @@ async function getConfigViaRoot() {
 }
 
 // get the config via the CLI
-async function getConfigViaCli() {
+async function getConfigViaCli(): Promise<EyasConfig> {
 	// setup
-	let loadedConfig = null;
+	let loadedConfig: EyasConfig | null = null;
 	const consumerPackageJsonPath = _path.join(roots.config, `package.json`);
 	const cjsConfigPath = _path.join(roots.config, `${baseConfigName}.cjs`);
 	const jsConfigPath = _path.join(roots.config, `${baseConfigName}.js`);
-	let consumerPackageJson = null;
+	let consumerPackageJson: { type?: string } | null = null;
 
 	// first load the consumer package.json
 	try {
@@ -177,7 +218,7 @@ async function getConfigViaCli() {
 		// attempt to load a *.cjs config
 		try {
 			loadedConfig = require(cjsConfigPath);
-		} catch (error) {
+		} catch (error: any) {
 			// alert the user about potential issues
 			console.warn(`CLI: Error loading config: ${error.message}`);
 			console.warn(`⚠️ CLI: Please rename ".eyas.config.js" to ".eyas.config.cjs"`);
@@ -190,9 +231,9 @@ async function getConfigViaCli() {
 		try {
 			const loadedModule = await import(pathToFileURL(jsConfigPath).href);
 			loadedConfig = loadedModule?.default || loadedModule;
-			loadedConfig = { ...loadedConfig }; // ensure the object is extensible
+			loadedConfig = { ...loadedConfig! }; // ensure the object is extensible
 			loadedConfig._isConfigLoaded = true;
-		} catch (error) {
+		} catch (error: any) {
 			console.error(`CLI: Error loading config: ${error.message}`);
 			loadedConfig = {};
 		}
@@ -217,10 +258,10 @@ async function getConfigViaCli() {
 // copy the *.eyas file to a temporary location as an *.asar and load the config directly
 // * config cannot be loaded from custom extension
 // * renaming the file to *.asar in-place is poor UX
-async function getConfigFromAsar(path) {
+async function getConfigFromAsar(path: string): Promise<EyasConfig> {
 	// setup
 	const tempFileName = `eyas-config-${crypto.randomUUID()}.asar`;
-	let loadedConfig;
+	let loadedConfig: EyasConfig;
 
 	// determine the path to where a copy of the *.eyas file will live
 	const tempPath = _path.join(_os.tmpdir(), tempFileName);
@@ -234,8 +275,8 @@ async function getConfigFromAsar(path) {
 		// Use require for ASAR paths as import() does not support them
 		const tempConfig = require(configPath);
 		loadedConfig = tempConfig?.default || tempConfig;
-		loadedConfig = { ...loadedConfig }; // ensure the object is extensible
-	} catch (error) {
+		loadedConfig = { ...loadedConfig! }; // ensure the object is extensible
+	} catch (error: any) {
 		console.error(`FILE: Error loading config: ${error.message}`);
 		loadedConfig = {};
 	}
@@ -249,7 +290,7 @@ async function getConfigFromAsar(path) {
 }
 
 // returns the validated configuration based on the loaded config
-function validateConfig(rawConfig, isConfigLoaded = false) {
+function validateConfig(rawConfig: EyasConfig | null, isConfigLoaded = false): ValidatedConfig {
 	// setup
 	const loadedConfig = rawConfig || {};
 	const outputs = loadedConfig.outputs || {};
@@ -257,7 +298,7 @@ function validateConfig(rawConfig, isConfigLoaded = false) {
 	const expiresIn = validateExpiration(outputs.expires);
 
 	// configuration merge and validation step
-	const validatedConfig = {
+	const validatedConfig: ValidatedConfig = {
 		// use given value or resolve to default location
 		source: loadedConfig.source || _path.resolve(roots.config, `dist`),
 		domains: validateCustomDomain(loadedConfig.domain || loadedConfig.domains),
@@ -290,9 +331,9 @@ function validateConfig(rawConfig, isConfigLoaded = false) {
 }
 
 // validate the user input for the custom domain
-function validateCustomDomain(input) {
+function validateCustomDomain(input?: string | string[] | { url: string; title?: string }[]): { url: string; title?: string }[] {
 	// default to an empty array
-	const output = [/* { url: ``, title: `Staging` } */];
+	const output: { url: string; title?: string }[] = [/* { url: ``, title: `Staging` } */];
 
 	// if the input is a string
 	if (typeof input === `string`) {
@@ -323,7 +364,7 @@ function validateCustomDomain(input) {
 }
 
 // get the version of the cli
-function getCliVersion() {
+function getCliVersion(): string {
 	try {
 		const { version } = JSON.parse(_fs.readFileSync(_path.join(roots.module, `package.json`), `utf-8`));
 		return version;
@@ -334,7 +375,7 @@ function getCliVersion() {
 }
 
 // attempts to return the current short hash
-function getCommitHash() {
+function getCommitHash(): string | null {
 	try {
 		return execSync(`git rev-parse --short HEAD`).toString().trim();
 	} catch (error) {
@@ -345,7 +386,7 @@ function getCommitHash() {
 }
 
 // attempts to return the current branch name
-function getBranchName() {
+function getBranchName(): string | null {
 	try {
 		return execSync(`git rev-parse --abbrev-ref HEAD`).toString().trim();
 	} catch (error) {
@@ -356,7 +397,7 @@ function getBranchName() {
 }
 
 // attempts to return the current user name
-function getUserName() {
+function getUserName(): string | null {
 	try {
 		return execSync(`git config user.name`).toString().trim();
 	} catch (error) {
@@ -367,14 +408,14 @@ function getUserName() {
 }
 
 // attempt to hash the user's email domain
-function getCompanyId() {
+function getCompanyId(): string | null {
 	try {
 		const email = execSync(`git config user.email`).toString().trim();
 
 		// get the root domain of the email without subdomains
 		const domain = email
 			.split(`@`) // split up the email
-			.at(-1) // get the last part
+			.at(-1)! // get the last part
 			.split(`.`) // split up the domain
 			.slice(-2) // get the last two parts
 			.join(`.`); // join them back together
@@ -388,7 +429,7 @@ function getCompanyId() {
 }
 
 // get the project id from the git remote
-function getProjectId() {
+function getProjectId(): string | null {
 	try {
 		// Split output into lines and filter out empty lines
 		const remotes = execSync(`git remote`, { encoding: `utf-8` })
@@ -408,12 +449,12 @@ function getProjectId() {
 }
 
 // create a unique id for the test
-function getTestId() {
+function getTestId(): string {
 	return crypto.randomUUID();
 }
 
 // validate the user input for the expiration
-function validateExpiration(hours) {
+function validateExpiration(hours?: any): number {
 	// default
 	let output = hours;
 	const defaultHours = 7 * 24; // 168 hours or 1 week
@@ -447,7 +488,7 @@ function validateExpiration(hours) {
 }
 
 // get the default preview expiration
-function getExpirationDate(expiresInHours) {
+function getExpirationDate(expiresInHours: number): Date {
 	const now = new Date();
 	return addHours(now, expiresInHours);
 }

@@ -1,18 +1,18 @@
 #!/usr/bin/env node
 
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config({ path: [`.env.local`, `.env`] });
-import path from 'path';
-import fs from 'fs-extra';
-import builder from 'electron-builder';
-import { exec } from 'child_process';
-import { getElectronBuilderConfig } from './electron-builder-config.js';
+import path from "path";
+import fs from "fs-extra";
+import builder, { Platform } from "electron-builder";
+import { exec } from "child_process";
+import { getElectronBuilderConfig } from "./electron-builder-config.js";
 
 /**
  * Compiles the runners for the project.
  * @returns {Promise<void>}
  */
-export async function compileRunners() {
+export async function compileRunners(): Promise<void> {
 	const isDev = process.env.NODE_ENV === `dev`;
 	const isInstaller = process.env.PUBLISH_TYPE === `installer`;
 	const isMac = process.platform === `darwin`;
@@ -29,13 +29,13 @@ export async function compileRunners() {
 	};
 
 	// Determine the executables to build
-	const targets = [];
+	const targets: Platform[] = [];
 	if (isWin) {
 		targets.push(builder.Platform.WINDOWS);
 	}
 
 	if (isMac) { targets.push(builder.Platform.MAC); }
-	// if(config.outputs.linux) { targets.push(builder.Platform.LINUX); }
+	// if(config.outputs.linux) { targets.push(Platform.LINUX); }
 
 	// set the name of the output files
 	const installerAppend = isInstaller ? `Installer` : ``;
@@ -55,7 +55,7 @@ export async function compileRunners() {
 	});
 
 	const builtFiles = await builder.build({
-		targets: targets.length ? builder.createTargets(targets) : null,
+		targets: targets.length ? builder.createTargets(targets) : undefined,
 		config,
 		publish: isInstaller ? `always` : `never`
 	});

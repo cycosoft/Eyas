@@ -5,9 +5,9 @@ import path from "path";
  * Returns the resolved path or null if a traversal attempt is detected.
  * @param {string} root - The base directory
  * @param {string} subPath - The relative path to join
- * @returns {string|null}
+ * @returns {string | null}
  */
-function safeJoin(root, subPath) {
+function safeJoin(root: string, subPath: string | null | undefined): string | null {
 	if (!root) { return null; }
 	if (!subPath) { return path.resolve(root); }
 

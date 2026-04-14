@@ -1,9 +1,7 @@
 // via ( https://github.com/electron-userland/electron-builder/issues/4785#issuecomment-918243380 )
 
-'use strict';
-
-import util from 'node:util';
-import { exec as childProcessExec } from 'node:child_process';
+import util from "node:util";
+import { exec as childProcessExec } from "node:child_process";
 
 const exec = util.promisify(childProcessExec);
 
@@ -11,7 +9,12 @@ const exec = util.promisify(childProcessExec);
 const OwnerName = `"Open Source Developer, Eric Higginson"`;
 const TimeStampServer = `http://time.certum.pl/`;
 
-async function doSign (file, hash, owner) {
+interface SignConfig {
+	path: string;
+	hash: string;
+}
+
+async function doSign(file: string, hash: string, owner: string): Promise<void> {
 	const Debug = (process.env.CERT_DEBUG && process.env.CERT_DEBUG === `true`) || false;
 	const Verbose = (process.env.CERT_VERBOSE && process.env.CERT_VERBOSE === `true`) || false;
 	const sha256 = hash === `sha256`;
@@ -43,7 +46,7 @@ async function doSign (file, hash, owner) {
 	}
 }
 
-export default async function (config) {
+export default async function (config: SignConfig): Promise<void> {
 	const Skip = (process.env.CERT_SKIP && process.env.CERT_SKIP === `true`) || false;
 	if (!Skip) {
 		console.info(`Signing ${config.path} with ${config.hash} to ${OwnerName}`);

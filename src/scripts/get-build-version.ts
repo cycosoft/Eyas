@@ -1,12 +1,10 @@
-'use strict';
-
 /**
  * Returns a WiX-compatible build version string in UTC: (YY).(M).(MinutesIntoMonth)
  * (e.g. 26.2.32704).
  * @param {Date} [date] - Optional date to use; defaults to current time in UTC.
  * @returns {string}
  */
-function getBuildVersion(date) {
+export function getBuildVersion(date?: Date): string {
 	const d = date ? new Date(date.getTime()) : new Date();
 	const year = d.getUTCFullYear() - 2000;
 	const month = d.getUTCMonth() + 1;
@@ -18,6 +16,4 @@ function getBuildVersion(date) {
 
 	return `${year}.${month}.${minutesIntoMonth}`;
 }
-
-export { getBuildVersion };
 
