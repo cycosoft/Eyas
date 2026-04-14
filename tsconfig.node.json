@@ -5,7 +5,7 @@
     "composite": true,
     "noEmit": true,
     "types": ["node"],
-    "allowJs": true,
+    "allowJs": false,
     "verbatimModuleSyntax": true
   }
 }

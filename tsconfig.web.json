@@ -8,7 +8,7 @@
     "paths": {
       "@/*": ["src/renderer/src/*"]
     },
-    "allowJs": true,
+    "allowJs": false,
     "types": ["vite/client", "vitest/globals"],
     "verbatimModuleSyntax": true
   }
