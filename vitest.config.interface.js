@@ -22,8 +22,8 @@ export default defineConfig({
 		globals: true,
 		environment: `jsdom`,
 		pool: `vmThreads`,
-		setupFiles: [`./tests/setup/vue-test-setup.js`],
-		include: [`tests/unit/**/*.test.js`],
+		setupFiles: [`./tests/setup/vue-test-setup.ts`],
+		include: [`tests/unit/**/*.test.{js,ts}`],
 		exclude: [`tests/e2e/**`, `tests/electron/**`],
 		css: {
 			include: [/.+/]
