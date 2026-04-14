@@ -146,5 +146,18 @@ export default tseslint.config(
 		rules: {
 			'no-restricted-syntax': `off`
 		}
+	},
+	{
+		// Require TypeScript for all tests and processed script files
+		files: [`tests/electron/**/*.js`, `tests/unit/**/*.js`, `src/scripts/**/*.js`],
+		rules: {
+			'no-restricted-syntax': [
+				`error`,
+				{
+					selector: `Program`,
+					message: `Conversion in progress: please rename this file to .ts.`
+				}
+			]
+		}
 	}
 );
