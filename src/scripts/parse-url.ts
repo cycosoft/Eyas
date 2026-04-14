@@ -1,8 +1,12 @@
 import validator from "validator";
 const { isURL } = validator;
 
-// format the url for electron consumption
-function parseURL(url) {
+/**
+ * Formats the URL for Electron consumption.
+ * @param {string | null | undefined} url - The input URL string to parse.
+ * @returns {URL | string} A parsed URL object or an empty string if invalid.
+ */
+function parseURL(url: string | null | undefined): URL | string {
 	// config
 	const output = ``;
 
