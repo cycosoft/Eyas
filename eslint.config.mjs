@@ -149,7 +149,7 @@ export default tseslint.config(
 	},
 	{
 		// Require TypeScript for all tests and processed script files
-		files: [`tests/electron/**/*.js`, `tests/unit/**/*.js`, `src/scripts/**/*.js`],
+		files: [`src/**/*.js`, `tests/**/*.js`],
 		rules: {
 			'no-restricted-syntax': [
 				`error`,
