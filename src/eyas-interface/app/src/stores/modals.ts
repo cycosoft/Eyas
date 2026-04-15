@@ -1,16 +1,17 @@
 import { defineStore } from 'pinia';
+import type { ModalsState } from '@/types/modals.js';
 
 export default defineStore(`modals`, {
-	state: () => ({
+	state: (): ModalsState => ({
 		visible: []
 	}),
 
 	actions: {
-		track(id) {
+		track(id: string) {
 			this.visible.push(id);
 		},
 
-		untrack(id) {
+		untrack(id: string) {
 			// get the index of the id
 			const index = this.visible.indexOf(id);
 
@@ -23,7 +24,7 @@ export default defineStore(`modals`, {
 	},
 
 	getters: {
-		lastOpenedById() {
+		lastOpenedById(): string | undefined {
 			return this.visible.at(-1);
 		}
 	}
