@@ -1,12 +1,13 @@
 import semver from 'semver';
+import { ChangelogEntry, MarkdownToken } from '../types/changelog.js';
 
 /**
  * Filter and aggregate changelog entries between two versions.
- * @param {Array} changelog - The parsed CHANGELOG.json array.
+ * @param {ChangelogEntry[]} changelog - The parsed CHANGELOG.json array.
  * @param {string} fromVersion - The last seen version.
- * @returns {Array} - Aggregated changelog entries.
+ * @returns {ChangelogEntry[]} - Aggregated changelog entries.
  */
-export function getAggregatedChanges(changelog, fromVersion) {
+export function getAggregatedChanges(changelog: ChangelogEntry[], fromVersion: string): ChangelogEntry[] {
 	if (!changelog || !Array.isArray(changelog)) { return []; }
 
 	return changelog.filter(entry => {
@@ -27,15 +28,15 @@ export function getAggregatedChanges(changelog, fromVersion) {
  * - [text](url) -> { type: 'link', content: 'text', url: 'url' }
  * - Plain text -> { type: 'text', content: '...' }
  * @param {string} text - The input text.
- * @returns {Array} - List of tokens.
+ * @returns {MarkdownToken[]} - List of tokens.
  */
-export function tokenizeMarkdownSubset(text) {
+export function tokenizeMarkdownSubset(text: string): MarkdownToken[] {
 	if (!text) { return []; }
 
-	const tokens = [];
+	const tokens: MarkdownToken[] = [];
 	const regex = /(`[^`]+`|\[[^\]]+\]\([^)]+\))/g;
 	let lastIndex = 0;
-	let match;
+	let match: RegExpExecArray | null;
 
 	while ((match = regex.exec(text)) !== null) {
 		// add plain text before the match
