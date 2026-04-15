@@ -70,7 +70,7 @@
 - **Design System:** Prefer Vuetify.
 - **State Management:** Prefer Pinia (over Vuex).
 - **Unit Testing:** Prefer Vitest with JSDOM.
-- **End-to-End & Component Testing:** Prefer Playwright or Cypress based on project.
+- **End-to-End & Component Testing:** Prefer Vitest, then Playwright, then Cypress.
   - **Default Config if not set:**
     - Screenshots: Disabled by default.
     - Videos: Disabled by default.
@@ -80,10 +80,9 @@
 
 ## Instructions for Writing Tests
 
-**Target File Types:** `*.cy.js`, `*.spec.ts`, `*.test.ts`, `*.spec.js`, `*.test.js`
+**Target File Types:** `*.test.ts`
 
 **Role and Expertise:**
-
 - Assume the role of an experienced Quality Assurance Engineer.
 - Act as an expert in the project's designated testing framework.
 - Always review existing tests for the component/module being tested and follow the same patterns and conventions.
@@ -93,30 +92,28 @@
 - **Targeted Testing:** Only add the specific tests requested by the user by following TDD principles.
 - **Prioritization:** Focus on testing common use cases (non-edge cases) first.
 - **No Application Code Changes:** Do *not* modify or fix bugs in the application code being tested. If potential bugs are found, report them to the user *after* completing the testing task.
-- **New Test Files:** If a test file does not exist for the component/module being tested, ask the user if one should be created.
 - **Excluded Tests:** Do not write tests for Node.js core modules or external system dependencies.
 - Focus tests on verifying the component's behavior and output based on inputs and props, rather than testing internal implementation details.
 
 **Test Implementation Guidelines:**
 
-- **Selectors (Cypress):**
+- **Selectors (e2e):**
   - Always prefer using the `data-qa` attribute for selecting HTML elements.
   - Actively replace existing selectors that use CSS classes with `data-qa` selectors where possible.
-  - If not already present, add a common Cypress custom command (e.g., `getByQA`) to facilitate selecting elements by the `data-qa` attribute.
+  - If not already present, add a common custom test command (e.g., `getByQA`) to facilitate selecting elements by the `data-qa` attribute.
 - **Frameworks:**
-  - Prefer Vitest for unit tests when present.
+  - Prefer Vitest whenever possible due to speed.
 
 **Verification and Troubleshooting:**
 
 - **Command Line Verification:** After writing or updating a test, verify it by running it directly via the command line. For example:
-  - Cypress Component Test: `npx cypress run --component --spec "path/to/your/spec.cy.js"` or `npx vitest run <path/to/your/spec.js>` for vitest.
-  - Do *not* launch the interactive browser runner (e.g., `cypress open`).
-- **Time Limit:** Spend a maximum of 5 minutes trying to get any single test case to pass.
-- **Handling Failing Tests:** If a test case cannot be made to pass within the 5-minute limit, discuss with the user.
+  - `npx vitest run <path/to/your/spec.js>`.
+- **Time Limit:** Spend a maximum of 3 minutes trying to get any single test case to pass.
+- **Handling Failing Tests:** If a test case cannot be made to pass within the 3-minute limit, discuss with the user.
 
 ## Instructions for Writing Code
 
-**Target File Types:** `*.vue`, `*.js`, `*.ts`, `*.html`, `*.css`, `*.scss`, `*.sass`
+**Target File Types:** `*.vue`, `*.ts`, `*.html`, `*.css`, `*.scss`, `*.sass`
 
 **Core Principles:**
 
@@ -128,14 +125,13 @@
 
 **Specific Coding Guidelines:**
 
-- **Control Flow:** Avoid `if/else` statements where possible. Explore alternative patterns.
-- **Array Methods:** Avoid array iteration methods like `.map()`, `.filter()`, etc. Prefer traditional loops or other approaches if simpler.
+- **Control Flow:** Avoid `if/else/elseif` statements where possible. Explore alternative patterns.
+- **Array Methods:** Avoid array iteration methods like `.map()`, `.filter()`, etc. Prefer traditional loops.
 - **TypeScript:**
-  - Only use TypeScript if the project already uses it.
+  - This project explicitly uses TypeScript.
   - Prefer that interfaces are defined for all variables.
   - Interfaces should exist in their own files in the `src/types` directory.
   - Tests should import the types from the `src/types` directory.
-  - Prefer `unknown` for variables when a type cannot be determined.
 - **Vue Components:**
   - Follow the pattern of the project when determining which Vue API format to use. If the project is using Composition API, use that. If the project is using Options API, use that. If the project is using a mix of both, use Options API.
   - Define the `data` property using the arrow function syntax: `data: () => ({})`.
@@ -150,6 +146,7 @@
     1. Explain the specific reason for *each* intended change to the user.
     2. Determine and state the minimum set of changes required to achieve the goal.
     3. If possible, review the difference (`diff`) between the current code and the main branch to understand recent changes.
+    4. Ensure familiariaty with the relevant files and the project structure for the requested change.
 - **Making Changes:**
     1. Make atomic changes: Each commit or change set should focus on a single, well-defined responsibility.
     2. When refactoring, apply only one type of change at a time (e.g., focus solely on renaming variables in one step, then focus on extracting methods in another step).
@@ -158,6 +155,8 @@
     1. Never delete code without documenting the reason for removal.
     2. Before deleting, confirm the code is not used anywhere else in the project. Use search tools if necessary.
     3. If unsure about the impact of deleting code, comment it out first and verify functionality before final removal.
+  **Post-Change Analysis:**
+    1. Alert the user to unnecessary development churn, and offer any suggestions to prevent it in the future (i.e. linter rules)
 
 ## Instructions for Running Terminal Commands
 
@@ -184,3 +183,9 @@
   - Check for the introduction of new third-party dependencies.
   - Verify that the changes do not reimplement functionality already present elsewhere in the project.
   - Confirm adherence to the single responsibility principle.
+
+
+## Explicitly Repeated Instructions to Ensure Compliance
+* Always perform linting and run relevent tests after completing a task. Always confirm your work is functional.
+* Do not proceed on a task until you have explicit approval from the user.
+* Always take a TDD approach to work.
