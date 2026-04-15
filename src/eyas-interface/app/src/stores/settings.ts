@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia';
+import type { SettingsState, Payload } from '../types/settings.js';
 
 export default defineStore(`settings`, {
-	state: () => ({
+	state: (): SettingsState => ({
 		projectSettings: {},
 		appSettings: {},
 		projectId: null,
@@ -10,26 +11,30 @@ export default defineStore(`settings`, {
 	}),
 
 	actions: {
-		setProjectSettings(data) {
+		setProjectSettings(data: Record<string, unknown>) {
 			this.projectSettings = { ...this.projectSettings, ...data };
 		},
 
-		setAppSettings(data) {
+		setAppSettings(data: Record<string, unknown>) {
 			this.appSettings = { ...this.appSettings, ...data };
 		},
 
-		setProjectId(id) {
+		setProjectId(id: string | null) {
 			this.projectId = id;
 		},
 
-		setSetting(keyPath, value, projectId) {
+		setSetting(keyPath: string, value: unknown, projectId?: boolean) {
 			this.$patch(state => {
 				const target = projectId ? state.projectSettings : state.appSettings;
 				const keys = keyPath.split(`.`);
 				const last = keys.pop();
-				const obj = keys.reduce((acc, k) => {
-					if (acc[k] === undefined || typeof acc[k] !== `object`) { acc[k] = {}; }
-					return acc[k];
+				if (!last) { return; }
+
+				const obj = keys.reduce((acc: Record<string, unknown>, k: string) => {
+					if (acc[k] === undefined || typeof acc[k] !== `object`) {
+						acc[k] = {};
+					}
+					return acc[k] as Record<string, unknown>;
 				}, target);
 
 				// only update if the value has changed
@@ -39,11 +44,11 @@ export default defineStore(`settings`, {
 			});
 		},
 
-		setSystemTheme(theme) {
+		setSystemTheme(theme: string) {
 			this.systemTheme = theme;
 		},
 
-		loadFromPayload({ project, app, projectId, systemTheme, version } = {}) {
+		loadFromPayload({ project, app, projectId, systemTheme, version }: Payload = {}) {
 			if (project !== undefined) { this.projectSettings = project; }
 			if (app !== undefined) { this.appSettings = app; }
 			if (projectId !== undefined) { this.projectId = projectId; }
