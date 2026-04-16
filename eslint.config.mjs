@@ -85,6 +85,7 @@ export default tseslint.config(
 			'@typescript-eslint/no-explicit-any': `warn`, // Relaxed for the refactor
 			'@typescript-eslint/no-require-imports': `warn`,
 			'@typescript-eslint/no-var-requires': `warn`,
+			'@typescript-eslint/consistent-type-definitions': [`error`, `interface`],
 
 			// Import Rules
 			'import/no-commonjs': `error`,
