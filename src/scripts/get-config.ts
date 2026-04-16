@@ -421,18 +421,16 @@ function getTestId(): string {
 // validate the user input for the expiration
 function validateExpiration(hours?: unknown): number {
 	// default
-	let output = hours;
 	const defaultHours = 7 * 24; // 168 hours or 1 week
 	const minHours = 1;
 	const maxHours = 30 * 24;
 
+	let output = typeof hours === `number` ? hours : defaultHours;
+
 	// if not a number
-	if (typeof output !== `number` || isNaN(output)) {
+	if (isNaN(output)) {
 		output = defaultHours;
 	}
-
-	// cast to a number
-	output = Number(output);
 
 	// must be a whole number
 	if (!Number.isInteger(output)) {

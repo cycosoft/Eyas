@@ -26,7 +26,13 @@ export interface MenuContext {
 	onCheckForUpdates: () => void;
 	onInstallUpdate: () => void;
 	testServerActive?: boolean;
+	testServerRemainingTime?: string;
 	onStartTestServer: () => void;
+	onStopTestServer?: () => void | Promise<void>;
+	onCopyTestServerUrl?: () => void;
+	onOpenTestServerInBrowser?: (event?: unknown, url?: string) => void;
+	testServerHttpsEnabled?: boolean;
+	onToggleTestServerHttps?: () => void;
 	toggleTestDevTools: () => void;
 	isInitializing?: boolean;
 	isConfigLoaded?: boolean;

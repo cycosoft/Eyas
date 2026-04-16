@@ -1,4 +1,4 @@
-import { MessageBoxOptions } from 'electron';
+import type { MessageBoxOptions } from 'electron';
 
 /**
  * Returns options for showing the "No update available" dialog.

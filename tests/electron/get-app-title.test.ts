@@ -36,7 +36,7 @@ describe(`getAppTitle`, () => {
 	});
 
 	test(`should include pageTitle even with no URL`, () => {
-		const result = getAppTitle(`Test App`, `1.0.0`, null, `My Page`);
+		const result = getAppTitle(`Test App`, `1.0.0`, undefined, `My Page`);
 		expect(result).toBe(`Test App :: 1.0.0 ✨ — My Page`);
 	});
 
@@ -55,29 +55,29 @@ describe(`sanitizePageTitle`, () => {
 		expect(sanitizePageTitle(`  My Page  `, `https://example.com`)).toBe(`My Page`);
 	});
 
-	test(`should return null when pageTitle is empty or whitespace`, () => {
-		expect(sanitizePageTitle(``, `https://example.com`)).toBeNull();
-		expect(sanitizePageTitle(`   `, `https://example.com`)).toBeNull();
-		expect(sanitizePageTitle(null, `https://example.com`)).toBeNull();
-		expect(sanitizePageTitle(undefined, `https://example.com`)).toBeNull();
+	test(`should return undefined when pageTitle is empty or whitespace`, () => {
+		expect(sanitizePageTitle(``, `https://example.com`)).toBeUndefined();
+		expect(sanitizePageTitle(`   `, `https://example.com`)).toBeUndefined();
+		expect(sanitizePageTitle(null, `https://example.com`)).toBeUndefined();
+		expect(sanitizePageTitle(undefined, `https://example.com`)).toBeUndefined();
 	});
 
-	test(`should return null when page is a data: URL (regardless of pageTitle value)`, () => {
-		expect(sanitizePageTitle(`Some Title`, `data:text/html,<html></html>`)).toBeNull();
-		expect(sanitizePageTitle(`data:text/html,<html></html>`, `data:text/html,<html></html>`)).toBeNull();
+	test(`should return undefined when page is a data: URL (regardless of pageTitle value)`, () => {
+		expect(sanitizePageTitle(`Some Title`, `data:text/html,<html></html>`)).toBeUndefined();
+		expect(sanitizePageTitle(`data:text/html,<html></html>`, `data:text/html,<html></html>`)).toBeUndefined();
 	});
 
-	test(`should return null when pageTitle equals the raw URL (Electron fallback)`, () => {
-		expect(sanitizePageTitle(`https://example.com`, `https://example.com`)).toBeNull();
+	test(`should return undefined when pageTitle equals the raw URL (Electron fallback)`, () => {
+		expect(sanitizePageTitle(`https://example.com`, `https://example.com`)).toBeUndefined();
 	});
 
-	test(`should return null when pageTitle is the URL hostname (Electron fallback on failed load)`, () => {
-		expect(sanitizePageTitle(`landing.dev.cycosoft.com`, `https://landing.dev.cycosoft.com/`)).toBeNull();
-		expect(sanitizePageTitle(`example.com`, `https://example.com/some/path`)).toBeNull();
+	test(`should return undefined when pageTitle is the URL hostname (Electron fallback on failed load)`, () => {
+		expect(sanitizePageTitle(`landing.dev.cycosoft.com`, `https://landing.dev.cycosoft.com/`)).toBeUndefined();
+		expect(sanitizePageTitle(`example.com`, `https://example.com/some/path`)).toBeUndefined();
 	});
 
-	test(`should return null when rawUrl is absent`, () => {
-		expect(sanitizePageTitle(`My Page`, null)).toBe(`My Page`);
+	test(`should return undefined when rawUrl is absent`, () => {
+		expect(sanitizePageTitle(`My Page`, undefined)).toBe(`My Page`);
 		expect(sanitizePageTitle(`My Page`, undefined)).toBe(`My Page`);
 	});
 });

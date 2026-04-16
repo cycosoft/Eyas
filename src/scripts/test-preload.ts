@@ -135,6 +135,13 @@ function polyfillUploadProgress(): void {
 			emitProgress(fileBytes, fileBytes);
 		});
 
+		// the event to dispatch the progress event
+		const emitProgress = (loaded: number, total: number) => {
+			this.upload.dispatchEvent(new ProgressEvent(`progress`,
+				{ lengthComputable: true, loaded, total }
+			));
+		};
+
 		// dispatch an initial progress event with 0 loaded bytes
 		emitProgress(0, fileBytes);
 
@@ -147,13 +154,6 @@ function polyfillUploadProgress(): void {
 
 			// alert the progress event
 			emitProgress(loaded, fileBytes);
-		};
-
-		// the event to dispatch the progress event
-		const emitProgress = (loaded: number, total: number) => {
-			this.upload.dispatchEvent(new ProgressEvent(`progress`,
-				{ lengthComputable: true, loaded, total }
-			));
 		};
 
 		// update the new progress event now and then every following interval

@@ -4,9 +4,9 @@
   "compilerOptions": {
     "composite": true,
     "noEmit": true,
-    "baseUrl": ".",
+    "noImplicitAny": true,
     "paths": {
-      "@/*": ["src/renderer/src/*"]
+      "@/*": ["./src/renderer/src/*"]
     },
     "allowJs": false,
     "types": ["vite/client", "vitest/globals"],

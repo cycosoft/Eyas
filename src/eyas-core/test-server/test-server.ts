@@ -1,19 +1,18 @@
 import path from 'node:path';
 import express from 'express';
-// @ts-expect-error - get-port is an ESM module and might not resolve correctly in all environments
 import getPortModule from 'get-port';
 import http from 'node:http';
 import https from 'node:https';
 import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import {
+import type {
 	TestServerState,
 	TestServerOptions,
 	CachedPorts,
 	TestServer
 } from '../../types/test-server.js';
 
-const getPort = typeof getPortModule === `function` ? getPortModule : (getPortModule as { default: typeof getPortModule }).default;
+const getPort = typeof getPortModule === `function` ? getPortModule : (getPortModule as unknown as { default: typeof getPortModule }).default;
 
 let safeJoin: ((root: string, subPath: string | null | undefined) => string | null) | null = null;
 let parseURL: ((url: string | null | undefined) => URL | string) | null = null;
@@ -73,15 +72,10 @@ async function getAvailablePort(urlStr: string | null, useHttps: boolean): Promi
 	return cachedPorts[protoKey]!;
 }
 
-interface ExpressRequest {
-	path: string;
-	_safePath?: string;
-}
 
-interface ExpressResponse {
-	status: (code: number) => ExpressResponse;
-	end: () => void;
-	sendFile: (path: string) => void;
+// Extended types for express
+interface EyasRequest extends express.Request {
+	_safePath?: string;
 }
 
 async function startTestServer(options: TestServerOptions): Promise<TestServerState | null> {
@@ -108,12 +102,12 @@ async function startTestServer(options: TestServerOptions): Promise<TestServerSt
 	const port = await getAvailablePort(null, useHttps);
 	const app = express();
 
-	// @ts-expect-error - Express types are not available
-	app.use((req: ExpressRequest, res: ExpressResponse, next: () => void) => {
+	app.use((req: EyasRequest, res: express.Response, next: express.NextFunction) => {
 		if (safeJoin) {
 			const safe = safeJoin(rootPath, req.path);
 			if (safe === null) {
-				return res.status(404).end();
+				res.status(404).end();
+				return;
 			}
 			req._safePath = safe;
 		}
@@ -123,13 +117,11 @@ async function startTestServer(options: TestServerOptions): Promise<TestServerSt
 	app.use(express.static(rootPath, { index: [`index.html`] }));
 
 	// SPA Fallback: send index.html for non-matched routes
-	// @ts-expect-error - Express types are not available
-	app.get(`*path`, (req: ExpressRequest, res: ExpressResponse) => {
+	app.get(`*path`, (_req: EyasRequest, res: express.Response) => {
 		res.sendFile(path.join(rootPath, `index.html`));
 	});
 
-	// @ts-expect-error - Express types are not available
-	app.use((req: ExpressRequest, res: ExpressResponse) => {
+	app.use((_req: EyasRequest, res: express.Response) => {
 		res.status(404).end();
 	});
 
@@ -153,7 +145,6 @@ async function startTestServer(options: TestServerOptions): Promise<TestServerSt
 		// if there was an error, clear the port and server state and try again
 		cachedPorts[options.useHttps ? `https` : `http`] = null;
 		server = null;
-		// @ts-expect-error - Recursion without await is intentional to retry once
 		return startTestServer(options);
 	}
 

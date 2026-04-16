@@ -2,23 +2,23 @@
  * Sanitizes the page title before including it in the window title.
  * @param {string} rawPageTitle - The raw value from webContents.getTitle().
  * @param {string} rawUrl - The raw URL (before data: filtering) from webContents.getURL().
- * @returns {string | null} The trimmed page title, or null if it should be omitted.
+ * @returns {string | undefined} The trimmed page title, or undefined if it should be omitted.
  */
-export function sanitizePageTitle(rawPageTitle: string | null | undefined, rawUrl: string | null | undefined): string | null {
+export function sanitizePageTitle(rawPageTitle: string | null | undefined, rawUrl: string | null | undefined): string | undefined {
 	// Omit empty or whitespace-only titles
-	if (!rawPageTitle?.trim()) { return null; }
+	if (!rawPageTitle?.trim()) { return undefined; }
 
 	// Omit when on a data: URL page (getTitle() may return the data URL or encoded content)
-	if (rawUrl?.startsWith(`data:`)) { return null; }
+	if (rawUrl?.startsWith(`data:`)) { return undefined; }
 
 	// Omit when the title is just the URL (Electron's fallback when <title> is absent)
-	if (rawPageTitle === rawUrl) { return null; }
+	if (rawPageTitle === rawUrl) { return undefined; }
 
 	// Omit when the title is just the hostname (Electron's fallback on failed page loads)
 	try {
 		if (rawUrl) {
 			const { hostname } = new URL(rawUrl);
-			if (rawPageTitle === hostname) { return null; }
+			if (rawPageTitle === hostname) { return undefined; }
 		}
 	} catch {
 		// rawUrl is not a parseable URL — skip this check

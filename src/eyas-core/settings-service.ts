@@ -135,10 +135,11 @@ function set(keyPath: string, value: unknown, projectId?: string): void {
 /**
  * Return the settings object for a specific project.
  * Returns an empty object (not defaults) when the project has no stored settings.
- * @param {string} projectId
+ * @param {string} [projectId]
  * @returns {object}
  */
-function getProjectSettings(projectId: string): ProjectSettings {
+function getProjectSettings(projectId?: string): ProjectSettings {
+	if (!projectId) { return {}; }
 	return _data?.projects?.[projectId] || {};
 }
 

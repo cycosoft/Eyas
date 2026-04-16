@@ -56,6 +56,7 @@ import { LOAD_TYPES, TEST_SERVER_SESSION_DURATION_MS } from '../scripts/constant
 import type { ValidatedConfig } from '../types/config.js';
 import type { MenuContext } from '../types/menu.js';
 import type { DeepLinkContext } from '../types/deep-link.js';
+import type { TestServerOptions } from '../types/test-server.js';
 
 // global variables $
 const $isDev = process.argv.includes(`--dev`);
@@ -65,7 +66,7 @@ let $config: ValidatedConfig | null = null;
 let $configToLoad: { method?: string; path?: string } = {};
 let $testNetworkEnabled = true;
 let $testServerHttpsEnabled = false;
-let $lastTestServerOptions: { customDomain: string | null } | null = null;
+let $lastTestServerOptions: TestServerOptions | null = null;
 let $testServerEndTime: number | null = null;
 let $testServerMenuIntervalId: NodeJS.Timeout | null = null;
 let $testDomainRaw: string | null = null;
@@ -177,7 +178,7 @@ async function initElectronCore(): Promise<void> {
 	};
 
 	// macOS: detect if the app was opened with a file
-	_electronCore.on(`open-file`, async (event, path) => {
+	_electronCore.on(`open-file`, async (_event, path) => {
 		// ensure the correct file type is being opened
 		if (!path.endsWith(`.eyas`)) { return; }
 
@@ -393,7 +394,7 @@ function initTestListeners(): void {
 	});
 
 	// when navigation starts
-	$appWindow.webContents.on(`did-start-navigation`, (event, url) => {
+	$appWindow.webContents.on(`did-start-navigation`, (_event, url) => {
 		// if the url is not the placeholder data url or about:blank
 		if (!url.startsWith(`data:text/html`) && url !== `about:blank`) {
 			// if the app is still initializing
@@ -408,7 +409,7 @@ function initTestListeners(): void {
 	});
 
 	// when there's a navigation failure
-	$appWindow.webContents.on(`did-fail-load`, (event, errorCode, errorDescription) => {
+	$appWindow.webContents.on(`did-fail-load`, (_event, errorCode, errorDescription) => {
 		// log the error
 		console.error(`Navigation failed: ${errorCode} - ${errorDescription}`);
 	});
@@ -419,14 +420,14 @@ function initTestListeners(): void {
 		win.on(`page-title-updated`, (evt, title) => {
 			evt.preventDefault();
 			const rawUrl = win.webContents.getURL();
-			const url = rawUrl?.startsWith(`data:`) ? null : rawUrl;
+			const url = rawUrl?.startsWith(`data:`) ? undefined : rawUrl;
 			win.setTitle(getAppTitle($config!.title, $config!.version, url, sanitizePageTitle(title, rawUrl)));
 		});
 
 		// Also apply our format when the new window finishes loading
 		win.webContents.on(`did-finish-load`, () => {
 			const rawUrl = win.webContents.getURL();
-			const url = rawUrl?.startsWith(`data:`) ? null : rawUrl;
+			const url = rawUrl?.startsWith(`data:`) ? undefined : rawUrl;
 			win.setTitle(getAppTitle($config!.title, $config!.version, url, sanitizePageTitle(win.webContents.getTitle(), rawUrl)));
 		});
 	});
@@ -436,7 +437,7 @@ function initTestListeners(): void {
 function initUiListeners(): void {
 
 	// update the network status
-	ipcMain.on(`network-status`, (event, status: boolean) => {
+	ipcMain.on(`network-status`, (_event, status: boolean) => {
 		$testNetworkEnabled = status;
 		setMenu();
 	});
@@ -460,7 +461,7 @@ function initUiListeners(): void {
 	});
 
 	// listen for the user to select an environment
-	ipcMain.on(`environment-selected`, (event, domain: string | { url: string; key?: string }) => {
+	ipcMain.on(`environment-selected`, (_event, domain: string | { url: string; key?: string }) => {
 		// support both legacy string (url only) and new object {url, key} formats
 		const domainUrl = typeof domain === `string` ? domain : domain.url;
 		const domainKey = typeof domain === `string` ? null : (domain.key ?? null);
@@ -482,7 +483,7 @@ function initUiListeners(): void {
 		const activeProjectId = $config?.meta?.projectId || null;
 		const targetProjectId = (projectId && projectId === activeProjectId) ? activeProjectId : null;
 
-		settingsService.set(key, value, targetProjectId);
+		settingsService.set(key, value, targetProjectId ?? undefined);
 		await settingsService.save();
 		event.reply(`setting-saved`, { key, projectId: targetProjectId });
 
@@ -501,14 +502,14 @@ function initUiListeners(): void {
 		// from the renderer to prevent cross-project data leakage.
 		const activeProjectId = $config?.meta?.projectId || null;
 		event.reply(`settings-loaded`, {
-			project: settingsService.getProjectSettings(activeProjectId),
+			project: settingsService.getProjectSettings(activeProjectId ?? undefined),
 			app: settingsService.getAppSettings(),
 			systemTheme: nativeTheme.shouldUseDarkColors ? `dark` : `light`,
 			version: _appVersion
 		});
 	});
 
-	ipcMain.on(`renderer-ready-for-modals`, (event, latestChangelogVersion: string) => {
+	ipcMain.on(`renderer-ready-for-modals`, (_event, latestChangelogVersion: string) => {
 		$latestChangelogVersion = latestChangelogVersion;
 		if (!$isStartupSequenceChecked) {
 			$isStartupSequenceChecked = true;
@@ -517,15 +518,16 @@ function initUiListeners(): void {
 	});
 
 	// listen for the user to launch a link
-	ipcMain.on(`launch-link`, (event, { url, openInBrowser }: { url: string; openInBrowser: boolean }) => {
+	ipcMain.on(`launch-link`, (_event, { url, openInBrowser }: { url: string; openInBrowser: boolean }) => {
 		// navigate to the requested url
 		navigate(parseURL(url).toString(), openInBrowser);
 	});
 
 	// test server setup modal: user clicked Continue, start the server
-	ipcMain.on(`test-server-setup-continue`, (event, { useHttps, autoOpenBrowser, useCustomDomain }: { useHttps: boolean; autoOpenBrowser: boolean; useCustomDomain: boolean }) => {
+	ipcMain.on(`test-server-setup-continue`, (_event, { useHttps, autoOpenBrowser, useCustomDomain }: { useHttps: boolean; autoOpenBrowser: boolean; useCustomDomain: boolean }) => {
 		$testServerHttpsEnabled = !!useHttps;
-		const customDomain = useCustomDomain ? (parseURL($testDomain)?.hostname || `test.local`) : null;
+		const parsed = parseURL($testDomain);
+		const customDomain = useCustomDomain ? (parsed instanceof URL ? parsed.hostname : `test.local`) : null;
 		doStartTestServer(autoOpenBrowser, customDomain);
 	});
 
@@ -588,7 +590,7 @@ async function trackEvent(event: string, extraData?: Record<string, unknown>): P
 		state.deviceId = await machineId();
 
 		// define who the user is in mixpanel
-		state.mixpanel.people.set(state.deviceId);
+		state.mixpanel.people.set(state.deviceId, {});
 	}
 
 	// if not running in dev mode
@@ -636,7 +638,7 @@ function getAppTitleWithContext(rawPageTitle?: string): string {
 	const rawUrl = $appWindow ? $appWindow.webContents.getURL() : null;
 
 	// ignore data: URLs in the address bar
-	const url = rawUrl?.startsWith(`data:`) ? null : rawUrl;
+	const url = (rawUrl?.startsWith(`data:`) ? undefined : rawUrl) || undefined;
 
 	// Sanitize the page title against the raw URL (before data: nulling)
 	const pageTitle = sanitizePageTitle(rawPageTitle, rawUrl || ``);
@@ -807,7 +809,7 @@ function copyTestServerUrlHandler(): void {
 	}
 }
 
-function openTestServerInBrowserHandler(event?: unknown, url?: string): void {
+function openTestServerInBrowserHandler(_event?: unknown, url?: string): void {
 	if ($isInitializing) return;
 	const state = testServer.getTestServerState();
 
@@ -834,13 +836,13 @@ async function startTestServerHandler(): Promise<void> {
 		const portHttp = await testServer.getAvailablePort($testDomain, false);
 		const portHttps = await testServer.getAvailablePort($testDomain, true);
 		const parsedTestDomain = parseURL($testDomain);
-		const hostnameForHosts = parsedTestDomain?.hostname || `test.local`;
+		const hostnameForHosts = (parsedTestDomain instanceof URL ? parsedTestDomain.hostname : null) || `test.local`;
 		const isWindows = process.platform === `win32`;
 
 		const projectId = $config?.meta?.projectId || null;
-		$testServerHttpsEnabled = settingsService.get(`testServer.useHttps`, projectId) as boolean;
-		const autoOpenBrowser = settingsService.get(`testServer.autoOpenBrowser`, projectId) as boolean;
-		const useCustomDomain = settingsService.get(`testServer.useCustomDomain`, projectId) as boolean;
+		$testServerHttpsEnabled = settingsService.get(`testServer.useHttps`, projectId ?? undefined) as boolean;
+		const autoOpenBrowser = settingsService.get(`testServer.autoOpenBrowser`, projectId ?? undefined) as boolean;
+		const useCustomDomain = settingsService.get(`testServer.useCustomDomain`, projectId ?? undefined) as boolean;
 
 		uiEvent(`show-test-server-setup-modal`, {
 			domain: `http://127.0.0.1`,
@@ -872,7 +874,7 @@ async function doStartTestServer(autoOpenBrowser = true, customDomain: string | 
 			rootPath: $paths.testSrc!,
 			useHttps: $testServerHttpsEnabled,
 			certs: certs || undefined,
-			customDomain
+			customDomain: customDomain ?? undefined
 		};
 		await testServer.startTestServer(options);
 		$lastTestServerOptions = options;
@@ -1030,7 +1032,10 @@ Runner: v${_appVersion}
 		},
 		openCacheFolder: () => {
 			if (!$appWindow) { return; }
-			shell.openPath($appWindow.webContents.session.getStoragePath());
+			const storagePath = $appWindow.webContents.session.getStoragePath();
+			if (storagePath) {
+				shell.openPath(storagePath);
+			}
 		},
 		refreshMenu: setMenu,
 		viewportItems,
@@ -1060,9 +1065,9 @@ Runner: v${_appVersion}
 		isConfigLoaded: !!$config?.meta?.isConfigLoaded,
 		isEnvironmentPending: $isEnvironmentPending,
 		onOpenSettings: () => uiEvent(`show-settings-modal`, {
-			project: settingsService.getProjectSettings($config?.meta?.projectId),
+			project: settingsService.getProjectSettings($config?.meta?.projectId ?? undefined),
 			app: settingsService.getAppSettings(),
-			projectId: $config?.meta?.projectId
+			projectId: $config?.meta?.projectId || undefined
 		}),
 		onShowWhatsNew: () => uiEvent(`show-whats-new`, true)
 	};
@@ -1234,7 +1239,8 @@ function setupEyasNetworkHandlers(): void {
 	ses.protocol.handle(`ui`, request => {
 
 		// drop the protocol from the request
-		const { pathname: relativePathToFile } = parseURL(request.url.replace(`ui://`, `https://`))!;
+		const parsed = parseURL(request.url.replace(`ui://`, `https://`));
+		const relativePathToFile = (parsed instanceof URL ? parsed.pathname : ``);
 
 		// build the expected path to the requested file
 		const localFilePath = safeJoin($paths.uiSource, relativePathToFile);
@@ -1256,7 +1262,8 @@ function setupEyasNetworkHandlers(): void {
 		}
 
 		// grab the pathname from the request
-		const { pathname } = parseURL(request.url.replace(`eyas://`, `https://`))!;
+		const parsed = parseURL(request.url.replace(`eyas://`, `https://`));
+		const pathname = (parsed instanceof URL ? parsed.pathname : ``);
 
 		// parse expected file attempting to load
 		const fileIfNotDefined = `index.html`;
@@ -1294,16 +1301,21 @@ function setupEyasNetworkHandlers(): void {
 	// listen for requests to the specified domains and redirect to the custom protocol
 	ses.protocol.handle(`https`, async request => {
 		// setup
-		const { hostname, pathname } = parseURL(request.url)!;
+		const parsedRequest = parseURL(request.url);
+		if (!(parsedRequest instanceof URL)) {
+			return ses.fetch(request);
+		}
+		const { hostname, pathname } = parsedRequest;
 		let bypassCustomProtocolHandlers = true;
 
 		// if the request's hostname matches the test domain
-		if (hostname === parseURL($testDomain)?.hostname) {
+		const parsedTestDomain = parseURL($testDomain);
+		if (hostname === (parsedTestDomain instanceof URL ? parsedTestDomain.hostname : null)) {
 			// check if the config.source is a valid url
 			const sourceOnWeb = parseURL($config!.source);
 
 			// if the config.source is a url
-			if (sourceOnWeb) {
+			if (sourceOnWeb instanceof URL) {
 				// redirect to the source domain with the same path
 				const newUrl = sourceOnWeb.origin
 					+ (sourceOnWeb.pathname + pathname)
@@ -1384,8 +1396,8 @@ async function startAFreshTest(forceShow = false): Promise<void> {
 	if ($config?.domains.length === 1) {
 		console.log(`Single domain defined, navigating...`);
 		// update the default domain and env key
-		$testDomainRaw = $config.domains[0].url;
-		$testDomain = parseURL($testDomainRaw)?.toString() || $testDomain;
+		const parsed = parseURL($testDomainRaw);
+		$testDomain = (parsed instanceof URL ? parsed.toString() : $testDomain);
 		$envKey = $config.domains[0].key ?? null;
 
 		// directly load the user's test using the new default domain
@@ -1395,7 +1407,7 @@ async function startAFreshTest(forceShow = false): Promise<void> {
 	// if the user has multiple custom domains
 	if ($config && $config.domains.length > 1) {
 		const currentHash = hashDomains($config.domains);
-		const envSettings = settingsService.get(`env`, $config.meta.projectId) as { alwaysChoose?: boolean; lastChoice?: { url: string; key?: string }; lastChoiceHash?: string } | undefined;
+		const envSettings = settingsService.get(`env`, $config.meta.projectId ?? undefined) as { alwaysChoose?: boolean; lastChoice?: { url: string; key?: string }; lastChoiceHash?: string } | undefined;
 		const alwaysChoose = envSettings?.alwaysChoose;
 		const lastChoice = envSettings?.lastChoice;
 		const lastHash = envSettings?.lastChoiceHash;
@@ -1404,14 +1416,15 @@ async function startAFreshTest(forceShow = false): Promise<void> {
 		if (!forceShow && alwaysChoose && lastChoice && lastHash === currentHash) {
 			// auto-select the previously chosen environment
 			$testDomainRaw = lastChoice.url;
-			$testDomain = parseURL(lastChoice.url)?.toString() || $testDomain;
+			const parsed = parseURL(lastChoice.url);
+			$testDomain = (parsed instanceof URL ? parsed.toString() : $testDomain);
 			$envKey = lastChoice.key ?? null;
 			navigate();
 		} else {
 			// display the environment chooser modal
 			$isEnvironmentPending = true;
 			uiEvent(`show-environment-modal`, $config.domains, {
-				projectId: $config.meta.projectId,
+				projectId: $config.meta.projectId ?? undefined,
 				alwaysChoose: !!alwaysChoose,
 				domainsHash: currentHash,
 				forceShow

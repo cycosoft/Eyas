@@ -1,5 +1,5 @@
 import selfsigned from 'selfsigned';
-import { CertBundle, CertOptions } from '../../types/test-server.js';
+import type { CertBundle, CertOptions } from '../../types/test-server.js';
 
 const certCache = new Map<string, CertBundle>();
 
@@ -14,6 +14,8 @@ export async function getCerts(domains: string | string[], options: CertOptions 
 	}
 
 	const validity = options.validityDays ?? 7;
+	const notAfterDate = new Date();
+	notAfterDate.setDate(notAfterDate.getDate() + validity);
 
 	const attrs = [
 		{ name: `commonName`, value: Array.isArray(domains) ? domains[0] : domains },
@@ -25,7 +27,7 @@ export async function getCerts(domains: string | string[], options: CertOptions 
 
 	const pems = await selfsigned.generate(attrs, {
 		algorithm: `sha256`,
-		days: validity,
+		notAfterDate,
 		keySize: 2048,
 		extensions: [
 			{
