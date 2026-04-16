@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'vitest';
 import { buildMenuTemplate } from '../../src/eyas-core/menu-template.js';
 
-const noop = () => { };
+const noop = (): void => { };
 
 const minimalContext = {
 	appName: `Eyas`,

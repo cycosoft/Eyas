@@ -25,7 +25,7 @@ describe(`TestServerActiveModal`, () => {
 		vi.useRealTimers();
 	});
 
-	async function setup(payload = null) {
+	async function setup(payload: Record<string, unknown> | null = null): Promise<void> {
 		wrapper = mount(TestServerActiveModal, {
 			global: {
 				stubs: {

@@ -8,9 +8,9 @@ vi.mock(`child_process`, async () => {
 	const actual = await vi.importActual(`child_process`);
 	return {
 		...actual,
-		execSync: (...args) => {
-			if (global.execSyncMock) return global.execSyncMock(...args);
-			return actual.execSync(...args);
+		execSync: (command: string, options?: unknown): string | Buffer => {
+			if (global.execSyncMock) return global.execSyncMock(command, options);
+			return actual.execSync(command, options as Record<string, unknown>);
 		}
 	};
 });

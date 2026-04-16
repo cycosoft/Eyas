@@ -51,7 +51,7 @@ process.once(`document-start`, () => {
 });
 
 // grab the given function as a string, wrap it in an anonymous function, and return it
-function injectWithAnonymousScope(fn: (...args: unknown[]) => unknown): string {
+export function injectWithAnonymousScope(fn: (...args: unknown[]) => unknown): string {
 	// newline required for the function to be properly parsed
 	return `(() => {
 		${extractFunctionBody(fn)}
@@ -59,7 +59,7 @@ function injectWithAnonymousScope(fn: (...args: unknown[]) => unknown): string {
 }
 
 // Extract the body of the function
-function extractFunctionBody(fn: (...args: unknown[]) => unknown): string {
+export function extractFunctionBody(fn: (...args: unknown[]) => unknown): string {
 	// convert the given function to a string
 	const content = fn.toString();
 
@@ -74,19 +74,19 @@ function extractFunctionBody(fn: (...args: unknown[]) => unknown): string {
 }
 
 // allow network detection status within Eyas
-function reportNetworkStatus(): void {
+export function reportNetworkStatus(): void {
 	window.addEventListener(`online`, () => window.eyas?.send(`network-status`, true));
 	window.addEventListener(`offline`, () => window.eyas?.send(`network-status`, false));
 }
 
 // polyfill for upload progress within Eyas
-function polyfillUploadProgress(): void {
+export function polyfillUploadProgress(): void {
 	const origOpen = XMLHttpRequest.prototype.send;
 	const minUploadSpeed = 50 * 1024;
 	let uploadSpeed = 150 * 1024; // default to 150KB/s
 
 	// Can be: Document, Blob, ArrayBuffer, Int8Array, DataView, FormData, URLSearchParams, string, object, null.
-	XMLHttpRequest.prototype.send = function (this: XMLHttpRequest, data?: Document | XMLHttpRequestBodyInit | null) {
+	XMLHttpRequest.prototype.send = function (this: XMLHttpRequest, data?: Document | XMLHttpRequestBodyInit | null): void {
 		// setup
 		const intervalTiming = 100;
 		let totalUpdates = 0;
@@ -136,7 +136,7 @@ function polyfillUploadProgress(): void {
 		});
 
 		// the event to dispatch the progress event
-		const emitProgress = (loaded: number, total: number) => {
+		const emitProgress = (loaded: number, total: number): void => {
 			this.upload.dispatchEvent(new ProgressEvent(`progress`,
 				{ lengthComputable: true, loaded, total }
 			));
@@ -145,7 +145,7 @@ function polyfillUploadProgress(): void {
 		// dispatch an initial progress event with 0 loaded bytes
 		emitProgress(0, fileBytes);
 
-		const updateProgress = () => {
+		const updateProgress = (): void => {
 			totalUpdates++;
 			let loaded = totalUpdates * uploadSpeed * (intervalTiming / 1000);
 

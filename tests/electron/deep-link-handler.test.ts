@@ -45,7 +45,7 @@ describe(`handleEyasProtocolUrl`, () => {
 		const startAFreshTest = vi.fn();
 		const setConfigToLoad = vi.fn();
 		const context = {
-			getAppWindow: () => null,
+			getAppWindow: (): null => null,
 			setConfigToLoad,
 			loadConfig,
 			startAFreshTest,
@@ -62,7 +62,7 @@ describe(`handleEyasProtocolUrl`, () => {
 		const startAFreshTest = vi.fn();
 		const setConfigToLoad = vi.fn();
 		const context = {
-			getAppWindow: () => null,
+			getAppWindow: (): null => null,
 			setConfigToLoad,
 			loadConfig,
 			startAFreshTest,
@@ -84,7 +84,7 @@ describe(`handleEyasProtocolUrl`, () => {
 		const startAFreshTest = vi.fn();
 		const setConfigToLoad = vi.fn();
 		const context = {
-			getAppWindow: () => ({}),
+			getAppWindow: (): object => ({}),
 			setConfigToLoad,
 			loadConfig,
 			startAFreshTest,

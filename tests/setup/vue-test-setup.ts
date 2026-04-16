@@ -41,7 +41,7 @@ Object.defineProperty(global.window, `visualViewport`, {
 
 // Mock ResizeObserver for Vuetify components
 global.ResizeObserver = class ResizeObserver {
-	observe() {}
-	unobserve() {}
-	disconnect() {}
+	observe(): void {}
+	unobserve(): void {}
+	disconnect(): void {}
 };

@@ -12,13 +12,13 @@ vi.mock(`node:util`, async importOriginal => {
 	const actual = await importOriginal();
 	return {
 		...actual,
-		promisify: fn => {
+		promisify: (fn: (...args: unknown[]) => unknown): ((...args: unknown[]) => unknown) => {
 			if (fn === exec) {
-				return async cmd => {
-					return fn(cmd);
-				};
+				return (async (cmd: string): Promise<{ stdout: string; stderr: string }> => {
+					return fn(cmd) as unknown as Promise<{ stdout: string; stderr: string }>;
+				}) as unknown as (...args: unknown[]) => unknown;
 			}
-			return actual.promisify(fn);
+			return actual.promisify(fn as never) as (...args: unknown[]) => unknown;
 		}
 	};
 });

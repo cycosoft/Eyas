@@ -162,6 +162,6 @@ describe(`test-server`, () => {
 	});
 });
 
-function fetchAsText(url) {
+function fetchAsText(url: string): Promise<string> {
 	return fetch(url).then(r => r.text());
 }

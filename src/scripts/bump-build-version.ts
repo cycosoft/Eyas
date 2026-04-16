@@ -85,7 +85,7 @@ export async function bumpBuildVersion(
 // Run if called directly
 const isMain = process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);
 if (isMain) {
-	(async () => {
+	(async (): Promise<void> => {
 		try {
 			await bumpBuildVersion();
 		} catch (err) {

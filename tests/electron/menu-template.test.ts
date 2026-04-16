@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'vitest';
 import { buildMenuTemplate } from '../../src/eyas-core/menu-template.js';
 
-const noop = () => { };
+const noop = (): void => { };
 
 const minimalContext = {
 	appName: `Eyas`,
@@ -85,7 +85,7 @@ describe(`Eyas menu`, () => {
 	});
 
 	test(`Settings item uses the onOpenSettings click handler from context`, () => {
-		const onOpenSettings = () => { };
+		const onOpenSettings = (): void => { };
 		const ctx = { ...minimalContext, onOpenSettings };
 		const template = buildMenuTemplate(ctx);
 		const submenu = template[0].submenu;
@@ -117,7 +117,7 @@ describe(`Eyas menu`, () => {
 	});
 
 	test(`when updateStatus is idle, Eyas submenu has Check for updates with onCheckForUpdates click`, () => {
-		const onCheck = () => { };
+		const onCheck = (): void => { };
 		const ctx = { ...minimalContext, updateStatus: `idle`, onCheckForUpdates: onCheck };
 		const template = buildMenuTemplate(ctx);
 		const submenu = template[0].submenu;
@@ -147,7 +147,7 @@ describe(`Eyas menu`, () => {
 	});
 
 	test(`when updateStatus is downloaded, last top-level item is Restart to install with onInstallUpdate click`, () => {
-		const onInstall = () => { };
+		const onInstall = (): void => { };
 		const ctx = { ...minimalContext, updateStatus: `downloaded`, onInstallUpdate: onInstall };
 		const template = buildMenuTemplate(ctx);
 		const last = template[template.length - 1];
@@ -184,7 +184,7 @@ describe(`Test menu`, () => {
 	});
 
 	test(`Test submenu contains Choose Test Environment using startAFreshTest`, () => {
-		const startAFreshTest = () => { };
+		const startAFreshTest = (): void => { };
 		const ctx = { ...minimalContext, startAFreshTest };
 		const template = buildMenuTemplate(ctx);
 		const testMenu = template[1];
@@ -194,7 +194,7 @@ describe(`Test menu`, () => {
 	});
 
 	test(`Test submenu contains Test Home using navigateHome`, () => {
-		const navigateHome = () => { };
+		const navigateHome = (): void => { };
 		const ctx = { ...minimalContext, navigateHome };
 		const template = buildMenuTemplate(ctx);
 		const testMenu = template[1];
@@ -221,7 +221,7 @@ describe(`Test menu`, () => {
 	});
 
 	test(`when testServerActive is false, Test menu includes Live Test Server item as enabled`, () => {
-		const onStartTestServer = () => { };
+		const onStartTestServer = (): void => { };
 		const ctx = { ...minimalContext, testServerActive: false, isConfigLoaded: true, onStartTestServer };
 		const template = buildMenuTemplate(ctx);
 		const testMenu = template[1];
@@ -282,7 +282,7 @@ describe(`Browser menu`, () => {
 	});
 
 	test(`Browser submenu contains Copy URL with copyUrl handler`, () => {
-		const copyUrl = () => { };
+		const copyUrl = (): void => { };
 		const ctx = { ...minimalContext, copyUrl };
 		const template = buildMenuTemplate(ctx);
 		const browserMenu = template[2];
@@ -292,7 +292,7 @@ describe(`Browser menu`, () => {
 	});
 
 	test(`Browser submenu contains Reload with reload handler`, () => {
-		const reload = () => { };
+		const reload = (): void => { };
 		const ctx = { ...minimalContext, reload };
 		const template = buildMenuTemplate(ctx);
 		const browserMenu = template[2];
@@ -302,7 +302,7 @@ describe(`Browser menu`, () => {
 	});
 
 	test(`Browser submenu contains Back with back handler`, () => {
-		const back = () => { };
+		const back = (): void => { };
 		const ctx = { ...minimalContext, back };
 		const template = buildMenuTemplate(ctx);
 		const browserMenu = template[2];
@@ -313,7 +313,7 @@ describe(`Browser menu`, () => {
 	});
 
 	test(`Browser submenu contains Forward with forward handler`, () => {
-		const forward = () => { };
+		const forward = (): void => { };
 		const ctx = { ...minimalContext, forward };
 		const template = buildMenuTemplate(ctx);
 		const browserMenu = template[2];
@@ -366,7 +366,7 @@ describe(`Development Tools menu`, () => {
 	});
 
 	test(`Tools submenu contains Go Online/Offline toggle with toggleNetwork handler`, () => {
-		const toggleNetwork = () => { };
+		const toggleNetwork = (): void => { };
 		const ctx = { ...minimalContext, toggleNetwork };
 		const template = buildMenuTemplate(ctx);
 		const toolsMenu = template[3];
@@ -398,7 +398,7 @@ describe(`Development Tools menu`, () => {
 	});
 
 	test(`template does NOT include Enable HTTPS option in Development Tools menu`, () => {
-		const onToggle = () => { };
+		const onToggle = (): void => { };
 		const ctx = { ...minimalContext, testServerHttpsEnabled: true, onToggleTestServerHttps: onToggle };
 		const template = buildMenuTemplate(ctx);
 		const toolsMenu = template[3];

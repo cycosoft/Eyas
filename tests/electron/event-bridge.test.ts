@@ -8,7 +8,7 @@ const bridgeSrc = fs.readFileSync(
 );
 
 // Extract the send and receive whitelists from the source by parsing their array literals
-function extractWhitelist(src, label) {
+function extractWhitelist(src: string, label: string): string[] {
 	// Find the array after "const validChannels" within the context of the send or receive block
 	// We search for each occurrence sequentially
 	const matches = [...src.matchAll(/const validChannels\s*=\s*\[([^\]]+)\]/g)];

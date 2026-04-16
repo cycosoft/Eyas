@@ -6,7 +6,7 @@ import { createPinia, setActivePinia } from 'pinia';
 
 // Mock the settings store
 vi.mock(`@/stores/settings`, () => ({
-	default: () => ({
+	default: (): Record<string, unknown> => ({
 		version: `1.0.0`,
 		appSettings: { lastSeenVersion: `0.9.0` },
 		$subscribe: vi.fn()

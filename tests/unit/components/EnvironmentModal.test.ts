@@ -32,7 +32,7 @@ describe(`EnvironmentModal`, () => {
 		// Simulate IPC receive - call the callback that was registered in mounted()
 		// The component registers: window.eyas?.receive('show-environment-modal', domains => {...})
 		const receiveCallback = wrapper.vm.$options.mounted?.[0] ||
-			(() => {
+			((): void => {
 				// Manually trigger the IPC receive
 				if (global.window.eyas.receive.mock.calls.length > 0) {
 					const call = global.window.eyas.receive.mock.calls.find(
