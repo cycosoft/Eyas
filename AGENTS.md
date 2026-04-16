@@ -14,8 +14,8 @@
   - **Test**: `npx vitest path/to/test.ts --config <config-file>`
 - **ESM Standard**: Follow NodeNext resolution. Imports MUST include the `.js` extension, even when the source file is `.ts`.
 - **DRY Logic**: Avoid duplication. Use traditional loops over `.map`/`.filter` where possible for simplicity.
-- **Linting**: Never change lint rules to fix errors. Fix the code. Mandatory lint check after every task.
-- **Atomic Changes**: One responsibility per change. Focus on one refactor type at a time (e.g., renaming vs. extracting).
+- **Linting**: Never change lint rules or use suppressions (`eslint-disable`, `@ts-ignore`) to fix errors. Fix the code. Mandatory lint check after every task.
+- **Atomic Changes**: One responsibility per change. Focus on bugs, functionality, and type safety; avoid purely stylistic refactors. Ensure behavioral parity during structural changes.
 
 ## 3. Technology Stack & Patterns
 - **Local Rules**: Refer to module-specific `AGENTS.md` in `src/eyas-core/` or `src/eyas-interface/` for environment-specific patterns.
@@ -27,7 +27,7 @@
 - **Planning**: Review code, identify gaps (IO, errors, loading), and document them before starting.
 - **Testing**: Limit debugging to 3 minutes before asking for help.
 - **Code Deletion**: Document why code was removed. Verify it's unused using search tools first.
-- **Pull Requests**: Focus on bugs, functionality, and typos. Avoid purely stylistic refactors.
+- **Pull Requests**: Focus on bugs, functionality, and typos. Avoid purely stylistic refactors or "lint-fixing" unaffected lines.
 
 ## 5. Core Directives (CRITICAL REPETITION)
 > [!IMPORTANT]
