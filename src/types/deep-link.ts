@@ -1,0 +1,11 @@
+/** Context required to handle protocol (deep-link) URLs */
+export interface DeepLinkContext {
+	getAppWindow: () => unknown;
+	setConfigToLoad: (payload: { method: string; path: string }) => void;
+	loadConfig: (method: string, path: string) => Promise<unknown>;
+	startAFreshTest: () => void;
+	LOAD_TYPES: {
+		WEB: string;
+		[key: string]: string;
+	};
+}

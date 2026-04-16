@@ -1,9 +1,11 @@
+import type { DeepLinkContext } from '../types/deep-link.js';
+
 /**
  * Returns true only when url is a non-empty string starting with eyas://.
  * @param {unknown} url
  * @returns {boolean}
  */
-function isEyasProtocolUrl(url) {
+export function isEyasProtocolUrl(url: unknown): url is string {
 	return typeof url === `string` && url.length > 0 && url.startsWith(`eyas://`);
 }
 
@@ -11,16 +13,10 @@ function isEyasProtocolUrl(url) {
  * Handles an eyas protocol URL: either loads config and starts test (if window exists)
  * or defers by setting configToLoad (if window not yet ready).
  * @param {string} url - Full URL (e.g. eyas://host/path)
- * @param {{
- *   getAppWindow: () => unknown;
- *   setConfigToLoad: (payload: { method: string; path: string }) => void;
- *   loadConfig: (method: string, path: string) => Promise<unknown>;
- *   startAFreshTest: () => void;
- *   LOAD_TYPES: { WEB: string };
- * }} context
+ * @param {DeepLinkContext} context
  * @returns {Promise<void>}
  */
-async function handleEyasProtocolUrl(url, context) {
+export async function handleEyasProtocolUrl(url: string, context: DeepLinkContext): Promise<void> {
 	if (!isEyasProtocolUrl(url)) {
 		return;
 	}
@@ -39,7 +35,7 @@ async function handleEyasProtocolUrl(url, context) {
  * @param {string[]} argv
  * @returns {string | undefined}
  */
-function getEyasUrlFromCommandLine(argv) {
+export function getEyasUrlFromCommandLine(argv: string[]): string | undefined {
 	for (let i = 0; i < argv.length; i++) {
 		const arg = argv[i];
 		if (typeof arg === `string` && arg.startsWith(`eyas://`)) {
@@ -48,9 +44,3 @@ function getEyasUrlFromCommandLine(argv) {
 	}
 	return undefined;
 }
-
-export {
-	isEyasProtocolUrl,
-	handleEyasProtocolUrl,
-	getEyasUrlFromCommandLine
-};

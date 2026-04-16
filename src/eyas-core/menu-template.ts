@@ -1,12 +1,12 @@
-'use strict';
+import type { MenuContext } from '../types/menu.js';
 
 /**
  * Builds the application menu template (array of descriptors for Menu.buildFromTemplate).
  * Pure function: no Electron or DOM; all behavior via context callbacks.
- * @param {object} context - Menu data and callbacks
- * @returns {object[]} Menu template array
+ * @param {MenuContext} context - Menu data and callbacks
+ * @returns {Record<string, unknown>[]} Menu template array
  */
-function buildMenuTemplate(context) {
+export function buildMenuTemplate(context: MenuContext): Record<string, unknown>[] {
 	const {
 		appName,
 		isDev,
@@ -57,7 +57,7 @@ function buildMenuTemplate(context) {
 	];
 
 	// ── 2. Test ──────────────────────────────────────────────────────────────
-	const testSubmenu = [
+	const testSubmenu: Record<string, unknown>[] = [
 		{ label: `🔄 &Reset Test Environment`, click: startAFreshTest, enabled: isConfigLoaded && !isEnvironmentPending }
 	];
 
@@ -95,7 +95,7 @@ function buildMenuTemplate(context) {
 		...(isDev ? [{ label: `📂 Open Cache Folder`, click: openCacheFolder }] : [])
 	];
 
-	const toolsSubmenu = [
+	const toolsSubmenu: Record<string, unknown>[] = [
 		{ label: `${testNetworkEnabled ? `🚫 &Go Offline` : `📶 &Go Online`}`, click: toggleNetwork, enabled: isConfigLoaded },
 		{ type: `separator` },
 		{ label: `📦 &Cache`, submenu: cacheSubmenu, enabled: isConfigLoaded },
@@ -117,7 +117,7 @@ function buildMenuTemplate(context) {
 	}
 
 	// ── Assemble root menu ────────────────────────────────────────────────────
-	const menu = [
+	const menu: Record<string, unknown>[] = [
 		{ label: `&${appName}`, submenu: appSubmenu },
 		{ label: `🧪 &Test`, enabled: isConfigLoaded, submenu: testSubmenu },
 		{ label: `🌐 &Browser`, enabled: isConfigLoaded, submenu: browserSubmenu },
@@ -134,6 +134,3 @@ function buildMenuTemplate(context) {
 
 	return menu;
 }
-
-export { buildMenuTemplate };
-

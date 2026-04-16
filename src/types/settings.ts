@@ -16,10 +16,10 @@ export interface SettingsBase {
 }
 
 /** Settings stored at the application level */
-export interface AppSettings extends SettingsBase {}
+export type AppSettings = SettingsBase;
 
 /** Settings stored at the project level, keyed by projectId */
-export interface ProjectSettings extends SettingsBase {}
+export type ProjectSettings = SettingsBase;
 
 /** The full structure of the settings.json file */
 export interface SettingsData {

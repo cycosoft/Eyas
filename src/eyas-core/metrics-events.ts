@@ -6,4 +6,4 @@ export const MP_EVENTS = {
 	ui: {
 		modalBackgroundContentViewed: `Modal Background Content Viewed`
 	}
-};
+} as const;
