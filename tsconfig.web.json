@@ -10,7 +10,8 @@
     },
     "allowJs": false,
     "types": ["vite/client", "vitest/globals"],
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "strictNullChecks": true
   }
 }
 

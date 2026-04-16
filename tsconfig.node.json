@@ -7,7 +7,8 @@
     "noImplicitAny": true,
     "types": ["node"],
     "allowJs": false,
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "strictNullChecks": true
   }
 }
 
