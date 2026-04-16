@@ -18,7 +18,7 @@
 - **Atomic Changes**: One responsibility per change. Focus on bugs, functionality, and type safety; avoid purely stylistic refactors. Ensure behavioral parity during structural changes.
 
 ## 3. Technology Stack & Patterns
-- **Local Rules**: Refer to module-specific `AGENTS.md` in `src/eyas-core/` or `src/eyas-interface/` for environment-specific patterns.
+- **Local Rules**: Refer to module-specific `AGENTS.md` in `src/eyas-core/` or `src/eyas-interface/` for environment-specific patterns. **Adaptive Rules**: If a local `AGENTS.md` is missing or insufficient for a module, suggest creating or updating it to capture recurring patterns and maintain shared context.
 - **Language**: Strict TypeScript. Define interfaces in `src/types/`. Tests must import these types.
 - **Type Collocation**: Prioritize updating existing files in `src/types/` (e.g., `test-server.ts`) over creating new ones to maintain domain-based organization.
 - **Terminal**: Use `npx` directly. No global installs. Run commands only in the workspace root.
