@@ -56,13 +56,13 @@ async function getConfig(method: string, path?: string): Promise<ValidatedConfig
 	}
 
 	// if requesting a config via the web
-	if (method === LOAD_TYPES.WEB) {
-		loadedConfig = await getConfigViaUrl(path!);
+	if (method === LOAD_TYPES.WEB && path) {
+		loadedConfig = await getConfigViaUrl(path);
 	}
 
 	// if requesting a config via a file association
-	if (method === LOAD_TYPES.ASSOCIATION) {
-		loadedConfig = await getConfigViaAssociation(path!);
+	if (method === LOAD_TYPES.ASSOCIATION && path) {
+		loadedConfig = await getConfigViaAssociation(path);
 	}
 
 	// if requesting a config via a sibling file
@@ -194,7 +194,9 @@ async function getConfigViaCli(): Promise<EyasConfig> {
 		try {
 			const loadedModule = await import(pathToFileURL(jsConfigPath).href);
 			loadedConfig = loadedModule?.default || loadedModule;
-			loadedConfig = { ...loadedConfig! }; // ensure the object is extensible
+			if (loadedConfig) {
+				loadedConfig = { ...loadedConfig }; // ensure the object is extensible
+			}
 			loadedConfig._isConfigLoaded = true;
 		} catch (error) {
 			const err = error as Error;
@@ -239,7 +241,9 @@ async function getConfigFromAsar(path: string): Promise<EyasConfig> {
 		// Use require for ASAR paths as import() does not support them
 		const tempConfig = require(configPath);
 		loadedConfig = tempConfig?.default || tempConfig;
-		loadedConfig = { ...loadedConfig! }; // ensure the object is extensible
+		if (loadedConfig) {
+			loadedConfig = { ...loadedConfig }; // ensure the object is extensible
+		}
 	} catch (error) {
 		const err = error as Error;
 		console.error(`FILE: Error loading config: ${err.message}`);
@@ -377,10 +381,13 @@ function getCompanyId(): string | null {
 	try {
 		const email = execSync(`git config user.email`).toString().trim();
 
+		const parts = email.split(`@`);
+		const domainPart = parts.at(-1);
+
+		if (!domainPart) { return null; }
+
 		// get the root domain of the email without subdomains
-		const domain = email
-			.split(`@`) // split up the email
-			.at(-1)! // get the last part
+		const domain = domainPart
 			.split(`.`) // split up the domain
 			.slice(-2) // get the last two parts
 			.join(`.`); // join them back together

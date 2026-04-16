@@ -40,7 +40,8 @@ function _deepGet(obj: unknown, keyPath: string): unknown {
  */
 function _deepSet(obj: Record<string, unknown>, keyPath: string, value: unknown): void {
 	const keys = keyPath.split(`.`);
-	const last = keys.pop()!;
+	const last = keys.pop();
+	if (last === undefined) { return; }
 	const target = keys.reduce((acc: Record<string, unknown>, k) => {
 		if (acc[k] === undefined || typeof acc[k] !== `object`) { acc[k] = {}; }
 		return acc[k] as Record<string, unknown>;
@@ -83,7 +84,9 @@ async function save(): Promise<void> {
 			_storagePath = _path.join(app.getPath(`userData`), `settings.json`);
 		}
 
-		await outputJson(_storagePath!, _data, { spaces: 2 });
+		if (_storagePath) {
+			await outputJson(_storagePath, _data, { spaces: 2 });
+		}
 	}).catch(err => {
 		console.error(`[SETTINGS-SERVICE] save failed:`, err);
 	});

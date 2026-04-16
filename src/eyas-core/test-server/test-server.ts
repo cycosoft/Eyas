@@ -40,8 +40,9 @@ async function getAvailablePort(urlStr: string | null, useHttps: boolean): Promi
 
 	const protoKey: keyof CachedPorts = useHttps ? `https` : `http`;
 
-	if (cachedPorts[protoKey]) {
-		return cachedPorts[protoKey]!;
+	const cached = cachedPorts[protoKey];
+	if (cached) {
+		return cached;
 	}
 
 	let targetPort: number | undefined;
@@ -69,7 +70,7 @@ async function getAvailablePort(urlStr: string | null, useHttps: boolean): Promi
 	const resultPort = await getPort({ port: preferredPorts, host: HOST });
 
 	cachedPorts[protoKey] = resultPort;
-	return cachedPorts[protoKey]!;
+	return resultPort;
 }
 
 

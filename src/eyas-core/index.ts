@@ -265,7 +265,7 @@ async function initElectronUi(): Promise<void> {
 		show: false,
 		webPreferences: {
 			preload: $paths.testPreload,
-			partition: `persist:${$config!.meta.testId}`
+			partition: `persist:${$config?.meta.testId}`
 		}
 	});
 
@@ -307,7 +307,7 @@ async function initElectronUi(): Promise<void> {
 	$eyasLayer = new BrowserView({
 		webPreferences: {
 			preload: $paths.eventBridge,
-			partition: `persist:${$config!.meta.testId}`,
+			partition: `persist:${$config?.meta.testId}`,
 			backgroundThrottling: false // allow to update even when hidden (e.g. modal close)
 		}
 	});
@@ -328,7 +328,7 @@ async function initElectronUi(): Promise<void> {
 		const splashTimeout = splashDelta > splashMinTime ? 0 : splashMinTime - splashDelta;
 		setTimeout(() => {
 			// show the app window
-			$appWindow!.show();
+			$appWindow?.show();
 
 			// we're done with the splash screen
 			splashScreen.destroy();
@@ -348,7 +348,7 @@ function createSplashScreen(): BrowserWindow {
 		alwaysOnTop: true,
 		show: false,
 		webPreferences: {
-			partition: `persist:${$config!.meta.testId}`
+			partition: `persist:${$config?.meta.testId}`
 		}
 	});
 
@@ -387,7 +387,7 @@ function initTestListeners(): void {
 	// Whenever the content is loaded on the app window
 	$appWindow.webContents.on(`did-finish-load`, () => {
 		// update the title, preserving the current page title
-		$appWindow!.setTitle(getAppTitleWithContext($appWindow!.webContents.getTitle()));
+		$appWindow?.setTitle(getAppTitleWithContext($appWindow.webContents.getTitle()));
 
 		// update the cache menu
 		setMenu();
@@ -421,14 +421,14 @@ function initTestListeners(): void {
 			evt.preventDefault();
 			const rawUrl = win.webContents.getURL();
 			const url = rawUrl?.startsWith(`data:`) ? undefined : rawUrl;
-			win.setTitle(getAppTitle($config!.title, $config!.version, url, sanitizePageTitle(title, rawUrl)));
+			win.setTitle(getAppTitle($config?.title || ``, $config?.version || ``, url, sanitizePageTitle(title, rawUrl)));
 		});
 
 		// Also apply our format when the new window finishes loading
 		win.webContents.on(`did-finish-load`, () => {
 			const rawUrl = win.webContents.getURL();
 			const url = rawUrl?.startsWith(`data:`) ? undefined : rawUrl;
-			win.setTitle(getAppTitle($config!.title, $config!.version, url, sanitizePageTitle(win.webContents.getTitle(), rawUrl)));
+			win.setTitle(getAppTitle($config?.title || ``, $config?.version || ``, url, sanitizePageTitle(win.webContents.getTitle(), rawUrl)));
 		});
 	});
 }
@@ -553,9 +553,13 @@ function initUiListeners(): void {
 		const state = testServer.getTestServerState();
 		if (state) {
 			// Session is actively running — add time without restarting the server
-			$testServerEndTime! += TEST_SERVER_SESSION_DURATION_MS;
+			if ($testServerEndTime !== null) {
+				$testServerEndTime += TEST_SERVER_SESSION_DURATION_MS;
+			}
 			testServerTimeout.cancelTestServerTimeout();
-			testServerTimeout.startTestServerTimeout(onTestServerTimeout, $testServerEndTime! - Date.now());
+			if ($testServerEndTime !== null) {
+				testServerTimeout.startTestServerTimeout(onTestServerTimeout, $testServerEndTime - Date.now());
+			}
 			uiEvent(`show-test-server-active-modal`, {
 				domain: state.customUrl || state.url,
 				startTime: state.startedAt,
@@ -871,7 +875,7 @@ async function doStartTestServer(autoOpenBrowser = true, customDomain: string | 
 	}
 	try {
 		const options = {
-			rootPath: $paths.testSrc!,
+			rootPath: $paths.testSrc || ``,
 			useHttps: $testServerHttpsEnabled,
 			certs: certs || undefined,
 			customDomain: customDomain ?? undefined
@@ -931,12 +935,12 @@ async function setMenu(): Promise<void> {
 		}
 		viewportItems.push({
 			label: `${isSizeMatch ? `🔘 ` : ``}${res.label} (${res.width} x ${res.height})`,
-			click: () => $appWindow!.setContentSize(res.width, res.height)
+			click: () => $appWindow?.setContentSize(res.width, res.height)
 		});
 	});
 	if ($currentViewport.length === 2 && !$allViewports.some(res => Math.abs(res.width - $currentViewport[0]) <= tolerance && Math.abs(res.height - $currentViewport[1]) <= tolerance)) {
 		viewportItems.unshift(
-			{ label: `🔘 Current (${$currentViewport[0]} x ${$currentViewport[1]})`, click: () => $appWindow!.setContentSize($currentViewport[0], $currentViewport[1]) },
+			{ label: `🔘 Current (${$currentViewport[0]} x ${$currentViewport[1]})`, click: () => $appWindow?.setContentSize($currentViewport[0], $currentViewport[1]) },
 			{ type: `separator` }
 		);
 	}
@@ -976,12 +980,13 @@ async function setMenu(): Promise<void> {
 			const startYear = 2023;
 			const currentYear = now.getFullYear();
 			const yearRange = startYear === currentYear ? startYear.toString() : `${startYear} - ${currentYear}`;
-			dialog.showMessageBox($appWindow!, {
-				type: `info`,
-				buttons: [`OK`],
-				title: `About`,
-				icon: $paths.icon as string,
-				message: `
+			if ($appWindow) {
+				dialog.showMessageBox($appWindow, {
+					type: `info`,
+					buttons: [`OK`],
+					title: `About`,
+					icon: $paths.icon as string,
+					message: `
 Name: ${$config.title}
 Version: ${$config.version}
 Expires: ${expirationFormatted} (${relativeFormatted})
@@ -997,7 +1002,8 @@ Runner: v${_appVersion}
 🌐 https://cycosoft.com
 🆘 https://github.com/cycosoft/Eyas/issues
 `
-			});
+				});
+			}
 		},
 		quit: _electronCore.quit,
 		startAFreshTest: () => startAFreshTest(true),
@@ -1080,7 +1086,7 @@ function setupAutoUpdater(): void {
 	autoUpdater.forceDevUpdateConfig = true;
 	// Spoof the current version for update testing (currentVersion is read-only)
 	Object.defineProperty(autoUpdater, `currentVersion`, {
-		get: () => semver.parse(_appVersion)!
+		get: () => semver.parse(_appVersion)
 	});
 
 	// Silence internal logging to prevent duplicate stack traces
@@ -1109,7 +1115,9 @@ function setupAutoUpdater(): void {
 	const showNoUpdateIfUserTriggered = () => {
 		if ($updateCheckUserTriggered) {
 			$updateCheckUserTriggered = false;
-			dialog.showMessageBox($appWindow!, getNoUpdateAvailableDialogOptions());
+			if ($appWindow) {
+				dialog.showMessageBox($appWindow, getNoUpdateAvailableDialogOptions());
+			}
 		}
 	};
 	autoUpdater.on(`update-not-available`, showNoUpdateIfUserTriggered);
@@ -1315,7 +1323,7 @@ function setupEyasNetworkHandlers(): void {
 		const parsedTestDomain = parseURL($testDomain);
 		if (hostname === (parsedTestDomain instanceof URL ? parsedTestDomain.hostname : null)) {
 			// check if the config.source is a valid url
-			const sourceOnWeb = parseURL($config!.source);
+			const sourceOnWeb = parseURL($config?.source || ``);
 
 			// if the config.source is a url
 			if (sourceOnWeb instanceof URL) {
@@ -1383,7 +1391,7 @@ async function startAFreshTest(forceShow = false): Promise<void> {
 	// check if $config.source is a url
 	const sourceOnWeb = parseURL($config?.source || ``);
 	if (sourceOnWeb) {
-		$testDomainRaw = $config!.source;
+		$testDomainRaw = $config?.source || ``;
 		$testDomain = sourceOnWeb.toString();
 		$envKey = null; // source URLs have no key
 	}

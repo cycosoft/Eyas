@@ -86,6 +86,7 @@ export default tseslint.config(
 			'@typescript-eslint/no-require-imports': `warn`,
 			'@typescript-eslint/no-var-requires': `warn`,
 			'@typescript-eslint/consistent-type-definitions': [`error`, `interface`],
+			'@typescript-eslint/no-non-null-assertion': `error`,
 
 			// Import Rules
 			'import/no-commonjs': `error`,
