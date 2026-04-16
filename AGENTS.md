@@ -189,3 +189,4 @@
 * Always perform linting and run relevent tests after completing a task. Always confirm your work is functional.
 * Do not proceed on a task until you have explicit approval from the user.
 * Always take a TDD approach to work.
+* Always take a DRY approach to work.
