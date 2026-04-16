@@ -57,9 +57,14 @@ export default tseslint.config(
 			parser: vueEslintParser,
 			parserOptions: {
 				parser: tseslint.parser,
+				project: [`./tsconfig.node.json`, `./tsconfig.web.json`], // Specified for accuracy
+				tsconfigRootDir: import.meta.dirname,
 				sourceType: `module`,
 				extraFileExtensions: [`.vue`]
 			}
+		},
+		rules: {
+			'@typescript-eslint/consistent-type-imports': `error`
 		}
 	},
 

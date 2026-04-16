@@ -1,4 +1,4 @@
-import { THEME_MODES } from '../scripts/constants.js';
+import type { THEME_MODES } from '../scripts/constants.js';
 
 export type ThemeMode = typeof THEME_MODES[keyof typeof THEME_MODES];
 

@@ -1,5 +1,5 @@
 import semver from 'semver';
-import { ChangelogEntry, MarkdownToken } from '../types/changelog.js';
+import type { ChangelogEntry, MarkdownToken } from '../types/changelog.js';
 
 /**
  * Filter and aggregate changelog entries between two versions.

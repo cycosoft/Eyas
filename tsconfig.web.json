@@ -1,6 +1,6 @@
 {
   "extends": "@vue/tsconfig/tsconfig.dom.json",
-  "include": ["src/renderer/src/**/*", "src/renderer/src/**/*.vue"],
+  "include": ["src/renderer/src/**/*", "src/renderer/src/**/*.vue", "src/eyas-interface/app/src/**/*", "tests/unit/**/*", "tests/setup/vue-test-setup.ts"],
   "compilerOptions": {
     "composite": true,
     "noEmit": true,

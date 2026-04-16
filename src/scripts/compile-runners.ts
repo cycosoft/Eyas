@@ -4,7 +4,8 @@ import dotenv from "dotenv";
 dotenv.config({ path: [`.env.local`, `.env`] });
 import path from "path";
 import fs from "fs-extra";
-import builder, { Platform } from "electron-builder";
+import type { Platform } from "electron-builder";
+import builder from "electron-builder";
 import { exec } from "child_process";
 import { getElectronBuilderConfig } from "./electron-builder-config.js";
 
