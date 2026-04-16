@@ -25,3 +25,16 @@ export interface CachedPorts {
 }
 
 export type TestServer = HttpServer | HttpsServer;
+
+export interface CertOptions {
+	validityDays?: number;
+	organization?: string;
+	countryCode?: string;
+	state?: string;
+	locality?: string;
+}
+
+export interface CertBundle {
+	key: string;
+	cert: string;
+}

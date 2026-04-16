@@ -1,15 +1,16 @@
 import selfsigned from 'selfsigned';
+import { CertBundle, CertOptions } from '../../types/test-server.js';
 
-const certCache = new Map();
+const certCache = new Map<string, CertBundle>();
 
-function getCacheKey(domains) {
+function getCacheKey(domains: string | string[]): string {
 	return Array.isArray(domains) ? domains.slice().sort().join(`,`) : String(domains);
 }
 
-export async function getCerts(domains, options = {}) {
+export async function getCerts(domains: string | string[], options: CertOptions = {}): Promise<CertBundle> {
 	const key = getCacheKey(domains);
 	if (certCache.has(key)) {
-		return certCache.get(key);
+		return certCache.get(key) as CertBundle;
 	}
 
 	const validity = options.validityDays ?? 7;
@@ -50,7 +51,7 @@ export async function getCerts(domains, options = {}) {
 		]
 	});
 
-	const cert = {
+	const cert: CertBundle = {
 		key: pems.private,
 		cert: pems.cert
 	};
