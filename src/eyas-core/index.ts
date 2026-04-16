@@ -1078,7 +1078,10 @@ Runner: v${_appVersion}
 
 function setupAutoUpdater(): void {
 	autoUpdater.forceDevUpdateConfig = true;
-	autoUpdater.currentVersion = semver.parse(_appVersion)!;
+	// Spoof the current version for update testing (currentVersion is read-only)
+	Object.defineProperty(autoUpdater, `currentVersion`, {
+		get: () => semver.parse(_appVersion)!
+	});
 
 	// Silence internal logging to prevent duplicate stack traces
 	autoUpdater.logger = null;

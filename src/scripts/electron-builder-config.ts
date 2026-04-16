@@ -84,7 +84,7 @@ export function getElectronBuilderConfig(options: BuildOptions): Configuration {
 		win: {
 			target: isInstaller ? `nsis` : `portable`,
 			icon: paths.icon,
-			...(isDev ? {} : { signtoolOptions: { sign: paths.codesignWin } as any })
+			...(isDev ? {} : { signtoolOptions: { sign: paths.codesignWin } as NonNullable<Configuration[`win`]>[`signtoolOptions`] })
 		},
 		nsis: {
 			oneClick: false,
