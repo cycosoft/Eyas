@@ -1,20 +1,17 @@
-'use strict';
-
 // imports
 import { app } from 'electron';
 import _path from 'path';
-import fsExtra from 'fs-extra';
+import { readJson, outputJson } from 'fs-extra';
 import { SETTINGS_DEFAULTS } from '../scripts/constants.js';
-
-const { readJson, outputJson } = fsExtra;
+import type { SettingsData, AppSettings, ProjectSettings } from '../types/settings.js';
 
 // ─── internal state ────────────────────────────────────────────────────────────
 
 /** In-memory representation of the loaded settings file */
-let _data = null;
+let _data: SettingsData | null = null;
 
 /** Path to the settings JSON file (overridable for tests) */
-let _storagePath = null;
+let _storagePath: string | null = null;
 
 // ─── test-only escape hatch ───────────────────────────────────────────────────
 
@@ -22,7 +19,7 @@ let _storagePath = null;
  * Override the storage path — used in tests to redirect I/O to a temp directory.
  * @param {string} p - Absolute path to the settings JSON file
  */
-function _setStoragePath(p) {
+function _setStoragePath(p: string): void {
 	_storagePath = p;
 	_data = null; // reset in-memory cache so the new path is read on next load()
 }
@@ -33,20 +30,20 @@ function _setStoragePath(p) {
  * Deep-get a value from an object by dot-notation key path.
  * Returns `undefined` if any segment is missing.
  */
-function _deepGet(obj, keyPath) {
-	return keyPath.split(`.`).reduce((acc, k) => acc?.[k], obj);
+function _deepGet(obj: unknown, keyPath: string): unknown {
+	return keyPath.split(`.`).reduce((acc, k) => (acc as Record<string, unknown> | null | undefined)?.[k], obj);
 }
 
 /**
  * Deep-set a value in an object by dot-notation key path.
  * Creates intermediate objects as needed.
  */
-function _deepSet(obj, keyPath, value) {
+function _deepSet(obj: Record<string, unknown>, keyPath: string, value: unknown): void {
 	const keys = keyPath.split(`.`);
-	const last = keys.pop();
-	const target = keys.reduce((acc, k) => {
+	const last = keys.pop()!;
+	const target = keys.reduce((acc: Record<string, unknown>, k) => {
 		if (acc[k] === undefined || typeof acc[k] !== `object`) { acc[k] = {}; }
-		return acc[k];
+		return acc[k] as Record<string, unknown>;
 	}, obj);
 	target[last] = value;
 }
@@ -57,7 +54,7 @@ function _deepSet(obj, keyPath, value) {
  * Load settings from disk into memory.
  * Safe to call even if the file does not yet exist.
  */
-async function load() {
+async function load(): Promise<void> {
 	if (!_storagePath) {
 		_storagePath = _path.join(app.getPath(`userData`), `settings.json`);
 	}
@@ -80,13 +77,13 @@ async function load() {
  * Sequentializes saves to prevent concurrent write issues.
  */
 let _saveQueue = Promise.resolve();
-async function save() {
+async function save(): Promise<void> {
 	_saveQueue = _saveQueue.then(async () => {
 		if (!_storagePath) {
 			_storagePath = _path.join(app.getPath(`userData`), `settings.json`);
 		}
 
-		await outputJson(_storagePath, _data, { spaces: 2 });
+		await outputJson(_storagePath!, _data, { spaces: 2 });
 	}).catch(err => {
 		console.error(`[SETTINGS-SERVICE] save failed:`, err);
 	});
@@ -101,7 +98,7 @@ async function save() {
  * @param {string} [projectId] - If provided, project-level value is checked first
  * @returns {*} Resolved value
  */
-function get(keyPath, projectId) {
+function get(keyPath: string, projectId?: string): unknown {
 
 	// 1. project level
 	if (projectId) {
@@ -124,14 +121,14 @@ function get(keyPath, projectId) {
  * @param {*}      value     - Value to store
  * @param {string} [projectId] - If provided, stored under the project bucket
  */
-function set(keyPath, value, projectId) {
+function set(keyPath: string, value: unknown, projectId?: string): void {
 	if (!_data) { _data = { app: {}, projects: {} }; }
 
 	if (projectId) {
 		if (!_data.projects[projectId]) { _data.projects[projectId] = {}; }
-		_deepSet(_data.projects[projectId], keyPath, value);
+		_deepSet(_data.projects[projectId] as unknown as Record<string, unknown>, keyPath, value);
 	} else {
-		_deepSet(_data.app, keyPath, value);
+		_deepSet(_data.app as unknown as Record<string, unknown>, keyPath, value);
 	}
 }
 
@@ -141,7 +138,7 @@ function set(keyPath, value, projectId) {
  * @param {string} projectId
  * @returns {object}
  */
-function getProjectSettings(projectId) {
+function getProjectSettings(projectId: string): ProjectSettings {
 	return _data?.projects?.[projectId] || {};
 }
 
@@ -149,7 +146,7 @@ function getProjectSettings(projectId) {
  * Return the app-level settings object.
  * @returns {object}
  */
-function getAppSettings() {
+function getAppSettings(): AppSettings {
 	return _data?.app || {};
 }
 
