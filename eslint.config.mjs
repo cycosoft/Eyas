@@ -64,7 +64,8 @@ export default tseslint.config(
 			}
 		},
 		rules: {
-			'@typescript-eslint/consistent-type-imports': `error`
+			'@typescript-eslint/consistent-type-imports': `error`,
+			'@typescript-eslint/explicit-function-return-type': `error`
 		}
 	},
 
