@@ -30,7 +30,7 @@ contextBridge.exposeInMainWorld(`eyas`, {
 		}
 	},
 
-	receive: (channel: string, func: (...args: any[]) => void) => {
+	receive: (channel: string, func: (...args: unknown[]) => void) => {
 		const validChannels = [
 			`modal-exit-visible`,
 			`show-environment-modal`,
@@ -47,7 +47,7 @@ contextBridge.exposeInMainWorld(`eyas`, {
 		];
 		if (validChannels.includes(channel)) {
 			// Deliberately strip event as it includes `sender`
-			ipcRenderer.on(channel, (_event, ...args: any[]) => func(...args));
+			ipcRenderer.on(channel, (_event: unknown, ...args: unknown[]) => { func(...args); });
 		}
 	}
 });

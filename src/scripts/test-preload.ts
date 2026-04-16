@@ -3,7 +3,7 @@ import { contextBridge, ipcRenderer } from "electron";
 // Define the shape of the 'eyas' object exposed to the renderer
 interface RequestBridge {
 	send: (channel: string, data?: unknown) => void;
-	receive: (channel: string, func: (...args: any[]) => void) => void;
+	receive: (channel: string, func: (...args: unknown[]) => void) => void;
 }
 
 declare global {
@@ -27,12 +27,12 @@ contextBridge.exposeInMainWorld(`eyas`, {
 		}
 	},
 
-	receive: (channel: string, func: (...args: any[]) => void) => {
+	receive: (channel: string, func: (...args: unknown[]) => void) => {
 		const validChannels: string[] = [];
 
 		if (validChannels.includes(channel)) {
 			// Deliberately strip event as it includes `sender`
-			ipcRenderer.on(channel, (_event, ...args: any[]) => func(...args));
+			ipcRenderer.on(channel, (_event, ...args: unknown[]) => { func(...args); });
 		}
 	}
 });
@@ -51,7 +51,7 @@ process.once(`document-start`, () => {
 });
 
 // grab the given function as a string, wrap it in an anonymous function, and return it
-function injectWithAnonymousScope(fn: (...args: any[]) => any): string {
+function injectWithAnonymousScope(fn: (...args: unknown[]) => unknown): string {
 	// newline required for the function to be properly parsed
 	return `(() => {
 		${extractFunctionBody(fn)}
@@ -59,7 +59,7 @@ function injectWithAnonymousScope(fn: (...args: any[]) => any): string {
 }
 
 // Extract the body of the function
-function extractFunctionBody(fn: (...args: any[]) => any): string {
+function extractFunctionBody(fn: (...args: unknown[]) => unknown): string {
 	// convert the given function to a string
 	const content = fn.toString();
 
@@ -86,7 +86,7 @@ function polyfillUploadProgress(): void {
 	let uploadSpeed = 150 * 1024; // default to 150KB/s
 
 	// Can be: Document, Blob, ArrayBuffer, Int8Array, DataView, FormData, URLSearchParams, string, object, null.
-	XMLHttpRequest.prototype.send = function (this: XMLHttpRequest, data?: any) {
+	XMLHttpRequest.prototype.send = function (this: XMLHttpRequest, data?: Document | XMLHttpRequestBodyInit | null) {
 		// setup
 		const intervalTiming = 100;
 		let totalUpdates = 0;
@@ -161,6 +161,6 @@ function polyfillUploadProgress(): void {
 		intervalId = setInterval(updateProgress, intervalTiming);
 
 		// eslint-disable-next-line prefer-rest-params
-		origOpen.apply(this, arguments as any);
+		origOpen.apply(this, arguments as unknown as [data?: Document | XMLHttpRequestBodyInit | null | undefined]);
 	};
 }

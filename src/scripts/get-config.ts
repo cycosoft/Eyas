@@ -11,52 +11,14 @@ import * as dateFns from "date-fns";
 import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 
+// Types
+import type { ValidatedConfig, EyasConfig } from "../types/config.js";
+
 // setup
 const require = createRequire(import.meta.url);
 const { isURL } = validator;
 const { addHours } = dateFns;
 const baseConfigName = `.eyas.config`;
-
-interface EyasConfig {
-	source?: string;
-	domain?: string | string[] | { url: string; title?: string }[];
-	domains?: string | string[] | { url: string; title?: string }[];
-	title?: string;
-	version?: string;
-	viewports?: { label: string; width: number; height: number }[];
-	links?: { label: string; url: string }[];
-	outputs?: {
-		expires?: number;
-	};
-	meta?: Partial<EyasMeta>;
-	_isConfigLoaded?: boolean;
-}
-
-interface EyasMeta {
-	expires: Date;
-	gitBranch: string | null;
-	gitHash: string | null;
-	gitUser: string | null;
-	compiled: Date;
-	eyas: string;
-	companyId: string | null;
-	projectId: string | null;
-	testId: string;
-	isConfigLoaded: boolean;
-}
-
-interface ValidatedConfig {
-	source: string;
-	domains: { url: string; title?: string }[];
-	title: string;
-	version: string;
-	viewports: { label: string; width: number; height: number }[];
-	links: { label: string; url: string }[];
-	outputs: {
-		expires: number;
-	};
-	meta: EyasMeta;
-}
 
 /*
 Retrieves the configuration for the test by one of the following methods
@@ -218,9 +180,10 @@ async function getConfigViaCli(): Promise<EyasConfig> {
 		// attempt to load a *.cjs config
 		try {
 			loadedConfig = require(cjsConfigPath);
-		} catch (error: any) {
+		} catch (error) {
 			// alert the user about potential issues
-			console.warn(`CLI: Error loading config: ${error.message}`);
+			const err = error as Error;
+			console.warn(`CLI: Error loading config: ${err.message}`);
 			console.warn(`⚠️ CLI: Please rename ".eyas.config.js" to ".eyas.config.cjs"`);
 		}
 	}
@@ -233,8 +196,9 @@ async function getConfigViaCli(): Promise<EyasConfig> {
 			loadedConfig = loadedModule?.default || loadedModule;
 			loadedConfig = { ...loadedConfig! }; // ensure the object is extensible
 			loadedConfig._isConfigLoaded = true;
-		} catch (error: any) {
-			console.error(`CLI: Error loading config: ${error.message}`);
+		} catch (error) {
+			const err = error as Error;
+			console.error(`CLI: Error loading config: ${err.message}`);
 			loadedConfig = {};
 		}
 	} else {
@@ -276,8 +240,9 @@ async function getConfigFromAsar(path: string): Promise<EyasConfig> {
 		const tempConfig = require(configPath);
 		loadedConfig = tempConfig?.default || tempConfig;
 		loadedConfig = { ...loadedConfig! }; // ensure the object is extensible
-	} catch (error: any) {
-		console.error(`FILE: Error loading config: ${error.message}`);
+	} catch (error) {
+		const err = error as Error;
+		console.error(`FILE: Error loading config: ${err.message}`);
 		loadedConfig = {};
 	}
 
@@ -313,11 +278,11 @@ function validateConfig(rawConfig: EyasConfig | null, isConfigLoaded = false): V
 
 		// data that is provided by the CLI step, not the user.
 		meta: {
-			expires: meta.expires || getExpirationDate(expiresIn),
+			expires: (meta.expires as Date) || getExpirationDate(expiresIn),
 			gitBranch: meta.gitBranch || getBranchName(),
 			gitHash: meta.gitHash || getCommitHash(),
 			gitUser: meta.gitUser || getUserName(),
-			compiled: meta.compiled || new Date(),
+			compiled: (meta.compiled as Date) || new Date(),
 			eyas: meta.eyas || getCliVersion(),
 			companyId: meta.companyId || getCompanyId(),
 			projectId: meta.projectId || getProjectId(),
@@ -331,9 +296,9 @@ function validateConfig(rawConfig: EyasConfig | null, isConfigLoaded = false): V
 }
 
 // validate the user input for the custom domain
-function validateCustomDomain(input?: string | string[] | { url: string; title?: string }[]): { url: string; title?: string }[] {
+function validateCustomDomain(input?: string | string[] | { url: string; title?: string; key?: string }[]): { url: string; title?: string; key?: string }[] {
 	// default to an empty array
-	const output: { url: string; title?: string }[] = [/* { url: ``, title: `Staging` } */];
+	const output: { url: string; title?: string; key?: string }[] = [/* { url: ``, title: `Staging` } */];
 
 	// if the input is a string
 	if (typeof input === `string`) {
@@ -454,7 +419,7 @@ function getTestId(): string {
 }
 
 // validate the user input for the expiration
-function validateExpiration(hours?: any): number {
+function validateExpiration(hours?: unknown): number {
 	// default
 	let output = hours;
 	const defaultHours = 7 * 24; // 168 hours or 1 week
@@ -462,7 +427,7 @@ function validateExpiration(hours?: any): number {
 	const maxHours = 30 * 24;
 
 	// if not a number
-	if (isNaN(output)) {
+	if (typeof output !== `number` || isNaN(output)) {
 		output = defaultHours;
 	}
 
