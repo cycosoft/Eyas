@@ -82,7 +82,7 @@ export default tseslint.config(
 				argsIgnorePattern: `^_`,
 				varsIgnorePattern: `^_`
 			}],
-			'@typescript-eslint/no-explicit-any': `warn`, // Relaxed for the refactor
+			'@typescript-eslint/no-explicit-any': `error`, // No more "cheating" with any
 			'@typescript-eslint/no-require-imports': `warn`,
 			'@typescript-eslint/no-var-requires': `warn`,
 			'@typescript-eslint/consistent-type-definitions': [`error`, `interface`],
