@@ -9,6 +9,9 @@
 
 ## 2. Engineering Standards (TDD & DRY)
 - **TDD First**: Every code change MUST be accompanied by a test (`*.test.ts`). Update or add tests *before* modifying code.
+- **Verification Locality**: Run targeted tests and linting on modified files/directories instead of project-wide runs to save time and reduce output noise.
+  - **Lint**: `npx eslint path/to/file.ts`
+  - **Test**: `npx vitest path/to/test.ts --config <config-file>`
 - **ESM Standard**: Follow NodeNext resolution. Imports MUST include the `.js` extension, even when the source file is `.ts`.
 - **DRY Logic**: Avoid duplication. Use traditional loops over `.map`/`.filter` where possible for simplicity.
 - **Linting**: Never change lint rules to fix errors. Fix the code. Mandatory lint check after every task.
@@ -29,7 +32,7 @@
 ## 5. Core Directives (CRITICAL REPETITION)
 > [!IMPORTANT]
 > - **Always use a TDD approach.** Write/update tests before code changes.
-> - **Always verify functionality.** Run tests and linting after every task.
+> - **Always verify functionality.** Run targeted tests and linting after every task.
 > - **Always get explicit approval** before starting ambiguous work.
 > - **Always keep it DRY.**
 > - **Always use TypeScript** with shared interfaces from `src/types/`.

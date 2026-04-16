@@ -4,7 +4,7 @@
 - **Framework**: Vue 3 (Options API).
 - **State Management**: Pinia.
 - **UI Components**: Vuetify.
-- **Testing**: Vitest with JSDOM environment.
+- **Testing**: Vitest with JSDOM environment. Run targeted tests with `npx vitest <file> --config vitest.config.interface.js`.
 
 ## 2. Component Patterns
 - **Options API**: Always use Options API. Define `data: () => ({})`.
