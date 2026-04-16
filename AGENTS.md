@@ -27,11 +27,6 @@
 - **Solution Finding:** Always aim to identify and propose the most effective technical approach.
 - **Confirmation Before Changes:** Before applying code edits, state your intended change and the reason concisely (e.g., 'I will refactor this function to improve readability by extracting a helper method.') and then proceed with the edit tool.
 
-**4. Handling Time-Related Queries:**
-
-- **Requirement:** If the user asks a question related to the current date or time.
-- **Action:** Execute a command-line instruction to retrieve the system's current date and time before formulating your answer. Use this information to provide an accurate, time-sensitive response.
-
 ## Instructions for Planning New Work (Features, Tasks, Bugs, Improvements, Refactors)
 
 **1. Assume Role:**
