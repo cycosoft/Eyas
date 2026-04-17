@@ -79,28 +79,31 @@ interface EyasRequest extends express.Request {
 	_safePath?: string;
 }
 
-async function startTestServer(options: TestServerOptions): Promise<TestServerState | null> {
-	if (!safeJoin) {
-		const pathUtilsPath = [
-			path.join(import.meta.dirname, `..`, `..`, `scripts`, `path-utils.js`),
-			path.join(import.meta.dirname, `..`, `scripts`, `path-utils.js`),
-			path.join(import.meta.dirname, `..`, `..`, `scripts`, `path-utils.ts`),
-			path.join(import.meta.dirname, `..`, `scripts`, `path-utils.ts`)
-		].find(p => fs.existsSync(p));
+/**
+ * Initializes the path-utils module by loading the safeJoin function.
+ */
+async function initPathUtils(): Promise<void> {
+	if (safeJoin) { return; }
 
-		if (pathUtilsPath) {
-			const mod = await import(pathToFileURL(pathUtilsPath).href);
-			safeJoin = mod.safeJoin;
-		}
+	const pathUtilsPath = [
+		path.join(import.meta.dirname, `..`, `..`, `scripts`, `path-utils.js`),
+		path.join(import.meta.dirname, `..`, `scripts`, `path-utils.js`),
+		path.join(import.meta.dirname, `..`, `..`, `scripts`, `path-utils.ts`),
+		path.join(import.meta.dirname, `..`, `scripts`, `path-utils.ts`)
+	].find(p => fs.existsSync(p));
+
+	if (pathUtilsPath) {
+		const mod = await import(pathToFileURL(pathUtilsPath).href);
+		safeJoin = mod.safeJoin;
 	}
+}
 
-	const { rootPath, useHttps = false, certs, customDomain } = options;
-	if (server) {
-		return getTestServerState();
-	}
-
-	// use cached port for the specified protocol if available, otherwise find a new one
-	const port = await getAvailablePort(null, useHttps);
+/**
+ * Creates and configures an Express application for the test server.
+ * @param rootPath The root directory to serve files from.
+ * @returns The configured Express application.
+ */
+function createExpressApp(rootPath: string): express.Express {
 	const app = express();
 
 	app.use((req: EyasRequest, res: express.Response, next: express.NextFunction) => {
@@ -126,31 +129,62 @@ async function startTestServer(options: TestServerOptions): Promise<TestServerSt
 		res.status(404).end();
 	});
 
-	const protocol = useHttps && certs ? `https` : `http`;
+	return app;
+}
+
+/**
+ * Creates an HTTP or HTTPS server instance based on the provided options.
+ * @param app The Express application to use.
+ * @param options The server options.
+ * @returns The created server instance.
+ */
+function createServerInstance(app: express.Express, options: TestServerOptions): http.Server | https.Server {
+	const { useHttps, certs } = options;
 	if (useHttps && certs) {
-		server = https.createServer({ key: certs.key, cert: certs.cert }, app);
-	} else {
-		server = http.createServer(app);
+		return https.createServer({ key: certs.key, cert: certs.cert }, app);
+	}
+	return http.createServer(app);
+}
+
+/**
+ * Starts the server and listens on the specified port.
+ * @param serverInstance The server instance to start.
+ * @param port The port to listen on.
+ * @returns A promise that resolves when the server is listening.
+ */
+async function listenOnPort(serverInstance: http.Server | https.Server, port: number): Promise<void> {
+	await new Promise<void>((resolve, reject) => {
+		serverInstance.listen(port, HOST, () => resolve());
+		serverInstance.on(`error`, reject);
+	});
+}
+
+async function startTestServer(options: TestServerOptions): Promise<TestServerState | null> {
+	await initPathUtils();
+
+	const { rootPath, useHttps = false, certs, customDomain } = options;
+	if (server) {
+		return getTestServerState();
 	}
 
+	// use cached port for the specified protocol if available, otherwise find a new one
+	const port = await getAvailablePort(null, useHttps);
+	const app = createExpressApp(rootPath);
+
+	const protocol = useHttps && certs ? `https` : `http`;
+	server = createServerInstance(app, options);
+
 	try {
-		await new Promise<void>((resolve, reject) => {
-			if (server) {
-				server.listen(port, HOST, () => resolve());
-				server.on(`error`, reject);
-			} else {
-				reject(new Error(`Server failed to initialize`));
-			}
-		});
+		await listenOnPort(server, port);
 	} catch {
 		// if there was an error, clear the port and server state and try again
-		cachedPorts[options.useHttps ? `https` : `http`] = null;
+		cachedPorts[useHttps ? `https` : `http`] = null;
 		server = null;
 		return startTestServer(options);
 	}
 
 	// store the successfully bound port for future use
-	cachedPorts[options.useHttps ? `https` : `http`] = port;
+	cachedPorts[useHttps ? `https` : `http`] = port;
 
 	state = {
 		url: `${protocol}://${HOST}:${port}`,
@@ -199,5 +233,9 @@ export {
 	stopTestServer,
 	getTestServerState,
 	clearTestServerPort,
-	getAvailablePort
+	getAvailablePort,
+	initPathUtils,
+	createExpressApp,
+	createServerInstance,
+	listenOnPort
 };
