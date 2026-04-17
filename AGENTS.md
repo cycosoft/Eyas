@@ -19,6 +19,7 @@
 - **Confirmation**: Always state the intended change (e.g., "Refactoring X to improve readability...") before using tools.
 - **Clarification**: Ask questions immediately if requirements are ambiguous.
 - **Token Efficiency**: Be surgically precise. Use `grep_search` before `view_file`. Only read necessary line ranges. Group multiple edits into a single tool call to minimize churn.
+- **Critical Thinking**: Avoid sycophantic behavior. Prioritize technical correctness and performance over blind agreement. If a proposal is suboptimal, provide a professional critique and better alternative.
 
 ## 3. Engineering Standards (TDD & DRY)
 - **TDD First**: Every code change MUST be accompanied by a test (`*.test.ts`). Update or add tests *before* modifying code.
@@ -28,7 +29,7 @@
   - **Test**: `npx vitest path/to/test.ts --config <config-file>`
 - **ESM Standard**: Follow NodeNext resolution. Imports MUST include the `.js` extension, even when the source file is `.ts`.
 - **DRY Logic**: Avoid duplication. Use traditional loops over `.map`/`.filter` where possible for simplicity.
-- **Linting**: Never change lint rules or use suppressions (`eslint-disable`, `@ts-ignore`) to fix errors. Fix the code. Mandatory lint check after every task.
+- **Linting**: Never change lint rules or use suppressions (`eslint-disable`, `@ts-ignore`) to fix errors. Fix the code. If a suppression is absolutely necessary for edge cases (e.g., test mocking), it MUST be accompanied by a comment explaining the technical justification. Mandatory lint check after every task.
 - **Atomic Changes**: One responsibility per change. Focus on bugs, functionality, and type safety; avoid purely stylistic refactors. Ensure behavioral parity during structural changes.
 
 ## 4. Technology Stack & Patterns
