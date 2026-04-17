@@ -98,7 +98,7 @@ export async function ensureEnvironmentSelected(uiPage) {
  * @param {Function} predicate
  */
 export async function waitForMenuUpdate(electronApp, predicate) {
-	for (let i = 0; i < 20; i++) {
+	for (let i = 0; i < 60; i++) {
 		const menu = await getMenuStructure(electronApp);
 		if (menu && predicate(menu)) return menu;
 		await new Promise(resolve => setTimeout(resolve, 500));

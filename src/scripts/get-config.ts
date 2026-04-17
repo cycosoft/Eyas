@@ -177,35 +177,36 @@ async function getConfigViaCli(): Promise<EyasConfig> {
 
 	// if the consumer is a module
 	if (consumerPackageJson?.type === `module`) {
-		// attempt to load a *.cjs config
-		try {
-			loadedConfig = require(cjsConfigPath);
-		} catch (error) {
-			// alert the user about potential issues
-			const err = error as Error;
-			console.warn(`CLI: Error loading config: ${err.message}`);
-			console.warn(`⚠️ CLI: Please rename ".eyas.config.js" to ".eyas.config.cjs"`);
+		// attempt to load a *.cjs config if it exists
+		if (_fs.existsSync(cjsConfigPath)) {
+			try {
+				loadedConfig = require(cjsConfigPath);
+			} catch (error) {
+				const err = error as Error;
+				console.error(`CLI: Error loading .cjs config: ${err.message}`);
+			}
 		}
 	}
 
 	// if a cjs config was not loaded
 	if (!loadedConfig) {
 		// attempt to load the *.js config
+		// Note: @vite-ignore is required here to prevent the bundler from
+		// trying to statically analyze this runtime import of an external file.
+		const configUrl = pathToFileURL(jsConfigPath).href;
 		try {
-			const loadedModule = await import(pathToFileURL(jsConfigPath).href);
+			const loadedModule = await import(/* @vite-ignore */ configUrl);
 			loadedConfig = loadedModule?.default || loadedModule;
 			if (loadedConfig) {
 				loadedConfig = { ...loadedConfig }; // ensure the object is extensible
 			}
 			loadedConfig._isConfigLoaded = true;
 		} catch (error) {
-			const err = error as Error;
-			console.error(`CLI: Error loading config: ${err.message}`);
+			console.error(`CLI: Error loading config:`, error);
 			loadedConfig = {};
 		}
 	} else {
-		// ensure cjs config is also extensible and marked
-		loadedConfig = { ...loadedConfig };
+		loadedConfig = { ...loadedConfig }; // ensure cjs config is also extensible
 	}
 
 	// if a source was provided

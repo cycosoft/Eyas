@@ -1,7 +1,8 @@
 // imports
 import { app } from 'electron';
 import _path from 'path';
-import { readJson, outputJson } from 'fs-extra';
+import fs from 'fs-extra';
+const { readJson, outputJson } = fs;
 import { SETTINGS_DEFAULTS } from '../scripts/constants.js';
 import type { SettingsData, AppSettings, ProjectSettings } from '../types/settings.js';
 

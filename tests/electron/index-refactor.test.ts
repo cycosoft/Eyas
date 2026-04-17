@@ -109,17 +109,23 @@ vi.mock(`../../src/eyas-core/deep-link-handler.js`, () => ({
 	getEyasUrlFromCommandLine: vi.fn()
 }));
 
-vi.mock(`electron-updater`, () => ({
-	autoUpdater: {
-		forceDevUpdateConfig: false,
-		logger: null,
-		setFeedURL: vi.fn(),
-		checkForUpdates: vi.fn().mockResolvedValue(null),
-		on: vi.fn(),
-		quitAndInstall: vi.fn(),
-		currentVersion: { version: `1.0.0` }
-	}
-}));
+vi.mock(`electron-updater`, () => {
+	const mock = {
+		autoUpdater: {
+			forceDevUpdateConfig: false,
+			logger: null,
+			setFeedURL: vi.fn(),
+			checkForUpdates: vi.fn().mockResolvedValue(null),
+			on: vi.fn(),
+			quitAndInstall: vi.fn(),
+			currentVersion: { version: `1.0.0` }
+		}
+	};
+	return {
+		...mock,
+		default: mock
+	};
+});
 
 // Import the functions to test
 import {

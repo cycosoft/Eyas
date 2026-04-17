@@ -3,8 +3,6 @@ import express from 'express';
 import getPortModule from 'get-port';
 import http from 'node:http';
 import https from 'node:https';
-import fs from 'node:fs';
-import { pathToFileURL } from 'node:url';
 import type {
 	TestServerState,
 	TestServerOptions,
@@ -12,10 +10,10 @@ import type {
 	TestServer
 } from '../../types/test-server.js';
 
-const getPort = typeof getPortModule === `function` ? getPortModule : (getPortModule as unknown as { default: typeof getPortModule }).default;
+import { parseURL } from '../../scripts/parse-url.js';
+import { safeJoin } from '../../scripts/path-utils.js';
 
-let safeJoin: ((root: string, subPath: string | null | undefined) => string | null) | null = null;
-let parseURL: ((url: string | null | undefined) => URL | string) | null = null;
+const getPort = typeof getPortModule === `function` ? getPortModule : (getPortModule as unknown as { default: typeof getPortModule }).default;
 
 let server: TestServer | null = null;
 let state: TestServerState | null = null;
@@ -24,20 +22,6 @@ const HOST = `127.0.0.1`;
 const DEFAULT_PORT = 12701;
 
 async function getAvailablePort(urlStr: string | null, useHttps: boolean): Promise<number> {
-	if (!parseURL) {
-		const parseUrlPath = [
-			path.join(import.meta.dirname, `..`, `..`, `scripts`, `parse-url.js`),
-			path.join(import.meta.dirname, `..`, `scripts`, `parse-url.js`),
-			path.join(import.meta.dirname, `..`, `..`, `scripts`, `parse-url.ts`),
-			path.join(import.meta.dirname, `..`, `scripts`, `parse-url.ts`)
-		].find(p => fs.existsSync(p));
-
-		if (parseUrlPath) {
-			const mod = await import(pathToFileURL(parseUrlPath).href);
-			parseURL = mod.parseURL;
-		}
-	}
-
 	const protoKey: keyof CachedPorts = useHttps ? `https` : `http`;
 
 	const cached = cachedPorts[protoKey];
@@ -83,19 +67,7 @@ interface EyasRequest extends express.Request {
  * Initializes the path-utils module by loading the safeJoin function.
  */
 async function initPathUtils(): Promise<void> {
-	if (safeJoin) { return; }
-
-	const pathUtilsPath = [
-		path.join(import.meta.dirname, `..`, `..`, `scripts`, `path-utils.js`),
-		path.join(import.meta.dirname, `..`, `scripts`, `path-utils.js`),
-		path.join(import.meta.dirname, `..`, `..`, `scripts`, `path-utils.ts`),
-		path.join(import.meta.dirname, `..`, `scripts`, `path-utils.ts`)
-	].find(p => fs.existsSync(p));
-
-	if (pathUtilsPath) {
-		const mod = await import(pathToFileURL(pathUtilsPath).href);
-		safeJoin = mod.safeJoin;
-	}
+	// No longer needed, using static imports
 }
 
 /**
@@ -154,8 +126,12 @@ function createServerInstance(app: express.Express, options: TestServerOptions):
  */
 async function listenOnPort(serverInstance: http.Server | https.Server, port: number): Promise<void> {
 	await new Promise<void>((resolve, reject) => {
-		serverInstance.listen(port, HOST, () => resolve());
-		serverInstance.on(`error`, reject);
+		serverInstance.listen(port, HOST, () => {
+			resolve();
+		});
+		serverInstance.on(`error`, err => {
+			reject(err);
+		});
 	});
 }
 
@@ -196,7 +172,6 @@ async function startTestServer(options: TestServerOptions): Promise<TestServerSt
 	if (customDomain) {
 		state.customUrl = `${protocol}://${customDomain}:${port}`;
 	}
-
 	return state;
 }
 

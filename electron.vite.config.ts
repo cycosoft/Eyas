@@ -31,9 +31,12 @@ export default defineConfig({
 					'test-server/test-server-timeout': resolve(import.meta.dirname, `src/eyas-core/test-server/test-server-timeout.js`)
 				},
 				output: {
-					entryFileNames: `[name].js`
+					// Output as native ESM. The root package.json has "type": "module",
+					// and out/package.json mirrors this, so Node.js treats .js files as ESM.
+					entryFileNames: `[name].js`,
+					format: `es`
 				},
-				external: [/^..\/scripts\//, /^..\/..\/package\.json$/]
+				external: []
 			},
 			emptyOutDir: true
 		}
@@ -55,7 +58,12 @@ export default defineConfig({
 					'variable-utils': resolve(import.meta.dirname, `src/scripts/variable-utils.js`)
 				},
 				output: {
-					entryFileNames: `[name].js`
+					// IMPORTANT: Electron's preload sandbox REQUIRES CommonJS (.js) scripts.
+					// Do NOT change this to 'es' format. Even though the project uses
+					// "type": "module", Electron enforces CJS for preload scripts as a
+					// hard security constraint. Changing this will break the app at runtime.
+					entryFileNames: `[name].js`,
+					format: `cjs`
 				}
 			},
 			outDir: `out/scripts`,

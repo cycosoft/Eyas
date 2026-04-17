@@ -26,8 +26,7 @@ async function createTempProject(projectId) {
 	// Minimal config that provides a distinguishable projectId in meta.
 	// Using an inline object so we don't need to build or compile anything.
 	const configContent = `
-'use strict';
-module.exports = {
+export default {
 	title: \`Test Project ${projectId}\`,
 	domains: [
 		{ url: \`https://staging.example.com\`, title: \`Staging\` },
@@ -35,7 +34,7 @@ module.exports = {
 	],
 	meta: {
 		projectId: \`${projectId}\`,
-		testId: require(\`crypto\`).randomUUID()
+		testId: '${crypto.randomUUID()}'
 	}
 };
 `;

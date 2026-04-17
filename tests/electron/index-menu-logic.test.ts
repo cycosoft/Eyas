@@ -1,4 +1,4 @@
-import { describe, test, expect, vi, beforeEach } from 'vitest';
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { BrowserWindow } from 'electron';
 import type { ValidatedConfig } from '../../src/types/config.js';
 import type { TestServerState } from '../../src/types/test-server.js';
@@ -37,6 +37,19 @@ vi.mock(`electron`, () => ({
 			getContentSize: vi.fn().mockReturnValue([1366, 768]),
 			setTitle: vi.fn(),
 			removeListener: vi.fn()
+		};
+	}),
+	BrowserView: vi.fn().mockImplementation(function() {
+		return {
+			webContents: {
+				on: vi.fn(),
+				loadURL: vi.fn(),
+				send: vi.fn(),
+				focus: vi.fn(),
+				isFocused: vi.fn().mockReturnValue(true)
+			},
+			setBounds: vi.fn(),
+			getBounds: vi.fn().mockReturnValue({ width: 1366, height: 768 })
 		};
 	}),
 	Menu: {
@@ -87,17 +100,23 @@ vi.mock(`../../src/eyas-core/settings-service.js`, () => ({
 	save: vi.fn().mockResolvedValue(undefined)
 }));
 
-vi.mock(`electron-updater`, () => ({
-	autoUpdater: {
-		forceDevUpdateConfig: false,
-		logger: null,
-		setFeedURL: vi.fn(),
-		checkForUpdates: vi.fn().mockResolvedValue(null),
-		on: vi.fn(),
-		quitAndInstall: vi.fn(),
-		currentVersion: { version: `1.0.0` }
-	}
-}));
+vi.mock(`electron-updater`, () => {
+	const mock = {
+		autoUpdater: {
+			forceDevUpdateConfig: false,
+			logger: null,
+			setFeedURL: vi.fn(),
+			checkForUpdates: vi.fn().mockResolvedValue(null),
+			on: vi.fn(),
+			quitAndInstall: vi.fn(),
+			currentVersion: { version: `1.0.0` }
+		}
+	};
+	return {
+		...mock,
+		default: mock
+	};
+});
 
 // Import the functions to test
 import { getViewportMenuItems, getLinkMenuItems, getTestServerRemainingTime } from '../../src/eyas-core/index.js';
@@ -199,13 +218,19 @@ describe(`index menu logic helpers`, () => {
 	});
 
 	describe(`getTestServerRemainingTime`, () => {
+		afterEach(() => {
+			vi.useRealTimers();
+		});
+
 		test(`should return empty string if no server state`, () => {
 			vi.mocked(testServer.getTestServerState).mockReturnValue(null);
 			expect(getTestServerRemainingTime()).toBe(``);
 		});
 
 		test(`should return formatted duration if server is active`, () => {
-			const startedAt = Date.now() - 1000 * 60 * 5; // 5 minutes ago
+			vi.useFakeTimers();
+			const now = Date.now();
+			const startedAt = now - 1000 * 60 * 5; // exactly 5 minutes ago (frozen clock)
 			vi.mocked(testServer.getTestServerState).mockReturnValue({
 				startedAt,
 				url: `http://localhost:1234`,

@@ -16,12 +16,14 @@ import _os from 'node:os';
 import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import Mixpanel from 'mixpanel';
-import { machineId } from 'node-machine-id';
+import nodeMachineId from 'node-machine-id';
+const { machineId } = nodeMachineId;
 import { isPast } from 'date-fns/isPast';
 import { format } from 'date-fns/format';
 import { differenceInDays } from 'date-fns/differenceInDays';
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
-import { autoUpdater } from 'electron-updater';
+import electronUpdater from 'electron-updater';
+const { autoUpdater } = electronUpdater;
 import semver from 'semver';
 
 // only allow a single instance of the app to be at a time
@@ -952,7 +954,7 @@ async function doStartTestServer(autoOpenBrowser = true, customDomain: string | 
 	}
 	testServerTimeout.startTestServerTimeout(onTestServerTimeout, TEST_SERVER_SESSION_DURATION_MS);
 	$testServerMenuIntervalId = setInterval(() => { setMenu(); }, 60 * 1000);
-	setMenu();
+	await setMenu();
 
 	if (autoOpenBrowser) {
 		openTestServerInBrowserHandler();
@@ -1255,7 +1257,12 @@ async function setMenu(): Promise<void> {
 	if (!$appWindow || !$config) { return; }
 
 	const sessionAge = getSessionAge();
-	const cacheSize = await $appWindow.webContents.session.getCacheSize();
+	let cacheSize = 0;
+	try {
+		cacheSize = await $appWindow.webContents.session.getCacheSize();
+	} catch {
+		// ignore
+	}
 
 	const viewportItems = getViewportMenuItems($appWindow, $allViewports, $currentViewport);
 	const linkItems = getLinkMenuItems($config, { navigate, navigateVariable });
