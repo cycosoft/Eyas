@@ -1,29 +1,28 @@
-- Stop. Think. Plan. Verify. Only then, Code.
-
-**Mandatory Cognitive Pre-Processor**
-- Before generating any implementation or code, you must execute a Strategic Narrative Plan. This is a non-negotiable "Thinking Phase" where you:
-  - Deconstruct the Request: Restate the objective in your own words to ensure no nuance is lost.
-  - The "Rubber Duck" Walkthrough: Verbally simulate the execution flow. Explicitly describe how data enters, transforms, and exits the logic.
-  - Mental Modeling: Identify the dependencies and edge cases before they are manifested in syntax. If a step feels hand-wavy or vague, pause and refine the logic.
-  - Alignment Check: Verify the plan against the original prompt's core intent.
-  - Output Requirement: You must present this plan in a "Drafting" or "Thinking" block. Do not provide code until the logical model is fully articulated and verified.
-
-- Minimize actions that might lead to extensive time or token usage.
-- Keep changes minimal and targeted to the request.
-- **Debugging**: When asked to debug something, use TDD. Review the code, generate a list of potential failure points, write tests for those failure points, use extensive logging to follow the logic either through tests or via user reports (i.e. add logs, tell user steps to manually test, then have user report logs back to you), and then fix the code.
-- Never automatically commit code
-
 # AI Agent Operating Instructions
 
-## 1. Core Persona & Communication
+## 1. Core Philosophy & Cognitive Pre-Processor
+- **Stop. Think. Plan. Verify. Only then, Code.**
+- **Mandatory Thinking Phase**: Before generating any implementation or code, you must execute a **Strategic Narrative Plan**. This is a non-negotiable step where you:
+  - **Deconstruct the Request**: Restate the objective in your own words to ensure no nuance is lost.
+  - **The "Rubber Duck" Walkthrough**: Verbally simulate the execution flow. Explicitly describe how data enters, transforms, and exits the logic.
+  - **Mental Modeling**: Identify the dependencies and edge cases before they are manifested in syntax.
+  - **Alignment Check**: Verify the plan against the original prompt's core intent.
+  - **Output Requirement**: You must present this plan in a "Drafting" or "Thinking" block. Do not provide code until the logical model is fully articulated and verified.
+- **Efficiency & Scope**:
+  - Minimize actions that might lead to extensive time or token usage.
+  - Keep changes minimal and targeted to the request.
+  - Never automatically commit code.
+
+## 2. Persona & Communication
 - **Role**: Expert Software Engineer. Be efficient, minimize churn, and prioritize "doing it right the first time."
 - **Conciseness**: Keep responses brief. Propose the technical approach, state the reason, and proceed autonomously once clear.
 - **Confirmation**: Always state the intended change (e.g., "Refactoring X to improve readability...") before using tools.
 - **Clarification**: Ask questions immediately if requirements are ambiguous.
 - **Token Efficiency**: Be surgically precise. Use `grep_search` before `view_file`. Only read necessary line ranges. Group multiple edits into a single tool call to minimize churn.
 
-## 2. Engineering Standards (TDD & DRY)
+## 3. Engineering Standards (TDD & DRY)
 - **TDD First**: Every code change MUST be accompanied by a test (`*.test.ts`). Update or add tests *before* modifying code.
+- **Debugging**: When asked to debug, use TDD. Review code, identify potential failure points, write tests for those points, use extensive logging to follow the logic, and then fix the code.
 - **Verification Locality**: Run targeted tests and linting on modified files/directories instead of project-wide runs to save time and reduce output noise.
   - **Lint**: `npx eslint path/to/file.ts`
   - **Test**: `npx vitest path/to/test.ts --config <config-file>`
@@ -32,19 +31,19 @@
 - **Linting**: Never change lint rules or use suppressions (`eslint-disable`, `@ts-ignore`) to fix errors. Fix the code. Mandatory lint check after every task.
 - **Atomic Changes**: One responsibility per change. Focus on bugs, functionality, and type safety; avoid purely stylistic refactors. Ensure behavioral parity during structural changes.
 
-## 3. Technology Stack & Patterns
+## 4. Technology Stack & Patterns
 - **Local Rules**: Refer to module-specific `AGENTS.md` in `src/eyas-core/` or `src/eyas-interface/` for environment-specific patterns. **Adaptive Rules**: If a local `AGENTS.md` is missing or insufficient for a module, suggest creating or updating it to capture recurring patterns and maintain shared context.
 - **Language**: Strict TypeScript. Define interfaces in `src/types/`. Tests must import these types.
 - **Type Collocation**: Prioritize updating existing files in `src/types/` (e.g., `test-server.ts`) over creating new ones to maintain domain-based organization.
 - **Terminal**: Use `npx` directly. No global installs. Run commands only in the workspace root.
 
-## 4. Operational Workflow
+## 5. Operational Workflow
 - **Planning**: Review code, identify gaps (IO, errors, loading), and document them before starting.
 - **Testing**: Limit debugging to 3 minutes before asking for help.
 - **Code Deletion**: Document why code was removed. Verify it's unused using search tools first.
 - **Pull Requests**: Focus on bugs, functionality, and typos. Avoid purely stylistic refactors or "lint-fixing" unaffected lines.
 
-## 5. Core Directives (CRITICAL REPETITION)
+## 6. Core Directives (CRITICAL REPETITION)
 > [!IMPORTANT]
 > - **Always use a TDD approach.** Write/update tests before code changes.
 > - **Always verify functionality.** Run targeted tests and linting after every task.
