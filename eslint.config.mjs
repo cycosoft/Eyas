@@ -82,6 +82,7 @@ export default tseslint.config(
 			'no-debugger': process.env.NODE_ENV === `production` ? `error` : `off`,
 			'no-unused-vars': `off`, // Handled by @typescript-eslint version
 			'no-redeclare': `off`, // Can be noisy with globals in separate configs
+			complexity: [`error`, 15],
 
 			// TS specific rule overrides
 			'@typescript-eslint/no-unused-vars': [`warn`, {
