@@ -25,14 +25,10 @@ interface BuildOptions {
  */
 export function getElectronBuilderConfig(options: BuildOptions): Configuration {
 	const {
-		isDev,
 		isInstaller,
 		isWin,
-		paths,
 		runnerName,
-		appleTeamId = ``,
-		runnersRoot,
-		provisioningProfile = ``
+		runnersRoot
 	} = options;
 
 	return {
@@ -41,29 +37,11 @@ export function getElectronBuilderConfig(options: BuildOptions): Configuration {
 		artifactName: `${runnerName}${isInstaller ? (isWin ? `-win` : `-mac`) : ``}.\${ext}`,
 		copyright: `Copyright © 2023 Cycosoft, LLC`,
 		asarUnpack: [`resources/**`],
-		files: [
-			`!**/.vscode/*`,
-			`!src/*`,
-			`!tests/*`,
-			`!.runners/*`,
-			`!.test-data/*`,
-			`!conductor/*`,
-			`!demo/*`,
-			`!docs/*`,
-			`!dist/*`,
-			`!eyas-dist/*`,
-			`!_design/*`,
-			`!electron.vite.config.{js,ts,mjs,cjs}`,
-			`!{.eslintignore,.eslintrc.cjs,eslint.config.mjs,babel.config.js}`,
-			`!{.env,.env.*,.npmrc,package-lock.json}`,
-			`!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}`,
-			`!{playwright.config.js,vitest.config.*.js,dev-app-update.yml}`,
-			`!{README.md,CHANGELOG.md,LICENSE.TXT}`
-		],
+		files: getExcludedFiles(),
 		directories: {
 			output: runnersRoot
 		},
-		compression: isDev ? `store` : `maximum`, // `store` | `normal` | `maximum`
+		compression: options.isDev ? `store` : `maximum`,
 		removePackageScripts: true,
 		removePackageKeywords: true,
 		publish: {
@@ -71,54 +49,139 @@ export function getElectronBuilderConfig(options: BuildOptions): Configuration {
 			url: `https://github.com/cycosoft/Eyas/releases`,
 			publishAutoUpdate: true
 		},
-		mac: {
-			target: isInstaller ? [`pkg`, `zip`] : `dir`,
-			category: `public.app-category.developer-tools`,
-			icon: paths.icon,
-			provisioningProfile: provisioningProfile || undefined,
-			hardenedRuntime: true,
-			gatekeeperAssess: false,
-			...(isDev ? { identity: null } : {}), // don't sign in dev
-			notarize: Boolean(appleTeamId)
-		},
-		win: {
-			target: isInstaller ? `nsis` : `portable`,
-			icon: paths.icon,
-			...(isDev ? {} : { signtoolOptions: { sign: paths.codesignWin } as NonNullable<Configuration[`win`]>[`signtoolOptions`] })
-		},
-		nsis: {
-			oneClick: false,
-			allowToChangeInstallationDirectory: true,
-			createDesktopShortcut: `always`,
-			createStartMenuShortcut: true,
-			runAfterFinish: false
-		},
-		linux: {
-			target: `AppImage`,
-			icon: paths.icon,
-			category: `Utility`
-		},
-		msi: {
-			oneClick: false, // because there is no feedback to users otherwise
-			runAfterFinish: false, // this gives the user an option, but we want mandatory
-			createDesktopShortcut: true // so the user knows install process finished
-		},
-		pkg: {
-			isRelocatable: false // always install in /Applications
-		},
-		fileAssociations: [
-			{
-				ext: `eyas`,
-				name: `eyas-db`,
-				icon: isWin ? paths.iconDbWin : paths.iconDbMac
-			}
-		],
-		protocols: [
-			{
-				name: `Eyas`,
-				schemes: [`eyas`],
-				role: `Viewer`
-			}
-		]
+		mac: getMacConfig(options),
+		win: getWinConfig(options),
+		nsis: getNsisConfig(),
+		linux: getLinuxConfig(options),
+		msi: getMsiConfig(),
+		pkg: { isRelocatable: false },
+		fileAssociations: getFileAssociations(options),
+		protocols: getProtocols()
 	};
 }
+
+/**
+ * Returns the list of files to be excluded from the build.
+ * @returns {string[]} List of excluded files
+ */
+function getExcludedFiles(): string[] {
+	return [
+		`!**/.vscode/*`,
+		`!src/*`,
+		`!tests/*`,
+		`!.runners/*`,
+		`!.test-data/*`,
+		`!conductor/*`,
+		`!demo/*`,
+		`!docs/*`,
+		`!dist/*`,
+		`!eyas-dist/*`,
+		`!_design/*`,
+		`!electron.vite.config.{js,ts,mjs,cjs}`,
+		`!{.eslintignore,.eslintrc.cjs,eslint.config.mjs,babel.config.js}`,
+		`!{.env,.env.*,.npmrc,package-lock.json}`,
+		`!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}`,
+		`!{playwright.config.js,vitest.config.*.js,dev-app-update.yml}`,
+		`!{README.md,CHANGELOG.md,LICENSE.TXT}`
+	];
+}
+
+/**
+ * Returns the macOS configuration for electron-builder.
+ * @param {BuildOptions} options - Build options
+ * @returns {Configuration['mac']} macOS configuration
+ */
+function getMacConfig(options: BuildOptions): Configuration[`mac`] {
+	return {
+		target: options.isInstaller ? [`pkg`, `zip`] : `dir`,
+		category: `public.app-category.developer-tools`,
+		icon: options.paths.icon,
+		provisioningProfile: options.provisioningProfile || undefined,
+		hardenedRuntime: true,
+		gatekeeperAssess: false,
+		...(options.isDev ? { identity: null } : {}),
+		notarize: Boolean(options.appleTeamId)
+	};
+}
+
+/**
+ * Returns the Windows configuration for electron-builder.
+ * @param {BuildOptions} options - Build options
+ * @returns {Configuration['win']} Windows configuration
+ */
+function getWinConfig(options: BuildOptions): Configuration[`win`] {
+	return {
+		target: options.isInstaller ? `nsis` : `portable`,
+		icon: options.paths.icon,
+		...(options.isDev ? {} : { signtoolOptions: { sign: options.paths.codesignWin } as NonNullable<Configuration[`win`]>[`signtoolOptions`] })
+	};
+}
+
+/**
+ * Returns the NSIS configuration for electron-builder.
+ * @returns {Configuration['nsis']} NSIS configuration
+ */
+function getNsisConfig(): Configuration[`nsis`] {
+	return {
+		oneClick: false,
+		allowToChangeInstallationDirectory: true,
+		createDesktopShortcut: `always`,
+		createStartMenuShortcut: true,
+		runAfterFinish: false
+	};
+}
+
+/**
+ * Returns the Linux configuration for electron-builder.
+ * @param {BuildOptions} options - Build options
+ * @returns {Configuration['linux']} Linux configuration
+ */
+function getLinuxConfig(options: BuildOptions): Configuration[`linux`] {
+	return {
+		target: `AppImage`,
+		icon: options.paths.icon,
+		category: `Utility`
+	};
+}
+
+/**
+ * Returns the MSI configuration for electron-builder.
+ * @returns {Configuration['msi']} MSI configuration
+ */
+function getMsiConfig(): Configuration[`msi`] {
+	return {
+		oneClick: false,
+		runAfterFinish: false,
+		createDesktopShortcut: true
+	};
+}
+
+/**
+ * Returns the file associations configuration for electron-builder.
+ * @param {BuildOptions} options - Build options
+ * @returns {Configuration['fileAssociations']} File associations configuration
+ */
+function getFileAssociations(options: BuildOptions): Configuration[`fileAssociations`] {
+	return [
+		{
+			ext: `eyas`,
+			name: `eyas-db`,
+			icon: options.isWin ? options.paths.iconDbWin : options.paths.iconDbMac
+		}
+	];
+}
+
+/**
+ * Returns the protocols configuration for electron-builder.
+ * @returns {Configuration['protocols']} Protocols configuration
+ */
+function getProtocols(): Configuration[`protocols`] {
+	return [
+		{
+			name: `Eyas`,
+			schemes: [`eyas`],
+			role: `Viewer`
+		}
+	];
+}
+
