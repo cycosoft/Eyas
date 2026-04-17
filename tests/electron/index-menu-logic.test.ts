@@ -1,4 +1,7 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
+import type { BrowserWindow } from 'electron';
+import type { ValidatedConfig } from '../../src/types/config.js';
+import type { TestServerState } from '../../src/types/test-server.js';
 
 // Mock electron before importing index.ts
 vi.mock(`electron`, () => ({
@@ -68,7 +71,7 @@ describe(`index menu logic helpers`, () => {
 	describe(`getViewportMenuItems`, () => {
 		const mockWindow = {
 			setContentSize: vi.fn()
-		} as any;
+		} as unknown as BrowserWindow;
 
 		const allViewports = [
 			{ label: `Desktop`, width: 1366, height: 768, isDefault: true },
@@ -82,7 +85,7 @@ describe(`index menu logic helpers`, () => {
 
 		test(`should identify selected viewport with 🔘 and inject separator`, () => {
 			const items = getViewportMenuItems(mockWindow, allViewports, [1366, 768]);
-			
+
 			// Should have separator before Desktop because it's default
 			expect(items[0].type).toBe(`separator`);
 			expect(items[1].label).toContain(`🔘 Desktop`);
@@ -104,7 +107,7 @@ describe(`index menu logic helpers`, () => {
 		test(`click handler should call setContentSize`, () => {
 			const items = getViewportMenuItems(mockWindow, allViewports, [1366, 768]);
 			const desktopItem = items[1];
-			(desktopItem.click as Function)();
+			(desktopItem.click as () => void)();
 			expect(mockWindow.setContentSize).toHaveBeenCalledWith(1366, 768);
 		});
 	});
@@ -121,7 +124,7 @@ describe(`index menu logic helpers`, () => {
 				{ label: `Local`, url: `eyas://local.test`, external: false },
 				{ label: `Variable`, url: `https://example.com/{myvar}`, external: false }
 			]
-		} as any;
+		} as unknown as ValidatedConfig;
 
 		test(`should return empty array if no config`, () => {
 			expect(getLinkMenuItems(null, handlers)).toEqual([]);
@@ -135,20 +138,20 @@ describe(`index menu logic helpers`, () => {
 
 		test(`should use navigate for static links`, () => {
 			const items = getLinkMenuItems(config, handlers);
-			(items[0].click as Function)();
+			(items[0].click as () => void)();
 			expect(handlers.navigate).toHaveBeenCalledWith(`https://google.com/`, true);
 		});
 
 		test(`should use navigateVariable for links with variables`, () => {
 			const items = getLinkMenuItems(config, handlers);
-			(items[2].click as Function)();
+			(items[2].click as () => void)();
 			expect(handlers.navigateVariable).toHaveBeenCalledWith(`https://example.com/{myvar}`);
 		});
 
 		test(`should mark invalid links`, () => {
 			const badConfig = {
 				links: [{ label: `Bad`, url: `not-a-url`, external: false }]
-			} as any;
+			} as unknown as ValidatedConfig;
 			const items = getLinkMenuItems(badConfig, handlers);
 			expect(items[0].label).toContain(`invalid entry`);
 			expect(items[0].enabled).toBe(false);
@@ -168,7 +171,7 @@ describe(`index menu logic helpers`, () => {
 				url: `http://localhost:1234`,
 				customUrl: null,
 				port: 1234
-			} as any);
+			} as TestServerState);
 
 			const result = getTestServerRemainingTime();
 			expect(result).toBe(`25m`);
