@@ -81,14 +81,14 @@ describe(`test-preload`, () => {
 
 		it(`should dispatch initial progress event and calculate fileBytes for strings`, () => {
 			const originalSend = vi.fn();
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const mockXHR = function (this: any): void {
-				this.upload = { dispatchEvent: vi.fn() };
-				this.addEventListener = vi.fn();
-			};
-			mockXHR.prototype.send = originalSend;
+			class MockXHR {
+				upload = { dispatchEvent: vi.fn() };
+				addEventListener = vi.fn();
+				send(..._args: unknown[]): void {}
+			}
+			MockXHR.prototype.send = originalSend;
 
-			vi.stubGlobal(`XMLHttpRequest`, mockXHR);
+			vi.stubGlobal(`XMLHttpRequest`, MockXHR);
 			vi.stubGlobal(`performance`, { now: vi.fn(() => 0) });
 			vi.stubGlobal(`ProgressEvent`, class {
 				type: string;
@@ -105,7 +105,7 @@ describe(`test-preload`, () => {
 
 			polyfillUploadProgress();
 
-			const xhr = new (mockXHR as any)();
+			const xhr = new MockXHR();
 			const data = `test-data`;
 			xhr.send(data);
 
