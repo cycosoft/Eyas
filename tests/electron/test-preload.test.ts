@@ -78,5 +78,46 @@ describe(`test-preload`, () => {
 			expect(mockXHR.prototype.send).not.toBe(originalSend);
 			expect(typeof mockXHR.prototype.send).toBe(`function`);
 		});
+
+		it(`should dispatch initial progress event and calculate fileBytes for strings`, () => {
+			const originalSend = vi.fn();
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const mockXHR = function (this: any): void {
+				this.upload = { dispatchEvent: vi.fn() };
+				this.addEventListener = vi.fn();
+			};
+			mockXHR.prototype.send = originalSend;
+
+			vi.stubGlobal(`XMLHttpRequest`, mockXHR);
+			vi.stubGlobal(`performance`, { now: vi.fn(() => 0) });
+			vi.stubGlobal(`ProgressEvent`, class {
+				type: string;
+				lengthComputable: boolean;
+				loaded: number;
+				total: number;
+				constructor(type: string, init: { lengthComputable: boolean, loaded: number, total: number }) {
+					this.type = type;
+					this.lengthComputable = init.lengthComputable;
+					this.loaded = init.loaded;
+					this.total = init.total;
+				}
+			});
+
+			polyfillUploadProgress();
+
+			const xhr = new (mockXHR as any)();
+			const data = `test-data`;
+			xhr.send(data);
+
+			// Should have called dispatchEvent with (0, data.length)
+			expect(xhr.upload.dispatchEvent).toHaveBeenCalledWith(expect.objectContaining({
+				type: `progress`,
+				loaded: 0,
+				total: data.length
+			}));
+
+			// Should have called original send
+			expect(originalSend).toHaveBeenCalled();
+		});
 	});
 });

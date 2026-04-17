@@ -96,27 +96,15 @@ export function polyfillUploadProgress(): void {
 		// track the time this request started
 		const requestStart = performance.now();
 
-		// update the fileBytes for ArrayBuffer, Int8Array, DataView
 		if (data instanceof ArrayBuffer || data instanceof DataView || (typeof Int8Array !== `undefined` && data instanceof Int8Array)) {
 			fileBytes = data.byteLength;
-		}
-
-		// update the fileBytes for Blob
-		if (data instanceof Blob) {
+		} else if (data instanceof Blob) {
 			fileBytes = data.size;
-		}
-
-		// update the fileBytes for FormData
-		if (data instanceof FormData) {
-			for (const pair of data.entries()) {
-				if (pair[1] instanceof File) {
-					fileBytes += pair[1].size;
-				}
+		} else if (data instanceof FormData) {
+			for (const [, v] of data.entries()) {
+				if (v instanceof File) { fileBytes += v.size; }
 			}
-		}
-
-		// update the fileBytes for string
-		if (typeof data === `string`) {
+		} else if (typeof data === `string`) {
 			fileBytes = data.length;
 		}
 
@@ -147,12 +135,7 @@ export function polyfillUploadProgress(): void {
 
 		const updateProgress = (): void => {
 			totalUpdates++;
-			let loaded = totalUpdates * uploadSpeed * (intervalTiming / 1000);
-
-			// quality check
-			if (loaded > fileBytes) { loaded = fileBytes; }
-
-			// alert the progress event
+			const loaded = Math.min(totalUpdates * uploadSpeed * (intervalTiming / 1000), fileBytes);
 			emitProgress(loaded, fileBytes);
 		};
 
