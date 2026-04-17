@@ -63,4 +63,17 @@ describe(`WhatsNewModal`, () => {
 		const cardText = wrapper.findComponent({ name: `VCardText` });
 		expect(cardText.exists()).toBe(true);
 	});
+
+	test(`showManual sets isVisible to true and mode to manual`, async () => {
+		await wrapper.vm.showManual();
+		expect(wrapper.vm.isVisible).toBe(true);
+		expect(wrapper.vm.mode).toBe(`manual`);
+	});
+
+	test(`close sets isVisible to false and sends whats-new-closed`, async () => {
+		wrapper.vm.isVisible = true;
+		await wrapper.vm.close();
+		expect(wrapper.vm.isVisible).toBe(false);
+		expect(window.eyas.send).toHaveBeenCalledWith(`whats-new-closed`);
+	});
 });

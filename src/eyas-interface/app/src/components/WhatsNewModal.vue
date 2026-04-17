@@ -118,87 +118,65 @@ import ModalWrapper from '@/components/ModalWrapper.vue';
 import { getAggregatedChanges, tokenizeMarkdownSubset } from '@/utils/changelog-utils.js';
 import changelogData from '../CHANGELOG.json';
 
+function useWhatsNewModal(): object {
+	const settingsStore = useSettingsStore();
+	const isVisible = ref(false);
+	const changelog = ref([]);
+	const expandedPanels = ref([]);
+	const mode = ref(`launch`); // `launch` or `manual`
+	const currentVersion = computed(() => changelogData[0]?.version);
+	const lastSeenVersion = computed(() => settingsStore.appSettings.lastSeenVersion || `0.0.0`);
+	const title = computed(() => mode.value === `manual` ? `Changelog` : `What's New`);
+
+	const showFromMain = async (): Promise<void> => {
+		changelog.value = changelogData;
+		const unseen = getAggregatedChanges(changelog.value, lastSeenVersion.value, currentVersion.value);
+		if (unseen.length > 0) {
+			mode.value = `launch`;
+			expandedPanels.value = unseen.map(u => u.version);
+			isVisible.value = true;
+		} else {
+			window.eyas?.send(`whats-new-closed`);
+		}
+	};
+
+	const showManual = async (): Promise<void> => {
+		changelog.value = changelogData;
+		mode.value = `manual`;
+		if (changelog.value.length > 0) {
+			expandedPanels.value = [changelog.value[0].version];
+		}
+		isVisible.value = true;
+	};
+
+	const close = (): void => {
+		isVisible.value = false;
+		if (currentVersion.value !== lastSeenVersion.value) {
+			window.eyas?.send(`save-setting`, { key: `lastSeenVersion`, value: currentVersion.value });
+		}
+		window.eyas?.send(`whats-new-closed`);
+	};
+
+	onMounted(() => {
+		window.eyas?.receive(`show-whats-new`, (isManual: boolean) => {
+			if (isManual) { showManual(); } else { showFromMain(); }
+		});
+	});
+
+	return {
+		isVisible, changelog, expandedPanels, currentVersion,
+		tokenize: tokenizeMarkdownSubset, close, mode, title,
+		showFromMain, showManual
+	};
+}
+
 export default {
 	components: {
 		ModalWrapper
 	},
 
 	setup(): object {
-		const settingsStore = useSettingsStore();
-		const isVisible = ref(false);
-		const changelog = ref([]);
-		const expandedPanels = ref([]);
-		const mode = ref(`launch`); // `launch` or `manual`
-
-		const currentVersion = computed(() => changelogData[0]?.version);
-		const lastSeenVersion = computed(() => settingsStore.appSettings.lastSeenVersion || `0.0.0`);
-
-		const title = computed(() => mode.value === `manual` ? `Changelog` : `What's New`);
-
-		const fetchChangelog = async (): Promise<void> => {
-			changelog.value = changelogData;
-		};
-
-		const showFromMain = async (): Promise<void> => {
-			await fetchChangelog();
-
-			const unseen = getAggregatedChanges(changelog.value, lastSeenVersion.value, currentVersion.value);
-
-			if (unseen.length > 0) {
-				mode.value = `launch`;
-				expandedPanels.value = unseen.map(u => u.version);
-				isVisible.value = true;
-			} else {
-				// if there are no new changes to show, notify the main process to continue
-				window.eyas?.send(`whats-new-closed`);
-			}
-		};
-
-		const showManual = async (): Promise<void> => {
-			await fetchChangelog();
-			mode.value = `manual`;
-			// Only expand the latest version
-			if (changelog.value.length > 0) {
-				expandedPanels.value = [changelog.value[0].version];
-			}
-			isVisible.value = true;
-		};
-
-		const close = (): void => {
-			isVisible.value = false;
-			// Update last seen version if we are in launch mode or if we manually viewed the latest
-			if (currentVersion.value !== lastSeenVersion.value) {
-				window.eyas?.send(`save-setting`, {
-					key: `lastSeenVersion`,
-					value: currentVersion.value
-				});
-			}
-
-			// notify the main process that the modal is closed so it can release the next modal
-			window.eyas?.send(`whats-new-closed`);
-		};
-
-		onMounted(() => {
-			// Listen for trigger from main process (manual or launch)
-			window.eyas?.receive(`show-whats-new`, isManual => {
-				if (isManual) {
-					showManual();
-				} else {
-					showFromMain();
-				}
-			});
-		});
-
-		return {
-			isVisible,
-			changelog,
-			expandedPanels,
-			currentVersion,
-			tokenize: tokenizeMarkdownSubset,
-			close,
-			mode,
-			title
-		};
+		return useWhatsNewModal();
 	}
 };
 </script>
