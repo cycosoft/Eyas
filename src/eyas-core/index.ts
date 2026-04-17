@@ -1358,8 +1358,10 @@ function clearCache(): void {
 }
 
 // refresh the app
-async function startAFreshTest(forceShow = false): Promise<void> {
-
+/**
+ * Resets the test state including server and initialization flags.
+ */
+async function resetFreshTestState(): Promise<void> {
 	// stop test server when test changes
 	if (testServer.getTestServerState()) {
 		await stopTestServer();
@@ -1371,6 +1373,14 @@ async function startAFreshTest(forceShow = false): Promise<void> {
 	// reset initialization state
 	$isInitializing = true;
 
+	// Reset test server settings
+	resetTestServerSettings();
+}
+
+/**
+ * Initializes the viewports based on the configuration and defaults.
+ */
+function initFreshTestViewports(): void {
 	// set the available viewports
 	$allViewports = [...($config?.viewports || []), ...$defaultViewports];
 
@@ -1378,13 +1388,12 @@ async function startAFreshTest(forceShow = false): Promise<void> {
 	$currentViewport[0] = $allViewports[0].width;
 	$currentViewport[1] = $allViewports[0].height;
 	$appWindow?.setContentSize($currentViewport[0], $currentViewport[1]);
+}
 
-	// Set the application menu
-	setMenu();
-
-	// Reset test server settings
-	resetTestServerSettings();
-
+/**
+ * Sets up the source path and domain information for the test.
+ */
+function setupFreshTestSource(): void {
 	// reset the path to the test source
 	$paths.testSrc = $config?.source || ``;
 
@@ -1395,12 +1404,19 @@ async function startAFreshTest(forceShow = false): Promise<void> {
 		$testDomain = sourceOnWeb.toString();
 		$envKey = null; // source URLs have no key
 	}
+}
 
+/**
+ * Handles navigation logic for no domains or a single domain.
+ * @returns {boolean} True if navigation was handled.
+ */
+function handleSimpleDomainNavigation(): boolean {
 	// if there are no custom domains defined
 	if (!$config?.domains.length) {
 		console.log(`No domains defined, navigating...`);
 		// load the test using the default domain
 		navigate();
+		return true;
 	}
 
 	// if the user has a single custom domain
@@ -1413,44 +1429,71 @@ async function startAFreshTest(forceShow = false): Promise<void> {
 
 		// directly load the user's test using the new default domain
 		navigate();
+		return true;
 	}
 
-	// if the user has multiple custom domains
-	if ($config && $config.domains.length > 1) {
-		const currentHash = hashDomains($config.domains);
-		const envSettings = settingsService.get(`env`, $config.meta.projectId ?? undefined) as { alwaysChoose?: boolean; lastChoice?: { url: string; key?: string }; lastChoiceHash?: string } | undefined;
-		const alwaysChoose = envSettings?.alwaysChoose;
-		const lastChoice = envSettings?.lastChoice;
-		const lastHash = envSettings?.lastChoiceHash;
+	return false;
+}
 
-		// skip the modal if the user opted out AND the domain list hasn't changed AND it's not a forced show
-		if (!forceShow && alwaysChoose && lastChoice && lastHash === currentHash) {
-			// auto-select the previously chosen environment
-			$testDomainRaw = lastChoice.url;
-			const parsed = parseURL(lastChoice.url);
-			$testDomain = (parsed instanceof URL ? parsed.toString() : $testDomain);
-			$envKey = lastChoice.key ?? null;
-			navigate();
-		} else {
-			// display the environment chooser modal
-			$isEnvironmentPending = true;
-			uiEvent(`show-environment-modal`, $config.domains, {
-				projectId: $config.meta.projectId ?? undefined,
-				alwaysChoose: !!alwaysChoose,
-				domainsHash: currentHash,
-				forceShow
-			});
-			setMenu();
-		}
+/**
+ * Handles navigation logic for multiple custom domains.
+ * @param {boolean} forceShow - Whether to force show the environment modal.
+ */
+function handleMultiDomainNavigation(forceShow: boolean): void {
+	if (!$config || $config.domains.length <= 1) { return; }
+
+	const currentHash = hashDomains($config.domains);
+	const envSettings = settingsService.get(`env`, $config.meta.projectId ?? undefined) as { alwaysChoose?: boolean; lastChoice?: { url: string; key?: string }; lastChoiceHash?: string } | undefined;
+	const alwaysChoose = envSettings?.alwaysChoose;
+	const lastChoice = envSettings?.lastChoice;
+	const lastHash = envSettings?.lastChoiceHash;
+
+	// skip the modal if the user opted out AND the domain list hasn't changed AND it's not a forced show
+	if (!forceShow && alwaysChoose && lastChoice && lastHash === currentHash) {
+		// auto-select the previously chosen environment
+		$testDomainRaw = lastChoice.url;
+		const parsed = parseURL(lastChoice.url);
+		$testDomain = (parsed instanceof URL ? parsed.toString() : $testDomain);
+		$envKey = lastChoice.key ?? null;
+		navigate();
+	} else {
+		// display the environment chooser modal
+		$isEnvironmentPending = true;
+		uiEvent(`show-environment-modal`, $config.domains, {
+			projectId: $config.meta.projectId ?? undefined,
+			alwaysChoose: !!alwaysChoose,
+			domainsHash: currentHash,
+			forceShow
+		});
+		setMenu();
 	}
+}
 
-	// ─── Version Mismatch check ──────────────────────────────────────────────────
+/**
+ * Checks for a version mismatch between the runner and the test builder.
+ */
+function checkVersionMismatch(): void {
 	// if the runner is older than the version that built the test
 	if ($config?.meta.eyas && semver.lt(_appVersion, $config.meta.eyas)) {
 		// send request to the UI layer
 		uiEvent(`show-version-mismatch-modal`, _appVersion, $config.meta.eyas);
 	}
 }
+
+// refresh the app
+async function startAFreshTest(forceShow = false): Promise<void> {
+	await resetFreshTestState();
+	initFreshTestViewports();
+	setMenu();
+	setupFreshTestSource();
+
+	if (!handleSimpleDomainNavigation()) {
+		handleMultiDomainNavigation(forceShow);
+	}
+
+	checkVersionMismatch();
+}
+
 
 /**
  * Check if the user needs to see the "What's New" modal on startup.
