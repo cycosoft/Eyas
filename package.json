@@ -26,7 +26,7 @@
     "_____________COMPILE_____________": "",
     "compile:build": "electron-vite build",
     "compile:mac:copy": "mv ./.runners/mac-arm64/Eyas.app ./.runners/mac-arm64/Start.app && ditto -c -k --sequesterRsrc --keepParent ./.runners/mac-arm64/Start.app ./dist/runners/Start.app.zip",
-    "compile:runner": "npm cache clean --force && node src/scripts/compile-runners.js",
+    "compile:runner": "npm cache clean --force && tsx src/scripts/compile-runners.ts",
     "compile:mac": "npm run compile:build && npm run compile:runner && npm run compile:mac:copy",
     "compile:mac:installer": "npm run compile:build && cross-env PUBLISH_TYPE=installer EYAS_OPEN_RUNNERS=true npm run compile:runner && npm run sign:mac:pkg && npm run notarize:pkg:output && npm run notarize:staple:pkg",
     "compile:installer": "npm run compile:build && cross-env PUBLISH_TYPE=installer EYAS_OPEN_RUNNERS=true npm run compile:runner",
@@ -50,7 +50,7 @@
     "update": "npm-check-updates --interactive --format group,time --cooldown 3",
     "lint": "eslint .",
     "_encapsulated_sign:mac:pkg": "mv ./.runners/EyasInstaller-mac.pkg ./.runners/EyasInstaller-mac-unsigned.pkg && productsign --sign \"$CERT_NAME\" ./.runners/EyasInstaller-mac-unsigned.pkg ./.runners/EyasInstaller-mac.pkg",
-    "bump:build": "node src/scripts/bump-build-version.js"
+    "bump:build": "tsx src/scripts/bump-build-version.ts"
   },
   "license": "MIT",
   "keywords": [
@@ -114,6 +114,7 @@
     "npm-check-updates": "^20.0.0",
     "pinia": "^3.0.4",
     "sass": "^1.99.0",
+    "tsx": "^4.21.0",
     "typescript": "^6.0.2",
     "typescript-eslint": "^8.58.1",
     "vite": "^7.3.1",
