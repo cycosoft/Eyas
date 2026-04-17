@@ -144,7 +144,17 @@ export default tseslint.config(
 	},
 	{
 		// Test-specific rules
-		files: [`**/*.test.ts`, `**/*.test.js`, `tests/**/*.ts`, `tests/**/*.js`],
+		files: [
+			`**/*.test.ts`,
+			`**/*.test.js`,
+			`**/*.test.mjs`,
+			`**/*.spec.ts`,
+			`**/*.spec.js`,
+			`**/*.spec.mjs`,
+			`tests/**/*.ts`,
+			`tests/**/*.js`,
+			`tests/**/*.mjs`
+		],
 		rules: {
 			// Warn about dynamic imports in test files - they are slower than static imports in Vitest
 			'no-restricted-syntax': [
