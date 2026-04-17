@@ -10,44 +10,47 @@ export function buildMenuTemplate(context: MenuContext): Record<string, unknown>
 	const {
 		appName,
 		isDev,
-		testNetworkEnabled,
-		sessionAge,
-		cacheSize,
+		isConfigLoaded = false,
+		updateStatus = `idle`,
+		onInstallUpdate
+	} = context;
+
+	// ── Assemble root menu ────────────────────────────────────────────────────
+	const menu: Record<string, unknown>[] = [
+		{ label: `&${appName}`, submenu: createAppSubmenu(context) },
+		{ label: `🧪 &Test`, enabled: isConfigLoaded, submenu: createTestSubmenu(context) },
+		{ label: `🌐 &Browser`, enabled: isConfigLoaded, submenu: createBrowserSubmenu(context) },
+		{ label: `🔧 &Development Tools`, enabled: isConfigLoaded || isDev, submenu: createToolsSubmenu(context) }
+	];
+
+	if (updateStatus === `downloaded`) {
+		menu.push({
+			label: `⬆️ Update available – Restart to install`,
+			click: onInstallUpdate
+		});
+	}
+
+	return menu;
+}
+
+/**
+ * Creates the "App" submenu (Eyas/About/Settings/etc).
+ */
+function createAppSubmenu(context: MenuContext): Record<string, unknown>[] {
+	const {
 		showAbout,
 		onOpenSettings = (): void => { },
 		onShowWhatsNew = (): void => { },
-		quit,
-		startAFreshTest,
-		copyUrl,
-		openUiDevTools,
-		navigateHome,
-		reload,
-		back,
-		forward,
-		toggleNetwork,
-		clearCache,
-		openCacheFolder,
-		refreshMenu,
-		viewportItems,
-		linkItems,
-		updateStatus = `idle`,
+		updateStatus,
 		onCheckForUpdates,
-		onInstallUpdate,
-		testServerActive = false,
-		onStartTestServer,
-		toggleTestDevTools,
-		isInitializing = false,
-		isConfigLoaded = false,
-		isEnvironmentPending = false
+		quit
 	} = context;
-
 
 	const updateStatusItem = updateStatus === `downloading`
 		? { label: `⬆️ Downloading update...`, enabled: false }
 		: { label: `⬆️ Check for updates`, click: onCheckForUpdates };
 
-	// ── 1. Eyas ─────────────────────────────────────────────────────────────
-	const appSubmenu = [
+	return [
 		{ label: `ℹ️ &About`, click: showAbout },
 		{ label: `⚙️ &Settings`, click: onOpenSettings },
 		{ label: `✨ &Changelog`, click: onShowWhatsNew },
@@ -55,39 +58,90 @@ export function buildMenuTemplate(context: MenuContext): Record<string, unknown>
 		{ type: `separator` },
 		{ label: `🚪 &Exit`, accelerator: `CmdOrCtrl+Q`, click: quit }
 	];
+}
 
-	// ── 2. Test ──────────────────────────────────────────────────────────────
-	const testSubmenu: Record<string, unknown>[] = [
-		{ label: `🔄 &Reset Test Environment`, click: startAFreshTest, enabled: isConfigLoaded && !isEnvironmentPending }
+/**
+ * Creates the "Test" submenu.
+ */
+function createTestSubmenu(context: MenuContext): Record<string, unknown>[] {
+	const {
+		isConfigLoaded = false,
+		isEnvironmentPending = false,
+		isInitializing = false,
+		startAFreshTest,
+		navigateHome,
+		linkItems,
+		onStartTestServer,
+		testServerActive = false
+	} = context;
+
+	const enabled = isConfigLoaded && !isEnvironmentPending;
+	const submenu: Record<string, unknown>[] = [
+		{ label: `🔄 &Reset Test Environment`, click: startAFreshTest, enabled },
+		{ label: `🏠 Test &Home`, click: navigateHome, enabled }
 	];
 
-	testSubmenu.push({ label: `🏠 Test &Home`, click: navigateHome, enabled: isConfigLoaded && !isEnvironmentPending });
-
 	if (linkItems.length) {
-		testSubmenu.push({ type: `separator` });
-		testSubmenu.push({ label: `🔗 &Links`, submenu: linkItems, enabled: isConfigLoaded && !isEnvironmentPending });
+		submenu.push({ type: `separator` });
+		submenu.push({ label: `🔗 &Links`, submenu: linkItems, enabled });
 	}
 
-	testSubmenu.push({ type: `separator` });
+	submenu.push({ type: `separator` });
 
-	testSubmenu.push({
+	submenu.push({
 		label: `📡 Live Test Server`,
 		click: onStartTestServer,
-		enabled: isConfigLoaded && !isEnvironmentPending && !isInitializing && !testServerActive
+		enabled: enabled && !isInitializing && !testServerActive
 	});
 
-	// ── 3. Browser ───────────────────────────────────────────────────────────
-	const browserSubmenu = [
-		{ label: `📋 &Copy URL`, click: copyUrl, enabled: isConfigLoaded && !isInitializing },
+	return submenu;
+}
+
+/**
+ * Creates the "Browser" submenu.
+ */
+function createBrowserSubmenu(context: MenuContext): Record<string, unknown>[] {
+	const {
+		isConfigLoaded = false,
+		isInitializing = false,
+		copyUrl,
+		reload,
+		back,
+		forward,
+		viewportItems
+	} = context;
+
+	const enabled = isConfigLoaded && !isInitializing;
+
+	return [
+		{ label: `📋 &Copy URL`, click: copyUrl, enabled },
 		{ type: `separator` },
-		{ label: `🔄 &Reload`, accelerator: `CmdOrCtrl+R`, click: reload, enabled: isConfigLoaded && !isInitializing },
-		{ label: `◀️ &Back`, accelerator: `CmdOrCtrl+Left`, click: back, enabled: isConfigLoaded && !isInitializing },
-		{ label: `▶️ &Forward`, accelerator: `CmdOrCtrl+Right`, click: forward, enabled: isConfigLoaded && !isInitializing },
+		{ label: `🔄 &Reload`, accelerator: `CmdOrCtrl+R`, click: reload, enabled },
+		{ label: `◀️ &Back`, accelerator: `CmdOrCtrl+Left`, click: back, enabled },
+		{ label: `▶️ &Forward`, accelerator: `CmdOrCtrl+Right`, click: forward, enabled },
 		{ type: `separator` },
 		{ label: `📐 &Viewport`, submenu: viewportItems }
 	];
+}
 
-	// ── 4. Tools ─────────────────────────────────────────────────────────────
+/**
+ * Creates the "Development Tools" submenu.
+ */
+function createToolsSubmenu(context: MenuContext): Record<string, unknown>[] {
+	const {
+		isDev,
+		isConfigLoaded = false,
+		testNetworkEnabled,
+		toggleNetwork,
+		sessionAge,
+		cacheSize,
+		refreshMenu,
+		clearCache,
+		openCacheFolder,
+		toggleTestDevTools,
+		openUiDevTools
+	} = context;
+
 	const cacheSubmenu = [
 		{ label: `⏳ Age: ${sessionAge}`, click: refreshMenu },
 		{ label: `💾 Size: ${cacheSize} bytes`, click: refreshMenu },
@@ -95,7 +149,7 @@ export function buildMenuTemplate(context: MenuContext): Record<string, unknown>
 		...(isDev ? [{ label: `📂 Open Cache Folder`, click: openCacheFolder }] : [])
 	];
 
-	const toolsSubmenu: Record<string, unknown>[] = [
+	const submenu: Record<string, unknown>[] = [
 		{ label: `${testNetworkEnabled ? `🚫 &Go Offline` : `📶 &Go Online`}`, click: toggleNetwork, enabled: isConfigLoaded },
 		{ type: `separator` },
 		{ label: `📦 &Cache`, submenu: cacheSubmenu, enabled: isConfigLoaded },
@@ -109,28 +163,13 @@ export function buildMenuTemplate(context: MenuContext): Record<string, unknown>
 	];
 
 	if (isDev) {
-		toolsSubmenu.push({
+		submenu.push({
 			label: `⚙️ Developer Tools (&eyas)`,
 			accelerator: `CmdOrCtrl+Shift+J`,
 			click: openUiDevTools
 		});
 	}
 
-	// ── Assemble root menu ────────────────────────────────────────────────────
-	const menu: Record<string, unknown>[] = [
-		{ label: `&${appName}`, submenu: appSubmenu },
-		{ label: `🧪 &Test`, enabled: isConfigLoaded, submenu: testSubmenu },
-		{ label: `🌐 &Browser`, enabled: isConfigLoaded, submenu: browserSubmenu },
-		{ label: `🔧 &Development Tools`, enabled: isConfigLoaded || isDev, submenu: toolsSubmenu }
-	];
-
-
-	if (updateStatus === `downloaded`) {
-		menu.push({
-			label: `⬆️ Update available – Restart to install`,
-			click: onInstallUpdate
-		});
-	}
-
-	return menu;
+	return submenu;
 }
+
