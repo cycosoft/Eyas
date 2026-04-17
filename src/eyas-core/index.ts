@@ -916,18 +916,30 @@ function onTestServerTimeout(): void {
 	uiEvent(`show-test-server-resume-modal`, formatDuration(TEST_SERVER_SESSION_DURATION_MS));
 }
 
-// Set up the application menu
-async function setMenu(): Promise<void> {
-	if (!$appWindow || !$config) { return; }
-
-	const sessionAge = getSessionAge();
-	const cacheSize = await $appWindow.webContents.session.getCacheSize();
+/**
+ * Builds the list of viewport menu items based on the current configuration and viewport.
+ * @returns An array of menu item objects for the viewport submenu.
+ */
+/**
+ * Builds the list of viewport menu items based on the current configuration and viewport.
+ * @param appWindow The app window to resize.
+ * @param allViewports The list of available viewports.
+ * @param currentViewport The current viewport dimensions [width, height].
+ * @returns An array of menu item objects for the viewport submenu.
+ */
+export function getViewportMenuItems(
+	appWindow: BrowserWindow | null,
+	allViewports: { label: string; width: number; height: number; isDefault?: boolean }[],
+	currentViewport: number[]
+): Record<string, unknown>[] {
+	if (!appWindow) { return []; }
 
 	const tolerance = 2;
 	const viewportItems: Record<string, unknown>[] = [];
 	let defaultsFound = false;
-	$allViewports.forEach(res => {
-		const [width, height] = $currentViewport || [];
+
+	allViewports.forEach(res => {
+		const [width, height] = currentViewport || [];
 		const isSizeMatch = Math.abs(res.width - width) <= tolerance && Math.abs(res.height - height) <= tolerance;
 		if (!defaultsFound && res.isDefault) {
 			viewportItems.push({ type: `separator` });
@@ -935,18 +947,41 @@ async function setMenu(): Promise<void> {
 		}
 		viewportItems.push({
 			label: `${isSizeMatch ? `🔘 ` : ``}${res.label} (${res.width} x ${res.height})`,
-			click: () => $appWindow?.setContentSize(res.width, res.height)
+			click: () => appWindow?.setContentSize(res.width, res.height)
 		});
 	});
-	if ($currentViewport.length === 2 && !$allViewports.some(res => Math.abs(res.width - $currentViewport[0]) <= tolerance && Math.abs(res.height - $currentViewport[1]) <= tolerance)) {
+
+	if (currentViewport.length === 2 && !allViewports.some(res => Math.abs(res.width - currentViewport[0]) <= tolerance && Math.abs(res.height - currentViewport[1]) <= tolerance)) {
 		viewportItems.unshift(
-			{ label: `🔘 Current (${$currentViewport[0]} x ${$currentViewport[1]})`, click: () => $appWindow?.setContentSize($currentViewport[0], $currentViewport[1]) },
+			{ label: `🔘 Current (${currentViewport[0]} x ${currentViewport[1]})`, click: () => appWindow?.setContentSize(currentViewport[0], currentViewport[1]) },
 			{ type: `separator` }
 		);
 	}
 
+	return viewportItems;
+}
+
+/**
+ * Builds the list of link menu items from the configuration.
+ * @returns An array of menu item objects for the links submenu.
+ */
+/**
+ * Builds the list of link menu items from the configuration.
+ * @param config The validated configuration.
+ * @param handlers Handlers for navigation.
+ * @returns An array of menu item objects for the links submenu.
+ */
+export function getLinkMenuItems(
+	config: ValidatedConfig | null,
+	handlers: {
+		navigate: (url?: string, external?: boolean) => void,
+		navigateVariable: (url: string) => void
+	}
+): Record<string, unknown>[] {
+	if (!config) { return []; }
+
 	const linkItems: Record<string, unknown>[] = [];
-	$config.links.forEach(item => {
+	config.links.forEach(item => {
 		const itemUrl = item.url;
 		let isValid;
 		let validUrl: string | undefined;
@@ -959,34 +994,179 @@ async function setMenu(): Promise<void> {
 		}
 		linkItems.push({
 			label: `${item.external ? `🌐 ` : ``}${item.label || item.url}${isValid ? `` : ` (invalid entry: "${item.url}")`}`,
-			click: () => hasVariables ? navigateVariable(itemUrl) : navigate(validUrl, item.external),
+			click: () => hasVariables ? handlers.navigateVariable(itemUrl) : handlers.navigate(validUrl, item.external),
 			enabled: isValid
 		});
 	});
 
-	const context: MenuContext = {
+	return linkItems;
+}
+
+/**
+ * Assembles the menu context object required for building the application menu template.
+ * @param params Data required to build the context.
+ * @returns The fully assembled MenuContext object.
+ */
+export function getMenuContext(params: {
+	sessionAge: string,
+	cacheSize: number,
+	viewportItems: Record<string, unknown>[],
+	linkItems: Record<string, unknown>[]
+}): MenuContext {
+	const { sessionAge, cacheSize, viewportItems, linkItems } = params;
+
+	return {
 		appName: APP_NAME,
 		isDev: $isDev,
 		testNetworkEnabled: $testNetworkEnabled,
 		sessionAge,
 		cacheSize,
-		showAbout: () => {
-			if (!$config) { return; }
-			const now = new Date();
-			const expires = new Date($config.meta.expires);
-			const dayCount = differenceInDays(expires, now);
-			const expirationFormatted = format(expires, `MMM do @ p`);
-			const relativeFormatted = dayCount ? `~${dayCount} days` : `soon`;
-			const startYear = 2023;
-			const currentYear = now.getFullYear();
-			const yearRange = startYear === currentYear ? startYear.toString() : `${startYear} - ${currentYear}`;
-			if ($appWindow) {
-				dialog.showMessageBox($appWindow, {
-					type: `info`,
-					buttons: [`OK`],
-					title: `About`,
-					icon: $paths.icon as string,
-					message: `
+		showAbout,
+		quit: _electronCore.quit,
+		startAFreshTest: (): void => startAFreshTest(true),
+		copyUrl,
+		openUiDevTools: (): void => $eyasLayer?.webContents.openDevTools(),
+		navigateHome,
+		reload,
+		back,
+		forward,
+		toggleNetwork,
+		clearCache: (): void => { clearCache(); },
+		openCacheFolder,
+		refreshMenu: setMenu,
+		viewportItems,
+		linkItems,
+		updateStatus: ($updateStatus as `idle` | `downloading` | `downloaded`) || `idle`,
+		onCheckForUpdates: $onCheckForUpdates,
+		onInstallUpdate: $onInstallUpdate,
+		testServerActive: !!testServer.getTestServerState(),
+		testServerRemainingTime: getTestServerRemainingTime(),
+		onStartTestServer: startTestServerHandler,
+		onStopTestServer: stopTestServer,
+		onCopyTestServerUrl: copyTestServerUrlHandler,
+		onOpenTestServerInBrowser: openTestServerInBrowserHandler,
+		testServerHttpsEnabled: $testServerHttpsEnabled,
+		onToggleTestServerHttps,
+		toggleTestDevTools: (): void => { $appWindow?.webContents.toggleDevTools(); },
+		isInitializing: $isInitializing,
+		isConfigLoaded: !!$config?.meta?.isConfigLoaded,
+		isEnvironmentPending: $isEnvironmentPending,
+		onOpenSettings,
+		onShowWhatsNew: (): void => uiEvent(`show-whats-new`, true)
+	};
+}
+
+/**
+ * Calculates the remaining time for the test server session.
+ * @returns A formatted duration string.
+ */
+export function getTestServerRemainingTime(): string {
+	const s = testServer.getTestServerState();
+	if (!s) { return ``; }
+	const elapsed = Date.now() - s.startedAt;
+	const remaining = TEST_SERVER_SESSION_DURATION_MS - elapsed;
+	return formatDuration(remaining);
+}
+
+/**
+ * Copies the current app window URL to the clipboard.
+ */
+function copyUrl(): void {
+	if ($isInitializing || !$appWindow) return;
+	clipboard.writeText($appWindow.webContents.getURL());
+}
+
+/**
+ * Navigates to the test home path.
+ */
+function navigateHome(): void {
+	if ($isInitializing) return;
+	navigate();
+}
+
+/**
+ * Reloads the app window ignoring cache.
+ */
+function reload(): void {
+	if ($isInitializing || !$appWindow) return;
+	$appWindow.webContents.reloadIgnoringCache();
+}
+
+/**
+ * Navigates back in the app window history.
+ */
+function back(): void {
+	if ($isInitializing || !$appWindow) return;
+	$appWindow.webContents.goBack();
+}
+
+/**
+ * Navigates forward in the app window history.
+ */
+function forward(): void {
+	if ($isInitializing || !$appWindow) return;
+	$appWindow.webContents.goForward();
+}
+
+/**
+ * Toggles the network enabled state and refreshes the menu.
+ */
+function toggleNetwork(): void {
+	if ($isInitializing) return;
+	$testNetworkEnabled = !$testNetworkEnabled;
+	setMenu();
+}
+
+/**
+ * Opens the storage path for the current session.
+ */
+function openCacheFolder(): void {
+	if (!$appWindow) { return; }
+	const storagePath = $appWindow.webContents.session.getStoragePath();
+	if (storagePath) {
+		shell.openPath(storagePath);
+	}
+}
+
+/**
+ * Toggles the HTTPS enabled state for the test server and refreshes the menu.
+ */
+function onToggleTestServerHttps(): void {
+	$testServerHttpsEnabled = !$testServerHttpsEnabled;
+	setMenu();
+}
+
+/**
+ * Shows the settings modal with current project and app settings.
+ */
+function onOpenSettings(): void {
+	uiEvent(`show-settings-modal`, {
+		project: settingsService.getProjectSettings($config?.meta?.projectId ?? undefined),
+		app: settingsService.getAppSettings(),
+		projectId: $config?.meta?.projectId || undefined
+	});
+}
+
+/**
+ * Displays the application About dialog.
+ */
+export function showAbout(): void {
+	if (!$config) { return; }
+	const now = new Date();
+	const expires = new Date($config.meta.expires);
+	const dayCount = differenceInDays(expires, now);
+	const expirationFormatted = format(expires, `MMM do @ p`);
+	const relativeFormatted = dayCount ? `~${dayCount} days` : `soon`;
+	const startYear = 2023;
+	const currentYear = now.getFullYear();
+	const yearRange = startYear === currentYear ? startYear.toString() : `${startYear} - ${currentYear}`;
+	if ($appWindow) {
+		dialog.showMessageBox($appWindow, {
+			type: `info`,
+			buttons: [`OK`],
+			title: `About`,
+			icon: $paths.icon as string,
+			message: `
 Name: ${$config.title}
 Version: ${$config.version}
 Expires: ${expirationFormatted} (${relativeFormatted})
@@ -1002,81 +1182,26 @@ Runner: v${_appVersion}
 🌐 https://cycosoft.com
 🆘 https://github.com/cycosoft/Eyas/issues
 `
-				});
-			}
-		},
-		quit: _electronCore.quit,
-		startAFreshTest: () => startAFreshTest(true),
-		copyUrl: () => {
-			if ($isInitializing || !$appWindow) return;
-			clipboard.writeText($appWindow.webContents.getURL());
-		},
-		openUiDevTools: () => $eyasLayer?.webContents.openDevTools(),
-		navigateHome: () => {
-			if ($isInitializing) return;
-			navigate();
-		},
-		reload: () => {
-			if ($isInitializing || !$appWindow) return;
-			$appWindow.webContents.reloadIgnoringCache();
-		},
-		back: () => {
-			if ($isInitializing || !$appWindow) return;
-			$appWindow.webContents.goBack();
-		},
-		forward: () => {
-			if ($isInitializing || !$appWindow) return;
-			$appWindow.webContents.goForward();
-		},
-		toggleNetwork: () => {
-			if ($isInitializing) return;
-			$testNetworkEnabled = !$testNetworkEnabled;
-			setMenu();
-		},
-		clearCache: () => {
-			clearCache();
-		},
-		openCacheFolder: () => {
-			if (!$appWindow) { return; }
-			const storagePath = $appWindow.webContents.session.getStoragePath();
-			if (storagePath) {
-				shell.openPath(storagePath);
-			}
-		},
-		refreshMenu: setMenu,
+		});
+	}
+}
+
+// Set up the application menu
+async function setMenu(): Promise<void> {
+	if (!$appWindow || !$config) { return; }
+
+	const sessionAge = getSessionAge();
+	const cacheSize = await $appWindow.webContents.session.getCacheSize();
+
+	const viewportItems = getViewportMenuItems($appWindow, $allViewports, $currentViewport);
+	const linkItems = getLinkMenuItems($config, { navigate, navigateVariable });
+
+	const context = getMenuContext({
+		sessionAge,
+		cacheSize,
 		viewportItems,
-		linkItems,
-		updateStatus: ($updateStatus as `idle` | `downloading` | `downloaded`) || `idle`,
-		onCheckForUpdates: $onCheckForUpdates,
-		onInstallUpdate: $onInstallUpdate,
-		testServerActive: !!testServer.getTestServerState(),
-		testServerRemainingTime: ((): string => {
-			const s = testServer.getTestServerState();
-			if (!s) { return ``; }
-			const elapsed = Date.now() - s.startedAt;
-			const remaining = TEST_SERVER_SESSION_DURATION_MS - elapsed;
-			return formatDuration(remaining);
-		})(),
-		onStartTestServer: startTestServerHandler,
-		onStopTestServer: stopTestServer,
-		onCopyTestServerUrl: copyTestServerUrlHandler,
-		onOpenTestServerInBrowser: openTestServerInBrowserHandler,
-		testServerHttpsEnabled: $testServerHttpsEnabled,
-		onToggleTestServerHttps: () => {
-			$testServerHttpsEnabled = !$testServerHttpsEnabled;
-			setMenu();
-		},
-		toggleTestDevTools: () => $appWindow?.webContents.toggleDevTools(),
-		isInitializing: $isInitializing,
-		isConfigLoaded: !!$config?.meta?.isConfigLoaded,
-		isEnvironmentPending: $isEnvironmentPending,
-		onOpenSettings: () => uiEvent(`show-settings-modal`, {
-			project: settingsService.getProjectSettings($config?.meta?.projectId ?? undefined),
-			app: settingsService.getAppSettings(),
-			projectId: $config?.meta?.projectId || undefined
-		}),
-		onShowWhatsNew: () => uiEvent(`show-whats-new`, true)
-	};
+		linkItems
+	});
 
 	const template = buildMenuTemplate(context);
 	Menu.setApplicationMenu(Menu.buildFromTemplate(template));
