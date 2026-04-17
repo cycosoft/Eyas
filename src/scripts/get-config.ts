@@ -262,41 +262,43 @@ async function getConfigFromAsar(path: string): Promise<EyasConfig> {
 function validateConfig(rawConfig: EyasConfig | null, isConfigLoaded = false): ValidatedConfig {
 	// setup
 	const loadedConfig = rawConfig || {};
-	const outputs = loadedConfig.outputs || {};
-	const meta = loadedConfig.meta || {};
-	const expiresIn = validateExpiration(outputs.expires);
+	const expiresIn = validateExpiration(loadedConfig.outputs?.expires);
 
 	// configuration merge and validation step
-	const validatedConfig: ValidatedConfig = {
+	return {
 		// use given value or resolve to default location
 		source: loadedConfig.source || _path.resolve(roots.config, `dist`),
 		domains: validateCustomDomain(loadedConfig.domain || loadedConfig.domains),
 		title: (loadedConfig.title || `Eyas`).trim(),
 		version: (loadedConfig.version || `${getBranchName()}.${getCommitHash()}` || `Unspecified Version`).trim(),
-		viewports: loadedConfig.viewports || [/* { label: ``, width: 0, height: 0 } */],
-		links: loadedConfig.links || [/* { label: ``, url: `` } */],
+		viewports: loadedConfig.viewports || [],
+		links: loadedConfig.links || [],
 
 		outputs: {
 			expires: expiresIn // hours
 		},
 
 		// data that is provided by the CLI step, not the user.
-		meta: {
-			expires: (meta.expires as Date) || getExpirationDate(expiresIn),
-			gitBranch: meta.gitBranch || getBranchName(),
-			gitHash: meta.gitHash || getCommitHash(),
-			gitUser: meta.gitUser || getUserName(),
-			compiled: (meta.compiled as Date) || new Date(),
-			eyas: meta.eyas || getCliVersion(),
-			companyId: meta.companyId || getCompanyId(),
-			projectId: meta.projectId || getProjectId(),
-			testId: meta.testId || getTestId(),
-			isConfigLoaded
-		}
+		meta: getValidatedMeta(loadedConfig.meta, expiresIn, isConfigLoaded)
 	};
+}
 
+// returns the validated metadata based on the loaded config
+function getValidatedMeta(rawMeta: Partial<EyasMeta> | undefined, expiresIn: number, isConfigLoaded: boolean): EyasMeta {
+	const meta = rawMeta || {};
 
-	return validatedConfig;
+	return {
+		expires: (meta.expires as Date) || getExpirationDate(expiresIn),
+		gitBranch: meta.gitBranch || getBranchName(),
+		gitHash: meta.gitHash || getCommitHash(),
+		gitUser: meta.gitUser || getUserName(),
+		compiled: (meta.compiled as Date) || new Date(),
+		eyas: meta.eyas || getCliVersion(),
+		companyId: meta.companyId || getCompanyId(),
+		projectId: meta.projectId || getProjectId(),
+		testId: meta.testId || getTestId(),
+		isConfigLoaded
+	};
 }
 
 // validate the user input for the custom domain
