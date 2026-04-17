@@ -1,13 +1,26 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { mount, VueWrapper } from '@vue/test-utils';
 import TestServerSetupModal from '@/components/TestServerSetupModal.vue';
 
+interface EyasWindow {
+	send: ReturnType<typeof vi.fn>;
+	receive: ReturnType<typeof vi.fn>;
+}
+
+declare global {
+	interface Window {
+		eyas: EyasWindow;
+	}
+}
+
 describe(`TestServerSetupModal`, () => {
-	let wrapper;
-	let receiveCallback;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	let wrapper: VueWrapper<any>;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	let receiveCallback: (payload: any) => void;
 
 	beforeEach(() => {
-		global.window.eyas = { send: vi.fn(), receive: vi.fn((channel, fn) => { receiveCallback = fn; }) };
+		window.eyas = { send: vi.fn(), receive: vi.fn((channel, fn) => { receiveCallback = fn; }) };
 		wrapper = mount(TestServerSetupModal);
 	});
 
@@ -61,7 +74,7 @@ describe(`TestServerSetupModal`, () => {
 		wrapper.vm.autoOpenBrowser = false;
 		wrapper.vm.useCustomDomain = true;
 		wrapper.vm.continueStart();
-		expect(global.window.eyas.send).toHaveBeenCalledWith(`test-server-setup-continue`, {
+		expect(window.eyas.send).toHaveBeenCalledWith(`test-server-setup-continue`, {
 			useHttps: false,
 			autoOpenBrowser: false,
 			useCustomDomain: true
@@ -75,7 +88,7 @@ describe(`TestServerSetupModal`, () => {
 		expect(wrapper.vm.visible).toBe(true);
 
 		wrapper.vm.cancel();
-		expect(global.window.eyas.send).not.toHaveBeenCalledWith(`test-server-setup-continue`);
+		expect(window.eyas.send).not.toHaveBeenCalledWith(`test-server-setup-continue`);
 		expect(wrapper.vm.visible).toBe(false);
 	});
 
@@ -122,7 +135,9 @@ describe(`TestServerSetupModal`, () => {
 		const sheet = document.querySelector(`.hosts-copy-block`);
 		expect(wrapper.vm.copyIcon).toBe(`mdi-content-copy`);
 
-		sheet.dispatchEvent(new Event(`click`));
+		if (sheet) {
+			sheet.dispatchEvent(new Event(`click`));
+		}
 		await wrapper.vm.$nextTick();
 		expect(navigator.clipboard.writeText).toHaveBeenCalledWith(`127.0.0.1\tmy.custom.url`);
 		expect(wrapper.vm.copyIcon).toBe(`mdi-check`);
