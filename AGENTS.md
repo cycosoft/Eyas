@@ -1,3 +1,18 @@
+- Stop. Think. Plan. Verify. Only then, Code.
+
+**Mandatory Cognitive Pre-Processor**
+- Before generating any implementation or code, you must execute a Strategic Narrative Plan. This is a non-negotiable "Thinking Phase" where you:
+  - Deconstruct the Request: Restate the objective in your own words to ensure no nuance is lost.
+  - The "Rubber Duck" Walkthrough: Verbally simulate the execution flow. Explicitly describe how data enters, transforms, and exits the logic.
+  - Mental Modeling: Identify the dependencies and edge cases before they are manifested in syntax. If a step feels hand-wavy or vague, pause and refine the logic.
+  - Alignment Check: Verify the plan against the original prompt's core intent.
+  - Output Requirement: You must present this plan in a "Drafting" or "Thinking" block. Do not provide code until the logical model is fully articulated and verified.
+
+- Minimize actions that might lead to extensive time or token usage.
+- Keep changes minimal and targeted to the request.
+- **Debugging**: When asked to debug something, use TDD. Review the code, generate a list of potential failure points, write tests for those failure points, use extensive logging to follow the logic either through tests or via user reports (i.e. add logs, tell user steps to manually test, then have user report logs back to you), and then fix the code.
+- Never automatically commit code
+
 # AI Agent Operating Instructions
 
 ## 1. Core Persona & Communication
