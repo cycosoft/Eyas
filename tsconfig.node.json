@@ -4,6 +4,8 @@
   "compilerOptions": {
     "composite": true,
     "noEmit": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "noImplicitAny": true,
     "types": ["node"],
     "allowJs": false,
