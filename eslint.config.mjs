@@ -140,6 +140,21 @@ export default tseslint.config(
 			'vue/multi-word-component-names': `off`
 		}
 	},
+	{
+		// Test-specific rules
+		files: [`**/*.test.ts`, `**/*.test.js`, `tests/**/*.ts`, `tests/**/*.js`],
+		rules: {
+			// Warn about dynamic imports in test files - they are slower than static imports in Vitest
+			'no-restricted-syntax': [
+				`error`,
+				{
+					// Match: await import('...') - ImportExpression is the AST node type for import()
+					selector: `AwaitExpression > ImportExpression`,
+					message: `Dynamic imports are slower than static imports. Use static imports instead for better performance.`
+				}
+			]
+		}
+	},
 
 	{
 		// Overrides for Declaration Files (TS requirement for quotes)
