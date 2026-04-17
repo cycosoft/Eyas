@@ -28,6 +28,8 @@ describe(`getConfig - CommonJS`, () => {
 		});
 
 		// Import getConfig after mocking
+		// Dynamic import is required here to ensure getConfig is evaluated AFTER vi.doMock
+		// eslint-disable-next-line no-restricted-syntax
 		const { default: getConfig } = await import(`../../src/scripts/get-config.js`);
 
 		try {
