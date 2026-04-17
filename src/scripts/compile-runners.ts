@@ -19,28 +19,12 @@ export async function compileRunners(): Promise<void> {
 	const isMac = process.platform === `darwin`;
 	const isWin = process.platform === `win32`;
 	const consumerRoot = process.cwd();
-	const buildRoot = consumerRoot;
 	const runnersRoot = path.join(consumerRoot, `.runners`);
 	const distRoot = path.join(consumerRoot, `dist`);
-	const paths = {
-		icon: path.join(buildRoot, `src`, `eyas-assets`, `eyas-logo.png`),
-		iconDbWin: path.join(buildRoot, `src`, `eyas-assets`, `eyas-db.ico`),
-		iconDbMac: path.join(buildRoot, `src`, `eyas-assets`, `eyas-db.icns`),
-		codesignWin: path.join(consumerRoot, `src`, `scripts`, `codesign-win.js`)
-	};
 
-	// Determine the executables to build
-	const targets: Platform[] = [];
-	if (isWin) {
-		targets.push(builder.Platform.WINDOWS);
-	}
-
-	if (isMac) { targets.push(builder.Platform.MAC); }
-	// if(config.outputs.linux) { targets.push(Platform.LINUX); }
-
-	// set the name of the output files
-	const installerAppend = isInstaller ? `Installer` : ``;
-	const runnerName = `Eyas${installerAppend}`;
+	const paths = getPaths(consumerRoot);
+	const targets = getBuildTargets(isWin, isMac);
+	const runnerName = `Eyas${isInstaller ? `Installer` : ``}`;
 
 	const config = getElectronBuilderConfig({
 		isDev,
@@ -50,7 +34,7 @@ export async function compileRunners(): Promise<void> {
 		paths,
 		runnerName,
 		appleTeamId: process.env.APPLE_TEAM_ID || ``,
-		buildRoot,
+		buildRoot: consumerRoot,
 		runnersRoot,
 		provisioningProfile: process.env.PROVISIONING_PROFILE_PATH || ``
 	});
@@ -61,8 +45,44 @@ export async function compileRunners(): Promise<void> {
 		publish: isInstaller ? `always` : `never`
 	});
 
+	await copyExecutables(builtFiles, distRoot);
+	maybeOpenRunnersFolder(runnersRoot, isWin);
+}
 
-	// copy just the final windows executables to the dist folder
+/**
+ * Gets the paths for the project.
+ * @param {string} consumerRoot The root of the consumer project.
+ * @returns {object} The paths for the project.
+ */
+function getPaths(consumerRoot: string): { icon: string; iconDbWin: string; iconDbMac: string; codesignWin: string } {
+	return {
+		icon: path.join(consumerRoot, `src`, `eyas-assets`, `eyas-logo.png`),
+		iconDbWin: path.join(consumerRoot, `src`, `eyas-assets`, `eyas-db.ico`),
+		iconDbMac: path.join(consumerRoot, `src`, `eyas-assets`, `eyas-db.icns`),
+		codesignWin: path.join(consumerRoot, `src`, `scripts`, `codesign-win.js`)
+	};
+}
+
+/**
+ * Gets the build targets for the project.
+ * @param {boolean} isWin Whether the platform is Windows.
+ * @param {boolean} isMac Whether the platform is Mac.
+ * @returns {Platform[]} The build targets for the project.
+ */
+function getBuildTargets(isWin: boolean, isMac: boolean): Platform[] {
+	const targets: Platform[] = [];
+	if (isWin) { targets.push(builder.Platform.WINDOWS); }
+	if (isMac) { targets.push(builder.Platform.MAC); }
+	return targets;
+}
+
+/**
+ * Copies the built executables to the dist folder.
+ * @param {string[]} builtFiles The files that were built.
+ * @param {string} distRoot The root of the dist folder.
+ * @returns {Promise<void>}
+ */
+async function copyExecutables(builtFiles: string[], distRoot: string): Promise<void> {
 	for (const file of builtFiles) {
 		// skip anything not an exe
 		if (!file.endsWith(`.exe`)) { continue; }
@@ -71,14 +91,19 @@ export async function compileRunners(): Promise<void> {
 		console.log(`copying ${file} to ${dest}`);
 		await fs.copy(file, dest);
 	}
+}
 
-	// open the output folder if requested
-	if (process.env.EYAS_OPEN_RUNNERS === `true`) {
-		const folderPath = runnersRoot;
-		const command = isWin ? `explorer "${folderPath}"` : `open "${folderPath}"`;
+/**
+ * Opens the output folder if requested.
+ * @param {string} runnersRoot The root of the runners folder.
+ * @param {boolean} isWin Whether the platform is Windows.
+ * @returns {void}
+ */
+function maybeOpenRunnersFolder(runnersRoot: string, isWin: boolean): void {
+	if (process.env.EYAS_OPEN_RUNNERS !== `true`) { return; }
 
-		exec(command);
-	}
+	const command = isWin ? `explorer "${runnersRoot}"` : `open "${runnersRoot}"`;
+	exec(command);
 }
 
 // Entry Point

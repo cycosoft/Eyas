@@ -3,6 +3,7 @@ import { compileRunners } from '../../src/scripts/compile-runners.js';
 import builder from 'electron-builder';
 import fs from 'fs-extra';
 import { exec } from 'child_process';
+import { getElectronBuilderConfig } from '../../src/scripts/electron-builder-config.js';
 
 // Mock the modules
 vi.mock(`electron-builder`, () => ({
@@ -24,6 +25,10 @@ vi.mock(`fs-extra`, () => ({
 
 vi.mock(`child_process`, () => ({
 	exec: vi.fn()
+}));
+
+vi.mock(`../../src/scripts/electron-builder-config.js`, () => ({
+	getElectronBuilderConfig: vi.fn().mockReturnValue({})
 }));
 
 describe(`compileRunners`, () => {
@@ -94,5 +99,44 @@ describe(`compileRunners`, () => {
 		await compileRunners();
 
 		expect(exec).toHaveBeenCalledWith(expect.stringContaining(`explorer`));
+	});
+
+	test(`should set publish to 'always' when PUBLISH_TYPE is 'installer'`, async () => {
+		process.env.PUBLISH_TYPE = `installer`;
+		await compileRunners();
+
+		expect(builder.build).toHaveBeenCalled();
+		const buildArgs = vi.mocked(builder.build).mock.calls[0][0];
+		expect(buildArgs.publish).toBe(`always`);
+	});
+
+	test(`should set publish to 'never' when PUBLISH_TYPE is not 'installer'`, async () => {
+		process.env.PUBLISH_TYPE = `something-else`;
+		await compileRunners();
+
+		expect(builder.build).toHaveBeenCalled();
+		const buildArgs = vi.mocked(builder.build).mock.calls[0][0];
+		expect(buildArgs.publish).toBe(`never`);
+	});
+
+	test(`should execute 'open' command for Mac if EYAS_OPEN_RUNNERS is true`, async () => {
+		process.env.EYAS_OPEN_RUNNERS = `true`;
+		Object.defineProperty(process, `platform`, { value: `darwin` });
+
+		await compileRunners();
+
+		expect(exec).toHaveBeenCalledWith(expect.stringContaining(`open`));
+	});
+
+	test(`should pass environment variables to getElectronBuilderConfig`, async () => {
+		process.env.APPLE_TEAM_ID = `TEAM123`;
+		process.env.PROVISIONING_PROFILE_PATH = `/path/to/profile`;
+
+		await compileRunners();
+
+		expect(getElectronBuilderConfig).toHaveBeenCalledWith(expect.objectContaining({
+			appleTeamId: `TEAM123`,
+			provisioningProfile: `/path/to/profile`
+		}));
 	});
 });
