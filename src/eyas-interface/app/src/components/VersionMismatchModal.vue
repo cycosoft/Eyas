@@ -40,7 +40,7 @@
 	</ModalWrapper>
 </template>
 
-<script>
+<script lang="ts">
 import ModalWrapper from '@/components/ModalWrapper.vue';
 
 export default {
@@ -48,13 +48,13 @@ export default {
 		ModalWrapper
 	},
 
-	data: () => ({
+	data: (): { visible: boolean; runnerVersion: string | null; testVersion: string | null } => ({
 		visible: false,
 		runnerVersion: null,
 		testVersion: null
 	}),
 
-	mounted() {
+	mounted(): void {
 		// Listen for messages from the main process
 		window.eyas?.receive(`show-version-mismatch-modal`, (runnerVersion, testVersion) => {
 			this.runnerVersion = runnerVersion;
@@ -64,7 +64,7 @@ export default {
 	},
 
 	methods: {
-		checkForUpdate() {
+		checkForUpdate(): void {
 			const url = `https://github.com/cycosoft/Eyas/releases`;
 			window.eyas?.send(`launch-link`, { url, openInBrowser: true });
 		}

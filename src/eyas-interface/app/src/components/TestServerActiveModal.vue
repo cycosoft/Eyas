@@ -130,7 +130,7 @@
 	</ModalWrapper>
 </template>
 
-<script>
+<script lang="ts">
 import ModalWrapper from '@/components/ModalWrapper.vue';
 import { TEST_SERVER_SESSION_DURATION_MS } from '@/../../../scripts/constants.js';
 
@@ -149,28 +149,28 @@ export default {
 		ModalWrapper
 	},
 
-	data: () => ({ ...defaults, now: Date.now(), timerInterval: null }),
+	data: (): object => ({ ...defaults, now: Date.now(), timerInterval: null }),
 
 	computed: {
-		tooltipText() {
+		tooltipText(): string {
 			return this.copyIcon === `mdi-check` ? `Copied!` : `Copy URL`;
 		},
-		formattedStartTime() {
+		formattedStartTime(): string {
 			if (!this.startTime) return ``;
 			return new Date(this.startTime).toLocaleTimeString([], { hour: `numeric`, minute: `2-digit` }).toLowerCase();
 		},
-		formattedEndTime() {
+		formattedEndTime(): string {
 			if (!this.endTime) return ``;
 			return new Date(this.endTime).toLocaleTimeString([], { hour: `numeric`, minute: `2-digit` }).toLowerCase();
 		},
-		countdownText() {
+		countdownText(): string {
 			if (!this.endTime) return ``;
 			const diff = Math.max(0, this.endTime - this.now);
 			const mins = Math.floor(diff / 60000);
 			const secs = Math.floor((diff % 60000) / 1000);
 			return `${mins}m${secs}s`;
 		},
-		displayUrl() {
+		displayUrl(): string {
 			if (!this.domain) return ``;
 			try {
 				const url = new URL(this.domain);
@@ -193,14 +193,14 @@ export default {
 				return this.domain;
 			}
 		},
-		extensionLabel() {
+		extensionLabel(): string {
 			const seconds = TEST_SERVER_SESSION_DURATION_MS / 1000;
 			if (seconds >= 60 && seconds % 60 === 0) {
 				return `${seconds / 60}m`;
 			}
 			return `${seconds}s`;
 		},
-		canExtend() {
+		canExtend(): boolean {
 			if (this.isExpired) return true;
 			if (!this.endTime) return false;
 			return (this.endTime - this.now) < TEST_SERVER_SESSION_DURATION_MS;
@@ -208,14 +208,14 @@ export default {
 	},
 
 	watch: {
-		isExpired() {
+		isExpired(): void {
 			this.$nextTick(() => {
 				this.$refs.modal?.pinDialogWidth();
 			});
 		}
 	},
 
-	mounted() {
+	mounted(): void {
 		window.eyas?.receive(`show-test-server-active-modal`, payload => {
 			this.domain = payload.domain || ``;
 			this.startTime = payload.startTime || null;
@@ -237,12 +237,12 @@ export default {
 		});
 	},
 
-	beforeUnmount() {
+	beforeUnmount(): void {
 		this.stopTimer();
 	},
 
 	methods: {
-		startTimer() {
+		startTimer(): void {
 			this.stopTimer();
 			this.timerInterval = setInterval(() => {
 				this.now = Date.now();
@@ -252,14 +252,14 @@ export default {
 			}, 1000);
 		},
 
-		stopTimer() {
+		stopTimer(): void {
 			if (this.timerInterval) {
 				clearInterval(this.timerInterval);
 				this.timerInterval = null;
 			}
 		},
 
-		copyDomain() {
+		copyDomain(): void {
 			navigator.clipboard.writeText(this.domain);
 			this.copyIcon = `mdi-check`;
 			setTimeout(() => {
@@ -267,20 +267,20 @@ export default {
 			}, 2000);
 		},
 
-		stopServer() {
+		stopServer(): void {
 			window.eyas?.send(`test-server-stop`);
 			this.close();
 		},
 
-		openInBrowser() {
+		openInBrowser(): void {
 			window.eyas?.send(`test-server-open-browser`, this.domain);
 		},
 
-		extendSession() {
+		extendSession(): void {
 			window.eyas?.send(`test-server-extend`);
 		},
 
-		close() {
+		close(): void {
 			this.stopTimer();
 			this.visible = false;
 			Object.assign(this.$data, defaults);

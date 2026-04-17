@@ -22,7 +22,7 @@
 	</ModalBackground>
 </template>
 
-<script>
+<script lang="ts">
 import ModalStore from '@/stores/modals.js';
 import ModalBackground from '@/components/ModalBackground.vue';
 
@@ -36,7 +36,7 @@ export default {
 		type: {
 			type: String,
 			default: `modal`,
-			validator: value => [`modal`, `dialog`].includes(value)
+			validator: (value: string): boolean => [`modal`, `dialog`].includes(value)
 		},
 		minWidth: {
 			type: [Number, String],
@@ -45,7 +45,7 @@ export default {
 	},
 	emits: [`update:modelValue`],
 
-	data() {
+	data(): { id: string; dialogWidth: string | number } {
 		return {
 			id: window.crypto.randomUUID(), // generate a unique ID for this modal
 			dialogWidth: `auto`
@@ -53,10 +53,10 @@ export default {
 	},
 
 	computed: {
-		backgroundContentVisible() {
+		backgroundContentVisible(): boolean {
 			return ModalStore().lastOpenedById === this.id;
 		},
-		calculatedMinWidth() {
+		calculatedMinWidth(): string | number | undefined {
 			if (this.minWidth !== undefined) {
 				return this.minWidth;
 			}
@@ -71,7 +71,7 @@ export default {
 		}
 	},
 
-	mounted() {
+	mounted(): void {
 		// listen for global events to close all the modals
 		window.eyas?.receive(`close-modals`, () => {
 			// tell the parent to update the model value
@@ -80,7 +80,7 @@ export default {
 	},
 
 	methods: {
-		trackModalState(isTrue) {
+		trackModalState(isTrue: boolean): void {
 			if (isTrue) {
 				// reset width to the initial auto state so it can calculate the new initial width
 				this.dialogWidth = `auto`;
@@ -92,14 +92,14 @@ export default {
 			}
 		},
 
-		hideUi() {
+		hideUi(): void {
 			// hide the UI if there are no other dialogs open
 			if (document.querySelectorAll(`.v-dialog`).length <= 1) {
 				window.eyas?.send(`hide-ui`);
 			}
 		},
 
-		pinDialogWidth() {
+		pinDialogWidth(): void {
 			// Find the currently active modal's card natively
 			const activeModalContent = document.querySelector(`[data-modal-id="${this.id}"] .v-card`);
 

@@ -114,7 +114,7 @@
 	</ModalWrapper>
 </template>
 
-<script>
+<script lang="ts">
 import ModalWrapper from '@/components/ModalWrapper.vue';
 
 const defaults = {
@@ -133,7 +133,7 @@ export default {
 		ModalWrapper
 	},
 
-	data: () => ({
+	data: (): object => ({
 		...defaults,
 		internalUseHttps: false,
 		internalAutoOpenBrowser: true,
@@ -143,43 +143,43 @@ export default {
 
 	computed: {
 		useHttps: {
-			get() { return this.internalUseHttps; },
-			set(val) {
+			get(): boolean { return this.internalUseHttps; },
+			set(val: boolean): void {
 				this.internalUseHttps = val;
 				this.saveSetting(`testServer.useHttps`, val);
 			}
 		},
 		autoOpenBrowser: {
-			get() { return this.internalAutoOpenBrowser; },
-			set(val) {
+			get(): boolean { return this.internalAutoOpenBrowser; },
+			set(val: boolean): void {
 				this.internalAutoOpenBrowser = val;
 				this.saveSetting(`testServer.autoOpenBrowser`, val);
 			}
 		},
 		useCustomDomain: {
-			get() { return this.internalUseCustomDomain; },
-			set(val) {
+			get(): boolean { return this.internalUseCustomDomain; },
+			set(val: boolean): void {
 				this.internalUseCustomDomain = val;
 				this.saveSetting(`testServer.useCustomDomain`, val);
 			}
 		},
-		hostsLine() {
+		hostsLine(): string {
 			const ip = `127.0.0.1`;
 			const host = this.hostnameForHosts || `test.local`;
 			return `${ip}\t${host}`;
 		},
-		displayDomain() {
+		displayDomain(): string {
 			return this.useCustomDomain ? (this.hostnameForHosts || `test.local`) : `127.0.0.1`;
 		},
-		port() {
+		port(): number {
 			return this.useHttps ? this.portHttps : this.portHttp;
 		},
-		displayPort() {
+		displayPort(): string {
 			return (this.useHttps && this.port === 443) || (!this.useHttps && this.port === 80) ? `` : `:${this.port}`;
 		}
 	},
 
-	mounted() {
+	mounted(): void {
 		window.eyas?.receive(`show-test-server-setup-modal`, payload => {
 			this.domain = payload.domain || ``;
 			this.hostnameForHosts = payload.hostnameForHosts || `test.local`;
@@ -199,15 +199,15 @@ export default {
 	},
 
 	methods: {
-		initiate(stepId) {
+		initiate(stepId: string): void {
 			window.eyas?.send(`test-server-setup-step`, { action: `initiate`, stepId });
 		},
 
-		revoke(stepId) {
+		revoke(stepId: string): void {
 			window.eyas?.send(`test-server-setup-step`, { action: `revoke`, stepId });
 		},
 
-		copyHostsLine() {
+		copyHostsLine(): void {
 			navigator.clipboard.writeText(this.hostsLine);
 			this.copyIcon = `mdi-check`;
 			setTimeout(() => {
@@ -215,7 +215,7 @@ export default {
 			}, 2000);
 		},
 
-		cancel() {
+		cancel(): void {
 			this.visible = false;
 			Object.assign(this.$data, {
 				...defaults,
@@ -226,7 +226,7 @@ export default {
 			});
 		},
 
-		continueStart() {
+		continueStart(): void {
 			window.eyas?.send(`test-server-setup-continue`, {
 				useHttps: this.useHttps,
 				autoOpenBrowser: this.autoOpenBrowser,
@@ -242,7 +242,7 @@ export default {
 			});
 		},
 
-		saveSetting(key, value) {
+		saveSetting(key: string, value: unknown): void {
 			window.eyas?.send(`save-setting`, { key, value, projectId: this.projectId });
 		}
 	}

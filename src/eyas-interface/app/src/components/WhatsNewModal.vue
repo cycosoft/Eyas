@@ -111,7 +111,7 @@
 	</ModalWrapper>
 </template>
 
-<script>
+<script lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import useSettingsStore from '@/stores/settings.js';
 import ModalWrapper from '@/components/ModalWrapper.vue';
@@ -123,7 +123,7 @@ export default {
 		ModalWrapper
 	},
 
-	setup() {
+	setup(): object {
 		const settingsStore = useSettingsStore();
 		const isVisible = ref(false);
 		const changelog = ref([]);
@@ -135,11 +135,11 @@ export default {
 
 		const title = computed(() => mode.value === `manual` ? `Changelog` : `What's New`);
 
-		const fetchChangelog = async () => {
+		const fetchChangelog = async (): Promise<void> => {
 			changelog.value = changelogData;
 		};
 
-		const showFromMain = async () => {
+		const showFromMain = async (): Promise<void> => {
 			await fetchChangelog();
 
 			const unseen = getAggregatedChanges(changelog.value, lastSeenVersion.value, currentVersion.value);
@@ -154,7 +154,7 @@ export default {
 			}
 		};
 
-		const showManual = async () => {
+		const showManual = async (): Promise<void> => {
 			await fetchChangelog();
 			mode.value = `manual`;
 			// Only expand the latest version
@@ -164,7 +164,7 @@ export default {
 			isVisible.value = true;
 		};
 
-		const close = () => {
+		const close = (): void => {
 			isVisible.value = false;
 			// Update last seen version if we are in launch mode or if we manually viewed the latest
 			if (currentVersion.value !== lastSeenVersion.value) {

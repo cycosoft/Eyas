@@ -62,7 +62,7 @@
 	</ModalWrapper>
 </template>
 
-<script>
+<script lang="ts">
 import ModalWrapper from '@/components/ModalWrapper.vue';
 
 // component defaults
@@ -80,9 +80,9 @@ export default {
 		ModalWrapper
 	},
 
-	data: () => JSON.parse(defaults),
+	data: (): object => JSON.parse(defaults),
 
-	mounted() {
+	mounted(): void {
 		// Listen for messages from the main process
 		window.eyas?.receive(`show-environment-modal`, (domains, options = {}) => {
 			this.domains = JSON.parse(JSON.stringify(domains));
@@ -94,7 +94,7 @@ export default {
 	},
 
 	methods: {
-		choose(domain, domainIndex) {
+		choose(domain: Record<string, unknown>, domainIndex: number): void {
 			// show a loader on the chosen domain
 			this.loadingIndex = domainIndex;
 
@@ -123,12 +123,12 @@ export default {
 			}, 200);
 		},
 
-		tooltip(domain) {
+		tooltip(domain: Record<string, unknown>): string {
 			const message = `Set environment title in Eyas config`;
 			return domain.url === domain.title ? message : domain.url;
 		},
 
-		hotkeyEnvSelector(event) {
+		hotkeyEnvSelector(event: KeyboardEvent): void {
 			// setup
 			const keyAsNumber = Number(event.key);
 
@@ -144,7 +144,7 @@ export default {
 			}
 		},
 
-		onAlwaysChooseChange(value) {
+		onAlwaysChooseChange(value: boolean): void {
 			// immediately save the setting when the checkbox is toggled
 			window.eyas?.send(`save-setting`, {
 				key: `env.alwaysChoose`,
@@ -153,7 +153,7 @@ export default {
 			});
 		},
 
-		reset() {
+		reset(): void {
 			Object.assign(this.$data, JSON.parse(defaults));
 		}
 	}

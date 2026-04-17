@@ -97,7 +97,7 @@
 	</ModalWrapper>
 </template>
 
-<script>
+<script lang="ts">
 import ModalWrapper from '@/components/ModalWrapper.vue';
 import isURL from 'validator/lib/isURL';
 
@@ -115,12 +115,12 @@ export default {
 		ModalWrapper
 	},
 
-	data: () => ({
+	data: (): object => ({
 		...JSON.parse(componentDefaults)
 	}),
 
 	computed: {
-		parsedLink () {
+		parsedLink (): string {
 			// copy for manipulation
 			const output = this.link;
 			const form = [...this.form];
@@ -132,7 +132,7 @@ export default {
 			});
 		},
 
-		linkIsValid () {
+		linkIsValid (): boolean {
 			// setup
 			let hasVariables = false;
 
@@ -150,7 +150,7 @@ export default {
 			return !hasVariables && isURL(this.parsedLink);
 		},
 
-		variables () {
+		variables (): Record<string, unknown>[] {
 			// setup
 			const output = [];
 
@@ -196,7 +196,7 @@ export default {
 		}
 	},
 
-	mounted() {
+	mounted(): void {
 		// Listen for messages from the main process
 		window.eyas?.receive(`show-variables-modal`, link => {
 			this.reset();
@@ -206,24 +206,24 @@ export default {
 	},
 
 	methods: {
-		close() {
+		close(): void {
 			this.visible = false;
 		},
 
-		open() {
+		open(): void {
 			this.visible = true;
 		},
 
-		reset() {
+		reset(): void {
 			Object.assign(this.$data, JSON.parse(componentDefaults));
 		},
 
-		launch() {
+		launch(): void {
 			window.eyas?.send(`launch-link`, { url: this.parsedLink });
 			this.close();
 		},
 
-		getFieldLabel(prefix, field) {
+		getFieldLabel(prefix: string, field?: string): string {
 			return `${prefix}${field ? ` for "${field}" field` : ``}`;
 		}
 	}

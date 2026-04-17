@@ -84,8 +84,8 @@ let $updateStatus = `idle`;
 let $isInitializing = true;
 let $isEnvironmentPending = false;
 let $updateCheckUserTriggered = false;
-let $onCheckForUpdates = () => { };
-let $onInstallUpdate = () => { };
+let $onCheckForUpdates = (): void => { };
+let $onInstallUpdate = (): void => { };
 let $pendingStartupModal: { eventName: string; args: unknown[] } | null = null;
 let $isStartupSequenceChecked = false;
 let $latestChangelogVersion: string | null = null;
@@ -1050,7 +1050,7 @@ Runner: v${_appVersion}
 		onCheckForUpdates: $onCheckForUpdates,
 		onInstallUpdate: $onInstallUpdate,
 		testServerActive: !!testServer.getTestServerState(),
-		testServerRemainingTime: (() => {
+		testServerRemainingTime: ((): string => {
 			const s = testServer.getTestServerState();
 			if (!s) { return ``; }
 			const elapsed = Date.now() - s.startedAt;
@@ -1098,11 +1098,11 @@ function setupAutoUpdater(): void {
 		repo: `Eyas`
 	});
 
-	$onCheckForUpdates = () => {
+	$onCheckForUpdates = (): void => {
 		$updateCheckUserTriggered = true;
 		autoUpdater.checkForUpdates().catch(() => { });
 	};
-	$onInstallUpdate = () => { autoUpdater.quitAndInstall(); };
+	$onInstallUpdate = (): void => { autoUpdater.quitAndInstall(); };
 
 	autoUpdater.on(`update-available`, () => {
 		$updateStatus = `downloading`;
@@ -1112,7 +1112,7 @@ function setupAutoUpdater(): void {
 		$updateStatus = `downloaded`;
 		setMenu();
 	});
-	const showNoUpdateIfUserTriggered = () => {
+	const showNoUpdateIfUserTriggered = (): void => {
 		if ($updateCheckUserTriggered) {
 			$updateCheckUserTriggered = false;
 			if ($appWindow) {

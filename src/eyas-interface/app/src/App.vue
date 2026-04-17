@@ -14,7 +14,7 @@
 	</v-app>
 </template>
 
-<script>
+<script lang="ts">
 import { onMounted, watch, computed } from 'vue';
 import { useTheme } from 'vuetify';
 import { THEME_MODES } from '@/../../../scripts/constants.js';
@@ -41,7 +41,7 @@ export default {
 		WhatsNewModal
 	},
 
-	setup() {
+	setup(): object {
 		const theme = useTheme();
 		const settingsStore = useSettingsStore();
 

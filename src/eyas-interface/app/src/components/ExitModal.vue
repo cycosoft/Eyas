@@ -32,7 +32,7 @@
 	</ModalWrapper>
 </template>
 
-<script>
+<script lang="ts">
 import ModalWrapper from '@/components/ModalWrapper.vue';
 
 export default {
@@ -40,23 +40,23 @@ export default {
 		ModalWrapper
 	},
 
-	data: () => ({
+	data: (): { visible: boolean; exiting: boolean } => ({
 		visible: false,
 		exiting: false
 	}),
 
-	mounted() {
+	mounted(): void {
 		// Listen for messages from the main process
 		window.eyas?.receive(`modal-exit-visible`, value => this.visible = value);
 	},
 
 	methods: {
-		exit() {
+		exit(): void {
 			this.exiting = true;
 			window.eyas?.send(`app-exit`);
 		},
 
-		cancel() {
+		cancel(): void {
 			this.visible = false;
 		}
 	}

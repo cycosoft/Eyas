@@ -16,7 +16,7 @@
 	<slot />
 </template>
 
-<script>
+<script lang="ts">
 export default {
 	props: {
 		modelValue: Boolean,
@@ -24,7 +24,7 @@ export default {
 	},
 
 	methods: {
-		openInBrowser(url) {
+		openInBrowser(url: string): void {
 			window.eyas?.send(`launch-link`, { url, openInBrowser: true });
 		}
 	}

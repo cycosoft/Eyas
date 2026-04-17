@@ -86,7 +86,7 @@
 	</ModalWrapper>
 </template>
 
-<script>
+<script lang="ts">
 import { THEME_MODES } from '@/../../../scripts/constants.js';
 import useSettingsStore from '@/stores/settings.js';
 import ModalWrapper from '@/components/ModalWrapper.vue';
@@ -96,13 +96,13 @@ export default {
 		ModalWrapper
 	},
 
-	setup() {
+	setup(): object {
 		return {
 			settingsStore: useSettingsStore()
 		};
 	},
 
-	data: () => ({
+	data: (): object => ({
 		THEME_MODES,
 		visible: false,
 		activeTab: `project`,
@@ -112,10 +112,10 @@ export default {
 
 	computed: {
 		appTheme: {
-			get() {
+			get(): string {
 				return this.settingsStore.appSettings.theme || THEME_MODES.LIGHT;
 			},
-			set(val) {
+			set(val: string): void {
 				// Update local store instantly for immediate UI reaction
 				this.settingsStore.setSetting(`theme`, val);
 				// Synchronize with main process in the background
@@ -124,27 +124,27 @@ export default {
 		},
 
 		appAlwaysChoose: {
-			get() {
+			get(): boolean {
 				return !!(this.settingsStore.appSettings.env?.alwaysChoose);
 			},
-			set(val) {
+			set(val: boolean): void {
 				this.settingsStore.setSetting(`env.alwaysChoose`, !!val);
 				this.saveAppSetting(`env.alwaysChoose`, !!val);
 			}
 		},
 
 		projectAlwaysChoose: {
-			get() {
+			get(): boolean {
 				return !!(this.settingsStore.projectSettings.env?.alwaysChoose);
 			},
-			set(val) {
+			set(val: boolean): void {
 				this.settingsStore.setSetting(`env.alwaysChoose`, !!val, this.projectId);
 				this.saveProjectSetting(`env.alwaysChoose`, !!val);
 			}
 		}
 	},
 
-	mounted() {
+	mounted(): void {
 		// Show this modal when requested by the main process
 		window.eyas?.receive(`show-settings-modal`, ({ project, app, projectId = null, systemTheme } = {}) => {
 			this.projectId = projectId;
@@ -163,11 +163,11 @@ export default {
 	},
 
 	methods: {
-		saveProjectSetting(key, value) {
+		saveProjectSetting(key: string, value: unknown): void {
 			window.eyas?.send(`save-setting`, { key, value, projectId: this.projectId });
 		},
 
-		saveAppSetting(key, value) {
+		saveAppSetting(key: string, value: unknown): void {
 			window.eyas?.send(`save-setting`, { key, value, projectId: null });
 		}
 	}
