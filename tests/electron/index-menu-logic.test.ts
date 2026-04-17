@@ -10,9 +10,35 @@ vi.mock(`electron`, () => ({
 		quit: vi.fn(),
 		on: vi.fn(),
 		whenReady: vi.fn().mockResolvedValue(true),
-		setAsDefaultProtocolClient: vi.fn()
+		setAsDefaultProtocolClient: vi.fn(),
+		getVersion: vi.fn().mockReturnValue(`1.0.0`),
+		getName: vi.fn().mockReturnValue(`Eyas`),
+		getAppPath: vi.fn().mockReturnValue(``),
+		getPath: vi.fn().mockReturnValue(``)
 	},
-	BrowserWindow: vi.fn(),
+	BrowserWindow: vi.fn().mockImplementation(function() {
+		return {
+			webContents: {
+				on: vi.fn(),
+				loadURL: vi.fn(),
+				getURL: vi.fn().mockReturnValue(`https://test.com`),
+				getTitle: vi.fn().mockReturnValue(`Test Title`),
+				session: {
+					webRequest: {
+						onBeforeRequest: vi.fn()
+					}
+				}
+			},
+			on: vi.fn(),
+			loadURL: vi.fn(),
+			addBrowserView: vi.fn(),
+			show: vi.fn(),
+			setContentSize: vi.fn(),
+			getContentSize: vi.fn().mockReturnValue([1366, 768]),
+			setTitle: vi.fn(),
+			removeListener: vi.fn()
+		};
+	}),
 	Menu: {
 		setApplicationMenu: vi.fn(),
 		buildFromTemplate: vi.fn()
@@ -56,7 +82,21 @@ vi.mock(`../../src/eyas-core/test-server/test-server.js`, () => ({
 vi.mock(`../../src/eyas-core/settings-service.js`, () => ({
 	get: vi.fn(),
 	getProjectSettings: vi.fn(),
-	getAppSettings: vi.fn()
+	getAppSettings: vi.fn(),
+	load: vi.fn().mockResolvedValue(undefined),
+	save: vi.fn().mockResolvedValue(undefined)
+}));
+
+vi.mock(`electron-updater`, () => ({
+	autoUpdater: {
+		forceDevUpdateConfig: false,
+		logger: null,
+		setFeedURL: vi.fn(),
+		checkForUpdates: vi.fn().mockResolvedValue(null),
+		on: vi.fn(),
+		quitAndInstall: vi.fn(),
+		currentVersion: { version: `1.0.0` }
+	}
 }));
 
 // Import the functions to test

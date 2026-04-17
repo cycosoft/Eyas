@@ -147,11 +147,37 @@ initElectronCore();
 
 // start the core of the application
 async function initElectronCore(): Promise<void> {
-	// imports
 	const {
 		handleEyasProtocolUrl,
 		getEyasUrlFromCommandLine
 	} = await import(`./deep-link-handler.js`);
+
+	setupDefaultProtocol();
+
+	const deepLinkContext: DeepLinkContext = {
+		getAppWindow: () => $appWindow,
+		setConfigToLoad: p => { $configToLoad = p; },
+		loadConfig: async (method, path) => {
+			const getConfig = (await import(`../scripts/get-config.js`)).default;
+			$config = await getConfig(method, path);
+		},
+		startAFreshTest,
+		LOAD_TYPES
+	};
+
+	setupDeepLinkListeners(deepLinkContext, handleEyasProtocolUrl, getEyasUrlFromCommandLine);
+
+	// add support for eyas:// protocol
+	registerInternalProtocols();
+
+	// start the electron layer
+	_electronCore.whenReady().then(handleAppReady);
+}
+
+/**
+ * Sets up the default protocol client for the application.
+ */
+export function setupDefaultProtocol(): void {
 	if (process.defaultApp) {
 		if (process.argv.length >= 2) {
 			_electronCore.setAsDefaultProtocolClient(
@@ -165,120 +191,88 @@ async function initElectronCore(): Promise<void> {
 	} else {
 		_electronCore.setAsDefaultProtocolClient(`eyas`);
 	}
+}
 
-	const deepLinkContext: DeepLinkContext = {
-		getAppWindow: () => $appWindow,
-		setConfigToLoad: p => { $configToLoad = p; },
-		loadConfig: async (method, path) => {
-			const getConfig = (await import(`../scripts/get-config.js`)).default;
-			$config = await getConfig(method, path);
-		},
-		startAFreshTest,
-		LOAD_TYPES
-	};
-
+/**
+ * Sets up listeners for deep links and second instance events.
+ * @param context The deep link context.
+ * @param handler The protocol URL handler.
+ * @param urlGetter The command line URL getter.
+ */
+export function setupDeepLinkListeners(
+	context: DeepLinkContext,
+	handler: (url: string, ctx: DeepLinkContext) => void,
+	urlGetter: (args: string[]) => string | null
+): void {
 	// macOS: detect if the app was opened with a file
 	_electronCore.on(`open-file`, async (_event, path) => {
-		// ensure the correct file type is being opened
 		if (!path.endsWith(`.eyas`)) { return; }
 
-		// if the $appWindow was already initialized
 		if ($appWindow) {
-			// load the new config
 			const getConfig = (await import(`../scripts/get-config.js`)).default;
 			$config = await getConfig(LOAD_TYPES.ASSOCIATION, path);
-
-			// start a new test based on the newly loaded config
 			startAFreshTest();
 		} else {
-			// define the config to load when the app is ready
-			$configToLoad = {
-				method: LOAD_TYPES.ASSOCIATION,
-				path
-			};
+			$configToLoad = { method: LOAD_TYPES.ASSOCIATION, path };
 		}
 	});
 
-	// macOS: handle eyas:// protocol (open-url); Windows/Linux: handle second instance with protocol URL
+	// macOS: handle eyas:// protocol (open-url)
 	_electronCore.on(`open-url`, (_event, url) => {
 		_event.preventDefault();
-		handleEyasProtocolUrl(url, deepLinkContext);
+		handler(url, context);
 	});
+
+	// Windows/Linux: handle second instance with protocol URL
 	_electronCore.on(`second-instance`, (_event, commandLine) => {
 		if ($appWindow) {
 			if ($appWindow.isMinimized()) { $appWindow.restore(); }
 			$appWindow.focus();
 		}
-		const url = getEyasUrlFromCommandLine(commandLine);
+		const url = urlGetter(commandLine);
 		if (url) {
-			handleEyasProtocolUrl(url, deepLinkContext);
+			handler(url, context);
 		}
 	});
+}
 
-	// add support for eyas:// protocol
-	registerInternalProtocols();
+/**
+ * Handles the application ready event.
+ */
+export async function handleAppReady(): Promise<void> {
+	// get config based on the context
+	const getConfig = (await import(`../scripts/get-config.js`)).default;
+	$config = await getConfig($configToLoad.method || LOAD_TYPES.AUTO, $configToLoad.path);
 
-	// start the electron layer
-	_electronCore.whenReady()
-		// when the electron layer is ready
-		.then(async () => {
-			// get config based on the context
-			const getConfig = (await import(`../scripts/get-config.js`)).default;
-			$config = await getConfig($configToLoad.method || LOAD_TYPES.AUTO, $configToLoad.path);
+	// load user settings from disk before first test start
+	await settingsService.load();
+	updateNativeTheme(settingsService.get(`theme`) as string);
 
-			// load user settings from disk before first test start
-			await settingsService.load();
-			updateNativeTheme(settingsService.get(`theme`) as string);
+	// start listening for requests to the custom protocol
+	setupEyasNetworkHandlers();
 
-			// start listening for requests to the custom protocol
-			setupEyasNetworkHandlers();
+	// start the UI layer
+	initElectronUi();
 
-			// start the UI layer
+	setupAutoUpdater();
+
+	// if Electron receives the `activate` event
+	_electronCore.on(`activate`, () => {
+		// if the window does not already exist, create it
+		if (!_electronWindow.getAllWindows().length) {
 			initElectronUi();
-
-			setupAutoUpdater();
-
-			// if Electron receives the `activate` event
-			_electronCore.on(`activate`, () => {
-				// if the window does not already exist, create it
-				if (!_electronWindow.getAllWindows().length) {
-					initElectronUi();
-				}
-			});
-		});
+		}
+	});
 }
 
 // initiate the core electron UI layer
 async function initElectronUi(): Promise<void> {
-
 	// set the current viewport to the first viewport in the list
 	$currentViewport[0] = $defaultViewports[0].width;
 	$currentViewport[1] = $defaultViewports[0].height;
 
-	// Create the app window for this instance
-	$appWindow = new _electronWindow({
-		useContentSize: true,
-		width: $currentViewport[0],
-		height: $currentViewport[1],
-		title: getAppTitleWithContext(),
-		icon: $paths.icon as string,
-		show: false,
-		webPreferences: {
-			preload: $paths.testPreload,
-			partition: `persist:${$config?.meta.testId}`
-		}
-	});
-
-	// intercept all web requests
-	$appWindow.webContents.session.webRequest.onBeforeRequest({ urls: [`<all_urls>`] }, (request, callback) => {
-		// validate this request
-		if (disableNetworkRequest(request.url)) {
-			return callback({ cancel: true });
-		}
-
-		// allow the request to continue
-		callback({ cancel: false });
-	});
+	createAppWindow();
+	setupWebRequestInterception();
 
 	// display the splash screen to the user
 	const splashScreen = createSplashScreen();
@@ -290,7 +284,7 @@ async function initElectronUi(): Promise<void> {
 	splashScreen.webContents.on(`did-finish-load`, () => { splashVisible = performance.now(); });
 
 	// load a default page so the app doesn't start black
-	$appWindow.loadURL(`data:text/html,` + encodeURIComponent(`<html><body></body></html>`));
+	$appWindow?.loadURL(`data:text/html,` + encodeURIComponent(`<html><body></body></html>`));
 
 	// track the app launch event
 	trackEvent(MP_EVENTS.core.launch);
@@ -303,7 +297,52 @@ async function initElectronUi(): Promise<void> {
 	initTestListeners();
 	initUiListeners();
 
-	// Initialize the $eyasLayer
+	initEyasLayer(splashScreen, splashVisible);
+}
+
+/**
+ * Creates the main application window.
+ */
+export function createAppWindow(): void {
+	$appWindow = new _electronWindow({
+		useContentSize: true,
+		width: $currentViewport[0],
+		height: $currentViewport[1],
+		title: getAppTitleWithContext(),
+		icon: $paths.icon as string,
+		show: false,
+		webPreferences: {
+			preload: $paths.testPreload,
+			partition: `persist:${$config?.meta.testId}`
+		}
+	});
+}
+
+/**
+ * Sets up web request interception for the application window.
+ */
+export function setupWebRequestInterception(): void {
+	if (!$appWindow) { return; }
+
+	$appWindow.webContents.session.webRequest.onBeforeRequest({ urls: [`<all_urls>`] }, (request, callback) => {
+		// validate this request
+		if (disableNetworkRequest(request.url)) {
+			return callback({ cancel: true });
+		}
+
+		// allow the request to continue
+		callback({ cancel: false });
+	});
+}
+
+/**
+ * Initializes the Eyas UI layer.
+ * @param splashScreen The splash screen window.
+ * @param splashVisible The time when the splash screen became visible.
+ */
+export function initEyasLayer(splashScreen: BrowserWindow, splashVisible: number): void {
+	if (!$appWindow) { return; }
+
 	$eyasLayer = new BrowserView({
 		webPreferences: {
 			preload: $paths.eventBridge,
@@ -312,6 +351,7 @@ async function initElectronUi(): Promise<void> {
 		}
 	});
 	$appWindow.addBrowserView($eyasLayer);
+
 	const url = ($isDev && process.env[`ELECTRON_RENDERER_URL`])
 		? `${process.env[`ELECTRON_RENDERER_URL`]}/index.html`
 		: `${$uiDomain}/index.html`;
@@ -435,13 +475,16 @@ function initTestListeners(): void {
 
 // initialize the Eyas listeners
 function initUiListeners(): void {
+	initAppIpcListeners();
+	initEnvironmentIpcListeners();
+	initSettingsIpcListeners();
+	initTestServerIpcListeners();
+}
 
-	// update the network status
-	ipcMain.on(`network-status`, (_event, status: boolean) => {
-		$testNetworkEnabled = status;
-		setMenu();
-	});
-
+/**
+ * Initializes application-level IPC listeners.
+ */
+export function initAppIpcListeners(): void {
 	// hide the UI when requested
 	ipcMain.on(`hide-ui`, () => { toggleEyasUI(false); });
 
@@ -460,6 +503,31 @@ function initUiListeners(): void {
 		_electronCore.quit();
 	});
 
+	ipcMain.on(`renderer-ready-for-modals`, (_event, latestChangelogVersion: string) => {
+		$latestChangelogVersion = latestChangelogVersion;
+		if (!$isStartupSequenceChecked) {
+			$isStartupSequenceChecked = true;
+			checkStartupSequence();
+		}
+	});
+
+	// listen for the user to launch a link
+	ipcMain.on(`launch-link`, (_event, { url, openInBrowser }: { url: string; openInBrowser: boolean }) => {
+		// navigate to the requested url
+		navigate(parseURL(url).toString(), openInBrowser);
+	});
+}
+
+/**
+ * Initializes environment-related IPC listeners.
+ */
+export function initEnvironmentIpcListeners(): void {
+	// update the network status
+	ipcMain.on(`network-status`, (_event, status: boolean) => {
+		$testNetworkEnabled = status;
+		setMenu();
+	});
+
 	// listen for the user to select an environment
 	ipcMain.on(`environment-selected`, (_event, domain: string | { url: string; key?: string }) => {
 		// support both legacy string (url only) and new object {url, key} formats
@@ -475,7 +543,12 @@ function initUiListeners(): void {
 		$isEnvironmentPending = false;
 		navigate();
 	});
+}
 
+/**
+ * Initializes settings-related IPC listeners.
+ */
+export function initSettingsIpcListeners(): void {
 	// listen for a setting to be saved from the UI
 	ipcMain.on(`save-setting`, async (event, { key, value, projectId }: { key: string; value: unknown; projectId?: string }) => {
 		// 1. If a projectId is provided, it must match the currently-active project.
@@ -508,21 +581,12 @@ function initUiListeners(): void {
 			version: _appVersion
 		});
 	});
+}
 
-	ipcMain.on(`renderer-ready-for-modals`, (_event, latestChangelogVersion: string) => {
-		$latestChangelogVersion = latestChangelogVersion;
-		if (!$isStartupSequenceChecked) {
-			$isStartupSequenceChecked = true;
-			checkStartupSequence();
-		}
-	});
-
-	// listen for the user to launch a link
-	ipcMain.on(`launch-link`, (_event, { url, openInBrowser }: { url: string; openInBrowser: boolean }) => {
-		// navigate to the requested url
-		navigate(parseURL(url).toString(), openInBrowser);
-	});
-
+/**
+ * Initializes test server-related IPC listeners.
+ */
+export function initTestServerIpcListeners(): void {
 	// test server setup modal: user clicked Continue, start the server
 	ipcMain.on(`test-server-setup-continue`, (_event, { useHttps, autoOpenBrowser, useCustomDomain }: { useHttps: boolean; autoOpenBrowser: boolean; useCustomDomain: boolean }) => {
 		$testServerHttpsEnabled = !!useHttps;
@@ -1371,9 +1435,18 @@ function setupEyasNetworkHandlers(): void {
 
 	const ses = session.fromPartition(`persist:${$config.meta.testId}`);
 
+	registerUiProtocolHandler(ses);
+	registerEyasProtocolHandler(ses);
+	registerHttpsProtocolHandler(ses);
+}
+
+/**
+ * Registers the 'ui' protocol handler.
+ * @param ses The session to register the handler on.
+ */
+export function registerUiProtocolHandler(ses: Electron.Session): void {
 	// use the "ui" protocol to load the Eyas UI layer
 	ses.protocol.handle(`ui`, request => {
-
 		// drop the protocol from the request
 		const parsed = parseURL(request.url.replace(`ui://`, `https://`));
 		const relativePathToFile = (parsed instanceof URL ? parsed.pathname : ``);
@@ -1389,7 +1462,13 @@ function setupEyasNetworkHandlers(): void {
 		// return the Eyas UI layer to complete the request
 		return ses.fetch(pathToFileURL(localFilePath).toString());
 	});
+}
 
+/**
+ * Registers the 'eyas' protocol handler.
+ * @param ses The session to register the handler on.
+ */
+export function registerEyasProtocolHandler(ses: Electron.Session): void {
 	// use this protocol to load files relatively from the local file system
 	ses.protocol.handle(`eyas`, request => {
 		// validate this request
@@ -1433,7 +1512,13 @@ function setupEyasNetworkHandlers(): void {
 		// return the file from the local system to complete the request
 		return ses.fetch(pathToFileURL(localFilePath).toString());
 	});
+}
 
+/**
+ * Registers the 'https' protocol handler for redirections.
+ * @param ses The session to register the handler on.
+ */
+export function registerHttpsProtocolHandler(ses: Electron.Session): void {
 	// listen for requests to the specified domains and redirect to the custom protocol
 	ses.protocol.handle(`https`, async request => {
 		// setup
