@@ -6,7 +6,7 @@
     "noEmit": true,
     "noImplicitAny": true,
     "paths": {
-      "@/*": ["./src/renderer/src/*"]
+      "@/*": ["./src/eyas-interface/app/src/*"]
     },
     "allowJs": false,
     "types": ["vite/client", "vitest/globals"],

@@ -36,8 +36,8 @@ describe(`useSettingsStore`, () => {
 			app: { env: { alwaysChoose: false } },
 			projectId: `proj-123`
 		});
-		expect(store.projectSettings.env.alwaysChoose).toBe(true);
-		expect(store.appSettings.env.alwaysChoose).toBe(false);
+		expect((store.projectSettings.env as Record<string, boolean>).alwaysChoose).toBe(true);
+		expect((store.appSettings.env as Record<string, boolean>).alwaysChoose).toBe(false);
 		expect(store.projectId).toBe(`proj-123`);
 	});
 

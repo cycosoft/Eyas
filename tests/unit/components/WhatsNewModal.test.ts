@@ -1,5 +1,5 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { mount, VueWrapper } from '@vue/test-utils';
 import WhatsNewModal from '@/components/WhatsNewModal.vue';
 import { createVuetify } from 'vuetify';
 import { createPinia, setActivePinia } from 'pinia';
@@ -20,7 +20,7 @@ vi.mock(`@/utils/changelog-utils`, () => ({
 }));
 
 describe(`WhatsNewModal`, () => {
-	let wrapper;
+	let wrapper: VueWrapper<any>;
 	let vuetify;
 
 	beforeEach(async () => {
@@ -28,7 +28,7 @@ describe(`WhatsNewModal`, () => {
 		setActivePinia(createPinia());
 
 		// Mock window.eyas
-		global.window.eyas = {
+		(window as any).eyas = {
 			send: vi.fn(),
 			receive: vi.fn()
 		};
@@ -74,6 +74,6 @@ describe(`WhatsNewModal`, () => {
 		wrapper.vm.isVisible = true;
 		await wrapper.vm.close();
 		expect(wrapper.vm.isVisible).toBe(false);
-		expect(window.eyas.send).toHaveBeenCalledWith(`whats-new-closed`);
+		expect((window as any).eyas.send).toHaveBeenCalledWith(`whats-new-closed`);
 	});
 });
