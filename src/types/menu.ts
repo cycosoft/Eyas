@@ -9,7 +9,7 @@ export interface MenuContext {
 	onOpenSettings?: () => void;
 	onShowWhatsNew?: () => void;
 	quit: () => void;
-	startAFreshTest: () => void;
+	startAFreshTest: () => void | Promise<void>;
 	copyUrl: () => void;
 	openUiDevTools: () => void;
 	navigateHome: () => void;

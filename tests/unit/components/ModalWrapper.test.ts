@@ -1,15 +1,15 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { mount, VueWrapper } from '@vue/test-utils';
 import ModalWrapper from '@/components/ModalWrapper.vue';
 import { createVuetify } from 'vuetify';
 
 describe(`ModalWrapper`, () => {
-	let wrapper;
-	let vuetify;
+	let wrapper: VueWrapper<any>;
+	let vuetify: any;
 
 	beforeEach(() => {
 		vuetify = createVuetify();
-		global.window.eyas = { send: vi.fn(), receive: vi.fn() };
+		(window as any).eyas = { send: vi.fn(), receive: vi.fn() };
 
 
 

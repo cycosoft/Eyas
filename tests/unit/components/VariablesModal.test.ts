@@ -1,17 +1,17 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { mount, VueWrapper } from '@vue/test-utils';
 import VariablesModal from '@/components/VariablesModal.vue';
 
 describe(`VariablesModal`, () => {
-	let wrapper;
-	let mockSend;
-	let mockReceive;
+	let wrapper: VueWrapper<any>;
+	let mockSend: any;
+	let mockReceive: any;
 
 	beforeEach(() => {
 		mockSend = vi.fn();
 		mockReceive = vi.fn();
-		global.window.eyas.send = mockSend;
-		global.window.eyas.receive = mockReceive;
+		(window as any).eyas.send = mockSend;
+		(window as any).eyas.receive = mockReceive;
 
 		wrapper = mount(VariablesModal);
 	});
@@ -28,7 +28,7 @@ describe(`VariablesModal`, () => {
 
 		// Simulate IPC receive
 		const receiveCallback = mockReceive.mock.calls.find(
-			call => call[0] === `show-variables-modal`
+			(call: any) => call[0] === `show-variables-modal`
 		)?.[1];
 
 		if (receiveCallback) {
@@ -80,7 +80,7 @@ describe(`VariablesModal`, () => {
 
 		// Find and click the launch button
 		const launchButton = wrapper.findAll(`button`).find(
-			btn => btn.text().includes(`Continue`)
+			(btn: any) => btn.text().includes(`Continue`)
 		);
 
 		if (launchButton) {
@@ -339,14 +339,14 @@ describe(`VariablesModal`, () => {
 			wrapper.vm.link = `https://example.com/{_env.url}/path`;
 			const vars = wrapper.vm.variables;
 			// Should NOT be in variables list (filtered by underscore prefix)
-			expect(vars.every(v => !v.type.startsWith(`_`))).toBe(true);
+			expect(vars.every((v: any) => !v.type.startsWith(`_`))).toBe(true);
 		});
 
 		test(`{_env.key} token reaching the modal is treated as an unknown app token, not user-input`, () => {
 			wrapper.vm.link = `https://{_env.key}example.com`;
 			const vars = wrapper.vm.variables;
 			// Should NOT be in variables list (filtered by underscore prefix)
-			expect(vars.every(v => !v.type.startsWith(`_`))).toBe(true);
+			expect(vars.every((v: any) => !v.type.startsWith(`_`))).toBe(true);
 		});
 
 		test(`after {_env.url} and {_env.key} resolved, only remaining user vars appear in modal`, async () => {

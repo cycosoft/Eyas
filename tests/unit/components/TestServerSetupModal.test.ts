@@ -2,16 +2,6 @@ import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, VueWrapper } from '@vue/test-utils';
 import TestServerSetupModal from '@/components/TestServerSetupModal.vue';
 
-interface EyasWindow {
-	send: ReturnType<typeof vi.fn>;
-	receive: ReturnType<typeof vi.fn>;
-}
-
-declare global {
-	interface Window {
-		eyas: EyasWindow;
-	}
-}
 
 describe(`TestServerSetupModal`, () => {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -20,7 +10,7 @@ describe(`TestServerSetupModal`, () => {
 	let receiveCallback: (payload: any) => void;
 
 	beforeEach(() => {
-		window.eyas = { send: vi.fn(), receive: vi.fn((channel, fn) => { receiveCallback = fn; }) };
+		(window as any).eyas = { send: vi.fn(), receive: vi.fn((channel: string, fn: any) => { receiveCallback = fn; }) };
 		wrapper = mount(TestServerSetupModal);
 	});
 
@@ -74,7 +64,7 @@ describe(`TestServerSetupModal`, () => {
 		wrapper.vm.autoOpenBrowser = false;
 		wrapper.vm.useCustomDomain = true;
 		wrapper.vm.continueStart();
-		expect(window.eyas.send).toHaveBeenCalledWith(`test-server-setup-continue`, {
+		expect((window as any).eyas.send).toHaveBeenCalledWith(`test-server-setup-continue`, {
 			useHttps: false,
 			autoOpenBrowser: false,
 			useCustomDomain: true
@@ -88,7 +78,7 @@ describe(`TestServerSetupModal`, () => {
 		expect(wrapper.vm.visible).toBe(true);
 
 		wrapper.vm.cancel();
-		expect(window.eyas.send).not.toHaveBeenCalledWith(`test-server-setup-continue`);
+		expect((window as any).eyas.send).not.toHaveBeenCalledWith(`test-server-setup-continue`);
 		expect(wrapper.vm.visible).toBe(false);
 	});
 

@@ -12,7 +12,7 @@ import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 
 // Types
-import type { ValidatedConfig, EyasConfig } from "../types/config.js";
+import type { ValidatedConfig, EyasConfig, EyasMeta } from "../types/config.js";
 
 // setup
 const require = createRequire(import.meta.url);
@@ -199,14 +199,18 @@ async function getConfigViaCli(): Promise<EyasConfig> {
 			loadedConfig = loadedModule?.default || loadedModule;
 			if (loadedConfig) {
 				loadedConfig = { ...loadedConfig }; // ensure the object is extensible
+			} else {
+				loadedConfig = {};
 			}
 			loadedConfig._isConfigLoaded = true;
 		} catch (error) {
 			console.error(`CLI: Error loading config:`, error);
 			loadedConfig = {};
 		}
-	} else {
+	} else if (loadedConfig) {
 		loadedConfig = { ...loadedConfig }; // ensure cjs config is also extensible
+	} else {
+		loadedConfig = {};
 	}
 
 	// if a source was provided

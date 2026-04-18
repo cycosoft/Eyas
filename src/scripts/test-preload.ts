@@ -8,7 +8,7 @@ interface RequestBridge {
 
 declare global {
 	interface Window {
-		eyas?: RequestBridge;
+		eyas: RequestBridge;
 	}
 }
 

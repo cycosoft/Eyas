@@ -3,13 +3,13 @@ import { parseURL } from '../../src/scripts/parse-url.js';
 
 describe(`parseURL`, () => {
 	test(`returns URL object for valid URL with protocol`, () => {
-		const result = parseURL(`https://example.com`);
+		const result = parseURL(`https://example.com`) as URL;
 		expect(result).toBeInstanceOf(URL);
 		expect(result.href).toBe(`https://example.com/`);
 	});
 
 	test(`adds https:// protocol when missing`, () => {
-		const result = parseURL(`example.com`);
+		const result = parseURL(`example.com`) as URL;
 		expect(result).toBeInstanceOf(URL);
 		expect(result.protocol).toBe(`https:`);
 		expect(result.hostname).toBe(`example.com`);

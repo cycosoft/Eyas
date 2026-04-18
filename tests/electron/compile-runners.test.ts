@@ -19,7 +19,7 @@ vi.mock(`electron-builder`, () => ({
 
 vi.mock(`fs-extra`, () => ({
 	default: {
-		copy: vi.fn().mockResolvedValue()
+		copy: vi.fn().mockResolvedValue(undefined)
 	}
 }));
 
@@ -58,7 +58,7 @@ describe(`compileRunners`, () => {
 		await compileRunners();
 
 		expect(builder.build).toHaveBeenCalled();
-		const buildArgs = vi.mocked(builder.build).mock.calls[0][0];
+		const buildArgs = vi.mocked(builder.build).mock.calls[0][0]!;
 		expect(buildArgs.targets).toContain(builder.Platform.WINDOWS);
 	});
 
@@ -67,7 +67,7 @@ describe(`compileRunners`, () => {
 		await compileRunners();
 
 		expect(builder.build).toHaveBeenCalled();
-		const buildArgs = vi.mocked(builder.build).mock.calls[0][0];
+		const buildArgs = vi.mocked(builder.build).mock.calls[0][0]!;
 		expect(buildArgs.targets).toContain(builder.Platform.MAC);
 	});
 
@@ -106,7 +106,7 @@ describe(`compileRunners`, () => {
 		await compileRunners();
 
 		expect(builder.build).toHaveBeenCalled();
-		const buildArgs = vi.mocked(builder.build).mock.calls[0][0];
+		const buildArgs = vi.mocked(builder.build).mock.calls[0][0]!;
 		expect(buildArgs.publish).toBe(`always`);
 	});
 
@@ -115,7 +115,7 @@ describe(`compileRunners`, () => {
 		await compileRunners();
 
 		expect(builder.build).toHaveBeenCalled();
-		const buildArgs = vi.mocked(builder.build).mock.calls[0][0];
+		const buildArgs = vi.mocked(builder.build).mock.calls[0][0]!;
 		expect(buildArgs.publish).toBe(`never`);
 	});
 

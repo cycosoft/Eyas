@@ -1,18 +1,18 @@
 import { describe, test, expect, vi, afterEach, beforeEach } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { mount, VueWrapper } from '@vue/test-utils';
 import TestServerActiveModal from '@/components/TestServerActiveModal.vue';
 import { nextTick } from 'vue';
 import { TEST_SERVER_SESSION_DURATION_MS } from '@/../../../scripts/constants.js';
 
 describe(`TestServerActiveModal`, () => {
-	let wrapper;
-	let callbacks = {};
+	let wrapper: VueWrapper<any>;
+	let callbacks: Record<string, any> = {};
 
 	beforeEach(() => {
 		callbacks = {};
-		global.window.eyas = {
+		(window as any).eyas = {
 			send: vi.fn(),
-			receive: vi.fn((channel, fn) => {
+			receive: vi.fn((channel: string, fn: any) => {
 				callbacks[channel] = fn;
 			})
 		};
@@ -80,7 +80,7 @@ describe(`TestServerActiveModal`, () => {
 	test(`Open in Browser button emits test-server-open-browser with domain`, async () => {
 		await setup({ domain: `http://localhost:1234`, startTime: 0, endTime: 1000 });
 		wrapper.vm.openInBrowser();
-		expect(global.window.eyas.send).toHaveBeenCalledWith(`test-server-open-browser`, `http://localhost:1234`);
+		expect((window as any).eyas.send).toHaveBeenCalledWith(`test-server-open-browser`, `http://localhost:1234`);
 	});
 
 	test(`Open in Browser button is disabled when expired`, async () => {
@@ -121,7 +121,7 @@ describe(`TestServerActiveModal`, () => {
 		const extendBtn = wrapper.find(`#btn-extend-session`);
 		expect(extendBtn.exists()).toBe(true);
 		await extendBtn.trigger(`click`);
-		expect(global.window.eyas.send).toHaveBeenCalledWith(`test-server-extend`);
+		expect((window as any).eyas.send).toHaveBeenCalledWith(`test-server-extend`);
 
 		// Simulate backend response
 		const activeCb = callbacks[`show-test-server-active-modal`];

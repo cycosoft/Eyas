@@ -1,5 +1,5 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { mount, VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { createVuetify } from 'vuetify';
 import App from '@/App.vue';
@@ -9,15 +9,15 @@ import useSettingsStore from '@/stores/settings.js';
 const vuetify = createVuetify();
 
 describe(`App`, () => {
-	let wrapper;
-	let mockSend;
-	let mockReceive;
+	let wrapper: VueWrapper<any>;
+	let mockSend: any;
+	let mockReceive: any;
 
 	beforeEach(() => {
 		setActivePinia(createPinia());
 		mockSend = vi.fn();
 		mockReceive = vi.fn();
-		global.window.eyas = {
+		(window as any).eyas = {
 			send: mockSend,
 			receive: mockReceive
 		};
@@ -50,7 +50,7 @@ describe(`App`, () => {
 
 	test(`updates store when settings-loaded is received`, () => {
 		const settingsStore = useSettingsStore();
-		const call = mockReceive.mock.calls.find(c => c[0] === `settings-loaded`);
+		const call = mockReceive.mock.calls.find((c: any) => c[0] === `settings-loaded`);
 		expect(call).toBeDefined();
 
 		const payload = {
@@ -65,7 +65,7 @@ describe(`App`, () => {
 
 	test(`updates store when settings-updated is received`, () => {
 		const settingsStore = useSettingsStore();
-		const call = mockReceive.mock.calls.find(c => c[0] === `settings-updated`);
+		const call = mockReceive.mock.calls.find((c: any) => c[0] === `settings-updated`);
 		expect(call).toBeDefined();
 
 		const payload = {

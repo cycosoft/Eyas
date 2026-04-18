@@ -1,19 +1,19 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { mount, VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import SettingsModal from '@/components/SettingsModal.vue';
 
 describe(`SettingsModal`, () => {
-	let wrapper;
-	let mockSend;
-	let mockReceive;
+	let wrapper: VueWrapper<any>;
+	let mockSend: any;
+	let mockReceive: any;
 
 	beforeEach(() => {
 		setActivePinia(createPinia());
 		mockSend = vi.fn();
 		mockReceive = vi.fn();
-		global.window.eyas.send = mockSend;
-		global.window.eyas.receive = mockReceive;
+		(window as any).eyas.send = mockSend;
+		(window as any).eyas.receive = mockReceive;
 
 		wrapper = mount(SettingsModal, {
 			global: {
@@ -33,7 +33,7 @@ describe(`SettingsModal`, () => {
 
 	test(`listens for show-settings-modal IPC and sets visible = true`, () => {
 		// Find the receive registration for show-settings-modal
-		const call = mockReceive.mock.calls.find(c => c[0] === `show-settings-modal`);
+		const call = mockReceive.mock.calls.find((c: any) => c[0] === `show-settings-modal`);
 		expect(call).toBeDefined();
 
 		// Invoke the callback
@@ -48,19 +48,19 @@ describe(`SettingsModal`, () => {
 
 	test(`show-settings-modal resets to Project tab`, () => {
 		wrapper.vm.activeTab = `app`;
-		const call = mockReceive.mock.calls.find(c => c[0] === `show-settings-modal`);
+		const call = mockReceive.mock.calls.find((c: any) => c[0] === `show-settings-modal`);
 		call[1]({ project: {}, app: {} });
 		expect(wrapper.vm.activeTab).toBe(`project`);
 	});
 
 	test(`populates projectAlwaysChoose from payload`, () => {
-		const call = mockReceive.mock.calls.find(c => c[0] === `show-settings-modal`);
+		const call = mockReceive.mock.calls.find((c: any) => c[0] === `show-settings-modal`);
 		call[1]({ project: { env: { alwaysChoose: true } }, app: {} });
 		expect(wrapper.vm.projectAlwaysChoose).toBe(true);
 	});
 
 	test(`populates appAlwaysChoose from payload`, () => {
-		const call = mockReceive.mock.calls.find(c => c[0] === `show-settings-modal`);
+		const call = mockReceive.mock.calls.find((c: any) => c[0] === `show-settings-modal`);
 		call[1]({ project: {}, app: { env: { alwaysChoose: true } } });
 		expect(wrapper.vm.appAlwaysChoose).toBe(true);
 	});
@@ -87,7 +87,7 @@ describe(`SettingsModal`, () => {
 	test(`setting-saved IPC shows the toast if modal is visible`, () => {
 		wrapper.vm.visible = true; // Modal must be visible for toast to show
 		expect(wrapper.vm.toastVisible).toBe(false);
-		const call = mockReceive.mock.calls.find(c => c[0] === `setting-saved`);
+		const call = mockReceive.mock.calls.find((c: any) => c[0] === `setting-saved`);
 		expect(call).toBeDefined();
 		call[1]();
 		expect(wrapper.vm.toastVisible).toBe(true);
@@ -111,7 +111,7 @@ describe(`SettingsModal`, () => {
 	});
 
 	test(`show-settings-modal does NOT send save-setting (reproduction for toast bug)`, () => {
-		const call = mockReceive.mock.calls.find(c => c[0] === `show-settings-modal`);
+		const call = mockReceive.mock.calls.find((c: any) => c[0] === `show-settings-modal`);
 
 		// Reset mock to ensure we don't count the initial setup if any
 		mockSend.mockClear();
@@ -132,11 +132,11 @@ describe(`SettingsModal`, () => {
 		wrapper.vm.toastVisible = false;
 
 		// Simulate receiving setting-saved while closed
-		const call = mockReceive.mock.calls.find(c => c[0] === `setting-saved`);
+		const call = mockReceive.mock.calls.find((c: any) => c[0] === `setting-saved`);
 		call[1]();
 
 		// Open the modal
-		const showCall = mockReceive.mock.calls.find(c => c[0] === `show-settings-modal`);
+		const showCall = mockReceive.mock.calls.find((c: any) => c[0] === `show-settings-modal`);
 		showCall[1]({ project: {}, app: {} });
 
 		await wrapper.vm.$nextTick();

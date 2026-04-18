@@ -1,17 +1,17 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { mount, VueWrapper } from '@vue/test-utils';
 import EnvironmentModal from '@/components/EnvironmentModal.vue';
 
 describe(`EnvironmentModal`, () => {
-	let wrapper;
-	let mockSend;
-	let mockReceive;
+	let wrapper: VueWrapper<any>;
+	let mockSend: any;
+	let mockReceive: any;
 
 	beforeEach(() => {
 		mockSend = vi.fn();
 		mockReceive = vi.fn();
-		global.window.eyas.send = mockSend;
-		global.window.eyas.receive = mockReceive;
+		(window as any).eyas.send = mockSend;
+		(window as any).eyas.receive = mockReceive;
 
 		wrapper = mount(EnvironmentModal);
 	});
@@ -34,9 +34,9 @@ describe(`EnvironmentModal`, () => {
 		const receiveCallback = wrapper.vm.$options.mounted?.[0] ||
 			((): void => {
 				// Manually trigger the IPC receive
-				if (global.window.eyas.receive.mock.calls.length > 0) {
-					const call = global.window.eyas.receive.mock.calls.find(
-						c => c[0] === `show-environment-modal`
+				if ((window as any).eyas.receive.mock.calls.length > 0) {
+					const call = (window as any).eyas.receive.mock.calls.find(
+						(c: any) => c[0] === `show-environment-modal`
 					);
 					if (call && call[1]) {
 						call[1](domains);
@@ -167,7 +167,7 @@ describe(`EnvironmentModal`, () => {
 
 		test(`show-environment-modal payload sets alwaysChoose`, () => {
 			// Simulate the IPC receive callback
-			const call = mockReceive.mock.calls.find(c => c[0] === `show-environment-modal`);
+			const call = mockReceive.mock.calls.find((c: any) => c[0] === `show-environment-modal`);
 			call[1]([], { alwaysChoose: true, projectId: `proj-x`, domainsHash: `abc` });
 			expect(wrapper.vm.alwaysChoose).toBe(true);
 			expect(wrapper.vm.projectId).toBe(`proj-x`);

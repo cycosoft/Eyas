@@ -21,7 +21,7 @@ describe(`getConfig - CommonJS`, () => {
 			const actual = await vi.importActual(`../../src/scripts/get-roots.js`);
 			return {
 				default: {
-					...actual.default,
+					...(actual.default as any),
 					config: tempDir
 				}
 			};

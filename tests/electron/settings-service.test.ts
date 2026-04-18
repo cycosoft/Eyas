@@ -8,7 +8,7 @@ import service from '../../src/eyas-core/settings-service.js';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
-let tmpFile;
+let tmpFile: string;
 
 beforeEach(() => {
 	// Each test gets its own unique temp file so tests don't interfere
@@ -102,7 +102,7 @@ describe(`set()`, () => {
 	test(`set does not clobber unrelated keys`, () => {
 		service.set(`env.alwaysChoose`, true, `proj-c`);
 		service.set(`env.lastChoiceHash`, `abc123`, `proj-c`);
-		const settings = service.getProjectSettings(`proj-c`);
+		const settings = service.getProjectSettings(`proj-c`) as any;
 		expect(settings.env.alwaysChoose).toBe(true);
 		expect(settings.env.lastChoiceHash).toBe(`abc123`);
 	});

@@ -26,15 +26,15 @@ describe(`getElectronBuilderConfig`, () => {
 			...baseOptions,
 			appleTeamId: `TEAM123`
 		});
-		expect(typeof configWithTeamId.mac.notarize).toBe(`boolean`);
-		expect(configWithTeamId.mac.notarize).toBe(true);
+		expect(typeof configWithTeamId.mac!.notarize).toBe(`boolean`);
+		expect(configWithTeamId.mac!.notarize).toBe(true);
 
 		const configWithoutTeamId = getElectronBuilderConfig({
 			...baseOptions,
 			appleTeamId: ``
 		});
-		expect(typeof configWithoutTeamId.mac.notarize).toBe(`boolean`);
-		expect(configWithoutTeamId.mac.notarize).toBe(false);
+		expect(typeof configWithoutTeamId.mac!.notarize).toBe(`boolean`);
+		expect(configWithoutTeamId.mac!.notarize).toBe(false);
 	});
 
 	test(`win has no top-level sign property`, () => {
@@ -42,8 +42,8 @@ describe(`getElectronBuilderConfig`, () => {
 			...baseOptions,
 			isWin: true
 		});
-		expect(`sign` in config.win).toBe(false);
-		expect(config.win.sign).toBeUndefined();
+		expect(`sign` in config.win!).toBe(false);
+		expect((config.win as any).sign).toBeUndefined();
 	});
 
 	test(`win uses signtoolOptions.sign when not dev`, () => {
@@ -52,8 +52,8 @@ describe(`getElectronBuilderConfig`, () => {
 			isWin: true,
 			isDev: false
 		});
-		expect(config.win.signtoolOptions).toBeDefined();
-		expect(config.win.signtoolOptions.sign).toBe(basePaths.codesignWin);
+		expect(config.win!.signtoolOptions).toBeDefined();
+		expect(config.win!.signtoolOptions!.sign).toBe(basePaths.codesignWin);
 	});
 
 	test(`win has no signtoolOptions when dev`, () => {
@@ -62,7 +62,7 @@ describe(`getElectronBuilderConfig`, () => {
 			isWin: true,
 			isDev: true
 		});
-		expect(config.win.signtoolOptions).toBeUndefined();
+		expect(config.win!.signtoolOptions).toBeUndefined();
 	});
 
 	test(`mac target is array with pkg and zip when isInstaller and isMac`, () => {
@@ -71,9 +71,9 @@ describe(`getElectronBuilderConfig`, () => {
 			isInstaller: true,
 			isMac: true
 		});
-		expect(Array.isArray(config.mac.target)).toBe(true);
-		expect(config.mac.target).toContain(`pkg`);
-		expect(config.mac.target).toContain(`zip`);
+		expect(Array.isArray(config.mac!.target)).toBe(true);
+		expect(config.mac!.target).toContain(`pkg`);
+		expect(config.mac!.target).toContain(`zip`);
 	});
 
 	test(`artifactName includes -mac suffix when isInstaller and isMac`, () => {
@@ -106,11 +106,11 @@ describe(`getElectronBuilderConfig`, () => {
 			isWin: true
 		});
 		expect(config.nsis).toBeDefined();
-		expect(config.nsis.oneClick).toBe(false);
-		expect(config.nsis.allowToChangeInstallationDirectory).toBe(true);
-		expect(config.nsis.createDesktopShortcut).toBe(`always`);
-		expect(config.nsis.createStartMenuShortcut).toBe(true);
-		expect(config.nsis.runAfterFinish).toBe(false);
+		expect(config.nsis!.oneClick).toBe(false);
+		expect(config.nsis!.allowToChangeInstallationDirectory).toBe(true);
+		expect(config.nsis!.createDesktopShortcut).toBe(`always`);
+		expect(config.nsis!.createStartMenuShortcut).toBe(true);
+		expect(config.nsis!.runAfterFinish).toBe(false);
 	});
 });
 

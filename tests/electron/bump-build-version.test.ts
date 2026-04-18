@@ -7,18 +7,18 @@ import { bumpBuildVersion } from '../../src/scripts/bump-build-version.js';
 vi.mock(`child_process`, async () => {
 	const actual = await vi.importActual(`child_process`);
 	return {
-		...actual,
+		...actual as any,
 		execSync: (command: string, options?: unknown): string | Buffer => {
-			if (global.execSyncMock) return global.execSyncMock(command, options);
-			return actual.execSync(command, options as Record<string, unknown>);
+			if ((global as any).execSyncMock) return (global as any).execSyncMock(command, options);
+			return (actual as any).execSync(command, options as Record<string, unknown>);
 		}
 	};
 });
 
 describe(`bumpBuildVersion`, () => {
-	let tempDir;
-	let pkgPath;
-	let changelogPath;
+	let tempDir: string;
+	let pkgPath: string;
+	let changelogPath: string;
 
 	beforeEach(async () => {
 		tempDir = path.join(os.tmpdir(), `eyas-test-${Math.random().toString(36).slice(2)}`);
@@ -30,14 +30,14 @@ describe(`bumpBuildVersion`, () => {
 		changelogPath = path.join(tempDir, `CHANGELOG.json`);
 		await fs.writeJson(changelogPath, [{ version: `1.0.0`, items: [] }], { spaces: 2 });
 
-		global.execSyncMock = vi.fn().mockReturnValue(`v1.0.0`);
+		(global as any).execSyncMock = vi.fn().mockReturnValue(`v1.0.0`);
 
 		vi.spyOn(console, `log`).mockImplementation(() => { });
 	});
 
 	afterEach(async () => {
 		await fs.remove(tempDir);
-		delete global.execSyncMock;
+		delete (global as any).execSyncMock;
 		vi.restoreAllMocks();
 	});
 

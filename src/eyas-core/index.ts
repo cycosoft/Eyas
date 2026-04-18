@@ -204,7 +204,7 @@ export function setupDefaultProtocol(): void {
 export function setupDeepLinkListeners(
 	context: DeepLinkContext,
 	handler: (url: string, ctx: DeepLinkContext) => void,
-	urlGetter: (args: string[]) => string | null
+	urlGetter: (args: string[]) => string | undefined | null
 ): void {
 	// macOS: detect if the app was opened with a file
 	_electronCore.on(`open-file`, async (_event, path) => {
@@ -1089,7 +1089,7 @@ export function getMenuContext(params: {
 		cacheSize,
 		showAbout,
 		quit: _electronCore.quit,
-		startAFreshTest: (): void => startAFreshTest(true),
+		startAFreshTest: () => startAFreshTest(true),
 		copyUrl,
 		openUiDevTools: (): void => $eyasLayer?.webContents.openDevTools(),
 		navigateHome,

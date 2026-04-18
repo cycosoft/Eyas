@@ -1,9 +1,10 @@
 import { describe, test, expect } from 'vitest';
 import { buildMenuTemplate } from '../../src/eyas-core/menu-template.js';
+import type { MenuContext } from '../../src/types/menu.js';
 
 const noop = (): void => { };
 
-const minimalContext = {
+const minimalContext: MenuContext = {
 	appName: `Eyas`,
 	isDev: false,
 	isConfigLoaded: true,
@@ -31,7 +32,8 @@ const minimalContext = {
 	onCheckForUpdates: noop,
 	onInstallUpdate: noop,
 	testServerActive: false,
-	toggleTestDevTools: noop
+	toggleTestDevTools: noop,
+	onStartTestServer: noop
 };
 
 describe(`Menu links and DevTools gating (Refined)`, () => {
@@ -43,31 +45,31 @@ describe(`Menu links and DevTools gating (Refined)`, () => {
 		};
 
 		test(`root menus 'Test' and 'Browser' are disabled`, () => {
-			const template = buildMenuTemplate(ctx);
-			const testMenu = template.find(m => m.label && m.label.includes(`Test`));
-			const browserMenu = template.find(m => m.label && m.label.includes(`Browser`));
+			const template = buildMenuTemplate(ctx as MenuContext) as any[];
+			const testMenu = template.find((m: any) => m.label && m.label.includes(`Test`));
+			const browserMenu = template.find((m: any) => m.label && m.label.includes(`Browser`));
 
 			expect(testMenu.enabled).toBe(false);
 			expect(browserMenu.enabled).toBe(false);
 		});
 
 		test(`DevTools root menu is enabled only if isDev is true`, () => {
-			const devTemplate = buildMenuTemplate({ ...ctx, isDev: true });
-			const prodTemplate = buildMenuTemplate({ ...ctx, isDev: false });
+			const devTemplate = buildMenuTemplate({ ...ctx, isDev: true } as MenuContext) as any[];
+			const prodTemplate = buildMenuTemplate({ ...ctx, isDev: false } as MenuContext) as any[];
 
-			const devToolsMenu = devTemplate.find(m => m.label && m.label.includes(`Development Tools`));
-			const prodToolsMenu = prodTemplate.find(m => m.label && m.label.includes(`Development Tools`));
+			const devToolsMenu = devTemplate.find((m: any) => m.label && m.label.includes(`Development Tools`));
+			const prodToolsMenu = prodTemplate.find((m: any) => m.label && m.label.includes(`Development Tools`));
 
 			expect(devToolsMenu.enabled).not.toBe(false);
 			expect(prodToolsMenu.enabled).toBe(false);
 		});
 
 		test(`Specific items like 'Developer Tools (Test)' and 'Stop network' are disabled`, () => {
-			const template = buildMenuTemplate({ ...ctx, isDev: true });
-			const toolsMenu = template.find(m => m.label && m.label.includes(`Development Tools`));
+			const template = buildMenuTemplate({ ...ctx, isDev: true } as MenuContext) as any[];
+			const toolsMenu = template.find((m: any) => m.label && m.label.includes(`Development Tools`));
 
-			const testDevTools = toolsMenu.submenu.find(i => i.label && i.label.includes(`(Test)`));
-			const networkToggle = toolsMenu.submenu.find(i => i.label && (i.label.includes(`Online`) || i.label.includes(`Offline`)));
+			const testDevTools = toolsMenu.submenu.find((i: any) => i.label && i.label.includes(`(Test)`));
+			const networkToggle = toolsMenu.submenu.find((i: any) => i.label && (i.label.includes(`Online`) || i.label.includes(`Offline`)));
 
 			expect(testDevTools.enabled).toBe(false);
 			expect(networkToggle.enabled).toBe(false);
@@ -87,33 +89,33 @@ describe(`Menu links and DevTools gating (Refined)`, () => {
 			const template = buildMenuTemplate({
 				...ctx,
 				linkItems: [{ label: `Link 1`, click: noop }]
-			});
-			const testMenu = template.find(m => m.label && m.label.includes(`Test`));
-			const linksItem = testMenu.submenu.find(i => i.label && i.label.includes(`Links`));
+			} as MenuContext) as any[];
+			const testMenu = template.find((m: any) => m.label && m.label.includes(`Test`));
+			const linksItem = testMenu.submenu.find((i: any) => i.label && i.label.includes(`Links`));
 
 			expect(linksItem.enabled).toBe(false);
 		});
 
 		test(`'Developer Tools (Test)' is ENABLED`, () => {
-			const template = buildMenuTemplate(ctx);
-			const toolsMenu = template.find(m => m.label && m.label.includes(`Development Tools`));
-			const testDevTools = toolsMenu.submenu.find(i => i.label && i.label.includes(`(Test)`));
+			const template = buildMenuTemplate(ctx as MenuContext) as any[];
+			const toolsMenu = template.find((m: any) => m.label && m.label.includes(`Development Tools`));
+			const testDevTools = toolsMenu.submenu.find((i: any) => i.label && i.label.includes(`(Test)`));
 
 			expect(testDevTools.enabled).not.toBe(false);
 		});
 
 		test(`'Go Online/Offline' is ENABLED`, () => {
-			const template = buildMenuTemplate(ctx);
-			const toolsMenu = template.find(m => m.label && m.label.includes(`Development Tools`));
-			const networkToggle = toolsMenu.submenu.find(i => i.label && (i.label.includes(`Online`) || i.label.includes(`Offline`)));
+			const template = buildMenuTemplate(ctx as MenuContext) as any[];
+			const toolsMenu = template.find((m: any) => m.label && m.label.includes(`Development Tools`));
+			const networkToggle = toolsMenu.submenu.find((i: any) => i.label && (i.label.includes(`Online`) || i.label.includes(`Offline`)));
 
 			expect(networkToggle.enabled).not.toBe(false);
 		});
 
 		test(`'Developer Tools (eyas)' is ENABLED and renamed`, () => {
-			const template = buildMenuTemplate(ctx);
-			const toolsMenu = template.find(m => m.label && m.label.includes(`Development Tools`));
-			const eyasDevTools = toolsMenu.submenu.find(i => i.label && i.label.toLowerCase().includes(`eyas`));
+			const template = buildMenuTemplate(ctx as MenuContext) as any[];
+			const toolsMenu = template.find((m: any) => m.label && m.label.includes(`Development Tools`));
+			const eyasDevTools = toolsMenu.submenu.find((i: any) => i.label && i.label.toLowerCase().includes(`eyas`));
 
 			expect(eyasDevTools).toBeDefined();
 			expect(eyasDevTools.enabled).not.toBe(false);
@@ -127,11 +129,11 @@ describe(`Menu links and DevTools gating (Refined)`, () => {
 				isConfigLoaded: true,
 				isInitializing: true
 			};
-			const template = buildMenuTemplate(ctx);
-			const toolsMenu = template.find(m => m.label && m.label.includes(`Development Tools`));
-			const cacheItem = toolsMenu.submenu.find(i => i.label && i.label.includes(`Cache`));
+			const template = buildMenuTemplate(ctx as MenuContext) as any[];
+			const toolsMenu = template.find((m: any) => m.label && m.label.includes(`Development Tools`));
+			const cacheItem = toolsMenu.submenu.find((i: any) => i.label && i.label.includes(`Cache`));
 
-			cacheItem.submenu.forEach(i => {
+			cacheItem.submenu.forEach((i: any) => {
 				if (i.label) {
 					expect(i.enabled).not.toBe(false);
 				}
