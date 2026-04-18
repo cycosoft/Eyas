@@ -4,18 +4,8 @@ import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import SettingsModal from '@/components/SettingsModal.vue';
 import type { Mock } from 'vitest';
+import type { SettingsModalVM, WindowWithEyas } from '@/types/eyas-interface.js';
 
-type ComponentVM = {
-	visible: boolean;
-	toastVisible: boolean;
-	projectId: string;
-	activeTab: string;
-	projectAlwaysChoose: boolean;
-	appAlwaysChoose: boolean;
-	saveProjectSetting: (key: string, value: unknown) => void;
-	saveAppSetting: (key: string, value: unknown) => void;
-	$nextTick: () => Promise<void>;
-}
 
 describe(`SettingsModal`, () => {
 	let wrapper: VueWrapper;
@@ -26,7 +16,7 @@ describe(`SettingsModal`, () => {
 		setActivePinia(createPinia());
 		mockSend = vi.fn();
 		mockReceive = vi.fn();
-		const eyas = (window as unknown as { eyas: { send: Mock; receive: Mock } }).eyas;
+		const eyas = (window as unknown as WindowWithEyas).eyas;
 		eyas.send = mockSend;
 		eyas.receive = mockReceive;
 
@@ -43,7 +33,7 @@ describe(`SettingsModal`, () => {
 	});
 
 	test(`modal is hidden by default`, () => {
-		expect((wrapper.vm as unknown as ComponentVM).visible).toBe(false);
+		expect((wrapper.vm as unknown as SettingsModalVM).visible).toBe(false);
 	});
 
 	test(`listens for show-settings-modal IPC and sets visible = true`, () => {
@@ -54,39 +44,39 @@ describe(`SettingsModal`, () => {
 
 		// Invoke the callback
 		call[1]({ project: {}, app: {}, projectId: `proj-test` });
-		expect((wrapper.vm as unknown as ComponentVM).visible).toBe(true);
-		expect((wrapper.vm as unknown as ComponentVM).projectId).toBe(`proj-test`);
+		expect((wrapper.vm as unknown as SettingsModalVM).visible).toBe(true);
+		expect((wrapper.vm as unknown as SettingsModalVM).projectId).toBe(`proj-test`);
 	});
 
 	test(`defaults to the Project tab`, () => {
-		expect((wrapper.vm as unknown as ComponentVM).activeTab).toBe(`project`);
+		expect((wrapper.vm as unknown as SettingsModalVM).activeTab).toBe(`project`);
 	});
 
 	test(`show-settings-modal resets to Project tab`, () => {
-		(wrapper.vm as unknown as ComponentVM).activeTab = `app`;
+		(wrapper.vm as unknown as SettingsModalVM).activeTab = `app`;
 		const call = mockReceive.mock.calls.find(c => c[0] === `show-settings-modal`);
 		if (!call) throw new Error(`call not found`);
 		call[1]({ project: {}, app: {} });
-		expect((wrapper.vm as unknown as ComponentVM).activeTab).toBe(`project`);
+		expect((wrapper.vm as unknown as SettingsModalVM).activeTab).toBe(`project`);
 	});
 
 	test(`populates projectAlwaysChoose from payload`, () => {
 		const call = mockReceive.mock.calls.find(c => c[0] === `show-settings-modal`);
 		if (!call) throw new Error(`call not found`);
 		call[1]({ project: { env: { alwaysChoose: true } }, app: {} });
-		expect((wrapper.vm as unknown as ComponentVM).projectAlwaysChoose).toBe(true);
+		expect((wrapper.vm as unknown as SettingsModalVM).projectAlwaysChoose).toBe(true);
 	});
 
 	test(`populates appAlwaysChoose from payload`, () => {
 		const call = mockReceive.mock.calls.find(c => c[0] === `show-settings-modal`);
 		if (!call) throw new Error(`call not found`);
 		call[1]({ project: {}, app: { env: { alwaysChoose: true } } });
-		expect((wrapper.vm as unknown as ComponentVM).appAlwaysChoose).toBe(true);
+		expect((wrapper.vm as unknown as SettingsModalVM).appAlwaysChoose).toBe(true);
 	});
 
 	test(`saveProjectSetting sends save-setting with projectId`, () => {
-		(wrapper.vm as unknown as ComponentVM).projectId = `proj-abc`;
-		(wrapper.vm as unknown as ComponentVM).saveProjectSetting(`env.alwaysChoose`, true);
+		(wrapper.vm as unknown as SettingsModalVM).projectId = `proj-abc`;
+		(wrapper.vm as unknown as SettingsModalVM).saveProjectSetting(`env.alwaysChoose`, true);
 		expect(mockSend).toHaveBeenCalledWith(`save-setting`, {
 			key: `env.alwaysChoose`,
 			value: true,
@@ -95,7 +85,7 @@ describe(`SettingsModal`, () => {
 	});
 
 	test(`saveAppSetting sends save-setting with null projectId`, () => {
-		(wrapper.vm as unknown as ComponentVM).saveAppSetting(`env.alwaysChoose`, false);
+		(wrapper.vm as unknown as SettingsModalVM).saveAppSetting(`env.alwaysChoose`, false);
 		expect(mockSend).toHaveBeenCalledWith(`save-setting`, {
 			key: `env.alwaysChoose`,
 			value: false,
@@ -104,29 +94,29 @@ describe(`SettingsModal`, () => {
 	});
 
 	test(`setting-saved IPC shows the toast if modal is visible`, () => {
-		(wrapper.vm as unknown as ComponentVM).visible = true; // Modal must be visible for toast to show
-		expect((wrapper.vm as unknown as ComponentVM).toastVisible).toBe(false);
+		(wrapper.vm as unknown as SettingsModalVM).visible = true; // Modal must be visible for toast to show
+		expect((wrapper.vm as unknown as SettingsModalVM).toastVisible).toBe(false);
 		const call = mockReceive.mock.calls.find(c => c[0] === `setting-saved`);
 		if (!call) throw new Error(`call not found`);
 		expect(call).toBeDefined();
 		call[1]();
-		expect((wrapper.vm as unknown as ComponentVM).toastVisible).toBe(true);
+		expect((wrapper.vm as unknown as SettingsModalVM).toastVisible).toBe(true);
 	});
 
 	test(`Close button sets visible = false`, async () => {
-		(wrapper.vm as unknown as ComponentVM).visible = true;
-		await (wrapper.vm as unknown as ComponentVM).$nextTick();
+		(wrapper.vm as unknown as SettingsModalVM).visible = true;
+		await (wrapper.vm as unknown as SettingsModalVM).$nextTick();
 
-		(wrapper.vm as unknown as ComponentVM).visible = false;
-		await (wrapper.vm as unknown as ComponentVM).$nextTick();
-		expect((wrapper.vm as unknown as ComponentVM).visible).toBe(false);
+		(wrapper.vm as unknown as SettingsModalVM).visible = false;
+		await (wrapper.vm as unknown as SettingsModalVM).$nextTick();
+		expect((wrapper.vm as unknown as SettingsModalVM).visible).toBe(false);
 	});
 
 	test(`Close button does not send a save-setting`, async () => {
-		(wrapper.vm as unknown as ComponentVM).visible = true;
-		await (wrapper.vm as unknown as ComponentVM).$nextTick();
-		(wrapper.vm as unknown as ComponentVM).visible = false;
-		await (wrapper.vm as unknown as ComponentVM).$nextTick();
+		(wrapper.vm as unknown as SettingsModalVM).visible = true;
+		await (wrapper.vm as unknown as SettingsModalVM).$nextTick();
+		(wrapper.vm as unknown as SettingsModalVM).visible = false;
+		await (wrapper.vm as unknown as SettingsModalVM).$nextTick();
 		expect(mockSend).not.toHaveBeenCalledWith(`save-setting`, expect.anything());
 	});
 
@@ -149,8 +139,8 @@ describe(`SettingsModal`, () => {
 
 	test(`toast is NOT shown if setting-saved was received while modal was closed`, async () => {
 		// Ensure modal is closed and toast is hidden
-		(wrapper.vm as unknown as ComponentVM).visible = false;
-		(wrapper.vm as unknown as ComponentVM).toastVisible = false;
+		(wrapper.vm as unknown as SettingsModalVM).visible = false;
+		(wrapper.vm as unknown as SettingsModalVM).toastVisible = false;
 
 		// Simulate receiving setting-saved while closed
 		const call = mockReceive.mock.calls.find(c => c[0] === `setting-saved`);
@@ -163,9 +153,9 @@ describe(`SettingsModal`, () => {
 		if (!showCall) throw new Error(`show-settings-modal call not found`);
 		showCall[1]({ project: {}, app: {} });
 
-		await (wrapper.vm as unknown as ComponentVM).$nextTick();
+		await (wrapper.vm as unknown as SettingsModalVM).$nextTick();
 
 		// The bug is that toastVisible will be true here
-		expect((wrapper.vm as unknown as ComponentVM).toastVisible).toBe(false);
+		expect((wrapper.vm as unknown as SettingsModalVM).toastVisible).toBe(false);
 	});
 });

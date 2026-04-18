@@ -1,6 +1,7 @@
 import { describe, test, expect } from 'vitest';
 import fs from 'fs';
 import path from 'path';
+import type { ChannelName, ResponseBody, MenuLabel } from '../../src/types/primitives.js';
 
 const bridgeSrc = fs.readFileSync(
 	path.join(import.meta.dirname, `../../src/scripts/event-bridge.ts`),
@@ -8,7 +9,7 @@ const bridgeSrc = fs.readFileSync(
 );
 
 // Extract the send and receive whitelists from the source by parsing their array literals
-function extractWhitelist(src: string, label: string): string[] {
+function extractWhitelist(src: ResponseBody, label: MenuLabel): ChannelName[] {
 	// Find the array after "const validChannels" within the context of the send or receive block
 	// We search for each occurrence sequentially
 	const matches = [...src.matchAll(/const validChannels\s*=\s*\[([^\]]+)\]/g)];

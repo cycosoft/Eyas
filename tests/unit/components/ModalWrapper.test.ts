@@ -3,14 +3,9 @@ import { mount } from '@vue/test-utils';
 import type { VueWrapper } from '@vue/test-utils';
 import ModalWrapper from '@/components/ModalWrapper.vue';
 import { createVuetify } from 'vuetify';
-import type { Mock } from 'vitest';
+import type { ModalWrapperVM, WindowWithEyas } from '@/types/eyas-interface.js';
 
-type ComponentVM = {
-	pinDialogWidth: () => void;
-	dialogWidth: number | string;
-	calculatedMinWidth: number | string;
-	$nextTick: () => Promise<void>;
-}
+// Removed local type definition
 
 describe(`ModalWrapper`, () => {
 	let wrapper: VueWrapper;
@@ -18,7 +13,7 @@ describe(`ModalWrapper`, () => {
 
 	beforeEach(() => {
 		vuetify = createVuetify();
-		(window as unknown as { eyas: { send: Mock; receive: Mock } }).eyas = { send: vi.fn(), receive: vi.fn() };
+		(window as unknown as WindowWithEyas).eyas = { send: vi.fn(), receive: vi.fn() };
 
 
 
@@ -35,17 +30,17 @@ describe(`ModalWrapper`, () => {
 	});
 
 	test(`computed calculatedMinWidth returns 500 for type="modal"`, () => {
-		expect((wrapper.vm as unknown as ComponentVM).calculatedMinWidth).toBe(500);
+		expect((wrapper.vm as unknown as ModalWrapperVM).calculatedMinWidth).toBe(500);
 	});
 
 	test(`computed calculatedMinWidth returns undefined for type="dialog"`, async () => {
 		await wrapper.setProps({ type: `dialog` });
-		expect((wrapper.vm as unknown as ComponentVM).calculatedMinWidth).toBe(undefined);
+		expect((wrapper.vm as unknown as ModalWrapperVM).calculatedMinWidth).toBe(undefined);
 	});
 
 	test(`computed calculatedMinWidth uses minWidth prop if provided`, async () => {
 		await wrapper.setProps({ type: `dialog`, minWidth: 200 });
-		expect((wrapper.vm as unknown as ComponentVM).calculatedMinWidth).toBe(200);
+		expect((wrapper.vm as unknown as ModalWrapperVM).calculatedMinWidth).toBe(200);
 	});
 
 	test(`pins dialog width after enter to prevent jitter`, async () => {
@@ -57,7 +52,7 @@ describe(`ModalWrapper`, () => {
 		});
 
 		// Verify initial width is default auto
-		expect((wrapper.vm as unknown as ComponentVM).dialogWidth).toBe(`auto`);
+		expect((wrapper.vm as unknown as ModalWrapperVM).dialogWidth).toBe(`auto`);
 
 		// Find the element in the document since v-dialog renders in a portal
 		const card = document.querySelector(`.v-card`);
@@ -69,11 +64,11 @@ describe(`ModalWrapper`, () => {
 		});
 
 		// Trigger the @after-enter event that should pin the width
-		(wrapper.vm as unknown as ComponentVM).pinDialogWidth();
-		await (wrapper.vm as unknown as ComponentVM).$nextTick();
+		(wrapper.vm as unknown as ModalWrapperVM).pinDialogWidth();
+		await (wrapper.vm as unknown as ModalWrapperVM).$nextTick();
 
 		// Assert the data property has been pinned based on offsetWidth + 1
-		expect((wrapper.vm as unknown as ComponentVM).dialogWidth).toBe(701);
+		expect((wrapper.vm as unknown as ModalWrapperVM).dialogWidth).toBe(701);
 	});
 
 	test(`ensures v-card-text inside the slot is identifyable`, async () => {

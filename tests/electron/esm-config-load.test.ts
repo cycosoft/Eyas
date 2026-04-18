@@ -3,6 +3,8 @@ import { expect, test, describe, vi } from 'vitest';
 import { LOAD_TYPES } from '../../src/scripts/constants.js';
 import fs from 'fs';
 import path from 'path';
+import type { ProjectRoots } from '../../src/types/eyas-interface.js';
+import type { ModuleWithDefault } from '../../src/types/node-helpers.js';
 
 describe(`getConfig - ESM`, () => {
 	const tempDir = path.resolve(`tests/tmp/esm`);
@@ -21,7 +23,7 @@ describe(`getConfig - ESM`, () => {
 			const actual = await vi.importActual(`../../src/scripts/get-roots.js`);
 			return {
 				default: {
-					...(actual as { default: Record<string, unknown> }).default,
+					...(actual as ModuleWithDefault<ProjectRoots>).default,
 					config: tempDir
 				}
 			};

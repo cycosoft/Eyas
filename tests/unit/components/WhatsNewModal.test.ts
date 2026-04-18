@@ -2,17 +2,11 @@ import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import type { VueWrapper } from '@vue/test-utils';
 import WhatsNewModal from '@/components/WhatsNewModal.vue';
-import type { Mock } from 'vitest';
 import { createVuetify } from 'vuetify';
 import { createPinia, setActivePinia } from 'pinia';
+import type { ComponentVM, WindowWithEyas } from '@/types/eyas-interface.js';
 
-type ComponentVM = {
-	isVisible: boolean;
-	mode: string;
-	showManual: () => Promise<void>;
-	close: () => Promise<void>;
-	$nextTick: () => Promise<void>;
-}
+// Removed local ComponentVM definition
 
 // Mock the settings store
 vi.mock(`@/stores/settings`, () => ({
@@ -38,7 +32,7 @@ describe(`WhatsNewModal`, () => {
 		setActivePinia(createPinia());
 
 		// Mock window.eyas
-		(window as unknown as { eyas: { send: Mock; receive: Mock } }).eyas = {
+		(window as unknown as WindowWithEyas).eyas = {
 			send: vi.fn(),
 			receive: vi.fn()
 		};
@@ -84,7 +78,7 @@ describe(`WhatsNewModal`, () => {
 		(wrapper.vm as unknown as ComponentVM).isVisible = true;
 		await (wrapper.vm as unknown as ComponentVM).close();
 		expect((wrapper.vm as unknown as ComponentVM).isVisible).toBe(false);
-		const eyas = (window as unknown as { eyas: { send: Mock } }).eyas;
+		const eyas = (window as unknown as WindowWithEyas).eyas;
 		expect(eyas.send).toHaveBeenCalledWith(`whats-new-closed`);
 	});
 });

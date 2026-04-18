@@ -1,11 +1,12 @@
 import { describe, test, expect, beforeEach, afterEach } from 'vitest';
+import type { FileSystemPath, DomainUrl, ResponseBody } from '../../../src/types/primitives.js';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { startTestServer, stopTestServer, getTestServerState, clearTestServerPort, getAvailablePort } from '../../../src/eyas-core/test-server/test-server.js';
 
 describe(`test-server`, () => {
-	let tempDir: string;
+	let tempDir: FileSystemPath;
 
 	beforeEach(async () => {
 		clearTestServerPort();
@@ -171,6 +172,6 @@ describe(`test-server`, () => {
 	});
 });
 
-function fetchAsText(url: string): Promise<string> {
-	return fetch(url).then(r => r.text());
+function fetchAsText(url: DomainUrl): Promise<ResponseBody> {
+	return fetch(url).then(r => r.text() as Promise<ResponseBody>);
 }

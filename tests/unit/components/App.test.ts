@@ -6,6 +6,7 @@ import { createVuetify } from 'vuetify';
 import type { Mock } from 'vitest';
 import App from '@/App.vue';
 import useSettingsStore from '@/stores/settings.js';
+import type { WindowWithEyas } from '@/types/eyas-interface.js';
 
 // Mock Vuetify
 const vuetify = createVuetify();
@@ -19,7 +20,7 @@ describe(`App`, () => {
 		setActivePinia(createPinia());
 		mockSend = vi.fn();
 		mockReceive = vi.fn();
-		(window as unknown as { eyas: { send: Mock; receive: Mock } }).eyas = {
+		(window as unknown as WindowWithEyas).eyas = {
 			send: mockSend,
 			receive: mockReceive
 		};

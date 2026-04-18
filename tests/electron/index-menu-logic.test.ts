@@ -2,6 +2,9 @@ import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { BrowserWindow } from 'electron';
 import type { ValidatedConfig } from '../../src/types/config.js';
 import type { TestServerState } from '../../src/types/test-server.js';
+import type { MenuLabel } from '../../src/types/primitives.js';
+
+type MockMenuItem = { label?: MenuLabel };
 
 // Mock electron before importing index.ts
 vi.mock(`electron`, () => ({
@@ -160,7 +163,7 @@ describe(`index menu logic helpers`, () => {
 			const items = getViewportMenuItems(mockWindow, allViewports, [1000, 1000]);
 			expect(items[0].label).toBe(`🔘 Current (1000 x 1000)`);
 			expect(items[1].type).toBe(`separator`);
-			expect(items.some((i: { label?: string }) => i.label?.includes(`🔘 Desktop`))).toBe(false);
+			expect(items.some((i: MockMenuItem) => i.label?.includes(`🔘 Desktop`))).toBe(false);
 		});
 
 		test(`click handler should call setContentSize`, () => {

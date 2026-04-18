@@ -7,6 +7,7 @@ import { bumpBuildVersion } from '../../src/scripts/bump-build-version.js';
 import type * as ChildProcess from 'child_process';
 import { execSync } from 'child_process';
 import type { Mock } from 'vitest';
+import type { FilePath } from '../../src/types/primitives.js';
 
 vi.mock(`child_process`, async () => {
 	const actual = await vi.importActual(`child_process`) as typeof ChildProcess;
@@ -17,9 +18,9 @@ vi.mock(`child_process`, async () => {
 });
 
 describe(`bumpBuildVersion`, () => {
-	let tempDir: string;
-	let pkgPath: string;
-	let changelogPath: string;
+	let tempDir: FilePath;
+	let pkgPath: FilePath;
+	let changelogPath: FilePath;
 
 	beforeEach(async () => {
 		tempDir = path.join(os.tmpdir(), `eyas-test-${Math.random().toString(36).slice(2)}`);

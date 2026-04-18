@@ -1,4 +1,5 @@
 import { describe, test, expect, beforeEach, afterEach } from 'vitest';
+import type { FileSystemPath } from '../../src/types/primitives.js';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { remove, readJson } from 'fs-extra';
@@ -8,7 +9,7 @@ import service from '../../src/eyas-core/settings-service.js';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
-let tmpFile: string;
+let tmpFile: FileSystemPath;
 
 beforeEach(() => {
 	// Each test gets its own unique temp file so tests don't interfere

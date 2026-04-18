@@ -1,4 +1,11 @@
 import { describe, it, expect, vi } from 'vitest';
+import type { ProgressBytes, EventType, IsComputable, TimestampMS } from '../../src/types/primitives.js';
+
+type ProgressEventInit = {
+	lengthComputable: IsComputable;
+	loaded: ProgressBytes;
+	total: ProgressBytes;
+};
 
 // Mock electron before importing the file
 vi.mock(`electron`, () => ({
@@ -36,7 +43,7 @@ import { injectWithAnonymousScope, extractFunctionBody, polyfillUploadProgress }
 describe(`test-preload`, () => {
 	describe(`utility functions`, () => {
 		it(`extractFunctionBody should extract the body of a function`, () => {
-			function testFn(): number {
+			function testFn(): TimestampMS {
 				const x = 1;
 				return x;
 			}
@@ -91,11 +98,11 @@ describe(`test-preload`, () => {
 			vi.stubGlobal(`XMLHttpRequest`, MockXHR);
 			vi.stubGlobal(`performance`, { now: vi.fn(() => 0) });
 			vi.stubGlobal(`ProgressEvent`, class {
-				type: string;
-				lengthComputable: boolean;
-				loaded: number;
-				total: number;
-				constructor(type: string, init: { lengthComputable: boolean, loaded: number, total: number }) {
+				type: EventType;
+				lengthComputable: IsComputable;
+				loaded: ProgressBytes;
+				total: ProgressBytes;
+				constructor(type: EventType, init: ProgressEventInit) {
 					this.type = type;
 					this.lengthComputable = init.lengthComputable;
 					this.loaded = init.loaded;

@@ -1,0 +1,145 @@
+import type { ModalMode, IsVisible, ChannelName, DomainUrl, IsEnabled, MenuLabel, EventType, ViewportWidth, AppTitle, ResponseBody, PortNumber, FilePath } from './primitives.js';
+
+/**
+ * Interface for the 'eyas' object injected into the browser window.
+ */
+export type EyasInterface = {
+	send: (channel: ChannelName, ...args: unknown[]) => void;
+	receive: (channel: ChannelName, callback: (...args: unknown[]) => void) => void;
+};
+
+/**
+ * Type helper for the Vue component's ViewModel in tests.
+ */
+export type ComponentVM = {
+	isVisible: IsVisible;
+	mode: ModalMode;
+	showManual: () => Promise<void>;
+	close: () => Promise<void>;
+	$nextTick: () => Promise<void>;
+};
+
+/**
+ * Meta information for a variable in a URL.
+ */
+export type VariableItem = {
+	type: EventType;
+	field?: MenuLabel;
+	options?: unknown[];
+};
+
+/**
+ * Type helper for the VariablesModal Vue component's ViewModel in tests.
+ */
+export type VariablesModalVM = {
+	link: DomainUrl;
+	visible: IsVisible;
+	parsedLink: DomainUrl;
+	linkIsValid: IsEnabled;
+	form: unknown[];
+	variables: VariableItem[];
+	getFieldLabel: (prefix: MenuLabel, field?: MenuLabel) => MenuLabel;
+	$nextTick: () => Promise<void>;
+};
+
+/**
+ * Type helper for the EnvironmentModal Vue component's ViewModel in tests.
+ */
+export type EnvironmentModalVM = {
+	domains: unknown[];
+	visible: IsVisible;
+	choose: (domain: unknown, index: number) => void;
+	alwaysChoose: IsVisible;
+	projectId: AppTitle;
+	domainsHash: ResponseBody;
+	onAlwaysChooseChange: (value: boolean) => void;
+	$nextTick: () => Promise<void>;
+	$options: { mounted?: Array<() => void> } & Record<string, unknown>;
+};
+
+/**
+ * Type helper for the ModalWrapper Vue component's ViewModel in tests.
+ */
+export type ModalWrapperVM = {
+	pinDialogWidth: () => void;
+	dialogWidth: ViewportWidth | string;
+	calculatedMinWidth: ViewportWidth | string;
+	$nextTick: () => Promise<void>;
+};
+
+/**
+ * Type helper for the SettingsModal Vue component's ViewModel in tests.
+ */
+export type SettingsModalVM = {
+	visible: IsVisible;
+	toastVisible: IsVisible;
+	projectId: AppTitle;
+	activeTab: MenuLabel;
+	projectAlwaysChoose: IsVisible;
+	appAlwaysChoose: IsVisible;
+	saveProjectSetting: (key: MenuLabel, value: unknown) => void;
+	saveAppSetting: (key: MenuLabel, value: unknown) => void;
+	$nextTick: () => Promise<void>;
+};
+
+/**
+ * Type helper for the TestServerActiveModal Vue component's ViewModel in tests.
+ */
+export type TestServerActiveModalVM = {
+	visible: IsVisible;
+	domain: DomainUrl;
+	isExpired: IsVisible;
+	displayUrl: DomainUrl;
+	extensionLabel: MenuLabel;
+	copyIcon: MenuLabel;
+	openInBrowser: () => void;
+	stopServer: () => void;
+	copyDomain: () => void;
+};
+
+/**
+ * Type helper for the TestServerSetupModal Vue component's ViewModel in tests.
+ */
+export type TestServerSetupModalVM = {
+	visible: IsVisible;
+	steps: unknown[];
+	hostsLine: MenuLabel;
+	portHttp: PortNumber;
+	portHttps: PortNumber;
+	port: PortNumber;
+	autoOpenBrowser: IsVisible;
+	useCustomDomain: IsVisible;
+	useHttps: IsVisible;
+	isWindows: IsVisible;
+	displayDomain: DomainUrl;
+	internalUseCustomDomain: IsVisible;
+	internalUseHttps: IsVisible;
+	displayPort: MenuLabel;
+	continueStart: () => void;
+	cancel: () => void;
+	copyIcon: MenuLabel;
+	$nextTick: () => Promise<void>;
+};
+
+/**
+ * Type helper for the project roots directory structure.
+ */
+export type ProjectRoots = {
+	preBuild: FilePath;
+	moduleBuild: FilePath;
+	dist: FilePath;
+	src: FilePath;
+	eyasBuild: FilePath;
+	eyasDist: FilePath;
+	runners: FilePath;
+	config: FilePath;
+	eyas: FilePath;
+	module: FilePath;
+};
+
+/**
+ * Type helper for casting window with 'eyas' interface.
+ */
+export type WindowWithEyas = {
+	eyas: EyasInterface;
+};
