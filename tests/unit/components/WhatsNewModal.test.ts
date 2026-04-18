@@ -1,8 +1,18 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mount, VueWrapper } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
+import type { VueWrapper } from '@vue/test-utils';
 import WhatsNewModal from '@/components/WhatsNewModal.vue';
+import type { Mock } from 'vitest';
 import { createVuetify } from 'vuetify';
 import { createPinia, setActivePinia } from 'pinia';
+
+interface ComponentVM {
+	isVisible: boolean;
+	mode: string;
+	showManual: () => Promise<void>;
+	close: () => Promise<void>;
+	$nextTick: () => Promise<void>;
+}
 
 // Mock the settings store
 vi.mock(`@/stores/settings`, () => ({
@@ -20,15 +30,15 @@ vi.mock(`@/utils/changelog-utils`, () => ({
 }));
 
 describe(`WhatsNewModal`, () => {
-	let wrapper: VueWrapper<any>;
-	let vuetify;
+	let wrapper: VueWrapper;
+	let vuetify: ReturnType<typeof createVuetify>;
 
 	beforeEach(async () => {
 		vuetify = createVuetify();
 		setActivePinia(createPinia());
 
 		// Mock window.eyas
-		(window as any).eyas = {
+		(window as unknown as { eyas: { send: Mock; receive: Mock } }).eyas = {
 			send: vi.fn(),
 			receive: vi.fn()
 		};
@@ -40,8 +50,8 @@ describe(`WhatsNewModal`, () => {
 		});
 
 		// Ensure modal is visible so content is rendered
-		wrapper.vm.isVisible = true;
-		await wrapper.vm.$nextTick();
+		(wrapper.vm as unknown as ComponentVM).isVisible = true;
+		await (wrapper.vm as unknown as ComponentVM).$nextTick();
 	});
 
 	afterEach(() => {
@@ -65,15 +75,16 @@ describe(`WhatsNewModal`, () => {
 	});
 
 	test(`showManual sets isVisible to true and mode to manual`, async () => {
-		await wrapper.vm.showManual();
-		expect(wrapper.vm.isVisible).toBe(true);
-		expect(wrapper.vm.mode).toBe(`manual`);
+		await (wrapper.vm as unknown as ComponentVM).showManual();
+		expect((wrapper.vm as unknown as ComponentVM).isVisible).toBe(true);
+		expect((wrapper.vm as unknown as ComponentVM).mode).toBe(`manual`);
 	});
 
 	test(`close sets isVisible to false and sends whats-new-closed`, async () => {
-		wrapper.vm.isVisible = true;
-		await wrapper.vm.close();
-		expect(wrapper.vm.isVisible).toBe(false);
-		expect((window as any).eyas.send).toHaveBeenCalledWith(`whats-new-closed`);
+		(wrapper.vm as unknown as ComponentVM).isVisible = true;
+		await (wrapper.vm as unknown as ComponentVM).close();
+		expect((wrapper.vm as unknown as ComponentVM).isVisible).toBe(false);
+		const eyas = (window as unknown as { eyas: { send: Mock } }).eyas;
+		expect(eyas.send).toHaveBeenCalledWith(`whats-new-closed`);
 	});
 });

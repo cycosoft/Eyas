@@ -1,18 +1,32 @@
 import { describe, test, expect, vi, afterEach, beforeEach } from 'vitest';
-import { mount, VueWrapper } from '@vue/test-utils';
+import type { VueWrapper } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 import TestServerActiveModal from '@/components/TestServerActiveModal.vue';
+import type { Mock } from 'vitest';
 import { nextTick } from 'vue';
 import { TEST_SERVER_SESSION_DURATION_MS } from '@/../../../scripts/constants.js';
 
+interface ComponentVM {
+	visible: boolean;
+	domain: string;
+	isExpired: boolean;
+	displayUrl: string;
+	extensionLabel: string;
+	copyIcon: string;
+	openInBrowser: () => void;
+	stopServer: () => void;
+	copyDomain: () => void;
+}
+
 describe(`TestServerActiveModal`, () => {
-	let wrapper: VueWrapper<any>;
-	let callbacks: Record<string, any> = {};
+	let wrapper: VueWrapper;
+	let callbacks: Record<string, (payload?: unknown) => void> = {};
 
 	beforeEach(() => {
 		callbacks = {};
-		(window as any).eyas = {
+		(window as unknown as { eyas: { send: Mock; receive: Mock } }).eyas = {
 			send: vi.fn(),
-			receive: vi.fn((channel: string, fn: any) => {
+			receive: vi.fn((channel: string, fn: (payload?: unknown) => void) => {
 				callbacks[channel] = fn;
 			})
 		};
@@ -53,8 +67,8 @@ describe(`TestServerActiveModal`, () => {
 
 	test(`receives show-test-server-active-modal and displays modal`, async () => {
 		await setup({ domain: `http://localhost:1234`, startTime: Date.now(), endTime: Date.now() + 10000 });
-		expect(wrapper.vm.visible).toBe(true);
-		expect(wrapper.vm.domain).toBe(`http://localhost:1234`);
+		expect((wrapper.vm as unknown as ComponentVM).visible).toBe(true);
+		expect((wrapper.vm as unknown as ComponentVM).domain).toBe(`http://localhost:1234`);
 		expect(wrapper.text()).toContain(`Live Test Server`);
 	});
 
@@ -79,8 +93,9 @@ describe(`TestServerActiveModal`, () => {
 
 	test(`Open in Browser button emits test-server-open-browser with domain`, async () => {
 		await setup({ domain: `http://localhost:1234`, startTime: 0, endTime: 1000 });
-		wrapper.vm.openInBrowser();
-		expect((window as any).eyas.send).toHaveBeenCalledWith(`test-server-open-browser`, `http://localhost:1234`);
+		(wrapper.vm as unknown as ComponentVM).openInBrowser();
+		const eyas = (window as unknown as { eyas: { send: Mock } }).eyas;
+		expect(eyas.send).toHaveBeenCalledWith(`test-server-open-browser`, `http://localhost:1234`);
 	});
 
 	test(`Open in Browser button is disabled when expired`, async () => {
@@ -103,8 +118,8 @@ describe(`TestServerActiveModal`, () => {
 			await nextTick();
 			await nextTick();
 		}
-		expect(wrapper.vm.isExpired).toBe(true);
-		expect(wrapper.vm.visible).toBe(true);
+		expect((wrapper.vm as unknown as ComponentVM).isExpired).toBe(true);
+		expect((wrapper.vm as unknown as ComponentVM).visible).toBe(true);
 		expect(wrapper.find(`[data-qa="test-server-expired-alert"]`).text()).toContain(`timed out after 30m`);
 	});
 
@@ -117,11 +132,12 @@ describe(`TestServerActiveModal`, () => {
 			await nextTick();
 		}
 
-		expect(wrapper.vm.isExpired).toBe(true);
+		expect((wrapper.vm as unknown as ComponentVM).isExpired).toBe(true);
 		const extendBtn = wrapper.find(`#btn-extend-session`);
 		expect(extendBtn.exists()).toBe(true);
 		await extendBtn.trigger(`click`);
-		expect((window as any).eyas.send).toHaveBeenCalledWith(`test-server-extend`);
+		const eyas = (window as unknown as { eyas: { send: Mock } }).eyas;
+		expect(eyas.send).toHaveBeenCalledWith(`test-server-extend`);
 
 		// Simulate backend response
 		const activeCb = callbacks[`show-test-server-active-modal`];
@@ -130,7 +146,7 @@ describe(`TestServerActiveModal`, () => {
 			await nextTick();
 			await nextTick();
 		}
-		expect(wrapper.vm.isExpired).toBe(false);
+		expect((wrapper.vm as unknown as ComponentVM).isExpired).toBe(false);
 	});
 
 	test(`End Session resets expired state`, async () => {
@@ -138,10 +154,10 @@ describe(`TestServerActiveModal`, () => {
 		const cb = callbacks[`show-test-server-resume-modal`];
 		if (cb) cb(`30m`);
 		await nextTick();
-		expect(wrapper.vm.isExpired).toBe(true);
+		expect((wrapper.vm as unknown as ComponentVM).isExpired).toBe(true);
 
-		await wrapper.vm.stopServer();
-		expect(wrapper.vm.isExpired).toBe(false);
+		await (wrapper.vm as unknown as ComponentVM).stopServer();
+		expect((wrapper.vm as unknown as ComponentVM).isExpired).toBe(false);
 	});
 
 	test(`Copy to clipboard functionality`, async () => {
@@ -149,12 +165,12 @@ describe(`TestServerActiveModal`, () => {
 		const mockClipboard = { writeText: vi.fn() };
 		Object.assign(navigator, { clipboard: mockClipboard });
 
-		await wrapper.vm.copyDomain();
+		await (wrapper.vm as unknown as ComponentVM).copyDomain();
 		expect(navigator.clipboard.writeText).toHaveBeenCalledWith(`http://custom.local`);
-		expect(wrapper.vm.copyIcon).toBe(`mdi-check`);
+		expect((wrapper.vm as unknown as ComponentVM).copyIcon).toBe(`mdi-check`);
 
 		vi.advanceTimersByTime(2000);
-		expect(wrapper.vm.copyIcon).toBe(`mdi-content-copy`);
+		expect((wrapper.vm as unknown as ComponentVM).copyIcon).toBe(`mdi-content-copy`);
 	});
 
 	describe(`Extend Session button visibility and state`, () => {
@@ -219,23 +235,23 @@ describe(`TestServerActiveModal`, () => {
 	describe(`Dynamic Display Logic (TDD)`, () => {
 		test(`displayUrl hides port 80 for http`, async () => {
 			await setup({ domain: `http://localhost:80` });
-			expect(wrapper.vm.displayUrl).toBe(`http://localhost`);
+			expect((wrapper.vm as unknown as ComponentVM).displayUrl).toBe(`http://localhost`);
 		});
 
 		test(`displayUrl hides port 443 for https`, async () => {
 			await setup({ domain: `https://localhost:443` });
-			expect(wrapper.vm.displayUrl).toBe(`https://localhost`);
+			expect((wrapper.vm as unknown as ComponentVM).displayUrl).toBe(`https://localhost`);
 		});
 
 		test(`displayUrl hides port 90`, async () => {
 			await setup({ domain: `http://localhost:90` });
-			expect(wrapper.vm.displayUrl).toBe(`http://localhost`);
+			expect((wrapper.vm as unknown as ComponentVM).displayUrl).toBe(`http://localhost`);
 		});
 
 		test(`extensionLabel displays minutes if >= 60`, async () => {
 			// Constants are currently 1800000ms (30m)
 			await setup();
-			expect(wrapper.vm.extensionLabel).toBe(`30m`);
+			expect((wrapper.vm as unknown as ComponentVM).extensionLabel).toBe(`30m`);
 		});
 	});
 });

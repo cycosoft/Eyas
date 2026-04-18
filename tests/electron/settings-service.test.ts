@@ -102,9 +102,9 @@ describe(`set()`, () => {
 	test(`set does not clobber unrelated keys`, () => {
 		service.set(`env.alwaysChoose`, true, `proj-c`);
 		service.set(`env.lastChoiceHash`, `abc123`, `proj-c`);
-		const settings = service.getProjectSettings(`proj-c`) as any;
-		expect(settings.env.alwaysChoose).toBe(true);
-		expect(settings.env.lastChoiceHash).toBe(`abc123`);
+		const settings = service.getProjectSettings(`proj-c`);
+		expect(settings.env?.alwaysChoose).toBe(true);
+		expect(settings.env?.lastChoiceHash).toBe(`abc123`);
 	});
 
 	test(`set to different projectIds does not cross-contaminate`, () => {

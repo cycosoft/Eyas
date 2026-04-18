@@ -1,3 +1,4 @@
+import type { MenuItemConstructorOptions } from 'electron';
 import { describe, test, expect } from 'vitest';
 import { buildMenuTemplate } from '../../src/eyas-core/menu-template.js';
 import type { MenuContext } from '../../src/types/menu.js';
@@ -45,31 +46,38 @@ describe(`Menu links and DevTools gating (Refined)`, () => {
 		};
 
 		test(`root menus 'Test' and 'Browser' are disabled`, () => {
-			const template = buildMenuTemplate(ctx as MenuContext) as any[];
-			const testMenu = template.find((m: any) => m.label && m.label.includes(`Test`));
-			const browserMenu = template.find((m: any) => m.label && m.label.includes(`Browser`));
+			const template = buildMenuTemplate(ctx as MenuContext) as MenuItemConstructorOptions[];
+			const testMenu = template.find((m: MenuItemConstructorOptions) => m.label && m.label.includes(`Test`));
+			if (!testMenu) throw new Error();
+			const browserMenu = template.find((m: MenuItemConstructorOptions) => m.label && m.label.includes(`Browser`));
+			if (!browserMenu) throw new Error();
 
 			expect(testMenu.enabled).toBe(false);
 			expect(browserMenu.enabled).toBe(false);
 		});
 
 		test(`DevTools root menu is enabled only if isDev is true`, () => {
-			const devTemplate = buildMenuTemplate({ ...ctx, isDev: true } as MenuContext) as any[];
-			const prodTemplate = buildMenuTemplate({ ...ctx, isDev: false } as MenuContext) as any[];
+			const devTemplate = buildMenuTemplate({ ...ctx, isDev: true } as MenuContext) as MenuItemConstructorOptions[];
+			const prodTemplate = buildMenuTemplate({ ...ctx, isDev: false } as MenuContext) as MenuItemConstructorOptions[];
 
-			const devToolsMenu = devTemplate.find((m: any) => m.label && m.label.includes(`Development Tools`));
-			const prodToolsMenu = prodTemplate.find((m: any) => m.label && m.label.includes(`Development Tools`));
+			const devToolsMenu = devTemplate.find((m: MenuItemConstructorOptions) => m.label && m.label.includes(`Development Tools`));
+			if (!devToolsMenu) throw new Error();
+			const prodToolsMenu = prodTemplate.find((m: MenuItemConstructorOptions) => m.label && m.label.includes(`Development Tools`));
+			if (!prodToolsMenu) throw new Error();
 
 			expect(devToolsMenu.enabled).not.toBe(false);
 			expect(prodToolsMenu.enabled).toBe(false);
 		});
 
 		test(`Specific items like 'Developer Tools (Test)' and 'Stop network' are disabled`, () => {
-			const template = buildMenuTemplate({ ...ctx, isDev: true } as MenuContext) as any[];
-			const toolsMenu = template.find((m: any) => m.label && m.label.includes(`Development Tools`));
+			const template = buildMenuTemplate({ ...ctx, isDev: true } as MenuContext) as MenuItemConstructorOptions[];
+			const toolsMenu = template.find((m: MenuItemConstructorOptions) => m.label && m.label.includes(`Development Tools`));
+			if (!toolsMenu) throw new Error();
 
-			const testDevTools = toolsMenu.submenu.find((i: any) => i.label && i.label.includes(`(Test)`));
-			const networkToggle = toolsMenu.submenu.find((i: any) => i.label && (i.label.includes(`Online`) || i.label.includes(`Offline`)));
+			const testDevTools = (toolsMenu.submenu as MenuItemConstructorOptions[]).find((i: MenuItemConstructorOptions) => i.label && i.label.includes(`(Test)`));
+			if (!testDevTools) throw new Error();
+			const networkToggle = (toolsMenu.submenu as MenuItemConstructorOptions[]).find((i: MenuItemConstructorOptions) => i.label && (i.label.includes(`Online`) || i.label.includes(`Offline`)));
+			if (!networkToggle) throw new Error();
 
 			expect(testDevTools.enabled).toBe(false);
 			expect(networkToggle.enabled).toBe(false);
@@ -89,33 +97,41 @@ describe(`Menu links and DevTools gating (Refined)`, () => {
 			const template = buildMenuTemplate({
 				...ctx,
 				linkItems: [{ label: `Link 1`, click: noop }]
-			} as MenuContext) as any[];
-			const testMenu = template.find((m: any) => m.label && m.label.includes(`Test`));
-			const linksItem = testMenu.submenu.find((i: any) => i.label && i.label.includes(`Links`));
+			} as MenuContext) as MenuItemConstructorOptions[];
+			const testMenu = template.find((m: MenuItemConstructorOptions) => m.label && m.label.includes(`Test`));
+			if (!testMenu) throw new Error();
+			const linksItem = (testMenu.submenu as MenuItemConstructorOptions[]).find((i: MenuItemConstructorOptions) => i.label && i.label.includes(`Links`));
+			if (!linksItem) throw new Error();
 
 			expect(linksItem.enabled).toBe(false);
 		});
 
 		test(`'Developer Tools (Test)' is ENABLED`, () => {
-			const template = buildMenuTemplate(ctx as MenuContext) as any[];
-			const toolsMenu = template.find((m: any) => m.label && m.label.includes(`Development Tools`));
-			const testDevTools = toolsMenu.submenu.find((i: any) => i.label && i.label.includes(`(Test)`));
+			const template = buildMenuTemplate(ctx as MenuContext) as MenuItemConstructorOptions[];
+			const toolsMenu = template.find((m: MenuItemConstructorOptions) => m.label && m.label.includes(`Development Tools`));
+			if (!toolsMenu) throw new Error();
+			const testDevTools = (toolsMenu.submenu as MenuItemConstructorOptions[]).find((i: MenuItemConstructorOptions) => i.label && i.label.includes(`(Test)`));
+			if (!testDevTools) throw new Error();
 
 			expect(testDevTools.enabled).not.toBe(false);
 		});
 
 		test(`'Go Online/Offline' is ENABLED`, () => {
-			const template = buildMenuTemplate(ctx as MenuContext) as any[];
-			const toolsMenu = template.find((m: any) => m.label && m.label.includes(`Development Tools`));
-			const networkToggle = toolsMenu.submenu.find((i: any) => i.label && (i.label.includes(`Online`) || i.label.includes(`Offline`)));
+			const template = buildMenuTemplate(ctx as MenuContext) as MenuItemConstructorOptions[];
+			const toolsMenu = template.find((m: MenuItemConstructorOptions) => m.label && m.label.includes(`Development Tools`));
+			if (!toolsMenu) throw new Error();
+			const networkToggle = (toolsMenu.submenu as MenuItemConstructorOptions[]).find((i: MenuItemConstructorOptions) => i.label && (i.label.includes(`Online`) || i.label.includes(`Offline`)));
+			if (!networkToggle) throw new Error();
 
 			expect(networkToggle.enabled).not.toBe(false);
 		});
 
 		test(`'Developer Tools (eyas)' is ENABLED and renamed`, () => {
-			const template = buildMenuTemplate(ctx as MenuContext) as any[];
-			const toolsMenu = template.find((m: any) => m.label && m.label.includes(`Development Tools`));
-			const eyasDevTools = toolsMenu.submenu.find((i: any) => i.label && i.label.toLowerCase().includes(`eyas`));
+			const template = buildMenuTemplate(ctx as MenuContext) as MenuItemConstructorOptions[];
+			const toolsMenu = template.find((m: MenuItemConstructorOptions) => m.label && m.label.includes(`Development Tools`));
+			if (!toolsMenu) throw new Error();
+			const eyasDevTools = (toolsMenu.submenu as MenuItemConstructorOptions[]).find((i: MenuItemConstructorOptions) => i.label && i.label.toLowerCase().includes(`eyas`));
+			if (!eyasDevTools) throw new Error();
 
 			expect(eyasDevTools).toBeDefined();
 			expect(eyasDevTools.enabled).not.toBe(false);
@@ -129,11 +145,13 @@ describe(`Menu links and DevTools gating (Refined)`, () => {
 				isConfigLoaded: true,
 				isInitializing: true
 			};
-			const template = buildMenuTemplate(ctx as MenuContext) as any[];
-			const toolsMenu = template.find((m: any) => m.label && m.label.includes(`Development Tools`));
-			const cacheItem = toolsMenu.submenu.find((i: any) => i.label && i.label.includes(`Cache`));
+			const template = buildMenuTemplate(ctx as MenuContext) as MenuItemConstructorOptions[];
+			const toolsMenu = template.find((m: MenuItemConstructorOptions) => m.label && m.label.includes(`Development Tools`));
+			if (!toolsMenu) throw new Error();
+			const cacheItem = (toolsMenu.submenu as MenuItemConstructorOptions[]).find((i: MenuItemConstructorOptions) => i.label && i.label.includes(`Cache`));
+			if (!cacheItem) throw new Error();
 
-			cacheItem.submenu.forEach((i: any) => {
+			(cacheItem.submenu as MenuItemConstructorOptions[]).forEach((i: MenuItemConstructorOptions) => {
 				if (i.label) {
 					expect(i.enabled).not.toBe(false);
 				}

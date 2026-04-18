@@ -1,17 +1,32 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mount, VueWrapper } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
+import type { VueWrapper } from '@vue/test-utils';
+import type { Mock } from 'vitest';
 import EnvironmentModal from '@/components/EnvironmentModal.vue';
 
+interface ComponentVM {
+	domains: unknown[];
+	visible: boolean;
+	choose: (domain: unknown, index: number) => void;
+	alwaysChoose: boolean;
+	projectId: string;
+	domainsHash: string;
+	onAlwaysChooseChange: (value: boolean) => void;
+	$nextTick: () => Promise<void>;
+	$options: { mounted?: Array<() => void> } & Record<string, unknown>;
+}
+
 describe(`EnvironmentModal`, () => {
-	let wrapper: VueWrapper<any>;
-	let mockSend: any;
-	let mockReceive: any;
+	let wrapper: VueWrapper;
+	let mockSend: Mock;
+	let mockReceive: Mock;
 
 	beforeEach(() => {
 		mockSend = vi.fn();
 		mockReceive = vi.fn();
-		(window as any).eyas.send = mockSend;
-		(window as any).eyas.receive = mockReceive;
+		const eyas = (window as unknown as { eyas: { send: Mock; receive: Mock } }).eyas;
+		eyas.send = mockSend;
+		eyas.receive = mockReceive;
 
 		wrapper = mount(EnvironmentModal);
 	});
@@ -31,12 +46,13 @@ describe(`EnvironmentModal`, () => {
 
 		// Simulate IPC receive - call the callback that was registered in mounted()
 		// The component registers: window.eyas?.receive('show-environment-modal', domains => {...})
-		const receiveCallback = wrapper.vm.$options.mounted?.[0] ||
+		const receiveCallback = (wrapper.vm as unknown as ComponentVM).$options.mounted?.[0] ||
 			((): void => {
 				// Manually trigger the IPC receive
-				if ((window as any).eyas.receive.mock.calls.length > 0) {
-					const call = (window as any).eyas.receive.mock.calls.find(
-						(c: any) => c[0] === `show-environment-modal`
+				const eyas = (window as unknown as { eyas: { receive: Mock } }).eyas;
+				if (eyas.receive.mock.calls.length > 0) {
+					const call = eyas.receive.mock.calls.find(
+						c => c[0] === `show-environment-modal`
 					);
 					if (call && call[1]) {
 						call[1](domains);
@@ -49,14 +65,14 @@ describe(`EnvironmentModal`, () => {
 			receiveCallback();
 		} else {
 			// Directly set the data to test the component state
-			wrapper.vm.domains = domains;
-			wrapper.vm.visible = true;
+			(wrapper.vm as unknown as ComponentVM).domains = domains;
+			(wrapper.vm as unknown as ComponentVM).visible = true;
 		}
 
-		await wrapper.vm.$nextTick();
+		await (wrapper.vm as unknown as ComponentVM).$nextTick();
 
-		expect(wrapper.vm.domains).toEqual(domains);
-		expect(wrapper.vm.visible).toBe(true);
+		expect((wrapper.vm as unknown as ComponentVM).domains).toEqual(domains);
+		expect((wrapper.vm as unknown as ComponentVM).visible).toBe(true);
 	});
 
 	test(`sends environment-selected IPC with URL when button clicked`, async () => {
@@ -65,12 +81,12 @@ describe(`EnvironmentModal`, () => {
 		];
 
 		// Set up the component with domains
-		wrapper.vm.domains = domains;
-		wrapper.vm.visible = true;
-		await wrapper.vm.$nextTick();
+		(wrapper.vm as unknown as ComponentVM).domains = domains;
+		(wrapper.vm as unknown as ComponentVM).visible = true;
+		await (wrapper.vm as unknown as ComponentVM).$nextTick();
 
 		// Call choose method directly to test IPC sending
-		wrapper.vm.choose(domains[0].url, 0);
+		(wrapper.vm as unknown as ComponentVM).choose(domains[0].url, 0);
 
 		// Wait for setTimeout in choose method
 		await new Promise(resolve => setTimeout(resolve, 250));
@@ -84,12 +100,12 @@ describe(`EnvironmentModal`, () => {
 			{ url: `example.com`, title: `Example` }
 		];
 
-		wrapper.vm.domains = domains;
-		wrapper.vm.visible = true;
-		await wrapper.vm.$nextTick();
+		(wrapper.vm as unknown as ComponentVM).domains = domains;
+		(wrapper.vm as unknown as ComponentVM).visible = true;
+		await (wrapper.vm as unknown as ComponentVM).$nextTick();
 
 		// Call choose method directly to test IPC sending
-		wrapper.vm.choose(domains[0].url, 0);
+		(wrapper.vm as unknown as ComponentVM).choose(domains[0].url, 0);
 
 		await new Promise(resolve => setTimeout(resolve, 250));
 
@@ -98,19 +114,19 @@ describe(`EnvironmentModal`, () => {
 	});
 
 	test(`modal shows and hides correctly`, async () => {
-		expect(wrapper.vm.visible).toBe(false);
+		expect((wrapper.vm as unknown as ComponentVM).visible).toBe(false);
 
 		const domains = [{ url: `https://example.com`, title: `Example` }];
 
 		// Directly set the component state to test visibility
-		wrapper.vm.domains = domains;
-		wrapper.vm.visible = true;
-		await wrapper.vm.$nextTick();
-		expect(wrapper.vm.visible).toBe(true);
+		(wrapper.vm as unknown as ComponentVM).domains = domains;
+		(wrapper.vm as unknown as ComponentVM).visible = true;
+		await (wrapper.vm as unknown as ComponentVM).$nextTick();
+		expect((wrapper.vm as unknown as ComponentVM).visible).toBe(true);
 
-		wrapper.vm.visible = false;
-		await wrapper.vm.$nextTick();
-		expect(wrapper.vm.visible).toBe(false);
+		(wrapper.vm as unknown as ComponentVM).visible = false;
+		await (wrapper.vm as unknown as ComponentVM).$nextTick();
+		expect((wrapper.vm as unknown as ComponentVM).visible).toBe(false);
 	});
 
 	// -------------------------------------------------------------------------
@@ -124,11 +140,11 @@ describe(`EnvironmentModal`, () => {
 				{ url: `https://dev.eyas.cycosoft.com`, title: `Development`, key: `dev.` }
 			];
 
-			wrapper.vm.domains = domains;
-			wrapper.vm.visible = true;
-			await wrapper.vm.$nextTick();
+			(wrapper.vm as unknown as ComponentVM).domains = domains;
+			(wrapper.vm as unknown as ComponentVM).visible = true;
+			await (wrapper.vm as unknown as ComponentVM).$nextTick();
 
-			wrapper.vm.choose(domains[0], 0);
+			(wrapper.vm as unknown as ComponentVM).choose(domains[0], 0);
 			await new Promise(resolve => setTimeout(resolve, 250));
 
 			expect(mockSend).toHaveBeenCalledWith(
@@ -142,11 +158,11 @@ describe(`EnvironmentModal`, () => {
 				{ url: `https://eyas.cycosoft.com`, title: `Production` }
 			];
 
-			wrapper.vm.domains = domains;
-			wrapper.vm.visible = true;
-			await wrapper.vm.$nextTick();
+			(wrapper.vm as unknown as ComponentVM).domains = domains;
+			(wrapper.vm as unknown as ComponentVM).visible = true;
+			await (wrapper.vm as unknown as ComponentVM).$nextTick();
 
-			wrapper.vm.choose(domains[0], 0);
+			(wrapper.vm as unknown as ComponentVM).choose(domains[0], 0);
 			await new Promise(resolve => setTimeout(resolve, 250));
 
 			// key is undefined — main process treats it as "" for {_env.key} substitution
@@ -162,21 +178,22 @@ describe(`EnvironmentModal`, () => {
 	// -------------------------------------------------------------------------
 	describe(`settings integration`, () => {
 		test(`alwaysChoose initialises to false by default`, () => {
-			expect(wrapper.vm.alwaysChoose).toBe(false);
+			expect((wrapper.vm as unknown as ComponentVM).alwaysChoose).toBe(false);
 		});
 
 		test(`show-environment-modal payload sets alwaysChoose`, () => {
 			// Simulate the IPC receive callback
-			const call = mockReceive.mock.calls.find((c: any) => c[0] === `show-environment-modal`);
+			const call = mockReceive.mock.calls.find(c => c[0] === `show-environment-modal`);
+			if (!call) throw new Error(`call not found`);
 			call[1]([], { alwaysChoose: true, projectId: `proj-x`, domainsHash: `abc` });
-			expect(wrapper.vm.alwaysChoose).toBe(true);
-			expect(wrapper.vm.projectId).toBe(`proj-x`);
-			expect(wrapper.vm.domainsHash).toBe(`abc`);
+			expect((wrapper.vm as unknown as ComponentVM).alwaysChoose).toBe(true);
+			expect((wrapper.vm as unknown as ComponentVM).projectId).toBe(`proj-x`);
+			expect((wrapper.vm as unknown as ComponentVM).domainsHash).toBe(`abc`);
 		});
 
 		test(`onAlwaysChooseChange sends save-setting with correct projectId`, () => {
-			wrapper.vm.projectId = `proj-y`;
-			wrapper.vm.onAlwaysChooseChange(true);
+			(wrapper.vm as unknown as ComponentVM).projectId = `proj-y`;
+			(wrapper.vm as unknown as ComponentVM).onAlwaysChooseChange(true);
 			expect(mockSend).toHaveBeenCalledWith(`save-setting`, {
 				key: `env.alwaysChoose`,
 				value: true,
@@ -186,12 +203,12 @@ describe(`EnvironmentModal`, () => {
 
 		test(`choose() sends save-setting for env.lastChoice`, async () => {
 			const domain = { url: `https://example.com`, title: `Example` };
-			wrapper.vm.domains = [domain];
-			wrapper.vm.projectId = `proj-z`;
-			wrapper.vm.visible = true;
-			await wrapper.vm.$nextTick();
+			(wrapper.vm as unknown as ComponentVM).domains = [domain];
+			(wrapper.vm as unknown as ComponentVM).projectId = `proj-z`;
+			(wrapper.vm as unknown as ComponentVM).visible = true;
+			await (wrapper.vm as unknown as ComponentVM).$nextTick();
 
-			wrapper.vm.choose(domain, 0);
+			(wrapper.vm as unknown as ComponentVM).choose(domain, 0);
 
 			// save-setting is sent before the setTimeout delay
 			expect(mockSend).toHaveBeenCalledWith(`save-setting`, expect.objectContaining({
@@ -202,13 +219,13 @@ describe(`EnvironmentModal`, () => {
 
 		test(`choose() sends save-setting for env.lastChoiceHash`, async () => {
 			const domain = { url: `https://example.com`, title: `Example` };
-			wrapper.vm.domains = [domain];
-			wrapper.vm.domainsHash = `deadbeef`;
-			wrapper.vm.projectId = `proj-z`;
-			wrapper.vm.visible = true;
-			await wrapper.vm.$nextTick();
+			(wrapper.vm as unknown as ComponentVM).domains = [domain];
+			(wrapper.vm as unknown as ComponentVM).domainsHash = `deadbeef`;
+			(wrapper.vm as unknown as ComponentVM).projectId = `proj-z`;
+			(wrapper.vm as unknown as ComponentVM).visible = true;
+			await (wrapper.vm as unknown as ComponentVM).$nextTick();
 
-			wrapper.vm.choose(domain, 0);
+			(wrapper.vm as unknown as ComponentVM).choose(domain, 0);
 
 			expect(mockSend).toHaveBeenCalledWith(`save-setting`, {
 				key: `env.lastChoiceHash`,

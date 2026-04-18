@@ -58,7 +58,8 @@ describe(`compileRunners`, () => {
 		await compileRunners();
 
 		expect(builder.build).toHaveBeenCalled();
-		const buildArgs = vi.mocked(builder.build).mock.calls[0][0]!;
+		const buildArgs = vi.mocked(builder.build).mock.calls[0][0];
+		if (!buildArgs) throw new Error(`buildArgs is undefined`);
 		expect(buildArgs.targets).toContain(builder.Platform.WINDOWS);
 	});
 
@@ -67,7 +68,8 @@ describe(`compileRunners`, () => {
 		await compileRunners();
 
 		expect(builder.build).toHaveBeenCalled();
-		const buildArgs = vi.mocked(builder.build).mock.calls[0][0]!;
+		const buildArgs = vi.mocked(builder.build).mock.calls[0][0];
+		if (!buildArgs) throw new Error(`buildArgs is undefined`);
 		expect(buildArgs.targets).toContain(builder.Platform.MAC);
 	});
 
@@ -106,7 +108,8 @@ describe(`compileRunners`, () => {
 		await compileRunners();
 
 		expect(builder.build).toHaveBeenCalled();
-		const buildArgs = vi.mocked(builder.build).mock.calls[0][0]!;
+		const buildArgs = vi.mocked(builder.build).mock.calls[0][0];
+		if (!buildArgs) throw new Error(`buildArgs is undefined`);
 		expect(buildArgs.publish).toBe(`always`);
 	});
 
@@ -115,7 +118,8 @@ describe(`compileRunners`, () => {
 		await compileRunners();
 
 		expect(builder.build).toHaveBeenCalled();
-		const buildArgs = vi.mocked(builder.build).mock.calls[0][0]!;
+		const buildArgs = vi.mocked(builder.build).mock.calls[0][0];
+		if (!buildArgs) throw new Error(`buildArgs is undefined`);
 		expect(buildArgs.publish).toBe(`never`);
 	});
 

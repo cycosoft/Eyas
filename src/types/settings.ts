@@ -5,6 +5,11 @@ export type ThemeMode = typeof THEME_MODES[keyof typeof THEME_MODES];
 export interface SettingsBase {
 	env?: {
 		alwaysChoose?: boolean;
+		lastChoice?: {
+			url: string;
+			key?: string;
+		};
+		lastChoiceHash?: string;
 	};
 	theme?: ThemeMode;
 	lastSeenVersion?: string;

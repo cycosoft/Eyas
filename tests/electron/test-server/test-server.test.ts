@@ -32,20 +32,20 @@ describe(`test-server`, () => {
 		clearTestServerPort();
 		stopTestServer(); // Ensure no server is running
 		const state = await startTestServer({ rootPath: tempDir });
-		expect(state).not.toBeNull();
-		expect(state!.port).toBe(12701);
-		expect(state!.url).toBe(`http://127.0.0.1:12701`);
+		if (!state) { throw new Error(`state is null`); }
+		expect(state.port).toBe(12701);
+		expect(state.url).toBe(`http://127.0.0.1:12701`);
 	});
 
 	test(`startTestServer serves files under root and binds to 127.0.0.1`, async () => {
 		const state = await startTestServer({ rootPath: tempDir });
-		expect(state).not.toBeNull();
-		expect(state!.url).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
-		expect(state!.port).toBeGreaterThan(0);
-		expect(state!.startedAt).toBeDefined();
-		expect(state!.useHttps).toBe(false);
+		if (!state) { throw new Error(`state is null`); }
+		expect(state.url).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
+		expect(state.port).toBeGreaterThan(0);
+		expect(state.startedAt).toBeDefined();
+		expect(state.useHttps).toBe(false);
 
-		const baseUrl = state!.url;
+		const baseUrl = state.url;
 		const body = await fetchAsText(baseUrl + `/`);
 		expect(body).toContain(`root`);
 
@@ -58,7 +58,8 @@ describe(`test-server`, () => {
 
 	test(`requests for non-existent path return index.html (SPA Fallback)`, async () => {
 		const state = await startTestServer({ rootPath: tempDir });
-		const baseUrl = state!.url;
+		if (!state) { throw new Error(`state is null`); }
+		const baseUrl = state.url;
 
 		const response = await fetch(baseUrl + `/non/existent/path`);
 		expect(response.status).toBe(200);
@@ -68,7 +69,8 @@ describe(`test-server`, () => {
 
 	test(`non-GET requests for non-existent path still return 404`, async () => {
 		const state = await startTestServer({ rootPath: tempDir });
-		const baseUrl = state!.url;
+		if (!state) { throw new Error(`state is null`); }
+		const baseUrl = state.url;
 
 		const response = await fetch(baseUrl + `/non/existent/path`, { method: `POST` });
 		expect(response.status).toBe(404);
@@ -76,7 +78,8 @@ describe(`test-server`, () => {
 
 	test(`requests for path with ../ return 200 (normalized to root index.html)`, async () => {
 		const state = await startTestServer({ rootPath: tempDir });
-		const baseUrl = state!.url;
+		if (!state) { throw new Error(`state is null`); }
+		const baseUrl = state.url;
 
 		const res = await fetch(baseUrl + `/../package.json`);
 		// This is normalized by the client to /package.json, which is safe and hits SPA fallback
@@ -86,7 +89,8 @@ describe(`test-server`, () => {
 
 	test(`requests for encoded path traversal return 404`, async () => {
 		const state = await startTestServer({ rootPath: tempDir });
-		const baseUrl = state!.url;
+		if (!state) { throw new Error(`state is null`); }
+		const baseUrl = state.url;
 
 		const res = await fetch(baseUrl + `/..%2f..%2fetc%2fpasswd`);
 		expect(res.status).toBe(404);
@@ -94,7 +98,8 @@ describe(`test-server`, () => {
 
 	test(`stopTestServer stops server and getTestServerState returns null`, async () => {
 		const state = await startTestServer({ rootPath: tempDir });
-		const baseUrl = state!.url;
+		if (!state) { throw new Error(`state is null`); }
+		const baseUrl = state.url;
 		await stopTestServer();
 		expect(getTestServerState()).toBeNull();
 
@@ -104,18 +109,21 @@ describe(`test-server`, () => {
 
 	test(`server URL uses 127.0.0.1 only`, async () => {
 		const state = await startTestServer({ rootPath: tempDir });
-		expect(state!.url).toContain(`127.0.0.1`);
-		expect(state!.url).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
+		if (!state) { throw new Error(`state is null`); }
+		expect(state.url).toContain(`127.0.0.1`);
+		expect(state.url).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
 	});
 
 	test(`port is reused after stop and restart`, async () => {
 		const state1 = await startTestServer({ rootPath: tempDir });
-		const port1 = state1!.port;
+		if (!state1) { throw new Error(`state1 is null`); }
+		const port1 = state1.port;
 		await stopTestServer();
 
 		const state2 = await startTestServer({ rootPath: tempDir });
+		if (!state2) { throw new Error(`state2 is null`); }
 
-		const port2 = state2!.port;
+		const port2 = state2.port;
 		expect(port1).toBe(port2);
 	});
 

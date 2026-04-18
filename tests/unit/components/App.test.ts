@@ -1,7 +1,9 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mount, VueWrapper } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
+import type { VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { createVuetify } from 'vuetify';
+import type { Mock } from 'vitest';
 import App from '@/App.vue';
 import useSettingsStore from '@/stores/settings.js';
 
@@ -9,15 +11,15 @@ import useSettingsStore from '@/stores/settings.js';
 const vuetify = createVuetify();
 
 describe(`App`, () => {
-	let wrapper: VueWrapper<any>;
-	let mockSend: any;
-	let mockReceive: any;
+	let wrapper: VueWrapper;
+	let mockSend: Mock;
+	let mockReceive: Mock;
 
 	beforeEach(() => {
 		setActivePinia(createPinia());
 		mockSend = vi.fn();
 		mockReceive = vi.fn();
-		(window as any).eyas = {
+		(window as unknown as { eyas: { send: Mock; receive: Mock } }).eyas = {
 			send: mockSend,
 			receive: mockReceive
 		};
@@ -50,7 +52,8 @@ describe(`App`, () => {
 
 	test(`updates store when settings-loaded is received`, () => {
 		const settingsStore = useSettingsStore();
-		const call = mockReceive.mock.calls.find((c: any) => c[0] === `settings-loaded`);
+		const call = mockReceive.mock.calls.find(c => c[0] === `settings-loaded`);
+		if (!call) throw new Error(`call not found`);
 		expect(call).toBeDefined();
 
 		const payload = {
@@ -65,7 +68,8 @@ describe(`App`, () => {
 
 	test(`updates store when settings-updated is received`, () => {
 		const settingsStore = useSettingsStore();
-		const call = mockReceive.mock.calls.find((c: any) => c[0] === `settings-updated`);
+		const call = mockReceive.mock.calls.find(c => c[0] === `settings-updated`);
+		if (!call) throw new Error(`call not found`);
 		expect(call).toBeDefined();
 
 		const payload = {

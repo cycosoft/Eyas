@@ -160,7 +160,7 @@ describe(`index menu logic helpers`, () => {
 			const items = getViewportMenuItems(mockWindow, allViewports, [1000, 1000]);
 			expect(items[0].label).toBe(`🔘 Current (1000 x 1000)`);
 			expect(items[1].type).toBe(`separator`);
-			expect(items.some((i: any) => i.label?.includes(`🔘 Desktop`))).toBe(false);
+			expect(items.some((i: { label?: string }) => i.label?.includes(`🔘 Desktop`))).toBe(false);
 		});
 
 		test(`click handler should call setContentSize`, () => {

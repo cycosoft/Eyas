@@ -4,14 +4,15 @@ import path from 'path';
 import os from 'os';
 import { bumpBuildVersion } from '../../src/scripts/bump-build-version.js';
 
+import type * as ChildProcess from 'child_process';
+import { execSync } from 'child_process';
+import type { Mock } from 'vitest';
+
 vi.mock(`child_process`, async () => {
-	const actual = await vi.importActual(`child_process`);
+	const actual = await vi.importActual(`child_process`) as typeof ChildProcess;
 	return {
-		...actual as any,
-		execSync: (command: string, options?: unknown): string | Buffer => {
-			if ((global as any).execSyncMock) return (global as any).execSyncMock(command, options);
-			return (actual as any).execSync(command, options as Record<string, unknown>);
-		}
+		...actual,
+		execSync: vi.fn()
 	};
 });
 
@@ -30,14 +31,14 @@ describe(`bumpBuildVersion`, () => {
 		changelogPath = path.join(tempDir, `CHANGELOG.json`);
 		await fs.writeJson(changelogPath, [{ version: `1.0.0`, items: [] }], { spaces: 2 });
 
-		(global as any).execSyncMock = vi.fn().mockReturnValue(`v1.0.0`);
+		(execSync as Mock).mockReturnValue(`v1.0.0`);
 
 		vi.spyOn(console, `log`).mockImplementation(() => { });
 	});
 
 	afterEach(async () => {
 		await fs.remove(tempDir);
-		delete (global as any).execSyncMock;
+		(execSync as Mock).mockReset();
 		vi.restoreAllMocks();
 	});
 

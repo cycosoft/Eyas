@@ -1,3 +1,4 @@
+import type { MenuItemConstructorOptions } from 'electron';
 import { describe, test, expect } from 'vitest';
 import { buildMenuTemplate } from '../../src/eyas-core/menu-template.js';
 import type { MenuContext } from '../../src/types/menu.js';
@@ -69,10 +70,10 @@ describe(`Root menu structure`, () => {
 describe(`Eyas menu`, () => {
 	test(`first submenu contains About then separator then Exit in order`, () => {
 		const template = buildMenuTemplate(minimalContext);
-		const submenu = template[0].submenu as any[];
-		const aboutIndex = submenu.findIndex((item: any) => item.label && item.label.includes(`About`));
-		const separatorIndex = submenu.findIndex((item: any) => item.type === `separator`);
-		const exitIndex = submenu.findIndex((item: any) => item.label && item.label.includes(`Exit`));
+		const submenu = template[0].submenu as MenuItemConstructorOptions[];
+		const aboutIndex = submenu.findIndex(item => item.label && item.label.includes(`About`));
+		const separatorIndex = submenu.findIndex(item => item.type === `separator`);
+		const exitIndex = submenu.findIndex(item => item.label && item.label.includes(`Exit`));
 		expect(aboutIndex).toBeGreaterThanOrEqual(0);
 		expect(separatorIndex).toBeGreaterThan(aboutIndex);
 		expect(exitIndex).toBeGreaterThan(separatorIndex);
@@ -80,8 +81,9 @@ describe(`Eyas menu`, () => {
 
 	test(`app submenu contains a Settings item`, () => {
 		const template = buildMenuTemplate(minimalContext);
-		const submenu = template[0].submenu as any[];
-		const settingsItem = submenu.find((item: any) => item.label && item.label.includes(`Settings`));
+		const submenu = template[0].submenu as MenuItemConstructorOptions[];
+		const settingsItem = submenu.find(item => item.label && item.label.includes(`Settings`));
+		if (!settingsItem) throw new Error();
 		expect(settingsItem).toBeDefined();
 	});
 
@@ -89,17 +91,18 @@ describe(`Eyas menu`, () => {
 		const onOpenSettings = (): void => { };
 		const ctx = { ...minimalContext, onOpenSettings };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const submenu = template[0].submenu as any[];
-		const settingsItem = submenu.find((item: any) => item.label && item.label.includes(`Settings`));
+		const submenu = template[0].submenu as MenuItemConstructorOptions[];
+		const settingsItem = submenu.find(item => item.label && item.label.includes(`Settings`));
+		if (!settingsItem) throw new Error();
 		expect(settingsItem.click).toBe(onOpenSettings);
 	});
 
 	test(`Settings item appears between About and Check for updates`, () => {
 		const template = buildMenuTemplate(minimalContext);
-		const submenu = template[0].submenu as any[];
-		const aboutIndex = submenu.findIndex((item: any) => item.label && item.label.includes(`About`));
-		const settingsIndex = submenu.findIndex((item: any) => item.label && item.label.includes(`Settings`));
-		const checkIndex = submenu.findIndex((item: any) => item.label && item.label.includes(`Check for updates`));
+		const submenu = template[0].submenu as MenuItemConstructorOptions[];
+		const aboutIndex = submenu.findIndex(item => item.label && item.label.includes(`About`));
+		const settingsIndex = submenu.findIndex(item => item.label && item.label.includes(`Settings`));
+		const checkIndex = submenu.findIndex(item => item.label && item.label.includes(`Check for updates`));
 		expect(settingsIndex).toBeGreaterThan(aboutIndex);
 		expect(settingsIndex).toBeLessThan(checkIndex);
 	});
@@ -111,8 +114,9 @@ describe(`Eyas menu`, () => {
 	test(`when updateStatus is downloading, Eyas submenu has label indicating downloading`, () => {
 		const ctx = { ...minimalContext, updateStatus: `downloading` };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const submenu = template[0].submenu as any[];
-		const downloadItem = submenu.find((item: any) => item.label && item.label.toLowerCase().includes(`download`));
+		const submenu = template[0].submenu as MenuItemConstructorOptions[];
+		const downloadItem = submenu.find(item => item.label && item.label.toLowerCase().includes(`download`));
+		if (!downloadItem) throw new Error();
 		expect(downloadItem).toBeDefined();
 		expect(downloadItem.type).not.toBe(`separator`);
 	});
@@ -121,8 +125,9 @@ describe(`Eyas menu`, () => {
 		const onCheck = (): void => { };
 		const ctx = { ...minimalContext, updateStatus: `idle`, onCheckForUpdates: onCheck };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const submenu = template[0].submenu as any[];
-		const checkItem = submenu.find((item: any) => item.label && item.label.includes(`Check for updates`));
+		const submenu = template[0].submenu as MenuItemConstructorOptions[];
+		const checkItem = submenu.find(item => item.label && item.label.includes(`Check for updates`));
+		if (!checkItem) throw new Error();
 		expect(checkItem).toBeDefined();
 		expect(checkItem.click).toBe(onCheck);
 	});
@@ -131,8 +136,9 @@ describe(`Eyas menu`, () => {
 		const updateIcon = `⬆️`;
 		const ctx = { ...minimalContext, updateStatus: `idle` };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const submenu = template[0].submenu as any[];
-		const checkItem = submenu.find((item: any) => item.label && item.label.includes(`Check for updates`));
+		const submenu = template[0].submenu as MenuItemConstructorOptions[];
+		const checkItem = submenu.find(item => item.label && item.label.includes(`Check for updates`));
+		if (!checkItem) throw new Error();
 		expect(checkItem).toBeDefined();
 		expect(checkItem.label).toContain(updateIcon);
 	});
@@ -141,8 +147,9 @@ describe(`Eyas menu`, () => {
 		const updateIcon = `⬆️`;
 		const ctx = { ...minimalContext, updateStatus: `downloading` };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const submenu = template[0].submenu as any[];
-		const item = submenu.find((i: any) => i.label && i.label.toLowerCase().includes(`download`));
+		const submenu = template[0].submenu as MenuItemConstructorOptions[];
+		const item = submenu.find(i => i.label && i.label.toLowerCase().includes(`download`));
+		if (!item) throw new Error();
 		expect(item).toBeDefined();
 		expect(item.label).toContain(updateIcon);
 	});
@@ -151,7 +158,7 @@ describe(`Eyas menu`, () => {
 		const onInstall = (): void => { };
 		const ctx = { ...minimalContext, updateStatus: `downloaded`, onInstallUpdate: onInstall };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const last = template[template.length - 1] as any;
+		const last = template[template.length - 1] as MenuItemConstructorOptions;
 		expect(last.label).toMatch(/Update available|Restart to install/i);
 		expect(last.click).toBe(onInstall);
 	});
@@ -159,7 +166,7 @@ describe(`Eyas menu`, () => {
 	test(`when updateStatus is not downloaded, last top-level item is not update-install item`, () => {
 		const ctx = { ...minimalContext, updateStatus: `idle`, linkItems: [{ label: `Link1`, click: noop, enabled: true }] };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const last = template[template.length - 1] as any;
+		const last = template[template.length - 1] as MenuItemConstructorOptions;
 		expect(last.label).not.toMatch(/Restart to install|Update available/i);
 	});
 
@@ -167,7 +174,7 @@ describe(`Eyas menu`, () => {
 		const updateIcon = `⬆️`;
 		const ctx = { ...minimalContext, updateStatus: `downloaded` };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const last = template[template.length - 1] as any;
+		const last = template[template.length - 1] as MenuItemConstructorOptions;
 		expect(last.label).toMatch(/Update available|Restart to install/i);
 		expect(last.label).toContain(updateIcon);
 	});
@@ -178,7 +185,7 @@ describe(`Eyas menu`, () => {
 describe(`Test menu`, () => {
 	test(`Test menu exists as second root item`, () => {
 		const template = buildMenuTemplate(minimalContext);
-		const testMenu = template[1] as any;
+		const testMenu = template[1] as MenuItemConstructorOptions;
 		expect(testMenu).toBeDefined();
 		expect(testMenu.label).toContain(`Test`);
 		expect(Array.isArray(testMenu.submenu)).toBe(true);
@@ -188,8 +195,9 @@ describe(`Test menu`, () => {
 		const startAFreshTest = (): void => { };
 		const ctx = { ...minimalContext, startAFreshTest };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const testMenu = template[1] as any;
-		const envItem = testMenu.submenu.find((item: any) => item.label && item.label.toLowerCase().includes(`reset`));
+		const testMenu = template[1] as MenuItemConstructorOptions;
+		const envItem = (testMenu.submenu as MenuItemConstructorOptions[]).find(item => item.label && item.label.toLowerCase().includes(`reset`));
+		if (!envItem) throw new Error();
 		expect(envItem).toBeDefined();
 		expect(envItem.click).toBe(startAFreshTest);
 	});
@@ -198,8 +206,9 @@ describe(`Test menu`, () => {
 		const navigateHome = (): void => { };
 		const ctx = { ...minimalContext, navigateHome };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const testMenu = template[1] as any;
-		const homeItem = testMenu.submenu.find((item: any) => item.label && item.label.toLowerCase().includes(`home`));
+		const testMenu = template[1] as MenuItemConstructorOptions;
+		const homeItem = (testMenu.submenu as MenuItemConstructorOptions[]).find(item => item.label && item.label.toLowerCase().includes(`home`));
+		if (!homeItem) throw new Error();
 		expect(homeItem).toBeDefined();
 		expect(homeItem.click).toBe(navigateHome);
 	});
@@ -207,8 +216,9 @@ describe(`Test menu`, () => {
 	test(`Test submenu contains a Links submenu when linkItems is non-empty`, () => {
 		const ctx = { ...minimalContext, linkItems: [{ label: `My Link`, click: noop }] };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const testMenu = template[1] as any;
-		const linksItem = testMenu.submenu.find((item: any) => item.label && item.label.toLowerCase().includes(`link`));
+		const testMenu = template[1] as MenuItemConstructorOptions;
+		const linksItem = (testMenu.submenu as MenuItemConstructorOptions[]).find(item => item.label && item.label.toLowerCase().includes(`link`));
+		if (!linksItem) throw new Error();
 		expect(linksItem).toBeDefined();
 		expect(Array.isArray(linksItem.submenu)).toBe(true);
 	});
@@ -216,8 +226,8 @@ describe(`Test menu`, () => {
 	test(`Test submenu omits Links submenu when linkItems is empty`, () => {
 		const ctx = { ...minimalContext, linkItems: [] };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const testMenu = template[1] as any;
-		const linksItem = testMenu.submenu.find((item: any) => item.label && item.label.toLowerCase().includes(`link`));
+		const testMenu = template[1] as MenuItemConstructorOptions;
+		const linksItem = (testMenu.submenu as MenuItemConstructorOptions[]).find(item => item.label && item.label.toLowerCase().includes(`link`));
 		expect(linksItem).toBeUndefined();
 	});
 
@@ -225,8 +235,9 @@ describe(`Test menu`, () => {
 		const onStartTestServer = (): void => { };
 		const ctx = { ...minimalContext, testServerActive: false, isConfigLoaded: true, onStartTestServer };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const testMenu = template[1] as any;
-		const startItem = testMenu.submenu.find((item: any) => item.label && item.label.includes(`Live Test Server`));
+		const testMenu = template[1] as MenuItemConstructorOptions;
+		const startItem = (testMenu.submenu as MenuItemConstructorOptions[]).find(item => item.label && item.label.includes(`Live Test Server`));
+		if (!startItem) throw new Error();
 		expect(startItem).toBeDefined();
 		expect(startItem.enabled).toBe(true);
 		expect(startItem.click).toBe(onStartTestServer);
@@ -235,8 +246,9 @@ describe(`Test menu`, () => {
 	test(`when testServerActive is true, Test menu includes Live Test Server item as disabled`, () => {
 		const ctx = { ...minimalContext, testServerActive: true };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const testMenu = template[1] as any;
-		const startItem = testMenu.submenu.find((item: any) => item.label && item.label.includes(`Live Test Server`));
+		const testMenu = template[1] as MenuItemConstructorOptions;
+		const startItem = (testMenu.submenu as MenuItemConstructorOptions[]).find(item => item.label && item.label.includes(`Live Test Server`));
+		if (!startItem) throw new Error();
 		expect(startItem).toBeDefined();
 		expect(startItem.enabled).toBe(false);
 	});
@@ -244,29 +256,29 @@ describe(`Test menu`, () => {
 	test(`when testServerActive is true, Test menu does NOT include 'Test Server running for...' item`, () => {
 		const ctx = { ...minimalContext, testServerActive: true, testServerRemainingTime: `29m` };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const testMenu = template[1] as any;
-		const statusItem = testMenu.submenu.find((item: any) => item.label && item.label.includes(`Test Server running`));
+		const testMenu = template[1] as MenuItemConstructorOptions;
+		const statusItem = (testMenu.submenu as MenuItemConstructorOptions[]).find(item => item.label && item.label.includes(`Test Server running`));
 		expect(statusItem).toBeUndefined();
 	});
 
 	test(`when testServerActive is true, template does NOT include a top-level status item at the end`, () => {
 		const ctx = { ...minimalContext, testServerActive: true, testServerRemainingTime: `15m` };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const labels = template.map((item: any) => item.label);
-		expect(labels.some(l => l && l.includes(`Test Server running`))).toBe(false);
+		const labels = template.map(item => item.label);
+		expect(labels.some(l => typeof l === `string` && l.includes(`Test Server running`))).toBe(false);
 	});
 
 	test(`when testServerActive is false, template does not include top-level status item at the end`, () => {
 		const ctx = { ...minimalContext, testServerActive: false };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const last = template[template.length - 1] as any;
+		const last = template[template.length - 1] as MenuItemConstructorOptions;
 		expect(last.label).not.toMatch(/Exposed for/);
 	});
 
 	test(`when isInitializing is true, Test menu is disabled`, () => {
 		const ctx = { ...minimalContext, isInitializing: true };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const testMenu = template[1] as any;
+		const testMenu = template[1] as MenuItemConstructorOptions;
 		expect(testMenu.enabled).toBe(false);
 	});
 });
@@ -276,7 +288,7 @@ describe(`Test menu`, () => {
 describe(`Browser menu`, () => {
 	test(`Browser menu exists as third root item`, () => {
 		const template = buildMenuTemplate(minimalContext);
-		const browserMenu = template[2] as any;
+		const browserMenu = template[2] as MenuItemConstructorOptions;
 		expect(browserMenu).toBeDefined();
 		expect(browserMenu.label).toContain(`Browser`);
 		expect(Array.isArray(browserMenu.submenu)).toBe(true);
@@ -286,8 +298,9 @@ describe(`Browser menu`, () => {
 		const copyUrl = (): void => { };
 		const ctx = { ...minimalContext, copyUrl };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const browserMenu = template[2] as any;
-		const item = browserMenu.submenu.find((i: any) => i.label && i.label.toLowerCase().includes(`copy url`));
+		const browserMenu = template[2] as MenuItemConstructorOptions;
+		const item = (browserMenu.submenu as MenuItemConstructorOptions[]).find(i => i.label && i.label.toLowerCase().includes(`copy url`));
+		if (!item) throw new Error();
 		expect(item).toBeDefined();
 		expect(item.click).toBe(copyUrl);
 	});
@@ -296,8 +309,9 @@ describe(`Browser menu`, () => {
 		const reload = (): void => { };
 		const ctx = { ...minimalContext, reload };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const browserMenu = template[2] as any;
-		const item = browserMenu.submenu.find((i: any) => i.label && i.label.toLowerCase().includes(`reload`));
+		const browserMenu = template[2] as MenuItemConstructorOptions;
+		const item = (browserMenu.submenu as MenuItemConstructorOptions[]).find(i => i.label && i.label.toLowerCase().includes(`reload`));
+		if (!item) throw new Error();
 		expect(item).toBeDefined();
 		expect(item.click).toBe(reload);
 	});
@@ -306,8 +320,9 @@ describe(`Browser menu`, () => {
 		const back = (): void => { };
 		const ctx = { ...minimalContext, back };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const browserMenu = template[2] as any;
-		const item = browserMenu.submenu.find((i: any) => i.label && i.label.toLowerCase().includes(`back`));
+		const browserMenu = template[2] as MenuItemConstructorOptions;
+		const item = (browserMenu.submenu as MenuItemConstructorOptions[]).find(i => i.label && i.label.toLowerCase().includes(`back`));
+		if (!item) throw new Error();
 		expect(item).toBeDefined();
 		expect(item.click).toBe(back);
 		expect(item.label).toContain(`◀️`);
@@ -317,8 +332,9 @@ describe(`Browser menu`, () => {
 		const forward = (): void => { };
 		const ctx = { ...minimalContext, forward };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const browserMenu = template[2] as any;
-		const item = browserMenu.submenu.find((i: any) => i.label && i.label.toLowerCase().includes(`forward`));
+		const browserMenu = template[2] as MenuItemConstructorOptions;
+		const item = (browserMenu.submenu as MenuItemConstructorOptions[]).find(i => i.label && i.label.toLowerCase().includes(`forward`));
+		if (!item) throw new Error();
 		expect(item).toBeDefined();
 		expect(item.click).toBe(forward);
 		expect(item.label).toContain(`▶️`);
@@ -326,16 +342,17 @@ describe(`Browser menu`, () => {
 
 	test(`Browser submenu does NOT contain Go Online/Offline toggle`, () => {
 		const template = buildMenuTemplate(minimalContext);
-		const browserMenu = template[2] as any;
-		const item = browserMenu.submenu.find((i: any) => i.label && (i.label.toLowerCase().includes(`online`) || i.label.toLowerCase().includes(`offline`)));
+		const browserMenu = template[2] as MenuItemConstructorOptions;
+		const item = (browserMenu.submenu as MenuItemConstructorOptions[]).find(i => i.label && (i.label.toLowerCase().includes(`online`) || i.label.toLowerCase().includes(`offline`)));
 		expect(item).toBeUndefined();
 	});
 
 	test(`Browser submenu contains a Viewport submenu`, () => {
 		const ctx = { ...minimalContext, viewportItems: [{ label: `Desktop (1366 x 768)`, click: noop }] };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const browserMenu = template[2] as any;
-		const viewportItem = browserMenu.submenu.find((i: any) => i.label && i.label.toLowerCase().includes(`viewport`));
+		const browserMenu = template[2] as MenuItemConstructorOptions;
+		const viewportItem = (browserMenu.submenu as MenuItemConstructorOptions[]).find(i => i.label && i.label.toLowerCase().includes(`viewport`));
+		if (!viewportItem) throw new Error();
 		expect(viewportItem).toBeDefined();
 		expect(Array.isArray(viewportItem.submenu)).toBe(true);
 	});
@@ -343,7 +360,7 @@ describe(`Browser menu`, () => {
 	test(`when isInitializing is true, Browser menu is disabled`, () => {
 		const ctx = { ...minimalContext, isInitializing: true };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const browserMenu = template[2] as any;
+		const browserMenu = template[2] as MenuItemConstructorOptions;
 		expect(browserMenu.enabled).toBe(false);
 	});
 });
@@ -353,7 +370,7 @@ describe(`Browser menu`, () => {
 describe(`Development Tools menu`, () => {
 	test(`Development Tools menu exists as fourth root item`, () => {
 		const template = buildMenuTemplate(minimalContext);
-		const toolsMenu = template[3] as any;
+		const toolsMenu = template[3] as MenuItemConstructorOptions;
 		expect(toolsMenu).toBeDefined();
 		expect(toolsMenu.label).toContain(`Development Tools`);
 		expect(Array.isArray(toolsMenu.submenu)).toBe(true);
@@ -361,8 +378,8 @@ describe(`Development Tools menu`, () => {
 
 	test(`Development Tools submenu does NOT contain Copy URL`, () => {
 		const template = buildMenuTemplate(minimalContext);
-		const toolsMenu = template[3] as any;
-		const item = toolsMenu.submenu.find((i: any) => i.label && i.label.toLowerCase().includes(`copy url`));
+		const toolsMenu = template[3] as MenuItemConstructorOptions;
+		const item = (toolsMenu.submenu as MenuItemConstructorOptions[]).find(i => i.label && i.label.toLowerCase().includes(`copy url`));
 		expect(item).toBeUndefined();
 	});
 
@@ -370,8 +387,9 @@ describe(`Development Tools menu`, () => {
 		const toggleNetwork = (): void => { };
 		const ctx = { ...minimalContext, toggleNetwork };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const toolsMenu = template[3] as any;
-		const item = toolsMenu.submenu.find((i: any) => i.label && (i.label.toLowerCase().includes(`online`) || i.label.toLowerCase().includes(`offline`)));
+		const toolsMenu = template[3] as MenuItemConstructorOptions;
+		const item = (toolsMenu.submenu as MenuItemConstructorOptions[]).find(i => i.label && (i.label.toLowerCase().includes(`online`) || i.label.toLowerCase().includes(`offline`)));
+		if (!item) throw new Error();
 		expect(item).toBeDefined();
 		expect(item.click).toBe(toggleNetwork);
 	});
@@ -379,13 +397,17 @@ describe(`Development Tools menu`, () => {
 	test(`Tools submenu contains a Cache submenu with Age, Size, and Clear items`, () => {
 		const ctx = { ...minimalContext, sessionAge: `5m`, cacheSize: 1024 };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const toolsMenu = template[3] as any;
-		const cacheItem = toolsMenu.submenu.find((i: any) => i.label && i.label.toLowerCase().includes(`cache`));
+		const toolsMenu = template[3] as MenuItemConstructorOptions;
+		const cacheItem = (toolsMenu.submenu as MenuItemConstructorOptions[]).find(i => i.label && i.label.toLowerCase().includes(`cache`));
+		if (!cacheItem) throw new Error();
 		expect(cacheItem).toBeDefined();
 		expect(Array.isArray(cacheItem.submenu)).toBe(true);
-		const ageItem = (cacheItem.submenu as any[]).find((i: any) => i.label && i.label.toLowerCase().includes(`age`));
-		const sizeItem = (cacheItem.submenu as any[]).find((i: any) => i.label && i.label.toLowerCase().includes(`size`));
-		const clearItem = (cacheItem.submenu as any[]).find((i: any) => i.label && i.label.toLowerCase().includes(`clear`));
+		const ageItem = (cacheItem.submenu as MenuItemConstructorOptions[]).find(i => i.label && i.label.toLowerCase().includes(`age`));
+		if (!ageItem) throw new Error();
+		const sizeItem = (cacheItem.submenu as MenuItemConstructorOptions[]).find(i => i.label && i.label.toLowerCase().includes(`size`));
+		if (!sizeItem) throw new Error();
+		const clearItem = (cacheItem.submenu as MenuItemConstructorOptions[]).find(i => i.label && i.label.toLowerCase().includes(`clear`));
+		if (!clearItem) throw new Error();
 		expect(ageItem).toBeDefined();
 		expect(sizeItem).toBeDefined();
 		expect(clearItem).toBeDefined();
@@ -393,8 +415,9 @@ describe(`Development Tools menu`, () => {
 
 	test(`Tools submenu contains Developer Tools item`, () => {
 		const template = buildMenuTemplate(minimalContext);
-		const toolsMenu = template[3] as any;
-		const devToolsItem = toolsMenu.submenu.find((i: any) => i.label && i.label.toLowerCase().includes(`developer tools`));
+		const toolsMenu = template[3] as MenuItemConstructorOptions;
+		const devToolsItem = (toolsMenu.submenu as MenuItemConstructorOptions[]).find(i => i.label && i.label.toLowerCase().includes(`developer tools`));
+		if (!devToolsItem) throw new Error();
 		expect(devToolsItem).toBeDefined();
 	});
 
@@ -402,16 +425,16 @@ describe(`Development Tools menu`, () => {
 		const onToggle = (): void => { };
 		const ctx = { ...minimalContext, testServerHttpsEnabled: true, onToggleTestServerHttps: onToggle };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const toolsMenu = template[3] as any;
+		const toolsMenu = template[3] as MenuItemConstructorOptions;
 		expect(toolsMenu).toBeDefined();
-		const httpsItem = toolsMenu.submenu.find((s: any) => s.label && s.label.toLowerCase().includes(`https`));
+		const httpsItem = (toolsMenu.submenu as MenuItemConstructorOptions[]).find(s => s.label && s.label.toLowerCase().includes(`https`));
 		expect(httpsItem).toBeUndefined();
 	});
 
 	test(`when isInitializing is true, Development Tools menu is disabled`, () => {
 		const ctx = { ...minimalContext, isInitializing: true };
 		const template = buildMenuTemplate(ctx as MenuContext);
-		const toolsMenu = template[3] as any;
+		const toolsMenu = template[3] as MenuItemConstructorOptions;
 		expect(toolsMenu.enabled).toBe(false);
 	});
 });

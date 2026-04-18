@@ -21,7 +21,7 @@ describe(`getConfig - ESM`, () => {
 			const actual = await vi.importActual(`../../src/scripts/get-roots.js`);
 			return {
 				default: {
-					...(actual.default as any),
+					...(actual as { default: Record<string, unknown> }).default,
 					config: tempDir
 				}
 			};

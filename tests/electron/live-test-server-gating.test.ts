@@ -1,3 +1,4 @@
+import type { MenuItemConstructorOptions } from 'electron';
 import { describe, test, expect } from 'vitest';
 import { buildMenuTemplate } from '../../src/eyas-core/menu-template.js';
 import type { MenuContext } from '../../src/types/menu.js';
@@ -45,27 +46,33 @@ const minimalContext: MenuContext = {
 describe(`Live Test Server Gating`, () => {
 	test(`should be enabled when config is loaded, environment is not pending, and not initializing`, () => {
 		const ctx = { ...minimalContext, isConfigLoaded: true, isEnvironmentPending: false, isInitializing: false };
-		const template = buildMenuTemplate(ctx as MenuContext) as any[];
-		const testMenu = template.find((item: any) => item.label && item.label.includes(`Test`));
-		const liveServerItem = testMenu.submenu.find((item: any) => item.label && item.label.includes(`Live Test Server`));
+		const template = buildMenuTemplate(ctx as MenuContext) as MenuItemConstructorOptions[];
+		const testMenu = template.find((item: MenuItemConstructorOptions) => item.label && item.label.includes(`Test`));
+		if (!testMenu) throw new Error();
+		const liveServerItem = (testMenu.submenu as MenuItemConstructorOptions[]).find((item: MenuItemConstructorOptions) => item.label && item.label.includes(`Live Test Server`));
+		if (!liveServerItem) throw new Error();
 
 		expect(liveServerItem.enabled).toBe(true);
 	});
 
 	test(`should be disabled when config is NOT loaded`, () => {
 		const ctx = { ...minimalContext, isConfigLoaded: false };
-		const template = buildMenuTemplate(ctx as MenuContext) as any[];
-		const testMenu = template.find((item: any) => item.label && item.label.includes(`Test`));
-		const liveServerItem = testMenu.submenu.find((item: any) => item.label && item.label.includes(`Live Test Server`));
+		const template = buildMenuTemplate(ctx as MenuContext) as MenuItemConstructorOptions[];
+		const testMenu = template.find((item: MenuItemConstructorOptions) => item.label && item.label.includes(`Test`));
+		if (!testMenu) throw new Error();
+		const liveServerItem = (testMenu.submenu as MenuItemConstructorOptions[]).find((item: MenuItemConstructorOptions) => item.label && item.label.includes(`Live Test Server`));
+		if (!liveServerItem) throw new Error();
 
 		expect(liveServerItem.enabled).toBe(false);
 	});
 
 	test(`should be disabled when environment IS pending`, () => {
 		const ctx = { ...minimalContext, isEnvironmentPending: true };
-		const template = buildMenuTemplate(ctx as MenuContext) as any[];
-		const testMenu = template.find((item: any) => item.label && item.label.includes(`Test`));
-		const liveServerItem = testMenu.submenu.find((item: any) => item.label && item.label.includes(`Live Test Server`));
+		const template = buildMenuTemplate(ctx as MenuContext) as MenuItemConstructorOptions[];
+		const testMenu = template.find((item: MenuItemConstructorOptions) => item.label && item.label.includes(`Test`));
+		if (!testMenu) throw new Error();
+		const liveServerItem = (testMenu.submenu as MenuItemConstructorOptions[]).find((item: MenuItemConstructorOptions) => item.label && item.label.includes(`Live Test Server`));
+		if (!liveServerItem) throw new Error();
 
 		expect(liveServerItem.enabled).toBe(false);
 	});

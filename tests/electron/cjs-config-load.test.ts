@@ -3,6 +3,7 @@ import { expect, test, describe, vi } from 'vitest';
 import { LOAD_TYPES } from '../../src/scripts/constants.js';
 import fs from 'fs';
 import path from 'path';
+import type * as GetRoots from '../../src/scripts/get-roots.js';
 
 describe(`getConfig - CommonJS`, () => {
 	const tempDir = path.resolve(`tests/tmp/cjs`);
@@ -18,10 +19,10 @@ describe(`getConfig - CommonJS`, () => {
 
 		// Mock roots.config
 		vi.doMock(`../../src/scripts/get-roots.js`, async () => {
-			const actual = await vi.importActual(`../../src/scripts/get-roots.js`);
+			const actual = await vi.importActual(`../../src/scripts/get-roots.js`) as typeof GetRoots;
 			return {
 				default: {
-					...(actual.default as any),
+					...actual.default,
 					config: tempDir
 				}
 			};

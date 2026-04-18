@@ -7,18 +7,20 @@ vi.mock(`node:child_process`, () => ({
 	exec: vi.fn()
 }));
 
+import type * as Util from 'node:util';
+
 // Mock util.promisify to return a function that calls the mocked exec
 vi.mock(`node:util`, async importOriginal => {
-	const actual = await importOriginal();
+	const actual = await importOriginal() as typeof Util;
 	return {
-		...actual as any,
+		...actual,
 		promisify: (fn: (...args: unknown[]) => unknown): ((...args: unknown[]) => unknown) => {
 			if (fn === exec) {
-				return (async (cmd: string): Promise<{ stdout: string; stderr: string }> => {
-					return fn(cmd) as unknown as Promise<{ stdout: string; stderr: string }>;
+				return (async (_cmd: string): Promise<{ stdout: string; stderr: string }> => {
+					return fn(_cmd) as unknown as Promise<{ stdout: string; stderr: string }>;
 				}) as unknown as (...args: unknown[]) => unknown;
 			}
-			return (actual as any).promisify(fn as never) as (...args: unknown[]) => unknown;
+			return actual.promisify(fn as never) as (...args: unknown[]) => unknown;
 		}
 	};
 });
@@ -32,10 +34,10 @@ describe(`codesign-win`, () => {
 	});
 
 	it(`should call signtool with correct arguments`, async () => {
-		vi.mocked(exec).mockImplementation(((_cmd: any, cb: any) => {
-			if (cb) { cb(null, { stdout: `success` } as any); }
-			return { stdout: `success` } as any;
-		}) as any);
+		vi.mocked(exec).mockImplementation(((_cmd: string, cb: (error: Error | null, result: { stdout: string }) => void) => {
+			if (cb) { cb(null, { stdout: `success` }); }
+			return { stdout: `success` };
+		}) as unknown as typeof exec);
 
 		const config = {
 			path: `C:\\path\\to\\app.exe`,
@@ -56,10 +58,10 @@ describe(`codesign-win`, () => {
 	});
 
 	it(`should use /t and /v for non-sha256 hash`, async () => {
-		vi.mocked(exec).mockImplementation(((_cmd: any, cb: any) => {
-			if (cb) { cb(null, { stdout: `success` } as any); }
-			return { stdout: `success` } as any;
-		}) as any);
+		vi.mocked(exec).mockImplementation(((_cmd: string, cb: (error: Error | null, result: { stdout: string }) => void) => {
+			if (cb) { cb(null, { stdout: `success` }); }
+			return { stdout: `success` };
+		}) as unknown as typeof exec);
 
 		const config = {
 			path: `C:\\path\\to\\app.exe`,
@@ -90,10 +92,10 @@ describe(`codesign-win`, () => {
 
 	it(`should include /debug if CERT_DEBUG is true`, async () => {
 		process.env.CERT_DEBUG = `true`;
-		vi.mocked(exec).mockImplementation(((_cmd: any, cb: any) => {
-			if (cb) { cb(null, { stdout: `success` } as any); }
-			return { stdout: `success` } as any;
-		}) as any);
+		vi.mocked(exec).mockImplementation(((_cmd: string, cb: (error: Error | null, result: { stdout: string }) => void) => {
+			if (cb) { cb(null, { stdout: `success` }); }
+			return { stdout: `success` };
+		}) as unknown as typeof exec);
 
 		const config = {
 			path: `C:\\path\\to\\app.exe`,

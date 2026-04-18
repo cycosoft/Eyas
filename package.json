@@ -50,7 +50,7 @@
     "_____________SCRIPTS_____________": "",
     "update": "npm-check-updates --interactive --format group,time --cooldown 3",
     "type-check": "tsc -b",
-    "lint": "eslint .",
+    "lint": "eslint . --fix",
     "_encapsulated_sign:mac:pkg": "mv ./.runners/EyasInstaller-mac.pkg ./.runners/EyasInstaller-mac-unsigned.pkg && productsign --sign \"$CERT_NAME\" ./.runners/EyasInstaller-mac-unsigned.pkg ./.runners/EyasInstaller-mac.pkg",
     "bump:build": "tsx src/scripts/bump-build-version.ts"
   },
