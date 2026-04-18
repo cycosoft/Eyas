@@ -1,10 +1,12 @@
+import type { LabelString, AppVersion, DomainUrl } from "../types/primitives.js";
+
 /**
  * Sanitizes the page title before including it in the window title.
- * @param {string} rawPageTitle - The raw value from webContents.getTitle().
- * @param {string} rawUrl - The raw URL (before data: filtering) from webContents.getURL().
- * @returns {string | undefined} The trimmed page title, or undefined if it should be omitted.
+ * @param {LabelString} rawPageTitle - The raw value from webContents.getTitle().
+ * @param {DomainUrl} rawUrl - The raw URL (before data: filtering) from webContents.getURL().
+ * @returns {LabelString | undefined} The trimmed page title, or undefined if it should be omitted.
  */
-export function sanitizePageTitle(rawPageTitle: string | null | undefined, rawUrl: string | null | undefined): string | undefined {
+export function sanitizePageTitle(rawPageTitle: LabelString | null | undefined, rawUrl: DomainUrl | null | undefined): LabelString | undefined {
 	// Omit empty or whitespace-only titles
 	if (!rawPageTitle?.trim()) { return undefined; }
 
@@ -29,13 +31,13 @@ export function sanitizePageTitle(rawPageTitle: string | null | undefined, rawUr
 
 /**
  * Generates the application title based on the provided title, version, and optional URL.
- * @param {string} title The title of the application.
- * @param {string} version The version string.
- * @param {string} [url] The current URL being viewed (optional).
- * @param {string} [pageTitle] The document.title set by the web page (optional).
- * @returns {string} The formatted application title.
+ * @param {LabelString} title The title of the application.
+ * @param {AppVersion} version The version string.
+ * @param {DomainUrl} [url] The current URL being viewed (optional).
+ * @param {LabelString} [pageTitle] The document.title set by the web page (optional).
+ * @returns {LabelString} The formatted application title.
  */
-export function getAppTitle(title: string, version: string, url?: string, pageTitle?: string): string {
+export function getAppTitle(title: LabelString, version: AppVersion, url?: DomainUrl, pageTitle?: LabelString): LabelString {
 	let output = `${title} :: ${version} ✨`;
 
 	// Add the page title if it's a non-empty, non-whitespace string

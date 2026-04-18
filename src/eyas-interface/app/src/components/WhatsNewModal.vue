@@ -113,12 +113,30 @@
 
 <script lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import type { Ref, ComputedRef } from 'vue';
 import useSettingsStore from '@/stores/settings.js';
 import ModalWrapper from '@/components/ModalWrapper.vue';
 import { getAggregatedChanges, tokenizeMarkdownSubset } from '@/utils/changelog-utils.js';
 import changelogData from '../CHANGELOG.json';
+import type { IsVisible, AppVersion, ChannelName, LabelString, SettingKey, IsActive } from '@/../../../types/primitives.js';
+import type { ChangelogEntry, MarkdownToken } from '../types/changelog.js';
 
-function useWhatsNewModal(): object {
+type WhatsNewMode = `launch` | `manual`;
+
+type WhatsNewState = {
+	isVisible: Ref<IsVisible>;
+	changelog: Ref<ChangelogEntry[]>;
+	expandedPanels: Ref<AppVersion[]>;
+	currentVersion: ComputedRef<AppVersion>;
+	tokenize: (text: LabelString) => MarkdownToken[];
+	close: () => void;
+	mode: Ref<WhatsNewMode>;
+	title: ComputedRef<LabelString>;
+	showFromMain: () => Promise<void>;
+	showManual: () => Promise<void>;
+}
+
+function useWhatsNewModal(): WhatsNewState {
 	const settingsStore = useSettingsStore();
 	const isVisible = ref(false);
 	const changelog = ref([]);
@@ -136,7 +154,7 @@ function useWhatsNewModal(): object {
 			expandedPanels.value = unseen.map(u => u.version);
 			isVisible.value = true;
 		} else {
-			window.eyas?.send(`whats-new-closed`);
+			window.eyas?.send(`whats-new-closed` as ChannelName);
 		}
 	};
 
@@ -152,13 +170,13 @@ function useWhatsNewModal(): object {
 	const close = (): void => {
 		isVisible.value = false;
 		if (currentVersion.value !== lastSeenVersion.value) {
-			window.eyas?.send(`save-setting`, { key: `lastSeenVersion`, value: currentVersion.value });
+			window.eyas?.send(`save-setting` as ChannelName, { key: `lastSeenVersion` as SettingKey, value: currentVersion.value });
 		}
-		window.eyas?.send(`whats-new-closed`);
+		window.eyas?.send(`whats-new-closed` as ChannelName);
 	};
 
 	onMounted(() => {
-		window.eyas?.receive(`show-whats-new`, (isManual: boolean) => {
+		window.eyas?.receive(`show-whats-new` as ChannelName, (isManual: IsActive) => {
 			if (isManual) { showManual(); } else { showFromMain(); }
 		});
 	});
@@ -175,7 +193,7 @@ export default {
 		ModalWrapper
 	},
 
-	setup(): object {
+	setup(): WhatsNewState {
 		return useWhatsNewModal();
 	}
 };

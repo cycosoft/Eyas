@@ -38,7 +38,10 @@ export type CertBundle = {
 	cert: CertContent;
 };
 
-/** Extended Express Request with Eyas-specific properties */
-export type EyasRequest = {
+/** Extensions for the Express Request object */
+export type EyasRequestExtensions = {
 	_safePath?: FileSystemPath;
-} & Request;
+}
+
+/** Extended Express Request with Eyas-specific properties */
+export type EyasRequest = EyasRequestExtensions & Request;

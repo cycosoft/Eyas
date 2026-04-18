@@ -1,11 +1,12 @@
 // imports
 import { contextBridge, ipcRenderer } from "electron";
+import type { ChannelName } from "../types/primitives.js";
 
 // via ( https://stackoverflow.com/a/59814127 )
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld(`eyas`, {
-	send: (channel: string, data?: unknown) => {
+	send: (channel: ChannelName, data?: unknown): void => {
 		// whitelist channels
 		const validChannels = [
 			`app-exit`,
@@ -30,7 +31,7 @@ contextBridge.exposeInMainWorld(`eyas`, {
 		}
 	},
 
-	receive: (channel: string, func: (...args: unknown[]) => void) => {
+	receive: (channel: ChannelName, func: (...args: unknown[]) => void): void => {
 		const validChannels = [
 			`modal-exit-visible`,
 			`show-environment-modal`,

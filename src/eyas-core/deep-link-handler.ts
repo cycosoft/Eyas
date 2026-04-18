@@ -1,11 +1,12 @@
 import type { DeepLinkContext } from '../types/deep-link.js';
+import type { EyasProtocolUrl, CommandLineArgs } from '../types/primitives.js';
 
 /**
  * Returns true only when url is a non-empty string starting with eyas://.
  * @param {unknown} url
  * @returns {boolean}
  */
-export function isEyasProtocolUrl(url: unknown): url is string {
+export function isEyasProtocolUrl(url: unknown): url is EyasProtocolUrl {
 	return typeof url === `string` && url.length > 0 && url.startsWith(`eyas://`);
 }
 
@@ -16,7 +17,7 @@ export function isEyasProtocolUrl(url: unknown): url is string {
  * @param {DeepLinkContext} context
  * @returns {Promise<void>}
  */
-export async function handleEyasProtocolUrl(url: string, context: DeepLinkContext): Promise<void> {
+export async function handleEyasProtocolUrl(url: EyasProtocolUrl, context: DeepLinkContext): Promise<void> {
 	if (!isEyasProtocolUrl(url)) {
 		return;
 	}
@@ -35,7 +36,7 @@ export async function handleEyasProtocolUrl(url: string, context: DeepLinkContex
  * @param {string[]} argv
  * @returns {string | undefined}
  */
-export function getEyasUrlFromCommandLine(argv: string[]): string | undefined {
+export function getEyasUrlFromCommandLine(argv: CommandLineArgs): EyasProtocolUrl | undefined {
 	for (let i = 0; i < argv.length; i++) {
 		const arg = argv[i];
 		if (typeof arg === `string` && arg.startsWith(`eyas://`)) {

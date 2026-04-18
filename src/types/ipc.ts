@@ -1,10 +1,8 @@
 import type { ChannelName, ProjectId, DomainUrl, IsActive, SettingKey } from './primitives.js';
+import type { EnvironmentChoice } from './core.js';
 
 /** Payload for selecting a test environment */
-export type EnvironmentSelectedPayload = DomainUrl | {
-	url: DomainUrl;
-	key?: SettingKey;
-};
+export type EnvironmentSelectedPayload = DomainUrl | EnvironmentChoice;
 
 /**
  * Interface for the 'eyas' object injected into the browser window.

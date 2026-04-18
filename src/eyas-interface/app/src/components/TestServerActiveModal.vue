@@ -133,6 +133,19 @@
 <script lang="ts">
 import ModalWrapper from '@/components/ModalWrapper.vue';
 import { TEST_SERVER_SESSION_DURATION_MS } from '@/../../../scripts/constants.js';
+import type { IsVisible, DomainUrl, Timestamp, IconName, DurationString, TimerId, ChannelName, LabelString, TimeString, IsActive } from '@/../../../types/primitives.js';
+
+type TestServerActiveState = {
+	visible: IsVisible;
+	domain: DomainUrl;
+	startTime: Timestamp | null;
+	endTime: Timestamp | null;
+	copyIcon: IconName;
+	isExpired: IsActive;
+	duration: DurationString;
+	now: Timestamp;
+	timerInterval: TimerId | null;
+}
 
 const defaults = {
 	visible: false,
@@ -149,28 +162,28 @@ export default {
 		ModalWrapper
 	},
 
-	data: (): object => ({ ...defaults, now: Date.now(), timerInterval: null }),
+	data: (): TestServerActiveState => ({ ...defaults, now: Date.now(), timerInterval: null }),
 
 	computed: {
-		tooltipText(): string {
+		tooltipText(): LabelString {
 			return this.copyIcon === `mdi-check` ? `Copied!` : `Copy URL`;
 		},
-		formattedStartTime(): string {
+		formattedStartTime(): TimeString {
 			if (!this.startTime) return ``;
 			return new Date(this.startTime).toLocaleTimeString([], { hour: `numeric`, minute: `2-digit` }).toLowerCase();
 		},
-		formattedEndTime(): string {
+		formattedEndTime(): TimeString {
 			if (!this.endTime) return ``;
 			return new Date(this.endTime).toLocaleTimeString([], { hour: `numeric`, minute: `2-digit` }).toLowerCase();
 		},
-		countdownText(): string {
+		countdownText(): TimeString {
 			if (!this.endTime) return ``;
 			const diff = Math.max(0, this.endTime - this.now);
 			const mins = Math.floor(diff / 60000);
 			const secs = Math.floor((diff % 60000) / 1000);
 			return `${mins}m${secs}s`;
 		},
-		displayUrl(): string {
+		displayUrl(): DomainUrl {
 			if (!this.domain) return ``;
 			try {
 				const url = new URL(this.domain);
@@ -193,14 +206,14 @@ export default {
 				return this.domain;
 			}
 		},
-		extensionLabel(): string {
+		extensionLabel(): LabelString {
 			const seconds = TEST_SERVER_SESSION_DURATION_MS / 1000;
 			if (seconds >= 60 && seconds % 60 === 0) {
 				return `${seconds / 60}m`;
 			}
 			return `${seconds}s`;
 		},
-		canExtend(): boolean {
+		canExtend(): IsActive {
 			if (this.isExpired) return true;
 			if (!this.endTime) return false;
 			return (this.endTime - this.now) < TEST_SERVER_SESSION_DURATION_MS;
@@ -216,7 +229,7 @@ export default {
 	},
 
 	mounted(): void {
-		window.eyas?.receive(`show-test-server-active-modal`, payload => {
+		window.eyas?.receive(`show-test-server-active-modal` as ChannelName, payload => {
 			this.domain = payload.domain || ``;
 			this.startTime = payload.startTime || null;
 			this.endTime = payload.endTime || null;
@@ -229,7 +242,7 @@ export default {
 			}
 		});
 
-		window.eyas?.receive(`show-test-server-resume-modal`, duration => {
+		window.eyas?.receive(`show-test-server-resume-modal` as ChannelName, duration => {
 			this.duration = duration || `the session limit`;
 			this.isExpired = true;
 			this.visible = true;
@@ -268,16 +281,16 @@ export default {
 		},
 
 		stopServer(): void {
-			window.eyas?.send(`test-server-stop`);
+			window.eyas?.send(`test-server-stop` as ChannelName);
 			this.close();
 		},
 
 		openInBrowser(): void {
-			window.eyas?.send(`test-server-open-browser`, this.domain);
+			window.eyas?.send(`test-server-open-browser` as ChannelName, this.domain);
 		},
 
 		extendSession(): void {
-			window.eyas?.send(`test-server-extend`);
+			window.eyas?.send(`test-server-extend` as ChannelName);
 		},
 
 		close(): void {

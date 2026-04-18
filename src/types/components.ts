@@ -1,4 +1,4 @@
-import type { ModalMode, IsVisible, DomainUrl, IsEnabled, MenuLabel, EventType, ViewportWidth, AppTitle, ResponseBody, PortNumber } from './primitives.js';
+import type { ModalMode, IsVisible, DomainUrl, IsEnabled, MenuLabel, EventType, ViewportWidth, AppTitle, ResponseBody, PortNumber, Count, IsActive, LabelString } from './primitives.js';
 
 /**
  * Type helper for the Vue component's ViewModel in tests.
@@ -40,14 +40,20 @@ export type VariablesModalVM = {
 export type EnvironmentModalVM = {
 	domains: unknown[];
 	visible: IsVisible;
-	choose: (domain: unknown, index: number) => void;
+	choose: (domain: unknown, index: Count) => void;
 	alwaysChoose: IsVisible;
 	projectId: AppTitle;
 	domainsHash: ResponseBody;
-	onAlwaysChooseChange: (value: boolean) => void;
+	onAlwaysChooseChange: (value: IsActive) => void;
 	$nextTick: () => Promise<void>;
-	$options: { mounted?: Array<() => void> } & Record<string, unknown>;
+	$options: ComponentOptions;
 };
+
+export type ComponentBaseOptions = {
+	mounted?: Array<() => void>;
+}
+
+export type ComponentOptions = ComponentBaseOptions & Record<LabelString, unknown>;
 
 /**
  * Type helper for the ModalWrapper Vue component's ViewModel in tests.

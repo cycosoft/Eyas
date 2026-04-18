@@ -90,6 +90,18 @@
 import { THEME_MODES } from '@/../../../scripts/constants.js';
 import useSettingsStore from '@/stores/settings.js';
 import ModalWrapper from '@/components/ModalWrapper.vue';
+import type { ChannelName, IsVisible, SettingKey, ProjectId, IsActive } from '@/../../../types/primitives.js';
+import type { ThemeMode } from '@/../../../types/settings.js';
+
+type TabName = `project` | `app`;
+
+type SettingsModalState = {
+	THEME_MODES: typeof THEME_MODES;
+	visible: IsVisible;
+	activeTab: TabName;
+	projectId: ProjectId | null;
+	toastVisible: IsVisible;
+}
 
 export default {
 	components: {
@@ -102,7 +114,7 @@ export default {
 		};
 	},
 
-	data: (): object => ({
+	data: (): SettingsModalState => ({
 		THEME_MODES,
 		visible: false,
 		activeTab: `project`,
@@ -112,41 +124,41 @@ export default {
 
 	computed: {
 		appTheme: {
-			get(): string {
+			get(): ThemeMode {
 				return this.settingsStore.appSettings.theme || THEME_MODES.LIGHT;
 			},
-			set(val: string): void {
+			set(val: ThemeMode): void {
 				// Update local store instantly for immediate UI reaction
-				this.settingsStore.setSetting(`theme`, val);
+				this.settingsStore.setSetting(`theme` as SettingKey, val);
 				// Synchronize with main process in the background
-				this.saveAppSetting(`theme`, val);
+				this.saveAppSetting(`theme` as SettingKey, val);
 			}
 		},
 
 		appAlwaysChoose: {
-			get(): boolean {
+			get(): IsActive {
 				return !!(this.settingsStore.appSettings.env?.alwaysChoose);
 			},
-			set(val: boolean): void {
-				this.settingsStore.setSetting(`env.alwaysChoose`, !!val);
-				this.saveAppSetting(`env.alwaysChoose`, !!val);
+			set(val: IsActive): void {
+				this.settingsStore.setSetting(`env.alwaysChoose` as SettingKey, !!val);
+				this.saveAppSetting(`env.alwaysChoose` as SettingKey, !!val);
 			}
 		},
 
 		projectAlwaysChoose: {
-			get(): boolean {
+			get(): IsActive {
 				return !!(this.settingsStore.projectSettings.env?.alwaysChoose);
 			},
-			set(val: boolean): void {
-				this.settingsStore.setSetting(`env.alwaysChoose`, !!val, this.projectId);
-				this.saveProjectSetting(`env.alwaysChoose`, !!val);
+			set(val: IsActive): void {
+				this.settingsStore.setSetting(`env.alwaysChoose` as SettingKey, !!val, this.projectId);
+				this.saveProjectSetting(`env.alwaysChoose` as SettingKey, !!val);
 			}
 		}
 	},
 
 	mounted(): void {
 		// Show this modal when requested by the main process
-		window.eyas?.receive(`show-settings-modal`, ({ project, app, projectId = null, systemTheme } = {}) => {
+		window.eyas?.receive(`show-settings-modal` as ChannelName, ({ project, app, projectId = null, systemTheme } = {}) => {
 			this.projectId = projectId;
 			this.settingsStore.loadFromPayload({ project, app, projectId, systemTheme });
 			this.activeTab = `project`;
@@ -155,7 +167,7 @@ export default {
 		});
 
 		// Show toast when a setting is acknowledged by the main process
-		window.eyas?.receive(`setting-saved`, () => {
+		window.eyas?.receive(`setting-saved` as ChannelName, () => {
 			if (this.visible) {
 				this.toastVisible = true;
 			}
@@ -163,12 +175,12 @@ export default {
 	},
 
 	methods: {
-		saveProjectSetting(key: string, value: unknown): void {
-			window.eyas?.send(`save-setting`, { key, value, projectId: this.projectId });
+		saveProjectSetting(key: SettingKey, value: unknown): void {
+			window.eyas?.send(`save-setting` as ChannelName, { key, value, projectId: this.projectId });
 		},
 
-		saveAppSetting(key: string, value: unknown): void {
-			window.eyas?.send(`save-setting`, { key, value, projectId: null });
+		saveAppSetting(key: SettingKey, value: unknown): void {
+			window.eyas?.send(`save-setting` as ChannelName, { key, value, projectId: null });
 		}
 	}
 };

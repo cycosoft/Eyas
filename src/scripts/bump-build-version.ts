@@ -3,18 +3,19 @@ import path from "path";
 import { execSync } from "child_process";
 import { getBuildVersion } from "./get-build-version.js";
 import { fileURLToPath } from "url";
+import type { AppVersion, LabelString, SourcePath } from "../types/primitives.js";
 
 type PackageJson = {
-	version: string;
-	[key: string]: unknown;
+	version: AppVersion;
+	[key: LabelString]: unknown;
 }
 
 type ChangelogItem = {
-	text: string;
+	text: LabelString;
 }
 
 type ChangelogEntry = {
-	version: string;
+	version: AppVersion;
 	items?: ChangelogItem[];
 }
 
@@ -25,9 +26,9 @@ type ChangelogEntry = {
  * @returns {Promise<string>} The new version.
  */
 export async function bumpBuildVersion(
-	packageJsonPath: string = path.join(process.cwd(), `package.json`),
-	changelogPath: string = path.join(process.cwd(), `src`, `eyas-interface`, `app`, `src`, `CHANGELOG.json`)
-): Promise<string> {
+	packageJsonPath: SourcePath = path.join(process.cwd(), `package.json`),
+	changelogPath: SourcePath = path.join(process.cwd(), `src`, `eyas-interface`, `app`, `src`, `CHANGELOG.json`)
+): Promise<AppVersion> {
 	const packageJson: PackageJson = await fs.readJson(packageJsonPath);
 
 	// Generate the new version
@@ -39,7 +40,7 @@ export async function bumpBuildVersion(
 
 	// Update CHANGELOG.json
 	if (await fs.pathExists(changelogPath)) {
-		const changelogText: string = await fs.readFile(changelogPath, `utf8`);
+		const changelogText: LabelString = await fs.readFile(changelogPath, `utf8`);
 		const updatedText = changelogText.replace(/"version":\s*"[^"]*"/, `"version": "${newVersion}"`);
 		await fs.writeFile(changelogPath, updatedText);
 	}
@@ -54,7 +55,7 @@ export async function bumpBuildVersion(
 			const current = changelog[0];
 
 			// Determine the previous version from git tags
-			let previousVersion = ``;
+			let previousVersion: AppVersion = ``;
 			try {
 				previousVersion = execSync(`git describe --tags --abbrev=0`, { encoding: `utf8` }).trim().replace(/^v/, ``);
 			} catch {

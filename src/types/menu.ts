@@ -1,4 +1,4 @@
-import type { AppName, IsActive, FormattedDuration, ByteCount, UpdateStatus, MenuLabel, DomainUrl } from './primitives.js';
+import type { AppName, IsActive, FormattedDuration, ByteCount, UpdateStatus, MenuLabel, DomainUrl, MenuAccelerator } from './primitives.js';
 
 /** A single menu item descriptor */
 export type MenuItem = {
@@ -7,7 +7,7 @@ export type MenuItem = {
 	enabled?: IsActive;
 	click?: () => void;
 	submenu?: MenuItem[];
-	accelerator?: string;
+	accelerator?: MenuAccelerator;
 	[key: string]: unknown; // Allow other Electron-specific props
 }
 
@@ -60,7 +60,7 @@ export type MenuContext = {
 	onStartTestServer: () => void;
 	onStopTestServer?: () => void | Promise<void>;
 	onCopyTestServerUrl?: () => void;
-	onOpenTestServerInBrowser?: (event?: unknown, url?: string) => void;
+	onOpenTestServerInBrowser?: (event?: unknown, url?: DomainUrl) => void;
 	testServerHttpsEnabled?: IsActive;
 	onToggleTestServerHttps?: () => void;
 	toggleTestDevTools: () => void;

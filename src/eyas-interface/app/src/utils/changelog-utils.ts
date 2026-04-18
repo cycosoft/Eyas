@@ -1,5 +1,6 @@
 import semver from 'semver';
 import type { ChangelogEntry, MarkdownToken } from '../types/changelog.js';
+import type { AppVersion, LabelString } from '../../../../types/primitives.js';
 
 /**
  * Filter and aggregate changelog entries between two versions.
@@ -7,7 +8,7 @@ import type { ChangelogEntry, MarkdownToken } from '../types/changelog.js';
  * @param {string} fromVersion - The last seen version.
  * @returns {ChangelogEntry[]} - Aggregated changelog entries.
  */
-export function getAggregatedChanges(changelog: ChangelogEntry[], fromVersion: string): ChangelogEntry[] {
+export function getAggregatedChanges(changelog: ChangelogEntry[], fromVersion: AppVersion): ChangelogEntry[] {
 	if (!changelog || !Array.isArray(changelog)) { return []; }
 
 	return changelog.filter(entry => {
@@ -30,7 +31,7 @@ export function getAggregatedChanges(changelog: ChangelogEntry[], fromVersion: s
  * @param {string} text - The input text.
  * @returns {MarkdownToken[]} - List of tokens.
  */
-export function tokenizeMarkdownSubset(text: string): MarkdownToken[] {
+export function tokenizeMarkdownSubset(text: LabelString): MarkdownToken[] {
 	if (!text) { return []; }
 
 	const tokens: MarkdownToken[] = [];

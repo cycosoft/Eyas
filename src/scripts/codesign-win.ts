@@ -2,6 +2,7 @@
 
 import util from "node:util";
 import { exec as childProcessExec } from "node:child_process";
+import type { SourcePath, HashString, LabelString } from "../types/primitives.js";
 
 const exec = util.promisify(childProcessExec);
 
@@ -10,11 +11,11 @@ const OwnerName = `"Open Source Developer, Eric Higginson"`;
 const TimeStampServer = `http://time.certum.pl/`;
 
 type SignConfig = {
-	path: string;
-	hash: string;
+	path: SourcePath;
+	hash: HashString;
 }
 
-async function doSign(file: string, hash: string, owner: string): Promise<void> {
+async function doSign(file: SourcePath, hash: HashString, owner: LabelString): Promise<void> {
 	const Debug = (process.env.CERT_DEBUG && process.env.CERT_DEBUG === `true`) || false;
 	const Verbose = (process.env.CERT_VERBOSE && process.env.CERT_VERBOSE === `true`) || false;
 	const sha256 = hash === `sha256`;

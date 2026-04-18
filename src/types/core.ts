@@ -1,4 +1,4 @@
-import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, FilePath, DomainUrl, SettingKey, IsActive } from './primitives.js';
+import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, FilePath, DomainUrl, SettingKey, IsActive, IsDefault, LoadMethod, AppVersion, HashString, RetryCount, DeviceId, AppTitle } from './primitives.js';
 import type { Mixpanel } from 'mixpanel';
 
 
@@ -7,7 +7,7 @@ export type Viewport = {
 	label: ViewportLabel;
 	width: ViewportWidth;
 	height: ViewportHeight;
-	isDefault?: boolean;
+	isDefault?: IsDefault;
 }
 
 /** Tuple representing viewport dimensions */
@@ -15,7 +15,7 @@ export type ViewportSize = [ViewportWidth, ViewportHeight];
 
 /** Information about the configuration file to be loaded */
 export type ConfigToLoad = {
-	method?: string;
+	method?: LoadMethod;
 	path?: FilePath;
 }
 
@@ -27,15 +27,22 @@ export type StartupModal = {
 
 /** Application-level settings stored in the settings service */
 export type AppSettings = {
-	lastSeenVersion?: string;
-	[key: string]: unknown;
+	lastSeenVersion?: AppVersion;
+	[key: SettingKey]: unknown;
 }
 
 /** Settings related to the environment selection */
 export type EnvironmentSettings = {
 	alwaysChoose?: IsActive;
 	lastChoice?: EnvironmentChoice;
-	lastChoiceHash?: string;
+	lastChoiceHash?: HashString;
+}
+
+/** Settings related to the local test server */
+export type TestServerSettings = {
+	useHttps?: IsActive;
+	autoOpenBrowser?: IsActive;
+	useCustomDomain?: IsActive;
 }
 
 /** A single environment choice saved in settings */
@@ -43,6 +50,13 @@ export type EnvironmentChoice = {
 	url: DomainUrl;
 	key?: SettingKey;
 }
+
+/** A single environment choice with a title */
+export type EnvironmentTitle = {
+	title?: AppTitle;
+}
+
+export type EnvironmentChoiceWithTitle = EnvironmentChoice & EnvironmentTitle;
 
 /** Event that can be prevented */
 export type PreventableEvent = {
@@ -52,11 +66,11 @@ export type PreventableEvent = {
 /** Function for focusing the UI with attempt tracking */
 export type FocusUI = {
 	(): void;
-	attempts?: number;
+	attempts?: RetryCount;
 }
 
 /** Mixpanel tracking state attached to trackEvent */
 export type TrackingState = {
 	mixpanel?: Mixpanel;
-	deviceId?: string;
+	deviceId?: DeviceId;
 }

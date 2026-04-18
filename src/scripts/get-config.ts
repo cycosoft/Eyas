@@ -12,7 +12,8 @@ import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 
 // Types
-import type { ValidatedConfig, EyasConfig, EyasMeta } from "../types/config.js";
+import type { ValidatedConfig, EyasConfig, EyasMeta, DomainConfig } from "../types/config.js";
+import type { LoadMethod, SourcePath, IsActive, LabelString, AppVersion, HashString, ProjectId, TestId, DurationHours } from "../types/primitives.js";
 
 // setup
 const require = createRequire(import.meta.url);
@@ -28,7 +29,7 @@ Retrieves the configuration for the test by one of the following methods
 - Path to *.eyas found in the same directory as the runner
 - Path to .eyas.config.js loaded via the CLI
 */
-async function getConfig(method: string, path?: string): Promise<ValidatedConfig> {
+async function getConfig(method: LoadMethod, path?: SourcePath): Promise<ValidatedConfig> {
 	// setup
 	let loadedConfig: EyasConfig | null = null;
 
@@ -86,7 +87,7 @@ async function getConfig(method: string, path?: string): Promise<ValidatedConfig
 }
 
 // get the config via web requests ( supports both eyas:// and https:// protocols )
-async function getConfigViaUrl(path: string): Promise<EyasConfig> {
+async function getConfigViaUrl(path: SourcePath): Promise<EyasConfig> {
 	// setup
 	const defaultConfigName = `eyas.json`;
 
@@ -140,7 +141,7 @@ async function getConfigViaUrl(path: string): Promise<EyasConfig> {
 }
 
 // get the config via file association
-async function getConfigViaAssociation(path: string): Promise<EyasConfig> {
+async function getConfigViaAssociation(path: SourcePath): Promise<EyasConfig> {
 	// pass the path through to the asar loader AND return the config object
 	return await getConfigFromAsar(path);
 }
@@ -166,7 +167,8 @@ async function getConfigViaCli(): Promise<EyasConfig> {
 	const consumerPackageJsonPath = _path.join(roots.config, `package.json`);
 	const cjsConfigPath = _path.join(roots.config, `${baseConfigName}.cjs`);
 	const jsConfigPath = _path.join(roots.config, `${baseConfigName}.js`);
-	let consumerPackageJson: { type?: string } | null = null;
+	type PackageJson = { type?: LabelString };
+	let consumerPackageJson: PackageJson | null = null;
 
 	// first load the consumer package.json
 	try {
@@ -229,7 +231,7 @@ async function getConfigViaCli(): Promise<EyasConfig> {
 // copy the *.eyas file to a temporary location as an *.asar and load the config directly
 // * config cannot be loaded from custom extension
 // * renaming the file to *.asar in-place is poor UX
-async function getConfigFromAsar(path: string): Promise<EyasConfig> {
+async function getConfigFromAsar(path: SourcePath): Promise<EyasConfig> {
 	// setup
 	const tempFileName = `eyas-config-${crypto.randomUUID()}.asar`;
 	let loadedConfig: EyasConfig;
@@ -264,7 +266,7 @@ async function getConfigFromAsar(path: string): Promise<EyasConfig> {
 }
 
 // returns the validated configuration based on the loaded config
-function validateConfig(rawConfig: EyasConfig | null, isConfigLoaded = false): ValidatedConfig {
+function validateConfig(rawConfig: EyasConfig | null, isConfigLoaded: IsActive = false): ValidatedConfig {
 	// setup
 	const loadedConfig = rawConfig || {};
 	const expiresIn = validateExpiration(loadedConfig.outputs?.expires);
@@ -289,7 +291,7 @@ function validateConfig(rawConfig: EyasConfig | null, isConfigLoaded = false): V
 }
 
 // returns the validated metadata based on the loaded config
-function getValidatedMeta(rawMeta: Partial<EyasMeta> | undefined, expiresIn: number, isConfigLoaded: boolean): EyasMeta {
+function getValidatedMeta(rawMeta: Partial<EyasMeta> | undefined, expiresIn: DurationHours, isConfigLoaded: IsActive): EyasMeta {
 	const meta = rawMeta || {};
 
 	return {
@@ -307,14 +309,14 @@ function getValidatedMeta(rawMeta: Partial<EyasMeta> | undefined, expiresIn: num
 }
 
 // validate the user input for the custom domain
-function validateCustomDomain(input?: string | string[] | { url: string; title?: string; key?: string }[]): { url: string; title?: string; key?: string }[] {
+function validateCustomDomain(input?: string | string[] | DomainConfig[]): DomainConfig[] {
 	// default to an empty array
-	const output: { url: string; title?: string; key?: string }[] = [/* { url: ``, title: `Staging` } */];
+	const output: DomainConfig[] = [/* { url: ``, title: `Staging` } */];
 
 	// if the input is a string
 	if (typeof input === `string`) {
 		// convert to an array
-		output.push({ url: input });
+		output.push({ url: input, title: input });
 	}
 
 	// if the input is an array
@@ -340,7 +342,7 @@ function validateCustomDomain(input?: string | string[] | { url: string; title?:
 }
 
 // get the version of the cli
-function getCliVersion(): string {
+function getCliVersion(): AppVersion {
 	try {
 		const { version } = JSON.parse(_fs.readFileSync(_path.join(roots.module, `package.json`), `utf-8`));
 		return version;
@@ -351,7 +353,7 @@ function getCliVersion(): string {
 }
 
 // attempts to return the current short hash
-function getCommitHash(): string | null {
+function getCommitHash(): HashString | null {
 	try {
 		return execSync(`git rev-parse --short HEAD`).toString().trim();
 	} catch (error) {
@@ -362,7 +364,7 @@ function getCommitHash(): string | null {
 }
 
 // attempts to return the current branch name
-function getBranchName(): string | null {
+function getBranchName(): LabelString | null {
 	try {
 		return execSync(`git rev-parse --abbrev-ref HEAD`).toString().trim();
 	} catch (error) {
@@ -373,7 +375,7 @@ function getBranchName(): string | null {
 }
 
 // attempts to return the current user name
-function getUserName(): string | null {
+function getUserName(): LabelString | null {
 	try {
 		return execSync(`git config user.name`).toString().trim();
 	} catch (error) {
@@ -384,7 +386,7 @@ function getUserName(): string | null {
 }
 
 // attempt to hash the user's email domain
-function getCompanyId(): string | null {
+function getCompanyId(): HashString | null {
 	try {
 		const email = execSync(`git config user.email`).toString().trim();
 
@@ -408,7 +410,7 @@ function getCompanyId(): string | null {
 }
 
 // get the project id from the git remote
-function getProjectId(): string | null {
+function getProjectId(): ProjectId | null {
 	try {
 		// Split output into lines and filter out empty lines
 		const remotes = execSync(`git remote`, { encoding: `utf-8` })
@@ -428,12 +430,12 @@ function getProjectId(): string | null {
 }
 
 // create a unique id for the test
-function getTestId(): string {
+function getTestId(): TestId {
 	return crypto.randomUUID();
 }
 
 // validate the user input for the expiration
-function validateExpiration(hours?: unknown): number {
+function validateExpiration(hours?: unknown): DurationHours {
 	// default
 	const defaultHours = 7 * 24; // 168 hours or 1 week
 	const minHours = 1;
@@ -465,7 +467,7 @@ function validateExpiration(hours?: unknown): number {
 }
 
 // get the default preview expiration
-function getExpirationDate(expiresInHours: number): Date {
+function getExpirationDate(expiresInHours: DurationHours): Date {
 	const now = new Date();
 	return addHours(now, expiresInHours);
 }

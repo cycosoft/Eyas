@@ -28,6 +28,7 @@ import TestServerActiveModal from '@/components/TestServerActiveModal.vue';
 import SettingsModal from '@/components/SettingsModal.vue';
 import WhatsNewModal from '@/components/WhatsNewModal.vue';
 import changelogData from '@/CHANGELOG.json';
+import type { ChannelName } from '@/../../../types/primitives.js';
 
 export default {
 	components: {
@@ -56,23 +57,23 @@ export default {
 
 		onMounted(() => {
 			// listen for settings to be loaded from the main process
-			window.eyas?.receive(`settings-loaded`, data => {
+			window.eyas?.receive(`settings-loaded` as ChannelName, data => {
 				settingsStore.loadFromPayload(data);
 				// once settings are loaded, signal that we are ready for startup modals
-				window.eyas?.send(`renderer-ready-for-modals`, changelogData[0]?.version);
+				window.eyas?.send(`renderer-ready-for-modals` as ChannelName, changelogData[0]?.version);
 			});
 
-			window.eyas?.receive(`settings-updated`, ({ key, value, projectId }) => {
+			window.eyas?.receive(`settings-updated` as ChannelName, ({ key, value, projectId }) => {
 				settingsStore.setSetting(key, value, projectId);
 			});
 
 			// listen for system theme updates
-			window.eyas?.receive(`system-theme-updated`, theme => {
+			window.eyas?.receive(`system-theme-updated` as ChannelName, theme => {
 				settingsStore.setSystemTheme(theme);
 			});
 
 			// request initial settings
-			window.eyas?.send(`get-settings`);
+			window.eyas?.send(`get-settings` as ChannelName);
 		});
 
 		return {
@@ -84,6 +85,6 @@ export default {
 };
 
 // detect when the network status changes
-window.addEventListener(`online`, () => window.eyas?.send(`network-status`, true));
-window.addEventListener(`offline`, () => window.eyas?.send(`network-status`, false));
+window.addEventListener(`online`, () => window.eyas?.send(`network-status` as ChannelName, true));
+window.addEventListener(`offline`, () => window.eyas?.send(`network-status` as ChannelName, false));
 </script>

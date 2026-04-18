@@ -1,21 +1,24 @@
 import type { Configuration } from "electron-builder";
+import type { SourcePath, IsActive, LabelString } from "../types/primitives.js";
+
+type BuildPaths = {
+	icon: SourcePath;
+	iconDbWin: SourcePath;
+	iconDbMac: SourcePath;
+	codesignWin: SourcePath;
+}
 
 type BuildOptions = {
-	isDev: boolean;
-	isInstaller: boolean;
-	isWin: boolean;
-	isMac?: boolean;
-	paths: {
-		icon: string;
-		iconDbWin: string;
-		iconDbMac: string;
-		codesignWin: string;
-	};
-	runnerName: string;
-	appleTeamId?: string;
-	buildRoot?: string;
-	runnersRoot: string;
-	provisioningProfile?: string;
+	isDev: IsActive;
+	isInstaller: IsActive;
+	isWin: IsActive;
+	isMac?: IsActive;
+	paths: BuildPaths;
+	runnerName: LabelString;
+	appleTeamId?: LabelString;
+	buildRoot?: SourcePath;
+	runnersRoot: SourcePath;
+	provisioningProfile?: SourcePath;
 }
 
 /**
@@ -64,7 +67,7 @@ export function getElectronBuilderConfig(options: BuildOptions): Configuration {
  * Returns the list of files to be excluded from the build.
  * @returns {string[]} List of excluded files
  */
-function getExcludedFiles(): string[] {
+function getExcludedFiles(): SourcePath[] {
 	return [
 		`!**/.vscode/*`,
 		`!src/*`,

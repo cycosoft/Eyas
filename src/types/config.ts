@@ -1,42 +1,55 @@
 import type { Viewport } from './core.js';
+import type { DomainUrl, AppVersion, LabelString, IsActive, HashString, ProjectId, TestId, DurationHours, SourcePath } from './primitives.js';
 
 export type EyasMeta = {
 	expires: Date;
-	gitBranch: string | null;
-	gitHash: string | null;
-	gitUser: string | null;
+	gitBranch: LabelString | null;
+	gitHash: HashString | null;
+	gitUser: LabelString | null;
 	compiled: Date;
-	eyas: string;
-	companyId: string | null;
-	projectId: string | null;
-	testId: string;
-	isConfigLoaded: boolean;
+	eyas: AppVersion;
+	companyId: HashString | null;
+	projectId: ProjectId | null;
+	testId: TestId;
+	isConfigLoaded: IsActive;
+}
+
+export type DomainConfig = {
+	url: DomainUrl;
+	title?: LabelString;
+	key?: LabelString;
+}
+
+export type LinkConfig = {
+	label: LabelString;
+	url: DomainUrl;
+	external?: IsActive;
+}
+
+export type OutputConfig = {
+	expires: DurationHours;
 }
 
 export type ValidatedConfig = {
-	source: string;
-	domains: { url: string; title?: string; key?: string }[];
-	title: string;
-	version: string;
+	source: SourcePath;
+	domains: DomainConfig[];
+	title: LabelString;
+	version: AppVersion;
 	viewports: Viewport[];
-	links: { label: string; url: string; external?: boolean }[];
-	outputs: {
-		expires: number;
-	};
+	links: LinkConfig[];
+	outputs: OutputConfig;
 	meta: EyasMeta;
 }
 
 export type EyasConfig = {
-	source?: string;
-	domain?: string | string[] | { url: string; title?: string }[];
-	domains?: string | string[] | { url: string; title?: string }[];
-	title?: string;
-	version?: string;
+	source?: SourcePath;
+	domain?: string | string[] | DomainConfig[];
+	domains?: string | string[] | DomainConfig[];
+	title?: LabelString;
+	version?: AppVersion;
 	viewports?: Viewport[];
-	links?: { label: string; url: string; external?: boolean }[];
-	outputs?: {
-		expires?: number;
-	};
+	links?: LinkConfig[];
+	outputs?: Partial<OutputConfig>;
 	meta?: Partial<EyasMeta>;
-	_isConfigLoaded?: boolean;
+	_isConfigLoaded?: IsActive;
 }

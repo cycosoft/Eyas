@@ -1,12 +1,15 @@
 import { contextBridge, ipcRenderer } from "electron";
+import type { ChannelName, LabelString, TimerId, IsActive, Count } from "../types/primitives.js";
 
 // Define the shape of the 'eyas' object exposed to the renderer
 type RequestBridge = {
-	send: (channel: string, data?: unknown) => void;
-	receive: (channel: string, func: (...args: unknown[]) => void) => void;
+	send: (channel: ChannelName, data?: unknown) => void;
+	receive: (channel: ChannelName, func: (...args: unknown[]) => void) => void;
 }
 
 declare global {
+	// Global augmentation of the Window interface requires the 'interface' keyword to merge with the existing Window definition.
+	// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 	interface Window {
 		eyas: RequestBridge;
 	}
@@ -16,9 +19,9 @@ declare global {
 // the ipcRenderer without exposing the entire object
 // via ( https://stackoverflow.com/a/59814127 )
 contextBridge.exposeInMainWorld(`eyas`, {
-	send: (channel: string, data?: unknown) => {
+	send: (channel: ChannelName, data?: unknown): void => {
 		// whitelist channels
-		const validChannels = [
+		const validChannels: ChannelName[] = [
 			`network-status`
 		];
 
@@ -27,8 +30,8 @@ contextBridge.exposeInMainWorld(`eyas`, {
 		}
 	},
 
-	receive: (channel: string, func: (...args: unknown[]) => void) => {
-		const validChannels: string[] = [];
+	receive: (channel: ChannelName, func: (...args: unknown[]) => void): void => {
+		const validChannels: ChannelName[] = [];
 
 		if (validChannels.includes(channel)) {
 			// Deliberately strip event as it includes `sender`
@@ -51,7 +54,7 @@ process.once(`document-start`, () => {
 });
 
 // grab the given function as a string, wrap it in an anonymous function, and return it
-export function injectWithAnonymousScope(fn: (...args: unknown[]) => unknown): string {
+export function injectWithAnonymousScope(fn: (...args: unknown[]) => unknown): LabelString {
 	// newline required for the function to be properly parsed
 	return `(() => {
 		${extractFunctionBody(fn)}
@@ -59,7 +62,7 @@ export function injectWithAnonymousScope(fn: (...args: unknown[]) => unknown): s
 }
 
 // Extract the body of the function
-export function extractFunctionBody(fn: (...args: unknown[]) => unknown): string {
+export function extractFunctionBody(fn: (...args: unknown[]) => unknown): LabelString {
 	// convert the given function to a string
 	const content = fn.toString();
 
@@ -75,8 +78,8 @@ export function extractFunctionBody(fn: (...args: unknown[]) => unknown): string
 
 // allow network detection status within Eyas
 export function reportNetworkStatus(): void {
-	window.addEventListener(`online`, () => window.eyas?.send(`network-status`, true));
-	window.addEventListener(`offline`, () => window.eyas?.send(`network-status`, false));
+	window.addEventListener(`online`, () => window.eyas?.send(`network-status` as ChannelName, true as IsActive));
+	window.addEventListener(`offline`, () => window.eyas?.send(`network-status` as ChannelName, false as IsActive));
 }
 
 // polyfill for upload progress within Eyas
@@ -90,7 +93,7 @@ export function polyfillUploadProgress(): void {
 		// setup
 		const intervalTiming = 100;
 		let totalUpdates = 0;
-		let intervalId: ReturnType<typeof setInterval> | null = null;
+		let intervalId: TimerId | null = null;
 		let fileBytes = 1; // default to 1 byte to avoid division by 0
 
 		// track the time this request started
@@ -124,7 +127,7 @@ export function polyfillUploadProgress(): void {
 		});
 
 		// the event to dispatch the progress event
-		const emitProgress = (loaded: number, total: number): void => {
+		const emitProgress = (loaded: Count, total: Count): void => {
 			this.upload.dispatchEvent(new ProgressEvent(`progress`,
 				{ lengthComputable: true, loaded, total }
 			));

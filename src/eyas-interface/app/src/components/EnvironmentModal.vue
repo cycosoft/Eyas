@@ -64,6 +64,8 @@
 
 <script lang="ts">
 import ModalWrapper from '@/components/ModalWrapper.vue';
+import type { EnvironmentChoiceWithTitle } from '@/../../../types/core.js';
+import type { IsVisible, ListIndex, IsActive, ProjectId, ChannelName, LabelString, HashString } from '@/../../../types/primitives.js';
 
 // component defaults
 const defaults = JSON.stringify({
@@ -75,16 +77,25 @@ const defaults = JSON.stringify({
 	domainsHash: null
 });
 
+type EnvironmentModalState = {
+	visible: IsVisible;
+	domains: EnvironmentChoiceWithTitle[];
+	loadingIndex: ListIndex;
+	alwaysChoose: IsActive;
+	projectId: ProjectId | null;
+	domainsHash: HashString | null;
+}
+
 export default {
 	components: {
 		ModalWrapper
 	},
 
-	data: (): object => JSON.parse(defaults),
+	data: (): EnvironmentModalState => JSON.parse(defaults),
 
 	mounted(): void {
 		// Listen for messages from the main process
-		window.eyas?.receive(`show-environment-modal`, (domains, options = {}) => {
+		window.eyas?.receive(`show-environment-modal` as ChannelName, (domains, options = {}) => {
 			this.domains = JSON.parse(JSON.stringify(domains));
 			this.projectId = options.projectId ?? null;
 			this.alwaysChoose = !!options.alwaysChoose;
@@ -94,17 +105,17 @@ export default {
 	},
 
 	methods: {
-		choose(domain: Record<string, unknown>, domainIndex: number): void {
+		choose(domain: EnvironmentChoiceWithTitle, domainIndex: ListIndex): void {
 			// show a loader on the chosen domain
 			this.loadingIndex = domainIndex;
 
 			// save the user's choice and hash so we can skip the modal next time
-			window.eyas?.send(`save-setting`, {
+			window.eyas?.send(`save-setting` as ChannelName, {
 				key: `env.lastChoice`,
 				value: JSON.parse(JSON.stringify(domain)),
 				projectId: this.projectId
 			});
-			window.eyas?.send(`save-setting`, {
+			window.eyas?.send(`save-setting` as ChannelName, {
 				key: `env.lastChoiceHash`,
 				value: this.domainsHash,
 				projectId: this.projectId
@@ -113,7 +124,7 @@ export default {
 			// timeout for user feedback + time to load test environment
 			setTimeout(() => {
 				// send the chosen domain to the main process
-				window.eyas?.send(`environment-selected`, JSON.parse(JSON.stringify(domain)));
+				window.eyas?.send(`environment-selected` as ChannelName, JSON.parse(JSON.stringify(domain)));
 
 				// close the modal
 				this.visible = false;
@@ -123,7 +134,7 @@ export default {
 			}, 200);
 		},
 
-		tooltip(domain: Record<string, unknown>): string {
+		tooltip(domain: EnvironmentChoiceWithTitle): LabelString {
 			const message = `Set environment title in Eyas config`;
 			return domain.url === domain.title ? message : domain.url;
 		},
@@ -144,9 +155,9 @@ export default {
 			}
 		},
 
-		onAlwaysChooseChange(value: boolean): void {
+		onAlwaysChooseChange(value: IsActive): void {
 			// immediately save the setting when the checkbox is toggled
-			window.eyas?.send(`save-setting`, {
+			window.eyas?.send(`save-setting` as ChannelName, {
 				key: `env.alwaysChoose`,
 				value: !!value,
 				projectId: this.projectId

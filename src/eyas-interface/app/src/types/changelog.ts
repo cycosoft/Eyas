@@ -1,17 +1,32 @@
+import type { LabelString, AppVersion, DomainUrl } from '../../../../types/primitives.js';
+
 export type ChangelogItem = {
-	text: string;
-	subItems?: string[];
+	text: LabelString;
+	subItems?: LabelString[];
 	subItemsType?: `ordered` | `unordered`;
 }
 
 export type ChangelogEntry = {
-	version: string;
+	version: AppVersion;
 	items: ChangelogItem[];
-	notes?: string;
+	notes?: LabelString;
 	listType?: `ordered` | `unordered`;
 }
 
-export type MarkdownToken =
-	| { type: `text`; content: string }
-	| { type: `code`; content: string }
-	| { type: `link`; content: string; url: string };
+export type MarkdownTextToken = {
+	type: `text`;
+	content: LabelString;
+}
+
+export type MarkdownCodeToken = {
+	type: `code`;
+	content: LabelString;
+}
+
+export type MarkdownLinkToken = {
+	type: `link`;
+	content: LabelString;
+	url: DomainUrl;
+}
+
+export type MarkdownToken = MarkdownTextToken | MarkdownCodeToken | MarkdownLinkToken;

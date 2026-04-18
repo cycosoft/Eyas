@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import type { SettingsState, Payload } from '../types/settings.js';
+import type { ProjectId, SystemTheme, SettingKey, SettingValue, SettingsMap, IsActive } from '../../../../types/primitives.js';
 
 export default defineStore(`settings`, {
 	state: (): SettingsState => ({
@@ -11,30 +12,30 @@ export default defineStore(`settings`, {
 	}),
 
 	actions: {
-		setProjectSettings(data: Record<string, unknown>) {
+		setProjectSettings(data: SettingsMap) {
 			this.projectSettings = { ...this.projectSettings, ...data };
 		},
 
-		setAppSettings(data: Record<string, unknown>) {
+		setAppSettings(data: SettingsMap) {
 			this.appSettings = { ...this.appSettings, ...data };
 		},
 
-		setProjectId(id: string | null) {
+		setProjectId(id: ProjectId | null) {
 			this.projectId = id;
 		},
 
-		setSetting(keyPath: string, value: unknown, projectId?: boolean) {
+		setSetting(keyPath: SettingKey, value: SettingValue, projectId?: IsActive) {
 			this.$patch(state => {
 				const target = projectId ? state.projectSettings : state.appSettings;
 				const keys = keyPath.split(`.`);
 				const last = keys.pop();
 				if (!last) { return; }
 
-				const obj = keys.reduce((acc: Record<string, unknown>, k: string) => {
+				const obj = keys.reduce((acc: SettingsMap, k: SettingKey) => {
 					if (acc[k] === undefined || typeof acc[k] !== `object`) {
 						acc[k] = {};
 					}
-					return acc[k] as Record<string, unknown>;
+					return acc[k] as SettingsMap;
 				}, target);
 
 				// only update if the value has changed
@@ -44,7 +45,7 @@ export default defineStore(`settings`, {
 			});
 		},
 
-		setSystemTheme(theme: string) {
+		setSystemTheme(theme: SystemTheme) {
 			this.systemTheme = theme;
 		},
 

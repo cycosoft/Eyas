@@ -1,23 +1,14 @@
 import type { THEME_MODES } from '../scripts/constants.js';
+import type { EnvironmentSettings, TestServerSettings } from './core.js';
+import type { AppVersion, ProjectId } from './primitives.js';
 
 export type ThemeMode = typeof THEME_MODES[keyof typeof THEME_MODES];
 
 export type SettingsBase = {
-	env?: {
-		alwaysChoose?: boolean;
-		lastChoice?: {
-			url: string;
-			key?: string;
-		};
-		lastChoiceHash?: string;
-	};
+	env?: EnvironmentSettings;
 	theme?: ThemeMode;
-	lastSeenVersion?: string;
-	testServer?: {
-		useHttps?: boolean;
-		autoOpenBrowser?: boolean;
-		useCustomDomain?: boolean;
-	};
+	lastSeenVersion?: AppVersion;
+	testServer?: TestServerSettings;
 }
 
 /** Settings stored at the application level */
@@ -29,5 +20,5 @@ export type ProjectSettings = SettingsBase;
 /** The full structure of the settings.json file */
 export type SettingsData = {
 	app: AppSettings;
-	projects: Record<string, ProjectSettings>;
+	projects: Record<ProjectId, ProjectSettings>;
 }

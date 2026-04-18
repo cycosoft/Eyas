@@ -1,12 +1,14 @@
 import validator from "validator";
+import type { DomainUrl } from "../types/primitives.js";
+
 const { isURL } = validator;
 
 /**
  * Formats the URL for Electron consumption.
- * @param {string | null | undefined} url - The input URL string to parse.
- * @returns {URL | string} A parsed URL object or an empty string if invalid.
+ * @param {DomainUrl | null | undefined} url - The input URL string to parse.
+ * @returns {URL | DomainUrl} A parsed URL object or an empty string if invalid.
  */
-function parseURL(url: string | null | undefined): URL | string {
+function parseURL(url: DomainUrl | null | undefined): URL | DomainUrl {
 	// config
 	const output = ``;
 

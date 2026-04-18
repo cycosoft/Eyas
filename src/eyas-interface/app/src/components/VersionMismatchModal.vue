@@ -42,31 +42,36 @@
 
 <script lang="ts">
 import ModalWrapper from '@/components/ModalWrapper.vue';
+import type { IsVisible, AppVersion, ChannelName, DomainUrl } from '@/../../../types/primitives.js';
+
+type VersionMismatchState = {
+	visible: IsVisible;
+	runnerVersion: AppVersion | null;
+	testVersion: AppVersion | null;
+}
 
 export default {
 	components: {
 		ModalWrapper
 	},
 
-	data: (): { visible: boolean; runnerVersion: string | null; testVersion: string | null } => ({
+	data: (): VersionMismatchState => ({
 		visible: false,
 		runnerVersion: null,
 		testVersion: null
 	}),
 
 	mounted(): void {
-		// Listen for messages from the main process
-		window.eyas?.receive(`show-version-mismatch-modal`, (runnerVersion, testVersion) => {
-			this.runnerVersion = runnerVersion;
-			this.testVersion = testVersion;
+		window.eyas?.receive(`show-version-mismatch-modal` as ChannelName, ({ runnerVersion, testVersion } = {}) => {
+			this.runnerVersion = runnerVersion || null;
+			this.testVersion = testVersion || null;
 			this.visible = true;
 		});
 	},
 
 	methods: {
 		checkForUpdate(): void {
-			const url = `https://github.com/cycosoft/Eyas/releases`;
-			window.eyas?.send(`launch-link`, { url, openInBrowser: true });
+			window.eyas?.send(`open-external` as ChannelName, `https://github.com/cycosoft/eyas/releases` as DomainUrl);
 		}
 	}
 };

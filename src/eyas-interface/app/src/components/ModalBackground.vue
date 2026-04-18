@@ -17,6 +17,8 @@
 </template>
 
 <script lang="ts">
+import type { DomainUrl, ChannelName } from '@/../../../types/primitives.js';
+
 export default {
 	props: {
 		modelValue: Boolean,
@@ -24,8 +26,8 @@ export default {
 	},
 
 	methods: {
-		openInBrowser(url: string): void {
-			window.eyas?.send(`launch-link`, { url, openInBrowser: true });
+		openInBrowser(url: DomainUrl): void {
+			window.eyas?.send(`launch-link` as ChannelName, { url, openInBrowser: true });
 		}
 	}
 };

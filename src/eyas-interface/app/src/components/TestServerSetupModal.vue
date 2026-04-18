@@ -116,6 +116,22 @@
 
 <script lang="ts">
 import ModalWrapper from '@/components/ModalWrapper.vue';
+import type { IsVisible, DomainUrl, PortNumber, IconName, IsActive, ProjectId, ChannelName, PortString, LabelString, SettingKey, SettingValue, IsWindows, StepId } from '@/../../../types/primitives.js';
+
+type TestServerSetupState = {
+	visible: IsVisible;
+	domain: DomainUrl;
+	hostnameForHosts: DomainUrl;
+	steps: StepId[];
+	portHttp: PortNumber;
+	portHttps: PortNumber;
+	isWindows: IsWindows;
+	copyIcon: IconName;
+	internalUseHttps: IsActive;
+	internalAutoOpenBrowser: IsActive;
+	internalUseCustomDomain: IsActive;
+	projectId: ProjectId | null;
+}
 
 const defaults = {
 	visible: false,
@@ -133,7 +149,7 @@ export default {
 		ModalWrapper
 	},
 
-	data: (): object => ({
+	data: (): TestServerSetupState => ({
 		...defaults,
 		internalUseHttps: false,
 		internalAutoOpenBrowser: true,
@@ -143,44 +159,44 @@ export default {
 
 	computed: {
 		useHttps: {
-			get(): boolean { return this.internalUseHttps; },
-			set(val: boolean): void {
+			get(): IsActive { return this.internalUseHttps; },
+			set(val: IsActive): void {
 				this.internalUseHttps = val;
-				this.saveSetting(`testServer.useHttps`, val);
+				this.saveSetting(`testServer.useHttps` as SettingKey, val);
 			}
 		},
 		autoOpenBrowser: {
-			get(): boolean { return this.internalAutoOpenBrowser; },
-			set(val: boolean): void {
+			get(): IsActive { return this.internalAutoOpenBrowser; },
+			set(val: IsActive): void {
 				this.internalAutoOpenBrowser = val;
-				this.saveSetting(`testServer.autoOpenBrowser`, val);
+				this.saveSetting(`testServer.autoOpenBrowser` as SettingKey, val);
 			}
 		},
 		useCustomDomain: {
-			get(): boolean { return this.internalUseCustomDomain; },
-			set(val: boolean): void {
+			get(): IsActive { return this.internalUseCustomDomain; },
+			set(val: IsActive): void {
 				this.internalUseCustomDomain = val;
-				this.saveSetting(`testServer.useCustomDomain`, val);
+				this.saveSetting(`testServer.useCustomDomain` as SettingKey, val);
 			}
 		},
-		hostsLine(): string {
+		hostsLine(): LabelString {
 			const ip = `127.0.0.1`;
 			const host = this.hostnameForHosts || `test.local`;
 			return `${ip}\t${host}`;
 		},
-		displayDomain(): string {
+		displayDomain(): DomainUrl {
 			return this.useCustomDomain ? (this.hostnameForHosts || `test.local`) : `127.0.0.1`;
 		},
-		port(): number {
+		port(): PortNumber {
 			return this.useHttps ? this.portHttps : this.portHttp;
 		},
-		displayPort(): string {
+		displayPort(): PortString {
 			return (this.useHttps && this.port === 443) || (!this.useHttps && this.port === 80) ? `` : `:${this.port}`;
 		}
 	},
 
 	mounted(): void {
-		window.eyas?.receive(`show-test-server-setup-modal`, payload => {
+		window.eyas?.receive(`show-test-server-setup-modal` as ChannelName, payload => {
 			this.domain = payload.domain || ``;
 			this.hostnameForHosts = payload.hostnameForHosts || `test.local`;
 			this.steps = Array.isArray(payload.steps) ? payload.steps : [];
@@ -199,12 +215,12 @@ export default {
 	},
 
 	methods: {
-		initiate(stepId: string): void {
-			window.eyas?.send(`test-server-setup-step`, { action: `initiate`, stepId });
+		initiate(stepId: StepId): void {
+			window.eyas?.send(`test-server-setup-step` as ChannelName, { action: `initiate`, stepId });
 		},
 
-		revoke(stepId: string): void {
-			window.eyas?.send(`test-server-setup-step`, { action: `revoke`, stepId });
+		revoke(stepId: StepId): void {
+			window.eyas?.send(`test-server-setup-step` as ChannelName, { action: `revoke`, stepId });
 		},
 
 		copyHostsLine(): void {
@@ -227,7 +243,7 @@ export default {
 		},
 
 		continueStart(): void {
-			window.eyas?.send(`test-server-setup-continue`, {
+			window.eyas?.send(`test-server-setup-continue` as ChannelName, {
 				useHttps: this.useHttps,
 				autoOpenBrowser: this.autoOpenBrowser,
 				useCustomDomain: this.useCustomDomain
@@ -242,8 +258,8 @@ export default {
 			});
 		},
 
-		saveSetting(key: string, value: unknown): void {
-			window.eyas?.send(`save-setting`, { key, value, projectId: this.projectId });
+		saveSetting(key: SettingKey, value: SettingValue): void {
+			window.eyas?.send(`save-setting` as ChannelName, { key, value, projectId: this.projectId });
 		}
 	}
 };

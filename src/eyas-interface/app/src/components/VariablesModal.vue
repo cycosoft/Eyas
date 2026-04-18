@@ -100,6 +100,7 @@
 <script lang="ts">
 import ModalWrapper from '@/components/ModalWrapper.vue';
 import isURL from 'validator/lib/isURL';
+import type { IsVisible, DomainUrl, LabelString, ChannelName, VariableValue, VariableType, FieldName, IsActive } from '@/../../../types/primitives.js';
 
 const REGEX_VARIABLES_AND_FIELDS = /([?|&](\w*)=)?{([^{}]+)}/g;
 const REGEX_VARIABLES_ONLY = /{([^{}]+)}/g;
@@ -110,17 +111,34 @@ const componentDefaults = JSON.stringify({
 	form: []
 });
 
+type VariableOption = {
+	value: VariableValue;
+	title: LabelString;
+}
+
+type VariableDescriptor = {
+	type: VariableType;
+	field?: FieldName;
+	options?: VariableOption[];
+}
+
+type VariablesModalState = {
+	visible: IsVisible;
+	link: DomainUrl;
+	form: VariableValue[];
+}
+
 export default {
 	components: {
 		ModalWrapper
 	},
 
-	data: (): object => ({
+	data: (): VariablesModalState => ({
 		...JSON.parse(componentDefaults)
 	}),
 
 	computed: {
-		parsedLink (): string {
+		parsedLink (): LabelString {
 			// copy for manipulation
 			const output = this.link;
 			const form = [...this.form];
@@ -132,7 +150,7 @@ export default {
 			});
 		},
 
-		linkIsValid (): boolean {
+		linkIsValid (): IsActive {
 			// setup
 			let hasVariables = false;
 
@@ -150,9 +168,9 @@ export default {
 			return !hasVariables && isURL(this.parsedLink);
 		},
 
-		variables (): Record<string, unknown>[] {
+		variables (): VariableDescriptor[] {
 			// setup
-			const output = [];
+			const output: VariableDescriptor[] = [];
 
 			// find all variables in the link
 			const variables = this.link.matchAll(new RegExp(REGEX_VARIABLES_AND_FIELDS));
@@ -160,7 +178,7 @@ export default {
 			// for each variable found
 			for (const variable of variables) {
 				// setup
-				const data = {};
+				const data: VariableDescriptor = { type: `` as VariableType };
 				const type = variable[3];
 				const isList = variable[3].includes(`|`);
 				const hasField = variable[2];
@@ -169,11 +187,11 @@ export default {
 				if (type.startsWith(`_`)) { continue; }
 
 				// populate the data object
-				data.type = isList ? `list` : type;
+				data.type = (isList ? `list` : type) as VariableType;
 
 				// add the field if it exists
 				if (hasField) {
-					data.field = variable[2];
+					data.field = variable[2] as FieldName;
 				}
 
 				// add the options or label
@@ -181,9 +199,9 @@ export default {
 					data.options = [];
 
 					variable[3].split(`|`).forEach(option => {
-						data.options.push({
-							value: option,
-							title: option || `{blank}`
+						data.options?.push({
+							value: option as VariableValue,
+							title: (option || `{blank}`) as LabelString
 						});
 					});
 				}
@@ -198,7 +216,7 @@ export default {
 
 	mounted(): void {
 		// Listen for messages from the main process
-		window.eyas?.receive(`show-variables-modal`, link => {
+		window.eyas?.receive(`show-variables-modal` as ChannelName, link => {
 			this.reset();
 			this.link = link;
 			this.open();
@@ -219,11 +237,11 @@ export default {
 		},
 
 		launch(): void {
-			window.eyas?.send(`launch-link`, { url: this.parsedLink });
+			window.eyas?.send(`launch-link` as ChannelName, { url: this.parsedLink });
 			this.close();
 		},
 
-		getFieldLabel(prefix: string, field?: string): string {
+		getFieldLabel(prefix: LabelString, field?: FieldName): LabelString {
 			return `${prefix}${field ? ` for "${field}" field` : ``}`;
 		}
 	}

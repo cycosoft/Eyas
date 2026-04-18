@@ -8,6 +8,7 @@ import type { Platform } from "electron-builder";
 import builder from "electron-builder";
 import { exec } from "child_process";
 import { getElectronBuilderConfig } from "./electron-builder-config.js";
+import type { SourcePath, IsActive } from "../types/primitives.js";
 
 /**
  * Compiles the runners for the project.
@@ -49,12 +50,19 @@ export async function compileRunners(): Promise<void> {
 	maybeOpenRunnersFolder(runnersRoot, isWin);
 }
 
+type BuildPaths = {
+	icon: SourcePath;
+	iconDbWin: SourcePath;
+	iconDbMac: SourcePath;
+	codesignWin: SourcePath;
+}
+
 /**
  * Gets the paths for the project.
  * @param {string} consumerRoot The root of the consumer project.
- * @returns {object} The paths for the project.
+ * @returns {BuildPaths} The paths for the project.
  */
-function getPaths(consumerRoot: string): { icon: string; iconDbWin: string; iconDbMac: string; codesignWin: string } {
+function getPaths(consumerRoot: SourcePath): BuildPaths {
 	return {
 		icon: path.join(consumerRoot, `src`, `eyas-assets`, `eyas-logo.png`),
 		iconDbWin: path.join(consumerRoot, `src`, `eyas-assets`, `eyas-db.ico`),
@@ -69,7 +77,7 @@ function getPaths(consumerRoot: string): { icon: string; iconDbWin: string; icon
  * @param {boolean} isMac Whether the platform is Mac.
  * @returns {Platform[]} The build targets for the project.
  */
-function getBuildTargets(isWin: boolean, isMac: boolean): Platform[] {
+function getBuildTargets(isWin: IsActive, isMac: IsActive): Platform[] {
 	const targets: Platform[] = [];
 	if (isWin) { targets.push(builder.Platform.WINDOWS); }
 	if (isMac) { targets.push(builder.Platform.MAC); }
@@ -82,7 +90,7 @@ function getBuildTargets(isWin: boolean, isMac: boolean): Platform[] {
  * @param {string} distRoot The root of the dist folder.
  * @returns {Promise<void>}
  */
-async function copyExecutables(builtFiles: string[], distRoot: string): Promise<void> {
+async function copyExecutables(builtFiles: SourcePath[], distRoot: SourcePath): Promise<void> {
 	for (const file of builtFiles) {
 		// skip anything not an exe
 		if (!file.endsWith(`.exe`)) { continue; }
@@ -99,7 +107,7 @@ async function copyExecutables(builtFiles: string[], distRoot: string): Promise<
  * @param {boolean} isWin Whether the platform is Windows.
  * @returns {void}
  */
-function maybeOpenRunnersFolder(runnersRoot: string, isWin: boolean): void {
+function maybeOpenRunnersFolder(runnersRoot: SourcePath, isWin: IsActive): void {
 	if (process.env.EYAS_OPEN_RUNNERS !== `true`) { return; }
 
 	const command = isWin ? `explorer "${runnersRoot}"` : `open "${runnersRoot}"`;

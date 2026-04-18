@@ -25,6 +25,14 @@
 <script lang="ts">
 import ModalStore from '@/stores/modals.js';
 import ModalBackground from '@/components/ModalBackground.vue';
+import type { ModalId, ChannelName, IsVisible, IsActive } from '@/../../../types/primitives.js';
+
+type ModalType = `modal` | `dialog`;
+
+type ModalWrapperState = {
+	id: ModalId;
+	dialogWidth: number | `auto`;
+}
 
 export default {
 	components: {
@@ -36,7 +44,7 @@ export default {
 		type: {
 			type: String,
 			default: `modal`,
-			validator: (value: string): boolean => [`modal`, `dialog`].includes(value)
+			validator: (value: ModalType): IsActive => [`modal`, `dialog`].includes(value)
 		},
 		minWidth: {
 			type: [Number, String],
@@ -45,7 +53,7 @@ export default {
 	},
 	emits: [`update:modelValue`],
 
-	data(): { id: string; dialogWidth: string | number } {
+	data(): ModalWrapperState {
 		return {
 			id: window.crypto.randomUUID(), // generate a unique ID for this modal
 			dialogWidth: `auto`
@@ -53,10 +61,10 @@ export default {
 	},
 
 	computed: {
-		backgroundContentVisible(): boolean {
+		backgroundContentVisible(): IsVisible {
 			return ModalStore().lastOpenedById === this.id;
 		},
-		calculatedMinWidth(): string | number | undefined {
+		calculatedMinWidth(): number | undefined {
 			if (this.minWidth !== undefined) {
 				return this.minWidth;
 			}
@@ -73,14 +81,14 @@ export default {
 
 	mounted(): void {
 		// listen for global events to close all the modals
-		window.eyas?.receive(`close-modals`, () => {
+		window.eyas?.receive(`close-modals` as ChannelName, () => {
 			// tell the parent to update the model value
 			this.$emit(`update:modelValue`, false);
 		});
 	},
 
 	methods: {
-		trackModalState(isTrue: boolean): void {
+		trackModalState(isTrue: IsVisible): void {
 			if (isTrue) {
 				// reset width to the initial auto state so it can calculate the new initial width
 				this.dialogWidth = `auto`;
@@ -95,7 +103,7 @@ export default {
 		hideUi(): void {
 			// hide the UI if there are no other dialogs open
 			if (document.querySelectorAll(`.v-dialog`).length <= 1) {
-				window.eyas?.send(`hide-ui`);
+				window.eyas?.send(`hide-ui` as ChannelName);
 			}
 		},
 

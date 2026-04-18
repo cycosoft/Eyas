@@ -1,15 +1,17 @@
+import type { ProjectId, SystemTheme, AppVersion, SettingsMap } from '../../../../types/primitives.js';
+
 export type SettingsState = {
-	projectSettings: Record<string, unknown>;
-	appSettings: Record<string, unknown>;
-	projectId: string | null;
-	systemTheme: string;
-	version: string;
+	projectSettings: SettingsMap;
+	appSettings: SettingsMap;
+	projectId: ProjectId | null;
+	systemTheme: SystemTheme;
+	version: AppVersion;
 }
 
 export type Payload = {
-	project?: Record<string, unknown>;
-	app?: Record<string, unknown>;
-	projectId?: string | null;
-	systemTheme?: string;
-	version?: string;
+	project?: SettingsMap;
+	app?: SettingsMap;
+	projectId?: ProjectId | null;
+	systemTheme?: SystemTheme;
+	version?: AppVersion;
 }
