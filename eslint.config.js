@@ -83,6 +83,7 @@ export default tseslint.config(
 			'no-unused-vars': `off`, // Handled by @typescript-eslint version
 			'no-redeclare': `off`, // Can be noisy with globals in separate configs
 			complexity: [`error`, 15],
+			'max-lines': [`error`, 300],
 			'max-lines-per-function': [`error`, { max: 50, skipBlankLines: true, skipComments: true, IIFEs: true }],
 
 			// TS specific rule overrides
@@ -165,6 +166,7 @@ export default tseslint.config(
 					message: `Dynamic imports are slower than static imports. Use static imports instead for better performance.`
 				}
 			],
+			'max-lines': [`error`, 500],
 			'max-lines-per-function': `off`
 		}
 	},
