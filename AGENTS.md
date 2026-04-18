@@ -25,6 +25,7 @@
 - **TDD First**: Every code change MUST be accompanied by a test (`*.test.ts`). Update or add tests *before* modifying code.
 - **Debugging**: When asked to debug, use TDD. Review code, identify potential failure points, write tests for those points, use extensive logging to follow the logic, and then fix the code.
 - **Verification Locality**: Run targeted tests and linting on modified files/directories instead of project-wide runs to save time and reduce output noise.
+  - **Direct Linting**: Prioritize linting specific files or subdirectories over project-wide scans. If dealing with large-scale changes, run the linter once, pipe to a file, and work from that local report to avoid redundant project-wide executions.
   - **Lint**: `npx eslint path/to/file.ts`
   - **Test**: `npx vitest path/to/test.ts --config <config-file>`
 - **ESM Standard**: Follow NodeNext resolution. Imports MUST include the `.js` extension, even when the source file is `.ts`.
@@ -33,13 +34,18 @@
 - **Atomic Changes**: One responsibility per change. Focus on bugs, functionality, and type safety; avoid purely stylistic refactors. Ensure behavioral parity during structural changes.
 
 ## 4. Technology Stack & Patterns
-- **Local Rules**: Refer to module-specific `AGENTS.md` in `src/eyas-core/` or `src/eyas-interface/` for environment-specific patterns. **Adaptive Rules**: If a local `AGENTS.md` is missing or insufficient for a module, suggest creating or updating it to capture recurring patterns and maintain shared context.
+- **Local Rules**: Refer to module-specific `AGENTS.md` in `src/types/`, `src/eyas-core/`, `src/eyas-interface/`, or `tests/` for environment-specific patterns. **Adaptive Rules**: If a local `AGENTS.md` is missing or insufficient for a module, suggest creating or updating it to capture recurring patterns and maintain shared context.
 - **Language**: Strict TypeScript. Define interfaces in `src/types/`. Tests must import these types.
 - **Type Collocation**: Prioritize updating existing files in `src/types/` (e.g., `test-server.ts`) over creating new ones to maintain domain-based organization.
 - **Terminal**: Use `npx` directly. No global installs. Run commands only in the workspace root.
 
 ## 5. Operational Workflow
 - **Planning**: Review code, identify gaps (IO, errors, loading), and document them before starting.
+- **Batch Refactoring**: When performing large-scale type modernization or lint fixing:
+  - **Scan**: Run a directory-wide lint and pipe to a temporary file.
+  - **Map**: Analyze the output to identify all necessary interface changes, then update the central registry (e.g., `src/types/`) in a single tool call.
+  - **Apply**: Refactor all affected files simultaneously using a single `multi_replace_file_content` call to minimize round-trips and token usage.
+- **Registry-First Refactoring**: When encountering a linter error regarding inline objects or missing types in tests, first check `src/types/eyas-interface.ts`. If a corresponding VM or State interface does not exist, create it in the registry **immediately** before modifying the test file.
 - **Testing**: Limit debugging to 3 minutes before asking for help.
 - **Code Deletion**: Document why code was removed. Verify it's unused using search tools first.
 - **Pull Requests**: Focus on bugs, functionality, and typos. Avoid purely stylistic refactors or "lint-fixing" unaffected lines.
