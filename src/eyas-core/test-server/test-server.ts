@@ -7,13 +7,17 @@ import type {
 	TestServerState,
 	TestServerOptions,
 	CachedPorts,
-	TestServer
+	TestServer,
+	EyasRequest
 } from '../../types/test-server.js';
+import type { DomainUrl, PortNumber, FileSystemPath, IsActive } from '../../types/primitives.js';
 
 import { parseURL } from '../../scripts/parse-url.js';
 import { safeJoin } from '../../scripts/path-utils.js';
 
-const getPort = typeof getPortModule === `function` ? getPortModule : (getPortModule as unknown as { default: typeof getPortModule }).default;
+import type { ModuleWithDefault } from '../../types/meta.js';
+
+const getPort = typeof getPortModule === `function` ? getPortModule : (getPortModule as unknown as ModuleWithDefault<typeof getPortModule>).default;
 
 let server: TestServer | null = null;
 let state: TestServerState | null = null;
@@ -21,7 +25,7 @@ let cachedPorts: CachedPorts = { http: null, https: null };
 const HOST = `127.0.0.1`;
 const DEFAULT_PORT = 12701;
 
-async function getAvailablePort(urlStr: string | null, useHttps: boolean): Promise<number> {
+async function getAvailablePort(urlStr: DomainUrl | null, useHttps: IsActive): Promise<PortNumber> {
 	const protoKey: keyof CachedPorts = useHttps ? `https` : `http`;
 
 	const cached = cachedPorts[protoKey];
@@ -58,10 +62,7 @@ async function getAvailablePort(urlStr: string | null, useHttps: boolean): Promi
 }
 
 
-// Extended types for express
-type EyasRequest = {
-	_safePath?: string;
-} & express.Request
+// Extended types for express moved to registry
 
 /**
  * Initializes the path-utils module by loading the safeJoin function.
@@ -75,7 +76,7 @@ async function initPathUtils(): Promise<void> {
  * @param rootPath The root directory to serve files from.
  * @returns The configured Express application.
  */
-function createExpressApp(rootPath: string): express.Express {
+function createExpressApp(rootPath: FileSystemPath): express.Express {
 	const app = express();
 
 	app.use((req: EyasRequest, res: express.Response, next: express.NextFunction) => {
@@ -124,7 +125,7 @@ function createServerInstance(app: express.Express, options: TestServerOptions):
  * @param port The port to listen on.
  * @returns A promise that resolves when the server is listening.
  */
-async function listenOnPort(serverInstance: http.Server | https.Server, port: number): Promise<void> {
+async function listenOnPort(serverInstance: http.Server | https.Server, port: PortNumber): Promise<void> {
 	await new Promise<void>((resolve, reject) => {
 		serverInstance.listen(port, HOST, () => {
 			resolve();

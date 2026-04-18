@@ -2,8 +2,9 @@ import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import type { VueWrapper } from '@vue/test-utils';
 import TestServerSetupModal from '@/components/TestServerSetupModal.vue';
-import type { TestServerSetupModalVM, WindowWithEyas } from '@/types/eyas-interface.js';
-import type { ChannelName } from '@/types/primitives.js';
+import type { WindowWithEyas } from '@registry/ipc.js';
+import type { TestServerSetupModalVM } from '@registry/components.js';
+import type { ChannelName } from '@registry/primitives.js';
 
 // Removed local type definition
 

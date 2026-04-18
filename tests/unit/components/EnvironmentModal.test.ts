@@ -3,7 +3,8 @@ import { mount } from '@vue/test-utils';
 import type { VueWrapper } from '@vue/test-utils';
 import type { Mock } from 'vitest';
 import EnvironmentModal from '@/components/EnvironmentModal.vue';
-import type { EnvironmentModalVM, WindowWithEyas } from '@/types/eyas-interface.js';
+import type { WindowWithEyas } from '@registry/ipc.js';
+import type { EnvironmentModalVM } from '@registry/components.js';
 
 
 describe(`EnvironmentModal`, () => {
@@ -40,9 +41,9 @@ describe(`EnvironmentModal`, () => {
 			((): void => {
 				// Manually trigger the IPC receive
 				const eyas = (window as unknown as WindowWithEyas).eyas;
-				if (eyas.receive.mock.calls.length > 0) {
-					const call = eyas.receive.mock.calls.find(
-						c => c[0] === `show-environment-modal`
+				if ((eyas.receive as Mock).mock.calls.length > 0) {
+					const call = (eyas.receive as Mock).mock.calls.find(
+						(c: unknown[]) => c[0] === `show-environment-modal`
 					);
 					if (call && call[1]) {
 						call[1](domains);

@@ -6,6 +6,7 @@
     "noEmit": true,
     "noImplicitAny": true,
     "paths": {
+      "@registry/*": ["./src/types/*"],
       "@/*": ["./src/eyas-interface/app/src/*"]
     },
     "allowJs": false,

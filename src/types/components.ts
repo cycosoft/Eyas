@@ -1,12 +1,4 @@
-import type { ModalMode, IsVisible, ChannelName, DomainUrl, IsEnabled, MenuLabel, EventType, ViewportWidth, AppTitle, ResponseBody, PortNumber, FilePath } from './primitives.js';
-
-/**
- * Interface for the 'eyas' object injected into the browser window.
- */
-export type EyasInterface = {
-	send: (channel: ChannelName, ...args: unknown[]) => void;
-	receive: (channel: ChannelName, callback: (...args: unknown[]) => void) => void;
-};
+import type { ModalMode, IsVisible, DomainUrl, IsEnabled, MenuLabel, EventType, ViewportWidth, AppTitle, ResponseBody, PortNumber } from './primitives.js';
 
 /**
  * Type helper for the Vue component's ViewModel in tests.
@@ -119,27 +111,4 @@ export type TestServerSetupModalVM = {
 	cancel: () => void;
 	copyIcon: MenuLabel;
 	$nextTick: () => Promise<void>;
-};
-
-/**
- * Type helper for the project roots directory structure.
- */
-export type ProjectRoots = {
-	preBuild: FilePath;
-	moduleBuild: FilePath;
-	dist: FilePath;
-	src: FilePath;
-	eyasBuild: FilePath;
-	eyasDist: FilePath;
-	runners: FilePath;
-	config: FilePath;
-	eyas: FilePath;
-	module: FilePath;
-};
-
-/**
- * Type helper for casting window with 'eyas' interface.
- */
-export type WindowWithEyas = {
-	eyas: EyasInterface;
 };

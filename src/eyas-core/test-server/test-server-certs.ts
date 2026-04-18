@@ -1,13 +1,14 @@
 import selfsigned from 'selfsigned';
 import type { CertBundle, CertOptions } from '../../types/test-server.js';
+import type { DomainUrl, SettingKey } from '../../types/primitives.js';
 
 const certCache = new Map<string, CertBundle>();
 
-function getCacheKey(domains: string | string[]): string {
+function getCacheKey(domains: DomainUrl | DomainUrl[]): SettingKey {
 	return Array.isArray(domains) ? domains.slice().sort().join(`,`) : String(domains);
 }
 
-export async function getCerts(domains: string | string[], options: CertOptions = {}): Promise<CertBundle> {
+export async function getCerts(domains: DomainUrl | DomainUrl[], options: CertOptions = {}): Promise<CertBundle> {
 	const key = getCacheKey(domains);
 	if (certCache.has(key)) {
 		return certCache.get(key) as CertBundle;

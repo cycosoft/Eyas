@@ -36,3 +36,8 @@ export type CertBundle = {
 	key: CertKey;
 	cert: CertContent;
 };
+
+/** Extended Express Request with Eyas-specific properties */
+export type EyasRequest = {
+	_safePath?: FileSystemPath;
+} & import(`express`).Request;

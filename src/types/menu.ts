@@ -1,10 +1,40 @@
+import type { AppName, IsActive, FormattedDuration, ByteCount, UpdateStatus, MenuLabel, DomainUrl } from './primitives.js';
+
+/** A single menu item descriptor */
+export type MenuItem = {
+	label?: MenuLabel;
+	type?: `normal` | `separator` | `submenu` | `checkbox` | `radio`;
+	enabled?: IsActive;
+	click?: () => void;
+	submenu?: MenuItem[];
+	accelerator?: string;
+	[key: string]: unknown; // Allow other Electron-specific props
+}
+
+/** A full menu template array */
+export type MenuTemplate = MenuItem[];
+
+/** Parameters for getMenuContext */
+export type MenuContextParams = {
+	sessionAge: FormattedDuration;
+	cacheSize: ByteCount;
+	viewportItems: MenuItem[];
+	linkItems: MenuItem[];
+}
+
+/** Handlers for navigation links in the menu */
+export type LinkMenuHandlers = {
+	navigate: (url?: DomainUrl, external?: IsActive) => void;
+	navigateVariable: (url: DomainUrl) => void;
+}
+
 /** Context required to build the application menu */
 export type MenuContext = {
-	appName: string;
-	isDev: boolean;
-	testNetworkEnabled: boolean;
-	sessionAge: string;
-	cacheSize: string | number;
+	appName: AppName;
+	isDev: IsActive;
+	testNetworkEnabled: IsActive;
+	sessionAge: FormattedDuration;
+	cacheSize: ByteCount | FormattedDuration;
 	showAbout: () => void;
 	onOpenSettings?: () => void;
 	onShowWhatsNew?: () => void;
@@ -20,21 +50,21 @@ export type MenuContext = {
 	clearCache: () => void;
 	openCacheFolder: () => void;
 	refreshMenu: () => void;
-	viewportItems: Record<string, unknown>[];
-	linkItems: Record<string, unknown>[];
-	updateStatus?: string;
+	viewportItems: MenuItem[];
+	linkItems: MenuItem[];
+	updateStatus?: UpdateStatus;
 	onCheckForUpdates: () => void;
 	onInstallUpdate: () => void;
-	testServerActive?: boolean;
-	testServerRemainingTime?: string;
+	testServerActive?: IsActive;
+	testServerRemainingTime?: FormattedDuration;
 	onStartTestServer: () => void;
 	onStopTestServer?: () => void | Promise<void>;
 	onCopyTestServerUrl?: () => void;
 	onOpenTestServerInBrowser?: (event?: unknown, url?: string) => void;
-	testServerHttpsEnabled?: boolean;
+	testServerHttpsEnabled?: IsActive;
 	onToggleTestServerHttps?: () => void;
 	toggleTestDevTools: () => void;
-	isInitializing?: boolean;
-	isConfigLoaded?: boolean;
-	isEnvironmentPending?: boolean;
+	isInitializing?: IsActive;
+	isConfigLoaded?: IsActive;
+	isEnvironmentPending?: IsActive;
 }

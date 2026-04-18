@@ -3,7 +3,8 @@ import type { VueWrapper } from '@vue/test-utils';
 import { mount } from '@vue/test-utils';
 import VariablesModal from '@/components/VariablesModal.vue';
 import type { Mock } from 'vitest';
-import type { VariablesModalVM, WindowWithEyas, VariableItem } from '@/types/eyas-interface.js';
+import type { WindowWithEyas } from '@registry/ipc.js';
+import type { VariablesModalVM, VariableItem } from '@registry/components.js';
 
 
 describe(`VariablesModal`, () => {

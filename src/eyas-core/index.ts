@@ -56,18 +56,21 @@ import { LOAD_TYPES, TEST_SERVER_SESSION_DURATION_MS } from '../scripts/constant
 
 // Types
 import type { ValidatedConfig } from '../types/config.js';
-import type { MenuContext } from '../types/menu.js';
+import type { MenuContext, MenuTemplate, MenuContextParams, LinkMenuHandlers } from '../types/menu.js';
 import type { DeepLinkContext } from '../types/deep-link.js';
 import type { TestServerOptions } from '../types/test-server.js';
+import type { Viewport, ConfigToLoad, StartupModal, AppSettings, EnvironmentSettings, PreventableEvent, ViewportSize, FocusUI, TrackingState } from '../types/core.js';
+import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActive, IsPending, DomainUrl, FormattedDuration, MPEventName, AppVersion, TimestampMS, HashString, ThemeSource, AppTitle } from '../types/primitives.js';
+import type { SaveSettingPayload, TestServerSetupPayload, EnvironmentSelectedPayload, LaunchLinkPayload } from '../types/ipc.js';
 
 // global variables $
 const $isDev = process.argv.includes(`--dev`);
 let $appWindow: BrowserWindow | null = null;
 let $eyasLayer: BrowserView | null = null;
 let $config: ValidatedConfig | null = null;
-let $configToLoad: { method?: string; path?: string } = {};
-let $testNetworkEnabled = true;
-let $testServerHttpsEnabled = false;
+let $configToLoad: ConfigToLoad = {};
+let $testNetworkEnabled: IsActive = true;
+let $testServerHttpsEnabled: IsActive = false;
 let $lastTestServerOptions: TestServerOptions | null = null;
 let $testServerEndTime: number | null = null;
 let $testServerMenuIntervalId: NodeJS.Timeout | null = null;
@@ -75,21 +78,21 @@ let $testDomainRaw: string | null = null;
 let $testDomain = `eyas://local.test`;
 let $envKey: string | null = null;
 const $uiDomain = `ui://eyas.interface`;
-const $defaultViewports = [
-	{ isDefault: true, label: `Desktop`, width: 1366, height: 768 },
-	{ isDefault: true, label: `Tablet`, width: 768, height: 1024 },
-	{ isDefault: true, label: `Mobile`, width: 360, height: 640 }
+const $defaultViewports: Viewport[] = [
+	{ isDefault: true, label: `Desktop` as ViewportLabel, width: 1366 as ViewportWidth, height: 768 as ViewportHeight },
+	{ isDefault: true, label: `Tablet` as ViewportLabel, width: 768 as ViewportWidth, height: 1024 as ViewportHeight },
+	{ isDefault: true, label: `Mobile` as ViewportLabel, width: 360 as ViewportWidth, height: 640 as ViewportHeight }
 ];
-let $allViewports: { label: string; width: number; height: number; isDefault?: boolean }[] = [];
-const $currentViewport: number[] = [];
+let $allViewports: Viewport[] = [];
+const $currentViewport: ViewportSize = [0, 0];
 let $updateStatus = `idle`;
-let $isInitializing = true;
-let $isEnvironmentPending = false;
+let $isInitializing: IsActive = true;
+let $isEnvironmentPending: IsPending = false;
 let $updateCheckUserTriggered = false;
 let $onCheckForUpdates = (): void => { };
 let $onInstallUpdate = (): void => { };
-let $pendingStartupModal: { eventName: string; args: unknown[] } | null = null;
-let $isStartupSequenceChecked = false;
+let $pendingStartupModal: StartupModal | null = null;
+let $isStartupSequenceChecked: IsActive = false;
 let $latestChangelogVersion: string | null = null;
 
 const $paths = {
@@ -120,7 +123,7 @@ const APP_NAME = `Eyas`;
  * @param {object[]} domains
  * @returns {string} unsigned 32-bit hex string
  */
-function hashDomains(domains: unknown[]): string {
+function hashDomains(domains: unknown[]): HashString {
 	const str = JSON.stringify(domains);
 	let h = 5381;
 	for (let i = 0; i < str.length; i++) { h = (h * 33) ^ str.charCodeAt(i); }
@@ -132,7 +135,7 @@ function hashDomains(domains: unknown[]): string {
  * update the native theme of the app to match the theme source
  * @param {string} themeSource - the theme source to apply (e.g. 'light', 'dark', 'system')
  */
-function updateNativeTheme(themeSource?: string): void {
+function updateNativeTheme(themeSource?: ThemeSource): void {
 	nativeTheme.themeSource = (themeSource as `light` | `dark` | `system`) || `system`;
 }
 
@@ -203,8 +206,8 @@ export function setupDefaultProtocol(): void {
  */
 export function setupDeepLinkListeners(
 	context: DeepLinkContext,
-	handler: (url: string, ctx: DeepLinkContext) => void,
-	urlGetter: (args: string[]) => string | undefined | null
+	handler: (url: DomainUrl, ctx: DeepLinkContext) => void,
+	urlGetter: (args: string[]) => DomainUrl | undefined | null
 ): void {
 	// macOS: detect if the app was opened with a file
 	_electronCore.on(`open-file`, async (_event, path) => {
@@ -342,7 +345,7 @@ export function setupWebRequestInterception(): void {
  * @param splashScreen The splash screen window.
  * @param splashVisible The time when the splash screen became visible.
  */
-export function initEyasLayer(splashScreen: BrowserWindow, splashVisible: number): void {
+export function initEyasLayer(splashScreen: BrowserWindow, splashVisible: TimestampMS): void {
 	if (!$appWindow) { return; }
 
 	$eyasLayer = new BrowserView({
@@ -505,7 +508,7 @@ export function initAppIpcListeners(): void {
 		_electronCore.quit();
 	});
 
-	ipcMain.on(`renderer-ready-for-modals`, (_event, latestChangelogVersion: string) => {
+	ipcMain.on(`renderer-ready-for-modals`, (_event, latestChangelogVersion: AppVersion) => {
 		$latestChangelogVersion = latestChangelogVersion;
 		if (!$isStartupSequenceChecked) {
 			$isStartupSequenceChecked = true;
@@ -514,7 +517,7 @@ export function initAppIpcListeners(): void {
 	});
 
 	// listen for the user to launch a link
-	ipcMain.on(`launch-link`, (_event, { url, openInBrowser }: { url: string; openInBrowser: boolean }) => {
+	ipcMain.on(`launch-link`, (_event, { url, openInBrowser }: LaunchLinkPayload) => {
 		// navigate to the requested url
 		navigate(parseURL(url).toString(), openInBrowser);
 	});
@@ -525,13 +528,13 @@ export function initAppIpcListeners(): void {
  */
 export function initEnvironmentIpcListeners(): void {
 	// update the network status
-	ipcMain.on(`network-status`, (_event, status: boolean) => {
+	ipcMain.on(`network-status`, (_event, status: IsActive) => {
 		$testNetworkEnabled = status;
 		setMenu();
 	});
 
 	// listen for the user to select an environment
-	ipcMain.on(`environment-selected`, (_event, domain: string | { url: string; key?: string }) => {
+	ipcMain.on(`environment-selected`, (_event, domain: EnvironmentSelectedPayload) => {
 		// support both legacy string (url only) and new object {url, key} formats
 		const domainUrl = typeof domain === `string` ? domain : domain.url;
 		const domainKey = typeof domain === `string` ? null : (domain.key ?? null);
@@ -552,7 +555,7 @@ export function initEnvironmentIpcListeners(): void {
  */
 export function initSettingsIpcListeners(): void {
 	// listen for a setting to be saved from the UI
-	ipcMain.on(`save-setting`, async (event, { key, value, projectId }: { key: string; value: unknown; projectId?: string }) => {
+	ipcMain.on(`save-setting`, async (event, { key, value, projectId }: SaveSettingPayload) => {
 		// 1. If a projectId is provided, it must match the currently-active project.
 		// 2. If no (or mismatching) projectId is provided, it's an app-level (global) setting.
 		const activeProjectId = $config?.meta?.projectId || null;
@@ -590,7 +593,7 @@ export function initSettingsIpcListeners(): void {
  */
 export function initTestServerIpcListeners(): void {
 	// test server setup modal: user clicked Continue, start the server
-	ipcMain.on(`test-server-setup-continue`, (_event, { useHttps, autoOpenBrowser, useCustomDomain }: { useHttps: boolean; autoOpenBrowser: boolean; useCustomDomain: boolean }) => {
+	ipcMain.on(`test-server-setup-continue`, (_event, { useHttps, autoOpenBrowser, useCustomDomain }: TestServerSetupPayload) => {
 		$testServerHttpsEnabled = !!useHttps;
 		const parsed = parseURL($testDomain);
 		const customDomain = useCustomDomain ? (parsed instanceof URL ? parsed.hostname : `test.local`) : null;
@@ -639,15 +642,10 @@ export function initTestServerIpcListeners(): void {
 }
 
 // method for tracking events
-async function trackEvent(event: string, extraData?: Record<string, unknown>): Promise<void> {
+async function trackEvent(event: MPEventName, extraData?: Record<string, unknown>): Promise<void> {
 	// setup
 	const MP_KEY_PROD = `07f0475cb429f7de5ebf79a1c418dc5c`;
 	const MP_KEY_DEV = `02b67bb94dd797e9a2cbb31d021c3cef`;
-
-	type TrackingState = {
-		mixpanel?: Mixpanel.Mixpanel;
-		deviceId?: string;
-	}
 
 	const state = trackEvent as unknown as TrackingState;
 
@@ -704,7 +702,7 @@ function checkTestExpiration(): void {
 }
 
 // Get the app title
-function getAppTitleWithContext(rawPageTitle?: string): string {
+function getAppTitleWithContext(rawPageTitle?: AppTitle): AppTitle {
 	const rawUrl = $appWindow ? $appWindow.webContents.getURL() : null;
 
 	// ignore data: URLs in the address bar
@@ -718,17 +716,12 @@ function getAppTitleWithContext(rawPageTitle?: string): string {
 }
 
 // manage automatic title updates
-function onTitleUpdate(evt: { preventDefault: () => void }, title: string): void {
+function onTitleUpdate(evt: PreventableEvent, title: AppTitle): void {
 	// Disregard the default behavior
 	evt.preventDefault();
 
 	// update the title, passing the new document.title
 	$appWindow?.setTitle(getAppTitleWithContext(title));
-}
-
-type FocusUI = {
-	(): void;
-	attempts?: number;
 }
 
 // focus the UI layer
@@ -768,7 +761,7 @@ const focusUI: FocusUI = () => {
 };
 
 // Toggle the Eyas UI layer so the user can interact with it or their test
-function toggleEyasUI(enable: boolean): void {
+function toggleEyasUI(enable: IsActive): void {
 	if (!$eyasLayer) { return; }
 
 	if (enable) {
@@ -792,7 +785,7 @@ function toggleEyasUI(enable: boolean): void {
 }
 
 // manage navigation
-function navigate(path?: string, openInBrowser?: boolean): void {
+function navigate(path?: DomainUrl, openInBrowser?: IsActive): void {
 	if (!$appWindow) { return; }
 
 	// setup
@@ -879,7 +872,7 @@ function copyTestServerUrlHandler(): void {
 	}
 }
 
-function openTestServerInBrowserHandler(_event?: unknown, url?: string): void {
+function openTestServerInBrowserHandler(_event?: unknown, url?: DomainUrl): void {
 	if ($isInitializing) return;
 	const state = testServer.getTestServerState();
 
@@ -995,13 +988,13 @@ function onTestServerTimeout(): void {
  */
 export function getViewportMenuItems(
 	appWindow: BrowserWindow | null,
-	allViewports: { label: string; width: number; height: number; isDefault?: boolean }[],
-	currentViewport: number[]
-): Record<string, unknown>[] {
+	allViewports: Viewport[],
+	currentViewport: ViewportSize
+): MenuTemplate {
 	if (!appWindow) { return []; }
 
 	const tolerance = 2;
-	const viewportItems: Record<string, unknown>[] = [];
+	const viewportItems: MenuTemplate = [];
 	let defaultsFound = false;
 
 	allViewports.forEach(res => {
@@ -1039,14 +1032,11 @@ export function getViewportMenuItems(
  */
 export function getLinkMenuItems(
 	config: ValidatedConfig | null,
-	handlers: {
-		navigate: (url?: string, external?: boolean) => void,
-		navigateVariable: (url: string) => void
-	}
-): Record<string, unknown>[] {
+	handlers: LinkMenuHandlers
+): MenuTemplate {
 	if (!config) { return []; }
 
-	const linkItems: Record<string, unknown>[] = [];
+	const linkItems: MenuTemplate = [];
 	config.links.forEach(item => {
 		const itemUrl = item.url;
 		let isValid;
@@ -1073,12 +1063,7 @@ export function getLinkMenuItems(
  * @param params Data required to build the context.
  * @returns The fully assembled MenuContext object.
  */
-export function getMenuContext(params: {
-	sessionAge: string,
-	cacheSize: number,
-	viewportItems: Record<string, unknown>[],
-	linkItems: Record<string, unknown>[]
-}): MenuContext {
+export function getMenuContext(params: MenuContextParams): MenuContext {
 	const { sessionAge, cacheSize, viewportItems, linkItems } = params;
 
 	return {
@@ -1126,7 +1111,7 @@ export function getMenuContext(params: {
  * Calculates the remaining time for the test server session.
  * @returns A formatted duration string.
  */
-export function getTestServerRemainingTime(): string {
+export function getTestServerRemainingTime(): FormattedDuration {
 	const s = testServer.getTestServerState();
 	if (!s) { return ``; }
 	const elapsed = Date.now() - s.startedAt;
@@ -1329,7 +1314,7 @@ function setupAutoUpdater(): void {
 	autoUpdater.checkForUpdates().catch(() => { });
 }
 
-function getSessionAge(): string {
+function getSessionAge(): FormattedDuration {
 	if (!$appWindow) { return ``; }
 
 	let output: Date | string = new Date();
@@ -1356,7 +1341,7 @@ function getSessionAge(): string {
 }
 
 // listen for the window to close
-async function manageAppClose(evt: { preventDefault: () => void }): Promise<void> {
+function manageAppClose(evt: PreventableEvent): void {
 	// stop the window from closing
 	evt.preventDefault();
 
@@ -1368,7 +1353,7 @@ async function manageAppClose(evt: { preventDefault: () => void }): Promise<void
 }
 
 // navigate to a variable url
-function navigateVariable(url: string): void {
+function navigateVariable(url: DomainUrl): void {
 	const env = { url: $testDomainRaw || ``, key: $envKey };
 
 	// substitute all Eyas-managed env variables (_env.url, _env.key, testdomain)
@@ -1424,7 +1409,7 @@ function registerInternalProtocols(): void {
 }
 
 // handle blocking requests when the user disables the network
-function disableNetworkRequest(url: string): boolean {
+function disableNetworkRequest(url: DomainUrl): IsActive {
 	const output = false;
 
 	// exit if the network is not disabled
@@ -1627,7 +1612,7 @@ function setupFreshTestSource(): void {
  * Handles navigation logic for no domains or a single domain.
  * @returns {boolean} True if navigation was handled.
  */
-function handleSimpleDomainNavigation(): boolean {
+function handleSimpleDomainNavigation(): IsActive {
 	// if there are no custom domains defined
 	if (!$config?.domains.length) {
 		console.log(`No domains defined, navigating...`);
@@ -1656,11 +1641,11 @@ function handleSimpleDomainNavigation(): boolean {
  * Handles navigation logic for multiple custom domains.
  * @param {boolean} forceShow - Whether to force show the environment modal.
  */
-function handleMultiDomainNavigation(forceShow: boolean): void {
+function handleMultiDomainNavigation(forceShow: IsActive): void {
 	if (!$config || $config.domains.length <= 1) { return; }
 
 	const currentHash = hashDomains($config.domains);
-	const envSettings = settingsService.get(`env`, $config.meta.projectId ?? undefined) as { alwaysChoose?: boolean; lastChoice?: { url: string; key?: string }; lastChoiceHash?: string } | undefined;
+	const envSettings = settingsService.get(`env`, $config.meta.projectId ?? undefined) as EnvironmentSettings | undefined;
 	const alwaysChoose = envSettings?.alwaysChoose;
 	const lastChoice = envSettings?.lastChoice;
 	const lastHash = envSettings?.lastChoiceHash;
@@ -1728,13 +1713,13 @@ function checkStartupSequence(): void {
 /**
  * Single source of truth for whether the "What's New" modal is required.
  */
-function isWhatsNewRequired(): boolean {
+function isWhatsNewRequired(): IsActive {
 	// check if the user has requested to skip the "What's New" modal
 	if (process.argv.includes(`--skip-whats-new`)) {
 		return false;
 	}
 
-	const appSettings = settingsService.getAppSettings() as { lastSeenVersion?: string } | undefined;
+	const appSettings = settingsService.getAppSettings() as AppSettings | undefined;
 	const lastSeenVersion = appSettings?.lastSeenVersion || `0.0.0`;
 	return !!($latestChangelogVersion && ($latestChangelogVersion !== lastSeenVersion));
 }
@@ -1752,7 +1737,7 @@ function triggerBufferedModal(): void {
 }
 
 // request the UI layer to launch an event
-function uiEvent(eventName: string, ...args: unknown[]): void {
+function uiEvent(eventName: ChannelName, ...args: unknown[]): void {
 	// if the "What's New" modal is currently active, buffer this event
 	// (Except for the "What's New" modal itself)
 	if ($pendingStartupModal === null && eventName !== `show-whats-new`) {

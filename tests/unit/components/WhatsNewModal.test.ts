@@ -4,7 +4,8 @@ import type { VueWrapper } from '@vue/test-utils';
 import WhatsNewModal from '@/components/WhatsNewModal.vue';
 import { createVuetify } from 'vuetify';
 import { createPinia, setActivePinia } from 'pinia';
-import type { ComponentVM, WindowWithEyas } from '@/types/eyas-interface.js';
+import type { WindowWithEyas } from '@registry/ipc.js';
+import type { ComponentVM } from '@registry/components.js';
 
 // Removed local ComponentVM definition
 

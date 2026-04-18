@@ -1,12 +1,12 @@
-import type { MenuContext } from '../types/menu.js';
+import type { MenuContext, MenuTemplate } from '../types/menu.js';
 
 /**
  * Builds the application menu template (array of descriptors for Menu.buildFromTemplate).
  * Pure function: no Electron or DOM; all behavior via context callbacks.
  * @param {MenuContext} context - Menu data and callbacks
- * @returns {Record<string, unknown>[]} Menu template array
+ * @returns {MenuTemplate} Menu template array
  */
-export function buildMenuTemplate(context: MenuContext): Record<string, unknown>[] {
+export function buildMenuTemplate(context: MenuContext): MenuTemplate {
 	const {
 		appName,
 		isDev,
@@ -16,7 +16,7 @@ export function buildMenuTemplate(context: MenuContext): Record<string, unknown>
 	} = context;
 
 	// ── Assemble root menu ────────────────────────────────────────────────────
-	const menu: Record<string, unknown>[] = [
+	const menu: MenuTemplate = [
 		{ label: `&${appName}`, submenu: createAppSubmenu(context) },
 		{ label: `🧪 &Test`, enabled: isConfigLoaded, submenu: createTestSubmenu(context) },
 		{ label: `🌐 &Browser`, enabled: isConfigLoaded, submenu: createBrowserSubmenu(context) },
@@ -36,7 +36,7 @@ export function buildMenuTemplate(context: MenuContext): Record<string, unknown>
 /**
  * Creates the "App" submenu (Eyas/About/Settings/etc).
  */
-function createAppSubmenu(context: MenuContext): Record<string, unknown>[] {
+function createAppSubmenu(context: MenuContext): MenuTemplate {
 	const {
 		showAbout,
 		onOpenSettings = (): void => { },
@@ -63,7 +63,7 @@ function createAppSubmenu(context: MenuContext): Record<string, unknown>[] {
 /**
  * Creates the "Test" submenu.
  */
-function createTestSubmenu(context: MenuContext): Record<string, unknown>[] {
+function createTestSubmenu(context: MenuContext): MenuTemplate {
 	const {
 		isConfigLoaded = false,
 		isEnvironmentPending = false,
@@ -76,7 +76,7 @@ function createTestSubmenu(context: MenuContext): Record<string, unknown>[] {
 	} = context;
 
 	const enabled = isConfigLoaded && !isEnvironmentPending;
-	const submenu: Record<string, unknown>[] = [
+	const submenu: MenuTemplate = [
 		{ label: `🔄 &Reset Test Environment`, click: startAFreshTest, enabled },
 		{ label: `🏠 Test &Home`, click: navigateHome, enabled }
 	];
@@ -100,7 +100,7 @@ function createTestSubmenu(context: MenuContext): Record<string, unknown>[] {
 /**
  * Creates the "Browser" submenu.
  */
-function createBrowserSubmenu(context: MenuContext): Record<string, unknown>[] {
+function createBrowserSubmenu(context: MenuContext): MenuTemplate {
 	const {
 		isConfigLoaded = false,
 		isInitializing = false,
@@ -127,7 +127,7 @@ function createBrowserSubmenu(context: MenuContext): Record<string, unknown>[] {
 /**
  * Creates the "Development Tools" submenu.
  */
-function createToolsSubmenu(context: MenuContext): Record<string, unknown>[] {
+function createToolsSubmenu(context: MenuContext): MenuTemplate {
 	const {
 		isDev,
 		isConfigLoaded = false,
@@ -142,14 +142,14 @@ function createToolsSubmenu(context: MenuContext): Record<string, unknown>[] {
 		openUiDevTools
 	} = context;
 
-	const cacheSubmenu = [
+	const cacheSubmenu: MenuTemplate = [
 		{ label: `⏳ Age: ${sessionAge}`, click: refreshMenu },
 		{ label: `💾 Size: ${cacheSize} bytes`, click: refreshMenu },
 		{ label: `🗑️ &Clear`, click: clearCache },
 		...(isDev ? [{ label: `📂 Open Cache Folder`, click: openCacheFolder }] : [])
 	];
 
-	const submenu: Record<string, unknown>[] = [
+	const submenu: MenuTemplate = [
 		{ label: `${testNetworkEnabled ? `🚫 &Go Offline` : `📶 &Go Online`}`, click: toggleNetwork, enabled: isConfigLoaded },
 		{ type: `separator` },
 		{ label: `📦 &Cache`, submenu: cacheSubmenu, enabled: isConfigLoaded },

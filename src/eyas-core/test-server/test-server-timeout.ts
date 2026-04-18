@@ -1,3 +1,5 @@
+import type { DurationMS, IsActive } from '../../types/primitives.js';
+
 let timeoutId: NodeJS.Timeout | null = null;
 let expired = false;
 
@@ -6,7 +8,7 @@ let expired = false;
  * @param onExpire The function to call when the timeout expires
  * @param expireMs The timeout duration in milliseconds
  */
-export function startTestServerTimeout(onExpire: () => void, expireMs: number): void {
+export function startTestServerTimeout(onExpire: () => void, expireMs: DurationMS): void {
 	cancelTestServerTimeout();
 	expired = false;
 	timeoutId = setTimeout(() => {
@@ -32,7 +34,7 @@ export function cancelTestServerTimeout(): void {
  * Returns whether the test server timeout has expired
  * @returns True if the timeout has expired, false otherwise
  */
-export function isTestServerTimeoutExpired(): boolean {
+export function isTestServerTimeoutExpired(): IsActive {
 	return expired;
 }
 
@@ -41,6 +43,6 @@ export function isTestServerTimeoutExpired(): boolean {
  * @param onExpire The function to call when the timeout expires
  * @param expireMs The timeout duration in milliseconds
  */
-export function resetTestServerTimeout(onExpire: () => void, expireMs: number): void {
+export function resetTestServerTimeout(onExpire: () => void, expireMs: DurationMS): void {
 	startTestServerTimeout(onExpire, expireMs);
 }

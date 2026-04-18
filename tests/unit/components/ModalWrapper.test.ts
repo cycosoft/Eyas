@@ -3,7 +3,8 @@ import { mount } from '@vue/test-utils';
 import type { VueWrapper } from '@vue/test-utils';
 import ModalWrapper from '@/components/ModalWrapper.vue';
 import { createVuetify } from 'vuetify';
-import type { ModalWrapperVM, WindowWithEyas } from '@/types/eyas-interface.js';
+import type { WindowWithEyas } from '@registry/ipc.js';
+import type { ModalWrapperVM } from '@registry/components.js';
 
 // Removed local type definition
 

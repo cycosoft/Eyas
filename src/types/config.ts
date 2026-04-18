@@ -1,3 +1,5 @@
+import type { Viewport } from './core.js';
+
 export type EyasMeta = {
 	expires: Date;
 	gitBranch: string | null;
@@ -16,7 +18,7 @@ export type ValidatedConfig = {
 	domains: { url: string; title?: string; key?: string }[];
 	title: string;
 	version: string;
-	viewports: { label: string; width: number; height: number; isDefault?: boolean }[];
+	viewports: Viewport[];
 	links: { label: string; url: string; external?: boolean }[];
 	outputs: {
 		expires: number;
@@ -30,7 +32,7 @@ export type EyasConfig = {
 	domains?: string | string[] | { url: string; title?: string }[];
 	title?: string;
 	version?: string;
-	viewports?: { label: string; width: number; height: number; isDefault?: boolean }[];
+	viewports?: Viewport[];
 	links?: { label: string; url: string; external?: boolean }[];
 	outputs?: {
 		expires?: number;

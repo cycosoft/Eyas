@@ -4,7 +4,8 @@ import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import SettingsModal from '@/components/SettingsModal.vue';
 import type { Mock } from 'vitest';
-import type { SettingsModalVM, WindowWithEyas } from '@/types/eyas-interface.js';
+import type { WindowWithEyas } from '@registry/ipc.js';
+import type { SettingsModalVM } from '@registry/components.js';
 
 
 describe(`SettingsModal`, () => {

@@ -6,7 +6,7 @@ import { createVuetify } from 'vuetify';
 import type { Mock } from 'vitest';
 import App from '@/App.vue';
 import useSettingsStore from '@/stores/settings.js';
-import type { WindowWithEyas } from '@/types/eyas-interface.js';
+import type { WindowWithEyas } from '@registry/ipc.js';
 
 // Mock Vuetify
 const vuetify = createVuetify();

@@ -5,6 +5,7 @@ import fs from 'fs-extra';
 const { readJson, outputJson } = fs;
 import { SETTINGS_DEFAULTS } from '../scripts/constants.js';
 import type { SettingsData, AppSettings, ProjectSettings } from '../types/settings.js';
+import type { FilePath, ProjectId, SettingKey } from '../types/primitives.js';
 
 // ─── internal state ────────────────────────────────────────────────────────────
 
@@ -12,7 +13,7 @@ import type { SettingsData, AppSettings, ProjectSettings } from '../types/settin
 let _data: SettingsData | null = null;
 
 /** Path to the settings JSON file (overridable for tests) */
-let _storagePath: string | null = null;
+let _storagePath: FilePath | null = null;
 
 // ─── test-only escape hatch ───────────────────────────────────────────────────
 
@@ -20,7 +21,7 @@ let _storagePath: string | null = null;
  * Override the storage path — used in tests to redirect I/O to a temp directory.
  * @param {string} p - Absolute path to the settings JSON file
  */
-function _setStoragePath(p: string): void {
+function _setStoragePath(p: FilePath): void {
 	_storagePath = p;
 	_data = null; // reset in-memory cache so the new path is read on next load()
 }
@@ -31,7 +32,7 @@ function _setStoragePath(p: string): void {
  * Deep-get a value from an object by dot-notation key path.
  * Returns `undefined` if any segment is missing.
  */
-function _deepGet(obj: unknown, keyPath: string): unknown {
+function _deepGet(obj: unknown, keyPath: SettingKey): unknown {
 	return keyPath.split(`.`).reduce((acc, k) => (acc as Record<string, unknown> | null | undefined)?.[k], obj);
 }
 
@@ -39,7 +40,7 @@ function _deepGet(obj: unknown, keyPath: string): unknown {
  * Deep-set a value in an object by dot-notation key path.
  * Creates intermediate objects as needed.
  */
-function _deepSet(obj: Record<string, unknown>, keyPath: string, value: unknown): void {
+function _deepSet(obj: Record<string, unknown>, keyPath: SettingKey, value: unknown): void {
 	const keys = keyPath.split(`.`);
 	const last = keys.pop();
 	if (last === undefined) { return; }
@@ -102,7 +103,7 @@ async function save(): Promise<void> {
  * @param {string} [projectId] - If provided, project-level value is checked first
  * @returns {*} Resolved value
  */
-function get(keyPath: string, projectId?: string): unknown {
+function get(keyPath: SettingKey, projectId?: ProjectId): unknown {
 
 	// 1. project level
 	if (projectId) {
@@ -125,7 +126,7 @@ function get(keyPath: string, projectId?: string): unknown {
  * @param {*}      value     - Value to store
  * @param {string} [projectId] - If provided, stored under the project bucket
  */
-function set(keyPath: string, value: unknown, projectId?: string): void {
+function set(keyPath: SettingKey, value: unknown, projectId?: ProjectId): void {
 	if (!_data) { _data = { app: {}, projects: {} }; }
 
 	if (projectId) {
@@ -142,7 +143,7 @@ function set(keyPath: string, value: unknown, projectId?: string): void {
  * @param {string} [projectId]
  * @returns {object}
  */
-function getProjectSettings(projectId?: string): ProjectSettings {
+function getProjectSettings(projectId?: ProjectId): ProjectSettings {
 	if (!projectId) { return {}; }
 	return _data?.projects?.[projectId] || {};
 }
