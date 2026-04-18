@@ -32,6 +32,7 @@
 - **DRY Logic**: Avoid duplication. Use traditional loops over `.map`/`.filter` where possible for simplicity.
 - **Linting**: Never change lint rules or use suppressions (`eslint-disable`, `@ts-ignore`) to fix errors. Fix the code. If a suppression is absolutely necessary for edge cases (e.g., test mocking), it MUST be accompanied by a comment explaining the technical justification. Mandatory lint check after every task.
 - **Atomic Changes**: One responsibility per change. Focus on bugs, functionality, and type safety; avoid purely stylistic refactors. Ensure behavioral parity during structural changes.
+- **Type Leaks**: Avoid anonymous object structures even within casting syntax (e.g., `as { default: T }`). These are considered "Type Leaks." Always use a named meta-type from `src/types/` (e.g., `ModuleWithDefault<T>`) to wrap these structures.
 
 ## 4. Technology Stack & Patterns
 - **Local Rules**: Refer to module-specific `AGENTS.md` in `src/types/`, `src/eyas-core/`, `src/eyas-interface/`, or `tests/` for environment-specific patterns. **Adaptive Rules**: If a local `AGENTS.md` is missing or insufficient for a module, suggest creating or updating it to capture recurring patterns and maintain shared context.

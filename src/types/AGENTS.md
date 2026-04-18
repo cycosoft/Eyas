@@ -12,11 +12,11 @@ Avoid raw primitives (`string`, `number`, `boolean`) in type annotations. Always
 - **UI State**: Use `IsVisible`, `IsEnabled`, or `ModalMode`.
 
 ## 2. Component ViewModels
-Every Vue component must have a corresponding ViewModel interface defined in `src/types/eyas-interface.ts`.
+Every Vue component must have a corresponding ViewModel interface defined in `src/types/components.ts`.
 
 - **Naming**: `[ComponentName]VM` (e.g., `SettingsModalVM`).
 - **Tests**: Never define local `ComponentVM` types in `*.test.ts` files. Import the shared interface from the registry.
-- **Window Object**: Use `WindowWithEyas` when casting `window` for IPC bridge access.
+- **Window Object**: Use `WindowWithEyas` (from `src/types/ipc.js`) when casting `window` for IPC bridge access.
 
 ## 3. Mocking & Node Helpers
 Refer to `src/types/node-helpers.ts` for standardized Node.js and Electron utility types.
@@ -24,8 +24,8 @@ Refer to `src/types/node-helpers.ts` for standardized Node.js and Electron utili
 - **Dynamic Imports**: Use `ModuleWithDefault<T>` to type default exports from dynamic `import()` or `vi.doMock` calls.
 - **Exec/Shell**: Use `ExecResult` and `ExecCallback` for `child_process` interactions.
 
-## 4. Organization & Collocation
-- **Domain Logic**: Prioritize updating existing domain files (e.g., `settings.ts`, `test-server.ts`) over creating new files.
-- **Registry**: Use `eyas-interface.ts` as the central export hub for high-level application interfaces.
+## 4. Organization & Modularity
+- **Domain Logic**: Prioritize updating existing domain files (e.g., `settings.ts`, `test-server.ts`, `build.ts`, `ipc.ts`) over creating new files.
+- **Registry Modularity**: Avoid creating monolithic registry files. Distribute interfaces based on domain (e.g., `components.ts` for UI, `ipc.ts` for bridge, `build.ts` for filesystem).
 - **Registry Maintenance**: The registry must be updated **before** affected code or tests are modified. If a new interface is needed to resolve a linter error, add it here first.
 - **Imports**: Always use the `.js` extension in import statements (e.g., `import type { ... } from './primitives.js'`).
