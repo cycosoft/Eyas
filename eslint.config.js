@@ -140,6 +140,10 @@ export default tseslint.config(
 				{
 					selector: `TSTypeAnnotation > :matches(TSNumberKeyword, TSBooleanKeyword, TSStringKeyword, TSArrayType > :matches(TSNumberKeyword, TSBooleanKeyword, TSStringKeyword))`,
 					message: `Do not use raw primitives (or arrays of primitives) in type annotations. Define a semantic type alias in src/types/ (e.g., type ViewportWidth = number) to provide context and maintainability.`
+				},
+				{
+					selector: `CallExpression[callee.property.name=/^(send|receive)$/]:matches([callee.object.name='eyas'], [callee.object.property.name='eyas']) > :matches(Literal, TemplateLiteral):first-child`,
+					message: `IPC channels must be typed using 'ChannelName'. Please use a cast (e.g., 'channel-name' as ChannelName) to ensure type safety and project-wide consistency.`
 				}
 			],
 
@@ -180,6 +184,10 @@ export default tseslint.config(
 				{
 					selector: `TSTypeAnnotation > :matches(TSNumberKeyword, TSBooleanKeyword, TSStringKeyword, TSArrayType > :matches(TSNumberKeyword, TSBooleanKeyword, TSStringKeyword))`,
 					message: `Do not use raw primitives (or arrays of primitives) in type annotations. Define a semantic type alias in src/types/ (e.g., type ViewportWidth = number) to provide context and maintainability.`
+				},
+				{
+					selector: `CallExpression[callee.property.name=/^(send|receive)$/]:matches([callee.object.name='eyas'], [callee.object.property.name='eyas']) > :matches(Literal, TemplateLiteral):first-child`,
+					message: `IPC channels must be typed using 'ChannelName'. Please use a cast (e.g., 'channel-name' as ChannelName) to ensure type safety and project-wide consistency.`
 				}
 			],
 			'max-lines': [`error`, 500],
