@@ -132,6 +132,14 @@ export default tseslint.config(
 				{
 					selector: `Identifier[name='__dirname']`,
 					message: `__dirname is not defined in ESM. Use import.meta.url or a helper instead.`
+				},
+				{
+					selector: `TSTypeLiteral`,
+					message: `Do not use inline object types. Define a named interface in src/types/ instead.`
+				},
+				{
+					selector: `TSTypeAnnotation > :matches(TSNumberKeyword, TSBooleanKeyword, TSStringKeyword)`,
+					message: `Consider using a Branded Type (e.g., Brand<number, 'Width'>) to prevent crossover between unrelated primitives.`
 				}
 			],
 
