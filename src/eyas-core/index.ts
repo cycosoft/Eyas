@@ -644,7 +644,7 @@ async function trackEvent(event: string, extraData?: Record<string, unknown>): P
 	const MP_KEY_PROD = `07f0475cb429f7de5ebf79a1c418dc5c`;
 	const MP_KEY_DEV = `02b67bb94dd797e9a2cbb31d021c3cef`;
 
-	interface TrackingState {
+	type TrackingState = {
 		mixpanel?: Mixpanel.Mixpanel;
 		deviceId?: string;
 	}
@@ -726,7 +726,7 @@ function onTitleUpdate(evt: { preventDefault: () => void }, title: string): void
 	$appWindow?.setTitle(getAppTitleWithContext(title));
 }
 
-interface FocusUI {
+type FocusUI = {
 	(): void;
 	attempts?: number;
 }

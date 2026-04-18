@@ -6,7 +6,7 @@ import type { Mock } from 'vitest';
 import { createVuetify } from 'vuetify';
 import { createPinia, setActivePinia } from 'pinia';
 
-interface ComponentVM {
+type ComponentVM = {
 	isVisible: boolean;
 	mode: string;
 	showManual: () => Promise<void>;

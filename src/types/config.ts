@@ -1,4 +1,4 @@
-export interface EyasMeta {
+export type EyasMeta = {
 	expires: Date;
 	gitBranch: string | null;
 	gitHash: string | null;
@@ -11,7 +11,7 @@ export interface EyasMeta {
 	isConfigLoaded: boolean;
 }
 
-export interface ValidatedConfig {
+export type ValidatedConfig = {
 	source: string;
 	domains: { url: string; title?: string; key?: string }[];
 	title: string;
@@ -24,7 +24,7 @@ export interface ValidatedConfig {
 	meta: EyasMeta;
 }
 
-export interface EyasConfig {
+export type EyasConfig = {
 	source?: string;
 	domain?: string | string[] | { url: string; title?: string }[];
 	domains?: string | string[] | { url: string; title?: string }[];

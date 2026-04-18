@@ -4,7 +4,7 @@ import type { VueWrapper } from '@vue/test-utils';
 import TestServerSetupModal from '@/components/TestServerSetupModal.vue';
 import type { Mock } from 'vitest';
 
-interface ComponentVM {
+type ComponentVM = {
 	visible: boolean;
 	steps: unknown[];
 	hostsLine: string;

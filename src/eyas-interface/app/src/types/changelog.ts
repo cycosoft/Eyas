@@ -1,10 +1,10 @@
-export interface ChangelogItem {
+export type ChangelogItem = {
 	text: string;
 	subItems?: string[];
 	subItemsType?: `ordered` | `unordered`;
 }
 
-export interface ChangelogEntry {
+export type ChangelogEntry = {
 	version: string;
 	items: ChangelogItem[];
 	notes?: string;

@@ -1,6 +1,6 @@
 import type { Configuration } from "electron-builder";
 
-interface BuildOptions {
+type BuildOptions = {
 	isDev: boolean;
 	isInstaller: boolean;
 	isWin: boolean;

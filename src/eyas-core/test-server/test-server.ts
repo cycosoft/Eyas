@@ -59,9 +59,9 @@ async function getAvailablePort(urlStr: string | null, useHttps: boolean): Promi
 
 
 // Extended types for express
-interface EyasRequest extends express.Request {
+type EyasRequest = {
 	_safePath?: string;
-}
+} & express.Request
 
 /**
  * Initializes the path-utils module by loading the safeJoin function.

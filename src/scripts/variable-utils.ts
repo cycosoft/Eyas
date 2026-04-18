@@ -7,7 +7,7 @@ const REGEX_ENV_KEY = /{_env\.key}/g;
 const REGEX_TESTDOMAIN = /{testdomain}/g;  // deprecated alias for _env.url
 const REGEX_ALL_VARIABLES = /{[^{}]+}/g;
 
-interface Environment {
+type Environment = {
 	url: string | null;
 	key?: string | null;
 }

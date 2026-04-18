@@ -1,5 +1,5 @@
 /** Context required to build the application menu */
-export interface MenuContext {
+export type MenuContext = {
 	appName: string;
 	isDev: boolean;
 	testNetworkEnabled: boolean;

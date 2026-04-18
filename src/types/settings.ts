@@ -2,7 +2,7 @@ import type { THEME_MODES } from '../scripts/constants.js';
 
 export type ThemeMode = typeof THEME_MODES[keyof typeof THEME_MODES];
 
-export interface SettingsBase {
+export type SettingsBase = {
 	env?: {
 		alwaysChoose?: boolean;
 		lastChoice?: {
@@ -27,7 +27,7 @@ export type AppSettings = SettingsBase;
 export type ProjectSettings = SettingsBase;
 
 /** The full structure of the settings.json file */
-export interface SettingsData {
+export type SettingsData = {
 	app: AppSettings;
 	projects: Record<string, ProjectSettings>;
 }

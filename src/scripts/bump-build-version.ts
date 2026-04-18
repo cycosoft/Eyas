@@ -4,16 +4,16 @@ import { execSync } from "child_process";
 import { getBuildVersion } from "./get-build-version.js";
 import { fileURLToPath } from "url";
 
-interface PackageJson {
+type PackageJson = {
 	version: string;
 	[key: string]: unknown;
 }
 
-interface ChangelogItem {
+type ChangelogItem = {
 	text: string;
 }
 
-interface ChangelogEntry {
+type ChangelogEntry = {
 	version: string;
 	items?: ChangelogItem[];
 }

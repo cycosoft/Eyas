@@ -9,7 +9,7 @@ const exec = util.promisify(childProcessExec);
 const OwnerName = `"Open Source Developer, Eric Higginson"`;
 const TimeStampServer = `http://time.certum.pl/`;
 
-interface SignConfig {
+type SignConfig = {
 	path: string;
 	hash: string;
 }

@@ -1,40 +1,38 @@
 import type { Server as HttpServer } from 'node:http';
 import type { Server as HttpsServer } from 'node:https';
+import type { DomainUrl, PortNumber, TimestampMS, IsVisible, FileSystemPath, CertKey, CertContent, ValidityDays, OrganizationName, CountryCode, StateName, LocalityName } from './primitives.js';
 
-export interface TestServerState {
-	url: string;
-	port: number;
-	startedAt: number;
-	useHttps: boolean;
-	customUrl?: string;
-}
+export type TestServerState = {
+	url: DomainUrl;
+	port: PortNumber;
+	startedAt: TimestampMS;
+	useHttps: IsVisible;
+	customUrl?: DomainUrl;
+};
 
-export interface TestServerOptions {
-	rootPath: string;
-	useHttps?: boolean;
-	certs?: {
-		key: string;
-		cert: string;
-	};
-	customDomain?: string;
-}
+export type TestServerOptions = {
+	rootPath: FileSystemPath;
+	useHttps?: IsVisible;
+	certs?: CertBundle;
+	customDomain?: DomainUrl;
+};
 
-export interface CachedPorts {
-	http: number | null;
-	https: number | null;
-}
+export type CachedPorts = {
+	http: PortNumber | null;
+	https: PortNumber | null;
+};
 
 export type TestServer = HttpServer | HttpsServer;
 
-export interface CertOptions {
-	validityDays?: number;
-	organization?: string;
-	countryCode?: string;
-	state?: string;
-	locality?: string;
-}
+export type CertOptions = {
+	validityDays?: ValidityDays;
+	organization?: OrganizationName;
+	countryCode?: CountryCode;
+	state?: StateName;
+	locality?: LocalityName;
+};
 
-export interface CertBundle {
-	key: string;
-	cert: string;
-}
+export type CertBundle = {
+	key: CertKey;
+	cert: CertContent;
+};

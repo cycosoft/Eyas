@@ -4,7 +4,7 @@ import { mount } from '@vue/test-utils';
 import VariablesModal from '@/components/VariablesModal.vue';
 import type { Mock } from 'vitest';
 
-interface ComponentVM {
+type ComponentVM = {
 	link: string;
 	visible: boolean;
 	parsedLink: string;

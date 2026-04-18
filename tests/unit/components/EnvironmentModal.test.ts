@@ -4,7 +4,7 @@ import type { VueWrapper } from '@vue/test-utils';
 import type { Mock } from 'vitest';
 import EnvironmentModal from '@/components/EnvironmentModal.vue';
 
-interface ComponentVM {
+type ComponentVM = {
 	domains: unknown[];
 	visible: boolean;
 	choose: (domain: unknown, index: number) => void;

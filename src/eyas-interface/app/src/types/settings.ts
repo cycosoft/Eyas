@@ -1,4 +1,4 @@
-export interface SettingsState {
+export type SettingsState = {
 	projectSettings: Record<string, unknown>;
 	appSettings: Record<string, unknown>;
 	projectId: string | null;
@@ -6,7 +6,7 @@ export interface SettingsState {
 	version: string;
 }
 
-export interface Payload {
+export type Payload = {
 	project?: Record<string, unknown>;
 	app?: Record<string, unknown>;
 	projectId?: string | null;

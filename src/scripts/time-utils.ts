@@ -1,9 +1,11 @@
+import type { DurationMS, FormattedDuration } from '../types/primitives.js';
+
 /**
  * Formats a duration in milliseconds to a human-readable string.
- * @param {number} ms - Duration in milliseconds
- * @returns {string} Formatted duration (e.g. "30m", "5s")
+ * @param {DurationMS} ms - Duration in milliseconds
+ * @returns {FormattedDuration} Formatted duration (e.g. "30m", "5s")
  */
-function formatDuration(ms: number): string {
+function formatDuration(ms: DurationMS): FormattedDuration {
 	const seconds = Math.floor(ms / 1000);
 	const minutes = Math.floor(seconds / 60);
 	const hours = Math.floor(minutes / 60);

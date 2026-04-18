@@ -94,7 +94,7 @@ export default tseslint.config(
 			'@typescript-eslint/no-explicit-any': `error`, // No more "cheating" with any
 			'@typescript-eslint/no-require-imports': `warn`,
 			'@typescript-eslint/no-var-requires': `warn`,
-			'@typescript-eslint/consistent-type-definitions': [`error`, `interface`],
+			'@typescript-eslint/consistent-type-definitions': [`error`, `type`],
 			'@typescript-eslint/no-non-null-assertion': `error`,
 
 			// Import Rules
@@ -134,12 +134,12 @@ export default tseslint.config(
 					message: `__dirname is not defined in ESM. Use import.meta.url or a helper instead.`
 				},
 				{
-					selector: `TSTypeLiteral`,
-					message: `Do not use inline object types. Define a named interface in src/types/ instead.`
+					selector: `TSTypeLiteral:not(TSTypeAliasDeclaration > TSTypeLiteral)`,
+					message: `Do not use inline object types. Define a named interface/type in src/types/ instead.`
 				},
 				{
-					selector: `TSTypeAnnotation > :matches(TSNumberKeyword, TSBooleanKeyword, TSStringKeyword)`,
-					message: `Consider using a Branded Type (e.g., Brand<number, 'Width'>) to prevent crossover between unrelated primitives.`
+					selector: `TSTypeAnnotation > :matches(TSNumberKeyword, TSBooleanKeyword, TSStringKeyword, TSArrayType > :matches(TSNumberKeyword, TSBooleanKeyword, TSStringKeyword))`,
+					message: `Do not use raw primitives (or arrays of primitives) in type annotations. Define a semantic type alias in src/types/ (e.g., type ViewportWidth = number) to provide context and maintainability.`
 				}
 			],
 

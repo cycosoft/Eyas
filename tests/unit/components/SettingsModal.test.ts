@@ -5,7 +5,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import SettingsModal from '@/components/SettingsModal.vue';
 import type { Mock } from 'vitest';
 
-interface ComponentVM {
+type ComponentVM = {
 	visible: boolean;
 	toastVisible: boolean;
 	projectId: string;

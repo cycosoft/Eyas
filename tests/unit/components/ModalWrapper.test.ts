@@ -5,7 +5,7 @@ import ModalWrapper from '@/components/ModalWrapper.vue';
 import { createVuetify } from 'vuetify';
 import type { Mock } from 'vitest';
 
-interface ComponentVM {
+type ComponentVM = {
 	pinDialogWidth: () => void;
 	dialogWidth: number | string;
 	calculatedMinWidth: number | string;

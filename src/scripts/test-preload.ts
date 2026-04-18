@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from "electron";
 
 // Define the shape of the 'eyas' object exposed to the renderer
-interface RequestBridge {
+type RequestBridge = {
 	send: (channel: string, data?: unknown) => void;
 	receive: (channel: string, func: (...args: unknown[]) => void) => void;
 }

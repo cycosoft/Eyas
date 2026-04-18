@@ -6,7 +6,7 @@ import type { Mock } from 'vitest';
 import { nextTick } from 'vue';
 import { TEST_SERVER_SESSION_DURATION_MS } from '@/../../../scripts/constants.js';
 
-interface ComponentVM {
+type ComponentVM = {
 	visible: boolean;
 	domain: string;
 	isExpired: boolean;
