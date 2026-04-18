@@ -172,6 +172,14 @@ export default tseslint.config(
 					// Match: await import('...') - ImportExpression is the AST node type for import()
 					selector: `AwaitExpression > ImportExpression`,
 					message: `Dynamic imports are slower than static imports. Use static imports instead for better performance.`
+				},
+				{
+					selector: `TSTypeLiteral:not(TSTypeAliasDeclaration > TSTypeLiteral)`,
+					message: `Do not use inline object types. Define a named interface/type in src/types/ instead.`
+				},
+				{
+					selector: `TSTypeAnnotation > :matches(TSNumberKeyword, TSBooleanKeyword, TSStringKeyword, TSArrayType > :matches(TSNumberKeyword, TSBooleanKeyword, TSStringKeyword))`,
+					message: `Do not use raw primitives (or arrays of primitives) in type annotations. Define a semantic type alias in src/types/ (e.g., type ViewportWidth = number) to provide context and maintainability.`
 				}
 			],
 			'max-lines': [`error`, 500],
