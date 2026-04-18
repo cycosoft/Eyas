@@ -30,7 +30,8 @@ export type MPEventName = string;
 export type EventType = string;
 export type IsComputable = boolean;
 export type Count = number;
-export type TimerId = any;
+export type TimerId = ReturnType<typeof setTimeout>;
+export type MetadataKey = string;
 
 // UI / Labels
 export type MenuLabel = string;

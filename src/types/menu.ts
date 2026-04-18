@@ -1,4 +1,4 @@
-import type { AppName, IsActive, FormattedDuration, ByteCount, UpdateStatus, MenuLabel, DomainUrl, MenuAccelerator } from './primitives.js';
+import type { AppName, IsActive, FormattedDuration, ByteCount, UpdateStatus, MenuLabel, DomainUrl, MenuAccelerator, MetadataKey } from './primitives.js';
 
 /** A single menu item descriptor */
 export type MenuItem = {
@@ -8,7 +8,7 @@ export type MenuItem = {
 	click?: () => void;
 	submenu?: MenuItem[];
 	accelerator?: MenuAccelerator;
-	[key: string]: unknown; // Allow other Electron-specific props
+	[key: MetadataKey]: unknown; // Allow other Electron-specific props
 }
 
 /** A full menu template array */
