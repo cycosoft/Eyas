@@ -79,7 +79,7 @@ describe(`getConfig`, () => {
 
 			expect(config.title).toBe(`Custom Title`);
 			expect(config.version).toBe(`1.2.3`);
-			expect(config.domains).toEqual([{ url: `example.com` }]);
+			expect(config.domains).toEqual([{ url: `example.com`, title: `example.com` }]);
 			expect(config.viewports).toHaveLength(1);
 			expect(config.outputs.expires).toBe(48);
 		});
@@ -91,7 +91,7 @@ describe(`getConfig`, () => {
 			});
 
 			const config = await getConfig(LOAD_TYPES.WEB, `https://example.com`);
-			expect(config.domains).toEqual([{ url: `legacy.com` }]);
+			expect(config.domains).toEqual([{ url: `legacy.com`, title: `legacy.com` }]);
 		});
 
 		test(`should handle 'domains' array field`, async () => {
