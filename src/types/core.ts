@@ -1,4 +1,6 @@
 import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, FilePath, DomainUrl, SettingKey, IsActive } from './primitives.js';
+import type { Mixpanel } from 'mixpanel';
+
 
 /** A viewport configuration for the browser window */
 export type Viewport = {
@@ -55,6 +57,6 @@ export type FocusUI = {
 
 /** Mixpanel tracking state attached to trackEvent */
 export type TrackingState = {
-	mixpanel?: import(`mixpanel`).Mixpanel;
+	mixpanel?: Mixpanel;
 	deviceId?: string;
 }

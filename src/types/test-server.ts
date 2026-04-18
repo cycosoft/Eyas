@@ -1,3 +1,4 @@
+import type { Request } from 'express';
 import type { Server as HttpServer } from 'node:http';
 import type { Server as HttpsServer } from 'node:https';
 import type { DomainUrl, PortNumber, TimestampMS, IsVisible, FileSystemPath, CertKey, CertContent, ValidityDays, OrganizationName, CountryCode, StateName, LocalityName } from './primitives.js';
@@ -40,4 +41,4 @@ export type CertBundle = {
 /** Extended Express Request with Eyas-specific properties */
 export type EyasRequest = {
 	_safePath?: FileSystemPath;
-} & import(`express`).Request;
+} & Request;
