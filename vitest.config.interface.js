@@ -10,9 +10,15 @@ export default defineConfig({
 	],
 	resolve: {
 		alias: {
+			'@core': resolve(import.meta.dirname, `src/eyas-core`),
+			'@scripts': resolve(import.meta.dirname, `src/scripts`),
+			'@registry': resolve(import.meta.dirname, `src/types`),
+			'@assets': resolve(import.meta.dirname, `src/eyas-assets`),
+			'@interface': resolve(import.meta.dirname, `src/eyas-interface/app/src`),
 			'@': resolve(import.meta.dirname, `src/eyas-interface/app/src`)
 		}
 	},
+
 	css: {
 		modules: {
 			classNameStrategy: `non-scoped`

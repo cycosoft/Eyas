@@ -40,39 +40,27 @@
 	</ModalWrapper>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
 import ModalWrapper from '@/components/ModalWrapper.vue';
 import type { IsVisible, AppVersion, ChannelName, DomainUrl } from '@/../../../types/primitives.js';
+import type { VersionMismatchData } from '@/../../../types/components.js';
 
-type VersionMismatchState = {
-	visible: IsVisible;
-	runnerVersion: AppVersion | null;
-	testVersion: AppVersion | null;
+const visible = ref<IsVisible>(false);
+const runnerVersion = ref<AppVersion | null>(null);
+const testVersion = ref<AppVersion | null>(null);
+
+onMounted(() => {
+	window.eyas?.receive(`show-version-mismatch-modal` as ChannelName, data => {
+		const { runnerVersion: runner, testVersion: test } = (data || {}) as VersionMismatchData;
+		runnerVersion.value = runner || null;
+		testVersion.value = test || null;
+		visible.value = true;
+	});
+});
+
+
+function checkForUpdate(): void {
+	window.eyas?.send(`open-external` as ChannelName, `https://github.com/cycosoft/eyas/releases` as DomainUrl);
 }
-
-export default {
-	components: {
-		ModalWrapper
-	},
-
-	data: (): VersionMismatchState => ({
-		visible: false,
-		runnerVersion: null,
-		testVersion: null
-	}),
-
-	mounted(): void {
-		window.eyas?.receive(`show-version-mismatch-modal` as ChannelName, ({ runnerVersion, testVersion } = {}) => {
-			this.runnerVersion = runnerVersion || null;
-			this.testVersion = testVersion || null;
-			this.visible = true;
-		});
-	},
-
-	methods: {
-		checkForUpdate(): void {
-			window.eyas?.send(`open-external` as ChannelName, `https://github.com/cycosoft/eyas/releases` as DomainUrl);
-		}
-	}
-};
 </script>

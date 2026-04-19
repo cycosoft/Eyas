@@ -1,4 +1,4 @@
-import type { ModalMode, IsVisible, DomainUrl, IsEnabled, MenuLabel, EventType, ViewportWidth, AppTitle, ResponseBody, PortNumber, Count, IsActive, LabelString } from './primitives.js';
+import type { ModalMode, IsVisible, DomainUrl, IsEnabled, MenuLabel, EventType, ViewportWidth, AppTitle, ResponseBody, PortNumber, Count, IsActive, LabelString, AppVersion } from './primitives.js';
 
 /**
  * Type helper for the Vue component's ViewModel in tests.
@@ -118,3 +118,24 @@ export type TestServerSetupModalVM = {
 	copyIcon: MenuLabel;
 	$nextTick: () => Promise<void>;
 };
+
+/**
+ * Type helper for the VersionMismatchModal Vue component's ViewModel in tests.
+ */
+export type VersionMismatchModalVM = {
+	visible: IsVisible;
+	runnerVersion: AppVersion | null;
+	testVersion: AppVersion | null;
+	checkForUpdate: () => void;
+	$nextTick: () => Promise<void>;
+};
+
+/**
+ * Data passed to the VersionMismatchModal via IPC.
+ */
+export type VersionMismatchData = {
+	runnerVersion?: AppVersion;
+	testVersion?: AppVersion;
+};
+
+
