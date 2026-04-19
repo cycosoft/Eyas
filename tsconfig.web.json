@@ -6,7 +6,11 @@
     "noEmit": true,
     "noImplicitAny": true,
     "paths": {
+      "@core/*": ["./src/eyas-core/*"],
+      "@scripts/*": ["./src/scripts/*"],
       "@registry/*": ["./src/types/*"],
+      "@assets/*": ["./src/eyas-assets/*"],
+      "@interface/*": ["./src/eyas-interface/app/src/*"],
       "@/*": ["./src/eyas-interface/app/src/*"]
     },
     "allowJs": false,

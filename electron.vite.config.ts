@@ -4,6 +4,15 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 import vue from '@vitejs/plugin-vue';
 import vuetify from 'vite-plugin-vuetify';
 
+const commonResolve = {
+	alias: {
+		'@core': resolve(import.meta.dirname, `src/eyas-core`),
+		'@scripts': resolve(import.meta.dirname, `src/scripts`),
+		'@registry': resolve(import.meta.dirname, `src/types`),
+		'@assets': resolve(import.meta.dirname, `src/eyas-assets`)
+	}
+};
+
 export default defineConfig({
 	main: {
 		plugins: [
@@ -17,6 +26,7 @@ export default defineConfig({
 				]
 			})
 		],
+		resolve: commonResolve,
 		build: {
 			rollupOptions: {
 				input: {
@@ -43,6 +53,7 @@ export default defineConfig({
 	},
 	preload: {
 		plugins: [externalizeDepsPlugin()],
+		resolve: commonResolve,
 		build: {
 			rollupOptions: {
 				input: {
@@ -78,9 +89,10 @@ export default defineConfig({
 		root: resolve(import.meta.dirname, `src/eyas-interface/app`),
 		resolve: {
 			alias: {
+				...commonResolve.alias,
 				vue: `vue/dist/vue.esm-bundler.js`,
 				'@': resolve(import.meta.dirname, `src/eyas-interface/app/src`),
-				'@registry': resolve(import.meta.dirname, `src/types`)
+				'@interface': resolve(import.meta.dirname, `src/eyas-interface/app/src`)
 			}
 		},
 		build: {

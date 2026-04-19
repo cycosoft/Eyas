@@ -9,13 +9,13 @@ import type {
 	CachedPorts,
 	TestServer,
 	EyasRequest
-} from '../../types/test-server.js';
-import type { DomainUrl, PortNumber, FileSystemPath, IsActive } from '../../types/primitives.js';
+} from '@registry/test-server.js';
+import type { DomainUrl, PortNumber, FileSystemPath, IsActive } from '@registry/primitives.js';
 
-import { parseURL } from '../../scripts/parse-url.js';
-import { safeJoin } from '../../scripts/path-utils.js';
+import { parseURL } from '@scripts/parse-url.js';
+import { safeJoin } from '@scripts/path-utils.js';
 
-import type { ModuleWithDefault } from '../../types/meta.js';
+import type { ModuleWithDefault } from '@registry/meta.js';
 
 const getPort = typeof getPortModule === `function` ? getPortModule : (getPortModule as unknown as ModuleWithDefault<typeof getPortModule>).default;
 

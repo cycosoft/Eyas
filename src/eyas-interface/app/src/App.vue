@@ -14,10 +14,10 @@
 	</v-app>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { onMounted, watch, computed } from 'vue';
 import { useTheme } from 'vuetify';
-import { THEME_MODES } from '@/../../../scripts/constants.js';
+import { THEME_MODES } from '@scripts/constants.js';
 import useSettingsStore from '@/stores/settings.js';
 import ExitModal from '@/components/ExitModal.vue';
 import EnvironmentModal from '@/components/EnvironmentModal.vue';
@@ -28,61 +28,40 @@ import TestServerActiveModal from '@/components/TestServerActiveModal.vue';
 import SettingsModal from '@/components/SettingsModal.vue';
 import WhatsNewModal from '@/components/WhatsNewModal.vue';
 import changelogData from '@/CHANGELOG.json';
-import type { ChannelName } from '@/../../../types/primitives.js';
+import type { ChannelName } from '@registry/primitives.js';
 
-export default {
-	components: {
-		EnvironmentModal,
-		VariablesModal,
-		ExitModal,
-		VersionMismatchModal,
-		TestServerSetupModal,
-		TestServerActiveModal,
-		SettingsModal,
-		WhatsNewModal
-	},
+const theme = useTheme();
+const settingsStore = useSettingsStore();
 
-	setup(): object {
-		const theme = useTheme();
-		const settingsStore = useSettingsStore();
+const currentTheme = computed(() => {
+	const setting = settingsStore.appSettings.theme || THEME_MODES.LIGHT;
+	return setting === THEME_MODES.SYSTEM ? settingsStore.systemTheme : setting;
+});
 
-		const currentTheme = computed(() => {
-			const setting = settingsStore.appSettings.theme || THEME_MODES.LIGHT;
-			return setting === THEME_MODES.SYSTEM ? settingsStore.systemTheme : setting;
-		});
+watch(currentTheme, newVal => {
+	theme.global.name.value = newVal;
+}, { immediate: true });
 
-		watch(currentTheme, newVal => {
-			theme.global.name.value = newVal;
-		}, { immediate: true });
+onMounted(() => {
+	// listen for settings to be loaded from the main process
+	window.eyas?.receive(`settings-loaded` as ChannelName, data => {
+		settingsStore.loadFromPayload(data);
+		// once settings are loaded, signal that we are ready for startup modals
+		window.eyas?.send(`renderer-ready-for-modals` as ChannelName, changelogData[0]?.version);
+	});
 
-		onMounted(() => {
-			// listen for settings to be loaded from the main process
-			window.eyas?.receive(`settings-loaded` as ChannelName, data => {
-				settingsStore.loadFromPayload(data);
-				// once settings are loaded, signal that we are ready for startup modals
-				window.eyas?.send(`renderer-ready-for-modals` as ChannelName, changelogData[0]?.version);
-			});
+	window.eyas?.receive(`settings-updated` as ChannelName, ({ key, value, projectId }) => {
+		settingsStore.setSetting(key, value, projectId);
+	});
 
-			window.eyas?.receive(`settings-updated` as ChannelName, ({ key, value, projectId }) => {
-				settingsStore.setSetting(key, value, projectId);
-			});
+	// listen for system theme updates
+	window.eyas?.receive(`system-theme-updated` as ChannelName, theme => {
+		settingsStore.setSystemTheme(theme);
+	});
 
-			// listen for system theme updates
-			window.eyas?.receive(`system-theme-updated` as ChannelName, theme => {
-				settingsStore.setSystemTheme(theme);
-			});
-
-			// request initial settings
-			window.eyas?.send(`get-settings` as ChannelName);
-		});
-
-		return {
-			theme,
-			settingsStore,
-			currentTheme
-		};
-	}
-};
+	// request initial settings
+	window.eyas?.send(`get-settings` as ChannelName);
+});
 
 // detect when the network status changes
 window.addEventListener(`online`, () => window.eyas?.send(`network-status` as ChannelName, true));
