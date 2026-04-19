@@ -10,6 +10,9 @@
   - **Output Requirement**: You must present this plan in a "Drafting" or "Thinking" block. Do not provide code until the logical model is fully articulated and verified.
 - **Efficiency & Scope**:
   - Minimize actions that might lead to extensive time or token usage.
+  - **Projected Constraints**: When refactoring to fix a linter violation (e.g., `max-lines`), you MUST calculate the projected state of all destination files. Ensure the refactor doesn't simply move the violation to a new file.
+  - **Domain-First Splitting**: When a file exceeds `max-lines`, avoid generic `utils.ts` files. Split by logical domain (e.g., `get-config.git.ts`, `get-config.loaders.ts`) to prevent the new file from immediately exceeding limits.
+  - **Line Count Projection**: Calculate the total lines of logic being moved. If `(Total Lines - Entry Point Lines) > Max Lines`, plan for a multi-file split from the start to minimize churn.
   - Keep changes minimal and targeted to the request.
   - Never automatically commit code.
 
