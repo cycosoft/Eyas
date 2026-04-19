@@ -1,6 +1,18 @@
 {
   "extends": "@electron-toolkit/tsconfig/tsconfig.node.json",
-  "include": ["src/main/**/*", "src/preload/**/*", "src/eyas-core/**/*", "src/types/**/*", "src/scripts/**/*", "tests/electron/**/*", "tests/setup/**/*", "electron.vite.config.ts"],
+  "include": [
+    "src/path-aliases.ts",
+    "src/main/**/*",
+    "src/preload/**/*",
+    "src/eyas-core/**/*",
+    "src/types/**/*",
+    "src/scripts/**/*",
+    "tests/electron/**/*",
+    "tests/setup/**/*",
+    "electron.vite.config.ts",
+    "vitest.config.interface.ts",
+    "vitest.config.electron.ts"
+  ],
   "compilerOptions": {
     "composite": true,
     "noEmit": true,
@@ -19,4 +31,3 @@
     "strictNullChecks": true
   }
 }
-

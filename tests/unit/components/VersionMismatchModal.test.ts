@@ -1,10 +1,10 @@
-import { describe, test, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import type { VueWrapper } from '@vue/test-utils';
 import VersionMismatchModal from '@/components/VersionMismatchModal.vue';
 import { createVuetify } from 'vuetify';
-import type { WindowWithEyas, EyasInterface } from '@registry/ipc.js';
 import type { VersionMismatchModalVM } from '@registry/components.js';
+import { getIpcMock, findReceiveCallback } from '../../setup/ipc-mock-utils.js';
 
 describe(`VersionMismatchModal`, () => {
 	let wrapper: VueWrapper;
@@ -12,7 +12,7 @@ describe(`VersionMismatchModal`, () => {
 
 	beforeEach(() => {
 		vuetify = createVuetify();
-		(window as unknown as WindowWithEyas).eyas = { send: vi.fn(), receive: vi.fn() };
+		// window.eyas is already mocked by vue-test-setup.ts
 
 		wrapper = mount(VersionMismatchModal, {
 			global: { plugins: [vuetify] }
@@ -25,10 +25,10 @@ describe(`VersionMismatchModal`, () => {
 	});
 
 	test(`shows modal when 'show-version-mismatch-modal' is received`, async () => {
-		const receiveMock = (window as unknown as WindowWithEyas).eyas.receive as unknown as Mock<EyasInterface[`receive`]>;
-		const call = receiveMock.mock.calls.find(c => c[0] === `show-version-mismatch-modal`);
-		if (!call) { throw new Error(`IPC callback not found`); }
-		const callback = call[1];
+		const receiveMock = getIpcMock(`receive`);
+		const callback = findReceiveCallback(receiveMock, `show-version-mismatch-modal`);
+		if (!callback) { throw new Error(`IPC callback not found`); }
+
 
 		callback({ runnerVersion: `1.0.0`, testVersion: `1.1.0` });
 		await (wrapper.vm as unknown as VersionMismatchModalVM).$nextTick();
@@ -39,12 +39,13 @@ describe(`VersionMismatchModal`, () => {
 	});
 
 	test(`calls 'open-external' when 'Check For Update' is clicked`, async () => {
-		const sendSpy = vi.spyOn((window as unknown as WindowWithEyas).eyas, `send`);
+		const sendSpy = getIpcMock(`send`);
 
 		await (wrapper.vm as unknown as VersionMismatchModalVM).checkForUpdate();
 
 		expect(sendSpy).toHaveBeenCalledWith(`open-external`, `https://github.com/cycosoft/eyas/releases`);
 	});
+
 
 	test(`closes modal when 'Later' is clicked`, async () => {
 		(wrapper.vm as unknown as VersionMismatchModalVM).visible = true;

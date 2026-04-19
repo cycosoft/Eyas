@@ -4,14 +4,12 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 import vue from '@vitejs/plugin-vue';
 import vuetify from 'vite-plugin-vuetify';
 
+import { commonAliases, rendererAliases } from './src/path-aliases.js';
+
 const commonResolve = {
-	alias: {
-		'@core': resolve(import.meta.dirname, `src/eyas-core`),
-		'@scripts': resolve(import.meta.dirname, `src/scripts`),
-		'@registry': resolve(import.meta.dirname, `src/types`),
-		'@assets': resolve(import.meta.dirname, `src/eyas-assets`)
-	}
+	alias: commonAliases
 };
+
 
 export default defineConfig({
 	main: {
@@ -89,12 +87,11 @@ export default defineConfig({
 		root: resolve(import.meta.dirname, `src/eyas-interface/app`),
 		resolve: {
 			alias: {
-				...commonResolve.alias,
-				vue: `vue/dist/vue.esm-bundler.js`,
-				'@': resolve(import.meta.dirname, `src/eyas-interface/app/src`),
-				'@interface': resolve(import.meta.dirname, `src/eyas-interface/app/src`)
+				...rendererAliases,
+				vue: `vue/dist/vue.esm-bundler.js`
 			}
 		},
+
 		build: {
 			rollupOptions: {
 				input: resolve(import.meta.dirname, `src/eyas-interface/app/index.html`)

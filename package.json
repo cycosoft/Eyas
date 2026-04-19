@@ -22,8 +22,9 @@
     "_____________TEST_______________": "",
     "check": "npm run type-check && npm run test:interface:unit && npm run test:electron:unit && npm run test:electron:e2e && npm run lint && npm audit",
     "test:electron:e2e": "npm run compile:build && playwright test",
-    "test:electron:unit": "vitest run --config vitest.config.electron.js",
-    "test:interface:unit": "vitest run --config vitest.config.interface.js",
+    "test:electron:unit": "vitest run --config vitest.config.electron.ts",
+    "test:interface:unit": "vitest run --config vitest.config.interface.ts",
+
     "_____________COMPILE_____________": "",
     "compile:build": "npm run type-check && electron-vite build",
     "compile:mac:copy": "mv ./.runners/mac-arm64/Eyas.app ./.runners/mac-arm64/Start.app && ditto -c -k --sequesterRsrc --keepParent ./.runners/mac-arm64/Start.app ./dist/runners/Start.app.zip",

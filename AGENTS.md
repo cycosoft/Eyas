@@ -53,6 +53,7 @@
   - **Map**: Analyze the output to identify all necessary interface changes, then update the central registry (e.g., `src/types/`) in a single tool call.
   - **Apply**: Refactor all affected files simultaneously using a single `multi_replace_file_content` call to minimize round-trips and token usage.
 - **Registry-First Refactoring**: When encountering a linter error regarding inline objects or missing types in tests, first check `src/types/eyas-interface.ts`. If a corresponding VM or State interface does not exist, create it in the registry **immediately** before modifying the test file.
+- **Instruction Auditing**: Before starting work in any module, audit its local `AGENTS.md` file against the current `eslint.config.js`. Remove redundant syntax instructions that are already enforced by the linter and update stale patterns to ensure the documentation does not contradict the automated source of truth.
 - **Testing**: Limit debugging to 3 minutes before asking for help.
 - **Code Deletion**: Document why code was removed. Verify it's unused using search tools first.
 - **Pull Requests**: Focus on bugs, functionality, and typos. Avoid purely stylistic refactors or "lint-fixing" unaffected lines.

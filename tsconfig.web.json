@@ -1,6 +1,6 @@
 {
   "extends": "@vue/tsconfig/tsconfig.dom.json",
-  "include": ["src/renderer/src/**/*", "src/renderer/src/**/*.vue", "src/eyas-interface/app/src/**/*", "src/scripts/**/*", "src/types/**/*", "tests/unit/**/*", "tests/setup/vue-test-setup.ts"],
+  "include": ["src/path-aliases.ts", "src/renderer/src/**/*", "src/renderer/src/**/*.vue", "src/eyas-interface/app/src/**/*", "src/scripts/**/*", "src/types/**/*", "tests/unit/**/*", "tests/setup/**/*"],
   "compilerOptions": {
     "composite": true,
     "noEmit": true,
@@ -19,4 +19,3 @@
     "strictNullChecks": true
   }
 }
-
