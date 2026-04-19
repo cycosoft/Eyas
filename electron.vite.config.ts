@@ -79,7 +79,8 @@ export default defineConfig({
 		resolve: {
 			alias: {
 				vue: `vue/dist/vue.esm-bundler.js`,
-				'@': resolve(import.meta.dirname, `src/eyas-interface/app/src`)
+				'@': resolve(import.meta.dirname, `src/eyas-interface/app/src`),
+				'@registry': resolve(import.meta.dirname, `src/types`)
 			}
 		},
 		build: {
