@@ -52,6 +52,7 @@
   - **Scan**: Run a directory-wide lint and pipe to a temporary file.
   - **Map**: Analyze the output to identify all necessary interface changes, then update the central registry (e.g., `src/types/`) in a single tool call.
   - **Apply**: Refactor all affected files simultaneously using a single `multi_replace_file_content` call to minimize round-trips and token usage.
+- **Tool Selection for .vue files**: When editing `.vue` components (specifically within `<script setup>`), prefer multiple targeted `replace_file_content` calls over a single large `multi_replace_file_content` call. This prevents "target content not found" errors caused by complex indentation or formatting shifts often encountered in SFCs.
 - **Registry-First Refactoring**: When encountering a linter error regarding inline objects or missing types in tests, first check `src/types/eyas-interface.ts`. If a corresponding VM or State interface does not exist, create it in the registry **immediately** before modifying the test file.
 - **Instruction Auditing**: Before starting work in any module, audit its local `AGENTS.md` file against the current `eslint.config.js`. Remove redundant syntax instructions that are already enforced by the linter and update stale patterns to ensure the documentation does not contradict the automated source of truth.
 - **Testing**: Limit debugging to 3 minutes before asking for help.
