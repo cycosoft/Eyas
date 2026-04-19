@@ -156,7 +156,12 @@ export default tseslint.config(
 			}],
 			'vue/max-attributes-per-line': `off`,
 			'vue/multi-word-component-names': `off`,
-			'vue/component-api-style': [`error`, [`script-setup`]]
+			'vue/component-api-style': [`error`, [`script-setup`]],
+			'vue/max-lines-per-block': [`error`, {
+				script: 150,
+				template: 250,
+				style: 100
+			}]
 		}
 	},
 	{
