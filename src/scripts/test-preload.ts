@@ -77,7 +77,7 @@ export function extractFunctionBody(fn: (...args: unknown[]) => unknown): LabelS
 }
 
 // allow network detection status within Eyas
-export function reportNetworkStatus(): void {
+function reportNetworkStatus(): void {
 	window.addEventListener(`online`, () => window.eyas?.send(`network-status` as ChannelName, true as IsActive));
 	window.addEventListener(`offline`, () => window.eyas?.send(`network-status` as ChannelName, false as IsActive));
 }

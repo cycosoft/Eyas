@@ -244,7 +244,7 @@ export function setupDeepLinkListeners(
 /**
  * Handles the application ready event.
  */
-export async function handleAppReady(): Promise<void> {
+async function handleAppReady(): Promise<void> {
 	// get config based on the context
 	const getConfig = (await import(`../scripts/get-config.js`)).default;
 	$config = await getConfig($configToLoad.method || LOAD_TYPES.AUTO, $configToLoad.path);
@@ -345,7 +345,7 @@ export function setupWebRequestInterception(): void {
  * @param splashScreen The splash screen window.
  * @param splashVisible The time when the splash screen became visible.
  */
-export function initEyasLayer(splashScreen: BrowserWindow, splashVisible: TimestampMS): void {
+function initEyasLayer(splashScreen: BrowserWindow, splashVisible: TimestampMS): void {
 	if (!$appWindow) { return; }
 
 	$eyasLayer = new BrowserView({
@@ -1063,7 +1063,7 @@ export function getLinkMenuItems(
  * @param params Data required to build the context.
  * @returns The fully assembled MenuContext object.
  */
-export function getMenuContext(params: MenuContextParams): MenuContext {
+function getMenuContext(params: MenuContextParams): MenuContext {
 	const { sessionAge, cacheSize, viewportItems, linkItems } = params;
 
 	return {
@@ -1201,7 +1201,7 @@ function onOpenSettings(): void {
 /**
  * Displays the application About dialog.
  */
-export function showAbout(): void {
+function showAbout(): void {
 	if (!$config) { return; }
 	const now = new Date();
 	const expires = new Date($config.meta.expires);

@@ -183,7 +183,7 @@ export async function getConfigViaCli(): Promise<EyasConfig> {
  * @param path The path to the *.eyas file
  * @returns The loaded configuration
  */
-export async function getConfigFromAsar(path: SourcePath): Promise<EyasConfig> {
+async function getConfigFromAsar(path: SourcePath): Promise<EyasConfig> {
 	// setup
 	const tempFileName = `eyas-config-${crypto.randomUUID()}.asar`;
 	let loadedConfig: EyasConfig;

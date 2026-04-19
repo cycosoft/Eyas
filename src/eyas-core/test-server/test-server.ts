@@ -210,8 +210,6 @@ export {
 	getTestServerState,
 	clearTestServerPort,
 	getAvailablePort,
-	initPathUtils,
 	createExpressApp,
-	createServerInstance,
-	listenOnPort
+	createServerInstance
 };

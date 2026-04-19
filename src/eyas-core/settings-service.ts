@@ -164,8 +164,7 @@ export {
 	get,
 	set,
 	getProjectSettings,
-	getAppSettings,
-	_setStoragePath
+	getAppSettings
 };
 
 export default {

@@ -13,15 +13,11 @@ export type DurationHours = number;
 export type DurationString = string;
 
 // Boolean Statuses
-export type IsFeatureEnabled = boolean;
 export type IsActive = boolean;
-export type Success = boolean;
 export type IsVisible = boolean;
 export type IsPending = boolean;
 export type IsEnabled = boolean;
-export type IsDev = boolean;
 export type IsDefault = boolean;
-export type UseHttps = boolean;
 export type IsWindows = boolean;
 
 // Events / Progress
@@ -40,11 +36,9 @@ export type ProjectId = string;
 export type SettingKey = string;
 export type AppName = string;
 export type AppVersion = string;
-export type FormattedCacheSize = string;
 export type ByteCount = number;
 export type UpdateStatus = string;
 export type ModalMode = string;
-export type ModalName = string;
 export type ModalId = string;
 export type ThemeSource = string;
 export type MenuAccelerator = string;
@@ -60,7 +54,6 @@ export type FieldName = string;
 export type FileSystemPath = string;
 export type FilePath = FileSystemPath;
 export type SourcePath = string;
-export type FileContent = string;
 
 // Networking
 export type PortNumber = number;
@@ -80,7 +73,6 @@ export type ViewportLabel = string;
 export type HashString = string;
 export type DeviceId = string;
 export type TestId = string;
-export type CompanyId = string;
 
 // Certificates
 export type CertKey = string;
@@ -107,5 +99,4 @@ export type SettingsMap = Record<string, SettingValue>;
 export type SystemTheme = string;
 
 // Environments
-export type EnvironmentKey = string;
-export type EnvironmentUrl = DomainUrl;
+

@@ -56,7 +56,7 @@ export function validateConfig(rawConfig: EyasConfig | null, isConfigLoaded: IsA
  * @param isConfigLoaded Whether the config was actually loaded
  * @returns The validated metadata
  */
-export function getValidatedMeta(rawMeta: Partial<EyasMeta> | undefined, expiresIn: DurationHours, isConfigLoaded: IsActive): EyasMeta {
+function getValidatedMeta(rawMeta: Partial<EyasMeta> | undefined, expiresIn: DurationHours, isConfigLoaded: IsActive): EyasMeta {
 	const meta = rawMeta || {};
 
 	return {
@@ -114,7 +114,7 @@ export function validateCustomDomain(input?: string | string[] | DomainConfig[])
  * Get the version of the cli
  * @returns The CLI version
  */
-export function getCliVersion(): AppVersion {
+function getCliVersion(): AppVersion {
 	try {
 		const { version } = JSON.parse(_fs.readFileSync(_path.join(roots.module, `package.json`), `utf-8`));
 		return version;

@@ -4,12 +4,13 @@
     "src/main/index.ts",
     "src/preload/index.ts",
     "src/eyas-interface/app/src/main.ts",
-    "src/scripts/compile-runners.ts",
+    "src/eyas-interface/app/src/env.d.ts",
     "src/scripts/get-config.ts",
     "src/scripts/event-bridge.ts",
     "tests/e2e/**/*.spec.mjs",
     "tests/e2e/eyas-utils.mjs",
     "tests/unit/**/*.test.ts",
+    "tests/electron/**/*.test.ts",
     "electron.vite.config.ts",
     ".eyas.config.js"
   ],
@@ -21,14 +22,9 @@
     "pkgutil",
     "xcrun",
     "spctl",
-    "productsign",
-    "sudo",
-    "mv",
-    "xattr"
+    "productsign"
   ],
   "ignoreDependencies": [
-    "@mdi/font",
-    "sass",
     "vue-tsc"
   ],
   "paths": {
