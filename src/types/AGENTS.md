@@ -1,31 +1,22 @@
-# Type System & Modernization Standards
+# Type Registry Standards
 
-This directory is the **Source of Truth** for the Eyas type system. All agents must adhere to these strict standards to ensure project-wide type safety and maintainability.
+## Core Philosophy
+The type registry is the single source of truth for all data structures in Eyas. It ensures consistency across the core process and the interface.
 
-## 1. Semantic Aliasing (Mandatory)
-Avoid raw primitives (`string`, `number`, `boolean`) in type annotations. Always check `src/types/primitives.ts` for a semantic alias that provides domain context.
+## Naming Conventions
+- **PascalCase**: All types and interfaces must use PascalCase.
+- **Semantic Aliases**: Avoid using raw primitives (`string`, `number`, `boolean`) in business logic. Use semantic aliases from `primitives.ts`.
+    - *Correct*: `startTime: Timestamp`
+    - *Incorrect*: `startTime: number`
+- **VM Suffix**: ViewModels or state objects used by Vue components should be suffixed with `VM`.
 
-- **Paths**: Use `FilePath`.
-- **URLs**: Use `DomainUrl`.
-- **IDs/Names**: Use `ChannelName`, `EventType`, or `AppTitle`.
-- **Numbers**: Use `PortNumber`, `TimestampMS`, or `ViewportWidth`.
-- **UI State**: Use `IsVisible`, `IsEnabled`, or `ModalMode`.
+## File Organization
+- **Domain-Based**: Group types by domain (e.g., `menu.ts`, `test-server.ts`).
+- **Primitives**: Base semantic aliases reside in `primitives.ts`.
+- **Component Registry**: Interface-specific structures reside in `components.ts`.
 
-## 2. Component ViewModels
-Every Vue component must have a corresponding ViewModel interface defined in `src/types/components.ts`.
-
-- **Naming**: `[ComponentName]VM` (e.g., `SettingsModalVM`).
-- **Tests**: Never define local `ComponentVM` types in `*.test.ts` files. Import the shared interface from the registry.
-- **Window Object**: Use `WindowWithEyas` (from `src/types/ipc.js`) when casting `window` for IPC bridge access.
-
-## 3. Mocking & Node Helpers
-Refer to `src/types/node-helpers.ts` for standardized Node.js and Electron utility types.
-
-- **Dynamic Imports**: Use `ModuleWithDefault<T>` to type default exports from dynamic `import()` or `vi.doMock` calls.
-- **Exec/Shell**: Use `ExecResult` and `ExecCallback` for `child_process` interactions.
-
-## 4. Organization & Modularity
-- **Domain Logic**: Prioritize updating existing domain files (e.g., `settings.ts`, `test-server.ts`, `build.ts`, `ipc.ts`) over creating new files.
-- **Registry Modularity**: Avoid creating monolithic registry files. Distribute interfaces based on domain (e.g., `components.ts` for UI, `ipc.ts` for bridge, `build.ts` for filesystem).
-- **Registry Maintenance**: The registry must be updated **before** affected code or tests are modified. If a new interface is needed to resolve a linter error, add it here first.
-- **Imports**: Always use the `.js` extension in import statements (e.g., `import type { ... } from './primitives.js'`).
+## Rules & Constraints
+- **Registry-First**: Before defining an inline object in a component or function, check if a type already exists in `src/types/`. If not, create it.
+- **No Circular Imports**: Types should not import from code files (`.ts` or `.vue`). They should only import from other type files.
+- **Alphabetical Sorting**: Properties within interfaces and exports within files should be sorted alphabetically to maintain scannability.
+- **Mandatory Imports**: Use `.js` extensions in all imports (e.g., `import type { T } from './primitives.js'`).

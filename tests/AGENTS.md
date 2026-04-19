@@ -1,29 +1,24 @@
-# Test Suite Standards & Patterns
+# Testing Standards
 
-This directory contains the verification logic for Eyas. All tests must be strictly typed and follow these isolation patterns to prevent flakiness and maintain structural integrity.
+## Core Philosophy
+We follow a **TDD-First** approach. Tests are not just verification; they are the documentation of intended behavior.
 
-## 1. IPC Bridge Mocking
-When mocking the `window.eyas` interface (the Electron IPC bridge), always use the shared `WindowWithEyas` interface.
+## Test Categories
+- **Unit Tests (`tests/unit/`)**: Test pure functions and individual components in isolation.
+- **Integration Tests (`tests/integration/`)**: Test the interaction between multiple modules or the integration of core logic with the test server.
+- **Electron/E2E Tests (`tests/electron/`)**: Test the full application lifecycle, including IPC and native window behavior.
 
-- **Casting**: Use `(window as unknown as WindowWithEyas).eyas = { ... }`.
-- **Channel Typing**: Ensure `send` and `receive` mock implementations use the `ChannelName` alias for the channel argument.
-- **Payloads**: Use `unknown` for payload arguments in mock functions to ensure the implementation handles them safely.
+## Execution Standards
+- **Targeted Testing**: Run only the relevant test file to save time.
+    - `npx vitest path/to/test.ts --config <config-file>`
+- **Config Selection**:
+    - Use `vitest.config.interface.js` for interface/Vue tests.
+    - Use `vitest.config.core.js` for core/logic tests.
 
-## 2. Module Isolation & Configuration
-For tests that require resetting module state (e.g., loading different configurations), use Vitest's `vi.doMock` pattern.
-
-- **Mocking**: Call `vi.doMock()` before dynamically importing the module under test.
-- **Loading**: Use dynamic `await import()` inside the `test` block.
-- **Type Casting**: Use `ModuleWithDefault<T>` from `@/types/node-helpers.js` to type the result of dynamic imports or `vi.importActual` calls.
-
-## 3. Component ViewModels
-Vue component tests must never define local `type ComponentVM = { ... }` blocks.
-
-- **Registry**: Import the component's ViewModel interface (e.g., `SettingsModalVM`) from `@/types/components.js`.
-- **Registry-First**: If a component ViewModel or store state is missing or out of date, update the appropriate module in `src/types/` (e.g., `components.ts`) **before** modifying the test file.
-- **Consistency**: This ensures that changes to the component's reactive state are automatically reflected in the test suite's type requirements.
-
-## 4. General Requirements
-- **No `any`**: The use of `any` is strictly prohibited. Use `unknown` or define a specific interface in `src/types/`.
-- **Async Safety**: Always `await` file system cleanup in `afterEach` hooks using `fs-extra` to prevent race conditions between tests.
-- **Naming**: Use backticks for test descriptions to maintain consistency (e.g., `describe(`MyComponent`, () => { ... })`).
+## Rules & Constraints
+- **VM Integrity**: When testing Vue components, always cast the wrapper VM to its registry-defined interface (e.g., `as TestServerActiveModalVM`).
+- **Mocking**:
+    - Use `vi.mock()` for external dependencies (e.g., `electron`, `fs`).
+    - Never mock the logic you are testing.
+- **Behavioral Parity**: When refactoring code to satisfy linter rules (like `max-lines`), verify that existing tests pass BEFORE and AFTER the change.
+- **ESM resolution**: Always use `.js` extensions in imports within test files.
