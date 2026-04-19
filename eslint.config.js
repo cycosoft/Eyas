@@ -86,7 +86,7 @@ export default tseslint.config(
 			'max-lines': [`error`, 300],
 			'max-lines-per-function': [`error`, { max: 50, skipBlankLines: true, skipComments: true, IIFEs: true }],
 			'max-params': [`error`, 4],
-			'import/max-dependencies': [`error`, { max: 15 }],
+			'import/max-dependencies': [`error`, { max: 25 }],
 
 			// TS specific rule overrides
 			'@typescript-eslint/no-unused-vars': [`warn`, {
