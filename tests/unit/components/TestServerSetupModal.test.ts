@@ -119,7 +119,8 @@ describe(`TestServerSetupModal`, () => {
 		await (wrapper.vm as unknown as TestServerSetupModalVM).$nextTick();
 
 		expect(document.querySelector(`[data-qa="hosts-file-instructions"]`)).toBeNull();
-		await wrapper.setData({ internalUseCustomDomain: true });
+		(wrapper.vm as unknown as TestServerSetupModalVM).internalUseCustomDomain = true;
+		await (wrapper.vm as unknown as TestServerSetupModalVM).$nextTick();
 		expect(document.querySelector(`[data-qa="hosts-file-instructions"]`)).not.toBeNull();
 	});
 
@@ -127,7 +128,8 @@ describe(`TestServerSetupModal`, () => {
 		vi.useFakeTimers();
 		receiveCallback({ domain: `http://127.0.0.1`, hostnameForHosts: `my.custom.url`, steps: [] });
 		await (wrapper.vm as unknown as TestServerSetupModalVM).$nextTick();
-		await wrapper.setData({ internalUseCustomDomain: true });
+		(wrapper.vm as unknown as TestServerSetupModalVM).internalUseCustomDomain = true;
+		await (wrapper.vm as unknown as TestServerSetupModalVM).$nextTick();
 
 		const mockClipboard = { writeText: vi.fn() };
 		Object.assign(navigator, { clipboard: mockClipboard });
@@ -168,14 +170,19 @@ describe(`TestServerSetupModal`, () => {
 		expect((wrapper.vm as unknown as TestServerSetupModalVM).useHttps).toBe(false);
 		expect((wrapper.vm as unknown as TestServerSetupModalVM).displayPort).toBe(``);
 
-		await wrapper.setData({ internalUseHttps: true });
+		(wrapper.vm as unknown as TestServerSetupModalVM).internalUseHttps = true;
+		await (wrapper.vm as unknown as TestServerSetupModalVM).$nextTick();
 		expect((wrapper.vm as unknown as TestServerSetupModalVM).useHttps).toBe(true);
 		expect((wrapper.vm as unknown as TestServerSetupModalVM).displayPort).toBe(``);
 
-		await wrapper.setData({ internalUseHttps: false, portHttp: 8080 });
+		(wrapper.vm as unknown as TestServerSetupModalVM).internalUseHttps = false;
+		(wrapper.vm as unknown as TestServerSetupModalVM).portHttp = 8080;
+		await (wrapper.vm as unknown as TestServerSetupModalVM).$nextTick();
 		expect((wrapper.vm as unknown as TestServerSetupModalVM).displayPort).toBe(`:8080`);
 
-		await wrapper.setData({ internalUseHttps: true, portHttps: 8443 });
+		(wrapper.vm as unknown as TestServerSetupModalVM).internalUseHttps = true;
+		(wrapper.vm as unknown as TestServerSetupModalVM).portHttps = 8443;
+		await (wrapper.vm as unknown as TestServerSetupModalVM).$nextTick();
 		expect((wrapper.vm as unknown as TestServerSetupModalVM).displayPort).toBe(`:8443`);
 	});
 });

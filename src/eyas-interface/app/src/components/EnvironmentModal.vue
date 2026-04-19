@@ -62,111 +62,106 @@
 	</ModalWrapper>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
 import ModalWrapper from '@/components/ModalWrapper.vue';
 import type { EnvironmentChoiceWithTitle } from '@/../../../types/core.js';
 import type { IsVisible, ListIndex, IsActive, ProjectId, ChannelName, LabelString, HashString } from '@/../../../types/primitives.js';
 
-// component defaults
-const defaults = JSON.stringify({
-	visible: false,
-	domains: [],
-	loadingIndex: -1,
-	alwaysChoose: false,
-	projectId: null,
-	domainsHash: null
-});
+const visible = ref<IsVisible>(false);
+const domains = ref<EnvironmentChoiceWithTitle[]>([]);
+const loadingIndex = ref<ListIndex>(-1);
+const alwaysChoose = ref<IsActive>(false);
+const projectId = ref<ProjectId | null>(null);
+const domainsHash = ref<HashString | null>(null);
 
-type EnvironmentModalState = {
-	visible: IsVisible;
-	domains: EnvironmentChoiceWithTitle[];
-	loadingIndex: ListIndex;
-	alwaysChoose: IsActive;
-	projectId: ProjectId | null;
-	domainsHash: HashString | null;
-}
+const reset = (): void => {
+	visible.value = false;
+	domains.value = [];
+	loadingIndex.value = -1;
+	alwaysChoose.value = false;
+	projectId.value = null;
+	domainsHash.value = null;
+};
 
-export default {
-	components: {
-		ModalWrapper
-	},
+const choose = (domain: EnvironmentChoiceWithTitle, domainIndex: ListIndex): void => {
+	// show a loader on the chosen domain
+	loadingIndex.value = domainIndex;
 
-	data: (): EnvironmentModalState => JSON.parse(defaults),
+	// save the user's choice and hash so we can skip the modal next time
+	window.eyas?.send(`save-setting` as ChannelName, {
+		key: `env.lastChoice`,
+		value: JSON.parse(JSON.stringify(domain)),
+		projectId: projectId.value
+	});
+	window.eyas?.send(`save-setting` as ChannelName, {
+		key: `env.lastChoiceHash`,
+		value: domainsHash.value,
+		projectId: projectId.value
+	});
 
-	mounted(): void {
-		// Listen for messages from the main process
-		window.eyas?.receive(`show-environment-modal` as ChannelName, (domains, options = {}) => {
-			this.domains = JSON.parse(JSON.stringify(domains));
-			this.projectId = options.projectId ?? null;
-			this.alwaysChoose = !!options.alwaysChoose;
-			this.domainsHash = options.domainsHash ?? null;
-			this.visible = true;
-		});
-	},
+	// timeout for user feedback + time to load test environment
+	setTimeout(() => {
+		// send the chosen domain to the main process
+		window.eyas?.send(`environment-selected` as ChannelName, JSON.parse(JSON.stringify(domain)));
 
-	methods: {
-		choose(domain: EnvironmentChoiceWithTitle, domainIndex: ListIndex): void {
-			// show a loader on the chosen domain
-			this.loadingIndex = domainIndex;
+		// close the modal
+		visible.value = false;
 
-			// save the user's choice and hash so we can skip the modal next time
-			window.eyas?.send(`save-setting` as ChannelName, {
-				key: `env.lastChoice`,
-				value: JSON.parse(JSON.stringify(domain)),
-				projectId: this.projectId
-			});
-			window.eyas?.send(`save-setting` as ChannelName, {
-				key: `env.lastChoiceHash`,
-				value: this.domainsHash,
-				projectId: this.projectId
-			});
+		// reset the modal state
+		setTimeout(reset, 200);
+	}, 200);
+};
 
-			// timeout for user feedback + time to load test environment
-			setTimeout(() => {
-				// send the chosen domain to the main process
-				window.eyas?.send(`environment-selected` as ChannelName, JSON.parse(JSON.stringify(domain)));
+const tooltip = (domain: EnvironmentChoiceWithTitle): LabelString => {
+	const message = `Set environment title in Eyas config`;
+	return domain.url === domain.title ? message : domain.url;
+};
 
-				// close the modal
-				this.visible = false;
+const hotkeyEnvSelector = (event: KeyboardEvent): void => {
+	// setup
+	const keyAsNumber = Number(event.key);
 
-				// reset the modal state
-				setTimeout(this.reset, 200);
-			}, 200);
-		},
+	// if the key pressed isn't a number, exit
+	if (isNaN(keyAsNumber)) { return; }
 
-		tooltip(domain: EnvironmentChoiceWithTitle): LabelString {
-			const message = `Set environment title in Eyas config`;
-			return domain.url === domain.title ? message : domain.url;
-		},
+	// check that the key pressed is within the range of the domains
+	if (keyAsNumber > 0 && keyAsNumber <= domains.value.length) {
+		const chosenIndex = keyAsNumber - 1;
 
-		hotkeyEnvSelector(event: KeyboardEvent): void {
-			// setup
-			const keyAsNumber = Number(event.key);
-
-			// if the key pressed isn't a number, exit
-			if(isNaN(keyAsNumber)) { return; }
-
-			// check that the key pressed is within the range of the domains
-			if(keyAsNumber > 0 && keyAsNumber <= this.domains.length) {
-				const chosenIndex = keyAsNumber - 1;
-
-				// choose the domain at the index of the key pressed
-				this.choose(this.domains[chosenIndex], chosenIndex);
-			}
-		},
-
-		onAlwaysChooseChange(value: IsActive): void {
-			// immediately save the setting when the checkbox is toggled
-			window.eyas?.send(`save-setting` as ChannelName, {
-				key: `env.alwaysChoose`,
-				value: !!value,
-				projectId: this.projectId
-			});
-		},
-
-		reset(): void {
-			Object.assign(this.$data, JSON.parse(defaults));
-		}
+		// choose the domain at the index of the key pressed
+		choose(domains.value[chosenIndex], chosenIndex);
 	}
 };
+
+const onAlwaysChooseChange = (value: IsActive): void => {
+	// immediately save the setting when the checkbox is toggled
+	window.eyas?.send(`save-setting` as ChannelName, {
+		key: `env.alwaysChoose`,
+		value: !!value,
+		projectId: projectId.value
+	});
+};
+
+onMounted(() => {
+	// Listen for messages from the main process
+	window.eyas?.receive(`show-environment-modal` as ChannelName, (newDomains, options = {}) => {
+		domains.value = JSON.parse(JSON.stringify(newDomains));
+		projectId.value = options.projectId ?? null;
+		alwaysChoose.value = !!options.alwaysChoose;
+		domainsHash.value = options.domainsHash ?? null;
+		visible.value = true;
+	});
+});
+
+defineExpose({
+	visible,
+	domains,
+	loadingIndex,
+	alwaysChoose,
+	projectId,
+	domainsHash,
+	choose,
+	onAlwaysChooseChange
+});
 </script>

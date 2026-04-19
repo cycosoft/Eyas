@@ -1,5 +1,22 @@
 import type { ModalMode, IsVisible, DomainUrl, IsEnabled, MenuLabel, EventType, ViewportWidth, AppTitle, ResponseBody, PortNumber, Count, IsActive, LabelString, AppVersion } from './primitives.js';
 
+export type ModalType = `modal` | `dialog`;
+
+export type ModalBackgroundProps = {
+	modelValue: IsVisible;
+	contentVisible: IsVisible;
+}
+
+export type ModalWrapperProps = {
+	modelValue: IsVisible;
+	type?: ModalType;
+	minWidth?: ViewportWidth | LabelString;
+}
+
+export type ModalWrapperEmits = {
+	(e: `update:modelValue`, value: IsVisible): void;
+}
+
 /**
  * Type helper for the Vue component's ViewModel in tests.
  */

@@ -114,155 +114,151 @@
 	</ModalWrapper>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue';
 import ModalWrapper from '@/components/ModalWrapper.vue';
 import type { IsVisible, DomainUrl, PortNumber, IconName, IsActive, ProjectId, ChannelName, PortString, LabelString, SettingKey, SettingValue, IsWindows, StepId } from '@/../../../types/primitives.js';
 
-type TestServerSetupState = {
-	visible: IsVisible;
-	domain: DomainUrl;
-	hostnameForHosts: DomainUrl;
-	steps: StepId[];
-	portHttp: PortNumber;
-	portHttps: PortNumber;
-	isWindows: IsWindows;
-	copyIcon: IconName;
-	internalUseHttps: IsActive;
-	internalAutoOpenBrowser: IsActive;
-	internalUseCustomDomain: IsActive;
-	projectId: ProjectId | null;
-}
+const visible = ref<IsVisible>(false);
+const domain = ref<DomainUrl>(``);
+const hostnameForHosts = ref<DomainUrl>(`test.local`);
+const steps = ref<StepId[]>([]);
+const portHttp = ref<PortNumber>(12701);
+const portHttps = ref<PortNumber>(12701);
+const isWindows = ref<IsWindows>(false);
+const copyIcon = ref<IconName>(`mdi-content-copy`);
+const internalUseHttps = ref<IsActive>(false);
+const internalAutoOpenBrowser = ref<IsActive>(true);
+const internalUseCustomDomain = ref<IsActive>(false);
+const projectId = ref<ProjectId | null>(null);
 
-const defaults = {
-	visible: false,
-	domain: ``,
-	hostnameForHosts: `test.local`,
-	steps: [],
-	portHttp: 12701,
-	portHttps: 12701,
-	isWindows: false,
-	copyIcon: `mdi-content-copy`
+const reset = (): void => {
+	visible.value = false;
+	domain.value = ``;
+	hostnameForHosts.value = `test.local`;
+	steps.value = [];
+	portHttp.value = 12701;
+	portHttps.value = 12701;
+	isWindows.value = false;
+	copyIcon.value = `mdi-content-copy`;
+	internalUseHttps.value = false;
+	internalAutoOpenBrowser.value = true;
+	internalUseCustomDomain.value = false;
+	projectId.value = null;
 };
 
-export default {
-	components: {
-		ModalWrapper
-	},
+const saveSetting = (key: SettingKey, value: SettingValue): void => {
+	window.eyas?.send(`save-setting` as ChannelName, { key, value, projectId: projectId.value });
+};
 
-	data: (): TestServerSetupState => ({
-		...defaults,
-		internalUseHttps: false,
-		internalAutoOpenBrowser: true,
-		internalUseCustomDomain: false,
-		projectId: null
-	}),
-
-	computed: {
-		useHttps: {
-			get(): IsActive { return this.internalUseHttps; },
-			set(val: IsActive): void {
-				this.internalUseHttps = val;
-				this.saveSetting(`testServer.useHttps` as SettingKey, val);
-			}
-		},
-		autoOpenBrowser: {
-			get(): IsActive { return this.internalAutoOpenBrowser; },
-			set(val: IsActive): void {
-				this.internalAutoOpenBrowser = val;
-				this.saveSetting(`testServer.autoOpenBrowser` as SettingKey, val);
-			}
-		},
-		useCustomDomain: {
-			get(): IsActive { return this.internalUseCustomDomain; },
-			set(val: IsActive): void {
-				this.internalUseCustomDomain = val;
-				this.saveSetting(`testServer.useCustomDomain` as SettingKey, val);
-			}
-		},
-		hostsLine(): LabelString {
-			const ip = `127.0.0.1`;
-			const host = this.hostnameForHosts || `test.local`;
-			return `${ip}\t${host}`;
-		},
-		displayDomain(): DomainUrl {
-			return this.useCustomDomain ? (this.hostnameForHosts || `test.local`) : `127.0.0.1`;
-		},
-		port(): PortNumber {
-			return this.useHttps ? this.portHttps : this.portHttp;
-		},
-		displayPort(): PortString {
-			return (this.useHttps && this.port === 443) || (!this.useHttps && this.port === 80) ? `` : `:${this.port}`;
-		}
-	},
-
-	mounted(): void {
-		window.eyas?.receive(`show-test-server-setup-modal` as ChannelName, payload => {
-			this.domain = payload.domain || ``;
-			this.hostnameForHosts = payload.hostnameForHosts || `test.local`;
-			this.steps = Array.isArray(payload.steps) ? payload.steps : [];
-
-			// Set internal values directly to avoid triggering setters unnecessarily
-			this.internalUseHttps = !!payload.useHttps;
-			this.internalAutoOpenBrowser = payload.autoOpenBrowser !== undefined ? !!payload.autoOpenBrowser : true;
-			this.internalUseCustomDomain = !!payload.useCustomDomain;
-			this.projectId = payload.projectId || null;
-
-			this.portHttp = payload.portHttp || 12701;
-			this.portHttps = payload.portHttps || 12701;
-			this.isWindows = !!payload.isWindows;
-			this.visible = true;
-		});
-	},
-
-	methods: {
-		initiate(stepId: StepId): void {
-			window.eyas?.send(`test-server-setup-step` as ChannelName, { action: `initiate`, stepId });
-		},
-
-		revoke(stepId: StepId): void {
-			window.eyas?.send(`test-server-setup-step` as ChannelName, { action: `revoke`, stepId });
-		},
-
-		copyHostsLine(): void {
-			navigator.clipboard.writeText(this.hostsLine);
-			this.copyIcon = `mdi-check`;
-			setTimeout(() => {
-				this.copyIcon = `mdi-content-copy`;
-			}, 2000);
-		},
-
-		cancel(): void {
-			this.visible = false;
-			Object.assign(this.$data, {
-				...defaults,
-				internalUseHttps: false,
-				internalAutoOpenBrowser: true,
-				internalUseCustomDomain: false,
-				projectId: null
-			});
-		},
-
-		continueStart(): void {
-			window.eyas?.send(`test-server-setup-continue` as ChannelName, {
-				useHttps: this.useHttps,
-				autoOpenBrowser: this.autoOpenBrowser,
-				useCustomDomain: this.useCustomDomain
-			});
-			this.visible = false;
-			Object.assign(this.$data, {
-				...defaults,
-				internalUseHttps: false,
-				internalAutoOpenBrowser: true,
-				internalUseCustomDomain: false,
-				projectId: null
-			});
-		},
-
-		saveSetting(key: SettingKey, value: SettingValue): void {
-			window.eyas?.send(`save-setting` as ChannelName, { key, value, projectId: this.projectId });
-		}
+const useHttps = computed({
+	get(): IsActive { return internalUseHttps.value; },
+	set(val: IsActive): void {
+		internalUseHttps.value = val;
+		saveSetting(`testServer.useHttps` as SettingKey, val);
 	}
+});
+
+const autoOpenBrowser = computed({
+	get(): IsActive { return internalAutoOpenBrowser.value; },
+	set(val: IsActive): void {
+		internalAutoOpenBrowser.value = val;
+		saveSetting(`testServer.autoOpenBrowser` as SettingKey, val);
+	}
+});
+
+const useCustomDomain = computed({
+	get(): IsActive { return internalUseCustomDomain.value; },
+	set(val: IsActive): void {
+		internalUseCustomDomain.value = val;
+		saveSetting(`testServer.useCustomDomain` as SettingKey, val);
+	}
+});
+
+const hostsLine = computed((): LabelString => {
+	const ip = `127.0.0.1`;
+	const host = hostnameForHosts.value || `test.local`;
+	return `${ip}\t${host}`;
+});
+
+const displayDomain = computed((): DomainUrl => {
+	return useCustomDomain.value ? (hostnameForHosts.value || `test.local`) : `127.0.0.1`;
+});
+
+const port = computed((): PortNumber => {
+	return useHttps.value ? portHttps.value : portHttp.value;
+});
+
+const displayPort = computed((): PortString => {
+	return (useHttps.value && port.value === 443) || (!useHttps.value && port.value === 80) ? `` : `:${port.value}`;
+});
+
+
+
+const copyHostsLine = (): void => {
+	navigator.clipboard.writeText(hostsLine.value);
+	copyIcon.value = `mdi-check`;
+	setTimeout(() => {
+		copyIcon.value = `mdi-content-copy`;
+	}, 2000);
 };
+
+const cancel = (): void => {
+	reset();
+};
+
+const continueStart = (): void => {
+	window.eyas?.send(`test-server-setup-continue` as ChannelName, {
+		useHttps: useHttps.value,
+		autoOpenBrowser: autoOpenBrowser.value,
+		useCustomDomain: useCustomDomain.value
+	});
+	reset();
+};
+
+onMounted(() => {
+	window.eyas?.receive(`show-test-server-setup-modal` as ChannelName, payload => {
+		domain.value = payload.domain || ``;
+		hostnameForHosts.value = payload.hostnameForHosts || `test.local`;
+		steps.value = Array.isArray(payload.steps) ? payload.steps : [];
+
+		// Set internal values directly to avoid triggering setters unnecessarily
+		internalUseHttps.value = !!payload.useHttps;
+		internalAutoOpenBrowser.value = payload.autoOpenBrowser !== undefined ? !!payload.autoOpenBrowser : true;
+		internalUseCustomDomain.value = !!payload.useCustomDomain;
+		projectId.value = payload.projectId || null;
+
+		portHttp.value = payload.portHttp || 12701;
+		portHttps.value = payload.portHttps || 12701;
+		isWindows.value = !!payload.isWindows;
+		visible.value = true;
+	});
+});
+
+defineExpose({
+	visible,
+	domain,
+	hostnameForHosts,
+	steps,
+	portHttp,
+	portHttps,
+	isWindows,
+	copyIcon,
+	internalUseHttps,
+	internalAutoOpenBrowser,
+	internalUseCustomDomain,
+	projectId,
+	useHttps,
+	autoOpenBrowser,
+	useCustomDomain,
+	hostsLine,
+	displayDomain,
+	port,
+	displayPort,
+	copyHostsLine,
+	cancel,
+	continueStart
+});
 </script>
 
 <style scoped>

@@ -168,6 +168,19 @@ onMounted(() => {
 		if (isManual) { showManual(); } else { showFromMain(); }
 	});
 });
+
+defineExpose({
+	isVisible,
+	changelog,
+	expandedPanels,
+	mode,
+	currentVersion,
+	lastSeenVersion,
+	title,
+	showFromMain,
+	showManual,
+	close
+});
 </script>
 
 <style scoped>

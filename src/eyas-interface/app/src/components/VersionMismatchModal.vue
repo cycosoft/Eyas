@@ -59,6 +59,13 @@ onMounted(() => {
 	});
 });
 
+defineExpose({
+	visible,
+	runnerVersion,
+	testVersion,
+	checkForUpdate
+});
+
 
 function checkForUpdate(): void {
 	window.eyas?.send(`open-external` as ChannelName, `https://github.com/cycosoft/eyas/releases` as DomainUrl);

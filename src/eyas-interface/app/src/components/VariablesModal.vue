@@ -97,19 +97,14 @@
 	</ModalWrapper>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue';
 import ModalWrapper from '@/components/ModalWrapper.vue';
 import isURL from 'validator/lib/isURL';
 import type { IsVisible, DomainUrl, LabelString, ChannelName, VariableValue, VariableType, FieldName, IsActive } from '@/../../../types/primitives.js';
 
 const REGEX_VARIABLES_AND_FIELDS = /([?|&](\w*)=)?{([^{}]+)}/g;
 const REGEX_VARIABLES_ONLY = /{([^{}]+)}/g;
-
-const componentDefaults = JSON.stringify({
-	visible: false,
-	link: ``, // `https://{dev.|staging.|}cycosoft.com?id={int}&message={str}&enabled={bool}`,
-	form: []
-});
 
 type VariableOption = {
 	value: VariableValue;
@@ -122,130 +117,129 @@ type VariableDescriptor = {
 	options?: VariableOption[];
 }
 
-type VariablesModalState = {
-	visible: IsVisible;
-	link: DomainUrl;
-	form: VariableValue[];
-}
+const visible = ref<IsVisible>(false);
+const link = ref<DomainUrl>(``);
+const form = ref<VariableValue[]>([]);
 
-export default {
-	components: {
-		ModalWrapper
-	},
+const parsedLink = computed((): LabelString => {
+	// copy for manipulation
+	const output = link.value;
+	const formData = [...form.value];
 
-	data: (): VariablesModalState => ({
-		...JSON.parse(componentDefaults)
-	}),
+	// replace all variables with form data
+	return output?.replace(REGEX_VARIABLES_ONLY, originalMatch => {
+		const value = formData.shift();
+		return value || value === `` ? encodeURIComponent(value) : originalMatch;
+	}) as LabelString;
+});
 
-	computed: {
-		parsedLink (): LabelString {
-			// copy for manipulation
-			const output = this.link;
-			const form = [...this.form];
+const linkIsValid = computed((): IsActive => {
+	// setup
+	let hasVariables = false;
 
-			// replace all variables with form data
-			return output?.replace(REGEX_VARIABLES_ONLY, originalMatch => {
-				const value = form.shift();
-				return value || value === `` ? encodeURIComponent(value) : originalMatch;
-			});
-		},
+	// exit if no link
+	if (!parsedLink.value) { return false; }
 
-		linkIsValid (): IsActive {
-			// setup
-			let hasVariables = false;
-
-			// exit if no link
-			if (!this.parsedLink) { return false; }
-
-			// check if the link has any variables
-			const variables = this.parsedLink.matchAll(new RegExp(REGEX_VARIABLES_AND_FIELDS));
-			for (const _ of variables) {
-				hasVariables = true;
-				break;
-			}
-
-			// valid if there are no variables AND the link is a valid URL
-			return !hasVariables && isURL(this.parsedLink);
-		},
-
-		variables (): VariableDescriptor[] {
-			// setup
-			const output: VariableDescriptor[] = [];
-
-			// find all variables in the link
-			const variables = this.link.matchAll(new RegExp(REGEX_VARIABLES_AND_FIELDS));
-
-			// for each variable found
-			for (const variable of variables) {
-				// setup
-				const data: VariableDescriptor = { type: `` as VariableType };
-				const type = variable[3];
-				const isList = variable[3].includes(`|`);
-				const hasField = variable[2];
-
-				// skip Eyas-managed variables (underscore prefix = app-defined, not user-input)
-				if (type.startsWith(`_`)) { continue; }
-
-				// populate the data object
-				data.type = (isList ? `list` : type) as VariableType;
-
-				// add the field if it exists
-				if (hasField) {
-					data.field = variable[2] as FieldName;
-				}
-
-				// add the options or label
-				if(isList) {
-					data.options = [];
-
-					variable[3].split(`|`).forEach(option => {
-						data.options?.push({
-							value: option as VariableValue,
-							title: (option || `{blank}`) as LabelString
-						});
-					});
-				}
-
-				// push the data object to the output
-				output.push(data);
-			}
-
-			return output;
-		}
-	},
-
-	mounted(): void {
-		// Listen for messages from the main process
-		window.eyas?.receive(`show-variables-modal` as ChannelName, link => {
-			this.reset();
-			this.link = link;
-			this.open();
-		});
-	},
-
-	methods: {
-		close(): void {
-			this.visible = false;
-		},
-
-		open(): void {
-			this.visible = true;
-		},
-
-		reset(): void {
-			Object.assign(this.$data, JSON.parse(componentDefaults));
-		},
-
-		launch(): void {
-			window.eyas?.send(`launch-link` as ChannelName, { url: this.parsedLink });
-			this.close();
-		},
-
-		getFieldLabel(prefix: LabelString, field?: FieldName): LabelString {
-			return `${prefix}${field ? ` for "${field}" field` : ``}`;
-		}
+	// check if the link has any variables
+	const matches = parsedLink.value.matchAll(new RegExp(REGEX_VARIABLES_AND_FIELDS));
+	for (const _ of matches) {
+		hasVariables = true;
+		break;
 	}
+
+	// valid if there are no variables AND the link is a valid URL
+	return !hasVariables && isURL(parsedLink.value);
+});
+
+const variables = computed((): VariableDescriptor[] => {
+	// setup
+	const output: VariableDescriptor[] = [];
+
+	// find all variables in the link
+	const matches = link.value.matchAll(new RegExp(REGEX_VARIABLES_AND_FIELDS));
+
+	// for each variable found
+	for (const match of matches) {
+		// setup
+		const data: VariableDescriptor = { type: `` as VariableType };
+		const type = match[3];
+		const isList = match[3].includes(`|`);
+		const hasField = match[2];
+
+		// skip Eyas-managed variables (underscore prefix = app-defined, not user-input)
+		if (type.startsWith(`_`)) { continue; }
+
+		// populate the data object
+		data.type = (isList ? `list` : type) as VariableType;
+
+		// add the field if it exists
+		if (hasField) {
+			data.field = match[2] as FieldName;
+		}
+
+		// add the options or label
+		if (isList) {
+			data.options = [];
+
+			match[3].split(`|`).forEach(option => {
+				data.options?.push({
+					value: option as VariableValue,
+					title: (option || `{blank}`) as LabelString
+				});
+			});
+		}
+
+		// push the data object to the output
+		output.push(data);
+	}
+
+	return output;
+});
+
+const close = (): void => {
+	visible.value = false;
 };
+
+const open = (): void => {
+	visible.value = true;
+};
+
+const reset = (): void => {
+	visible.value = false;
+	link.value = ``;
+	form.value = [];
+};
+
+const launch = (): void => {
+	window.eyas?.send(`launch-link` as ChannelName, { url: parsedLink.value });
+	close();
+};
+
+const getFieldLabel = (prefix: LabelString, field?: FieldName): LabelString => {
+	return `${prefix}${field ? ` for "${field}" field` : ``}`;
+};
+
+onMounted(() => {
+	window.eyas?.receive(`show-variables-modal` as ChannelName, (newLink: DomainUrl) => {
+		reset();
+		link.value = newLink;
+		open();
+	});
+});
+
+defineExpose({
+	visible,
+	link,
+	form,
+	parsedLink,
+	linkIsValid,
+	variables,
+	close,
+	open,
+	reset,
+	launch,
+	getFieldLabel
+});
 </script>
 
 <style>
