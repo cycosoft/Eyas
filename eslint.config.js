@@ -147,12 +147,13 @@ export default tseslint.config(
 				}
 			],
 
-			// Vue Specific Formatting
+			// Vue Specific Rules
 			'vue/html-indent': [`error`, `tab`, {
 				alignAttributesVertically: false
 			}],
 			'vue/max-attributes-per-line': `off`,
-			'vue/multi-word-component-names': `off`
+			'vue/multi-word-component-names': `off`,
+			'vue/component-api-style': [`error`, [`script-setup`]]
 		}
 	},
 	{
