@@ -39,6 +39,9 @@
 - **Language**: Strict TypeScript. Define interfaces in `src/types/`. Tests must import these types.
 - **Type Collocation**: Prioritize updating existing files in `src/types/` (e.g., `test-server.ts`) over creating new ones to maintain domain-based organization.
 - **Terminal**: Use `npx` directly. No global installs. Run commands only in the workspace root.
+- **Refactoring Patterns**:
+  - **Proxy Pattern**: When refactoring to satisfy linter rules (e.g., `max-lines`), prioritize keeping the public API/VM of a component or function intact. If logic is moved to a helper or utility, the original entry point should "proxy" the calls to maintain behavioral parity and test stability.
+  - **Logic Extraction**: Favor moving pure logic (calculations, formatting) to a sibling `.utils.ts` or `.logic.ts` file over structural changes that break the VM/interface contract.
 
 ## 5. Operational Workflow
 - **Planning**: Review code, identify gaps (IO, errors, loading), and document them before starting.
