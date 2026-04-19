@@ -7,12 +7,11 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "noImplicitAny": true,
-    "baseUrl": ".",
     "paths": {
-      "@core/*": ["src/eyas-core/*"],
-      "@scripts/*": ["src/scripts/*"],
-      "@registry/*": ["src/types/*"],
-      "@assets/*": ["src/eyas-assets/*"]
+      "@core/*": ["./src/eyas-core/*"],
+      "@scripts/*": ["./src/scripts/*"],
+      "@registry/*": ["./src/types/*"],
+      "@assets/*": ["./src/eyas-assets/*"]
     },
     "types": ["node"],
     "allowJs": false,
