@@ -45,6 +45,9 @@
 - **Refactoring Patterns**:
   - **Proxy Pattern**: When refactoring to satisfy linter rules (e.g., `max-lines`), prioritize keeping the public API/VM of a component or function intact. If logic is moved to a helper or utility, the original entry point should "proxy" the calls to maintain behavioral parity and test stability.
   - **Logic Extraction**: Favor moving pure logic (calculations, formatting) to a sibling `.utils.ts` or `.logic.ts` file over structural changes that break the VM/interface contract.
+  - **State-First Extraction**: When splitting a large orchestrator, prioritize moving global state variables into a shared state module or class BEFORE extracting logic. This prevents complex dependency injection chains.
+  - **Explicit Lambda Wrapping**: When injecting dependencies via a factory context (e.g., `getCoreContext`), always wrap function calls in lambdas (e.g., `() => helper(ctx)`) to ensure the correct context is bound at invocation time.
+  - **Incremental Verification**: Do not attempt to move entire logical domains in a single pass. Break them into smaller, testable sub-modules and verify at each step.
 
 ## 5. Operational Workflow
 - **Planning**: Review code, identify gaps (IO, errors, loading), and document them before starting.
