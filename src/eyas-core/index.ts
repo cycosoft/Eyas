@@ -3,7 +3,6 @@ import {
 	BrowserWindow,
 	Menu,
 	nativeTheme,
-	ipcMain,
 	BrowserView,
 	dialog,
 	shell,
@@ -54,14 +53,16 @@ import * as settingsService from './settings-service.js';
 import { getAppTitle, sanitizePageTitle } from '../scripts/get-app-title.js';
 import { LOAD_TYPES, TEST_SERVER_SESSION_DURATION_MS } from '../scripts/constants.js';
 
+import { initIpcHandlers } from './ipc-handlers.js';
+import type { CoreContext } from '../types/eyas-core.js';
+
 // Types
 import type { ValidatedConfig } from '../types/config.js';
 import type { MenuContext, MenuTemplate, MenuContextParams, LinkMenuHandlers } from '../types/menu.js';
 import type { DeepLinkContext } from '../types/deep-link.js';
 import type { TestServerOptions } from '../types/test-server.js';
 import type { Viewport, ConfigToLoad, StartupModal, AppSettings, EnvironmentSettings, PreventableEvent, ViewportSize, FocusUI, TrackingState } from '../types/core.js';
-import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActive, IsPending, DomainUrl, FormattedDuration, MPEventName, AppVersion, TimestampMS, HashString, ThemeSource, AppTitle } from '../types/primitives.js';
-import type { SaveSettingPayload, TestServerSetupPayload, EnvironmentSelectedPayload, LaunchLinkPayload } from '../types/ipc.js';
+import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActive, IsPending, DomainUrl, FormattedDuration, MPEventName, TimestampMS, HashString, ThemeSource, AppTitle } from '../types/primitives.js';
 
 // global variables $
 const $isDev = process.argv.includes(`--dev`);
@@ -480,165 +481,51 @@ function initTestListeners(): void {
 
 // initialize the Eyas listeners
 function initUiListeners(): void {
-	initAppIpcListeners();
-	initEnvironmentIpcListeners();
-	initSettingsIpcListeners();
-	initTestServerIpcListeners();
-}
+	const context: CoreContext = {
+		$appWindow,
+		$eyasLayer,
+		$config,
+		$testNetworkEnabled,
+		$testServerHttpsEnabled,
+		$lastTestServerOptions,
+		$testDomainRaw,
+		$testDomain,
+		$envKey,
+		$isEnvironmentPending,
+		$testServerEndTime,
+		$latestChangelogVersion,
+		$isStartupSequenceChecked,
+		_appVersion,
 
-/**
- * Initializes application-level IPC listeners.
- */
-export function initAppIpcListeners(): void {
-	// hide the UI when requested
-	ipcMain.on(`hide-ui`, () => { toggleEyasUI(false); });
+		// Setters
+		setTestNetworkEnabled: enabled => { $testNetworkEnabled = enabled; },
+		setTestServerHttpsEnabled: enabled => { $testServerHttpsEnabled = enabled; },
+		setTestDomainRaw: domain => { $testDomainRaw = domain; },
+		setTestDomain: domain => { $testDomain = domain; },
+		setEnvKey: key => { $envKey = key; },
+		setIsEnvironmentPending: pending => { $isEnvironmentPending = pending; },
+		setLatestChangelogVersion: version => { $latestChangelogVersion = version; },
+		setIsStartupSequenceChecked: checked => { $isStartupSequenceChecked = checked; },
+		setTestServerEndTime: time => { $testServerEndTime = time; },
 
-	// Whenever the UI layer has requested to close the app
-	ipcMain.on(`app-exit`, () => {
-		if (!$appWindow) { return; }
+		// Functions
+		toggleEyasUI,
+		trackEvent,
+		stopTestServer,
+		checkStartupSequence,
+		navigate,
+		setMenu,
+		doStartTestServer,
+		openTestServerInBrowserHandler,
+		uiEvent,
+		onTestServerTimeout,
+		onToggleTestServerHttps,
+		onOpenSettings,
+		triggerBufferedModal,
+		manageAppClose
+	};
 
-		// remove the close event listener so we don't get stuck in a loop
-		$appWindow.removeListener(`close`, manageAppClose);
-
-		// track that the app is being closed
-		trackEvent(MP_EVENTS.core.exit);
-
-		// Shut down test server if running, then exit
-		stopTestServer();
-		_electronCore.quit();
-	});
-
-	ipcMain.on(`renderer-ready-for-modals`, (_event, latestChangelogVersion: AppVersion) => {
-		$latestChangelogVersion = latestChangelogVersion;
-		if (!$isStartupSequenceChecked) {
-			$isStartupSequenceChecked = true;
-			checkStartupSequence();
-		}
-	});
-
-	// listen for the user to launch a link
-	ipcMain.on(`launch-link`, (_event, { url, openInBrowser }: LaunchLinkPayload) => {
-		// navigate to the requested url
-		navigate(parseURL(url).toString(), openInBrowser);
-	});
-}
-
-/**
- * Initializes environment-related IPC listeners.
- */
-export function initEnvironmentIpcListeners(): void {
-	// update the network status
-	ipcMain.on(`network-status`, (_event, status: IsActive) => {
-		$testNetworkEnabled = status;
-		setMenu();
-	});
-
-	// listen for the user to select an environment
-	ipcMain.on(`environment-selected`, (_event, domain: EnvironmentSelectedPayload) => {
-		// support both legacy string (url only) and new object {url, key} formats
-		const domainUrl = typeof domain === `string` ? domain : domain.url;
-		const domainKey = typeof domain === `string` ? null : (domain.key ?? null);
-
-		// update the test domain and env key
-		$testDomainRaw = domainUrl;
-		$testDomain = parseURL(domainUrl).toString();
-		$envKey = domainKey;
-
-		// load the test
-		$isEnvironmentPending = false;
-		navigate();
-	});
-}
-
-/**
- * Initializes settings-related IPC listeners.
- */
-export function initSettingsIpcListeners(): void {
-	// listen for a setting to be saved from the UI
-	ipcMain.on(`save-setting`, async (event, { key, value, projectId }: SaveSettingPayload) => {
-		// 1. If a projectId is provided, it must match the currently-active project.
-		// 2. If no (or mismatching) projectId is provided, it's an app-level (global) setting.
-		const activeProjectId = $config?.meta?.projectId || null;
-		const targetProjectId = (projectId && projectId === activeProjectId) ? activeProjectId : null;
-
-		settingsService.set(key, value, targetProjectId ?? undefined);
-		await settingsService.save();
-		event.reply(`setting-saved`, { key, projectId: targetProjectId });
-
-		// if the theme was updated, update the native theme
-		if (key === `theme`) {
-			updateNativeTheme(value as string);
-		}
-
-		// notify the UI that a setting has changed
-		$eyasLayer?.webContents?.send(`settings-updated`, { key, value, projectId: targetProjectId });
-	});
-
-	// listen for the UI to request the current settings
-	ipcMain.on(`get-settings`, event => {
-		// Always read from the currently-loaded project; do not accept a projectId
-		// from the renderer to prevent cross-project data leakage.
-		const activeProjectId = $config?.meta?.projectId || null;
-		event.reply(`settings-loaded`, {
-			project: settingsService.getProjectSettings(activeProjectId ?? undefined),
-			app: settingsService.getAppSettings(),
-			systemTheme: nativeTheme.shouldUseDarkColors ? `dark` : `light`,
-			version: _appVersion
-		});
-	});
-}
-
-/**
- * Initializes test server-related IPC listeners.
- */
-export function initTestServerIpcListeners(): void {
-	// test server setup modal: user clicked Continue, start the server
-	ipcMain.on(`test-server-setup-continue`, (_event, { useHttps, autoOpenBrowser, useCustomDomain }: TestServerSetupPayload) => {
-		$testServerHttpsEnabled = !!useHttps;
-		const parsed = parseURL($testDomain);
-		const customDomain = useCustomDomain ? (parsed instanceof URL ? parsed.hostname : `test.local`) : null;
-		doStartTestServer(autoOpenBrowser, customDomain);
-	});
-
-	// test server resume modal: user clicked Resume
-	ipcMain.on(`test-server-resume-confirm`, () => {
-		// if there are previous settings, restart with them
-		if ($lastTestServerOptions) {
-			doStartTestServer();
-		} else {
-			// otherwise just start with defaults
-			doStartTestServer();
-		}
-	});
-
-	// test server active modal: user clicked End Session
-	ipcMain.on(`test-server-stop`, stopTestServer);
-
-	// test server active modal: user clicked Open in Browser
-	ipcMain.on(`test-server-open-browser`, openTestServerInBrowserHandler);
-
-	// test server active modal: user clicked Extend Session
-	ipcMain.on(`test-server-extend`, () => {
-		const state = testServer.getTestServerState();
-		if (state) {
-			// Session is actively running — add time without restarting the server
-			if ($testServerEndTime !== null) {
-				$testServerEndTime += TEST_SERVER_SESSION_DURATION_MS;
-			}
-			testServerTimeout.cancelTestServerTimeout();
-			if ($testServerEndTime !== null) {
-				testServerTimeout.startTestServerTimeout(onTestServerTimeout, $testServerEndTime - Date.now());
-			}
-			uiEvent(`show-test-server-active-modal`, {
-				domain: state.customUrl || state.url,
-				startTime: state.startedAt,
-				endTime: $testServerEndTime
-			});
-		} else if ($lastTestServerOptions) {
-			// Session has expired — restart it fresh
-			doStartTestServer(false, $lastTestServerOptions.customDomain);
-		}
-	});
+	initIpcHandlers(context);
 }
 
 // method for tracking events
@@ -1754,9 +1641,3 @@ function uiEvent(eventName: ChannelName, ...args: unknown[]): void {
 	// send the interaction to the UI layer
 	$eyasLayer?.webContents.send(eventName, ...args);
 }
-
-// ─── IPC Handlers ─────────────────────────────────────────────────────────────
-ipcMain.on(`whats-new-closed`, () => {
-	// once the "What's New" modal is closed, trigger the next modal in the sequence
-	triggerBufferedModal();
-});

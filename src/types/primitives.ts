@@ -99,4 +99,4 @@ export type SettingsMap = Record<string, SettingValue>;
 export type SystemTheme = string;
 
 // Environments
-
+export type EnvironmentKey = string;

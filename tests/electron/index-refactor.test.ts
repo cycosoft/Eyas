@@ -133,14 +133,15 @@ import {
 	setupDeepLinkListeners,
 	createAppWindow,
 	setupWebRequestInterception,
-	initAppIpcListeners,
-	initEnvironmentIpcListeners,
-	initSettingsIpcListeners,
-	initTestServerIpcListeners,
 	registerUiProtocolHandler,
 	registerEyasProtocolHandler,
 	registerHttpsProtocolHandler
 } from '../../src/eyas-core/index.js';
+
+import {
+	initIpcHandlers
+} from '../../src/eyas-core/ipc-handlers.js';
+import type { CoreContext } from '../../src/types/eyas-core.js';
 
 describe(`index.ts refactoring unit tests`, () => {
 	beforeEach(() => {
@@ -176,26 +177,54 @@ describe(`index.ts refactoring unit tests`, () => {
 		expect(BrowserWindow).toHaveBeenCalled();
 	});
 
-	test(`initAppIpcListeners should register hide-ui and app-exit`, () => {
-		initAppIpcListeners();
+	test(`initIpcHandlers should register all IPC listeners`, () => {
+		const ctx = {
+			$appWindow: null,
+			$eyasLayer: null,
+			$config: null,
+			$testNetworkEnabled: true,
+			$testServerHttpsEnabled: false,
+			$lastTestServerOptions: null,
+			$testDomainRaw: null,
+			$testDomain: ``,
+			$envKey: null,
+			$isEnvironmentPending: false,
+			$testServerEndTime: null,
+			$latestChangelogVersion: null,
+			$isStartupSequenceChecked: false,
+			_appVersion: `1.0.0`,
+			toggleEyasUI: vi.fn(),
+			trackEvent: vi.fn(),
+			stopTestServer: vi.fn(),
+			checkStartupSequence: vi.fn(),
+			navigate: vi.fn(),
+			setMenu: vi.fn(),
+			doStartTestServer: vi.fn(),
+			openTestServerInBrowserHandler: vi.fn(),
+			uiEvent: vi.fn(),
+			onTestServerTimeout: vi.fn(),
+			onToggleTestServerHttps: vi.fn(),
+			onOpenSettings: vi.fn(),
+			triggerBufferedModal: vi.fn(),
+			manageAppClose: vi.fn(),
+			setLatestChangelogVersion: vi.fn(),
+			setIsStartupSequenceChecked: vi.fn(),
+			setTestNetworkEnabled: vi.fn(),
+			setTestDomainRaw: vi.fn(),
+			setTestDomain: vi.fn(),
+			setEnvKey: vi.fn(),
+			setIsEnvironmentPending: vi.fn(),
+			setTestServerHttpsEnabled: vi.fn(),
+			setTestServerEndTime: vi.fn()
+		} as unknown as CoreContext;
+
+		initIpcHandlers(ctx);
 		expect(ipcMain.on).toHaveBeenCalledWith(`hide-ui`, expect.any(Function));
 		expect(ipcMain.on).toHaveBeenCalledWith(`app-exit`, expect.any(Function));
-	});
-
-	test(`initEnvironmentIpcListeners should register network-status and environment-selected`, () => {
-		initEnvironmentIpcListeners();
 		expect(ipcMain.on).toHaveBeenCalledWith(`network-status`, expect.any(Function));
 		expect(ipcMain.on).toHaveBeenCalledWith(`environment-selected`, expect.any(Function));
-	});
-
-	test(`initSettingsIpcListeners should register save-setting and get-settings`, () => {
-		initSettingsIpcListeners();
 		expect(ipcMain.on).toHaveBeenCalledWith(`save-setting`, expect.any(Function));
 		expect(ipcMain.on).toHaveBeenCalledWith(`get-settings`, expect.any(Function));
-	});
-
-	test(`initTestServerIpcListeners should register test server events`, () => {
-		initTestServerIpcListeners();
 		expect(ipcMain.on).toHaveBeenCalledWith(`test-server-setup-continue`, expect.any(Function));
 		expect(ipcMain.on).toHaveBeenCalledWith(`test-server-stop`, expect.any(Function));
 	});
