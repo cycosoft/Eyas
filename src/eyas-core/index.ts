@@ -6,14 +6,11 @@ import {
 	BrowserView,
 	dialog,
 	shell,
-	clipboard,
-	session,
-	protocol
+	clipboard
 } from 'electron';
 import _path from 'node:path';
 import _os from 'node:os';
 import fs from 'node:fs';
-import { pathToFileURL } from 'node:url';
 import Mixpanel from 'mixpanel';
 import nodeMachineId from 'node-machine-id';
 const { machineId } = nodeMachineId;
@@ -46,7 +43,6 @@ import { MP_EVENTS } from './metrics-events.js';
 import * as testServer from './test-server/test-server.js';
 import * as testServerCerts from './test-server/test-server-certs.js';
 import * as testServerTimeout from './test-server/test-server-timeout.js';
-import { safeJoin } from '../scripts/path-utils.js';
 import { formatDuration } from '../scripts/time-utils.js';
 import { substituteEnvVariables, isVariableLinkValid, hasRemainingVariables } from '../scripts/variable-utils.js';
 import * as settingsService from './settings-service.js';
@@ -54,6 +50,11 @@ import { getAppTitle, sanitizePageTitle } from '../scripts/get-app-title.js';
 import { LOAD_TYPES, TEST_SERVER_SESSION_DURATION_MS } from '../scripts/constants.js';
 
 import { initIpcHandlers } from './ipc-handlers.js';
+import {
+	registerInternalProtocols,
+	setupEyasNetworkHandlers,
+	setupWebRequestInterception
+} from './protocol-handlers.js';
 import type { CoreContext } from '../types/eyas-core.js';
 
 // Types
@@ -62,7 +63,7 @@ import type { MenuContext, MenuTemplate, MenuContextParams, LinkMenuHandlers } f
 import type { DeepLinkContext } from '../types/deep-link.js';
 import type { TestServerOptions } from '../types/test-server.js';
 import type { Viewport, ConfigToLoad, StartupModal, AppSettings, EnvironmentSettings, PreventableEvent, ViewportSize, FocusUI, TrackingState } from '../types/core.js';
-import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActive, IsPending, DomainUrl, FormattedDuration, MPEventName, TimestampMS, HashString, ThemeSource, AppTitle } from '../types/primitives.js';
+import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActive, IsPending, DomainUrl, FormattedDuration, MPEventName, TimestampMS, HashString, ThemeSource, AppTitle, AppVersion, EnvironmentKey } from '../types/primitives.js';
 
 // global variables $
 const $isDev = process.argv.includes(`--dev`);
@@ -255,7 +256,7 @@ async function handleAppReady(): Promise<void> {
 	updateNativeTheme(settingsService.get(`theme`) as string);
 
 	// start listening for requests to the custom protocol
-	setupEyasNetworkHandlers();
+	setupEyasNetworkHandlers(getCoreContext());
 
 	// start the UI layer
 	initElectronUi();
@@ -278,7 +279,7 @@ async function initElectronUi(): Promise<void> {
 	$currentViewport[1] = $defaultViewports[0].height;
 
 	createAppWindow();
-	setupWebRequestInterception();
+	setupWebRequestInterception(getCoreContext());
 
 	// display the splash screen to the user
 	const splashScreen = createSplashScreen();
@@ -327,19 +328,6 @@ export function createAppWindow(): void {
 /**
  * Sets up web request interception for the application window.
  */
-export function setupWebRequestInterception(): void {
-	if (!$appWindow) { return; }
-
-	$appWindow.webContents.session.webRequest.onBeforeRequest({ urls: [`<all_urls>`] }, (request, callback) => {
-		// validate this request
-		if (disableNetworkRequest(request.url)) {
-			return callback({ cancel: true });
-		}
-
-		// allow the request to continue
-		callback({ cancel: false });
-	});
-}
 
 /**
  * Initializes the Eyas UI layer.
@@ -481,7 +469,15 @@ function initTestListeners(): void {
 
 // initialize the Eyas listeners
 function initUiListeners(): void {
-	const context: CoreContext = {
+	initIpcHandlers(getCoreContext());
+}
+
+/**
+ * Assembles the core context object for the application.
+ * @returns The fully assembled CoreContext object.
+ */
+function getCoreContext(): CoreContext {
+	return {
 		$appWindow,
 		$eyasLayer,
 		$config,
@@ -495,18 +491,19 @@ function initUiListeners(): void {
 		$testServerEndTime,
 		$latestChangelogVersion,
 		$isStartupSequenceChecked,
+		$paths,
 		_appVersion,
 
 		// Setters
-		setTestNetworkEnabled: enabled => { $testNetworkEnabled = enabled; },
-		setTestServerHttpsEnabled: enabled => { $testServerHttpsEnabled = enabled; },
-		setTestDomainRaw: domain => { $testDomainRaw = domain; },
-		setTestDomain: domain => { $testDomain = domain; },
-		setEnvKey: key => { $envKey = key; },
-		setIsEnvironmentPending: pending => { $isEnvironmentPending = pending; },
-		setLatestChangelogVersion: version => { $latestChangelogVersion = version; },
-		setIsStartupSequenceChecked: checked => { $isStartupSequenceChecked = checked; },
-		setTestServerEndTime: time => { $testServerEndTime = time; },
+		setTestNetworkEnabled: (enabled: IsActive): void => { $testNetworkEnabled = enabled; },
+		setTestServerHttpsEnabled: (enabled: IsActive): void => { $testServerHttpsEnabled = enabled; },
+		setTestDomainRaw: (domain: DomainUrl | null): void => { $testDomainRaw = domain; },
+		setTestDomain: (domain: DomainUrl): void => { $testDomain = domain; },
+		setEnvKey: (key: EnvironmentKey | null): void => { $envKey = key; },
+		setIsEnvironmentPending: (pending: IsPending): void => { $isEnvironmentPending = pending; },
+		setLatestChangelogVersion: (version: AppVersion | null): void => { $latestChangelogVersion = version; },
+		setIsStartupSequenceChecked: (checked: IsActive): void => { $isStartupSequenceChecked = checked; },
+		setTestServerEndTime: (time: TimestampMS | null): void => { $testServerEndTime = time; },
 
 		// Functions
 		toggleEyasUI,
@@ -524,8 +521,6 @@ function initUiListeners(): void {
 		triggerBufferedModal,
 		manageAppClose
 	};
-
-	initIpcHandlers(context);
 }
 
 // method for tracking events
@@ -1271,168 +1266,6 @@ function navigateVariable(url: DomainUrl): void {
 	}
 }
 
-// register a custom protocol for loading local test files and the UI
-function registerInternalProtocols(): void {
-	// register the custom protocols for relative paths + crypto support
-	protocol.registerSchemesAsPrivileged([
-		{
-			scheme: `eyas`, privileges: {
-				standard: true,
-				secure: true,
-				allowServiceWorkers: true,
-				supportFetchAPI: true,
-				corsEnabled: true,
-				stream: true
-			}
-		},
-
-		{
-			scheme: `ui`, privileges: {
-				standard: true,
-				secure: true
-			}
-		}
-	]);
-}
-
-// handle blocking requests when the user disables the network
-function disableNetworkRequest(url: DomainUrl): IsActive {
-	const output = false;
-
-	// exit if the network is not disabled
-	if ($testNetworkEnabled) { return output; }
-
-	// don't allow blocking the UI layer
-	if (url.startsWith(`ui://`)) { return output; }
-
-	return true;
-}
-
-// handle requests to the custom protocol
-function setupEyasNetworkHandlers(): void {
-	if (!$config) { return; }
-
-	const ses = session.fromPartition(`persist:${$config.meta.testId}`);
-
-	registerUiProtocolHandler(ses);
-	registerEyasProtocolHandler(ses);
-	registerHttpsProtocolHandler(ses);
-}
-
-/**
- * Registers the 'ui' protocol handler.
- * @param ses The session to register the handler on.
- */
-export function registerUiProtocolHandler(ses: Electron.Session): void {
-	// use the "ui" protocol to load the Eyas UI layer
-	ses.protocol.handle(`ui`, request => {
-		// drop the protocol from the request
-		const parsed = parseURL(request.url.replace(`ui://`, `https://`));
-		const relativePathToFile = (parsed instanceof URL ? parsed.pathname : ``);
-
-		// build the expected path to the requested file
-		const localFilePath = safeJoin($paths.uiSource, relativePathToFile);
-
-		// if the path is unsafe OR the file is missing
-		if (!localFilePath || !fs.existsSync(localFilePath)) {
-			return new Response(`Not Found`, { status: 404 });
-		}
-
-		// return the Eyas UI layer to complete the request
-		return ses.fetch(pathToFileURL(localFilePath).toString());
-	});
-}
-
-/**
- * Registers the 'eyas' protocol handler.
- * @param ses The session to register the handler on.
- */
-export function registerEyasProtocolHandler(ses: Electron.Session): void {
-	// use this protocol to load files relatively from the local file system
-	ses.protocol.handle(`eyas`, request => {
-		// validate this request
-		if (disableNetworkRequest(request.url)) {
-			return { cancel: true } as unknown as Response;
-		}
-
-		// grab the pathname from the request
-		const parsed = parseURL(request.url.replace(`eyas://`, `https://`));
-		const pathname = (parsed instanceof URL ? parsed.pathname : ``);
-
-		// parse expected file attempting to load
-		const fileIfNotDefined = `index.html`;
-
-		// check if the pathname ends with a file + extension
-		const hasExtension = pathname.split(`/`).pop()?.includes(`.`) || false;
-
-		// build the relative path to the file
-		const relativePathToFile = hasExtension
-			? pathname
-			: _path.join(pathname, fileIfNotDefined);
-
-		// build the expected path to the file
-		let localFilePath = safeJoin($paths.testSrc || ``, relativePathToFile);
-
-		if (
-			// if the file is unsafe OR doesn't exist
-			(!localFilePath || !fs.existsSync(localFilePath))
-			// AND the requested path isn't the root path
-			&& $paths.testSrc !== safeJoin($paths.testSrc || ``, pathname)
-		) {
-			// load root file instead
-			localFilePath = safeJoin($paths.testSrc || ``, fileIfNotDefined);
-		}
-
-		// if the path is still unsafe (shouldn't happen with index.html, but for safety)
-		if (!localFilePath) {
-			return new Response(`Not Found`, { status: 404 });
-		}
-
-		// return the file from the local system to complete the request
-		return ses.fetch(pathToFileURL(localFilePath).toString());
-	});
-}
-
-/**
- * Registers the 'https' protocol handler for redirections.
- * @param ses The session to register the handler on.
- */
-export function registerHttpsProtocolHandler(ses: Electron.Session): void {
-	// listen for requests to the specified domains and redirect to the custom protocol
-	ses.protocol.handle(`https`, async request => {
-		// setup
-		const parsedRequest = parseURL(request.url);
-		if (!(parsedRequest instanceof URL)) {
-			return ses.fetch(request);
-		}
-		const { hostname, pathname } = parsedRequest;
-		let bypassCustomProtocolHandlers = true;
-
-		// if the request's hostname matches the test domain
-		const parsedTestDomain = parseURL($testDomain);
-		if (hostname === (parsedTestDomain instanceof URL ? parsedTestDomain.hostname : null)) {
-			// check if the config.source is a valid url
-			const sourceOnWeb = parseURL($config?.source || ``);
-
-			// if the config.source is a url
-			if (sourceOnWeb instanceof URL) {
-				// redirect to the source domain with the same path
-				const newUrl = sourceOnWeb.origin
-					+ (sourceOnWeb.pathname + pathname)
-						.replaceAll(`//`, `/`);
-				return ses.fetch(newUrl, { bypassCustomProtocolHandlers });
-			} else {
-				// otherwise the config.source is a file, look locally
-				const newUrl = request.url.replace(`https://`, `eyas://`);
-				bypassCustomProtocolHandlers = false;
-				return ses.fetch(newUrl, { bypassCustomProtocolHandlers });
-			}
-		}
-
-		// make the request
-		return ses.fetch(request, { bypassCustomProtocolHandlers });
-	});
-}
 
 // clears the test cache
 function clearCache(): void {

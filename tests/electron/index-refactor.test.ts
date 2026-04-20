@@ -1,5 +1,5 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
-import { app, BrowserWindow, ipcMain, session } from 'electron';
+import { app, BrowserWindow, ipcMain, session, protocol } from 'electron';
 import type { DeepLinkContext } from '../../src/types/deep-link.js';
 
 // Mock electron before importing index.ts
@@ -131,12 +131,16 @@ vi.mock(`electron-updater`, () => {
 import {
 	setupDefaultProtocol,
 	setupDeepLinkListeners,
-	createAppWindow,
+	createAppWindow
+} from '../../src/eyas-core/index.js';
+
+import {
 	setupWebRequestInterception,
 	registerUiProtocolHandler,
 	registerEyasProtocolHandler,
-	registerHttpsProtocolHandler
-} from '../../src/eyas-core/index.js';
+	registerHttpsProtocolHandler,
+	registerInternalProtocols
+} from '../../src/eyas-core/protocol-handlers.js';
 
 import {
 	initIpcHandlers
@@ -169,12 +173,11 @@ describe(`index.ts refactoring unit tests`, () => {
 	});
 
 	test(`setupWebRequestInterception should register onBeforeRequest`, () => {
-		// Mock $appWindow by calling createAppWindow first
-		createAppWindow();
-		setupWebRequestInterception();
-		// We can't easily check the internal state of $appWindow without more mocks,
-		// but we can check if BrowserWindow was called.
-		expect(BrowserWindow).toHaveBeenCalled();
+		const ctx = {
+			$appWindow: new (BrowserWindow as any)()
+		} as unknown as CoreContext;
+		setupWebRequestInterception(ctx);
+		expect(ctx.$appWindow?.webContents.session.webRequest.onBeforeRequest).toHaveBeenCalled();
 	});
 
 	test(`initIpcHandlers should register all IPC listeners`, () => {
@@ -192,6 +195,10 @@ describe(`index.ts refactoring unit tests`, () => {
 			$testServerEndTime: null,
 			$latestChangelogVersion: null,
 			$isStartupSequenceChecked: false,
+			$paths: {
+				uiSource: ``,
+				testSrc: ``
+			} as any,
 			_appVersion: `1.0.0`,
 			toggleEyasUI: vi.fn(),
 			trackEvent: vi.fn(),
@@ -230,20 +237,34 @@ describe(`index.ts refactoring unit tests`, () => {
 	});
 
 	test(`registerUiProtocolHandler should call ses.protocol.handle`, () => {
+		const ctx = {
+			$paths: { uiSource: `` }
+		} as unknown as CoreContext;
 		const ses = session.fromPartition(`test`);
-		registerUiProtocolHandler(ses);
+		registerUiProtocolHandler(ctx, ses);
 		expect(ses.protocol.handle).toHaveBeenCalledWith(`ui`, expect.any(Function));
 	});
 
 	test(`registerEyasProtocolHandler should call ses.protocol.handle`, () => {
+		const ctx = {
+			$paths: { testSrc: `` }
+		} as unknown as CoreContext;
 		const ses = session.fromPartition(`test`);
-		registerEyasProtocolHandler(ses);
+		registerEyasProtocolHandler(ctx, ses);
 		expect(ses.protocol.handle).toHaveBeenCalledWith(`eyas`, expect.any(Function));
 	});
 
 	test(`registerHttpsProtocolHandler should call ses.protocol.handle`, () => {
+		const ctx = {
+			$testDomain: `https://test.com`
+		} as unknown as CoreContext;
 		const ses = session.fromPartition(`test`);
-		registerHttpsProtocolHandler(ses);
+		registerHttpsProtocolHandler(ctx, ses);
 		expect(ses.protocol.handle).toHaveBeenCalledWith(`https`, expect.any(Function));
+	});
+
+	test(`registerInternalProtocols should call protocol.registerSchemesAsPrivileged`, () => {
+		registerInternalProtocols();
+		expect(protocol.registerSchemesAsPrivileged).toHaveBeenCalled();
 	});
 });

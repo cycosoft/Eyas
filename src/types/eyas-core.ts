@@ -3,6 +3,23 @@ import type { ValidatedConfig } from './config.js';
 import type { TestServerOptions } from './test-server.js';
 import type { IsActive, IsPending, DomainUrl, MPEventName, ChannelName, TimestampMS, AppVersion, EnvironmentKey } from './primitives.js';
 import type { PreventableEvent } from './core.js';
+import type { FilePath } from './primitives.js';
+
+/** Paths used by the Eyas core orchestrator */
+export type EyasPaths = {
+	icon: FilePath;
+	configLoader: FilePath;
+	packageJson: FilePath;
+	testPreload: FilePath;
+	eventBridge: FilePath;
+	constants: FilePath;
+	pathUtils: FilePath;
+	timeUtils: FilePath;
+	testSrc: FilePath | null;
+	uiSource: FilePath;
+	eyasInterface: FilePath;
+	splashScreen: FilePath;
+};
 
 /** Context object for the Eyas core orchestrator to be shared with sub-modules */
 export type CoreContext = {
@@ -20,6 +37,7 @@ export type CoreContext = {
 	$testServerEndTime: TimestampMS | null;
 	$latestChangelogVersion: AppVersion | null;
 	$isStartupSequenceChecked: IsActive;
+	$paths: EyasPaths;
 	_appVersion: AppVersion;
 
 	// Setters (to avoid direct mutation if possible, but keep simple for now)
