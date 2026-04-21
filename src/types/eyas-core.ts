@@ -37,6 +37,7 @@ export type CoreContext = {
 	$testServerEndTime: TimestampMS | null;
 	$latestChangelogVersion: AppVersion | null;
 	$isStartupSequenceChecked: IsActive;
+	$isInitializing: IsActive;
 	$paths: EyasPaths;
 	_appVersion: AppVersion;
 
@@ -50,6 +51,8 @@ export type CoreContext = {
 	setLatestChangelogVersion: (version: AppVersion | null) => void;
 	setIsStartupSequenceChecked: (checked: IsActive) => void;
 	setTestServerEndTime: (time: TimestampMS | null) => void;
+	setLastTestServerOptions: (options: TestServerOptions | null) => void;
+	setIsInitializing: (initializing: IsActive) => void;
 
 	// Functions
 	toggleEyasUI: (enable: IsActive) => void;

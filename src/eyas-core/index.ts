@@ -38,13 +38,11 @@ import { getNoUpdateAvailableDialogOptions } from './update-dialog.js';
 import { MP_EVENTS } from './metrics-events.js';
 import { analyticsService } from './analytics.service.js';
 import * as testServer from './test-server/test-server.js';
-import * as testServerCerts from './test-server/test-server-certs.js';
-import * as testServerTimeout from './test-server/test-server-timeout.js';
-import { formatDuration } from '@scripts/time-utils.js';
+import { testServerService } from './test-server.service.js';
 import { substituteEnvVariables, isVariableLinkValid, hasRemainingVariables } from '@scripts/variable-utils.js';
 import * as settingsService from './settings-service.js';
 import { getAppTitle, sanitizePageTitle } from '@scripts/get-app-title.js';
-import { LOAD_TYPES, TEST_SERVER_SESSION_DURATION_MS } from '@scripts/constants.js';
+import { LOAD_TYPES } from '@scripts/constants.js';
 
 import { initIpcHandlers } from './ipc-handlers.js';
 import {
@@ -72,7 +70,6 @@ let $testNetworkEnabled: IsActive = true;
 let $testServerHttpsEnabled: IsActive = false;
 let $lastTestServerOptions: TestServerOptions | null = null;
 let $testServerEndTime: number | null = null;
-let $testServerMenuIntervalId: NodeJS.Timeout | null = null;
 let $testDomainRaw: string | null = null;
 let $testDomain = `eyas://local.test`;
 let $envKey: string | null = null;
@@ -492,6 +489,7 @@ function getCoreContext(): CoreContext {
 		get $testServerEndTime(): TimestampMS | null { return $testServerEndTime; },
 		get $latestChangelogVersion(): AppVersion | null { return $latestChangelogVersion; },
 		get $isStartupSequenceChecked(): IsActive { return $isStartupSequenceChecked; },
+		get $isInitializing(): IsActive { return $isInitializing; },
 		get $paths(): EyasPaths { return $paths as EyasPaths; },
 		get _appVersion(): AppVersion { return _appVersion as AppVersion; },
 
@@ -505,6 +503,8 @@ function getCoreContext(): CoreContext {
 		setLatestChangelogVersion: (version: AppVersion | null): void => { $latestChangelogVersion = version; },
 		setIsStartupSequenceChecked: (checked: IsActive): void => { $isStartupSequenceChecked = checked; },
 		setTestServerEndTime: (time: TimestampMS | null): void => { $testServerEndTime = time; },
+		setLastTestServerOptions: (options: TestServerOptions | null): void => { $lastTestServerOptions = options; },
+		setIsInitializing: (initializing: IsActive): void => { $isInitializing = initializing; },
 
 		// Functions
 		toggleEyasUI,
@@ -707,128 +707,32 @@ function onResize(): void {
 }
 
 async function stopTestServer(): Promise<void> {
-	if ($isInitializing) return;
-	await testServer.stopTestServer();
-	testServerTimeout.cancelTestServerTimeout();
-	if ($testServerMenuIntervalId) {
-		clearInterval($testServerMenuIntervalId);
-		$testServerMenuIntervalId = null;
-	}
-	setMenu();
+	await testServerService.stop(getCoreContext());
 }
 
 function copyTestServerUrlHandler(): void {
-	if ($isInitializing) return;
-	const state = testServer.getTestServerState();
-	if (state) {
-		const targetUrl = state.customUrl || state.url;
-		if (targetUrl) {
-			clipboard.writeText(targetUrl);
-		}
-	}
+	testServerService.copyUrl(getCoreContext());
 }
 
 function openTestServerInBrowserHandler(_event?: unknown, url?: DomainUrl): void {
-	if ($isInitializing) return;
-	const state = testServer.getTestServerState();
-
-	// use the provided url, or fall back to the test server state
-	const targetUrl = url || state?.customUrl || state?.url;
-	if (targetUrl) {
-		shell.openExternal(targetUrl);
-	}
+	testServerService.openInBrowser(getCoreContext(), url);
 }
 
 function resetTestServerSettings(): void {
-	$lastTestServerOptions = null;
+	testServerService.resetSettings(getCoreContext());
 }
 
 async function startTestServerHandler(): Promise<void> {
-	if ($isInitializing) return;
-	if (testServer.getTestServerState()) return;
-	if (!$paths.testSrc) return;
-
-	resetTestServerSettings();
-
-	// Show simplified setup modal
-	if ($eyasLayer) {
-		const portHttp = await testServer.getAvailablePort($testDomain, false);
-		const portHttps = await testServer.getAvailablePort($testDomain, true);
-		const parsedTestDomain = parseURL($testDomain);
-		const hostnameForHosts = (parsedTestDomain instanceof URL ? parsedTestDomain.hostname : null) || `test.local`;
-		const isWindows = process.platform === `win32`;
-
-		const projectId = $config?.meta?.projectId || null;
-		$testServerHttpsEnabled = settingsService.get(`testServer.useHttps`, projectId ?? undefined) as boolean;
-		const autoOpenBrowser = settingsService.get(`testServer.autoOpenBrowser`, projectId ?? undefined) as boolean;
-		const useCustomDomain = settingsService.get(`testServer.useCustomDomain`, projectId ?? undefined) as boolean;
-
-		uiEvent(`show-test-server-setup-modal`, {
-			domain: `http://127.0.0.1`,
-			portHttp,
-			portHttps,
-			hostnameForHosts,
-			steps: [],
-			useHttps: $testServerHttpsEnabled,
-			autoOpenBrowser,
-			useCustomDomain,
-			projectId,
-			isWindows
-		});
-	}
+	await testServerService.showSetupModal(getCoreContext());
 }
 
-async function doStartTestServer(autoOpenBrowser = true, customDomain: string | null = null): Promise<void> {
-	let certs;
-	if ($testServerHttpsEnabled) {
-		try {
-			certs = await testServerCerts.getCerts([`127.0.0.1`, `localhost`]);
-		} catch (err) {
-			console.error(`Live Test Server HTTPS cert generation failed:`, err);
-			return;
-		}
-	}
-	try {
-		const options = {
-			rootPath: $paths.testSrc || ``,
-			useHttps: $testServerHttpsEnabled,
-			certs: certs || undefined,
-			customDomain: customDomain ?? undefined
-		};
-		await testServer.startTestServer(options);
-		$lastTestServerOptions = options;
-	} catch (err) {
-		console.error(`Live Test server start failed:`, err);
-		return;
-	}
-	testServerTimeout.startTestServerTimeout(onTestServerTimeout, TEST_SERVER_SESSION_DURATION_MS);
-	$testServerMenuIntervalId = setInterval(() => { setMenu(); }, 60 * 1000);
-	await setMenu();
-
-	if (autoOpenBrowser) {
-		openTestServerInBrowserHandler();
-	}
-
-	const state = testServer.getTestServerState();
-	if (state) {
-		$testServerEndTime = state.startedAt + TEST_SERVER_SESSION_DURATION_MS;
-		uiEvent(`show-test-server-active-modal`, {
-			domain: state.customUrl || state.url,
-			startTime: state.startedAt,
-			endTime: $testServerEndTime
-		});
-	}
+async function doStartTestServer(autoOpenBrowser = true, customDomain: DomainUrl | null = null): Promise<void> {
+	await testServerService.start(getCoreContext(), autoOpenBrowser, customDomain);
 }
 
 // whenever the test server automatically shuts down
 function onTestServerTimeout(): void {
-	if ($appWindow && typeof $appWindow.flashFrame === `function`) {
-		$appWindow.flashFrame(true);
-	}
-	stopTestServer();
-
-	// Signal the UI that the session has expired
-	uiEvent(`show-test-server-resume-modal`, formatDuration(TEST_SERVER_SESSION_DURATION_MS));
+	testServerService.onTimeout(getCoreContext());
 }
 
 /**
@@ -968,11 +872,7 @@ function getMenuContext(params: MenuContextParams): MenuContext {
  * @returns A formatted duration string.
  */
 export function getTestServerRemainingTime(): FormattedDuration {
-	const s = testServer.getTestServerState();
-	if (!s) { return ``; }
-	const elapsed = Date.now() - s.startedAt;
-	const remaining = TEST_SERVER_SESSION_DURATION_MS - elapsed;
-	return formatDuration(remaining);
+	return testServerService.getRemainingTime();
 }
 
 /**
@@ -1039,8 +939,7 @@ function openCacheFolder(): void {
  * Toggles the HTTPS enabled state for the test server and refreshes the menu.
  */
 function onToggleTestServerHttps(): void {
-	$testServerHttpsEnabled = !$testServerHttpsEnabled;
-	setMenu();
+	testServerService.toggleHttps(getCoreContext());
 }
 
 /**
