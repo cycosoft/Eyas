@@ -71,7 +71,6 @@ export type ViewportLabel = string;
 
 // Identity / Identification
 export type HashString = string;
-export type DeviceId = string;
 export type TestId = string;
 
 // Certificates

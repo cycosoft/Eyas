@@ -9,11 +9,7 @@ import {
 	clipboard
 } from 'electron';
 import _path from 'node:path';
-import _os from 'node:os';
 import fs from 'node:fs';
-import Mixpanel from 'mixpanel';
-import nodeMachineId from 'node-machine-id';
-const { machineId } = nodeMachineId;
 import { isPast } from 'date-fns/isPast';
 import { format } from 'date-fns/format';
 import { differenceInDays } from 'date-fns/differenceInDays';
@@ -40,6 +36,7 @@ import { parseURL } from '../scripts/parse-url.js';
 import { buildMenuTemplate } from './menu-template.js';
 import { getNoUpdateAvailableDialogOptions } from './update-dialog.js';
 import { MP_EVENTS } from './metrics-events.js';
+import { analyticsService } from './analytics.service.js';
 import * as testServer from './test-server/test-server.js';
 import * as testServerCerts from './test-server/test-server-certs.js';
 import * as testServerTimeout from './test-server/test-server-timeout.js';
@@ -62,7 +59,7 @@ import type { ValidatedConfig } from '../types/config.js';
 import type { MenuContext, MenuTemplate, MenuContextParams, LinkMenuHandlers } from '../types/menu.js';
 import type { DeepLinkContext } from '../types/deep-link.js';
 import type { TestServerOptions } from '../types/test-server.js';
-import type { Viewport, ConfigToLoad, StartupModal, AppSettings, EnvironmentSettings, PreventableEvent, ViewportSize, FocusUI, TrackingState } from '../types/core.js';
+import type { Viewport, ConfigToLoad, StartupModal, AppSettings, EnvironmentSettings, PreventableEvent, ViewportSize, FocusUI } from '../types/core.js';
 import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActive, IsPending, DomainUrl, FormattedDuration, MPEventName, TimestampMS, HashString, ThemeSource, AppTitle, AppVersion, EnvironmentKey } from '../types/primitives.js';
 
 // global variables $
@@ -111,7 +108,6 @@ const $paths = {
 	eyasInterface: _path.join($roots.eyas, `eyas-interface`, `index.html`),
 	splashScreen: _path.join($roots.eyas, `eyas-interface`, `splash.html`)
 };
-const $operatingSystem = _os.platform();
 
 // eslint-disable-next-line quotes
 import _package from "../../package.json" with { type: "json" };
@@ -525,37 +521,8 @@ function getCoreContext(): CoreContext {
 
 // method for tracking events
 async function trackEvent(event: MPEventName, extraData?: Record<string, unknown>): Promise<void> {
-	// setup
-	const MP_KEY_PROD = `07f0475cb429f7de5ebf79a1c418dc5c`;
-	const MP_KEY_DEV = `02b67bb94dd797e9a2cbb31d021c3cef`;
-
-	const state = trackEvent as unknown as TrackingState;
-
-	// if mixpanel has not been initialized
-	if (!state.mixpanel) {
-		// initialize mixpanel to the correct environment
-		state.mixpanel = Mixpanel.init($isDev ? MP_KEY_DEV : MP_KEY_PROD);
-
-		// get information about the user
-		state.deviceId = await machineId();
-
-		// define who the user is in mixpanel
-		state.mixpanel.people.set(state.deviceId, {});
-	}
-
-	// if not running in dev mode
-	state.mixpanel.track(event, {
-		// core data to send with every request
-		distinct_id: state.deviceId, // device to link action to
-		$os: $operatingSystem,
-		$app_version_string: _appVersion,
-		companyId: $config?.meta.companyId,
-		projectId: $config?.meta.projectId,
-		testId: $config?.meta.testId,
-
-		// provided data to send with the event
-		...extraData
-	});
+	await analyticsService.init($isDev);
+	await analyticsService.trackEvent(event, $config, _appVersion, extraData);
 }
 
 // forces an exit if the loaded test has expired

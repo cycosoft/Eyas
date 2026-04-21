@@ -1,5 +1,4 @@
-import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, FilePath, DomainUrl, SettingKey, IsActive, IsDefault, LoadMethod, AppVersion, HashString, RetryCount, DeviceId, AppTitle } from './primitives.js';
-import type { Mixpanel } from 'mixpanel';
+import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, FilePath, DomainUrl, SettingKey, IsActive, IsDefault, LoadMethod, AppVersion, HashString, RetryCount, AppTitle } from './primitives.js';
 
 
 /** A viewport configuration for the browser window */
@@ -69,8 +68,3 @@ export type FocusUI = {
 	attempts?: RetryCount;
 }
 
-/** Mixpanel tracking state attached to trackEvent */
-export type TrackingState = {
-	mixpanel?: Mixpanel;
-	deviceId?: DeviceId;
-}
