@@ -52,10 +52,10 @@ import {
 	setupEyasNetworkHandlers,
 	setupWebRequestInterception
 } from './protocol-handlers.js';
-import type { CoreContext } from '../types/eyas-core.js';
+import type { CoreContext, EyasPaths } from '../types/eyas-core.js';
 
 // Types
-import type { ValidatedConfig } from '../types/config.js';
+import type { ValidatedConfig, LinkConfig } from '../types/config.js';
 import type { MenuContext, MenuTemplate, MenuContextParams, LinkMenuHandlers } from '../types/menu.js';
 import type { DeepLinkContext } from '../types/deep-link.js';
 import type { TestServerOptions } from '../types/test-server.js';
@@ -468,27 +468,32 @@ function initUiListeners(): void {
 	initIpcHandlers(getCoreContext());
 }
 
+let $coreContext: CoreContext | null = null;
+
 /**
  * Assembles the core context object for the application.
  * @returns The fully assembled CoreContext object.
  */
 function getCoreContext(): CoreContext {
-	return {
-		$appWindow,
-		$eyasLayer,
-		$config,
-		$testNetworkEnabled,
-		$testServerHttpsEnabled,
-		$lastTestServerOptions,
-		$testDomainRaw,
-		$testDomain,
-		$envKey,
-		$isEnvironmentPending,
-		$testServerEndTime,
-		$latestChangelogVersion,
-		$isStartupSequenceChecked,
-		$paths,
-		_appVersion,
+	if ($coreContext) { return $coreContext; }
+
+	$coreContext = {
+		// State
+		get $appWindow(): BrowserWindow | null { return $appWindow; },
+		get $eyasLayer(): BrowserView | null { return $eyasLayer; },
+		get $config(): ValidatedConfig | null { return $config; },
+		get $testNetworkEnabled(): IsActive { return $testNetworkEnabled; },
+		get $testServerHttpsEnabled(): IsActive { return $testServerHttpsEnabled; },
+		get $lastTestServerOptions(): TestServerOptions | null { return $lastTestServerOptions; },
+		get $testDomainRaw(): DomainUrl | null { return $testDomainRaw; },
+		get $testDomain(): DomainUrl { return $testDomain; },
+		get $envKey(): EnvironmentKey | null { return $envKey; },
+		get $isEnvironmentPending(): IsPending { return $isEnvironmentPending; },
+		get $testServerEndTime(): TimestampMS | null { return $testServerEndTime; },
+		get $latestChangelogVersion(): AppVersion | null { return $latestChangelogVersion; },
+		get $isStartupSequenceChecked(): IsActive { return $isStartupSequenceChecked; },
+		get $paths(): EyasPaths { return $paths as EyasPaths; },
+		get _appVersion(): AppVersion { return _appVersion as AppVersion; },
 
 		// Setters
 		setTestNetworkEnabled: (enabled: IsActive): void => { $testNetworkEnabled = enabled; },
@@ -517,6 +522,8 @@ function getCoreContext(): CoreContext {
 		triggerBufferedModal,
 		manageAppClose
 	};
+
+	return $coreContext as CoreContext;
 }
 
 // method for tracking events
@@ -886,7 +893,7 @@ export function getLinkMenuItems(
 	if (!config) { return []; }
 
 	const linkItems: MenuTemplate = [];
-	config.links.forEach(item => {
+	config.links.forEach((item: LinkConfig) => {
 		const itemUrl = item.url;
 		let isValid;
 		let validUrl: string | undefined;

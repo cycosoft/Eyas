@@ -1,6 +1,9 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { app, BrowserWindow, ipcMain, session, protocol } from 'electron';
 import type { DeepLinkContext } from '../../src/types/deep-link.js';
+import type { EyasPaths } from '../../src/types/eyas-core.js';
+
+type BrowserWindowConstructor = { new (): BrowserWindow };
 
 // Mock electron before importing index.ts
 vi.mock(`electron`, () => ({
@@ -174,7 +177,7 @@ describe(`index.ts refactoring unit tests`, () => {
 
 	test(`setupWebRequestInterception should register onBeforeRequest`, () => {
 		const ctx = {
-			$appWindow: new (BrowserWindow as any)()
+			$appWindow: new (BrowserWindow as unknown as BrowserWindowConstructor)()
 		} as unknown as CoreContext;
 		setupWebRequestInterception(ctx);
 		expect(ctx.$appWindow?.webContents.session.webRequest.onBeforeRequest).toHaveBeenCalled();
@@ -198,7 +201,7 @@ describe(`index.ts refactoring unit tests`, () => {
 			$paths: {
 				uiSource: ``,
 				testSrc: ``
-			} as any,
+			} as unknown as EyasPaths,
 			_appVersion: `1.0.0`,
 			toggleEyasUI: vi.fn(),
 			trackEvent: vi.fn(),

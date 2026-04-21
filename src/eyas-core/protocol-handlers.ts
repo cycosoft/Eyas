@@ -157,9 +157,14 @@ export function registerHttpsProtocolHandler(ctx: CoreContext, ses: Electron.Ses
 		const { hostname, pathname } = parsedRequest;
 		let bypassCustomProtocolHandlers = true;
 
-		// if the request's hostname matches the test domain
-		const parsedTestDomain = parseURL(ctx.$testDomain);
-		if (hostname === (parsedTestDomain instanceof URL ? parsedTestDomain.hostname : null)) {
+		// check if the request's hostname matches any of the test domains
+		const domains = ctx.$config?.domains || [];
+		const isManagedDomain = domains.some(d => {
+			const parsed = parseURL(d.url);
+			return hostname === (parsed instanceof URL ? parsed.hostname : null);
+		});
+
+		if (isManagedDomain) {
 			// check if the config.source is a valid url
 			const sourceOnWeb = parseURL(ctx.$config?.source || ``);
 
