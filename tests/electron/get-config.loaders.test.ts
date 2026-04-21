@@ -1,5 +1,5 @@
 import { expect, test, describe, vi, beforeEach } from "vitest";
-import * as loaders from "../../src/scripts/get-config.loaders.js";
+import * as loaders from "@scripts/get-config.loaders.js";
 
 describe(`get-config.loaders`, () => {
 	beforeEach(() => {

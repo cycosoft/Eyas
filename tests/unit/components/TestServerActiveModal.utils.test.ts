@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest';
-import { formatDisplayUrl, formatTimestamp, calculateCountdownText, getExtensionLabel, checkCanExtend } from '../../../src/eyas-interface/app/src/components/TestServerActiveModal.utils.js';
-import { TEST_SERVER_SESSION_DURATION_MS } from '../../../src/scripts/constants.js';
+import { formatDisplayUrl, formatTimestamp, calculateCountdownText, getExtensionLabel, checkCanExtend } from '@interface/components/TestServerActiveModal.utils.js';
+import { TEST_SERVER_SESSION_DURATION_MS } from '@scripts/constants.js';
 
 describe(`TestServerActiveModal.utils`, () => {
 	describe(`formatDisplayUrl`, () => {

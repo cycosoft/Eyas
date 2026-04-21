@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { getElectronBuilderConfig } from '../../src/scripts/electron-builder-config.js';
+import { getElectronBuilderConfig } from '@scripts/electron-builder-config.js';
 
 const basePaths = {
 	icon: `/fake/out/eyas-assets/eyas-logo.png`,

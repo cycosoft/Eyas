@@ -2,7 +2,7 @@
 
 import util from "node:util";
 import { exec as childProcessExec } from "node:child_process";
-import type { SourcePath, HashString, LabelString } from "../types/primitives.js";
+import type { SourcePath, HashString, LabelString } from "@registry/primitives.js";
 
 const exec = util.promisify(childProcessExec);
 

@@ -1,8 +1,8 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { BrowserWindow } from 'electron';
-import type { ValidatedConfig } from '../../src/types/config.js';
-import type { TestServerState } from '../../src/types/test-server.js';
-import type { MenuLabel } from '../../src/types/primitives.js';
+import type { ValidatedConfig } from '@registry/config.js';
+import type { TestServerState } from '@registry/test-server.js';
+import type { MenuLabel } from '@registry/primitives.js';
 
 type MockMenuItem = { label?: MenuLabel };
 
@@ -122,8 +122,8 @@ vi.mock(`electron-updater`, () => {
 });
 
 // Import the functions to test
-import { getViewportMenuItems, getLinkMenuItems, getTestServerRemainingTime } from '../../src/eyas-core/index.js';
-import * as testServer from '../../src/eyas-core/test-server/test-server.js';
+import { getViewportMenuItems, getLinkMenuItems, getTestServerRemainingTime } from '@core/index.js';
+import * as testServer from '@core/test-server/test-server.js';
 
 describe(`index menu logic helpers`, () => {
 	beforeEach(() => {

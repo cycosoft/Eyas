@@ -1,6 +1,6 @@
 // imports
 import { contextBridge, ipcRenderer } from "electron";
-import type { ChannelName } from "../types/primitives.js";
+import type { ChannelName } from "@registry/primitives.js";
 
 // via ( https://stackoverflow.com/a/59814127 )
 // Expose protected methods that allow the renderer process to use

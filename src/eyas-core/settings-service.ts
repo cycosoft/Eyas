@@ -3,9 +3,9 @@ import { app } from 'electron';
 import _path from 'path';
 import fs from 'fs-extra';
 const { readJson, outputJson } = fs;
-import { SETTINGS_DEFAULTS } from '../scripts/constants.js';
-import type { SettingsData, AppSettings, ProjectSettings } from '../types/settings.js';
-import type { FilePath, ProjectId, SettingKey } from '../types/primitives.js';
+import { SETTINGS_DEFAULTS } from '@scripts/constants.js';
+import type { SettingsData, AppSettings, ProjectSettings } from '@registry/settings.js';
+import type { FilePath, ProjectId, SettingKey } from '@registry/primitives.js';
 
 // ─── internal state ────────────────────────────────────────────────────────────
 

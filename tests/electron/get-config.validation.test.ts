@@ -1,5 +1,5 @@
 import { expect, test, describe, vi, beforeEach } from "vitest";
-import * as validationUtils from "../../src/scripts/get-config.validation.js";
+import * as validationUtils from "@scripts/get-config.validation.js";
 
 // Mock git utils
 vi.mock(`../../src/scripts/get-config.git.js`, () => ({

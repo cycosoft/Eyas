@@ -1,5 +1,5 @@
-import type { DeepLinkContext } from '../types/deep-link.js';
-import type { EyasProtocolUrl, CommandLineArgs } from '../types/primitives.js';
+import type { DeepLinkContext } from '@registry/deep-link.js';
+import type { EyasProtocolUrl, CommandLineArgs } from '@registry/primitives.js';
 
 /**
  * Returns true only when url is a non-empty string starting with eyas://.

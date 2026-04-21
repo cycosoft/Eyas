@@ -2,7 +2,7 @@ import { execSync } from "node:child_process";
 import crypto from "node:crypto";
 
 // Types
-import type { LabelString, HashString, ProjectId } from "../types/primitives.js";
+import type { LabelString, HashString, ProjectId } from "@registry/primitives.js";
 
 /**
  * Attempts to return the current short hash

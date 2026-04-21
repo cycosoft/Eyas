@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { IpcRendererEvent } from 'electron';
-import type { ChannelName } from '../types/primitives.js';
+import type { ChannelName } from '@registry/primitives.js';
 
 try {
 	contextBridge.exposeInMainWorld(`electron`, {

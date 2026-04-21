@@ -1,10 +1,10 @@
 import { ipcMain, nativeTheme, app } from 'electron';
-import type { CoreContext } from '../types/eyas-core.js';
-import { parseURL } from '../scripts/parse-url.js';
+import type { CoreContext } from '@registry/eyas-core.js';
+import { parseURL } from '@scripts/parse-url.js';
 import * as settingsService from './settings-service.js';
 import * as testServer from './test-server/test-server.js';
 import * as testServerTimeout from './test-server/test-server-timeout.js';
-import { TEST_SERVER_SESSION_DURATION_MS } from '../scripts/constants.js';
+import { TEST_SERVER_SESSION_DURATION_MS } from '@scripts/constants.js';
 import { MP_EVENTS } from './metrics-events.js';
 
 import type {
@@ -12,8 +12,8 @@ import type {
 	EnvironmentSelectedPayload,
 	SaveSettingPayload,
 	TestServerSetupPayload
-} from '../types/ipc.js';
-import type { IsActive, AppVersion } from '../types/primitives.js';
+} from '@registry/ipc.js';
+import type { IsActive, AppVersion } from '@registry/primitives.js';
 
 /**
  * Initializes all IPC handlers for the application.

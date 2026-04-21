@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { getNoUpdateAvailableDialogOptions } from '../../src/eyas-core/update-dialog.js';
+import { getNoUpdateAvailableDialogOptions } from '@core/update-dialog.js';
 
 describe(`getNoUpdateAvailableDialogOptions`, () => {
 	test(`returns options for Electron dialog.showMessageBox`, () => {

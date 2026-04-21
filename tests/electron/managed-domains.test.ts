@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, type Mock } from 'vitest';
-import { registerHttpsProtocolHandler } from '../../src/eyas-core/protocol-handlers.js';
-import type { CoreContext } from '../../src/types/eyas-core.js';
+import { registerHttpsProtocolHandler } from '@core/protocol-handlers.js';
+import type { CoreContext } from '@registry/eyas-core.js';
 
 vi.mock(`../../src/scripts/parse-url.js`, () => ({
 	parseURL: vi.fn(url => {

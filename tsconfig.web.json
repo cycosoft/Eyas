@@ -11,7 +11,9 @@
       "@registry/*": ["./src/types/*"],
       "@assets/*": ["./src/eyas-assets/*"],
       "@interface/*": ["./src/eyas-interface/app/src/*"],
-      "@/*": ["./src/eyas-interface/app/src/*"]
+      "@/*": ["./src/eyas-interface/app/src/*"],
+      "@setup/*": ["./tests/setup/*"],
+      "@root/*": ["./*"]
     },
     "allowJs": false,
     "types": ["vite/client", "vitest/globals"],

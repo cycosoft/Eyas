@@ -1,4 +1,4 @@
-import type { MenuContext, MenuTemplate } from '../types/menu.js';
+import type { MenuContext, MenuTemplate } from '@registry/menu.js';
 
 /**
  * Builds the application menu template (array of descriptors for Menu.buildFromTemplate).

@@ -8,7 +8,7 @@ import type { Platform } from "electron-builder";
 import builder from "electron-builder";
 import { exec } from "child_process";
 import { getElectronBuilderConfig } from "./electron-builder-config.js";
-import type { SourcePath, IsActive } from "../types/primitives.js";
+import type { SourcePath, IsActive } from "@registry/primitives.js";
 
 /**
  * Compiles the runners for the project.

@@ -1,4 +1,4 @@
-import type { LabelString, AppVersion, DomainUrl } from "../types/primitives.js";
+import type { LabelString, AppVersion, DomainUrl } from "@registry/primitives.js";
 
 /**
  * Sanitizes the page title before including it in the window title.

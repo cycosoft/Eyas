@@ -1,4 +1,4 @@
-import type { ProjectId, SystemTheme, AppVersion, SettingsMap } from '../../../../types/primitives.js';
+import type { ProjectId, SystemTheme, AppVersion, SettingsMap } from '@registry/primitives.js';
 
 export type SettingsState = {
 	projectSettings: SettingsMap;

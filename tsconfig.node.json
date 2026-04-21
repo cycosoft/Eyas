@@ -23,7 +23,9 @@
       "@core/*": ["./src/eyas-core/*"],
       "@scripts/*": ["./src/scripts/*"],
       "@registry/*": ["./src/types/*"],
-      "@assets/*": ["./src/eyas-assets/*"]
+      "@assets/*": ["./src/eyas-assets/*"],
+      "@setup/*": ["./tests/setup/*"],
+      "@root/*": ["./*"]
     },
     "types": ["node"],
     "allowJs": false,

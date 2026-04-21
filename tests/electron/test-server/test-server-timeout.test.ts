@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
-import { startTestServerTimeout, cancelTestServerTimeout, isTestServerTimeoutExpired, resetTestServerTimeout } from '../../../src/eyas-core/test-server/test-server-timeout.js';
-import { TEST_SERVER_SESSION_DURATION_MS } from '../../../src/scripts/constants.js';
+import { startTestServerTimeout, cancelTestServerTimeout, isTestServerTimeoutExpired, resetTestServerTimeout } from '@core/test-server/test-server-timeout.js';
+import { TEST_SERVER_SESSION_DURATION_MS } from '@scripts/constants.js';
 
 describe(`test-server-timeout`, () => {
 	beforeEach(() => {

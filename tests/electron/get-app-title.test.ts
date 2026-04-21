@@ -1,5 +1,5 @@
 import { expect, test, describe } from 'vitest';
-import { getAppTitle, sanitizePageTitle } from '../../src/scripts/get-app-title.js';
+import { getAppTitle, sanitizePageTitle } from '@scripts/get-app-title.js';
 
 describe(`getAppTitle`, () => {
 	test(`should return the title and version with emoji`, () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatDuration } from '../../src/scripts/time-utils.js';
+import { formatDuration } from '@scripts/time-utils.js';
 
 describe(`time-utils`, () => {
 	describe(`formatDuration`, () => {

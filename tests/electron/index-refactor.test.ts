@@ -1,7 +1,7 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { app, BrowserWindow, ipcMain, session, protocol } from 'electron';
-import type { DeepLinkContext } from '../../src/types/deep-link.js';
-import type { EyasPaths } from '../../src/types/eyas-core.js';
+import type { DeepLinkContext } from '@registry/deep-link.js';
+import type { EyasPaths } from '@registry/eyas-core.js';
 
 type BrowserWindowConstructor = { new (): BrowserWindow };
 
@@ -135,7 +135,7 @@ import {
 	setupDefaultProtocol,
 	setupDeepLinkListeners,
 	createAppWindow
-} from '../../src/eyas-core/index.js';
+} from '@core/index.js';
 
 import {
 	setupWebRequestInterception,
@@ -143,12 +143,12 @@ import {
 	registerEyasProtocolHandler,
 	registerHttpsProtocolHandler,
 	registerInternalProtocols
-} from '../../src/eyas-core/protocol-handlers.js';
+} from '@core/protocol-handlers.js';
 
 import {
 	initIpcHandlers
-} from '../../src/eyas-core/ipc-handlers.js';
-import type { CoreContext } from '../../src/types/eyas-core.js';
+} from '@core/ipc-handlers.js';
+import type { CoreContext } from '@registry/eyas-core.js';
 
 describe(`index.ts refactoring unit tests`, () => {
 	beforeEach(() => {

@@ -3,8 +3,8 @@ import nodeMachineId from 'node-machine-id';
 const { machineId } = nodeMachineId;
 import _os from 'node:os';
 import { MP_EVENTS } from './metrics-events.js';
-import type { ValidatedConfig } from '../types/config.js';
-import type { MPEventName, AppVersion, IsActive } from '../types/primitives.js';
+import type { ValidatedConfig } from '@registry/config.js';
+import type { MPEventName, AppVersion, IsActive } from '@registry/primitives.js';
 
 const MP_KEY_PROD = `07f0475cb429f7de5ebf79a1c418dc5c`;
 const MP_KEY_DEV = `02b67bb94dd797e9a2cbb31d021c3cef`;

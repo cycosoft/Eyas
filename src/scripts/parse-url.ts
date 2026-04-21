@@ -1,5 +1,5 @@
 import validator from "validator";
-import type { DomainUrl } from "../types/primitives.js";
+import type { DomainUrl } from "@registry/primitives.js";
 
 const { isURL } = validator;
 

@@ -5,8 +5,8 @@ import crypto from "node:crypto";
 import * as dateFns from "date-fns";
 
 // Types
-import type { ValidatedConfig, EyasConfig, EyasMeta, DomainConfig } from "../types/config.js";
-import type { IsActive, AppVersion, TestId, DurationHours } from "../types/primitives.js";
+import type { ValidatedConfig, EyasConfig, EyasMeta, DomainConfig } from "@registry/config.js";
+import type { IsActive, AppVersion, TestId, DurationHours } from "@registry/primitives.js";
 
 // Git Utilities
 import {

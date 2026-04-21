@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { parseURL } from '../../src/scripts/parse-url.js';
+import { parseURL } from '@scripts/parse-url.js';
 
 describe(`parseURL`, () => {
 	test(`returns URL object for valid URL with protocol`, () => {

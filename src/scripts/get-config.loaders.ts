@@ -9,8 +9,8 @@ import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 
 // Types
-import type { EyasConfig } from "../types/config.js";
-import type { SourcePath, LabelString } from "../types/primitives.js";
+import type { EyasConfig } from "@registry/config.js";
+import type { SourcePath, LabelString } from "@registry/primitives.js";
 
 // setup
 const require = createRequire(import.meta.url);

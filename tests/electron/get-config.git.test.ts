@@ -1,5 +1,5 @@
 import { expect, test, describe, vi, beforeEach } from "vitest";
-import * as gitUtils from "../../src/scripts/get-config.git.js";
+import * as gitUtils from "@scripts/get-config.git.js";
 
 // Mock the child_process to avoid git command failures in environments without git
 vi.mock(`node:child_process`, () => ({

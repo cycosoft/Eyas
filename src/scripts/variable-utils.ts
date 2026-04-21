@@ -1,6 +1,6 @@
 import validator from "validator";
 const { isURL } = validator;
-import type { DomainUrl, IsActive } from "../types/primitives.js";
+import type { DomainUrl, IsActive } from "@registry/primitives.js";
 
 // Regex patterns mirroring those used in setMenu() and navigateVariable()
 const REGEX_ENV_URL = /{_env\.url}/g;

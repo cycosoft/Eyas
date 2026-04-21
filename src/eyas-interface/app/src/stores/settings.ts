@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
-import type { SettingsState, Payload } from '../types/settings.js';
-import type { ProjectId, SystemTheme, SettingKey, SettingValue, SettingsMap, IsActive } from '../../../../types/primitives.js';
+import type { SettingsState, Payload } from '@interface/types/settings.js';
+import type { ProjectId, SystemTheme, SettingKey, SettingValue, SettingsMap, IsActive } from '@registry/primitives.js';
 
 export default defineStore(`settings`, {
 	state: (): SettingsState => ({

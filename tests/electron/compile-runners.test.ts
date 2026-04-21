@@ -1,9 +1,9 @@
 import { vi, describe, test, expect, beforeEach, afterEach } from 'vitest';
-import { compileRunners } from '../../src/scripts/compile-runners.js';
+import { compileRunners } from '@scripts/compile-runners.js';
 import builder from 'electron-builder';
 import fs from 'fs-extra';
 import { exec } from 'child_process';
-import { getElectronBuilderConfig } from '../../src/scripts/electron-builder-config.js';
+import { getElectronBuilderConfig } from '@scripts/electron-builder-config.js';
 
 // Mock the modules
 vi.mock(`electron-builder`, () => ({

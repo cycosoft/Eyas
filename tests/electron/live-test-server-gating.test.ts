@@ -1,7 +1,7 @@
 import type { MenuItemConstructorOptions } from 'electron';
 import { describe, test, expect } from 'vitest';
-import { buildMenuTemplate } from '../../src/eyas-core/menu-template.js';
-import type { MenuContext } from '../../src/types/menu.js';
+import { buildMenuTemplate } from '@core/menu-template.js';
+import type { MenuContext } from '@registry/menu.js';
 
 const noop = (): void => { };
 

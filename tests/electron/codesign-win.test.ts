@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import codesignWin from '../../src/scripts/codesign-win.js';
+import codesignWin from '@scripts/codesign-win.js';
 import { exec } from 'node:child_process';
-import type { ExecResult, ExecCallback, ExecCommand, ExecOutput } from '../../src/types/node-helpers.js';
+import type { ExecResult, ExecCallback, ExecCommand, ExecOutput } from '@registry/node-helpers.js';
 
 // Mock child_process.exec
 vi.mock(`node:child_process`, () => ({

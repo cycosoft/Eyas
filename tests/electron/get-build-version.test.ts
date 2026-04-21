@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import semver from 'semver';
-import { getBuildVersion } from '../../src/scripts/get-build-version.js';
+import { getBuildVersion } from '@scripts/get-build-version.js';
 
 describe(`getBuildVersion`, () => {
 	test(`return value is valid semver`, () => {

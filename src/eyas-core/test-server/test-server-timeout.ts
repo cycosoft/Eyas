@@ -1,4 +1,4 @@
-import type { DurationMS, IsActive } from '../../types/primitives.js';
+import type { DurationMS, IsActive } from '@registry/primitives.js';
 
 let timeoutId: NodeJS.Timeout | null = null;
 let expired = false;

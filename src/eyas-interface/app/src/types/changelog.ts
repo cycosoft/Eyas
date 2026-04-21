@@ -1,4 +1,4 @@
-import type { LabelString, AppVersion, DomainUrl } from '../../../../types/primitives.js';
+import type { LabelString, AppVersion, DomainUrl } from '@registry/primitives.js';
 
 export type ChangelogItem = {
 	text: LabelString;

@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { getCerts } from '../../../src/eyas-core/test-server/test-server-certs.js';
+import { getCerts } from '@core/test-server/test-server-certs.js';
 
 describe(`test-server-certs`, () => {
 	test(`getCerts returns key and cert`, async () => {

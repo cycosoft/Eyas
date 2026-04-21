@@ -1,6 +1,6 @@
 import selfsigned from 'selfsigned';
-import type { CertBundle, CertOptions } from '../../types/test-server.js';
-import type { DomainUrl, SettingKey } from '../../types/primitives.js';
+import type { CertBundle, CertOptions } from '@registry/test-server.js';
+import type { DomainUrl, SettingKey } from '@registry/primitives.js';
 
 const certCache = new Map<string, CertBundle>();
 

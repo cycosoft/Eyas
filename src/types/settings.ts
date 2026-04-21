@@ -1,4 +1,4 @@
-import type { THEME_MODES } from '../scripts/constants.js';
+import type { THEME_MODES } from '@scripts/constants.js';
 import type { EnvironmentSettings, TestServerSettings } from './core.js';
 import type { AppVersion, ProjectId } from './primitives.js';
 

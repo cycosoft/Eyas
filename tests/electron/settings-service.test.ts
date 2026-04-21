@@ -1,11 +1,11 @@
 import { describe, test, expect, beforeEach, afterEach } from 'vitest';
-import type { FileSystemPath } from '../../src/types/primitives.js';
+import type { FileSystemPath } from '@registry/primitives.js';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { remove, readJson } from 'fs-extra';
 
 // We use import so we can stay native to ESM
-import service from '../../src/eyas-core/settings-service.js';
+import service from '@core/settings-service.js';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 

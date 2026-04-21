@@ -11,7 +11,9 @@ export const commonAliases = {
 	'@core': resolve(root, `src/eyas-core`),
 	'@scripts': resolve(root, `src/scripts`),
 	'@registry': resolve(root, `src/types`),
-	'@assets': resolve(root, `src/eyas-assets`)
+	'@assets': resolve(root, `src/eyas-assets`),
+	'@setup': resolve(root, `tests/setup`),
+	'@root': root
 };
 
 /**

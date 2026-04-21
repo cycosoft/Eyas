@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import path from 'path';
-import { safeJoin } from '../../src/scripts/path-utils.js';
+import { safeJoin } from '@scripts/path-utils.js';
 
 describe(`path-utils`, () => {
 	describe(`safeJoin`, () => {

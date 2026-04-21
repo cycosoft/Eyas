@@ -4,7 +4,7 @@ import type { VueWrapper } from '@vue/test-utils';
 import VersionMismatchModal from '@/components/VersionMismatchModal.vue';
 import { createVuetify } from 'vuetify';
 import type { VersionMismatchModalVM } from '@registry/components.js';
-import { getIpcMock, findReceiveCallback } from '../../setup/ipc-mock-utils.js';
+import { getIpcMock, findReceiveCallback } from '@setup/ipc-mock-utils.js';
 
 describe(`VersionMismatchModal`, () => {
 	let wrapper: VueWrapper;

@@ -1,5 +1,5 @@
 import path from "path";
-import type { SourcePath } from "../types/primitives.js";
+import type { SourcePath } from "@registry/primitives.js";
 
 /**
  * Joins a root path with a sub-path and ensures the result is within the root.

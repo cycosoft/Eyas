@@ -1,9 +1,9 @@
 import { expect, test, describe, vi } from 'vitest';
-// import getConfig from '../../src/scripts/get-config.js'; // imported dynamically in tests
-import { LOAD_TYPES } from '../../src/scripts/constants.js';
+// import getConfig from '@scripts/get-config.js'; // imported dynamically in tests
+import { LOAD_TYPES } from '@scripts/constants.js';
 import fs from 'fs';
 import path from 'path';
-import type * as GetRoots from '../../src/scripts/get-roots.js';
+import type * as GetRoots from '@scripts/get-roots.js';
 
 describe(`getConfig - CommonJS`, () => {
 	const tempDir = path.resolve(`tests/tmp/cjs`);

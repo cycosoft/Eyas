@@ -1,5 +1,5 @@
 import path from "path";
-import type { SourcePath, IsActive } from "../types/primitives.js";
+import type { SourcePath, IsActive } from "@registry/primitives.js";
 
 // setup
 const isProd: IsActive = import.meta.dirname.includes(`node_modules`);

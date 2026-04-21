@@ -1,5 +1,5 @@
 import type { Configuration } from "electron-builder";
-import type { SourcePath, IsActive, LabelString } from "../types/primitives.js";
+import type { SourcePath, IsActive, LabelString } from "@registry/primitives.js";
 
 type BuildPaths = {
 	icon: SourcePath;

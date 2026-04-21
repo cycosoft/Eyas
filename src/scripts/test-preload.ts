@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
-import type { ChannelName, LabelString, TimerId, IsActive, Count } from "../types/primitives.js";
+import type { ChannelName, LabelString, TimerId, IsActive, Count } from "@registry/primitives.js";
 
 // Define the shape of the 'eyas' object exposed to the renderer
 type RequestBridge = {

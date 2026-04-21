@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { MP_EVENTS } from '../../src/eyas-core/metrics-events.js';
+import { MP_EVENTS } from '@core/metrics-events.js';
 
 describe(`MP_EVENTS`, () => {
 	test(`ui.modalBackgroundContentViewed is "Modal Background Content Viewed"`, () => {

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
-import { analyticsService } from '../../src/eyas-core/analytics.service.js';
+import { analyticsService } from '@core/analytics.service.js';
 import Mixpanel from 'mixpanel';
-import type { ValidatedConfig } from '../../src/types/config.js';
+import type { ValidatedConfig } from '@registry/config.js';
 
 vi.mock(`mixpanel`, () => ({
 	default: {

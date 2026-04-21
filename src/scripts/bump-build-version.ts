@@ -3,7 +3,7 @@ import path from "path";
 import { execSync } from "child_process";
 import { getBuildVersion } from "./get-build-version.js";
 import { fileURLToPath } from "url";
-import type { AppVersion, LabelString, SourcePath } from "../types/primitives.js";
+import type { AppVersion, LabelString, SourcePath } from "@registry/primitives.js";
 
 type PackageJson = {
 	version: AppVersion;

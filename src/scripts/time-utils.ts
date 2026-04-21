@@ -1,4 +1,4 @@
-import type { DurationMS, FormattedDuration } from '../types/primitives.js';
+import type { DurationMS, FormattedDuration } from '@registry/primitives.js';
 
 /**
  * Formats a duration in milliseconds to a human-readable string.

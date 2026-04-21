@@ -2,8 +2,8 @@
 import { LOAD_TYPES } from "./constants.js";
 
 // Types
-import type { ValidatedConfig, EyasConfig } from "../types/config.js";
-import type { LoadMethod, SourcePath } from "../types/primitives.js";
+import type { ValidatedConfig, EyasConfig } from "@registry/config.js";
+import type { LoadMethod, SourcePath } from "@registry/primitives.js";
 
 // Utilities
 import {

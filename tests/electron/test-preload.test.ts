@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import type { ProgressBytes, EventType, IsComputable, TimestampMS } from '../../src/types/primitives.js';
+import type { ProgressBytes, EventType, IsComputable, TimestampMS } from '@registry/primitives.js';
 
 type ProgressEventInit = {
 	lengthComputable: IsComputable;
@@ -38,7 +38,7 @@ vi.stubGlobal(`process`, mockProcess);
 
 // Import the functions
 // Note: We use .js extension as per project rules
-import { injectWithAnonymousScope, extractFunctionBody, polyfillUploadProgress } from '../../src/scripts/test-preload.js';
+import { injectWithAnonymousScope, extractFunctionBody, polyfillUploadProgress } from '@scripts/test-preload.js';
 
 describe(`test-preload`, () => {
 	describe(`utility functions`, () => {

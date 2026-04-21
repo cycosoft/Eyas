@@ -3,7 +3,7 @@ import {
 	substituteEnvVariables,
 	isVariableLinkValid,
 	hasRemainingVariables
-} from '../../src/scripts/variable-utils.js';
+} from '@scripts/variable-utils.js';
 
 // ---------------------------------------------------------------------------
 // Tests: link validation (the stub-replacement + isURL gate in setMenu)

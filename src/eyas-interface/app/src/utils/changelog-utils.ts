@@ -1,6 +1,6 @@
 import semver from 'semver';
-import type { ChangelogEntry, MarkdownToken } from '../types/changelog.js';
-import type { AppVersion, LabelString } from '../../../../types/primitives.js';
+import type { ChangelogEntry, MarkdownToken } from '@interface/types/changelog.js';
+import type { AppVersion, LabelString } from '@registry/primitives.js';
 
 /**
  * Filter and aggregate changelog entries between two versions.

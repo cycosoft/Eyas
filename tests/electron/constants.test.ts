@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { SETTINGS_DEFAULTS } from '../../src/scripts/constants.js';
+import { SETTINGS_DEFAULTS } from '@scripts/constants.js';
 
 describe(`SETTINGS_DEFAULTS`, () => {
 	test(`env.alwaysChoose defaults to false`, () => {

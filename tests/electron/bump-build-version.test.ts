@@ -2,12 +2,12 @@ import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
-import { bumpBuildVersion } from '../../src/scripts/bump-build-version.js';
+import { bumpBuildVersion } from '@scripts/bump-build-version.js';
 
 import type * as ChildProcess from 'child_process';
 import { execSync } from 'child_process';
 import type { Mock } from 'vitest';
-import type { FilePath } from '../../src/types/primitives.js';
+import type { FilePath } from '@registry/primitives.js';
 
 vi.mock(`child_process`, async () => {
 	const actual = await vi.importActual(`child_process`) as typeof ChildProcess;

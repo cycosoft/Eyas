@@ -15,7 +15,7 @@ vi.mock(`node:https`, () => ({
 import http from 'node:http';
 import https from 'node:https';
 import express from 'express';
-import { createExpressApp, createServerInstance } from '../../../src/eyas-core/test-server/test-server.js';
+import { createExpressApp, createServerInstance } from '@core/test-server/test-server.js';
 
 describe(`test-server helpers`, () => {
 	test(`createExpressApp returns an express app`, () => {

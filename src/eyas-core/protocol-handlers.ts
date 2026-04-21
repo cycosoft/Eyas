@@ -2,10 +2,10 @@ import { protocol, session } from 'electron';
 import _path from 'node:path';
 import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import type { CoreContext } from '../types/eyas-core.js';
-import { parseURL } from '../scripts/parse-url.js';
-import { safeJoin } from '../scripts/path-utils.js';
-import type { DomainUrl, IsActive } from '../types/primitives.js';
+import type { CoreContext } from '@registry/eyas-core.js';
+import { parseURL } from '@scripts/parse-url.js';
+import { safeJoin } from '@scripts/path-utils.js';
+import type { DomainUrl, IsActive } from '@registry/primitives.js';
 
 
 /**

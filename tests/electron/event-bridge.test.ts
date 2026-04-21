@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'vitest';
 import fs from 'fs';
 import path from 'path';
-import type { ChannelName, ResponseBody, MenuLabel } from '../../src/types/primitives.js';
+import type { ChannelName, ResponseBody, MenuLabel } from '@registry/primitives.js';
 
 const bridgeSrc = fs.readFileSync(
 	path.join(import.meta.dirname, `../../src/scripts/event-bridge.ts`),

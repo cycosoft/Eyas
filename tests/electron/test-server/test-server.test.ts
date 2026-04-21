@@ -1,9 +1,9 @@
 import { describe, test, expect, beforeEach, afterEach } from 'vitest';
-import type { FileSystemPath, DomainUrl, ResponseBody } from '../../../src/types/primitives.js';
+import type { FileSystemPath, DomainUrl, ResponseBody } from '@registry/primitives.js';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import { startTestServer, stopTestServer, getTestServerState, clearTestServerPort, getAvailablePort } from '../../../src/eyas-core/test-server/test-server.js';
+import { startTestServer, stopTestServer, getTestServerState, clearTestServerPort, getAvailablePort } from '@core/test-server/test-server.js';
 
 describe(`test-server`, () => {
 	let tempDir: FileSystemPath;

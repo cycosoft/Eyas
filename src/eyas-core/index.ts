@@ -31,8 +31,8 @@ if (!isPrimaryInstance) {
 }
 
 // Internal modules
-import $roots from '../scripts/get-roots.js';
-import { parseURL } from '../scripts/parse-url.js';
+import $roots from '@scripts/get-roots.js';
+import { parseURL } from '@scripts/parse-url.js';
 import { buildMenuTemplate } from './menu-template.js';
 import { getNoUpdateAvailableDialogOptions } from './update-dialog.js';
 import { MP_EVENTS } from './metrics-events.js';
@@ -40,11 +40,11 @@ import { analyticsService } from './analytics.service.js';
 import * as testServer from './test-server/test-server.js';
 import * as testServerCerts from './test-server/test-server-certs.js';
 import * as testServerTimeout from './test-server/test-server-timeout.js';
-import { formatDuration } from '../scripts/time-utils.js';
-import { substituteEnvVariables, isVariableLinkValid, hasRemainingVariables } from '../scripts/variable-utils.js';
+import { formatDuration } from '@scripts/time-utils.js';
+import { substituteEnvVariables, isVariableLinkValid, hasRemainingVariables } from '@scripts/variable-utils.js';
 import * as settingsService from './settings-service.js';
-import { getAppTitle, sanitizePageTitle } from '../scripts/get-app-title.js';
-import { LOAD_TYPES, TEST_SERVER_SESSION_DURATION_MS } from '../scripts/constants.js';
+import { getAppTitle, sanitizePageTitle } from '@scripts/get-app-title.js';
+import { LOAD_TYPES, TEST_SERVER_SESSION_DURATION_MS } from '@scripts/constants.js';
 
 import { initIpcHandlers } from './ipc-handlers.js';
 import {
@@ -52,15 +52,15 @@ import {
 	setupEyasNetworkHandlers,
 	setupWebRequestInterception
 } from './protocol-handlers.js';
-import type { CoreContext, EyasPaths } from '../types/eyas-core.js';
+import type { CoreContext, EyasPaths } from '@registry/eyas-core.js';
 
 // Types
-import type { ValidatedConfig, LinkConfig } from '../types/config.js';
-import type { MenuContext, MenuTemplate, MenuContextParams, LinkMenuHandlers } from '../types/menu.js';
-import type { DeepLinkContext } from '../types/deep-link.js';
-import type { TestServerOptions } from '../types/test-server.js';
-import type { Viewport, ConfigToLoad, StartupModal, AppSettings, EnvironmentSettings, PreventableEvent, ViewportSize, FocusUI } from '../types/core.js';
-import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActive, IsPending, DomainUrl, FormattedDuration, MPEventName, TimestampMS, HashString, ThemeSource, AppTitle, AppVersion, EnvironmentKey } from '../types/primitives.js';
+import type { ValidatedConfig, LinkConfig } from '@registry/config.js';
+import type { MenuContext, MenuTemplate, MenuContextParams, LinkMenuHandlers } from '@registry/menu.js';
+import type { DeepLinkContext } from '@registry/deep-link.js';
+import type { TestServerOptions } from '@registry/test-server.js';
+import type { Viewport, ConfigToLoad, StartupModal, AppSettings, EnvironmentSettings, PreventableEvent, ViewportSize, FocusUI } from '@registry/core.js';
+import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActive, IsPending, DomainUrl, FormattedDuration, MPEventName, TimestampMS, HashString, ThemeSource, AppTitle, AppVersion, EnvironmentKey } from '@registry/primitives.js';
 
 // global variables $
 const $isDev = process.argv.includes(`--dev`);
@@ -110,7 +110,7 @@ const $paths = {
 };
 
 // eslint-disable-next-line quotes
-import _package from "../../package.json" with { type: "json" };
+import _package from "@root/package.json" with { type: "json" };
 const _appVersion = _package.version;
 
 const APP_NAME = `Eyas`;

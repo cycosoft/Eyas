@@ -3,7 +3,7 @@ import {
 	isEyasProtocolUrl,
 	handleEyasProtocolUrl,
 	getEyasUrlFromCommandLine
-} from '../../src/eyas-core/deep-link-handler.js';
+} from '@core/deep-link-handler.js';
 
 const LOAD_TYPES = { WEB: `web` };
 

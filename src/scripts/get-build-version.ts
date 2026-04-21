@@ -1,4 +1,4 @@
-import type { AppVersion } from '../types/primitives.js';
+import type { AppVersion } from '@registry/primitives.js';
 
 /**
  * Returns a WiX-compatible build version string in UTC: (YY).(M).(MinutesIntoMonth)

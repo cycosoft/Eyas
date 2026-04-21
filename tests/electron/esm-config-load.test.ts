@@ -1,10 +1,10 @@
 import { expect, test, describe, vi } from 'vitest';
-// import getConfig from '../../src/scripts/get-config.js'; // imported dynamically in tests
-import { LOAD_TYPES } from '../../src/scripts/constants.js';
+// import getConfig from '@scripts/get-config.js'; // imported dynamically in tests
+import { LOAD_TYPES } from '@scripts/constants.js';
 import fs from 'fs';
 import path from 'path';
-import type { ProjectRoots } from '../../src/types/build.js';
-import type { ModuleWithDefault } from '../../src/types/node-helpers.js';
+import type { ProjectRoots } from '@registry/build.js';
+import type { ModuleWithDefault } from '@registry/node-helpers.js';
 
 describe(`getConfig - ESM`, () => {
 	const tempDir = path.resolve(`tests/tmp/esm`);
