@@ -87,6 +87,12 @@ export default tseslint.config(
 			'max-lines-per-function': [`error`, { max: 50, skipBlankLines: true, skipComments: true, IIFEs: true }],
 			'max-params': [`error`, 4],
 			'import/max-dependencies': [`warn`, { max: 25 }],
+			'no-restricted-imports': [`warn`, {
+				patterns: [{
+					group: [`../**`],
+					message: `Use path aliases (@core, @scripts, @registry, @assets, @interface) instead of relative parent imports.`
+				}]
+			}],
 
 			// TS specific rule overrides
 			'@typescript-eslint/no-unused-vars': [`warn`, {
