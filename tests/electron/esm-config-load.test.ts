@@ -6,6 +6,15 @@ import path from 'path';
 import type { ProjectRoots } from '@registry/build.js';
 import type { ModuleWithDefault } from '@registry/node-helpers.js';
 
+// Mock git utils to avoid slow git calls
+vi.mock(`@scripts/get-config.git.js`, () => ({
+	getBranchName: vi.fn(() => `mock-branch`),
+	getCommitHash: vi.fn(() => `mock-hash`),
+	getUserName: vi.fn(() => `mock-user`),
+	getCompanyId: vi.fn(() => `mock-company`),
+	getProjectId: vi.fn(() => `mock-project`)
+}));
+
 describe(`getConfig - ESM`, () => {
 	const tempDir = path.resolve(`tests/tmp/esm`);
 	const testConfigPath = path.join(tempDir, `.eyas.config.js`);

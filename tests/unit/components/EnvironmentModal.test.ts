@@ -13,6 +13,7 @@ describe(`EnvironmentModal`, () => {
 	let mockReceive: Mock;
 
 	beforeEach(() => {
+		vi.useFakeTimers();
 		mockSend = vi.fn();
 		mockReceive = vi.fn();
 		const eyas = (window as unknown as WindowWithEyas).eyas;
@@ -27,6 +28,7 @@ describe(`EnvironmentModal`, () => {
 			wrapper.unmount();
 		}
 		vi.clearAllMocks();
+		vi.useRealTimers();
 	});
 
 	test(`receives domains via IPC and displays them`, async () => {
@@ -80,7 +82,7 @@ describe(`EnvironmentModal`, () => {
 		(wrapper.vm as unknown as EnvironmentModalVM).choose(domains[0].url, 0);
 
 		// Wait for setTimeout in choose method
-		await new Promise(resolve => setTimeout(resolve, 250));
+		vi.advanceTimersByTime(250);
 
 		// Verify IPC was called with the URL
 		expect(mockSend).toHaveBeenCalledWith(`environment-selected`, `https://example.com`);
@@ -98,7 +100,7 @@ describe(`EnvironmentModal`, () => {
 		// Call choose method directly to test IPC sending
 		(wrapper.vm as unknown as EnvironmentModalVM).choose(domains[0].url, 0);
 
-		await new Promise(resolve => setTimeout(resolve, 250));
+		vi.advanceTimersByTime(250);
 
 		// URL without protocol should be sent as-is (parseURL will handle it in main process)
 		expect(mockSend).toHaveBeenCalledWith(`environment-selected`, `example.com`);
@@ -136,7 +138,7 @@ describe(`EnvironmentModal`, () => {
 			await (wrapper.vm as unknown as EnvironmentModalVM).$nextTick();
 
 			(wrapper.vm as unknown as EnvironmentModalVM).choose(domains[0], 0);
-			await new Promise(resolve => setTimeout(resolve, 250));
+			vi.advanceTimersByTime(250);
 
 			expect(mockSend).toHaveBeenCalledWith(
 				`environment-selected`,
@@ -154,7 +156,7 @@ describe(`EnvironmentModal`, () => {
 			await (wrapper.vm as unknown as EnvironmentModalVM).$nextTick();
 
 			(wrapper.vm as unknown as EnvironmentModalVM).choose(domains[0], 0);
-			await new Promise(resolve => setTimeout(resolve, 250));
+			vi.advanceTimersByTime(250);
 
 			// key is undefined — main process treats it as "" for {_env.key} substitution
 			expect(mockSend).toHaveBeenCalledWith(

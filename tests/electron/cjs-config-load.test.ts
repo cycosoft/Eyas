@@ -5,6 +5,15 @@ import fs from 'fs';
 import path from 'path';
 import type * as GetRoots from '@scripts/get-roots.js';
 
+// Mock git utils to avoid slow git calls
+vi.mock(`@scripts/get-config.git.js`, () => ({
+	getBranchName: vi.fn(() => `mock-branch`),
+	getCommitHash: vi.fn(() => `mock-hash`),
+	getUserName: vi.fn(() => `mock-user`),
+	getCompanyId: vi.fn(() => `mock-company`),
+	getProjectId: vi.fn(() => `mock-project`)
+}));
+
 describe(`getConfig - CommonJS`, () => {
 	const tempDir = path.resolve(`tests/tmp/cjs`);
 	const testConfigPath = path.join(tempDir, `.eyas.config.js`);

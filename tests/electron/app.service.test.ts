@@ -11,6 +11,15 @@ import { analyticsService } from '@core/analytics.service.js';
 import * as settingsService from '@core/settings-service.js';
 import { setupEyasNetworkHandlers } from '@core/protocol-handlers.js';
 
+// Mock git utils to avoid slow git calls
+vi.mock(`@scripts/get-config.git.js`, () => ({
+	getBranchName: vi.fn(() => `mock-branch`),
+	getCommitHash: vi.fn(() => `mock-hash`),
+	getUserName: vi.fn(() => `mock-user`),
+	getCompanyId: vi.fn(() => `mock-company`),
+	getProjectId: vi.fn(() => `mock-project`)
+}));
+
 // Mock electron
 vi.mock(`electron`, () => ({
 	app: {
@@ -71,7 +80,7 @@ vi.mock(`@core/settings-service.js`, () => ({
 	load: vi.fn().mockResolvedValue(undefined)
 }));
 
-vi.mock(`../scripts/get-config.js`, () => ({
+vi.mock(`@scripts/get-config.js`, () => ({
 	default: vi.fn().mockResolvedValue({})
 }));
 
