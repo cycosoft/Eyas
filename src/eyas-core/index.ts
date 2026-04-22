@@ -9,11 +9,8 @@ import {
 	clipboard
 } from 'electron';
 import _path from 'node:path';
-import fs from 'node:fs';
 import { isPast } from 'date-fns/isPast';
 import { format } from 'date-fns/format';
-import { differenceInDays } from 'date-fns/differenceInDays';
-import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
 import electronUpdater from 'electron-updater';
 const { autoUpdater } = electronUpdater;
 import semver from 'semver';
@@ -40,6 +37,8 @@ import { analyticsService } from './analytics.service.js';
 import * as testServer from './test-server/test-server.js';
 import { testServerService } from './test-server.service.js';
 import { navigationService } from './navigation.service.js';
+import { uiService } from './ui.service.js';
+import { appService } from './app.service.js';
 import { isVariableLinkValid } from '@scripts/variable-utils.js';
 import * as settingsService from './settings-service.js';
 import { LOAD_TYPES } from '@scripts/constants.js';
@@ -57,7 +56,7 @@ import type { ValidatedConfig, LinkConfig } from '@registry/config.js';
 import type { MenuContext, MenuTemplate, MenuContextParams, LinkMenuHandlers } from '@registry/menu.js';
 import type { DeepLinkContext } from '@registry/deep-link.js';
 import type { TestServerOptions } from '@registry/test-server.js';
-import type { Viewport, ConfigToLoad, StartupModal, AppSettings, PreventableEvent, ViewportSize, FocusUI } from '@registry/core.js';
+import type { Viewport, ConfigToLoad, StartupModal, PreventableEvent, ViewportSize } from '@registry/core.js';
 import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActive, IsPending, DomainUrl, FormattedDuration, MPEventName, TimestampMS, ThemeSource, AppTitle, AppVersion, EnvironmentKey } from '@registry/primitives.js';
 
 // global variables $
@@ -339,7 +338,7 @@ function initEyasLayer(splashScreen: BrowserWindow, splashVisible: TimestampMS):
 		await navigationService.startAFreshTest(getCoreContext());
 
 		// check the startup sequence (What's New, etc.)
-		checkStartupSequence();
+		getCoreContext().checkStartupSequence();
 
 		// set a minimum time for the splash screen to be visible
 		const splashMinTime = 750;
@@ -473,27 +472,31 @@ const coreContextSetters = {
 	setTestServerEndTime: (time: TimestampMS | null): void => { $testServerEndTime = time; },
 	setLastTestServerOptions: (options: TestServerOptions | null): void => { $lastTestServerOptions = options; },
 	setIsInitializing: (initializing: IsActive): void => { $isInitializing = initializing; },
-	setAllViewports: (viewports: Viewport[]): void => { $allViewports = viewports; }
+	setAllViewports: (viewports: Viewport[]): void => { $allViewports = viewports; },
+	setPendingStartupModal: (modal: StartupModal | null): void => { $pendingStartupModal = modal; }
 };
 
 const coreContextFunctions = {
-	toggleEyasUI: (enable: IsActive): void => toggleEyasUI(enable),
+	toggleEyasUI: (enable: IsActive): void => uiService.toggleEyasUI(getCoreContext(), enable),
 	trackEvent: (event: MPEventName, extraData?: Record<string, unknown>): Promise<void> => trackEvent(event, extraData),
 	stopTestServer: (): Promise<void> => stopTestServer(),
 	startAFreshTest: (forceShow?: IsActive): Promise<void> => navigationService.startAFreshTest(getCoreContext(), forceShow),
-	checkStartupSequence: (): void => checkStartupSequence(),
+	checkStartupSequence: (): void => uiService.checkStartupSequence(getCoreContext()),
 	navigate: (path?: DomainUrl, openInBrowser?: IsActive): void => navigationService.navigate(getCoreContext(), path, openInBrowser),
 	navigateVariable: (url: DomainUrl): void => navigationService.navigateVariable(getCoreContext(), url),
 	setMenu: (): Promise<void> => setMenu(),
 	doStartTestServer: (autoOpenBrowser?: IsActive, customDomain?: DomainUrl | null): Promise<void> => doStartTestServer(autoOpenBrowser, customDomain),
 	openTestServerInBrowserHandler: (_event?: unknown, url?: DomainUrl): void => openTestServerInBrowserHandler(_event, url),
-	uiEvent: (eventName: ChannelName, ...args: unknown[]): void => uiEvent(eventName, ...args),
-	onTestServerTimeout: (): void => onTestServerTimeout(),
-	onToggleTestServerHttps: (): void => onToggleTestServerHttps(),
+	uiEvent: (eventName: ChannelName, ...args: unknown[]): void => uiService.uiEvent(getCoreContext(), eventName, ...args),
+	onTestServerTimeout: (): void => appService.onTestServerTimeout(getCoreContext()),
+	onToggleTestServerHttps: (): void => testServerService.toggleHttps(getCoreContext()),
 	onOpenSettings: (): void => onOpenSettings(),
 	onTitleUpdate: (evt: PreventableEvent, title: AppTitle): void => navigationService.onTitleUpdate(getCoreContext(), evt, title),
-	triggerBufferedModal: (): void => triggerBufferedModal(),
-	manageAppClose: (evt: PreventableEvent): void => manageAppClose(evt)
+	triggerBufferedModal: (): void => uiService.triggerBufferedModal(getCoreContext()),
+	manageAppClose: (evt: PreventableEvent): void => appService.manageAppClose(getCoreContext(), evt),
+	showAbout: (): void => appService.showAbout(getCoreContext()),
+	clearCache: (): void => appService.clearCache(getCoreContext()),
+	getSessionAge: (): FormattedDuration => appService.getSessionAge(getCoreContext())
 };
 
 function getCoreContext(): CoreContext {
@@ -519,6 +522,7 @@ function getCoreContext(): CoreContext {
 		get $defaultViewports(): Viewport[] { return $defaultViewports; },
 		get $paths(): EyasPaths { return $paths as EyasPaths; },
 		get _appVersion(): AppVersion { return _appVersion as AppVersion; },
+		get $pendingStartupModal(): StartupModal | null { return $pendingStartupModal; },
 		...coreContextSetters,
 		...coreContextFunctions
 	};
@@ -555,68 +559,6 @@ function checkTestExpiration(): void {
 
 	// Exit the app
 	_electronCore.quit();
-}
-
-
-
-// focus the UI layer
-const focusUI: FocusUI = () => {
-	if (!$eyasLayer) { return; }
-
-	// track the number of attempts to focus the UI to prevent infinite loops
-	focusUI.attempts = focusUI.attempts || 0;
-	focusUI.attempts++;
-
-	// if the number of attempts is greater than 5
-	if (focusUI.attempts > 5) {
-		// reset the number of attempts
-		focusUI.attempts = 0;
-
-		// stop trying to focus the UI
-		return;
-	}
-
-	// give the layer focus
-	$eyasLayer.webContents.focus();
-
-	// check if the UI is focused
-	setTimeout(() => {
-		if (!$eyasLayer) { return; }
-		const isFocused = $eyasLayer.webContents.isFocused();
-
-		// if the UI is not focused
-		if (!isFocused) {
-			// call the focus method again
-			focusUI();
-		} else {
-			// reset the number of attempts
-			focusUI.attempts = 0;
-		}
-	}, 250);
-};
-
-// Toggle the Eyas UI layer so the user can interact with it or their test
-function toggleEyasUI(enable: IsActive): void {
-	if (!$eyasLayer) { return; }
-
-	if (enable) {
-		// set the bounds to the current viewport
-		$eyasLayer.setBounds({
-			x: 0,
-			y: 0,
-			width: $currentViewport[0],
-			height: $currentViewport[1]
-		});
-
-		// give the layer focus
-		focusUI();
-	} else {
-		// close all modals in the UI
-		$eyasLayer.webContents.send(`close-modals`);
-
-		// shrink the bounds to 0 to hide it
-		$eyasLayer.setBounds({ x: 0, y: 0, width: 0, height: 0 });
-	}
 }
 
 
@@ -670,11 +612,6 @@ async function startTestServerHandler(): Promise<void> {
 
 async function doStartTestServer(autoOpenBrowser = true, customDomain: DomainUrl | null = null): Promise<void> {
 	await testServerService.start(getCoreContext(), autoOpenBrowser, customDomain);
-}
-
-// whenever the test server automatically shuts down
-function onTestServerTimeout(): void {
-	testServerService.onTimeout(getCoreContext());
 }
 
 /**
@@ -774,7 +711,7 @@ function getMenuContext(params: MenuContextParams): MenuContext {
 		testNetworkEnabled: $testNetworkEnabled,
 		sessionAge,
 		cacheSize,
-		showAbout,
+		showAbout: () => getCoreContext().showAbout(),
 		quit: _electronCore.quit,
 		startAFreshTest: () => navigationService.startAFreshTest(getCoreContext(), true),
 		copyUrl,
@@ -784,7 +721,7 @@ function getMenuContext(params: MenuContextParams): MenuContext {
 		back,
 		forward,
 		toggleNetwork,
-		clearCache: (): void => { clearCache(); },
+		clearCache: (): void => { getCoreContext().clearCache(); },
 		openCacheFolder,
 		refreshMenu: setMenu,
 		viewportItems,
@@ -799,13 +736,13 @@ function getMenuContext(params: MenuContextParams): MenuContext {
 		onCopyTestServerUrl: copyTestServerUrlHandler,
 		onOpenTestServerInBrowser: openTestServerInBrowserHandler,
 		testServerHttpsEnabled: $testServerHttpsEnabled,
-		onToggleTestServerHttps,
+		onToggleTestServerHttps: () => getCoreContext().onToggleTestServerHttps(),
 		toggleTestDevTools: (): void => { $appWindow?.webContents.toggleDevTools(); },
 		isInitializing: $isInitializing,
 		isConfigLoaded: !!$config?.meta?.isConfigLoaded,
 		isEnvironmentPending: $isEnvironmentPending,
 		onOpenSettings,
-		onShowWhatsNew: (): void => uiEvent(`show-whats-new`, true)
+		onShowWhatsNew: (): void => getCoreContext().uiEvent(`show-whats-new`, true)
 	};
 }
 
@@ -877,68 +814,26 @@ function openCacheFolder(): void {
 	}
 }
 
-/**
- * Toggles the HTTPS enabled state for the test server and refreshes the menu.
- */
-function onToggleTestServerHttps(): void {
-	testServerService.toggleHttps(getCoreContext());
-}
+
 
 /**
  * Shows the settings modal with current project and app settings.
  */
 function onOpenSettings(): void {
-	uiEvent(`show-settings-modal`, {
+	getCoreContext().uiEvent(`show-settings-modal`, {
 		project: settingsService.getProjectSettings($config?.meta?.projectId ?? undefined),
 		app: settingsService.getAppSettings(),
 		projectId: $config?.meta?.projectId || undefined
 	});
 }
 
-/**
- * Displays the application About dialog.
- */
-function showAbout(): void {
-	if (!$config) { return; }
-	const now = new Date();
-	const expires = new Date($config.meta.expires);
-	const dayCount = differenceInDays(expires, now);
-	const expirationFormatted = format(expires, `MMM do @ p`);
-	const relativeFormatted = dayCount ? `~${dayCount} days` : `soon`;
-	const startYear = 2023;
-	const currentYear = now.getFullYear();
-	const yearRange = startYear === currentYear ? startYear.toString() : `${startYear} - ${currentYear}`;
-	if ($appWindow) {
-		dialog.showMessageBox($appWindow, {
-			type: `info`,
-			buttons: [`OK`],
-			title: `About`,
-			icon: $paths.icon as string,
-			message: `
-Name: ${$config.title}
-Version: ${$config.version}
-Expires: ${expirationFormatted} (${relativeFormatted})
 
-Branch: ${$config.meta.gitBranch} #${$config.meta.gitHash}
-User: ${$config.meta.gitUser}
-Created: ${new Date($config.meta.compiled).toLocaleString()}
-CLI: v${$config.meta.eyas}
-
-Runner: v${_appVersion}
-
-🏢 © ${yearRange} Cycosoft, LLC
-🌐 https://cycosoft.com
-🆘 https://github.com/cycosoft/Eyas/issues
-`
-		});
-	}
-}
 
 // Set up the application menu
 async function setMenu(): Promise<void> {
 	if (!$appWindow || !$config) { return; }
 
-	const sessionAge = getSessionAge();
+	const sessionAge = getCoreContext().getSessionAge();
 	let cacheSize = 0;
 	try {
 		cacheSize = await $appWindow.webContents.session.getCacheSize();
@@ -1014,118 +909,18 @@ function setupAutoUpdater(): void {
 	autoUpdater.checkForUpdates().catch(() => { });
 }
 
-function getSessionAge(): FormattedDuration {
-	if (!$appWindow) { return ``; }
-
-	let output: Date | string = new Date();
-
-	// get the path to the cache
-	const cachePath = $appWindow.webContents.session.getStoragePath();
-
-	// if the cache path was found
-	if (cachePath) {
-		// create a path to the `Session Storage` folder
-		const sessionFolder = _path.join(cachePath, `Session Storage`);
-
-		// if the session folder exists
-		if (fs.existsSync(sessionFolder)) {
-			// get the date the folder was created
-			output = fs.statSync(sessionFolder).birthtime;
-		}
-	}
-
-	// format the output to a relative time
-	output = formatDistanceToNow(output as Date);
-
-	return output;
-}
-
-// listen for the window to close
-function manageAppClose(evt: PreventableEvent): void {
-	// stop the window from closing
-	evt.preventDefault();
-
-	// send a message to the UI to show the exit modal with the captured image
-	uiEvent(`modal-exit-visible`, true);
-
-	// track that the modal background content was viewed
-	trackEvent(MP_EVENTS.ui.modalBackgroundContentViewed);
-}
-
-
-
-
-// clears the test cache
-function clearCache(): void {
-	if (!$appWindow) { return; }
-
-	// clear all caches for the session
-	$appWindow.webContents.session.clearCache(); // web cache
-	$appWindow.webContents.session.clearStorageData(); // cookies, filesystem, indexed db, local storage, shader cache, web sql, service workers, cache storage
-
-	// update the menu to reflect the cache changes
-	setMenu();
-}
 
 
 
 
 
 
-/**
- * Check if the user needs to see the "What's New" modal on startup.
- */
-function checkStartupSequence(): void {
-	if (isWhatsNewRequired()) {
-		// request to show the "What's New" modal
-		uiEvent(`show-whats-new`);
-	} else {
-		// if the modal is not needed, release any other modal that might have been buffered
-		triggerBufferedModal();
-	}
-}
 
-/**
- * Single source of truth for whether the "What's New" modal is required.
- */
-function isWhatsNewRequired(): IsActive {
-	// check if the user has requested to skip the "What's New" modal
-	if (process.argv.includes(`--skip-whats-new`)) {
-		return false;
-	}
 
-	const appSettings = settingsService.getAppSettings() as AppSettings | undefined;
-	const lastSeenVersion = appSettings?.lastSeenVersion || `0.0.0`;
-	return !!($latestChangelogVersion && ($latestChangelogVersion !== lastSeenVersion));
-}
 
-/**
- * Trigger any modal that was buffered during the startup sequence.
- */
-function triggerBufferedModal(): void {
-	if (!$pendingStartupModal) { return; }
 
-	// trigger the buffered modal event
-	const { eventName, args } = $pendingStartupModal;
-	$pendingStartupModal = null;
-	uiEvent(eventName, ...args);
-}
 
-// request the UI layer to launch an event
-function uiEvent(eventName: ChannelName, ...args: unknown[]): void {
-	// if the "What's New" modal is currently active, buffer this event
-	// (Except for the "What's New" modal itself)
-	if ($pendingStartupModal === null && eventName !== `show-whats-new`) {
-		// if we haven't seen the current version, buffer the first modal request
-		if (isWhatsNewRequired()) {
-			$pendingStartupModal = { eventName, args };
-			return;
-		}
-	}
 
-	// display the UI layer
-	toggleEyasUI(true);
 
-	// send the interaction to the UI layer
-	$eyasLayer?.webContents.send(eventName, ...args);
-}
+
+

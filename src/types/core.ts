@@ -1,4 +1,4 @@
-import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, FilePath, DomainUrl, SettingKey, IsActive, IsDefault, LoadMethod, AppVersion, HashString, RetryCount, AppTitle } from './primitives.js';
+import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, FilePath, DomainUrl, SettingKey, IsActive, IsDefault, LoadMethod, AppVersion, HashString, AppTitle } from './primitives.js';
 
 
 /** A viewport configuration for the browser window */
@@ -62,9 +62,5 @@ export type PreventableEvent = {
 	preventDefault: () => void;
 }
 
-/** Function for focusing the UI with attempt tracking */
-export type FocusUI = {
-	(): void;
-	attempts?: RetryCount;
-}
+
 

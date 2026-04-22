@@ -1,0 +1,118 @@
+import { describe, test, expect, vi, beforeEach } from 'vitest';
+import { dialog } from 'electron';
+import fs from 'node:fs';
+import _path from 'node:path';
+import { appService } from '@core/app.service.js';
+import type { CoreContext } from '@registry/eyas-core.js';
+import type { PreventableEvent } from '@registry/core.js';
+
+// Mock electron
+vi.mock(`electron`, () => ({
+	dialog: {
+		showMessageBox: vi.fn(),
+		showErrorBox: vi.fn()
+	}
+}));
+
+// Mock test server service
+vi.mock(`@core/test-server.service.js`, () => ({
+	testServerService: {
+		onTimeout: vi.fn()
+	}
+}));
+
+import { testServerService } from '@core/test-server.service.js';
+
+// Mock fs and path
+vi.mock(`node:fs`, () => ({
+	default: {
+		existsSync: vi.fn(),
+		statSync: vi.fn()
+	}
+}));
+
+vi.mock(`node:path`, () => ({
+	default: {
+		join: vi.fn((...args) => args.join(`/`))
+	}
+}));
+
+// Mock date-fns
+vi.mock(`date-fns/formatDistanceToNow`, () => ({
+	formatDistanceToNow: vi.fn().mockReturnValue(`2 hours`)
+}));
+
+describe(`app.service.ts unit tests`, () => {
+	let mockCtx: CoreContext;
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+
+		mockCtx = {
+			$appWindow: {
+				webContents: {
+					session: {
+						clearCache: vi.fn(),
+						clearStorageData: vi.fn(),
+						getStoragePath: vi.fn().mockReturnValue(`/mock/storage`)
+					}
+				}
+			},
+			$config: {
+				title: `Test App`,
+				version: `1.0.0`,
+				meta: {
+					expires: new Date().toISOString(),
+					gitBranch: `main`,
+					gitHash: `abc123`,
+					gitUser: `test-user`,
+					compiled: Date.now(),
+					eyas: `1.0.0`
+				}
+			},
+			$paths: { icon: `icon.png` },
+			_appVersion: `1.0.0`,
+			setMenu: vi.fn(),
+			uiEvent: vi.fn(),
+			trackEvent: vi.fn()
+		} as unknown as CoreContext;
+	});
+
+	test(`showAbout should call dialog.showMessageBox`, () => {
+		appService.showAbout(mockCtx);
+		expect(dialog.showMessageBox).toHaveBeenCalledWith(mockCtx.$appWindow, expect.objectContaining({
+			title: `About`,
+			icon: `icon.png`
+		}));
+	});
+
+	test(`clearCache should clear session data and set menu`, () => {
+		appService.clearCache(mockCtx);
+		expect(mockCtx.$appWindow?.webContents.session.clearCache).toHaveBeenCalled();
+		expect(mockCtx.$appWindow?.webContents.session.clearStorageData).toHaveBeenCalled();
+		expect(mockCtx.setMenu).toHaveBeenCalled();
+	});
+
+	test(`getSessionAge should return formatted duration`, () => {
+		vi.mocked(fs.existsSync).mockReturnValue(true);
+		vi.mocked(fs.statSync).mockReturnValue({ birthtime: new Date() } as unknown as fs.Stats);
+
+		const age = appService.getSessionAge(mockCtx);
+		expect(age).toBe(`2 hours`);
+		expect(fs.existsSync).toHaveBeenCalledWith(`/mock/storage/Session Storage`);
+	});
+
+	test(`manageAppClose should prevent default and trigger exit modal`, () => {
+		const evt = { preventDefault: vi.fn() } as unknown as PreventableEvent;
+		appService.manageAppClose(mockCtx, evt);
+
+		expect(evt.preventDefault).toHaveBeenCalled();
+		expect(mockCtx.uiEvent).toHaveBeenCalledWith(`modal-exit-visible`, true);
+		expect(mockCtx.trackEvent).toHaveBeenCalled();
+	});
+
+	test(`onTestServerTimeout should show error box`, () => {
+		appService.onTestServerTimeout(mockCtx);
+		expect(testServerService.onTimeout).toHaveBeenCalledWith(mockCtx);
+	});
+});

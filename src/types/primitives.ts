@@ -89,8 +89,9 @@ export type EyasProtocolUrl = string;
 export type LoadMethod = string;
 
 // CLI / System
-export type RetryCount = number;
+
 export type ListIndex = number;
+export type RetryCount = number;
 export type SettingValue = unknown;
 export type SettingsMap = Record<string, SettingValue>;
 

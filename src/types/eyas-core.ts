@@ -1,8 +1,8 @@
 import type { BrowserWindow, BrowserView } from 'electron';
 import type { ValidatedConfig } from './config.js';
 import type { TestServerOptions } from './test-server.js';
-import type { IsActive, IsPending, DomainUrl, MPEventName, ChannelName, TimestampMS, AppVersion, EnvironmentKey, AppTitle } from './primitives.js';
-import type { PreventableEvent, Viewport, ViewportSize } from './core.js';
+import type { IsActive, IsPending, DomainUrl, MPEventName, ChannelName, TimestampMS, AppVersion, EnvironmentKey, AppTitle, FormattedDuration, RetryCount } from './primitives.js';
+import type { PreventableEvent, Viewport, ViewportSize, StartupModal } from './core.js';
 import type { FilePath } from './primitives.js';
 
 /** Paths used by the Eyas core orchestrator */
@@ -43,6 +43,7 @@ export type CoreContext = {
 	$defaultViewports: Viewport[];
 	$paths: EyasPaths;
 	_appVersion: AppVersion;
+	$pendingStartupModal: StartupModal | null;
 
 	// Setters (to avoid direct mutation if possible, but keep simple for now)
 	setTestNetworkEnabled: (enabled: IsActive) => void;
@@ -57,6 +58,7 @@ export type CoreContext = {
 	setLastTestServerOptions: (options: TestServerOptions | null) => void;
 	setIsInitializing: (initializing: IsActive) => void;
 	setAllViewports: (viewports: Viewport[]) => void;
+	setPendingStartupModal: (modal: StartupModal | null) => void;
 
 	// Functions
 	toggleEyasUI: (enable: IsActive) => void;
@@ -76,4 +78,27 @@ export type CoreContext = {
 	onTitleUpdate: (evt: PreventableEvent, title: AppTitle) => void;
 	triggerBufferedModal: () => void;
 	manageAppClose: (evt: PreventableEvent) => void;
+	showAbout: () => void;
+	clearCache: () => void;
+	getSessionAge: () => FormattedDuration;
+};
+
+/** UI Service interface */
+export type UIService = {
+	toggleEyasUI: (ctx: CoreContext, enable: IsActive) => void;
+	focusUI: (ctx: CoreContext) => void;
+	uiEvent: (ctx: CoreContext, eventName: ChannelName, ...args: unknown[]) => void;
+	triggerBufferedModal: (ctx: CoreContext) => void;
+	checkStartupSequence: (ctx: CoreContext) => void;
+	isWhatsNewRequired: (ctx: CoreContext) => IsActive;
+	focusAttempts: RetryCount;
+};
+
+/** App Service interface */
+export type AppService = {
+	showAbout: (ctx: CoreContext) => void;
+	clearCache: (ctx: CoreContext) => void;
+	getSessionAge: (ctx: CoreContext) => FormattedDuration;
+	manageAppClose: (ctx: CoreContext, evt: PreventableEvent) => void;
+	onTestServerTimeout: (ctx: CoreContext) => void;
 };
