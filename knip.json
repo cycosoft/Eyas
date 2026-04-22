@@ -12,7 +12,9 @@
     "tests/unit/**/*.test.ts",
     "tests/electron/**/*.test.ts",
     "electron.vite.config.ts",
-    ".eyas.config.js"
+    ".eyas.config.js",
+    "demo/assets/components.js",
+    "demo/assets/demo.js"
   ],
   "project": ["**/*.{ts,vue,mjs,js}"],
   "ignoreBinaries": [
