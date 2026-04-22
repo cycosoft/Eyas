@@ -20,8 +20,8 @@ export default defineConfig({
 		setupFiles: [`./tests/setup/vue-test-setup.ts`],
 		include: [`tests/unit/**/*.test.{js,ts}`],
 		exclude: [`tests/e2e/**`, `tests/electron/**`],
-		css: {
-			include: [/.+/]
-		}
+		// css: {
+		// 	include: [/.+/]
+		// }
 	}
 });

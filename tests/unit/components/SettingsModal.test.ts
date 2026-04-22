@@ -21,11 +21,7 @@ describe(`SettingsModal`, () => {
 		eyas.send = mockSend;
 		eyas.receive = mockReceive;
 
-		wrapper = mount(SettingsModal, {
-			global: {
-				plugins: [createPinia()]
-			}
-		});
+		wrapper = mount(SettingsModal);
 	});
 
 	afterEach(() => {

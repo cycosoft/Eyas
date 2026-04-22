@@ -19,6 +19,15 @@ const piniaPlugin = {
 
 config.global.plugins = [vuetifyPlugin, piniaPlugin];
 
+// Suppress JSDOM CSS parsing errors for Vuetify's modern CSS
+const originalConsoleError = console.error;
+console.error = (...args: any[]) => {
+	if (typeof args[0] === `string` && args[0].includes(`Could not parse CSS stylesheet`)) {
+		return; // Ignore JSDOM CSS parsing errors
+	}
+	originalConsoleError(...args);
+};
+
 // Mock window.eyas IPC bridge
 global.window.eyas = {
 	send: vi.fn(),

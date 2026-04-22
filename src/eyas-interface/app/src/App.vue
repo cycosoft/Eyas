@@ -39,7 +39,7 @@ const currentTheme = computed(() => {
 });
 
 watch(currentTheme, newVal => {
-	theme.global.name.value = newVal;
+	theme.change ? theme.change(newVal) : (theme.global.name.value = newVal);
 }, { immediate: true });
 
 onMounted(() => {
