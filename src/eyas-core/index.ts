@@ -1,17 +1,15 @@
+import type {
+	BrowserView
+} from 'electron';
 import {
 	app,
 	BrowserWindow,
-	nativeTheme,
-	BrowserView,
-	dialog
+	nativeTheme
 } from 'electron';
 import _path from 'node:path';
-import { isPast } from 'date-fns/isPast';
-import { format } from 'date-fns/format';
 
 // only allow a single instance of the app to be at a time
 const _electronCore = app;
-const _electronWindow = BrowserWindow;
 const isPrimaryInstance = _electronCore.requestSingleInstanceLock();
 if (!isPrimaryInstance) {
 	console.log(``);
@@ -23,31 +21,27 @@ if (!isPrimaryInstance) {
 
 // Internal modules
 import $roots from '@scripts/get-roots.js';
-import { MP_EVENTS } from './metrics-events.js';
-import { analyticsService } from './analytics.service.js';
 import { testServerService } from './test-server.service.js';
 import { navigationService } from './navigation.service.js';
 import { uiService } from './ui.service.js';
 import { appService } from './app.service.js';
+import * as settingsService from './settings-service.js';
 import { updateService } from './update.service.js';
 import { menuService } from './menu.service.js';
-import * as settingsService from './settings-service.js';
-import { LOAD_TYPES } from '@scripts/constants.js';
+import { windowService } from './window.service.js';
 
 import { initIpcHandlers } from './ipc-handlers.js';
 import {
 	registerInternalProtocols,
-	setupEyasNetworkHandlers,
 	setupWebRequestInterception
 } from './protocol-handlers.js';
 import type { CoreContext, EyasPaths } from '@registry/eyas-core.js';
 
 // Types
 import type { ValidatedConfig } from '@registry/config.js';
-import type { DeepLinkContext } from '@registry/deep-link.js';
 import type { TestServerOptions } from '@registry/test-server.js';
 import type { Viewport, ConfigToLoad, StartupModal, PreventableEvent, ViewportSize } from '@registry/core.js';
-import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActive, IsPending, DomainUrl, FormattedDuration, MPEventName, TimestampMS, ThemeSource, AppTitle, AppVersion, EnvironmentKey, MetadataRecord, CommandLineArgs, SystemTheme, FilePath } from '@registry/primitives.js';
+import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActive, IsPending, DomainUrl, FormattedDuration, MPEventName, TimestampMS, AppTitle, AppVersion, EnvironmentKey, MetadataRecord, SystemTheme } from '@registry/primitives.js';
 
 // global variables $
 const $isDev = process.argv.includes(`--dev`) as IsActive;
@@ -62,7 +56,6 @@ let $testServerEndTime: TimestampMS | null = null;
 let $testDomainRaw: DomainUrl | null = null;
 let $testDomain = `eyas://local.test` as DomainUrl;
 let $envKey: EnvironmentKey | null = null;
-const $uiDomain = `ui://eyas.interface`;
 const $defaultViewports: Viewport[] = [
 	{ isDefault: true, label: `Desktop` as ViewportLabel, width: 1366 as ViewportWidth, height: 768 as ViewportHeight },
 	{ isDefault: true, label: `Tablet` as ViewportLabel, width: 768 as ViewportWidth, height: 1024 as ViewportHeight },
@@ -99,13 +92,6 @@ const _appVersion = _package.version;
 
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
-/**
- * update the native theme of the app to match the theme source
- * @param {string} themeSource - the theme source to apply (e.g. 'light', 'dark', 'system')
- */
-function updateNativeTheme(themeSource?: ThemeSource): void {
-	nativeTheme.themeSource = (themeSource as `light` | `dark` | `system`) || `system`;
-}
 
 // OS Listener
 nativeTheme.on(`updated`, () => {
@@ -115,329 +101,40 @@ nativeTheme.on(`updated`, () => {
 	}
 });
 
-// APP_ENTRY: initialize the first layer of the app
-initElectronCore();
-
 // start the core of the application
 async function initElectronCore(): Promise<void> {
-	const {
-		handleEyasProtocolUrl,
-		getEyasUrlFromCommandLine
-	} = await import(`./deep-link-handler.js`);
-
-	setupDefaultProtocol();
-
-	const deepLinkContext: DeepLinkContext = {
-		getAppWindow: () => $appWindow,
-		setConfigToLoad: p => { $configToLoad = p; },
-		loadConfig: async (method, path) => {
-			const getConfig = (await import(`../scripts/get-config.js`)).default;
-			$config = await getConfig(method, path);
-		},
-		startAFreshTest: () => navigationService.startAFreshTest(getCoreContext()),
-		LOAD_TYPES
-	};
-
-	setupDeepLinkListeners(deepLinkContext, handleEyasProtocolUrl, getEyasUrlFromCommandLine);
+	await appService.init(getCoreContext());
 
 	// add support for eyas:// protocol
 	registerInternalProtocols();
 
 	// start the electron layer
-	_electronCore.whenReady().then(handleAppReady);
-}
-
-/**
- * Sets up the default protocol client for the application.
- */
-export function setupDefaultProtocol(): void {
-	if (process.defaultApp) {
-		if (process.argv.length >= 2) {
-			_electronCore.setAsDefaultProtocolClient(
-				`eyas`,
-				process.execPath,
-				[_path.resolve(process.argv[1])]
-			);
-		} else {
-			_electronCore.setAsDefaultProtocolClient(`eyas`);
-		}
-	} else {
-		_electronCore.setAsDefaultProtocolClient(`eyas`);
-	}
-}
-
-/**
- * Sets up listeners for deep links and second instance events.
- * @param context The deep link context.
- * @param handler The protocol URL handler.
- * @param urlGetter The command line URL getter.
- */
-export function setupDeepLinkListeners(
-	context: DeepLinkContext,
-	handler: (url: DomainUrl, ctx: DeepLinkContext) => void,
-	urlGetter: (args: CommandLineArgs) => DomainUrl | undefined | null
-): void {
-	// macOS: detect if the app was opened with a file
-	_electronCore.on(`open-file`, async (_event, path) => {
-		if (!path.endsWith(`.eyas`)) { return; }
-
-		if ($appWindow) {
-			const getConfig = (await import(`../scripts/get-config.js`)).default;
-			$config = await getConfig(LOAD_TYPES.ASSOCIATION, path);
-			navigationService.startAFreshTest(getCoreContext());
-		} else {
-			$configToLoad = { method: LOAD_TYPES.ASSOCIATION, path };
-		}
-	});
-
-	// macOS: handle eyas:// protocol (open-url)
-	_electronCore.on(`open-url`, (_event, url) => {
-		_event.preventDefault();
-		handler(url, context);
-	});
-
-	// Windows/Linux: handle second instance with protocol URL
-	_electronCore.on(`second-instance`, (_event, commandLine) => {
-		if ($appWindow) {
-			if ($appWindow.isMinimized()) { $appWindow.restore(); }
-			$appWindow.focus();
-		}
-		const url = urlGetter(commandLine);
-		if (url) {
-			handler(url, context);
-		}
-	});
+	app.whenReady().then(handleAppReady);
 }
 
 /**
  * Handles the application ready event.
  */
 async function handleAppReady(): Promise<void> {
-	// get config based on the context
-	const getConfig = (await import(`../scripts/get-config.js`)).default;
-	$config = await getConfig($configToLoad.method || LOAD_TYPES.AUTO, $configToLoad.path);
-
-	// load user settings from disk before first test start
-	await settingsService.load();
-	updateNativeTheme(settingsService.get(`theme`) as SystemTheme);
-
-	// start listening for requests to the custom protocol
-	setupEyasNetworkHandlers(getCoreContext());
+	await appService.handleReady(getCoreContext());
 
 	// start the UI layer
-	initElectronUi();
+	windowService.initElectronUi(getCoreContext());
 
 	updateService.init(getCoreContext());
 
 	// if Electron receives the `activate` event
-	_electronCore.on(`activate`, () => {
+	app.on(`activate`, () => {
 		// if the window does not already exist, create it
-		if (!_electronWindow.getAllWindows().length) {
-			initElectronUi();
+		if (BrowserWindow.getAllWindows().length === 0) {
+			windowService.initElectronUi(getCoreContext());
 		}
 	});
 }
 
-// initiate the core electron UI layer
-async function initElectronUi(): Promise<void> {
-	// set the current viewport to the first viewport in the list
-	$currentViewport[0] = $defaultViewports[0].width;
-	$currentViewport[1] = $defaultViewports[0].height;
 
-	createAppWindow();
-	setupWebRequestInterception(getCoreContext());
 
-	// display the splash screen to the user
-	const splashScreen = createSplashScreen();
 
-	// track the time the splash screen was created as a backup
-	let splashVisible = performance.now();
-
-	// when the splash screen content has loaded, set a new more specific time
-	splashScreen.webContents.on(`did-finish-load`, () => { splashVisible = performance.now(); });
-
-	// load a default page so the app doesn't start black
-	$appWindow?.loadURL(`data:text/html,` + encodeURIComponent(`<html><body></body></html>`));
-
-	// track the app launch event
-	trackEvent(MP_EVENTS.core.launch);
-
-	// exit the app if the test has expired
-	// NOTE: THIS NEEDS TO BE MOVED TO THE UI LAYER
-	checkTestExpiration();
-
-	// listen for app events
-	initTestListeners();
-	initUiListeners();
-
-	initEyasLayer(splashScreen, splashVisible);
-}
-
-/**
- * Creates the main application window.
- */
-export function createAppWindow(): void {
-	$appWindow = new _electronWindow({
-		useContentSize: true,
-		width: $currentViewport[0],
-		height: $currentViewport[1],
-		title: navigationService.getAppTitleWithContext(getCoreContext()),
-		icon: $paths.icon as FilePath,
-		show: false,
-		webPreferences: {
-			preload: $paths.testPreload,
-			partition: `persist:${$config?.meta.testId}`
-		}
-	});
-}
-
-/**
- * Sets up web request interception for the application window.
- */
-
-/**
- * Initializes the Eyas UI layer.
- * @param splashScreen The splash screen window.
- * @param splashVisible The time when the splash screen became visible.
- */
-function initEyasLayer(splashScreen: BrowserWindow, splashVisible: TimestampMS): void {
-	if (!$appWindow) { return; }
-
-	$eyasLayer = new BrowserView({
-		webPreferences: {
-			preload: $paths.eventBridge,
-			partition: `persist:${$config?.meta.testId}`,
-			backgroundThrottling: false // allow to update even when hidden (e.g. modal close)
-		}
-	});
-	$appWindow.addBrowserView($eyasLayer);
-
-	const url = ($isDev && process.env[`ELECTRON_RENDERER_URL`])
-		? `${process.env[`ELECTRON_RENDERER_URL`]}/index.html`
-		: `${$uiDomain}/index.html`;
-	$eyasLayer.webContents.loadURL(url);
-
-	// once the Eyas UI layer is ready, attempt navigation
-	$eyasLayer.webContents.on(`did-finish-load`, async () => {
-		// start the test
-		await navigationService.startAFreshTest(getCoreContext());
-
-		// check the startup sequence (What's New, etc.)
-		getCoreContext().checkStartupSequence();
-
-		// set a minimum time for the splash screen to be visible
-		const splashMinTime = 750;
-		const splashDelta = performance.now() - splashVisible;
-		const splashTimeout = splashDelta > splashMinTime ? 0 : splashMinTime - splashDelta;
-		setTimeout(() => {
-			// show the app window
-			$appWindow?.show();
-
-			// we're done with the splash screen
-			splashScreen.destroy();
-		}, splashTimeout);
-	});
-}
-
-// create a splash screen to display to the user while we wait for the $eyasLayer to load
-function createSplashScreen(): BrowserWindow {
-
-	// create the splash screen
-	const splashScreen = new BrowserWindow({
-		width: 400,
-		height: 400,
-		frame: false,
-		transparent: true,
-		alwaysOnTop: true,
-		show: false,
-		webPreferences: {
-			partition: `persist:${$config?.meta.testId}`
-		}
-	});
-
-	// load the splash screen
-	const splashUrl = ($isDev && process.env[`ELECTRON_RENDERER_URL`])
-		? `${process.env[`ELECTRON_RENDERER_URL`]}/splash.html`
-		: `${$uiDomain}/splash.html`;
-	splashScreen.webContents.loadURL(splashUrl);
-
-	// when the splash screen content has loaded
-	splashScreen.webContents.on(`did-finish-load`, () => {
-		// center the splash screen
-		splashScreen.center();
-
-		// show the splash screen
-		splashScreen.show();
-	});
-
-	// return the splashscreen handle so it can be later destroyed
-	return splashScreen;
-}
-
-// initialize the listeners on the test content
-function initTestListeners(): void {
-	if (!$appWindow) { return; }
-
-	// listen for the window to close
-	// IMPORTANT: Must pass getCoreContext().manageAppClose (the stable singleton reference),
-	// NOT an inline wrapper — ipc-handlers.ts removes it by the same reference.
-	$appWindow.on(`close`, getCoreContext().manageAppClose);
-
-	// listen for changes to the window size
-	$appWindow.on(`resize`, onResize);
-
-	// Whenever a title update is requested
-	$appWindow.on(`page-title-updated`, (evt, title) => navigationService.onTitleUpdate(getCoreContext(), evt, title));
-
-	// Whenever the content is loaded on the app window
-	$appWindow.webContents.on(`did-finish-load`, () => {
-		// update the title, preserving the current page title
-		$appWindow?.setTitle(navigationService.getAppTitleWithContext(getCoreContext(), $appWindow.webContents.getTitle()));
-
-		// update the cache menu
-		setMenu();
-	});
-
-	// when navigation starts
-	$appWindow.webContents.on(`did-start-navigation`, (_event, url) => {
-		// if the url is not the placeholder data url or about:blank
-		if (!url.startsWith(`data:text/html`) && url !== `about:blank`) {
-			// if the app is still initializing
-			if ($isInitializing) {
-				// update the initialization state
-				$isInitializing = false;
-
-				// update the menu
-				setMenu();
-			}
-		}
-	});
-
-	// when there's a navigation failure
-	$appWindow.webContents.on(`did-fail-load`, (_event, errorCode, errorDescription) => {
-		// log the error
-		console.error(`Navigation failed: ${errorCode} - ${errorDescription}`);
-	});
-
-	// when the test content opens a new window (e.g. target="_blank")
-	$appWindow.webContents.on(`did-create-window`, win => {
-		// Apply our title format when the new window's page title updates
-		win.on(`page-title-updated`, (evt, title) => {
-			evt.preventDefault();
-			win.setTitle(navigationService.getAppTitleWithContext(getCoreContext(), title));
-		});
-
-		// Also apply our format when the new window finishes loading
-		win.webContents.on(`did-finish-load`, () => {
-			win.setTitle(navigationService.getAppTitleWithContext(getCoreContext(), win.webContents.getTitle()));
-		});
-	});
-}
-
-// initialize the Eyas listeners
-function initUiListeners(): void {
-	initIpcHandlers(getCoreContext());
-}
 
 let $coreContext: CoreContext | null = null;
 
@@ -458,30 +155,38 @@ const coreContextSetters = {
 	setLastTestServerOptions: (options: TestServerOptions | null): void => { $lastTestServerOptions = options; },
 	setIsInitializing: (initializing: IsActive): void => { $isInitializing = initializing; },
 	setAllViewports: (viewports: Viewport[]): void => { $allViewports = viewports; },
-	setPendingStartupModal: (modal: StartupModal | null): void => { $pendingStartupModal = modal; }
+	setPendingStartupModal: (modal: StartupModal | null): void => { $pendingStartupModal = modal; },
+	setAppWindow: (window: BrowserWindow | null): void => { $appWindow = window; },
+	setEyasLayer: (layer: BrowserView | null): void => { $eyasLayer = layer; },
+	setConfigToLoad: (config: ConfigToLoad): void => { $configToLoad = config; },
+	setConfig: (config: ValidatedConfig): void => { $config = config; }
 };
 
 const coreContextFunctions = {
 	toggleEyasUI: (enable: IsActive): void => uiService.toggleEyasUI(getCoreContext(), enable),
-	trackEvent: (event: MPEventName, extraData?: MetadataRecord): Promise<void> => trackEvent(event, extraData),
-	stopTestServer: (): Promise<void> => stopTestServer(),
+	trackEvent: (event: MPEventName, extraData?: MetadataRecord): Promise<void> => appService.trackEvent(getCoreContext(), event, extraData),
+	stopTestServer: (): Promise<void> => testServerService.stop(getCoreContext()),
 	startAFreshTest: (forceShow?: IsActive): Promise<void> => navigationService.startAFreshTest(getCoreContext(), forceShow),
 	checkStartupSequence: (): void => uiService.checkStartupSequence(getCoreContext()),
 	navigate: (path?: DomainUrl, openInBrowser?: IsActive): void => navigationService.navigate(getCoreContext(), path, openInBrowser),
 	navigateVariable: (url: DomainUrl): void => navigationService.navigateVariable(getCoreContext(), url),
-	setMenu: (): Promise<void> => setMenu(),
-	doStartTestServer: (autoOpenBrowser?: IsActive, customDomain?: DomainUrl | null): Promise<void> => doStartTestServer(autoOpenBrowser, customDomain),
-	openTestServerInBrowserHandler: (_event?: unknown, url?: DomainUrl): void => openTestServerInBrowserHandler(_event, url),
+	setMenu: (): Promise<void> => menuService.refresh(getCoreContext()),
+	doStartTestServer: (autoOpenBrowser?: IsActive, customDomain?: DomainUrl | null): Promise<void> => testServerService.start(getCoreContext(), autoOpenBrowser, customDomain),
+	openTestServerInBrowserHandler: (_event?: unknown, url?: DomainUrl): void => testServerService.openInBrowser(getCoreContext(), url),
 	uiEvent: (eventName: ChannelName, ...args: unknown[]): void => uiService.uiEvent(getCoreContext(), eventName, ...args),
 	onTestServerTimeout: (): void => appService.onTestServerTimeout(getCoreContext()),
 	onToggleTestServerHttps: (): void => testServerService.toggleHttps(getCoreContext()),
-	onOpenSettings: (): void => onOpenSettings(),
+	onOpenSettings: (): void => uiService.showSettings(getCoreContext()),
 	onTitleUpdate: (evt: PreventableEvent, title: AppTitle): void => navigationService.onTitleUpdate(getCoreContext(), evt, title),
 	triggerBufferedModal: (): void => uiService.triggerBufferedModal(getCoreContext()),
 	manageAppClose: (evt: PreventableEvent): void => appService.manageAppClose(getCoreContext(), evt),
 	showAbout: (): void => appService.showAbout(getCoreContext()),
 	clearCache: (): void => appService.clearCache(getCoreContext()),
-	getSessionAge: (): FormattedDuration => appService.getSessionAge(getCoreContext())
+	getSessionAge: (): FormattedDuration => appService.getSessionAge(getCoreContext()),
+	getAppTitle: (title?: AppTitle): AppTitle => navigationService.getAppTitleWithContext(getCoreContext(), title),
+	setupWebRequestInterception: (): void => setupWebRequestInterception(getCoreContext()),
+	checkExpiration: (): void => appService.checkExpiration(getCoreContext()),
+	initIpcHandlers: (): void => initIpcHandlers(getCoreContext())
 };
 
 function getCoreContext(): CoreContext {
@@ -491,6 +196,7 @@ function getCoreContext(): CoreContext {
 		get $appWindow(): BrowserWindow | null { return $appWindow; },
 		get $eyasLayer(): BrowserView | null { return $eyasLayer; },
 		get $config(): ValidatedConfig | null { return $config; },
+		get $configToLoad(): ConfigToLoad { return $configToLoad; },
 		get $testNetworkEnabled(): IsActive { return $testNetworkEnabled; },
 		get $testServerHttpsEnabled(): IsActive { return $testServerHttpsEnabled; },
 		get $lastTestServerOptions(): TestServerOptions | null { return $lastTestServerOptions; },
@@ -508,131 +214,22 @@ function getCoreContext(): CoreContext {
 		get $paths(): EyasPaths { return $paths as EyasPaths; },
 		get _appVersion(): AppVersion { return _appVersion as AppVersion; },
 		get $pendingStartupModal(): StartupModal | null { return $pendingStartupModal; },
+		get $isDev(): IsActive { return $isDev; },
 		...coreContextSetters,
 		...coreContextFunctions,
 		updateService,
-		menuService
+		menuService,
+		windowService
 	};
 
 	return $coreContext as CoreContext;
 }
 
-// method for tracking events
-async function trackEvent(event: MPEventName, extraData?: MetadataRecord): Promise<void> {
-	await analyticsService.init($isDev);
-	await analyticsService.trackEvent(event, $config, _appVersion, extraData);
-}
-
-// forces an exit if the loaded test has expired
-function checkTestExpiration(): void {
-	if (!$config) { return; }
-
-	// setup
-	const expirationDate = new Date($config.meta.expires);
-
-	// stop if the test has not expired
-	if (!isPast(expirationDate)) { return; }
-
-	// alert the user that the test has expired
-	dialog.showMessageBoxSync({
-		title: `🚫 Test Expired`,
-		message: `This test expired on ${format(expirationDate, `PPP`)} and can no longer be used`,
-		buttons: [`Exit`],
-		noLink: true
-	});
-
-	// track that the app is being closed
-	trackEvent(MP_EVENTS.core.exit);
-
-	// Exit the app
-	_electronCore.quit();
-}
-
-
-
-// when the app resizes
-function onResize(): void {
-	if (!$appWindow || !$eyasLayer) { return; }
-
-	// get the current viewport dimensions
-	const [newWidth, newHeight] = $appWindow.getContentSize();
-
-	// if the dimensions have not changed
-	if (newWidth === $currentViewport[0] && newHeight === $currentViewport[1]) {
-		return;
-	}
-
-	// update the current dimensions
-	$currentViewport[0] = newWidth;
-	$currentViewport[1] = newHeight;
-
-	// get the $eyasLayer dimensions
-	const { width, height } = $eyasLayer.getBounds();
-
-	// if the Eyas UI layer is visible
-	if (width && height) {
-		// update the Eyas UI layer to match the new dimensions
-		$eyasLayer.setBounds({ x: 0, y: 0, width: newWidth, height: newHeight });
-	}
-
-	// update the menu
-	setMenu();
-}
-
-async function stopTestServer(): Promise<void> {
-	await testServerService.stop(getCoreContext());
-}
-
-
-function openTestServerInBrowserHandler(_event?: unknown, url?: DomainUrl): void {
-	testServerService.openInBrowser(getCoreContext(), url);
-}
-
-
-
-
-async function doStartTestServer(autoOpenBrowser = true, customDomain: DomainUrl | null = null): Promise<void> {
-	await testServerService.start(getCoreContext(), autoOpenBrowser, customDomain);
-}
-
-
-
-
-
-
-
-
-/**
- * Shows the settings modal with current project and app settings.
- */
-function onOpenSettings(): void {
-	getCoreContext().uiEvent(`show-settings-modal`, {
-		project: settingsService.getProjectSettings($config?.meta?.projectId ?? undefined),
-		app: settingsService.getAppSettings(),
-		projectId: $config?.meta?.projectId || undefined
-	});
-}
-
-
-
-// Set up the application menu
-async function setMenu(): Promise<void> {
-	await menuService.refresh(getCoreContext());
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// APP_ENTRY: must be AFTER all let/const declarations (avoids Temporal Dead Zone).
+// getCoreContext() accesses $coreContext (declared with let), which would be in the
+// TDZ if initElectronCore() were called before the declaration is evaluated.
+initElectronCore().catch(err => {
+	// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+	require(`fs`).writeFileSync(`crash.log`, String(err && err.stack ? err.stack : err));
+	process.exit(1);
+});

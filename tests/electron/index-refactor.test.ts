@@ -1,6 +1,5 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { app, BrowserWindow, ipcMain, session, protocol } from 'electron';
-import type { DeepLinkContext } from '@registry/deep-link.js';
 import type { EyasPaths } from '@registry/eyas-core.js';
 
 type BrowserWindowConstructor = { new (): BrowserWindow };
@@ -130,12 +129,9 @@ vi.mock(`electron-updater`, () => {
 	};
 });
 
-// Import the functions to test
-import {
-	setupDefaultProtocol,
-	setupDeepLinkListeners,
-	createAppWindow
-} from '@core/index.js';
+// Import the services to test
+import { appService } from '@core/app.service.js';
+import { windowService } from '@core/window.service.js';
 
 import {
 	setupWebRequestInterception,
@@ -155,24 +151,77 @@ describe(`index.ts refactoring unit tests`, () => {
 		vi.clearAllMocks();
 	});
 
-	test(`setupDefaultProtocol should call setAsDefaultProtocolClient`, () => {
-		setupDefaultProtocol();
+	test(`setupProtocols should call setAsDefaultProtocolClient`, () => {
+		const ctx = {} as unknown as CoreContext;
+		appService.setupProtocols(ctx);
 		expect(app.setAsDefaultProtocolClient).toHaveBeenCalledWith(`eyas`);
 	});
 
-	test(`setupDeepLinkListeners should register app listeners`, () => {
-		const context = {} as unknown as DeepLinkContext;
-		const handler = vi.fn();
-		const urlGetter = vi.fn();
-		setupDeepLinkListeners(context, handler, urlGetter);
-		expect(app.on).toHaveBeenCalledWith(`open-file`, expect.any(Function));
-		expect(app.on).toHaveBeenCalledWith(`open-url`, expect.any(Function));
-		expect(app.on).toHaveBeenCalledWith(`second-instance`, expect.any(Function));
+	test(`createAppWindow should instantiate BrowserWindow`, () => {
+		const ctx = {
+			setAppWindow: vi.fn(),
+			$config: { meta: { testId: `test` } },
+			$currentViewport: [1366, 768],
+			$paths: { icon: `test.png` },
+			getAppTitle: vi.fn().mockReturnValue(`Test`)
+		} as unknown as CoreContext;
+		windowService.createAppWindow(ctx);
+		expect(BrowserWindow).toHaveBeenCalled();
 	});
 
-	test(`createAppWindow should instantiate BrowserWindow`, () => {
-		createAppWindow();
-		expect(BrowserWindow).toHaveBeenCalled();
+	test(`handleResize should update viewport and bounds`, () => {
+		const mockLayer = {
+			getBounds: vi.fn().mockReturnValue({ width: 800, height: 600 }),
+			setBounds: vi.fn()
+		};
+		const ctx = {
+			$appWindow: { getContentSize: vi.fn().mockReturnValue([1024, 768]) },
+			$eyasLayer: mockLayer,
+			$currentViewport: [800, 600],
+			setMenu: vi.fn()
+		} as unknown as CoreContext;
+
+		windowService.handleResize(ctx);
+
+		expect(ctx.$currentViewport).toEqual([1024, 768]);
+		expect(mockLayer.setBounds).toHaveBeenCalledWith({ x: 0, y: 0, width: 1024, height: 768 });
+		expect(ctx.setMenu).toHaveBeenCalled();
+	});
+
+	test(`initElectronUi should orchestrate window startup`, async () => {
+		const ctx = {
+			$defaultViewports: [{ width: 1024, height: 768 }],
+			$currentViewport: [0, 0],
+			setupWebRequestInterception: vi.fn(),
+			trackEvent: vi.fn(),
+			checkExpiration: vi.fn(),
+			initIpcHandlers: vi.fn(),
+			$appWindow: { loadURL: vi.fn(), on: vi.fn(), webContents: { on: vi.fn() } },
+			$config: { meta: { testId: `test` } },
+			$paths: { testPreload: ``, eventBridge: `` },
+			getAppTitle: vi.fn(),
+			setAppWindow: vi.fn(),
+			setEyasLayer: vi.fn()
+		} as unknown as CoreContext;
+
+		vi.spyOn(windowService, `createAppWindow`).mockImplementation(() => {});
+		vi.spyOn(windowService, `createSplashScreen`).mockImplementation(() => ({
+			webContents: { on: vi.fn(), loadURL: vi.fn() },
+			center: vi.fn(),
+			show: vi.fn()
+		} as unknown as BrowserWindow));
+		vi.spyOn(windowService, `initWindowListeners`).mockImplementation(() => {});
+		vi.spyOn(windowService, `initEyasLayer`).mockImplementation(() => {});
+
+		await windowService.initElectronUi(ctx);
+
+		expect(ctx.$currentViewport).toEqual([1024, 768]);
+		expect(windowService.createAppWindow).toHaveBeenCalledWith(ctx);
+		expect(ctx.setupWebRequestInterception).toHaveBeenCalled();
+		expect(ctx.trackEvent).toHaveBeenCalled();
+		expect(ctx.checkExpiration).toHaveBeenCalled();
+		expect(ctx.initIpcHandlers).toHaveBeenCalled();
+		expect(windowService.initEyasLayer).toHaveBeenCalled();
 	});
 
 	test(`setupWebRequestInterception should register onBeforeRequest`, () => {

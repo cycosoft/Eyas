@@ -1,8 +1,8 @@
 import type { BrowserWindow, BrowserView } from 'electron';
 import type { ValidatedConfig } from './config.js';
 import type { TestServerOptions } from './test-server.js';
-import type { IsActive, IsPending, DomainUrl, MPEventName, ChannelName, TimestampMS, AppVersion, EnvironmentKey, AppTitle, FormattedDuration, RetryCount, UpdateStatus } from './primitives.js';
-import type { PreventableEvent, Viewport, ViewportSize, StartupModal } from './core.js';
+import type { IsActive, IsPending, DomainUrl, MPEventName, ChannelName, TimestampMS, AppVersion, EnvironmentKey, AppTitle, FormattedDuration, RetryCount, UpdateStatus, MetadataRecord } from './primitives.js';
+import type { PreventableEvent, Viewport, ViewportSize, StartupModal, ConfigToLoad } from './core.js';
 import type { FilePath } from './primitives.js';
 import type { MenuTemplate, LinkMenuHandlers, MenuContextParams, MenuContext } from './menu.js';
 
@@ -28,6 +28,7 @@ export type CoreContext = {
 	$appWindow: BrowserWindow | null;
 	$eyasLayer: BrowserView | null;
 	$config: ValidatedConfig | null;
+	$configToLoad: ConfigToLoad;
 	$testNetworkEnabled: IsActive;
 	$testServerHttpsEnabled: IsActive;
 	$lastTestServerOptions: TestServerOptions | null;
@@ -45,6 +46,7 @@ export type CoreContext = {
 	$paths: EyasPaths;
 	_appVersion: AppVersion;
 	$pendingStartupModal: StartupModal | null;
+	$isDev: IsActive;
 
 	// Setters (to avoid direct mutation if possible, but keep simple for now)
 	setTestNetworkEnabled: (enabled: IsActive) => void;
@@ -60,6 +62,10 @@ export type CoreContext = {
 	setIsInitializing: (initializing: IsActive) => void;
 	setAllViewports: (viewports: Viewport[]) => void;
 	setPendingStartupModal: (modal: StartupModal | null) => void;
+	setAppWindow: (window: BrowserWindow | null) => void;
+	setEyasLayer: (layer: BrowserView | null) => void;
+	setConfigToLoad: (config: ConfigToLoad) => void;
+	setConfig: (config: ValidatedConfig) => void;
 
 	// Functions
 	toggleEyasUI: (enable: IsActive) => void;
@@ -82,10 +88,25 @@ export type CoreContext = {
 	showAbout: () => void;
 	clearCache: () => void;
 	getSessionAge: () => FormattedDuration;
+	getAppTitle: (title?: AppTitle) => AppTitle;
+	setupWebRequestInterception: () => void;
+	checkExpiration: () => void;
+	initIpcHandlers: () => void;
 
 	// Services
 	updateService: UpdateService;
 	menuService: MenuService;
+	windowService: WindowService;
+};
+
+/** Window Service interface */
+export type WindowService = {
+	createAppWindow: (ctx: CoreContext) => void;
+	createSplashScreen: (ctx: CoreContext) => BrowserWindow;
+	initEyasLayer: (ctx: CoreContext, splashScreen: BrowserWindow, splashVisible: TimestampMS) => void;
+	initWindowListeners: (ctx: CoreContext) => void;
+	handleResize: (ctx: CoreContext) => void;
+	initElectronUi: (ctx: CoreContext) => Promise<void>;
 };
 
 /** Update Service interface */
@@ -116,6 +137,7 @@ export type UIService = {
 	triggerBufferedModal: (ctx: CoreContext) => void;
 	checkStartupSequence: (ctx: CoreContext) => void;
 	isWhatsNewRequired: (ctx: CoreContext) => IsActive;
+	showSettings: (ctx: CoreContext) => void;
 	focusAttempts: RetryCount;
 };
 
@@ -126,4 +148,9 @@ export type AppService = {
 	getSessionAge: (ctx: CoreContext) => FormattedDuration;
 	manageAppClose: (ctx: CoreContext, evt: PreventableEvent) => void;
 	onTestServerTimeout: (ctx: CoreContext) => void;
+	init: (ctx: CoreContext) => Promise<void>;
+	setupProtocols: (ctx: CoreContext) => void;
+	handleReady: (ctx: CoreContext) => Promise<void>;
+	checkExpiration: (ctx: CoreContext) => void;
+	trackEvent: (ctx: CoreContext, event: MPEventName, extraData?: MetadataRecord) => Promise<void>;
 };

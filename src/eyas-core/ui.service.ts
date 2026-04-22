@@ -140,6 +140,18 @@ export const uiService: UIService = {
 		return !!(ctx.$latestChangelogVersion && (ctx.$latestChangelogVersion !== lastSeenVersion));
 	},
 
+	/**
+	 * Shows the settings modal with current project and app settings.
+	 * @param ctx The core context.
+	 */
+	showSettings(ctx: CoreContext): void {
+		this.uiEvent(ctx, `show-settings-modal`, {
+			project: settingsService.getProjectSettings(ctx.$config?.meta?.projectId ?? undefined),
+			app: settingsService.getAppSettings(),
+			projectId: ctx.$config?.meta?.projectId || undefined
+		});
+	},
+
 	/** Internal counter for focus attempts */
 	focusAttempts: 0
 };

@@ -2,10 +2,13 @@ import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { uiService } from '@core/ui.service.js';
 import type { CoreContext, UIService } from '@registry/eyas-core.js';
 import type { ChannelName } from '@registry/primitives.js';
+import type { AppSettings } from '@registry/core.js';
+import type { ProjectSettings } from '@registry/settings.js';
 
 // Mock settings service
 vi.mock(`@core/settings-service.js`, () => ({
-	getAppSettings: vi.fn()
+	getAppSettings: vi.fn(),
+	getProjectSettings: vi.fn()
 }));
 
 import * as settingsService from '@core/settings-service.js';
@@ -149,5 +152,18 @@ describe(`ui.service.ts unit tests`, () => {
 	test(`isWhatsNewRequired should return false if versions match`, () => {
 		vi.mocked(settingsService.getAppSettings).mockReturnValue({ lastSeenVersion: `1.1.0` });
 		expect(uiService.isWhatsNewRequired(mockCtx)).toBe(false);
+	});
+
+	test(`showSettings should trigger show-settings-modal with settings data`, () => {
+		vi.mocked(settingsService.getAppSettings).mockReturnValue({ lastSeenVersion: `1.1.0` } as unknown as AppSettings);
+		vi.mocked(settingsService.getProjectSettings).mockReturnValue({ testId: `test-proj` } as unknown as ProjectSettings);
+
+		uiService.showSettings(mockCtx);
+
+		expect(mockCtx.$eyasLayer?.webContents.send).toHaveBeenCalledWith(`show-settings-modal`, {
+			project: { testId: `test-proj` } as unknown as ProjectSettings,
+			app: { lastSeenVersion: `1.1.0` } as unknown as AppSettings,
+			projectId: undefined
+		});
 	});
 });
