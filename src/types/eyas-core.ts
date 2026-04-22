@@ -1,7 +1,7 @@
 import type { BrowserWindow, BrowserView } from 'electron';
 import type { ValidatedConfig } from './config.js';
 import type { TestServerOptions } from './test-server.js';
-import type { IsActive, IsPending, DomainUrl, MPEventName, ChannelName, TimestampMS, AppVersion, EnvironmentKey, AppTitle, FormattedDuration, RetryCount } from './primitives.js';
+import type { IsActive, IsPending, DomainUrl, MPEventName, ChannelName, TimestampMS, AppVersion, EnvironmentKey, AppTitle, FormattedDuration, RetryCount, UpdateStatus } from './primitives.js';
 import type { PreventableEvent, Viewport, ViewportSize, StartupModal } from './core.js';
 import type { FilePath } from './primitives.js';
 
@@ -81,6 +81,18 @@ export type CoreContext = {
 	showAbout: () => void;
 	clearCache: () => void;
 	getSessionAge: () => FormattedDuration;
+
+	// Services
+	updateService: UpdateService;
+};
+
+/** Update Service interface */
+export type UpdateService = {
+	init: (ctx: CoreContext) => void;
+	checkForUpdates: () => void;
+	installUpdate: () => void;
+	getStatus: () => UpdateStatus;
+	reset: () => void;
 };
 
 /** UI Service interface */

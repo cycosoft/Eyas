@@ -11,9 +11,6 @@ import {
 import _path from 'node:path';
 import { isPast } from 'date-fns/isPast';
 import { format } from 'date-fns/format';
-import electronUpdater from 'electron-updater';
-const { autoUpdater } = electronUpdater;
-import semver from 'semver';
 
 // only allow a single instance of the app to be at a time
 const _electronCore = app;
@@ -31,7 +28,6 @@ if (!isPrimaryInstance) {
 import $roots from '@scripts/get-roots.js';
 import { parseURL } from '@scripts/parse-url.js';
 import { buildMenuTemplate } from './menu-template.js';
-import { getNoUpdateAvailableDialogOptions } from './update-dialog.js';
 import { MP_EVENTS } from './metrics-events.js';
 import { analyticsService } from './analytics.service.js';
 import * as testServer from './test-server/test-server.js';
@@ -39,6 +35,7 @@ import { testServerService } from './test-server.service.js';
 import { navigationService } from './navigation.service.js';
 import { uiService } from './ui.service.js';
 import { appService } from './app.service.js';
+import { updateService } from './update.service.js';
 import { isVariableLinkValid } from '@scripts/variable-utils.js';
 import * as settingsService from './settings-service.js';
 import { LOAD_TYPES } from '@scripts/constants.js';
@@ -57,7 +54,7 @@ import type { MenuContext, MenuTemplate, MenuContextParams, LinkMenuHandlers } f
 import type { DeepLinkContext } from '@registry/deep-link.js';
 import type { TestServerOptions } from '@registry/test-server.js';
 import type { Viewport, ConfigToLoad, StartupModal, PreventableEvent, ViewportSize } from '@registry/core.js';
-import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActive, IsPending, DomainUrl, FormattedDuration, MPEventName, TimestampMS, ThemeSource, AppTitle, AppVersion, EnvironmentKey, MetadataRecord, CommandLineArgs, SystemTheme, FilePath, UpdateStatus } from '@registry/primitives.js';
+import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActive, IsPending, DomainUrl, FormattedDuration, MPEventName, TimestampMS, ThemeSource, AppTitle, AppVersion, EnvironmentKey, MetadataRecord, CommandLineArgs, SystemTheme, FilePath } from '@registry/primitives.js';
 
 // global variables $
 const $isDev = process.argv.includes(`--dev`) as IsActive;
@@ -80,15 +77,11 @@ const $defaultViewports: Viewport[] = [
 ];
 let $allViewports: Viewport[] = [];
 const $currentViewport: ViewportSize = [0, 0];
-let $updateStatus = `idle` as UpdateStatus;
+let $latestChangelogVersion: AppVersion | null = null;
 let $isInitializing: IsActive = true;
 let $isEnvironmentPending: IsPending = false;
-let $updateCheckUserTriggered: IsActive = false;
-let $onCheckForUpdates = (): void => { };
-let $onInstallUpdate = (): void => { };
 let $pendingStartupModal: StartupModal | null = null;
 let $isStartupSequenceChecked: IsActive = false;
-let $latestChangelogVersion: AppVersion | null = null;
 
 const $paths = {
 	icon: _path.join($roots.eyas, `eyas-assets`, `eyas-logo.png`),
@@ -242,7 +235,7 @@ async function handleAppReady(): Promise<void> {
 	// start the UI layer
 	initElectronUi();
 
-	setupAutoUpdater();
+	updateService.init(getCoreContext());
 
 	// if Electron receives the `activate` event
 	_electronCore.on(`activate`, () => {
@@ -524,7 +517,8 @@ function getCoreContext(): CoreContext {
 		get _appVersion(): AppVersion { return _appVersion as AppVersion; },
 		get $pendingStartupModal(): StartupModal | null { return $pendingStartupModal; },
 		...coreContextSetters,
-		...coreContextFunctions
+		...coreContextFunctions,
+		updateService
 	};
 
 	return $coreContext as CoreContext;
@@ -726,9 +720,9 @@ function getMenuContext(params: MenuContextParams): MenuContext {
 		refreshMenu: setMenu,
 		viewportItems,
 		linkItems,
-		updateStatus: ($updateStatus as `idle` | `downloading` | `downloaded`) || `idle`,
-		onCheckForUpdates: $onCheckForUpdates,
-		onInstallUpdate: $onInstallUpdate,
+		updateStatus: (getCoreContext().updateService.getStatus() as `idle` | `downloading` | `downloaded`) || `idle`,
+		onCheckForUpdates: () => getCoreContext().updateService.checkForUpdates(),
+		onInstallUpdate: () => getCoreContext().updateService.installUpdate(),
 		testServerActive: !!testServer.getTestServerState(),
 		testServerRemainingTime: getTestServerRemainingTime(),
 		onStartTestServer: startTestServerHandler,
@@ -858,56 +852,6 @@ async function setMenu(): Promise<void> {
 	Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
-function setupAutoUpdater(): void {
-	autoUpdater.forceDevUpdateConfig = true;
-	// Spoof the current version for update testing (currentVersion is read-only)
-	Object.defineProperty(autoUpdater, `currentVersion`, {
-		get: () => semver.parse(_appVersion)
-	});
-
-	// Silence internal logging to prevent duplicate stack traces
-	autoUpdater.logger = null;
-
-	autoUpdater.setFeedURL({
-		provider: `github`,
-		owner: `cycosoft`,
-		repo: `Eyas`
-	});
-
-	$onCheckForUpdates = (): void => {
-		$updateCheckUserTriggered = true;
-		autoUpdater.checkForUpdates().catch(() => { });
-	};
-	$onInstallUpdate = (): void => { autoUpdater.quitAndInstall(); };
-
-	autoUpdater.on(`update-available`, () => {
-		$updateStatus = `downloading`;
-		setMenu();
-	});
-	autoUpdater.on(`update-downloaded`, () => {
-		$updateStatus = `downloaded`;
-		setMenu();
-	});
-	const showNoUpdateIfUserTriggered = (): void => {
-		if ($updateCheckUserTriggered) {
-			$updateCheckUserTriggered = false;
-			if ($appWindow) {
-				dialog.showMessageBox($appWindow, getNoUpdateAvailableDialogOptions());
-			}
-		}
-	};
-	autoUpdater.on(`update-not-available`, showNoUpdateIfUserTriggered);
-	autoUpdater.on(`error`, (err: Error) => {
-		if (err.message?.includes(`404`)) {
-			console.error(`Auto-update error: update server not found`);
-		} else {
-			console.error(`Auto-update error:`, err);
-		}
-		showNoUpdateIfUserTriggered();
-	});
-
-	autoUpdater.checkForUpdates().catch(() => { });
-}
 
 
 
