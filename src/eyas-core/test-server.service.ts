@@ -19,6 +19,10 @@ async function stop(ctx: CoreContext): Promise<void> {
 	if (ctx.$isInitializing) { return; }
 	await testServer.stopTestServer();
 	testServerTimeout.cancelTestServerTimeout();
+
+	ctx.setLastTestServerOptions(null);
+	ctx.setTestServerEndTime(null);
+
 	if ($testServerMenuIntervalId) {
 		clearInterval($testServerMenuIntervalId);
 		$testServerMenuIntervalId = null;

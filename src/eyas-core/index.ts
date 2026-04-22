@@ -1,12 +1,9 @@
 import {
 	app,
 	BrowserWindow,
-	Menu,
 	nativeTheme,
 	BrowserView,
-	dialog,
-	shell,
-	clipboard
+	dialog
 } from 'electron';
 import _path from 'node:path';
 import { isPast } from 'date-fns/isPast';
@@ -26,17 +23,14 @@ if (!isPrimaryInstance) {
 
 // Internal modules
 import $roots from '@scripts/get-roots.js';
-import { parseURL } from '@scripts/parse-url.js';
-import { buildMenuTemplate } from './menu-template.js';
 import { MP_EVENTS } from './metrics-events.js';
 import { analyticsService } from './analytics.service.js';
-import * as testServer from './test-server/test-server.js';
 import { testServerService } from './test-server.service.js';
 import { navigationService } from './navigation.service.js';
 import { uiService } from './ui.service.js';
 import { appService } from './app.service.js';
 import { updateService } from './update.service.js';
-import { isVariableLinkValid } from '@scripts/variable-utils.js';
+import { menuService } from './menu.service.js';
 import * as settingsService from './settings-service.js';
 import { LOAD_TYPES } from '@scripts/constants.js';
 
@@ -49,8 +43,7 @@ import {
 import type { CoreContext, EyasPaths } from '@registry/eyas-core.js';
 
 // Types
-import type { ValidatedConfig, LinkConfig } from '@registry/config.js';
-import type { MenuContext, MenuTemplate, MenuContextParams, LinkMenuHandlers } from '@registry/menu.js';
+import type { ValidatedConfig } from '@registry/config.js';
 import type { DeepLinkContext } from '@registry/deep-link.js';
 import type { TestServerOptions } from '@registry/test-server.js';
 import type { Viewport, ConfigToLoad, StartupModal, PreventableEvent, ViewportSize } from '@registry/core.js';
@@ -102,7 +95,6 @@ const $paths = {
 import _package from "@root/package.json" with { type: "json" };
 const _appVersion = _package.version;
 
-const APP_NAME = `Eyas`;
 
 
 
@@ -518,7 +510,8 @@ function getCoreContext(): CoreContext {
 		get $pendingStartupModal(): StartupModal | null { return $pendingStartupModal; },
 		...coreContextSetters,
 		...coreContextFunctions,
-		updateService
+		updateService,
+		menuService
 	};
 
 	return $coreContext as CoreContext;
@@ -590,9 +583,6 @@ async function stopTestServer(): Promise<void> {
 	await testServerService.stop(getCoreContext());
 }
 
-function copyTestServerUrlHandler(): void {
-	testServerService.copyUrl(getCoreContext());
-}
 
 function openTestServerInBrowserHandler(_event?: unknown, url?: DomainUrl): void {
 	testServerService.openInBrowser(getCoreContext(), url);
@@ -600,213 +590,15 @@ function openTestServerInBrowserHandler(_event?: unknown, url?: DomainUrl): void
 
 
 
-async function startTestServerHandler(): Promise<void> {
-	await testServerService.showSetupModal(getCoreContext());
-}
 
 async function doStartTestServer(autoOpenBrowser = true, customDomain: DomainUrl | null = null): Promise<void> {
 	await testServerService.start(getCoreContext(), autoOpenBrowser, customDomain);
 }
 
-/**
- * Builds the list of viewport menu items based on the current configuration and viewport.
- * @returns An array of menu item objects for the viewport submenu.
- */
-/**
- * Builds the list of viewport menu items based on the current configuration and viewport.
- * @param appWindow The app window to resize.
- * @param allViewports The list of available viewports.
- * @param currentViewport The current viewport dimensions [width, height].
- * @returns An array of menu item objects for the viewport submenu.
- */
-export function getViewportMenuItems(
-	appWindow: BrowserWindow | null,
-	allViewports: Viewport[],
-	currentViewport: ViewportSize
-): MenuTemplate {
-	if (!appWindow) { return []; }
 
-	const tolerance = 2;
-	const viewportItems: MenuTemplate = [];
-	let defaultsFound = false;
 
-	allViewports.forEach(res => {
-		const [width, height] = currentViewport || [];
-		const isSizeMatch = Math.abs(res.width - width) <= tolerance && Math.abs(res.height - height) <= tolerance;
-		if (!defaultsFound && res.isDefault) {
-			viewportItems.push({ type: `separator` });
-			defaultsFound = true;
-		}
-		viewportItems.push({
-			label: `${isSizeMatch ? `🔘 ` : ``}${res.label} (${res.width} x ${res.height})`,
-			click: () => appWindow?.setContentSize(res.width, res.height)
-		});
-	});
 
-	if (currentViewport.length === 2 && !allViewports.some(res => Math.abs(res.width - currentViewport[0]) <= tolerance && Math.abs(res.height - currentViewport[1]) <= tolerance)) {
-		viewportItems.unshift(
-			{ label: `🔘 Current (${currentViewport[0]} x ${currentViewport[1]})`, click: () => appWindow?.setContentSize(currentViewport[0], currentViewport[1]) },
-			{ type: `separator` }
-		);
-	}
 
-	return viewportItems;
-}
-
-/**
- * Builds the list of link menu items from the configuration.
- * @returns An array of menu item objects for the links submenu.
- */
-/**
- * Builds the list of link menu items from the configuration.
- * @param config The validated configuration.
- * @param handlers Handlers for navigation.
- * @returns An array of menu item objects for the links submenu.
- */
-export function getLinkMenuItems(
-	config: ValidatedConfig | null,
-	handlers: LinkMenuHandlers
-): MenuTemplate {
-	if (!config) { return []; }
-
-	const linkItems: MenuTemplate = [];
-	config.links.forEach((item: LinkConfig) => {
-		const itemUrl = item.url;
-		let isValid;
-		let validUrl: DomainUrl | undefined;
-		const hasVariables = itemUrl.match(/{[^{}]+}/g)?.length;
-		if (hasVariables) {
-			isValid = isVariableLinkValid(itemUrl);
-		} else {
-			validUrl = parseURL(itemUrl)?.toString();
-			isValid = !!validUrl;
-		}
-		linkItems.push({
-			label: `${item.external ? `🌐 ` : ``}${item.label || item.url}${isValid ? `` : ` (invalid entry: "${item.url}")`}`,
-			click: () => hasVariables ? handlers.navigateVariable(itemUrl) : handlers.navigate(validUrl, item.external),
-			enabled: isValid
-		});
-	});
-
-	return linkItems;
-}
-
-/**
- * Assembles the menu context object required for building the application menu template.
- * @param params Data required to build the context.
- * @returns The fully assembled MenuContext object.
- */
-function getMenuContext(params: MenuContextParams): MenuContext {
-	const { sessionAge, cacheSize, viewportItems, linkItems } = params;
-
-	return {
-		appName: APP_NAME,
-		isDev: $isDev,
-		testNetworkEnabled: $testNetworkEnabled,
-		sessionAge,
-		cacheSize,
-		showAbout: () => getCoreContext().showAbout(),
-		quit: _electronCore.quit,
-		startAFreshTest: () => navigationService.startAFreshTest(getCoreContext(), true),
-		copyUrl,
-		openUiDevTools: (): void => $eyasLayer?.webContents.openDevTools(),
-		navigateHome,
-		reload,
-		back,
-		forward,
-		toggleNetwork,
-		clearCache: (): void => { getCoreContext().clearCache(); },
-		openCacheFolder,
-		refreshMenu: setMenu,
-		viewportItems,
-		linkItems,
-		updateStatus: (getCoreContext().updateService.getStatus() as `idle` | `downloading` | `downloaded`) || `idle`,
-		onCheckForUpdates: () => getCoreContext().updateService.checkForUpdates(),
-		onInstallUpdate: () => getCoreContext().updateService.installUpdate(),
-		testServerActive: !!testServer.getTestServerState(),
-		testServerRemainingTime: getTestServerRemainingTime(),
-		onStartTestServer: startTestServerHandler,
-		onStopTestServer: stopTestServer,
-		onCopyTestServerUrl: copyTestServerUrlHandler,
-		onOpenTestServerInBrowser: openTestServerInBrowserHandler,
-		testServerHttpsEnabled: $testServerHttpsEnabled,
-		onToggleTestServerHttps: () => getCoreContext().onToggleTestServerHttps(),
-		toggleTestDevTools: (): void => { $appWindow?.webContents.toggleDevTools(); },
-		isInitializing: $isInitializing,
-		isConfigLoaded: !!$config?.meta?.isConfigLoaded,
-		isEnvironmentPending: $isEnvironmentPending,
-		onOpenSettings,
-		onShowWhatsNew: (): void => getCoreContext().uiEvent(`show-whats-new`, true)
-	};
-}
-
-/**
- * Calculates the remaining time for the test server session.
- * @returns A formatted duration string.
- */
-export function getTestServerRemainingTime(): FormattedDuration {
-	return testServerService.getRemainingTime();
-}
-
-/**
- * Copies the current app window URL to the clipboard.
- */
-function copyUrl(): void {
-	if ($isInitializing || !$appWindow) return;
-	clipboard.writeText($appWindow.webContents.getURL());
-}
-
-/**
- * Navigates to the test home path.
- */
-function navigateHome(): void {
-	if ($isInitializing) return;
-	navigationService.navigate(getCoreContext());
-}
-
-/**
- * Reloads the app window ignoring cache.
- */
-function reload(): void {
-	if ($isInitializing || !$appWindow) return;
-	$appWindow.webContents.reloadIgnoringCache();
-}
-
-/**
- * Navigates back in the app window history.
- */
-function back(): void {
-	if ($isInitializing || !$appWindow) return;
-	$appWindow.webContents.goBack();
-}
-
-/**
- * Navigates forward in the app window history.
- */
-function forward(): void {
-	if ($isInitializing || !$appWindow) return;
-	$appWindow.webContents.goForward();
-}
-
-/**
- * Toggles the network enabled state and refreshes the menu.
- */
-function toggleNetwork(): void {
-	if ($isInitializing) return;
-	$testNetworkEnabled = !$testNetworkEnabled;
-	setMenu();
-}
-
-/**
- * Opens the storage path for the current session.
- */
-function openCacheFolder(): void {
-	if (!$appWindow) { return; }
-	const storagePath = $appWindow.webContents.session.getStoragePath();
-	if (storagePath) {
-		shell.openPath(storagePath);
-	}
-}
 
 
 
@@ -825,31 +617,7 @@ function onOpenSettings(): void {
 
 // Set up the application menu
 async function setMenu(): Promise<void> {
-	if (!$appWindow || !$config) { return; }
-
-	const sessionAge = getCoreContext().getSessionAge();
-	let cacheSize = 0;
-	try {
-		cacheSize = await $appWindow.webContents.session.getCacheSize();
-	} catch {
-		// ignore
-	}
-
-	const viewportItems = getViewportMenuItems($appWindow, $allViewports, $currentViewport);
-	const linkItems = getLinkMenuItems($config, {
-		navigate: (path?: DomainUrl, openInBrowser?: IsActive) => navigationService.navigate(getCoreContext(), path, openInBrowser),
-		navigateVariable: (url: DomainUrl) => navigationService.navigateVariable(getCoreContext(), url)
-	});
-
-	const context = getMenuContext({
-		sessionAge,
-		cacheSize,
-		viewportItems,
-		linkItems
-	});
-
-	const template = buildMenuTemplate(context);
-	Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+	await menuService.refresh(getCoreContext());
 }
 
 

@@ -4,6 +4,7 @@ import type { TestServerOptions } from './test-server.js';
 import type { IsActive, IsPending, DomainUrl, MPEventName, ChannelName, TimestampMS, AppVersion, EnvironmentKey, AppTitle, FormattedDuration, RetryCount, UpdateStatus } from './primitives.js';
 import type { PreventableEvent, Viewport, ViewportSize, StartupModal } from './core.js';
 import type { FilePath } from './primitives.js';
+import type { MenuTemplate, LinkMenuHandlers, MenuContextParams, MenuContext } from './menu.js';
 
 /** Paths used by the Eyas core orchestrator */
 export type EyasPaths = {
@@ -84,6 +85,7 @@ export type CoreContext = {
 
 	// Services
 	updateService: UpdateService;
+	menuService: MenuService;
 };
 
 /** Update Service interface */
@@ -93,6 +95,17 @@ export type UpdateService = {
 	installUpdate: () => void;
 	getStatus: () => UpdateStatus;
 	reset: () => void;
+};
+
+/** Menu Service interface */
+export type MenuService = {
+	refresh: (ctx: CoreContext) => Promise<void>;
+	getViewportMenuItems: (ctx: CoreContext) => MenuTemplate;
+	getLinkMenuItems: (config: ValidatedConfig | null, handlers: LinkMenuHandlers) => MenuTemplate;
+	getContext: (ctx: CoreContext, params: MenuContextParams) => MenuContext;
+	getAppHandlers: (ctx: CoreContext) => Partial<MenuContext>;
+	getNavigationHandlers: (ctx: CoreContext) => Partial<MenuContext>;
+	getTestServerHandlers: (ctx: CoreContext) => Partial<MenuContext>;
 };
 
 /** UI Service interface */
