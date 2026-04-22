@@ -22,93 +22,80 @@
 	</ModalBackground>
 </template>
 
-<script>
-import ModalStore from '@/stores/modals';
+<script setup lang="ts">
+import { ref, computed, watch, onMounted } from 'vue';
+import ModalStore from '@/stores/modals.js';
 import ModalBackground from '@/components/ModalBackground.vue';
+import type { ModalWrapperProps, ModalWrapperEmits } from '@/../../../types/components.js';
+import type { ModalId, ChannelName, IsVisible, ViewportWidth } from '@/../../../types/primitives.js';
 
-export default {
-	components: {
-		ModalBackground
-	},
+const props = withDefaults(defineProps<ModalWrapperProps>(), {
+	type: `modal`,
+	minWidth: undefined
+});
 
-	props: {
-		modelValue: Boolean,
-		type: {
-			type: String,
-			default: `modal`,
-			validator: value => [`modal`, `dialog`].includes(value)
-		},
-		minWidth: {
-			type: [Number, String],
-			default: undefined
-		}
-	},
+const emit = defineEmits<ModalWrapperEmits>();
 
-	data() {
-		return {
-			id: window.crypto.randomUUID(), // generate a unique ID for this modal
-			dialogWidth: `auto`
-		};
-	},
+const id = ref<ModalId>(window.crypto.randomUUID() as ModalId);
+const dialogWidth = ref<ViewportWidth | `auto`>(`auto`);
 
-	computed: {
-		backgroundContentVisible() {
-			return ModalStore().lastOpenedById === this.id;
-		},
-		calculatedMinWidth() {
-			if (this.minWidth !== undefined) {
-				return this.minWidth;
-			}
-			return this.type === `modal` ? 500 : undefined;
-		}
-	},
+const backgroundContentVisible = computed((): IsVisible => {
+	return ModalStore().lastOpenedById === id.value;
+});
 
-	watch: {
-		modelValue: {
-			immediate: true, // must be immediate to track the initial state AND when the modal is closed
-			handler: `trackModalState`
-		}
-	},
+const calculatedMinWidth = computed((): ViewportWidth | undefined => {
+	if (props.minWidth !== undefined) {
+		return Number(props.minWidth) as ViewportWidth;
+	}
+	return props.type === `modal` ? 500 as ViewportWidth : undefined;
+});
 
-	mounted() {
-		// listen for global events to close all the modals
-		window.eyas?.receive(`close-modals`, () => {
-			// tell the parent to update the model value
-			this.$emit(`update:modelValue`, false);
-		});
-	},
-
-	methods: {
-		trackModalState(isTrue) {
-			if (isTrue) {
-				// reset width to the initial auto state so it can calculate the new initial width
-				this.dialogWidth = `auto`;
-				// track this modal as the last opened modal
-				ModalStore().track(this.id);
-			} else {
-				// remove the modal from the store
-				ModalStore().untrack(this.id);
-			}
-		},
-
-		hideUi() {
-			// hide the UI if there are no other dialogs open
-			if (document.querySelectorAll('.v-dialog').length <= 1) {
-				window.eyas?.send('hide-ui');
-			}
-		},
-
-		pinDialogWidth() {
-			// Find the currently active modal's card natively
-			const activeModalContent = document.querySelector(`[data-modal-id="${this.id}"] .v-card`);
-
-			if (activeModalContent) {
-				// set the width of the dialog + 1 to round up and prevent content jumping
-				this.dialogWidth = activeModalContent.offsetWidth + 1;
-			}
-		}
+const trackModalState = (isTrue: IsVisible): void => {
+	if (isTrue) {
+		// reset width to the initial auto state so it can calculate the new initial width
+		dialogWidth.value = `auto`;
+		// track this modal as the last opened modal
+		ModalStore().track(id.value);
+	} else {
+		// remove the modal from the store
+		ModalStore().untrack(id.value);
 	}
 };
+
+watch(() => props.modelValue, newValue => {
+	trackModalState(newValue);
+}, { immediate: true });
+
+const hideUi = (): void => {
+	// hide the UI if there are no other dialogs open
+	if (document.querySelectorAll(`.v-dialog`).length <= 1) {
+		window.eyas?.send(`hide-ui` as ChannelName);
+	}
+};
+
+const pinDialogWidth = (): void => {
+	// Find the currently active modal's card natively
+	const activeModalContent = document.querySelector(`[data-modal-id="${id.value}"] .v-card`) as HTMLElement;
+
+	if (activeModalContent) {
+		// set the width of the dialog + 1 to round up and prevent content jumping
+		dialogWidth.value = activeModalContent.offsetWidth + 1;
+	}
+};
+
+onMounted(() => {
+	// listen for global events to close all the modals
+	window.eyas?.receive(`close-modals` as ChannelName, () => {
+		// tell the parent to update the model value
+		emit(`update:modelValue`, false);
+	});
+});
+
+defineExpose({
+	pinDialogWidth,
+	dialogWidth,
+	calculatedMinWidth
+});
 </script>
 
 <style scoped>

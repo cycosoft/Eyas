@@ -1,5 +1,11 @@
 [
 	{
+		"version": "26.5.0",
+		"items": [
+			{ "text": "🟣 Code modernization" }
+		]
+	},
+	{
 		"version": "26.4.15352",
 		"items": [
 			{ "text": "🟢 Add a toggle for dark mode that defaults to light mode" },

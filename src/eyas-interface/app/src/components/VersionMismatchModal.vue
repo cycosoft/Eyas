@@ -2,7 +2,9 @@
 	<ModalWrapper v-model="visible" type="dialog">
 		<v-card class="pa-3">
 			<v-card-text>
-				<p class="font-weight-black text-center text-title-large mb-10">⚠️ Possible Update Available ⚠️</p>
+				<p class="font-weight-black text-center text-title-large mb-10">
+					⚠️ Possible Update Available ⚠️
+				</p>
 
 				<v-sheet>
 					<v-row class="mt-8 px-14">
@@ -13,7 +15,9 @@
 							<v-btn
 								color="primary"
 								@click="checkForUpdate"
-							>Check For Update</v-btn>
+							>
+								Check For Update
+							</v-btn>
 						</v-col>
 					</v-row>
 				</v-sheet>
@@ -28,40 +32,42 @@
 				<v-btn
 					color="primary"
 					@click="visible = false"
-				>Later</v-btn>
+				>
+					Later
+				</v-btn>
 			</v-card-actions>
 		</v-card>
 	</ModalWrapper>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
 import ModalWrapper from '@/components/ModalWrapper.vue';
+import type { IsVisible, AppVersion, ChannelName, DomainUrl } from '@/../../../types/primitives.js';
+import type { VersionMismatchData } from '@/../../../types/components.js';
 
-export default {
-	components: {
-		ModalWrapper
-	},
+const visible = ref<IsVisible>(false);
+const runnerVersion = ref<AppVersion | null>(null);
+const testVersion = ref<AppVersion | null>(null);
 
-	data: () => ({
-		visible: false,
-		runnerVersion: null,
-		testVersion: null
-	}),
+onMounted(() => {
+	window.eyas?.receive(`show-version-mismatch-modal` as ChannelName, data => {
+		const { runnerVersion: runner, testVersion: test } = (data || {}) as VersionMismatchData;
+		runnerVersion.value = runner || null;
+		testVersion.value = test || null;
+		visible.value = true;
+	});
+});
 
-	mounted() {
-		// Listen for messages from the main process
-		window.eyas?.receive(`show-version-mismatch-modal`, (runnerVersion, testVersion) => {
-			this.runnerVersion = runnerVersion;
-			this.testVersion = testVersion;
-			this.visible = true;
-		});
-	},
+defineExpose({
+	visible,
+	runnerVersion,
+	testVersion,
+	checkForUpdate
+});
 
-	methods: {
-		checkForUpdate() {
-			const url = `https://github.com/cycosoft/Eyas/releases`;
-			window.eyas?.send(`launch-link`, { url, openInBrowser: true });
-		}
-	}
+
+function checkForUpdate(): void {
+	window.eyas?.send(`open-external` as ChannelName, `https://github.com/cycosoft/eyas/releases` as DomainUrl);
 }
 </script>

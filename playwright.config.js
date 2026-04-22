@@ -1,10 +1,10 @@
 /* global process */
 
-const { defineConfig } = require(`@playwright/test`);
+import { defineConfig } from '@playwright/test';
 
-module.exports = defineConfig({
+export default defineConfig({
 	testDir: `./tests/e2e`,
-	globalSetup: require.resolve(`./tests/e2e/global-setup.js`),
+	globalSetup: `./tests/e2e/global-setup.mjs`,
 	timeout: 30000,
 	expect: {
 		timeout: 10000

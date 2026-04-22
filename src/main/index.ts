@@ -1,1 +1,1 @@
-import '../eyas-core/index.js';
+import '@core/index.js';

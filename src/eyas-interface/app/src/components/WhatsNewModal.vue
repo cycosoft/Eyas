@@ -45,7 +45,9 @@
 								<template v-for="(token, i) in tokenize(entry.notes)" :key="i">
 									<code v-if="token.type === `code`" class="mx-1 px-1 rounded bg-grey-lighten-4 text-primary">{{ token.content }}</code>
 									<a v-else-if="token.type === `link`" :href="token.url" target="_blank" rel="noopener noreferrer">{{ token.content }}</a>
-									<template v-else>{{ token.content }}</template>
+									<template v-else>
+										{{ token.content }}
+									</template>
 								</template>
 							</div>
 
@@ -66,7 +68,7 @@
 											<template v-else>{{ token.content }}</template>
 										</template>
 									</span>
-									
+
 									<!-- Sub-items -->
 									<component
 										:is="item.subItemsType === 'ordered' ? 'ol' : 'ul'"
@@ -80,7 +82,9 @@
 											<template v-for="(token, i) in tokenize(sub)" :key="i">
 												<code v-if="token.type === `code`" class="mx-1 px-1 rounded bg-grey-lighten-4 text-primary">{{ token.content }}</code>
 												<a v-else-if="token.type === `link`" :href="token.url" target="_blank" rel="noopener noreferrer">{{ token.content }}</a>
-												<template v-else>{{ token.content }}</template>
+												<template v-else>
+													{{ token.content }}
+												</template>
 											</template>
 										</li>
 									</component>
@@ -107,96 +111,76 @@
 	</ModalWrapper>
 </template>
 
-<script>
+<script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import useSettingsStore from '@/stores/settings';
+import useSettingsStore from '@/stores/settings.js';
 import ModalWrapper from '@/components/ModalWrapper.vue';
-import { getAggregatedChanges, tokenizeMarkdownSubset } from '@/utils/changelog-utils';
-import changelogData from '../CHANGELOG.json';
+import { getAggregatedChanges, tokenizeMarkdownSubset } from '@/utils/changelog-utils.js';
+import changelogData from '@/CHANGELOG.json';
+import type { IsVisible, AppVersion, ChannelName, LabelString, SettingKey, IsActive } from '@registry/primitives.js';
+import type { ChangelogEntry, MarkdownToken } from '@/types/changelog.js';
 
-export default {
-	components: {
-		ModalWrapper
-	},
+type WhatsNewMode = `launch` | `manual`;
 
-	setup() {
-		const settingsStore = useSettingsStore();
-		const isVisible = ref(false);
-		const changelog = ref([]);
-		const expandedPanels = ref([]);
-		const mode = ref(`launch`); // `launch` or `manual`
+const settingsStore = useSettingsStore();
+const isVisible = ref<IsVisible>(false);
+const changelog = ref<ChangelogEntry[]>([]);
+const expandedPanels = ref<AppVersion[]>([]);
+const mode = ref<WhatsNewMode>(`launch`); // `launch` or `manual`
 
-		const currentVersion = computed(() => changelogData[0]?.version);
-		const lastSeenVersion = computed(() => settingsStore.appSettings.lastSeenVersion || `0.0.0`);
+const currentVersion = computed<AppVersion>(() => (changelogData as ChangelogEntry[])[0]?.version);
+const lastSeenVersion = computed<AppVersion>(() => settingsStore.appSettings.lastSeenVersion || `0.0.0`);
+const title = computed<LabelString>(() => mode.value === `manual` ? `Changelog` : `What's New`);
 
-		const title = computed(() => mode.value === `manual` ? `Changelog` : `What's New`);
+const tokenize = (text: LabelString): MarkdownToken[] => tokenizeMarkdownSubset(text);
 
-		const fetchChangelog = async () => {
-			changelog.value = changelogData;
-		};
-
-		const showFromMain = async () => {
-			await fetchChangelog();
-			
-			const unseen = getAggregatedChanges(changelog.value, lastSeenVersion.value, currentVersion.value);
-			
-			if (unseen.length > 0) {
-				mode.value = `launch`;
-				expandedPanels.value = unseen.map(u => u.version);
-				isVisible.value = true;
-			} else {
-				// if there are no new changes to show, notify the main process to continue
-				window.eyas?.send(`whats-new-closed`);
-			}
-		};
-
-		const showManual = async () => {
-			await fetchChangelog();
-			mode.value = `manual`;
-			// Only expand the latest version
-			if (changelog.value.length > 0) {
-				expandedPanels.value = [changelog.value[0].version];
-			}
-			isVisible.value = true;
-		};
-
-		const close = () => {
-			isVisible.value = false;
-			// Update last seen version if we are in launch mode or if we manually viewed the latest
-			if (currentVersion.value !== lastSeenVersion.value) {
-				window.eyas?.send(`save-setting`, {
-					key: `lastSeenVersion`,
-					value: currentVersion.value
-				});
-			}
-
-			// notify the main process that the modal is closed so it can release the next modal
-			window.eyas?.send(`whats-new-closed`);
-		};
-
-		onMounted(() => {
-			// Listen for trigger from main process (manual or launch)
-			window.eyas?.receive(`show-whats-new`, (isManual) => {
-				if (isManual) {
-					showManual();
-				} else {
-					showFromMain();
-				}
-			});
-		});
-
-		return {
-			isVisible,
-			changelog,
-			expandedPanels,
-			currentVersion,
-			tokenize: tokenizeMarkdownSubset,
-			close,
-			mode,
-			title
-		};
+const showFromMain = async (): Promise<void> => {
+	changelog.value = changelogData as ChangelogEntry[];
+	const unseen = getAggregatedChanges(changelog.value, lastSeenVersion.value, currentVersion.value);
+	if (unseen.length > 0) {
+		mode.value = `launch`;
+		expandedPanels.value = unseen.map(u => u.version);
+		isVisible.value = true;
+	} else {
+		window.eyas?.send(`whats-new-closed` as ChannelName);
 	}
 };
+
+const showManual = async (): Promise<void> => {
+	changelog.value = changelogData as ChangelogEntry[];
+	mode.value = `manual`;
+	if (changelog.value.length > 0) {
+		expandedPanels.value = [changelog.value[0].version];
+	}
+	isVisible.value = true;
+};
+
+const close = (): void => {
+	isVisible.value = false;
+	if (currentVersion.value !== lastSeenVersion.value) {
+		window.eyas?.send(`save-setting` as ChannelName, { key: `lastSeenVersion` as SettingKey, value: currentVersion.value });
+	}
+	window.eyas?.send(`whats-new-closed` as ChannelName);
+};
+
+onMounted(() => {
+	window.eyas?.receive(`show-whats-new` as ChannelName, (isManual: IsActive) => {
+		if (isManual) { showManual(); } else { showFromMain(); }
+	});
+});
+
+defineExpose({
+	isVisible,
+	changelog,
+	expandedPanels,
+	mode,
+	currentVersion,
+	lastSeenVersion,
+	title,
+	showFromMain,
+	showManual,
+	close
+});
 </script>
 
 <style scoped>

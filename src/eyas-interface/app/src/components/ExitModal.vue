@@ -32,33 +32,25 @@
 	</ModalWrapper>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
 import ModalWrapper from '@/components/ModalWrapper.vue';
+import type { ChannelName, IsVisible, IsPending } from '@/../../../types/primitives.js';
 
-export default {
-	components: {
-		ModalWrapper
-	},
+const visible = ref<IsVisible>(false);
+const exiting = ref<IsPending>(false);
 
-	data: () => ({
-		visible: false,
-		exiting: false
-	}),
-
-	mounted() {
-		// Listen for messages from the main process
-		window.eyas?.receive(`modal-exit-visible`, value => this.visible = value);
-	},
-
-	methods: {
-		exit() {
-			this.exiting = true;
-			window.eyas?.send(`app-exit`);
-		},
-
-		cancel() {
-			this.visible = false;
-		}
-	}
+const exit = (): void => {
+	exiting.value = true;
+	window.eyas?.send(`app-exit` as ChannelName);
 };
+
+const cancel = (): void => {
+	visible.value = false;
+};
+
+onMounted(() => {
+	// Listen for messages from the main process
+	window.eyas?.receive(`modal-exit-visible` as ChannelName, (value: IsVisible) => visible.value = value);
+});
 </script>

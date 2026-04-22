@@ -23,8 +23,12 @@
 					class="mb-4"
 					data-qa="test-server-expired-alert"
 				>
-					<p class="mb-0"><strong>Session Expired</strong></p>
-					<p class="mb-0 text-body-medium">This session timed out after {{ duration }}.</p>
+					<p class="mb-0">
+						<strong>Session Expired</strong>
+					</p>
+					<p class="mb-0 text-body-medium">
+						This session timed out after {{ duration }}.
+					</p>
 				</v-alert>
 
 				<!-- Active Status Hint -->
@@ -34,22 +38,28 @@
 					variant="tonal"
 					class="mb-4"
 				>
-					<p class="mb-0"><strong>Session Active</strong></p>
-					<p class="mb-0 text-body-medium">Session expires at {{ formattedEndTime }}</p>
+					<p class="mb-0">
+						<strong>Session Active</strong>
+					</p>
+					<p class="mb-0 text-body-medium">
+						Session expires at {{ formattedEndTime }}
+					</p>
 				</v-alert>
 
 				<v-list density="compact">
 					<!-- Server Address -->
 					<v-list-item>
-						<template v-slot:prepend>
+						<template #prepend>
 							<v-icon>mdi-earth</v-icon>
 						</template>
-						<v-list-item-title class="font-weight-bold">{{ isExpired ? 'Last session served at' : 'Test served at' }}</v-list-item-title>
+						<v-list-item-title class="font-weight-bold">
+							{{ isExpired ? 'Last session served at' : 'Test served at' }}
+						</v-list-item-title>
 						<v-list-item-subtitle>{{ displayUrl }}</v-list-item-subtitle>
-						<template v-slot:append>
+						<template #append>
 							<div class="d-flex ga-1">
 								<v-tooltip location="top" :text="tooltipText">
-									<template v-slot:activator="{ props }">
+									<template #activator="{ props }">
 										<v-btn
 											v-bind="props"
 											variant="text"
@@ -64,7 +74,7 @@
 								</v-tooltip>
 
 								<v-tooltip location="top" text="Open in Browser">
-									<template v-slot:activator="{ props }">
+									<template #activator="{ props }">
 										<v-btn
 											v-bind="props"
 											id="btn-open-in-browser"
@@ -84,10 +94,12 @@
 
 					<!-- Session Started -->
 					<v-list-item v-if="startTime">
-						<template v-slot:prepend>
+						<template #prepend>
 							<v-icon>mdi-clock-outline</v-icon>
 						</template>
-						<v-list-item-title class="font-weight-bold">{{ isExpired ? 'Last session started at' : 'Session started at' }}</v-list-item-title>
+						<v-list-item-title class="font-weight-bold">
+							{{ isExpired ? 'Last session started at' : 'Session started at' }}
+						</v-list-item-title>
 						<v-list-item-subtitle>{{ formattedStartTime }}</v-list-item-subtitle>
 					</v-list-item>
 				</v-list>
@@ -118,164 +130,133 @@
 	</ModalWrapper>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
 import ModalWrapper from '@/components/ModalWrapper.vue';
-import { TEST_SERVER_SESSION_DURATION_MS } from '@/../../../scripts/constants.js';
+import type { IsVisible, DomainUrl, Timestamp, IconName, DurationString, TimerId, ChannelName, LabelString, TimeString, IsActive } from '@/../../../types/primitives.js';
+import type { ModalWrapperVM } from '@/../../../types/components.js';
+import { formatDisplayUrl, formatTimestamp, calculateCountdownText, getExtensionLabel, checkCanExtend } from './TestServerActiveModal.utils.js';
 
-const defaults = {
-	visible: false,
-	domain: '',
-	startTime: null,
-	endTime: null,
-	copyIcon: 'mdi-content-copy',
-	isExpired: false,
-	duration: ''
-};
+// State
+const visible = ref<IsVisible>(false);
+const domain = ref<DomainUrl>(``);
+const startTime = ref<Timestamp | null>(null);
+const endTime = ref<Timestamp | null>(null);
+const copyIcon = ref<IconName>(`mdi-content-copy`);
+const isExpired = ref<IsActive>(false);
+const duration = ref<DurationString>(``);
+const now = ref<Timestamp>(Date.now());
+const timerInterval = ref<TimerId | null>(null);
+const modal = ref<ModalWrapperVM | null>(null);
 
-export default {
-	components: {
-		ModalWrapper
-	},
+// Watchers
+watch(isExpired, () => {
+	nextTick(() => {
+		modal.value?.pinDialogWidth();
+	});
+});
 
-	data: () => ({ ...defaults, now: Date.now(), timerInterval: null }),
+// Computed
+const tooltipText = computed<LabelString>(() => copyIcon.value === `mdi-check` ? `Copied!` : `Copy URL`);
+const formattedStartTime = computed<TimeString>(() => formatTimestamp(startTime.value));
+const formattedEndTime = computed<TimeString>(() => formatTimestamp(endTime.value));
+const countdownText = computed<TimeString>(() => calculateCountdownText(endTime.value, now.value));
+const displayUrl = computed<DomainUrl>(() => formatDisplayUrl(domain.value));
+const extensionLabel = computed<LabelString>(() => getExtensionLabel());
+const canExtend = computed<IsActive>(() => checkCanExtend(isExpired.value, endTime.value, now.value));
 
-	computed: {
-		tooltipText() {
-			return this.copyIcon === 'mdi-check' ? 'Copied!' : 'Copy URL';
-		},
-		formattedStartTime() {
-			if (!this.startTime) return '';
-			return new Date(this.startTime).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase();
-		},
-		formattedEndTime() {
-			if (!this.endTime) return '';
-			return new Date(this.endTime).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase();
-		},
-		countdownText() {
-			if (!this.endTime) return '';
-			const diff = Math.max(0, this.endTime - this.now);
-			const mins = Math.floor(diff / 60000);
-			const secs = Math.floor((diff % 60000) / 1000);
-			return `${mins}m${secs}s`;
-		},
-		displayUrl() {
-			if (!this.domain) return '';
-			try {
-				const url = new URL(this.domain);
-				// Hide port 90, 80 (http), 443 (https)
-				const isHttp = url.protocol === 'http:';
-				const isHttps = url.protocol === 'https:';
-				const hidePorts = ['90'];
-				if (isHttp && url.port === '80') hidePorts.push('80');
-				if (isHttps && url.port === '443') hidePorts.push('443');
-
-				// If port is empty string (because it's default for protocol),
-				// or if it's in our hidePorts list, we hide it.
-				// Note: new URL('http://localhost:80').port is '80'
-				// new URL('http://localhost').port is ''
-				if (hidePorts.includes(url.port) || url.port === '') {
-					return `${url.protocol}//${url.hostname}${url.pathname === '/' ? '' : url.pathname}`;
-				}
-				return this.domain;
-			} catch (e) {
-				return this.domain;
-			}
-		},
-		extensionLabel() {
-			const seconds = TEST_SERVER_SESSION_DURATION_MS / 1000;
-			if (seconds >= 60 && seconds % 60 === 0) {
-				return `${seconds / 60}m`;
-			}
-			return `${seconds}s`;
-		},
-		canExtend() {
-			if (this.isExpired) return true;
-			if (!this.endTime) return false;
-			return (this.endTime - this.now) < TEST_SERVER_SESSION_DURATION_MS;
-		}
-	},
-
-	watch: {
-		isExpired() {
-			this.$nextTick(() => {
-				this.$refs.modal?.pinDialogWidth();
-			});
-		}
-	},
-
-	mounted() {
-		window.eyas?.receive(`show-test-server-active-modal`, (payload) => {
-			this.domain = payload.domain || '';
-			this.startTime = payload.startTime || null;
-			this.endTime = payload.endTime || null;
-			this.isExpired = false;
-			this.visible = true;
-
-			this.now = Date.now();
-			if (this.endTime) {
-				this.startTimer();
-			}
-		});
-
-		window.eyas?.receive(`show-test-server-resume-modal`, (duration) => {
-			this.duration = duration || `the session limit`;
-			this.isExpired = true;
-			this.visible = true;
-			this.stopTimer();
-		});
-	},
-
-	beforeUnmount() {
-		this.stopTimer();
-	},
-
-	methods: {
-		startTimer() {
-			this.stopTimer();
-			this.timerInterval = setInterval(() => {
-				this.now = Date.now();
-				if (this.now >= this.endTime) {
-					this.stopTimer();
-				}
-			}, 1000);
-		},
-
-		stopTimer() {
-			if (this.timerInterval) {
-				clearInterval(this.timerInterval);
-				this.timerInterval = null;
-			}
-		},
-
-		copyDomain() {
-			navigator.clipboard.writeText(this.domain);
-			this.copyIcon = 'mdi-check';
-			setTimeout(() => {
-				this.copyIcon = 'mdi-content-copy';
-			}, 2000);
-		},
-
-		stopServer() {
-			window.eyas?.send(`test-server-stop`);
-			this.close();
-		},
-
-		openInBrowser() {
-			window.eyas?.send(`test-server-open-browser`, this.domain);
-		},
-
-		extendSession() {
-			window.eyas?.send(`test-server-extend`);
-		},
-
-		close() {
-			this.stopTimer();
-			this.visible = false;
-			Object.assign(this.$data, defaults);
-		}
+// Methods
+const stopTimer = (): void => {
+	if (timerInterval.value) {
+		clearInterval(timerInterval.value);
+		timerInterval.value = null;
 	}
 };
+
+const startTimer = (): void => {
+	stopTimer();
+	timerInterval.value = setInterval(() => {
+		now.value = Date.now();
+		if (now.value >= (endTime.value || 0)) {
+			stopTimer();
+		}
+	}, 1000);
+};
+
+const copyDomain = (): void => {
+	navigator.clipboard.writeText(domain.value);
+	copyIcon.value = `mdi-check`;
+	setTimeout(() => {
+		copyIcon.value = `mdi-content-copy`;
+	}, 2000);
+};
+
+const close = (): void => {
+	stopTimer();
+	visible.value = false;
+	// Reset state
+	domain.value = ``;
+	startTime.value = null;
+	endTime.value = null;
+	copyIcon.value = `mdi-content-copy`;
+	isExpired.value = false;
+	duration.value = ``;
+};
+
+const stopServer = (): void => {
+	window.eyas?.send(`test-server-stop` as ChannelName);
+	close();
+};
+
+const openInBrowser = (): void => {
+	window.eyas?.send(`test-server-open-browser` as ChannelName, domain.value);
+};
+
+const extendSession = (): void => {
+	window.eyas?.send(`test-server-extend` as ChannelName);
+};
+
+// Lifecycle & Listeners
+onMounted(() => {
+	window.eyas?.receive(`show-test-server-active-modal` as ChannelName, payload => {
+		domain.value = payload.domain || ``;
+		startTime.value = payload.startTime || null;
+		endTime.value = payload.endTime || null;
+		isExpired.value = false;
+		visible.value = true;
+
+		now.value = Date.now();
+		if (endTime.value) {
+			startTimer();
+		}
+	});
+
+	window.eyas?.receive(`show-test-server-resume-modal` as ChannelName, payloadDuration => {
+		duration.value = payloadDuration || `the session limit`;
+		isExpired.value = true;
+		visible.value = true;
+		stopTimer();
+	});
+});
+
+onBeforeUnmount(() => {
+	stopTimer();
+});
+
+// Expose for tests (VM Integrity)
+defineExpose({
+	visible,
+	domain,
+	isExpired,
+	displayUrl,
+	extensionLabel,
+	copyIcon,
+	openInBrowser,
+	stopServer,
+	copyDomain
+});
 </script>
+
 
 <style scoped>
 </style>

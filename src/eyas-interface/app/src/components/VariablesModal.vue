@@ -5,7 +5,9 @@
 	>
 		<v-card class="pa-3 variables-modal-content">
 			<v-card-text class="pb-0">
-				<p class="font-weight-black text-center text-title-large">Link Requires Additional Information</p>
+				<p class="font-weight-black text-center text-title-large">
+					Link Requires Additional Information
+				</p>
 
 				<v-sheet v-if="link" class="my-10">
 					<v-row
@@ -29,8 +31,8 @@
 							:label="getFieldLabel(`Select value`, variable.field)"
 						>
 							<v-radio
-								v-for="(option, index) in [`false`, `true`]"
-								:key="index"
+								v-for="(option, optIndex) in [`false`, `true`]"
+								:key="optIndex"
 								:value="option"
 								:label="option"
 								class="text-capitalize"
@@ -56,15 +58,21 @@
 
 					<!-- display the link being updated -->
 					<v-row class="pt-2">
-						<v-icon v-if="linkIsValid" class="mr-2" color="success">mdi-check-circle-outline</v-icon>
-						<v-icon v-else class="mr-2" color="error">mdi-alert-rhombus-outline</v-icon>
+						<v-icon v-if="linkIsValid" class="mr-2" color="success">
+							mdi-check-circle-outline
+						</v-icon>
+						<v-icon v-else class="mr-2" color="error">
+							mdi-alert-rhombus-outline
+						</v-icon>
 						<small class="parsed-link">{{ parsedLink }}</small>
 					</v-row>
 				</v-sheet>
 
 				<!-- Error for missing link data state -->
 				<v-sheet v-else class="mt-10 mb-4 text-center">
-					<v-icon class="mr-2" color="error">mdi-alert-rhombus-outline</v-icon>
+					<v-icon class="mr-2" color="error">
+						mdi-alert-rhombus-outline
+					</v-icon>
 					<small>No link received</small>
 				</v-sheet>
 			</v-card-text>
@@ -89,137 +97,149 @@
 	</ModalWrapper>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue';
 import ModalWrapper from '@/components/ModalWrapper.vue';
 import isURL from 'validator/lib/isURL';
+import type { IsVisible, DomainUrl, LabelString, ChannelName, VariableValue, VariableType, FieldName, IsActive } from '@/../../../types/primitives.js';
 
-const REGEX_VARIABLES_AND_FIELDS = /([\?|&](\w*)=)?{([^{}]+)}/g;
+const REGEX_VARIABLES_AND_FIELDS = /([?|&](\w*)=)?{([^{}]+)}/g;
 const REGEX_VARIABLES_ONLY = /{([^{}]+)}/g;
 
-const componentDefaults = JSON.stringify({
-	visible: false,
-	link: ``, //`https://{dev.|staging.|}cycosoft.com?id={int}&message={str}&enabled={bool}`,
-	form: []
+type VariableOption = {
+	value: VariableValue;
+	title: LabelString;
+}
+
+type VariableDescriptor = {
+	type: VariableType;
+	field?: FieldName;
+	options?: VariableOption[];
+}
+
+const visible = ref<IsVisible>(false);
+const link = ref<DomainUrl>(``);
+const form = ref<VariableValue[]>([]);
+
+const parsedLink = computed((): LabelString => {
+	// copy for manipulation
+	const output = link.value;
+	const formData = [...form.value];
+
+	// replace all variables with form data
+	return output?.replace(REGEX_VARIABLES_ONLY, originalMatch => {
+		const value = formData.shift();
+		return value || value === `` ? encodeURIComponent(value) : originalMatch;
+	}) as LabelString;
 });
 
-export default {
-	components: {
-		ModalWrapper
-	},
+const linkIsValid = computed((): IsActive => {
+	// setup
+	let hasVariables = false;
 
-	data: () => ({
-		...JSON.parse(componentDefaults)
-	}),
+	// exit if no link
+	if (!parsedLink.value) { return false; }
 
-	computed: {
-		parsedLink () {
-			// copy for manipulation
-			let output = this.link;
-			const form = [...this.form];
-
-			// replace all variables with form data
-			return output?.replace(REGEX_VARIABLES_ONLY, originalMatch => {
-				const value = form.shift();
-				return value || value === '' ? encodeURIComponent(value) : originalMatch;
-			});
-		},
-
-		linkIsValid () {
-			// setup
-			let hasVariables = false;
-
-			// exit if no link
-			if (!this.parsedLink) { return false; }
-
-			// check if the link has any variables
-			const variables = this.parsedLink.matchAll(new RegExp(REGEX_VARIABLES_AND_FIELDS));
-			for (const variable of variables) {
-				hasVariables = true;
-				break;
-			}
-
-			// valid if there are no variables AND the link is a valid URL
-			return !hasVariables && isURL(this.parsedLink);
-		},
-
-		variables () {
-			// setup
-			const output = [];
-
-			// find all variables in the link
-			const variables = this.link.matchAll(new RegExp(REGEX_VARIABLES_AND_FIELDS));
-
-			// for each variable found
-			for (const variable of variables) {
-				// setup
-				const data = {};
-				const type = variable[3];
-				const isList = variable[3].includes(`|`);
-				const hasField = variable[2];
-
-				// skip Eyas-managed variables (underscore prefix = app-defined, not user-input)
-				if (type.startsWith(`_`)) { continue; }
-
-				// populate the data object
-				data.type = isList ? `list` : type;
-
-				// add the field if it exists
-				if (hasField) {
-					data.field = variable[2];
-				}
-
-				// add the options or label
-				if(isList) {
-					data.options = [];
-
-					variable[3].split(`|`).forEach(option => {
-						data.options.push({
-							value: option,
-							title: option || `{blank}`
-						});
-					});
-				}
-
-				// push the data object to the output
-				output.push(data);
-			}
-
-			return output;
-		}
-	},
-
-	mounted() {
-		// Listen for messages from the main process
-		window.eyas?.receive(`show-variables-modal`, link => {
-			this.reset();
-			this.link = link;
-			this.open();
-		});
-	},
-
-	methods: {
-		close() {
-			this.visible = false;
-		},
-
-		open() {
-			this.visible = true;
-		},
-
-		reset() {
-			Object.assign(this.$data, JSON.parse(componentDefaults));
-		},
-
-		launch() {
-			window.eyas?.send(`launch-link`, { url: this.parsedLink });
-			this.close();
-		},
-
-		getFieldLabel(prefix, field) {
-			return `${prefix}${field ? ` for "${field}" field` : ``}`;
-		}
+	// check if the link has any variables
+	const matches = parsedLink.value.matchAll(new RegExp(REGEX_VARIABLES_AND_FIELDS));
+	for (const _ of matches) {
+		hasVariables = true;
+		break;
 	}
-}
+
+	// valid if there are no variables AND the link is a valid URL
+	return !hasVariables && isURL(parsedLink.value);
+});
+
+const variables = computed((): VariableDescriptor[] => {
+	// setup
+	const output: VariableDescriptor[] = [];
+
+	// find all variables in the link
+	const matches = link.value.matchAll(new RegExp(REGEX_VARIABLES_AND_FIELDS));
+
+	// for each variable found
+	for (const match of matches) {
+		// setup
+		const data: VariableDescriptor = { type: `` as VariableType };
+		const type = match[3];
+		const isList = match[3].includes(`|`);
+		const hasField = match[2];
+
+		// skip Eyas-managed variables (underscore prefix = app-defined, not user-input)
+		if (type.startsWith(`_`)) { continue; }
+
+		// populate the data object
+		data.type = (isList ? `list` : type) as VariableType;
+
+		// add the field if it exists
+		if (hasField) {
+			data.field = match[2] as FieldName;
+		}
+
+		// add the options or label
+		if (isList) {
+			data.options = [];
+
+			match[3].split(`|`).forEach(option => {
+				data.options?.push({
+					value: option as VariableValue,
+					title: (option || `{blank}`) as LabelString
+				});
+			});
+		}
+
+		// push the data object to the output
+		output.push(data);
+	}
+
+	return output;
+});
+
+const close = (): void => {
+	visible.value = false;
+};
+
+const open = (): void => {
+	visible.value = true;
+};
+
+const reset = (): void => {
+	visible.value = false;
+	link.value = ``;
+	form.value = [];
+};
+
+const launch = (): void => {
+	window.eyas?.send(`launch-link` as ChannelName, { url: parsedLink.value });
+	close();
+};
+
+const getFieldLabel = (prefix: LabelString, field?: FieldName): LabelString => {
+	return `${prefix}${field ? ` for "${field}" field` : ``}`;
+};
+
+onMounted(() => {
+	window.eyas?.receive(`show-variables-modal` as ChannelName, (newLink: DomainUrl) => {
+		reset();
+		link.value = newLink;
+		open();
+	});
+});
+
+defineExpose({
+	visible,
+	link,
+	form,
+	parsedLink,
+	linkIsValid,
+	variables,
+	close,
+	open,
+	reset,
+	launch,
+	getFieldLabel
+});
 </script>
 
 <style>

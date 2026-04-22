@@ -16,18 +16,14 @@
 	<slot />
 </template>
 
-<script>
-export default {
-	props: {
-		modelValue: Boolean,
-		contentVisible: Boolean
-	},
+<script setup lang="ts">
+import type { ModalBackgroundProps } from '@/../../../types/components.js';
+import type { DomainUrl, ChannelName } from '@/../../../types/primitives.js';
 
-	methods: {
-		openInBrowser(url) {
-			window.eyas?.send(`launch-link`, { url, openInBrowser: true });
-		}
-	}
+defineProps<ModalBackgroundProps>();
+
+const openInBrowser = (url: DomainUrl): void => {
+	window.eyas?.send(`launch-link` as ChannelName, { url, openInBrowser: true });
 };
 </script>
 

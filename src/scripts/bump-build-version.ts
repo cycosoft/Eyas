@@ -1,0 +1,98 @@
+import fs from "fs-extra";
+import path from "path";
+import { execSync } from "child_process";
+import { getBuildVersion } from "./get-build-version.js";
+import { fileURLToPath } from "url";
+import type { AppVersion, LabelString, SourcePath } from "@registry/primitives.js";
+
+type PackageJson = {
+	version: AppVersion;
+	[key: LabelString]: unknown;
+}
+
+type ChangelogItem = {
+	text: LabelString;
+}
+
+type ChangelogEntry = {
+	version: AppVersion;
+	items?: ChangelogItem[];
+}
+
+/**
+ * Updates the version in the specified package.json and outputs tagging instructions.
+ * @param {string} [packageJsonPath] - Optional path to package.json; defaults to the one in CWD.
+ * @param {string} [changelogPath] - Optional path to changelog.json.
+ * @returns {Promise<string>} The new version.
+ */
+export async function bumpBuildVersion(
+	packageJsonPath: SourcePath = path.join(process.cwd(), `package.json`),
+	changelogPath: SourcePath = path.join(process.cwd(), `src`, `eyas-interface`, `app`, `src`, `CHANGELOG.json`)
+): Promise<AppVersion> {
+	const packageJson: PackageJson = await fs.readJson(packageJsonPath);
+
+	// Generate the new version
+	const newVersion = getBuildVersion();
+	packageJson.version = newVersion;
+
+	// Write back to package.json
+	await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
+
+	// Update CHANGELOG.json
+	if (await fs.pathExists(changelogPath)) {
+		const changelogText: LabelString = await fs.readFile(changelogPath, `utf8`);
+		const updatedText = changelogText.replace(/"version":\s*"[^"]*"/, `"version": "${newVersion}"`);
+		await fs.writeFile(changelogPath, updatedText);
+	}
+
+	// Output instructions
+	console.log(`\n✅ Version updated to: ${newVersion}`);
+
+	// Output GitHub Release format
+	if (await fs.pathExists(changelogPath)) {
+		try {
+			const changelog: ChangelogEntry[] = await fs.readJson(changelogPath);
+			const current = changelog[0];
+
+			// Determine the previous version from git tags
+			let previousVersion: AppVersion = ``;
+			try {
+				previousVersion = execSync(`git describe --tags --abbrev=0`, { encoding: `utf8` }).trim().replace(/^v/, ``);
+			} catch {
+				// Fallback to changelog if git fails
+				previousVersion = changelog[1] ? changelog[1].version : ``;
+			}
+
+			if (current && current.items) {
+				console.log(`\n--- GitHub Release Body ---`);
+				current.items.forEach(item => console.log(item.text));
+				console.log(`\nCLI: \`npm i @cycosoft/eyas@latest --save-dev\` | [NPM](https://www.npmjs.com/package/@cycosoft/eyas)`);
+				if (previousVersion) {
+					console.log(`\n**Full Changelog**: https://github.com/cycosoft/Eyas/compare/v${previousVersion}...v${newVersion}`);
+				}
+				console.log(`---------------------------\n`);
+			}
+		} catch {
+			// Fail silently
+		}
+	}
+
+	console.log(`To tag this version, run:`);
+	console.log(`git tag -a v${newVersion} -m "v${newVersion}"\n`);
+
+	return newVersion;
+}
+
+// Run if called directly
+const isMain = process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);
+if (isMain) {
+	(async (): Promise<void> => {
+		try {
+			await bumpBuildVersion();
+		} catch (err) {
+			console.error(`❌ Error updating version:`, err instanceof Error ? err.message : String(err));
+			process.exit(1);
+		}
+	})();
+}
+
