@@ -11,7 +11,8 @@
     "tests/setup/**/*",
     "electron.vite.config.ts",
     "vitest.config.interface.ts",
-    "vitest.config.electron.ts"
+    "vitest.config.electron.ts",
+    "vitest.config.demo.ts"
   ],
   "compilerOptions": {
     "composite": true,
