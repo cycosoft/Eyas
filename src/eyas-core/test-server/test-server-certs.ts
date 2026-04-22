@@ -1,11 +1,11 @@
 import selfsigned from 'selfsigned';
 import type { CertBundle, CertOptions } from '@registry/test-server.js';
-import type { DomainUrl, SettingKey } from '@registry/primitives.js';
+import type { DomainUrl, CacheKey } from '@registry/primitives.js';
 
-const certCache = new Map<string, CertBundle>();
+const certCache = new Map<CacheKey, CertBundle>();
 
-function getCacheKey(domains: DomainUrl | DomainUrl[]): SettingKey {
-	return Array.isArray(domains) ? domains.slice().sort().join(`,`) : String(domains);
+function getCacheKey(domains: DomainUrl | DomainUrl[]): CacheKey {
+	return (Array.isArray(domains) ? domains.slice().sort().join(`,`) : String(domains)) as CacheKey;
 }
 
 export async function getCerts(domains: DomainUrl | DomainUrl[], options: CertOptions = {}): Promise<CertBundle> {

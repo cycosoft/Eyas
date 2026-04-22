@@ -4,7 +4,7 @@ import { mount } from '@vue/test-utils';
 import TestServerActiveModal from '@/components/TestServerActiveModal.vue';
 import type { WindowWithEyas } from '@registry/ipc.js';
 import type { TestServerActiveModalVM } from '@registry/components.js';
-import type { ChannelName } from '@registry/primitives.js';
+import type { ChannelName, MetadataRecord } from '@registry/primitives.js';
 import { nextTick } from 'vue';
 import { TEST_SERVER_SESSION_DURATION_MS } from '@/../../../scripts/constants.js';
 
@@ -30,7 +30,7 @@ describe(`TestServerActiveModal`, () => {
 		vi.useRealTimers();
 	});
 
-	async function setup(payload: Record<string, unknown> | null = null): Promise<void> {
+	async function setup(payload: MetadataRecord | null = null): Promise<void> {
 		wrapper = mount(TestServerActiveModal, {
 			global: {
 				stubs: {

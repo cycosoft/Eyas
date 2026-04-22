@@ -7,7 +7,7 @@ import * as settingsService from './settings-service.js';
 import { TEST_SERVER_SESSION_DURATION_MS } from '@scripts/constants.js';
 import { formatDuration } from '@scripts/time-utils.js';
 import type { CoreContext } from '@registry/eyas-core.js';
-import type { DomainUrl, FormattedDuration } from '@registry/primitives.js';
+import type { DomainUrl, FormattedDuration, IsEnabled, IsActive } from '@registry/primitives.js';
 
 let $testServerMenuIntervalId: NodeJS.Timeout | null = null;
 
@@ -79,9 +79,9 @@ async function showSetupModal(ctx: CoreContext): Promise<void> {
 		const isWindows = process.platform === `win32`;
 
 		const projectId = ctx.$config?.meta?.projectId || null;
-		ctx.setTestServerHttpsEnabled(settingsService.get(`testServer.useHttps`, projectId ?? undefined) as boolean);
-		const autoOpenBrowser = settingsService.get(`testServer.autoOpenBrowser`, projectId ?? undefined) as boolean;
-		const useCustomDomain = settingsService.get(`testServer.useCustomDomain`, projectId ?? undefined) as boolean;
+		ctx.setTestServerHttpsEnabled(settingsService.get(`testServer.useHttps`, projectId ?? undefined) as IsEnabled);
+		const autoOpenBrowser = settingsService.get(`testServer.autoOpenBrowser`, projectId ?? undefined) as IsActive;
+		const useCustomDomain = settingsService.get(`testServer.useCustomDomain`, projectId ?? undefined) as IsActive;
 
 		ctx.uiEvent(`show-test-server-setup-modal`, {
 			domain: `http://127.0.0.1`,

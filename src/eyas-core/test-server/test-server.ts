@@ -33,7 +33,7 @@ async function getAvailablePort(urlStr: DomainUrl | null, useHttps: IsActive): P
 		return cached;
 	}
 
-	let targetPort: number | undefined;
+	let targetPort: PortNumber | undefined;
 	if (urlStr && parseURL) {
 		const parsed = parseURL(urlStr);
 		if (parsed instanceof URL) {
@@ -46,7 +46,7 @@ async function getAvailablePort(urlStr: DomainUrl | null, useHttps: IsActive): P
 		}
 	}
 
-	let preferredPorts: number[] = [DEFAULT_PORT];
+	let preferredPorts: PortNumber[] = [DEFAULT_PORT as PortNumber];
 	if (targetPort) {
 		preferredPorts = [targetPort];
 		for (let i = 1; i <= 10; i++) {

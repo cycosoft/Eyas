@@ -57,10 +57,10 @@ import type { MenuContext, MenuTemplate, MenuContextParams, LinkMenuHandlers } f
 import type { DeepLinkContext } from '@registry/deep-link.js';
 import type { TestServerOptions } from '@registry/test-server.js';
 import type { Viewport, ConfigToLoad, StartupModal, PreventableEvent, ViewportSize } from '@registry/core.js';
-import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActive, IsPending, DomainUrl, FormattedDuration, MPEventName, TimestampMS, ThemeSource, AppTitle, AppVersion, EnvironmentKey } from '@registry/primitives.js';
+import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActive, IsPending, DomainUrl, FormattedDuration, MPEventName, TimestampMS, ThemeSource, AppTitle, AppVersion, EnvironmentKey, MetadataRecord, CommandLineArgs, SystemTheme, FilePath, UpdateStatus } from '@registry/primitives.js';
 
 // global variables $
-const $isDev = process.argv.includes(`--dev`);
+const $isDev = process.argv.includes(`--dev`) as IsActive;
 let $appWindow: BrowserWindow | null = null;
 let $eyasLayer: BrowserView | null = null;
 let $config: ValidatedConfig | null = null;
@@ -68,10 +68,10 @@ let $configToLoad: ConfigToLoad = {};
 let $testNetworkEnabled: IsActive = true;
 let $testServerHttpsEnabled: IsActive = false;
 let $lastTestServerOptions: TestServerOptions | null = null;
-let $testServerEndTime: number | null = null;
-let $testDomainRaw: string | null = null;
-let $testDomain = `eyas://local.test`;
-let $envKey: string | null = null;
+let $testServerEndTime: TimestampMS | null = null;
+let $testDomainRaw: DomainUrl | null = null;
+let $testDomain = `eyas://local.test` as DomainUrl;
+let $envKey: EnvironmentKey | null = null;
 const $uiDomain = `ui://eyas.interface`;
 const $defaultViewports: Viewport[] = [
 	{ isDefault: true, label: `Desktop` as ViewportLabel, width: 1366 as ViewportWidth, height: 768 as ViewportHeight },
@@ -80,15 +80,15 @@ const $defaultViewports: Viewport[] = [
 ];
 let $allViewports: Viewport[] = [];
 const $currentViewport: ViewportSize = [0, 0];
-let $updateStatus = `idle`;
+let $updateStatus = `idle` as UpdateStatus;
 let $isInitializing: IsActive = true;
 let $isEnvironmentPending: IsPending = false;
-let $updateCheckUserTriggered = false;
+let $updateCheckUserTriggered: IsActive = false;
 let $onCheckForUpdates = (): void => { };
 let $onInstallUpdate = (): void => { };
 let $pendingStartupModal: StartupModal | null = null;
 let $isStartupSequenceChecked: IsActive = false;
-let $latestChangelogVersion: string | null = null;
+let $latestChangelogVersion: AppVersion | null = null;
 
 const $paths = {
 	icon: _path.join($roots.eyas, `eyas-assets`, `eyas-logo.png`),
@@ -99,7 +99,7 @@ const $paths = {
 	constants: _path.join($roots.eyas, `scripts`, `constants.js`),
 	pathUtils: _path.join($roots.eyas, `scripts`, `path-utils.js`),
 	timeUtils: _path.join($roots.eyas, `scripts`, `time-utils.js`),
-	testSrc: `` as string | null,
+	testSrc: `` as DomainUrl | null,
 	uiSource: _path.join($roots.eyas, `eyas-interface`),
 	eyasInterface: _path.join($roots.eyas, `eyas-interface`, `index.html`),
 	splashScreen: _path.join($roots.eyas, `eyas-interface`, `splash.html`)
@@ -124,7 +124,7 @@ function updateNativeTheme(themeSource?: ThemeSource): void {
 
 // OS Listener
 nativeTheme.on(`updated`, () => {
-	const currentSetting = settingsService.get(`theme`) as string;
+	const currentSetting = settingsService.get(`theme`) as SystemTheme;
 	if (currentSetting === `system`) {
 		$eyasLayer?.webContents?.send(`system-theme-updated`, nativeTheme.shouldUseDarkColors ? `dark` : `light`);
 	}
@@ -190,7 +190,7 @@ export function setupDefaultProtocol(): void {
 export function setupDeepLinkListeners(
 	context: DeepLinkContext,
 	handler: (url: DomainUrl, ctx: DeepLinkContext) => void,
-	urlGetter: (args: string[]) => DomainUrl | undefined | null
+	urlGetter: (args: CommandLineArgs) => DomainUrl | undefined | null
 ): void {
 	// macOS: detect if the app was opened with a file
 	_electronCore.on(`open-file`, async (_event, path) => {
@@ -234,7 +234,7 @@ async function handleAppReady(): Promise<void> {
 
 	// load user settings from disk before first test start
 	await settingsService.load();
-	updateNativeTheme(settingsService.get(`theme`) as string);
+	updateNativeTheme(settingsService.get(`theme`) as SystemTheme);
 
 	// start listening for requests to the custom protocol
 	setupEyasNetworkHandlers(getCoreContext());
@@ -297,7 +297,7 @@ export function createAppWindow(): void {
 		width: $currentViewport[0],
 		height: $currentViewport[1],
 		title: navigationService.getAppTitleWithContext(getCoreContext()),
-		icon: $paths.icon as string,
+		icon: $paths.icon as FilePath,
 		show: false,
 		webPreferences: {
 			preload: $paths.testPreload,
@@ -478,7 +478,7 @@ const coreContextSetters = {
 
 const coreContextFunctions = {
 	toggleEyasUI: (enable: IsActive): void => uiService.toggleEyasUI(getCoreContext(), enable),
-	trackEvent: (event: MPEventName, extraData?: Record<string, unknown>): Promise<void> => trackEvent(event, extraData),
+	trackEvent: (event: MPEventName, extraData?: MetadataRecord): Promise<void> => trackEvent(event, extraData),
 	stopTestServer: (): Promise<void> => stopTestServer(),
 	startAFreshTest: (forceShow?: IsActive): Promise<void> => navigationService.startAFreshTest(getCoreContext(), forceShow),
 	checkStartupSequence: (): void => uiService.checkStartupSequence(getCoreContext()),
@@ -531,7 +531,7 @@ function getCoreContext(): CoreContext {
 }
 
 // method for tracking events
-async function trackEvent(event: MPEventName, extraData?: Record<string, unknown>): Promise<void> {
+async function trackEvent(event: MPEventName, extraData?: MetadataRecord): Promise<void> {
 	await analyticsService.init($isDev);
 	await analyticsService.trackEvent(event, $config, _appVersion, extraData);
 }
@@ -679,7 +679,7 @@ export function getLinkMenuItems(
 	config.links.forEach((item: LinkConfig) => {
 		const itemUrl = item.url;
 		let isValid;
-		let validUrl: string | undefined;
+		let validUrl: DomainUrl | undefined;
 		const hasVariables = itemUrl.match(/{[^{}]+}/g)?.length;
 		if (hasVariables) {
 			isValid = isVariableLinkValid(itemUrl);

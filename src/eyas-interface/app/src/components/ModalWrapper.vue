@@ -27,7 +27,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 import ModalStore from '@/stores/modals.js';
 import ModalBackground from '@/components/ModalBackground.vue';
 import type { ModalWrapperProps, ModalWrapperEmits } from '@/../../../types/components.js';
-import type { ModalId, ChannelName, IsVisible } from '@/../../../types/primitives.js';
+import type { ModalId, ChannelName, IsVisible, ViewportWidth } from '@/../../../types/primitives.js';
 
 const props = withDefaults(defineProps<ModalWrapperProps>(), {
 	type: `modal`,
@@ -37,17 +37,17 @@ const props = withDefaults(defineProps<ModalWrapperProps>(), {
 const emit = defineEmits<ModalWrapperEmits>();
 
 const id = ref<ModalId>(window.crypto.randomUUID() as ModalId);
-const dialogWidth = ref<number | `auto`>(`auto`);
+const dialogWidth = ref<ViewportWidth | `auto`>(`auto`);
 
 const backgroundContentVisible = computed((): IsVisible => {
 	return ModalStore().lastOpenedById === id.value;
 });
 
-const calculatedMinWidth = computed((): number | undefined => {
+const calculatedMinWidth = computed((): ViewportWidth | undefined => {
 	if (props.minWidth !== undefined) {
-		return Number(props.minWidth);
+		return Number(props.minWidth) as ViewportWidth;
 	}
-	return props.type === `modal` ? 500 : undefined;
+	return props.type === `modal` ? 500 as ViewportWidth : undefined;
 });
 
 const trackModalState = (isTrue: IsVisible): void => {

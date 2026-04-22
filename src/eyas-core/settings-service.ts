@@ -5,7 +5,7 @@ import fs from 'fs-extra';
 const { readJson, outputJson } = fs;
 import { SETTINGS_DEFAULTS } from '@scripts/constants.js';
 import type { SettingsData, AppSettings, ProjectSettings } from '@registry/settings.js';
-import type { FilePath, ProjectId, SettingKey } from '@registry/primitives.js';
+import type { FilePath, ProjectId, SettingKey, GenericRecord } from '@registry/primitives.js';
 
 // ─── internal state ────────────────────────────────────────────────────────────
 
@@ -33,20 +33,20 @@ function _setStoragePath(p: FilePath): void {
  * Returns `undefined` if any segment is missing.
  */
 function _deepGet(obj: unknown, keyPath: SettingKey): unknown {
-	return keyPath.split(`.`).reduce((acc, k) => (acc as Record<string, unknown> | null | undefined)?.[k], obj);
+	return keyPath.split(`.`).reduce((acc, k) => (acc as GenericRecord | null | undefined)?.[k], obj);
 }
 
 /**
  * Deep-set a value in an object by dot-notation key path.
  * Creates intermediate objects as needed.
  */
-function _deepSet(obj: Record<string, unknown>, keyPath: SettingKey, value: unknown): void {
+function _deepSet(obj: GenericRecord, keyPath: SettingKey, value: unknown): void {
 	const keys = keyPath.split(`.`);
 	const last = keys.pop();
 	if (last === undefined) { return; }
-	const target = keys.reduce((acc: Record<string, unknown>, k) => {
+	const target = keys.reduce((acc: GenericRecord, k) => {
 		if (acc[k] === undefined || typeof acc[k] !== `object`) { acc[k] = {}; }
-		return acc[k] as Record<string, unknown>;
+		return acc[k] as GenericRecord;
 	}, obj);
 	target[last] = value;
 }
@@ -131,9 +131,9 @@ function set(keyPath: SettingKey, value: unknown, projectId?: ProjectId): void {
 
 	if (projectId) {
 		if (!_data.projects[projectId]) { _data.projects[projectId] = {}; }
-		_deepSet(_data.projects[projectId] as unknown as Record<string, unknown>, keyPath, value);
+		_deepSet(_data.projects[projectId] as unknown as GenericRecord, keyPath, value);
 	} else {
-		_deepSet(_data.app as unknown as Record<string, unknown>, keyPath, value);
+		_deepSet(_data.app as unknown as GenericRecord, keyPath, value);
 	}
 }
 

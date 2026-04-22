@@ -6,7 +6,7 @@ import * as dateFns from "date-fns";
 
 // Types
 import type { ValidatedConfig, EyasConfig, EyasMeta, DomainConfig } from "@registry/config.js";
-import type { IsActive, AppVersion, TestId, DurationHours } from "@registry/primitives.js";
+import type { IsActive, AppVersion, TestId, DurationHours, DomainUrl } from "@registry/primitives.js";
 
 // Git Utilities
 import {
@@ -78,7 +78,7 @@ function getValidatedMeta(rawMeta: Partial<EyasMeta> | undefined, expiresIn: Dur
  * @param input The raw domain input
  * @returns The validated domain configuration
  */
-export function validateCustomDomain(input?: string | string[] | DomainConfig[]): DomainConfig[] {
+export function validateCustomDomain(input?: DomainUrl | DomainUrl[] | DomainConfig[]): DomainConfig[] {
 	// default to an empty array
 	const output: DomainConfig[] = [/* { url: ``, title: `Staging` } */];
 

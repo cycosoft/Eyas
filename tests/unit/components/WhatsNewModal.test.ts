@@ -6,12 +6,13 @@ import { createVuetify } from 'vuetify';
 import { createPinia, setActivePinia } from 'pinia';
 import type { WindowWithEyas } from '@registry/ipc.js';
 import type { ComponentVM } from '@registry/components.js';
+import type { GenericRecord } from '@registry/primitives.js';
 
 // Removed local ComponentVM definition
 
 // Mock the settings store
 vi.mock(`@/stores/settings`, () => ({
-	default: (): Record<string, unknown> => ({
+	default: (): GenericRecord => ({
 		version: `1.0.0`,
 		appSettings: { lastSeenVersion: `0.9.0` },
 		$subscribe: vi.fn()

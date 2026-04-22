@@ -4,13 +4,13 @@ const { machineId } = nodeMachineId;
 import _os from 'node:os';
 import { MP_EVENTS } from './metrics-events.js';
 import type { ValidatedConfig } from '@registry/config.js';
-import type { MPEventName, AppVersion, IsActive } from '@registry/primitives.js';
+import type { MPEventName, AppVersion, IsActive, DeviceId, MetadataRecord } from '@registry/primitives.js';
 
 const MP_KEY_PROD = `07f0475cb429f7de5ebf79a1c418dc5c`;
 const MP_KEY_DEV = `02b67bb94dd797e9a2cbb31d021c3cef`;
 
 let mpInstance: Mixpanel.Mixpanel | null = null;
-let deviceId: string | null = null;
+let deviceId: DeviceId | null = null;
 const operatingSystem = _os.platform();
 
 /**
@@ -36,7 +36,7 @@ async function trackEvent(
 	event: MPEventName,
 	config: ValidatedConfig | null,
 	appVersion: AppVersion,
-	extraData?: Record<string, unknown>
+	extraData?: MetadataRecord
 ): Promise<void> {
 	if (!mpInstance || !deviceId) { return; }
 

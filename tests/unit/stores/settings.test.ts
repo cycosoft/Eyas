@@ -1,6 +1,7 @@
 import { describe, test, expect, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import useSettingsStore from '@/stores/settings.js';
+import type { GenericRecord } from '@registry/primitives.js';
 
 describe(`useSettingsStore`, () => {
 	beforeEach(() => {
@@ -36,8 +37,8 @@ describe(`useSettingsStore`, () => {
 			app: { env: { alwaysChoose: false } },
 			projectId: `proj-123`
 		});
-		expect((store.projectSettings.env as Record<string, boolean>).alwaysChoose).toBe(true);
-		expect((store.appSettings.env as Record<string, boolean>).alwaysChoose).toBe(false);
+		expect((store.projectSettings.env as GenericRecord).alwaysChoose).toBe(true);
+		expect((store.appSettings.env as GenericRecord).alwaysChoose).toBe(false);
 		expect(store.projectId).toBe(`proj-123`);
 	});
 

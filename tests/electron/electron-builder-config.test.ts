@@ -1,5 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import { getElectronBuilderConfig } from '@scripts/electron-builder-config.js';
+import type { GenericRecord } from '@registry/primitives.js';
 
 const basePaths = {
 	icon: `/fake/out/eyas-assets/eyas-logo.png`,
@@ -49,7 +50,7 @@ describe(`getElectronBuilderConfig`, () => {
 		expect(config.win).toBeDefined();
 		if (!config.win) throw new Error(`win is undefined`);
 		expect(`sign` in config.win).toBe(false);
-		expect((config.win as Record<string, unknown>).sign).toBeUndefined();
+		expect((config.win as GenericRecord).sign).toBeUndefined();
 	});
 
 	test(`win uses signtoolOptions.sign when not dev`, () => {

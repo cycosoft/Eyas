@@ -28,6 +28,10 @@ export type IsComputable = boolean;
 export type Count = number;
 export type TimerId = ReturnType<typeof setTimeout>;
 export type MetadataKey = string;
+export type CacheKey = string;
+export type GenericKey = string;
+export type MetadataRecord = Record<MetadataKey, unknown>;
+export type GenericRecord = Record<GenericKey, unknown>;
 
 // UI / Labels
 export type MenuLabel = string;
@@ -72,6 +76,7 @@ export type ViewportLabel = string;
 // Identity / Identification
 export type HashString = string;
 export type TestId = string;
+export type DeviceId = string;
 
 // Certificates
 export type CertKey = string;

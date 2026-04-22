@@ -5,7 +5,7 @@ import { format } from 'date-fns/format';
 import { differenceInDays } from 'date-fns/differenceInDays';
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
 import type { CoreContext, AppService } from '@registry/eyas-core.js';
-import type { FormattedDuration } from '@registry/primitives.js';
+import type { FormattedDuration, FilePath, TimeString } from '@registry/primitives.js';
 import type { PreventableEvent } from '@registry/core.js';
 import { MP_EVENTS } from './metrics-events.js';
 import { testServerService } from './test-server.service.js';
@@ -35,7 +35,7 @@ export const appService: AppService = {
 				type: `info`,
 				buttons: [`OK`],
 				title: `About`,
-				icon: ctx.$paths.icon as string,
+				icon: ctx.$paths.icon as FilePath,
 				message: `
 Name: ${ctx.$config.title}
 Version: ${ctx.$config.version}
@@ -79,7 +79,7 @@ Runner: v${ctx._appVersion}
 	getSessionAge(ctx: CoreContext): FormattedDuration {
 		if (!ctx.$appWindow) { return ``; }
 
-		let output: Date | string = new Date();
+		let output: Date | TimeString = new Date();
 
 		// get the path to the cache
 		const cachePath = ctx.$appWindow.webContents.session.getStoragePath();
