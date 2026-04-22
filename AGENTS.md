@@ -60,6 +60,7 @@
 - **Instruction Auditing**: Before starting work in any module, audit its local `AGENTS.md` file against the current `eslint.config.js`. Remove redundant syntax instructions that are already enforced by the linter and update stale patterns to ensure the documentation does not contradict the automated source of truth.
 - **Testing**: Limit debugging to 3 minutes before asking for help.
 - **Code Deletion**: Document why code was removed. Verify it's unused using search tools first.
+- **Process Management**: When encountering "resource busy" or "locked" errors during Electron testing, prioritize stopping the parent process that spawned the app before attempting `taskkill`. This is often more effective at releasing file locks.
 - **Pull Requests**: Focus on bugs, functionality, and typos. Avoid purely stylistic refactors or "lint-fixing" unaffected lines.
 
 ## 6. Core Directives (CRITICAL REPETITION)
