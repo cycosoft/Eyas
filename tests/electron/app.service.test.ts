@@ -33,14 +33,17 @@ vi.mock(`node:fs`, () => ({
 	default: {
 		existsSync: vi.fn(),
 		statSync: vi.fn()
-	}
+	},
+	readFileSync: vi.fn().mockReturnValue(`{"version": "1.0.0"}`)
 }));
 
 vi.mock(`node:path`, () => ({
 	default: {
 		join: vi.fn((...args) => args.join(`/`)),
 		resolve: vi.fn((...args) => args.join(`/`))
-	}
+	},
+	join: vi.fn((...args) => args.join(`/`)),
+	resolve: vi.fn((...args) => args.join(`/`))
 }));
 
 // Mock date-fns

@@ -1,7 +1,7 @@
-import _path from "node:path";
-import _fs from "node:fs";
+import { resolve, join } from "node:path";
+import { readFileSync } from "node:fs";
 import roots from "./get-roots.js";
-import crypto from "node:crypto";
+import { randomUUID } from "node:crypto";
 import * as dateFns from "date-fns";
 
 // Types
@@ -33,7 +33,7 @@ export function validateConfig(rawConfig: EyasConfig | null, isConfigLoaded: IsA
 	// configuration merge and validation step
 	return {
 		// use given value or resolve to default location
-		source: loadedConfig.source || _path.resolve(roots.config, `dist`),
+		source: loadedConfig.source || resolve(roots.config, `dist`),
 		domains: validateCustomDomain(loadedConfig.domain || loadedConfig.domains),
 		title: (loadedConfig.title || `Eyas`).trim(),
 		version: (loadedConfig.version || `${getBranchName()}.${getCommitHash()}` || `Unspecified Version`).trim(),
@@ -116,7 +116,7 @@ export function validateCustomDomain(input?: DomainUrl | DomainUrl[] | DomainCon
  */
 function getCliVersion(): AppVersion {
 	try {
-		const { version } = JSON.parse(_fs.readFileSync(_path.join(roots.module, `package.json`), `utf-8`));
+		const { version } = JSON.parse(readFileSync(join(roots.module, `package.json`), `utf-8`));
 		return version;
 	} catch (error) {
 		console.error(`Error getting CLI version:`, error);
@@ -129,7 +129,7 @@ function getCliVersion(): AppVersion {
  * @returns A unique test ID
  */
 export function getTestId(): TestId {
-	return crypto.randomUUID();
+	return randomUUID();
 }
 
 /**
