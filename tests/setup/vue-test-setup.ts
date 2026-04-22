@@ -1,3 +1,4 @@
+import type { App } from 'vue';
 import { config } from '@vue/test-utils';
 import { createVuetify } from 'vuetify';
 import { createPinia } from 'pinia';
@@ -5,14 +6,14 @@ import { vi } from 'vitest';
 
 // Configure Vuetify
 const vuetifyPlugin = {
-	install(app: any) {
+	install(app: App): void {
 		app.use(createVuetify());
 	}
 };
 
 // Configure Pinia
 const piniaPlugin = {
-	install(app: any) {
+	install(app: App): void {
 		app.use(createPinia());
 	}
 };
@@ -21,7 +22,7 @@ config.global.plugins = [vuetifyPlugin, piniaPlugin];
 
 // Suppress JSDOM CSS parsing errors for Vuetify's modern CSS
 const originalConsoleError = console.error;
-console.error = (...args: any[]) => {
+console.error = (...args: unknown[]): void => {
 	if (typeof args[0] === `string` && args[0].includes(`Could not parse CSS stylesheet`)) {
 		return; // Ignore JSDOM CSS parsing errors
 	}

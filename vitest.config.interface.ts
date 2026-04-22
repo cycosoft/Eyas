@@ -19,7 +19,7 @@ export default defineConfig({
 		pool: `vmThreads`,
 		setupFiles: [`./tests/setup/vue-test-setup.ts`],
 		include: [`tests/unit/**/*.test.{js,ts}`],
-		exclude: [`tests/e2e/**`, `tests/electron/**`],
+		exclude: [`tests/e2e/**`, `tests/electron/**`]
 		// css: {
 		// 	include: [/.+/]
 		// }
