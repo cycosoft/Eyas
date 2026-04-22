@@ -4,8 +4,20 @@ import { createPinia } from 'pinia';
 import { vi } from 'vitest';
 
 // Configure Vuetify
-const vuetify = createVuetify();
-config.global.plugins = [vuetify, createPinia()];
+const vuetifyPlugin = {
+	install(app: any) {
+		app.use(createVuetify());
+	}
+};
+
+// Configure Pinia
+const piniaPlugin = {
+	install(app: any) {
+		app.use(createPinia());
+	}
+};
+
+config.global.plugins = [vuetifyPlugin, piniaPlugin];
 
 // Mock window.eyas IPC bridge
 global.window.eyas = {

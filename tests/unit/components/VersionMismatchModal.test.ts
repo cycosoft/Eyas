@@ -2,21 +2,15 @@ import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import type { VueWrapper } from '@vue/test-utils';
 import VersionMismatchModal from '@/components/VersionMismatchModal.vue';
-import { createVuetify } from 'vuetify';
 import type { VersionMismatchModalVM } from '@registry/components.js';
 import { getIpcMock, findReceiveCallback } from '@setup/ipc-mock-utils.js';
 
 describe(`VersionMismatchModal`, () => {
 	let wrapper: VueWrapper;
-	let vuetify: ReturnType<typeof createVuetify>;
-
 	beforeEach(() => {
-		vuetify = createVuetify();
 		// window.eyas is already mocked by vue-test-setup.ts
 
-		wrapper = mount(VersionMismatchModal, {
-			global: { plugins: [vuetify] }
-		});
+		wrapper = mount(VersionMismatchModal);
 	});
 
 	afterEach(() => {

@@ -2,14 +2,11 @@ import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import type { VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
-import { createVuetify } from 'vuetify';
 import type { Mock } from 'vitest';
 import App from '@/App.vue';
 import useSettingsStore from '@/stores/settings.js';
 import type { WindowWithEyas } from '@registry/ipc.js';
 
-// Mock Vuetify
-const vuetify = createVuetify();
 
 describe(`App`, () => {
 	let wrapper: VueWrapper;
@@ -27,7 +24,6 @@ describe(`App`, () => {
 
 		wrapper = mount(App, {
 			global: {
-				plugins: [vuetify],
 				stubs: {
 					ExitModal: true,
 					EnvironmentModal: true,
@@ -67,7 +63,7 @@ describe(`App`, () => {
 		expect(settingsStore.appSettings.theme).toBe(`dark`);
 	});
 
-	test(`updates store when settings-updated is received`, () => {
+	test(`updates store when settings-updated is received`, async () => {
 		const settingsStore = useSettingsStore();
 		const call = mockReceive.mock.calls.find(c => c[0] === `settings-updated`);
 		if (!call) throw new Error(`call not found`);
@@ -79,9 +75,9 @@ describe(`App`, () => {
 			projectId: null
 		};
 		call[1](payload);
+		await wrapper.vm.$nextTick();
 
 		expect(settingsStore.appSettings.theme).toBe(`dark`);
-		expect(vuetify.theme.global.name.value).toBe(`dark`);
 
 		// Check if the DOM has the class
 		expect(wrapper.get(`.v-theme--dark`)).toBeDefined();

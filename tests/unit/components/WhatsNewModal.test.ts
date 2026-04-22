@@ -2,7 +2,6 @@ import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import type { VueWrapper } from '@vue/test-utils';
 import WhatsNewModal from '@/components/WhatsNewModal.vue';
-import { createVuetify } from 'vuetify';
 import { createPinia, setActivePinia } from 'pinia';
 import type { WindowWithEyas } from '@registry/ipc.js';
 import type { ComponentVM } from '@registry/components.js';
@@ -27,10 +26,7 @@ vi.mock(`@/utils/changelog-utils`, () => ({
 
 describe(`WhatsNewModal`, () => {
 	let wrapper: VueWrapper;
-	let vuetify: ReturnType<typeof createVuetify>;
-
 	beforeEach(async () => {
-		vuetify = createVuetify();
 		setActivePinia(createPinia());
 
 		// Mock window.eyas
@@ -39,11 +35,7 @@ describe(`WhatsNewModal`, () => {
 			receive: vi.fn()
 		};
 
-		wrapper = mount(WhatsNewModal, {
-			global: {
-				plugins: [vuetify]
-			}
-		});
+		wrapper = mount(WhatsNewModal);
 
 		// Ensure modal is visible so content is rendered
 		(wrapper.vm as unknown as ComponentVM).isVisible = true;

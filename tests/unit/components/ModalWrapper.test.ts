@@ -2,7 +2,6 @@ import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import type { VueWrapper } from '@vue/test-utils';
 import ModalWrapper from '@/components/ModalWrapper.vue';
-import { createVuetify } from 'vuetify';
 import type { WindowWithEyas } from '@registry/ipc.js';
 import type { ModalWrapperVM } from '@registry/components.js';
 
@@ -10,16 +9,12 @@ import type { ModalWrapperVM } from '@registry/components.js';
 
 describe(`ModalWrapper`, () => {
 	let wrapper: VueWrapper;
-	let vuetify: ReturnType<typeof createVuetify>;
-
 	beforeEach(() => {
-		vuetify = createVuetify();
 		(window as unknown as WindowWithEyas).eyas = { send: vi.fn(), receive: vi.fn() };
 
 
 
 		wrapper = mount(ModalWrapper, {
-			global: { plugins: [vuetify] },
 			props: { modelValue: true },
 			slots: { default: `<div class="eyas-modal-content">Test</div>` }
 		});
@@ -47,7 +42,6 @@ describe(`ModalWrapper`, () => {
 	test(`pins dialog width after enter to prevent jitter`, async () => {
 		// Re-mount with a div that has the v-card class to match our new querySelector logic
 		wrapper = mount(ModalWrapper, {
-			global: { plugins: [vuetify] },
 			props: { modelValue: true },
 			slots: { default: `<div class="v-card eyas-modal-content">Test</div>` }
 		});
@@ -74,7 +68,6 @@ describe(`ModalWrapper`, () => {
 
 	test(`ensures v-card-text inside the slot is identifyable`, async () => {
 		wrapper = mount(ModalWrapper, {
-			global: { plugins: [vuetify] },
 			props: { modelValue: true },
 			slots: { default: `
 				<div class="v-card">
