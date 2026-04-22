@@ -1,8 +1,8 @@
 import type { BrowserWindow, BrowserView } from 'electron';
 import type { ValidatedConfig } from './config.js';
 import type { TestServerOptions } from './test-server.js';
-import type { IsActive, IsPending, DomainUrl, MPEventName, ChannelName, TimestampMS, AppVersion, EnvironmentKey } from './primitives.js';
-import type { PreventableEvent } from './core.js';
+import type { IsActive, IsPending, DomainUrl, MPEventName, ChannelName, TimestampMS, AppVersion, EnvironmentKey, AppTitle } from './primitives.js';
+import type { PreventableEvent, Viewport, ViewportSize } from './core.js';
 import type { FilePath } from './primitives.js';
 
 /** Paths used by the Eyas core orchestrator */
@@ -38,6 +38,9 @@ export type CoreContext = {
 	$latestChangelogVersion: AppVersion | null;
 	$isStartupSequenceChecked: IsActive;
 	$isInitializing: IsActive;
+	$allViewports: Viewport[];
+	$currentViewport: ViewportSize;
+	$defaultViewports: Viewport[];
 	$paths: EyasPaths;
 	_appVersion: AppVersion;
 
@@ -53,13 +56,16 @@ export type CoreContext = {
 	setTestServerEndTime: (time: TimestampMS | null) => void;
 	setLastTestServerOptions: (options: TestServerOptions | null) => void;
 	setIsInitializing: (initializing: IsActive) => void;
+	setAllViewports: (viewports: Viewport[]) => void;
 
 	// Functions
 	toggleEyasUI: (enable: IsActive) => void;
 	trackEvent: (event: MPEventName, extraData?: Record<string, unknown>) => Promise<void>;
 	stopTestServer: () => Promise<void>;
+	startAFreshTest: (forceShow?: IsActive) => Promise<void>;
 	checkStartupSequence: () => void;
 	navigate: (path?: DomainUrl, openInBrowser?: IsActive) => void;
+	navigateVariable: (url: DomainUrl) => void;
 	setMenu: () => Promise<void>;
 	doStartTestServer: (autoOpenBrowser?: IsActive, customDomain?: DomainUrl | null) => Promise<void>;
 	openTestServerInBrowserHandler: (_event?: unknown, url?: DomainUrl) => void;
@@ -67,6 +73,7 @@ export type CoreContext = {
 	onTestServerTimeout: () => void;
 	onToggleTestServerHttps: () => void;
 	onOpenSettings: () => void;
+	onTitleUpdate: (evt: PreventableEvent, title: AppTitle) => void;
 	triggerBufferedModal: () => void;
 	manageAppClose: (evt: PreventableEvent) => void;
 };

@@ -91,7 +91,8 @@ vi.mock(`electron`, () => ({
 
 // Mock test-server
 vi.mock(`../../src/eyas-core/test-server/test-server.js`, () => ({
-	getTestServerState: vi.fn()
+	getTestServerState: vi.fn(),
+	clearTestServerPort: vi.fn()
 }));
 
 // Mock settings-service

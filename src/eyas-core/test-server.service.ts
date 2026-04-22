@@ -198,5 +198,7 @@ export const testServerService = {
 	onTimeout,
 	getRemainingTime,
 	toggleHttps,
-	resetSettings
+	resetSettings,
+	getState: testServer.getTestServerState,
+	clearPort: testServer.clearTestServerPort
 };

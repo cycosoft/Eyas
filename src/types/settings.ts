@@ -1,5 +1,6 @@
 import type { THEME_MODES } from '@scripts/constants.js';
 import type { EnvironmentSettings, TestServerSettings } from './core.js';
+export type { EnvironmentSettings, TestServerSettings };
 import type { AppVersion, ProjectId } from './primitives.js';
 
 export type ThemeMode = typeof THEME_MODES[keyof typeof THEME_MODES];

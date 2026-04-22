@@ -39,9 +39,9 @@ import { MP_EVENTS } from './metrics-events.js';
 import { analyticsService } from './analytics.service.js';
 import * as testServer from './test-server/test-server.js';
 import { testServerService } from './test-server.service.js';
-import { substituteEnvVariables, isVariableLinkValid, hasRemainingVariables } from '@scripts/variable-utils.js';
+import { navigationService } from './navigation.service.js';
+import { isVariableLinkValid } from '@scripts/variable-utils.js';
 import * as settingsService from './settings-service.js';
-import { getAppTitle, sanitizePageTitle } from '@scripts/get-app-title.js';
 import { LOAD_TYPES } from '@scripts/constants.js';
 
 import { initIpcHandlers } from './ipc-handlers.js';
@@ -57,8 +57,8 @@ import type { ValidatedConfig, LinkConfig } from '@registry/config.js';
 import type { MenuContext, MenuTemplate, MenuContextParams, LinkMenuHandlers } from '@registry/menu.js';
 import type { DeepLinkContext } from '@registry/deep-link.js';
 import type { TestServerOptions } from '@registry/test-server.js';
-import type { Viewport, ConfigToLoad, StartupModal, AppSettings, EnvironmentSettings, PreventableEvent, ViewportSize, FocusUI } from '@registry/core.js';
-import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActive, IsPending, DomainUrl, FormattedDuration, MPEventName, TimestampMS, HashString, ThemeSource, AppTitle, AppVersion, EnvironmentKey } from '@registry/primitives.js';
+import type { Viewport, ConfigToLoad, StartupModal, AppSettings, PreventableEvent, ViewportSize, FocusUI } from '@registry/core.js';
+import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActive, IsPending, DomainUrl, FormattedDuration, MPEventName, TimestampMS, ThemeSource, AppTitle, AppVersion, EnvironmentKey } from '@registry/primitives.js';
 
 // global variables $
 const $isDev = process.argv.includes(`--dev`);
@@ -112,18 +112,7 @@ const _appVersion = _package.version;
 
 const APP_NAME = `Eyas`;
 
-/**
- * djb2 hash of a domains array — detects any structural change
- * (add, remove, reorder, URL edit) without any external dependencies.
- * @param {object[]} domains
- * @returns {string} unsigned 32-bit hex string
- */
-function hashDomains(domains: unknown[]): HashString {
-	const str = JSON.stringify(domains);
-	let h = 5381;
-	for (let i = 0; i < str.length; i++) { h = (h * 33) ^ str.charCodeAt(i); }
-	return (h >>> 0).toString(16);
-}
+
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 /**
@@ -161,7 +150,7 @@ async function initElectronCore(): Promise<void> {
 			const getConfig = (await import(`../scripts/get-config.js`)).default;
 			$config = await getConfig(method, path);
 		},
-		startAFreshTest,
+		startAFreshTest: () => navigationService.startAFreshTest(getCoreContext()),
 		LOAD_TYPES
 	};
 
@@ -211,7 +200,7 @@ export function setupDeepLinkListeners(
 		if ($appWindow) {
 			const getConfig = (await import(`../scripts/get-config.js`)).default;
 			$config = await getConfig(LOAD_TYPES.ASSOCIATION, path);
-			startAFreshTest();
+			navigationService.startAFreshTest(getCoreContext());
 		} else {
 			$configToLoad = { method: LOAD_TYPES.ASSOCIATION, path };
 		}
@@ -308,7 +297,7 @@ export function createAppWindow(): void {
 		useContentSize: true,
 		width: $currentViewport[0],
 		height: $currentViewport[1],
-		title: getAppTitleWithContext(),
+		title: navigationService.getAppTitleWithContext(getCoreContext()),
 		icon: $paths.icon as string,
 		show: false,
 		webPreferences: {
@@ -347,7 +336,10 @@ function initEyasLayer(splashScreen: BrowserWindow, splashVisible: TimestampMS):
 	// once the Eyas UI layer is ready, attempt navigation
 	$eyasLayer.webContents.on(`did-finish-load`, async () => {
 		// start the test
-		await startAFreshTest();
+		await navigationService.startAFreshTest(getCoreContext());
+
+		// check the startup sequence (What's New, etc.)
+		checkStartupSequence();
 
 		// set a minimum time for the splash screen to be visible
 		const splashMinTime = 750;
@@ -403,18 +395,20 @@ function initTestListeners(): void {
 	if (!$appWindow) { return; }
 
 	// listen for the window to close
-	$appWindow.on(`close`, manageAppClose);
+	// IMPORTANT: Must pass getCoreContext().manageAppClose (the stable singleton reference),
+	// NOT an inline wrapper — ipc-handlers.ts removes it by the same reference.
+	$appWindow.on(`close`, getCoreContext().manageAppClose);
 
 	// listen for changes to the window size
 	$appWindow.on(`resize`, onResize);
 
 	// Whenever a title update is requested
-	$appWindow.on(`page-title-updated`, onTitleUpdate);
+	$appWindow.on(`page-title-updated`, (evt, title) => navigationService.onTitleUpdate(getCoreContext(), evt, title));
 
 	// Whenever the content is loaded on the app window
 	$appWindow.webContents.on(`did-finish-load`, () => {
 		// update the title, preserving the current page title
-		$appWindow?.setTitle(getAppTitleWithContext($appWindow.webContents.getTitle()));
+		$appWindow?.setTitle(navigationService.getAppTitleWithContext(getCoreContext(), $appWindow.webContents.getTitle()));
 
 		// update the cache menu
 		setMenu();
@@ -446,16 +440,12 @@ function initTestListeners(): void {
 		// Apply our title format when the new window's page title updates
 		win.on(`page-title-updated`, (evt, title) => {
 			evt.preventDefault();
-			const rawUrl = win.webContents.getURL();
-			const url = rawUrl?.startsWith(`data:`) ? undefined : rawUrl;
-			win.setTitle(getAppTitle($config?.title || ``, $config?.version || ``, url, sanitizePageTitle(title, rawUrl)));
+			win.setTitle(navigationService.getAppTitleWithContext(getCoreContext(), title));
 		});
 
 		// Also apply our format when the new window finishes loading
 		win.webContents.on(`did-finish-load`, () => {
-			const rawUrl = win.webContents.getURL();
-			const url = rawUrl?.startsWith(`data:`) ? undefined : rawUrl;
-			win.setTitle(getAppTitle($config?.title || ``, $config?.version || ``, url, sanitizePageTitle(win.webContents.getTitle(), rawUrl)));
+			win.setTitle(navigationService.getAppTitleWithContext(getCoreContext(), win.webContents.getTitle()));
 		});
 	});
 }
@@ -471,11 +461,45 @@ let $coreContext: CoreContext | null = null;
  * Assembles the core context object for the application.
  * @returns The fully assembled CoreContext object.
  */
+const coreContextSetters = {
+	setTestNetworkEnabled: (enabled: IsActive): void => { $testNetworkEnabled = enabled; },
+	setTestServerHttpsEnabled: (enabled: IsActive): void => { $testServerHttpsEnabled = enabled; },
+	setTestDomainRaw: (domain: DomainUrl | null): void => { $testDomainRaw = domain; },
+	setTestDomain: (domain: DomainUrl): void => { $testDomain = domain; },
+	setEnvKey: (key: EnvironmentKey | null): void => { $envKey = key; },
+	setIsEnvironmentPending: (pending: IsPending): void => { $isEnvironmentPending = pending; },
+	setLatestChangelogVersion: (version: AppVersion | null): void => { $latestChangelogVersion = version; },
+	setIsStartupSequenceChecked: (checked: IsActive): void => { $isStartupSequenceChecked = checked; },
+	setTestServerEndTime: (time: TimestampMS | null): void => { $testServerEndTime = time; },
+	setLastTestServerOptions: (options: TestServerOptions | null): void => { $lastTestServerOptions = options; },
+	setIsInitializing: (initializing: IsActive): void => { $isInitializing = initializing; },
+	setAllViewports: (viewports: Viewport[]): void => { $allViewports = viewports; }
+};
+
+const coreContextFunctions = {
+	toggleEyasUI: (enable: IsActive): void => toggleEyasUI(enable),
+	trackEvent: (event: MPEventName, extraData?: Record<string, unknown>): Promise<void> => trackEvent(event, extraData),
+	stopTestServer: (): Promise<void> => stopTestServer(),
+	startAFreshTest: (forceShow?: IsActive): Promise<void> => navigationService.startAFreshTest(getCoreContext(), forceShow),
+	checkStartupSequence: (): void => checkStartupSequence(),
+	navigate: (path?: DomainUrl, openInBrowser?: IsActive): void => navigationService.navigate(getCoreContext(), path, openInBrowser),
+	navigateVariable: (url: DomainUrl): void => navigationService.navigateVariable(getCoreContext(), url),
+	setMenu: (): Promise<void> => setMenu(),
+	doStartTestServer: (autoOpenBrowser?: IsActive, customDomain?: DomainUrl | null): Promise<void> => doStartTestServer(autoOpenBrowser, customDomain),
+	openTestServerInBrowserHandler: (_event?: unknown, url?: DomainUrl): void => openTestServerInBrowserHandler(_event, url),
+	uiEvent: (eventName: ChannelName, ...args: unknown[]): void => uiEvent(eventName, ...args),
+	onTestServerTimeout: (): void => onTestServerTimeout(),
+	onToggleTestServerHttps: (): void => onToggleTestServerHttps(),
+	onOpenSettings: (): void => onOpenSettings(),
+	onTitleUpdate: (evt: PreventableEvent, title: AppTitle): void => navigationService.onTitleUpdate(getCoreContext(), evt, title),
+	triggerBufferedModal: (): void => triggerBufferedModal(),
+	manageAppClose: (evt: PreventableEvent): void => manageAppClose(evt)
+};
+
 function getCoreContext(): CoreContext {
 	if ($coreContext) { return $coreContext; }
 
 	$coreContext = {
-		// State
 		get $appWindow(): BrowserWindow | null { return $appWindow; },
 		get $eyasLayer(): BrowserView | null { return $eyasLayer; },
 		get $config(): ValidatedConfig | null { return $config; },
@@ -490,37 +514,13 @@ function getCoreContext(): CoreContext {
 		get $latestChangelogVersion(): AppVersion | null { return $latestChangelogVersion; },
 		get $isStartupSequenceChecked(): IsActive { return $isStartupSequenceChecked; },
 		get $isInitializing(): IsActive { return $isInitializing; },
+		get $allViewports(): Viewport[] { return $allViewports; },
+		get $currentViewport(): ViewportSize { return $currentViewport; },
+		get $defaultViewports(): Viewport[] { return $defaultViewports; },
 		get $paths(): EyasPaths { return $paths as EyasPaths; },
 		get _appVersion(): AppVersion { return _appVersion as AppVersion; },
-
-		// Setters
-		setTestNetworkEnabled: (enabled: IsActive): void => { $testNetworkEnabled = enabled; },
-		setTestServerHttpsEnabled: (enabled: IsActive): void => { $testServerHttpsEnabled = enabled; },
-		setTestDomainRaw: (domain: DomainUrl | null): void => { $testDomainRaw = domain; },
-		setTestDomain: (domain: DomainUrl): void => { $testDomain = domain; },
-		setEnvKey: (key: EnvironmentKey | null): void => { $envKey = key; },
-		setIsEnvironmentPending: (pending: IsPending): void => { $isEnvironmentPending = pending; },
-		setLatestChangelogVersion: (version: AppVersion | null): void => { $latestChangelogVersion = version; },
-		setIsStartupSequenceChecked: (checked: IsActive): void => { $isStartupSequenceChecked = checked; },
-		setTestServerEndTime: (time: TimestampMS | null): void => { $testServerEndTime = time; },
-		setLastTestServerOptions: (options: TestServerOptions | null): void => { $lastTestServerOptions = options; },
-		setIsInitializing: (initializing: IsActive): void => { $isInitializing = initializing; },
-
-		// Functions
-		toggleEyasUI,
-		trackEvent,
-		stopTestServer,
-		checkStartupSequence,
-		navigate,
-		setMenu,
-		doStartTestServer,
-		openTestServerInBrowserHandler,
-		uiEvent,
-		onTestServerTimeout,
-		onToggleTestServerHttps,
-		onOpenSettings,
-		triggerBufferedModal,
-		manageAppClose
+		...coreContextSetters,
+		...coreContextFunctions
 	};
 
 	return $coreContext as CoreContext;
@@ -557,28 +557,7 @@ function checkTestExpiration(): void {
 	_electronCore.quit();
 }
 
-// Get the app title
-function getAppTitleWithContext(rawPageTitle?: AppTitle): AppTitle {
-	const rawUrl = $appWindow ? $appWindow.webContents.getURL() : null;
 
-	// ignore data: URLs in the address bar
-	const url = (rawUrl?.startsWith(`data:`) ? undefined : rawUrl) || undefined;
-
-	// Sanitize the page title against the raw URL (before data: nulling)
-	const pageTitle = sanitizePageTitle(rawPageTitle, rawUrl || ``);
-
-	// Return the built title
-	return getAppTitle($config?.title || ``, $config?.version || ``, url, pageTitle);
-}
-
-// manage automatic title updates
-function onTitleUpdate(evt: PreventableEvent, title: AppTitle): void {
-	// Disregard the default behavior
-	evt.preventDefault();
-
-	// update the title, passing the new document.title
-	$appWindow?.setTitle(getAppTitleWithContext(title));
-}
 
 // focus the UI layer
 const focusUI: FocusUI = () => {
@@ -640,42 +619,7 @@ function toggleEyasUI(enable: IsActive): void {
 	}
 }
 
-// manage navigation
-function navigate(path?: DomainUrl, openInBrowser?: IsActive): void {
-	if (!$appWindow) { return; }
 
-	// setup
-	let runningTestSource = false;
-
-	// if the path wasn't provided (default to local test source)
-	if (!path) {
-		// store that we're running the local test source
-		runningTestSource = true;
-
-		// if there's a custom domain, go there OR default to the local test source
-		path = $testDomain;
-	}
-
-	if (
-		// if requested to open in the browser AND
-		openInBrowser &&
-		(
-			// not running the local test OR
-			!runningTestSource ||
-			// the test server is running AND we're running the local test
-			(testServer.getTestServerState() && runningTestSource)
-		)
-	) {
-		// open the requested url in the default browser
-		shell.openExternal(path);
-	} else {
-		// otherwise load the requested path in the app window
-		$appWindow.loadURL(path);
-	}
-
-	// ensure the UI is closed so the user can interact with the content
-	toggleEyasUI(false);
-}
 
 // when the app resizes
 function onResize(): void {
@@ -718,9 +662,7 @@ function openTestServerInBrowserHandler(_event?: unknown, url?: DomainUrl): void
 	testServerService.openInBrowser(getCoreContext(), url);
 }
 
-function resetTestServerSettings(): void {
-	testServerService.resetSettings(getCoreContext());
-}
+
 
 async function startTestServerHandler(): Promise<void> {
 	await testServerService.showSetupModal(getCoreContext());
@@ -834,7 +776,7 @@ function getMenuContext(params: MenuContextParams): MenuContext {
 		cacheSize,
 		showAbout,
 		quit: _electronCore.quit,
-		startAFreshTest: () => startAFreshTest(true),
+		startAFreshTest: () => navigationService.startAFreshTest(getCoreContext(), true),
 		copyUrl,
 		openUiDevTools: (): void => $eyasLayer?.webContents.openDevTools(),
 		navigateHome,
@@ -888,7 +830,7 @@ function copyUrl(): void {
  */
 function navigateHome(): void {
 	if ($isInitializing) return;
-	navigate();
+	navigationService.navigate(getCoreContext());
 }
 
 /**
@@ -1005,7 +947,10 @@ async function setMenu(): Promise<void> {
 	}
 
 	const viewportItems = getViewportMenuItems($appWindow, $allViewports, $currentViewport);
-	const linkItems = getLinkMenuItems($config, { navigate, navigateVariable });
+	const linkItems = getLinkMenuItems($config, {
+		navigate: (path?: DomainUrl, openInBrowser?: IsActive) => navigationService.navigate(getCoreContext(), path, openInBrowser),
+		navigateVariable: (url: DomainUrl) => navigationService.navigateVariable(getCoreContext(), url)
+	});
 
 	const context = getMenuContext({
 		sessionAge,
@@ -1107,37 +1052,7 @@ function manageAppClose(evt: PreventableEvent): void {
 	trackEvent(MP_EVENTS.ui.modalBackgroundContentViewed);
 }
 
-// navigate to a variable url
-function navigateVariable(url: DomainUrl): void {
-	const env = { url: $testDomainRaw || ``, key: $envKey };
 
-	// substitute all Eyas-managed env variables (_env.url, _env.key, testdomain)
-	const output = substituteEnvVariables(url, env);
-
-	// if substitution returned null, the env url is required but not yet set
-	if (output === null) {
-		if (!$appWindow) { return; }
-
-		// alert the user that they need to select an environment first
-		dialog.showMessageBoxSync($appWindow, {
-			type: `warning`,
-			buttons: [`OK`],
-			title: `Select an Environment`,
-			message: `You must select an environment before you can use this link`
-		});
-
-		return;
-	}
-
-	// if the url still has user-input variables
-	if (hasRemainingVariables(output)) {
-		// send request to the UI layer
-		uiEvent(`show-variables-modal`, output);
-	} else {
-		// just pass through to navigate
-		navigate(parseURL(output)?.toString());
-	}
-}
 
 
 // clears the test cache
@@ -1152,142 +1067,9 @@ function clearCache(): void {
 	setMenu();
 }
 
-// refresh the app
-/**
- * Resets the test state including server and initialization flags.
- */
-async function resetFreshTestState(): Promise<void> {
-	// stop test server when test changes
-	if (testServer.getTestServerState()) {
-		await stopTestServer();
-	}
 
-	// clear the cached port for the test server
-	testServer.clearTestServerPort();
 
-	// reset initialization state
-	$isInitializing = true;
 
-	// Reset test server settings
-	resetTestServerSettings();
-}
-
-/**
- * Initializes the viewports based on the configuration and defaults.
- */
-function initFreshTestViewports(): void {
-	// set the available viewports
-	$allViewports = [...($config?.viewports || []), ...$defaultViewports];
-
-	// reset the current viewport to the first in the list
-	$currentViewport[0] = $allViewports[0].width;
-	$currentViewport[1] = $allViewports[0].height;
-	$appWindow?.setContentSize($currentViewport[0], $currentViewport[1]);
-}
-
-/**
- * Sets up the source path and domain information for the test.
- */
-function setupFreshTestSource(): void {
-	// reset the path to the test source
-	$paths.testSrc = $config?.source || ``;
-
-	// check if $config.source is a url
-	const sourceOnWeb = parseURL($config?.source || ``);
-	if (sourceOnWeb) {
-		$testDomainRaw = $config?.source || ``;
-		$testDomain = sourceOnWeb.toString();
-		$envKey = null; // source URLs have no key
-	}
-}
-
-/**
- * Handles navigation logic for no domains or a single domain.
- * @returns {boolean} True if navigation was handled.
- */
-function handleSimpleDomainNavigation(): IsActive {
-	// if there are no custom domains defined
-	if (!$config?.domains.length) {
-		console.log(`No domains defined, navigating...`);
-		// load the test using the default domain
-		navigate();
-		return true;
-	}
-
-	// if the user has a single custom domain
-	if ($config?.domains.length === 1) {
-		console.log(`Single domain defined, navigating...`);
-		// update the default domain and env key
-		const parsed = parseURL($testDomainRaw);
-		$testDomain = (parsed instanceof URL ? parsed.toString() : $testDomain);
-		$envKey = $config.domains[0].key ?? null;
-
-		// directly load the user's test using the new default domain
-		navigate();
-		return true;
-	}
-
-	return false;
-}
-
-/**
- * Handles navigation logic for multiple custom domains.
- * @param {boolean} forceShow - Whether to force show the environment modal.
- */
-function handleMultiDomainNavigation(forceShow: IsActive): void {
-	if (!$config || $config.domains.length <= 1) { return; }
-
-	const currentHash = hashDomains($config.domains);
-	const envSettings = settingsService.get(`env`, $config.meta.projectId ?? undefined) as EnvironmentSettings | undefined;
-	const alwaysChoose = envSettings?.alwaysChoose;
-	const lastChoice = envSettings?.lastChoice;
-	const lastHash = envSettings?.lastChoiceHash;
-
-	// skip the modal if the user opted out AND the domain list hasn't changed AND it's not a forced show
-	if (!forceShow && alwaysChoose && lastChoice && lastHash === currentHash) {
-		// auto-select the previously chosen environment
-		$testDomainRaw = lastChoice.url;
-		const parsed = parseURL(lastChoice.url);
-		$testDomain = (parsed instanceof URL ? parsed.toString() : $testDomain);
-		$envKey = lastChoice.key ?? null;
-		navigate();
-	} else {
-		// display the environment chooser modal
-		$isEnvironmentPending = true;
-		uiEvent(`show-environment-modal`, $config.domains, {
-			projectId: $config.meta.projectId ?? undefined,
-			alwaysChoose: !!alwaysChoose,
-			domainsHash: currentHash,
-			forceShow
-		});
-		setMenu();
-	}
-}
-
-/**
- * Checks for a version mismatch between the runner and the test builder.
- */
-function checkVersionMismatch(): void {
-	// if the runner is older than the version that built the test
-	if ($config?.meta.eyas && semver.lt(_appVersion, $config.meta.eyas)) {
-		// send request to the UI layer
-		uiEvent(`show-version-mismatch-modal`, _appVersion, $config.meta.eyas);
-	}
-}
-
-// refresh the app
-async function startAFreshTest(forceShow = false): Promise<void> {
-	await resetFreshTestState();
-	initFreshTestViewports();
-	setMenu();
-	setupFreshTestSource();
-
-	if (!handleSimpleDomainNavigation()) {
-		handleMultiDomainNavigation(forceShow);
-	}
-
-	checkVersionMismatch();
-}
 
 
 /**
