@@ -147,8 +147,8 @@ export default tseslint.config(
 					message: `Do not use inline object types. Define a named interface/type in src/types/ instead.`
 				},
 				{
-					selector: `TSTypeAnnotation > :matches(TSNumberKeyword, TSBooleanKeyword, TSStringKeyword, TSArrayType > :matches(TSNumberKeyword, TSBooleanKeyword, TSStringKeyword))`,
-					message: `Do not use raw primitives (or arrays of primitives) in type annotations. Define a semantic type alias in src/types/ (e.g., type ViewportWidth = number) to provide context and maintainability.`
+					selector: `:matches(TSNumberKeyword, TSBooleanKeyword, TSStringKeyword, TSArrayType > :matches(TSNumberKeyword, TSBooleanKeyword, TSStringKeyword)):not(TSTypeAliasDeclaration *)`,
+					message: `Do not use raw primitives (or arrays of primitives) in type annotations or casts. Define a semantic type alias in src/types/ (e.g., type ViewportWidth = number) to provide context and maintainability.`
 				},
 				{
 					selector: `CallExpression[callee.property.name=/^(send|receive)$/]:matches([callee.object.name='eyas'], [callee.object.property.name='eyas']) > :matches(Literal, TemplateLiteral):first-child`,
@@ -197,8 +197,8 @@ export default tseslint.config(
 					message: `Do not use inline object types. Define a named interface/type in src/types/ instead.`
 				},
 				{
-					selector: `TSTypeAnnotation > :matches(TSNumberKeyword, TSBooleanKeyword, TSStringKeyword, TSArrayType > :matches(TSNumberKeyword, TSBooleanKeyword, TSStringKeyword))`,
-					message: `Do not use raw primitives (or arrays of primitives) in type annotations. Define a semantic type alias in src/types/ (e.g., type ViewportWidth = number) to provide context and maintainability.`
+					selector: `:matches(TSNumberKeyword, TSBooleanKeyword, TSStringKeyword, TSArrayType > :matches(TSNumberKeyword, TSBooleanKeyword, TSStringKeyword)):not(TSTypeAliasDeclaration *)`,
+					message: `Do not use raw primitives (or arrays of primitives) in type annotations or casts. Define a semantic type alias in src/types/ (e.g., type ViewportWidth = number) to provide context and maintainability.`
 				},
 				{
 					selector: `CallExpression[callee.property.name=/^(send|receive)$/]:matches([callee.object.name='eyas'], [callee.object.property.name='eyas']) > :matches(Literal, TemplateLiteral):first-child`,
