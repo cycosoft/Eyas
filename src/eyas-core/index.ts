@@ -1,5 +1,5 @@
 import type {
-	BrowserView
+	WebContentsView
 } from 'electron';
 import {
 	app,
@@ -46,7 +46,7 @@ import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActiv
 // global variables $
 const $isDev = process.argv.includes(`--dev`) as IsActive;
 let $appWindow: BrowserWindow | null = null;
-let $eyasLayer: BrowserView | null = null;
+let $eyasLayer: WebContentsView | null = null;
 let $config: ValidatedConfig | null = null;
 let $configToLoad: ConfigToLoad = {};
 let $testNetworkEnabled: IsActive = true;
@@ -157,7 +157,7 @@ const coreContextSetters = {
 	setAllViewports: (viewports: Viewport[]): void => { $allViewports = viewports; },
 	setPendingStartupModal: (modal: StartupModal | null): void => { $pendingStartupModal = modal; },
 	setAppWindow: (window: BrowserWindow | null): void => { $appWindow = window; },
-	setEyasLayer: (layer: BrowserView | null): void => { $eyasLayer = layer; },
+	setEyasLayer: (layer: WebContentsView | null): void => { $eyasLayer = layer; },
 	setConfigToLoad: (config: ConfigToLoad): void => { $configToLoad = config; },
 	setConfig: (config: ValidatedConfig): void => { $config = config; }
 };
@@ -194,7 +194,7 @@ function getCoreContext(): CoreContext {
 
 	$coreContext = {
 		get $appWindow(): BrowserWindow | null { return $appWindow; },
-		get $eyasLayer(): BrowserView | null { return $eyasLayer; },
+		get $eyasLayer(): WebContentsView | null { return $eyasLayer; },
 		get $config(): ValidatedConfig | null { return $config; },
 		get $configToLoad(): ConfigToLoad { return $configToLoad; },
 		get $testNetworkEnabled(): IsActive { return $testNetworkEnabled; },

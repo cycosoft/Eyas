@@ -18,5 +18,9 @@ test-results/
 playwright-report/
 .test-data/
 out/
+tests/.test-user-data-sequencing/
+tests/.test-user-data-trigger/
+tests/tmp/
+scratch/
 
 *.tsbuildinfo

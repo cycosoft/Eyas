@@ -33,11 +33,28 @@ vi.mock(`electron`, () => ({
 			on: vi.fn(),
 			loadURL: vi.fn(),
 			addBrowserView: vi.fn(),
+			contentView: {
+				addChildView: vi.fn(),
+				removeInterfaceView: vi.fn()
+			},
 			show: vi.fn(),
 			setContentSize: vi.fn(),
 			getContentSize: vi.fn().mockReturnValue([1366, 768]),
 			setTitle: vi.fn(),
 			removeListener: vi.fn()
+		};
+	}),
+	WebContentsView: vi.fn().mockImplementation(function() {
+		return {
+			webContents: {
+				on: vi.fn(),
+				loadURL: vi.fn(),
+				send: vi.fn(),
+				focus: vi.fn(),
+				isFocused: vi.fn().mockReturnValue(true)
+			},
+			setBounds: vi.fn(),
+			getBounds: vi.fn().mockReturnValue({ width: 1366, height: 768 })
 		};
 	}),
 	BrowserView: vi.fn().mockImplementation(function() {

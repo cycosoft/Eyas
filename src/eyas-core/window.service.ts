@@ -1,4 +1,4 @@
-import { BrowserWindow, BrowserView } from 'electron';
+import { BrowserWindow, WebContentsView } from 'electron';
 import type { CoreContext, WindowService } from '@registry/eyas-core.js';
 import { MP_EVENTS } from './metrics-events.js';
 import type { TimestampMS } from '@registry/primitives.js';
@@ -67,7 +67,7 @@ export const windowService: WindowService = {
 	},
 
 	/**
-	 * Initializes the Eyas UI layer as a BrowserView.
+	 * Initializes the Eyas UI layer as a WebContentsView.
 	 * @param ctx The core context.
 	 * @param splashScreen The splash screen window.
 	 * @param splashVisible The timestamp when the splash screen became visible.
@@ -79,7 +79,7 @@ export const windowService: WindowService = {
 		const isDev = process.argv.includes(`--dev`);
 		const uiDomain = `ui://eyas.interface`;
 
-		const layer = new BrowserView({
+		const layer = new WebContentsView({
 			webPreferences: {
 				preload: $paths.eventBridge,
 				partition: `persist:${$config?.meta.testId}`,
@@ -88,7 +88,7 @@ export const windowService: WindowService = {
 		});
 
 		ctx.setEyasLayer(layer);
-		$appWindow.addBrowserView(layer);
+		$appWindow.contentView.addChildView(layer);
 
 		const url = (isDev && process.env[`ELECTRON_RENDERER_URL`])
 			? `${process.env[`ELECTRON_RENDERER_URL`]}/index.html`

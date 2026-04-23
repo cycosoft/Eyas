@@ -1,4 +1,4 @@
-import type { BrowserWindow, BrowserView } from 'electron';
+import type { BrowserWindow, WebContentsView } from 'electron';
 import type { ValidatedConfig } from './config.js';
 import type { TestServerOptions } from './test-server.js';
 import type { IsActive, IsPending, DomainUrl, MPEventName, ChannelName, TimestampMS, AppVersion, EnvironmentKey, AppTitle, FormattedDuration, RetryCount, UpdateStatus, MetadataRecord } from './primitives.js';
@@ -26,7 +26,7 @@ export type EyasPaths = {
 export type CoreContext = {
 	// State
 	$appWindow: BrowserWindow | null;
-	$eyasLayer: BrowserView | null;
+	$eyasLayer: WebContentsView | null;
 	$config: ValidatedConfig | null;
 	$configToLoad: ConfigToLoad;
 	$testNetworkEnabled: IsActive;
@@ -63,7 +63,7 @@ export type CoreContext = {
 	setAllViewports: (viewports: Viewport[]) => void;
 	setPendingStartupModal: (modal: StartupModal | null) => void;
 	setAppWindow: (window: BrowserWindow | null) => void;
-	setEyasLayer: (layer: BrowserView | null) => void;
+	setEyasLayer: (layer: WebContentsView | null) => void;
 	setConfigToLoad: (config: ConfigToLoad) => void;
 	setConfig: (config: ValidatedConfig) => void;
 
