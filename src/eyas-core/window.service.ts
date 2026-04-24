@@ -98,6 +98,9 @@ export const windowService: WindowService = {
 			height: ctx.$currentViewport[1]
 		});
 
+		// make the layer transparent
+		layer.setBackgroundColor(`#00000000`);
+
 		const url = (isDev && process.env[`ELECTRON_RENDERER_URL`])
 			? `${process.env[`ELECTRON_RENDERER_URL`]}/index.html`
 			: `${uiDomain}/index.html`;
