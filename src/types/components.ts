@@ -155,4 +155,33 @@ export type VersionMismatchData = {
 	testVersion?: AppVersion;
 };
 
+/** A single item in a navigation group's submenu */
+export type NavItem = {
+	title: LabelString;
+	value: LabelString;
+};
 
+/** A top-level navigation group with a dropdown submenu */
+export type NavGroup = {
+	name: LabelString;
+	submenu: NavItem[];
+};
+
+/** Event payload for navigation group activation */
+export type NavActivateEvent = {
+	currentTarget: Element;
+};
+
+/**
+ * Type helper for the AppHeader Vue component's ViewModel in tests.
+ */
+export type AppHeaderVM = {
+	menu: IsActive;
+	menuItems: NavItem[];
+	menuMoving: IsActive;
+	activator: Element | undefined;
+	activate: (event: NavActivateEvent, group: NavGroup) => void;
+	onListEnter: () => void;
+	delayedClose: () => void;
+	$nextTick: () => Promise<void>;
+};

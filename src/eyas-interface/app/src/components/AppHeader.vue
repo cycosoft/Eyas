@@ -36,8 +36,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onMounted } from 'vue';
-import type { NavGroup, NavItem, NavActivateEvent } from '@/types/nav.js';
+import { ref, onMounted } from 'vue';
+import type { NavGroup, NavItem, NavActivateEvent, PendingNavOpen } from '@/types/nav.js';
 import type { ChannelName } from '@registry/primitives.js';
 
 const menu = ref(false);
@@ -88,7 +88,7 @@ const RESIZE_FALLBACK_MS = 200;
 let closeTimeout = -1;
 let movingTimeout = -1;
 let resizeFallback = -1;
-let pendingOpen: { target: Element; group: NavGroup } | null = null;
+let pendingOpen: PendingNavOpen | null = null;
 
 function openMenu(targetEl: Element, group: NavGroup): void {
 	activator.value = targetEl;

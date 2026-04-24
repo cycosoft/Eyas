@@ -1,5 +1,4 @@
-import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, FilePath, DomainUrl, SettingKey, IsActive, IsDefault, LoadMethod, AppVersion, HashString, AppTitle } from './primitives.js';
-
+import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, FilePath, DomainUrl, SettingKey, IsActive, IsDefault, LoadMethod, AppVersion, HashString, AppTitle, ScreenCoordinate, PixelDimension } from './primitives.js';
 
 /** A viewport configuration for the browser window */
 export type Viewport = {
@@ -62,5 +61,10 @@ export type PreventableEvent = {
 	preventDefault: () => void;
 }
 
-
-
+/** A rectangle representing a view's bounds */
+export type Rectangle = {
+	x: ScreenCoordinate;
+	y: ScreenCoordinate;
+	width: PixelDimension;
+	height: PixelDimension;
+};

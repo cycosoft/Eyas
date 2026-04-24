@@ -1,5 +1,5 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
-import { app, BrowserWindow, ipcMain, session, protocol } from 'electron';
+import { app, BrowserWindow, ipcMain, session, protocol, type IpcMainEvent } from 'electron';
 import type { EyasPaths } from '@registry/eyas-core.js';
 
 type BrowserWindowConstructor = { new (): BrowserWindow };
@@ -364,19 +364,19 @@ describe(`UI Expansion IPC`, () => {
 		} as unknown as CoreContext;
 
 		// get the handler registered by initIpcHandlers
-		let showUiHandler: (() => void) | null = null;
+		let showUiHandler: unknown = null;
 		vi.spyOn(ipcMain, `on`).mockImplementation((channel, cb) => {
-			if (channel === `show-ui`) { showUiHandler = cb as () => void; }
+			if (channel === `show-ui`) { showUiHandler = cb; }
+			return ipcMain;
 		});
 
 		initIpcHandlers(ctx);
 
-		if (!showUiHandler) { throw new Error(`show-ui handler not registered`); }
+		if (typeof showUiHandler !== `function`) { throw new Error(`show-ui handler not registered`); }
 
 		// trigger the handler
-		showUiHandler();
+		showUiHandler({} as IpcMainEvent);
 
 		expect(ctx.toggleEyasUI).toHaveBeenCalledWith(true);
 	});
 });
-

@@ -9,3 +9,14 @@ export type NavGroup = {
 	name: string;
 	submenu: NavItem[];
 };
+
+/** Data for a navigation group that is waiting to be opened */
+export type PendingNavOpen = {
+	target: Element;
+	group: NavGroup;
+};
+
+/** Event payload for navigation group activation */
+export type NavActivateEvent = {
+	currentTarget: Element;
+};

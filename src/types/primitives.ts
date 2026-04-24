@@ -72,6 +72,8 @@ export type CommandLineArgs = string[];
 export type ViewportWidth = number;
 export type ViewportHeight = number;
 export type ViewportLabel = string;
+export type ScreenCoordinate = number;
+export type PixelDimension = number;
 
 // Identity / Identification
 export type HashString = string;

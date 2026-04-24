@@ -1,7 +1,7 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { uiService } from '@core/ui.service.js';
 import { EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
-import type { CoreContext, UIService } from '@registry/eyas-core.js';
+import type { CoreContext } from '@registry/eyas-core.js';
 import type { ChannelName } from '@registry/primitives.js';
 import type { AppSettings } from '@registry/core.js';
 import type { ProjectSettings } from '@registry/settings.js';

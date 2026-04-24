@@ -1,7 +1,8 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { windowService } from '@core/window.service.js';
 import { EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
-import type { CoreContext } from '@registry/eyas-core.js';
+import type { CoreContext, CoreMockLayer, CoreMockWindow } from '@registry/eyas-core.js';
+import type { Rectangle } from '@registry/core.js';
 
 // Mock electron
 vi.mock(`electron`, () => ({
@@ -32,8 +33,8 @@ vi.mock(`@core/metrics-events.js`, () => ({ MP_EVENTS: {} }));
 
 describe(`window.service.ts unit tests`, () => {
 	let mockCtx: CoreContext;
-	let mockLayer: { setBounds: ReturnType<typeof vi.fn>; setBackgroundColor: ReturnType<typeof vi.fn>; webContents: { loadURL: ReturnType<typeof vi.fn>; on: ReturnType<typeof vi.fn> } };
-	let mockWindow: { getContentSize: ReturnType<typeof vi.fn>; on: ReturnType<typeof vi.fn>; webContents: { on: ReturnType<typeof vi.fn> }; contentView: { addChildView: ReturnType<typeof vi.fn> } };
+	let mockLayer: CoreMockLayer;
+	let mockWindow: CoreMockWindow;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -41,16 +42,27 @@ describe(`window.service.ts unit tests`, () => {
 		mockLayer = {
 			setBounds: vi.fn(),
 			setBackgroundColor: vi.fn(),
+			getBounds: vi.fn(),
 			webContents: {
 				loadURL: vi.fn(),
-				on: vi.fn()
+				on: vi.fn(),
+				send: vi.fn(),
+				focus: vi.fn(),
+				isFocused: vi.fn().mockReturnValue(true)
 			}
 		};
 
 		mockWindow = {
 			getContentSize: vi.fn().mockReturnValue([800, 600]),
 			on: vi.fn(),
-			webContents: { on: vi.fn() },
+			webContents: {
+				on: vi.fn(),
+				session: {
+					webRequest: {
+						onBeforeRequest: vi.fn()
+					}
+				}
+			},
 			contentView: { addChildView: vi.fn() }
 		};
 
@@ -83,8 +95,7 @@ describe(`window.service.ts unit tests`, () => {
 		test(`when UI layer is active (full height), updates to new full height on resize`, () => {
 			// UI is active: layer height matches the full viewport height
 			mockLayer.setBounds = vi.fn();
-			(mockLayer as unknown as { getBounds: () => { x: number; y: number; width: number; height: number } }).getBounds =
-				vi.fn().mockReturnValue({ x: 0, y: 0, width: 800, height: 600 });
+			mockLayer.getBounds = vi.fn().mockReturnValue({ x: 0, y: 0, width: 800, height: 600 } as Rectangle);
 			mockWindow.getContentSize = vi.fn().mockReturnValue([1024, 768]);
 
 			windowService.handleResize(mockCtx);
@@ -95,8 +106,7 @@ describe(`window.service.ts unit tests`, () => {
 		test(`when UI layer is passive (header height), updates width but keeps header height on resize`, () => {
 			// UI is passive: layer height equals EYAS_HEADER_HEIGHT
 			mockLayer.setBounds = vi.fn();
-			(mockLayer as unknown as { getBounds: () => { x: number; y: number; width: number; height: number } }).getBounds =
-				vi.fn().mockReturnValue({ x: 0, y: 0, width: 800, height: EYAS_HEADER_HEIGHT });
+			mockLayer.getBounds = vi.fn().mockReturnValue({ x: 0, y: 0, width: 800, height: EYAS_HEADER_HEIGHT } as Rectangle);
 			mockWindow.getContentSize = vi.fn().mockReturnValue([1024, 768]);
 
 			windowService.handleResize(mockCtx);
