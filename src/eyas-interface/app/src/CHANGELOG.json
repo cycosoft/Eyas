@@ -2,6 +2,7 @@
 	{
 		"version": "26.5.0",
 		"items": [
+			{ "text": "🟢 App Redesign" },
 			{ "text": "🟣 Code modernization" }
 		]
 	},
