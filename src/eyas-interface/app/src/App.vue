@@ -1,5 +1,6 @@
 <template>
 	<v-app data-qa="app-container">
+		<AppHeader />
 		<EnvironmentModal />
 		<VariablesModal />
 		<ExitModal />
@@ -16,6 +17,7 @@ import { onMounted, watch, computed } from 'vue';
 import { useTheme } from 'vuetify';
 import { THEME_MODES } from '@scripts/constants.js';
 import useSettingsStore from '@/stores/settings.js';
+import AppHeader from '@/components/AppHeader.vue';
 import ExitModal from '@/components/ExitModal.vue';
 import EnvironmentModal from '@/components/EnvironmentModal.vue';
 import VariablesModal from '@/components/VariablesModal.vue';

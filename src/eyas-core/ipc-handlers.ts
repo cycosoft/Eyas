@@ -36,6 +36,9 @@ export function initIpcHandlers(ctx: CoreContext): void {
  * @param ctx The core context.
  */
 function initAppIpcListeners(ctx: CoreContext): void {
+	// show the UI at full height when requested (e.g. header dropdown opened)
+	ipcMain.on(`show-ui`, () => { ctx.toggleEyasUI(true); });
+
 	// hide the UI when requested
 	ipcMain.on(`hide-ui`, () => { ctx.toggleEyasUI(false); });
 
