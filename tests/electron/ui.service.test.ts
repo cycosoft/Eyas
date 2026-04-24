@@ -41,7 +41,7 @@ describe(`ui.service.ts unit tests`, () => {
 		} as unknown as CoreContext;
 	});
 
-	test(`toggleEyasUI(true) should show layer and focus`, () => {
+	test(`toggleEyasUI(true) should sync bounds and focus the layer`, () => {
 		uiService.toggleEyasUI(mockCtx, true);
 		expect(mockCtx.$eyasLayer?.setBounds).toHaveBeenCalledWith({ x: 0, y: 0, width: 800, height: 600 });
 		expect(mockCtx.$eyasLayer?.webContents.focus).toHaveBeenCalled();

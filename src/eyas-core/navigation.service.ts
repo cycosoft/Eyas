@@ -16,7 +16,7 @@ import type { EnvironmentSettings } from '@registry/settings.js';
  * @param path Optional path to navigate to.
  * @param openInBrowser Whether to open the path in an external browser.
  */
-function navigate(ctx: CoreContext, path?: DomainUrl, openInBrowser?: IsActive): void {
+function navigate(ctx: CoreContext, path?: DomainUrl, openInBrowser?: IsActive, closeUi: IsActive = true): void {
 	if (!ctx.$appWindow) { return; }
 
 	// setup
@@ -49,7 +49,9 @@ function navigate(ctx: CoreContext, path?: DomainUrl, openInBrowser?: IsActive):
 	}
 
 	// ensure the UI is closed so the user can interact with the content
-	ctx.toggleEyasUI(false);
+	if (closeUi) {
+		ctx.toggleEyasUI(false);
+	}
 }
 
 /**

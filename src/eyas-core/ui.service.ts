@@ -16,7 +16,8 @@ export const uiService: UIService = {
 		if (!ctx.$eyasLayer) { return; }
 
 		if (enable) {
-			// set the bounds to the current viewport
+			// explicitly set the bounds to ensure the UI layer is perfectly synced to the current
+			// window size; this prevents off-center modals during startup or window transitions
 			ctx.$eyasLayer.setBounds({
 				x: 0,
 				y: 0,

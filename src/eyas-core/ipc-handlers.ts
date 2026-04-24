@@ -66,7 +66,7 @@ function initAppIpcListeners(ctx: CoreContext): void {
 	ipcMain.on(`launch-link`, (_event, { url, openInBrowser }: LaunchLinkPayload) => {
 		// navigate to the requested url
 		const parsed = parseURL(url);
-		ctx.navigate(parsed ? parsed.toString() : url, openInBrowser);
+		ctx.navigate(parsed ? parsed.toString() : url, openInBrowser, !openInBrowser);
 	});
 }
 

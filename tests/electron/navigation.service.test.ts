@@ -96,6 +96,13 @@ describe(`navigation.service.ts unit tests`, () => {
 		navigationService.navigate(mockCtx, `https://external.com` as DomainUrl, true);
 		expect(shell.openExternal).toHaveBeenCalledWith(`https://external.com`);
 		expect(mockCtx.$appWindow?.loadURL).not.toHaveBeenCalled();
+		expect(mockCtx.toggleEyasUI).toHaveBeenCalledWith(false); // Default behavior
+	});
+
+	test(`navigate should NOT close UI if closeUi is false`, () => {
+		navigationService.navigate(mockCtx, `https://external.com` as DomainUrl, true, false);
+		expect(shell.openExternal).toHaveBeenCalledWith(`https://external.com`);
+		expect(mockCtx.toggleEyasUI).not.toHaveBeenCalled();
 	});
 
 	test(`navigateVariable should substitute variables and navigate`, () => {
