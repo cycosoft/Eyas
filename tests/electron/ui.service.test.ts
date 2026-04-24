@@ -39,9 +39,6 @@ describe(`ui.service.ts unit tests`, () => {
 			uiEvent: vi.fn(),
 			triggerBufferedModal: vi.fn()
 		} as unknown as CoreContext;
-
-		// Reset internal state of the service
-		(uiService as UIService).focusAttempts = 0;
 	});
 
 	test(`toggleEyasUI(true) should show layer and focus`, () => {
@@ -56,34 +53,9 @@ describe(`ui.service.ts unit tests`, () => {
 		expect(mockCtx.$eyasLayer?.setBounds).not.toHaveBeenCalledWith({ x: 0, y: 0, width: 0, height: 0 });
 	});
 
-	test(`focusUI should retry if not focused`, () => {
-		if (!mockCtx.$eyasLayer) { throw new Error(`mockCtx.$eyasLayer is missing`); }
-		vi.mocked(mockCtx.$eyasLayer.webContents.isFocused)
-			.mockReturnValueOnce(false)
-			.mockReturnValueOnce(true);
-
+	test(`focusUI should focus the webContents`, () => {
 		uiService.focusUI(mockCtx);
 		expect(mockCtx.$eyasLayer?.webContents.focus).toHaveBeenCalledTimes(1);
-
-		vi.advanceTimersByTime(250);
-		expect(mockCtx.$eyasLayer?.webContents.focus).toHaveBeenCalledTimes(2);
-
-		vi.advanceTimersByTime(250);
-		expect(mockCtx.$eyasLayer?.webContents.focus).toHaveBeenCalledTimes(2); // No more retries
-	});
-
-	test(`focusUI should stop after 5 attempts`, () => {
-		if (!mockCtx.$eyasLayer) { throw new Error(`mockCtx.$eyasLayer is missing`); }
-		vi.mocked(mockCtx.$eyasLayer.webContents.isFocused).mockReturnValue(false);
-
-		uiService.focusUI(mockCtx); // 1
-		for (let i = 0; i < 4; i++) {
-			vi.advanceTimersByTime(250); // 2, 3, 4, 5
-		}
-		expect(mockCtx.$eyasLayer?.webContents.focus).toHaveBeenCalledTimes(5);
-
-		vi.advanceTimersByTime(250); // Should stop here
-		expect(mockCtx.$eyasLayer?.webContents.focus).toHaveBeenCalledTimes(5);
 	});
 
 	test(`uiEvent should buffer if Whats New is required`, () => {

@@ -11,7 +11,11 @@
 		/* hide all scrollbars (doesn't work on Chrome mobile) */
 		::-webkit-scrollbar { display: none; }
 		.v-application { background-color: transparent !important; }
-		.v-overlay:first-of-type { backdrop-filter: blur(5px); }
+		.v-overlay__scrim {
+			backdrop-filter: blur(3px);
+			background-color: rgba(0, 0, 0, 0.4);
+			opacity: unset;
+		}
 		body { font-family: Verdana, Geneva, Tahoma, sans-serif; }
 		.cursor-pointer { cursor: pointer; }
 	</style>

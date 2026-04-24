@@ -37,37 +37,7 @@ export const uiService: UIService = {
 	 * @param ctx The core context.
 	 */
 	focusUI(ctx: CoreContext): void {
-		if (!ctx.$eyasLayer) { return; }
-
-		// track the number of attempts to focus the UI to prevent infinite loops
-		this.focusAttempts = (this.focusAttempts || 0) + 1;
-
-		// if the number of attempts is greater than 5
-		if (this.focusAttempts > 5) {
-			// reset the number of attempts
-			this.focusAttempts = 0;
-
-			// stop trying to focus the UI
-			return;
-		}
-
-		// give the layer focus
-		ctx.$eyasLayer.webContents.focus();
-
-		// check if the UI is focused
-		setTimeout(() => {
-			if (!ctx.$eyasLayer) { return; }
-			const isFocused = ctx.$eyasLayer.webContents.isFocused();
-
-			// if the UI is not focused
-			if (!isFocused) {
-				// call the focus method again
-				this.focusUI(ctx);
-			} else {
-				// reset the number of attempts
-				this.focusAttempts = 0;
-			}
-		}, 250);
+		ctx.$eyasLayer?.webContents.focus();
 	},
 
 	/**
@@ -149,6 +119,5 @@ export const uiService: UIService = {
 		});
 	},
 
-	/** Internal counter for focus attempts */
-	focusAttempts: 0
+
 };

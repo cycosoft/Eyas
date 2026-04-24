@@ -1,12 +1,12 @@
 <template>
-	<v-overlay class="custom-background" :model-value="modelValue">
+	<v-overlay class="custom-background" :model-value="modelValue" :scrim="true">
 		<template v-if="contentVisible">
 			<div class="bottom-right">
 				<span class="cursor-pointer" @click="openInBrowser(`https://cycosoft.com`)">
 					<img
+						class="logo"
 						alt="Cycosoft, LLC logo"
 						src="@/assets/cycosoft-logo.svg"
-						width="175"
 					>
 				</span>
 			</div>
@@ -40,6 +40,12 @@ const openInBrowser = (url: DomainUrl): void => {
 		height: 100%;
 		align-items: flex-end;
 		justify-content: flex-end;
+	}
+
+	.logo {
+		margin-right: 1.5rem;
+		margin-bottom: 0.5rem;
+		width: 175px;
 	}
 }
 </style>
