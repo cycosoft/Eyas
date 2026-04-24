@@ -90,6 +90,14 @@ export const windowService: WindowService = {
 		ctx.setEyasLayer(layer);
 		$appWindow.contentView.addChildView(layer);
 
+		// set the initial bounds
+		layer.setBounds({
+			x: 0,
+			y: 0,
+			width: ctx.$currentViewport[0],
+			height: ctx.$currentViewport[1]
+		});
+
 		const url = (isDev && process.env[`ELECTRON_RENDERER_URL`])
 			? `${process.env[`ELECTRON_RENDERER_URL`]}/index.html`
 			: `${uiDomain}/index.html`;
@@ -170,10 +178,7 @@ export const windowService: WindowService = {
 		$currentViewport[0] = newWidth;
 		$currentViewport[1] = newHeight;
 
-		const { width, height } = $eyasLayer.getBounds();
-		if (width && height) {
-			$eyasLayer.setBounds({ x: 0, y: 0, width: newWidth, height: newHeight });
-		}
+		$eyasLayer.setBounds({ x: 0, y: 0, width: newWidth, height: newHeight });
 
 		ctx.setMenu();
 	},

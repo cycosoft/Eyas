@@ -29,9 +29,6 @@ export const uiService: UIService = {
 		} else {
 			// close all modals in the UI
 			ctx.$eyasLayer.webContents.send(`close-modals`);
-
-			// shrink the bounds to 0 to hide it
-			ctx.$eyasLayer.setBounds({ x: 0, y: 0, width: 0, height: 0 });
 		}
 	},
 

@@ -205,6 +205,23 @@ describe(`index.ts refactoring unit tests`, () => {
 		expect(ctx.setMenu).toHaveBeenCalled();
 	});
 
+	test(`handleResize should ALWAYS update bounds even if current layer is 0x0`, () => {
+		const mockLayer = {
+			getBounds: vi.fn().mockReturnValue({ width: 0, height: 0 }),
+			setBounds: vi.fn()
+		};
+		const ctx = {
+			$appWindow: { getContentSize: vi.fn().mockReturnValue([1024, 768]) },
+			$eyasLayer: mockLayer,
+			$currentViewport: [800, 600],
+			setMenu: vi.fn()
+		} as unknown as CoreContext;
+
+		windowService.handleResize(ctx);
+
+		expect(mockLayer.setBounds).toHaveBeenCalledWith({ x: 0, y: 0, width: 1024, height: 768 });
+	});
+
 	test(`initElectronUi should orchestrate window startup`, async () => {
 		const ctx = {
 			$defaultViewports: [{ width: 1024, height: 768 }],

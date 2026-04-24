@@ -50,10 +50,10 @@ describe(`ui.service.ts unit tests`, () => {
 		expect(mockCtx.$eyasLayer?.webContents.focus).toHaveBeenCalled();
 	});
 
-	test(`toggleEyasUI(false) should hide layer and close modals`, () => {
+	test(`toggleEyasUI(false) should close modals but NOT hide layer`, () => {
 		uiService.toggleEyasUI(mockCtx, false);
 		expect(mockCtx.$eyasLayer?.webContents.send).toHaveBeenCalledWith(`close-modals`);
-		expect(mockCtx.$eyasLayer?.setBounds).toHaveBeenCalledWith({ x: 0, y: 0, width: 0, height: 0 });
+		expect(mockCtx.$eyasLayer?.setBounds).not.toHaveBeenCalledWith({ x: 0, y: 0, width: 0, height: 0 });
 	});
 
 	test(`focusUI should retry if not focused`, () => {
