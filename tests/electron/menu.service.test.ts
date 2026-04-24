@@ -298,7 +298,7 @@ describe(`MenuService Helpers`, () => {
 				expect(mockWindow.webContents.toggleDevTools).toHaveBeenCalled();
 
 				handlers.openUiDevTools?.();
-				expect(mockCtx.$eyasLayer?.webContents.openDevTools).toHaveBeenCalled();
+				expect(mockCtx.$eyasLayer?.webContents.openDevTools).toHaveBeenCalledWith({ mode: `detach` });
 			});
 		});
 	});

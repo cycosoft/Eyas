@@ -205,6 +205,6 @@ export const menuService: MenuService = {
 		testServerHttpsEnabled: ctx.$testServerHttpsEnabled,
 		onToggleTestServerHttps: (): void => ctx.onToggleTestServerHttps(),
 		toggleTestDevTools: (): void => { ctx.$appWindow?.webContents.toggleDevTools(); },
-		openUiDevTools: (): void => ctx.$eyasLayer?.webContents.openDevTools()
+		openUiDevTools: (): void => ctx.$eyasLayer?.webContents.openDevTools({ mode: `detach` })
 	})
 };
