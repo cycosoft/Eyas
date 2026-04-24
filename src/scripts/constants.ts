@@ -33,3 +33,7 @@ export const SETTINGS_DEFAULTS = {
 		useCustomDomain: false
 	}
 } as const;
+// The pixel height of the persistent Eyas header/navigation bar.
+// Set to 0 until the header is built. When the header is implemented,
+// update this value and the content view layout will adjust automatically.
+export const EYAS_HEADER_HEIGHT = 0;

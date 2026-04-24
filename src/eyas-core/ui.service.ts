@@ -2,6 +2,7 @@ import type { CoreContext, UIService } from '@registry/eyas-core.js';
 import type { IsActive, ChannelName } from '@registry/primitives.js';
 import type { AppSettings } from '@registry/core.js';
 import * as settingsService from './settings-service.js';
+import { EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
 
 /**
  * Service for managing the Eyas UI layer (overlay) and modal flows.
@@ -16,8 +17,8 @@ export const uiService: UIService = {
 		if (!ctx.$eyasLayer) { return; }
 
 		if (enable) {
-			// explicitly set the bounds to ensure the UI layer is perfectly synced to the current
-			// window size; this prevents off-center modals during startup or window transitions
+			// restore the layer to full size, synced to the current window dimensions.
+			// this ensures the modal is centered and the scrim covers the full viewport.
 			ctx.$eyasLayer.setBounds({
 				x: 0,
 				y: 0,
@@ -30,6 +31,11 @@ export const uiService: UIService = {
 		} else {
 			// close all modals in the UI
 			ctx.$eyasLayer.webContents.send(`close-modals`);
+
+			// shrink the layer to header height so the persistent header remains visible,
+			// while the content view below receives all mouse events.
+			// the WebContentsView remains loaded and can still receive IPC messages.
+			ctx.$eyasLayer.setBounds({ x: 0, y: 0, width: ctx.$currentViewport[0], height: EYAS_HEADER_HEIGHT });
 		}
 	},
 
@@ -118,7 +124,7 @@ export const uiService: UIService = {
 			app: settingsService.getAppSettings(),
 			projectId: ctx.$config?.meta?.projectId || undefined
 		});
-	},
+	}
 
 
 };

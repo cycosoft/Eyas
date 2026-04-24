@@ -2,6 +2,7 @@ import { BrowserWindow, WebContentsView } from 'electron';
 import type { CoreContext, WindowService } from '@registry/eyas-core.js';
 import { MP_EVENTS } from './metrics-events.js';
 import type { TimestampMS } from '@registry/primitives.js';
+import { EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
 
 /**
  * Service for managing application windows and layers.
@@ -181,7 +182,13 @@ export const windowService: WindowService = {
 		$currentViewport[0] = newWidth;
 		$currentViewport[1] = newHeight;
 
-		$eyasLayer.setBounds({ x: 0, y: 0, width: newWidth, height: newHeight });
+		// determine if the UI layer is currently active (full screen) or passive (header only)
+		// by comparing its current height to the known header height constant.
+		const currentLayerHeight = $eyasLayer.getBounds().height;
+		const isActive = currentLayerHeight > EYAS_HEADER_HEIGHT;
+		const newLayerHeight = isActive ? newHeight : EYAS_HEADER_HEIGHT;
+
+		$eyasLayer.setBounds({ x: 0, y: 0, width: newWidth, height: newLayerHeight });
 
 		ctx.setMenu();
 	},

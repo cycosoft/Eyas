@@ -1,5 +1,6 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { uiService } from '@core/ui.service.js';
+import { EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
 import type { CoreContext, UIService } from '@registry/eyas-core.js';
 import type { ChannelName } from '@registry/primitives.js';
 import type { AppSettings } from '@registry/core.js';
@@ -41,16 +42,16 @@ describe(`ui.service.ts unit tests`, () => {
 		} as unknown as CoreContext;
 	});
 
-	test(`toggleEyasUI(true) should sync bounds and focus the layer`, () => {
+	test(`toggleEyasUI(true) should restore full bounds and focus the layer`, () => {
 		uiService.toggleEyasUI(mockCtx, true);
 		expect(mockCtx.$eyasLayer?.setBounds).toHaveBeenCalledWith({ x: 0, y: 0, width: 800, height: 600 });
 		expect(mockCtx.$eyasLayer?.webContents.focus).toHaveBeenCalled();
 	});
 
-	test(`toggleEyasUI(false) should close modals but NOT hide layer`, () => {
+	test(`toggleEyasUI(false) should close modals and shrink to header height`, () => {
 		uiService.toggleEyasUI(mockCtx, false);
 		expect(mockCtx.$eyasLayer?.webContents.send).toHaveBeenCalledWith(`close-modals`);
-		expect(mockCtx.$eyasLayer?.setBounds).not.toHaveBeenCalledWith({ x: 0, y: 0, width: 0, height: 0 });
+		expect(mockCtx.$eyasLayer?.setBounds).toHaveBeenCalledWith({ x: 0, y: 0, width: 800, height: EYAS_HEADER_HEIGHT });
 	});
 
 	test(`focusUI should focus the webContents`, () => {
