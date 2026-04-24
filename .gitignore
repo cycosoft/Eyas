@@ -24,3 +24,5 @@ tests/tmp/
 scratch/
 
 *.tsbuildinfo
+
+coverage/
