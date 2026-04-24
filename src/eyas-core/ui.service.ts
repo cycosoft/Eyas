@@ -28,6 +28,9 @@ export const uiService: UIService = {
 
 			// give the layer focus
 			this.focusUI(ctx);
+			
+			// notify renderer that the layer has expanded
+			ctx.$eyasLayer.webContents.send(`ui-shown`);
 		} else {
 			// close all modals in the UI
 			ctx.$eyasLayer.webContents.send(`close-modals`);
@@ -36,6 +39,9 @@ export const uiService: UIService = {
 			// while the content view below receives all mouse events.
 			// the WebContentsView remains loaded and can still receive IPC messages.
 			ctx.$eyasLayer.setBounds({ x: 0, y: 0, width: ctx.$currentViewport[0], height: EYAS_HEADER_HEIGHT });
+			
+			// notify renderer that the layer has collapsed
+			ctx.$eyasLayer.webContents.send(`ui-hidden`);
 		}
 	},
 

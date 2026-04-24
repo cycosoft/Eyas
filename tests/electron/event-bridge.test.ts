@@ -27,6 +27,7 @@ describe(`event-bridge channel whitelists`, () => {
 		const required = [
 			`app-exit`,
 			`hide-ui`,
+			`show-ui`,
 			`environment-selected`,
 			`launch-link`,
 			`network-status`,
@@ -57,7 +58,8 @@ describe(`event-bridge channel whitelists`, () => {
 			`close-modals`,
 			`show-settings-modal`,
 			`setting-saved`,
-			`settings-loaded`
+			`settings-loaded`,
+			`ui-shown`
 		];
 
 		test.each(required)(`includes channel: %s`, channel => {

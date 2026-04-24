@@ -219,7 +219,7 @@ describe(`index.ts refactoring unit tests`, () => {
 
 		windowService.handleResize(ctx);
 
-		expect(mockLayer.setBounds).toHaveBeenCalledWith({ x: 0, y: 0, width: 1024, height: 768 });
+		expect(mockLayer.setBounds).toHaveBeenCalledWith({ x: 0, y: 0, width: 1024, height: 48 }); // 48 is EYAS_HEADER_HEIGHT
 	});
 
 	test(`initElectronUi should orchestrate window startup`, async () => {
@@ -312,6 +312,7 @@ describe(`index.ts refactoring unit tests`, () => {
 		} as unknown as CoreContext;
 
 		initIpcHandlers(ctx);
+		expect(ipcMain.on).toHaveBeenCalledWith(`show-ui`, expect.any(Function));
 		expect(ipcMain.on).toHaveBeenCalledWith(`hide-ui`, expect.any(Function));
 		expect(ipcMain.on).toHaveBeenCalledWith(`app-exit`, expect.any(Function));
 		expect(ipcMain.on).toHaveBeenCalledWith(`network-status`, expect.any(Function));
@@ -354,3 +355,28 @@ describe(`index.ts refactoring unit tests`, () => {
 		expect(protocol.registerSchemesAsPrivileged).toHaveBeenCalled();
 	});
 });
+
+describe(`UI Expansion IPC`, () => {
+	test(`show-ui IPC handler should call toggleEyasUI(true)`, () => {
+		const ctx = {
+			toggleEyasUI: vi.fn(),
+			$eyasLayer: { webContents: { send: vi.fn() } }
+		} as unknown as CoreContext;
+
+		// get the handler registered by initIpcHandlers
+		let showUiHandler: (() => void) | null = null;
+		vi.spyOn(ipcMain, `on`).mockImplementation((channel, cb) => {
+			if (channel === `show-ui`) { showUiHandler = cb as () => void; }
+		});
+
+		initIpcHandlers(ctx);
+
+		if (!showUiHandler) { throw new Error(`show-ui handler not registered`); }
+
+		// trigger the handler
+		showUiHandler();
+
+		expect(ctx.toggleEyasUI).toHaveBeenCalledWith(true);
+	});
+});
+

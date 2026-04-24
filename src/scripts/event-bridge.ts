@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld(`eyas`, {
 		const validChannels = [
 			`app-exit`,
 			`hide-ui`,
+			`show-ui`,
 			`environment-selected`,
 			`launch-link`,
 			`network-status`,
@@ -44,7 +45,8 @@ contextBridge.exposeInMainWorld(`eyas`, {
 			`show-settings-modal`,
 			`setting-saved`,
 			`settings-loaded`,
-			`show-whats-new`
+			`show-whats-new`,
+			`ui-shown`
 		];
 		if (validChannels.includes(channel)) {
 			// Deliberately strip event as it includes `sender`

@@ -7,15 +7,20 @@ import type { WindowWithEyas } from '@registry/ipc.js';
 
 describe(`AppHeader`, () => {
 	let wrapper: VueWrapper;
-	let mockSend: ReturnType<typeof vi.fn>;
+	let uiShownCallback: (() => void) | null = null;
 
 	beforeEach(() => {
 		vi.useFakeTimers();
 		setActivePinia(createPinia());
 		mockSend = vi.fn();
+		uiShownCallback = null;
 		(window as unknown as WindowWithEyas).eyas = {
 			send: mockSend,
-			receive: vi.fn()
+			receive: vi.fn((channel: string, cb: () => void) => {
+				if (channel === `ui-shown`) {
+					uiShownCallback = cb;
+				}
+			})
 		};
 
 		wrapper = mount(AppHeader, {
@@ -42,7 +47,7 @@ describe(`AppHeader`, () => {
 	});
 
 	describe(`menu activation`, () => {
-		test(`activate() opens the menu and sets menu items from the group`, async () => {
+		test(`activate() sets menu items from the group`, async () => {
 			const vm = wrapper.vm as unknown as {
 				menu: boolean;
 				menuItems: { title: string; value: string }[];
@@ -53,9 +58,13 @@ describe(`AppHeader`, () => {
 			const group = { name: `Test`, submenu: [{ title: `Item`, value: `item` }] };
 
 			vm.activate({ currentTarget: fakeEl }, group);
+			
+			// simulate IPC propagation
+			if (uiShownCallback) uiShownCallback();
+			await wrapper.vm.$nextTick();
+			vi.advanceTimersByTime(20); // trigger requestAnimationFrame
 			await wrapper.vm.$nextTick();
 
-			expect(vm.menu).toBe(true);
 			expect(vm.menuItems).toEqual(group.submenu);
 		});
 
@@ -73,7 +82,57 @@ describe(`AppHeader`, () => {
 			expect(mockSend).toHaveBeenCalledWith(`show-ui`);
 		});
 
-		test(`activate() sets menuMoving when menu is already open`, async () => {
+		test(`activate() does NOT open menu immediately when menu was closed (waits for IPC event)`, async () => {
+			const vm = wrapper.vm as unknown as {
+				menu: boolean;
+				activate: (event: { currentTarget: Element }, group: { name: string; submenu: { title: string; value: string }[] }) => void;
+			};
+			vm.menu = false;
+
+			vm.activate({ currentTarget: document.createElement(`button`) }, { name: `Test`, submenu: [] });
+			await wrapper.vm.$nextTick();
+
+			// menu should NOT be open yet — it waits for the IPC event/fallback
+			expect(vm.menu).toBe(false);
+		});
+
+		test(`activate() opens menu after ui-shown event fires (viewport has expanded)`, async () => {
+			const vm = wrapper.vm as unknown as {
+				menu: boolean;
+				activate: (event: { currentTarget: Element }, group: { name: string; submenu: { title: string; value: string }[] }) => void;
+			};
+			vm.menu = false;
+
+			vm.activate({ currentTarget: document.createElement(`button`) }, { name: `Test`, submenu: [] });
+
+			// simulate IPC event
+			if (uiShownCallback) uiShownCallback();
+			await wrapper.vm.$nextTick();
+			vi.advanceTimersByTime(20); // trigger requestAnimationFrame
+			await wrapper.vm.$nextTick();
+
+			expect(vm.menu).toBe(true);
+		});
+
+		test(`activate() opens menu via fallback timeout if resize never fires`, async () => {
+			const vm = wrapper.vm as unknown as {
+				menu: boolean;
+				activate: (event: { currentTarget: Element }, group: { name: string; submenu: { title: string; value: string }[] }) => void;
+			};
+			vm.menu = false;
+
+			vm.activate({ currentTarget: document.createElement(`button`) }, { name: `Test`, submenu: [] });
+			expect(vm.menu).toBe(false);
+
+			vi.advanceTimersByTime(200);
+			await wrapper.vm.$nextTick();
+			vi.advanceTimersByTime(20); // trigger requestAnimationFrame
+			await wrapper.vm.$nextTick();
+			
+			expect(vm.menu).toBe(true);
+		});
+
+		test(`activate() opens menu immediately when menu is already open (glide)`, async () => {
 			const vm = wrapper.vm as unknown as {
 				menu: boolean;
 				menuMoving: boolean;
@@ -81,13 +140,13 @@ describe(`AppHeader`, () => {
 			};
 			vm.menu = true;
 
-			const fakeEl = document.createElement(`button`);
-			vm.activate({ currentTarget: fakeEl }, { name: `Test`, submenu: [] });
+			vm.activate({ currentTarget: document.createElement(`button`) }, { name: `Test`, submenu: [] });
 			await wrapper.vm.$nextTick();
 
+			// Already at full height — no wait needed
+			expect(vm.menu).toBe(true);
 			expect(vm.menuMoving).toBe(true);
 
-			// after 300ms the transition flag clears
 			vi.advanceTimersByTime(300);
 			expect(vm.menuMoving).toBe(false);
 		});
