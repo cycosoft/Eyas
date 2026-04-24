@@ -12,9 +12,14 @@
 		::-webkit-scrollbar { display: none; }
 		.v-application { background-color: transparent !important; }
 		.v-overlay__scrim {
-			backdrop-filter: blur(3px);
+			opacity: 1 !important;
+			background-color: transparent;
+			backdrop-filter: blur(0);
+			transition: background-color 0.3s ease, backdrop-filter 0.3s ease;
+		}
+		.v-overlay--active .v-overlay__scrim {
 			background-color: rgba(0, 0, 0, 0.4);
-			opacity: unset;
+			backdrop-filter: blur(3px);
 		}
 		body { font-family: Verdana, Geneva, Tahoma, sans-serif; }
 		.cursor-pointer { cursor: pointer; }
