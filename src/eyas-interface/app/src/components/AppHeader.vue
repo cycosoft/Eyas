@@ -14,7 +14,7 @@
 	<v-menu
 		v-model="menu"
 		:activator="activator"
-		:content-class="menuMoving ? `menu-move-transition` : ``"
+		:content-class="``"
 		location="bottom end"
 		:offset="4"
 		:viewport-margin="0"
@@ -43,7 +43,6 @@ import type { ChannelName } from '@registry/primitives.js';
 const menu = ref(false);
 const activator = ref<Element | undefined>();
 const menuItems = ref<NavItem[]>([]);
-const menuMoving = ref(false);
 
 // placeholder groups — replace with real application menus when ready
 const groups: NavGroup[] = [
@@ -86,7 +85,6 @@ const groups: NavGroup[] = [
 const RESIZE_FALLBACK_MS = 200;
 
 let closeTimeout = -1;
-let movingTimeout = -1;
 let resizeFallback = -1;
 let pendingOpen: PendingNavOpen | null = null;
 
@@ -109,14 +107,11 @@ onMounted(() => {
 
 function activate(event: NavActivateEvent, group: NavGroup): void {
 	clearTimeout(closeTimeout);
-	clearTimeout(movingTimeout);
 
 	const target = event.currentTarget;
 
 	if (menu.value) {
 		// Layer already at full height — glide to the new item immediately
-		menuMoving.value = true;
-		movingTimeout = window.setTimeout(() => { menuMoving.value = false; }, 300);
 		openMenu(target, group);
 	} else {
 		// Layer is at header height. Request expansion, then wait for the IPC
@@ -143,12 +138,6 @@ function delayedClose(): void {
 }
 
 // expose for testing
-defineExpose({ menu, menuItems, menuMoving, activator, activate, onListEnter, delayedClose });
+defineExpose({ menu, menuItems, activator, activate, onListEnter, delayedClose });
 </script>
 
-<style>
-.menu-move-transition {
-	transition: 0.2s ease-out;
-	transition-property: left, top;
-}
-</style>

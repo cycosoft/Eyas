@@ -178,7 +178,6 @@ export type NavActivateEvent = {
 export type AppHeaderVM = {
 	menu: IsActive;
 	menuItems: NavItem[];
-	menuMoving: IsActive;
 	activator: Element | undefined;
 	activate: (event: NavActivateEvent, group: NavGroup) => void;
 	onListEnter: () => void;

@@ -128,10 +128,6 @@ describe(`AppHeader`, () => {
 
 			// Already at full height — no wait needed
 			expect(vm.menu).toBe(true);
-			expect(vm.menuMoving).toBe(true);
-
-			vi.advanceTimersByTime(300);
-			expect(vm.menuMoving).toBe(false);
 		});
 	});
 
