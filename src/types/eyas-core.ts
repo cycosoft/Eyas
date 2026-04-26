@@ -78,6 +78,7 @@ export type CoreContext = {
 	setMenu: () => Promise<void>;
 	doStartTestServer: (autoOpenBrowser?: IsActive, customDomain?: DomainUrl | null) => Promise<void>;
 	openTestServerInBrowserHandler: (_event?: unknown, url?: DomainUrl) => void;
+	showTestServerSetup: () => Promise<void>;
 	uiEvent: (eventName: ChannelName, ...args: unknown[]) => void;
 	onTestServerTimeout: () => void;
 	onToggleTestServerHttps: () => void;

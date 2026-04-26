@@ -155,6 +155,7 @@ describe(`MenuService Helpers`, () => {
 		const mockCtx = {
 			showAbout: vi.fn(),
 			onOpenSettings: vi.fn(),
+			showTestServerSetup: vi.fn(),
 			uiEvent: vi.fn(),
 			navigate: vi.fn(),
 			startAFreshTest: vi.fn(),
@@ -276,7 +277,7 @@ describe(`MenuService Helpers`, () => {
 				expect(mockCtx.startAFreshTest).toHaveBeenCalledWith(true);
 
 				handlers.onStartTestServer?.();
-				expect(mockCtx.uiEvent).toHaveBeenCalledWith(`show-test-server-setup`, true);
+				expect(mockCtx.showTestServerSetup).toHaveBeenCalled();
 
 				handlers.onStopTestServer?.();
 				expect(mockCtx.stopTestServer).toHaveBeenCalled();

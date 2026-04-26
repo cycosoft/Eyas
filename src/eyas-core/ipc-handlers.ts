@@ -74,6 +74,15 @@ function initAppIpcListeners(ctx: CoreContext): void {
 
 	// show the about dialog
 	ipcMain.on(`show-about`, () => { ctx.showAbout(); });
+
+	// show the settings modal
+	ipcMain.on(`show-settings`, () => { ctx.onOpenSettings(); });
+
+	// show the what's new modal
+	ipcMain.on(`show-whats-new`, () => { ctx.uiEvent(`show-whats-new`, true); });
+
+	// show the test server setup modal
+	ipcMain.on(`show-test-server-setup`, () => { ctx.showTestServerSetup(); });
 }
 
 /**

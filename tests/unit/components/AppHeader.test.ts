@@ -178,6 +178,12 @@ describe(`AppHeader`, () => {
 			expect(mockSend).toHaveBeenCalledWith(`show-about`);
 		});
 
+		test(`onItemClick() sends show-test-server-setup IPC for 'test-server' item`, () => {
+			const vm = wrapper.vm as unknown as AppHeaderVM;
+			vm.onItemClick({ title: `Test Server`, value: `test-server` });
+			expect(mockSend).toHaveBeenCalledWith(`show-test-server-setup`);
+		});
+
 		test(`onItemClick() closes menu and sends hide-ui IPC`, () => {
 			const vm = wrapper.vm as unknown as AppHeaderVM;
 			vm.menu = true;

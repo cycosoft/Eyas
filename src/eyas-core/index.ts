@@ -173,6 +173,7 @@ const coreContextFunctions = {
 	setMenu: (): Promise<void> => menuService.refresh(getCoreContext()),
 	doStartTestServer: (autoOpenBrowser?: IsActive, customDomain?: DomainUrl | null): Promise<void> => testServerService.start(getCoreContext(), autoOpenBrowser, customDomain),
 	openTestServerInBrowserHandler: (_event?: unknown, url?: DomainUrl): void => testServerService.openInBrowser(getCoreContext(), url),
+	showTestServerSetup: (): Promise<void> => testServerService.showSetupModal(getCoreContext()),
 	uiEvent: (eventName: ChannelName, ...args: unknown[]): void => uiService.uiEvent(getCoreContext(), eventName, ...args),
 	onTestServerTimeout: (): void => appService.onTestServerTimeout(getCoreContext()),
 	onToggleTestServerHttps: (): void => testServerService.toggleHttps(getCoreContext()),

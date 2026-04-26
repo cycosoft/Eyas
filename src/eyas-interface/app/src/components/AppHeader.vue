@@ -146,6 +146,18 @@ function onItemClick(item: NavItem): void {
 		window.eyas?.send(`show-about` as ChannelName);
 	}
 
+	if (item.value === `test-server`) {
+		window.eyas?.send(`show-test-server-setup` as ChannelName);
+	}
+
+	if (item.value === `settings`) {
+		window.eyas?.send(`show-settings` as ChannelName);
+	}
+
+	if (item.value === `whats-new`) {
+		window.eyas?.send(`show-whats-new` as ChannelName);
+	}
+
 	menu.value = false;
 	window.eyas?.send(`hide-ui` as ChannelName);
 }

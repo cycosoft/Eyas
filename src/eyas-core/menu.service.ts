@@ -199,7 +199,7 @@ export const menuService: MenuService = {
 		onInstallUpdate: (): void => ctx.updateService.installUpdate(),
 		testServerActive: !!ctx.$lastTestServerOptions,
 		testServerRemainingTime: `` as FormattedDuration,
-		onStartTestServer: (): void => ctx.uiEvent(`show-test-server-setup`, true),
+		onStartTestServer: (): void => { ctx.showTestServerSetup(); },
 		onStopTestServer: (): Promise<void> => ctx.stopTestServer(),
 		testServerHttpsEnabled: ctx.$testServerHttpsEnabled,
 		onToggleTestServerHttps: (): void => ctx.onToggleTestServerHttps(),
