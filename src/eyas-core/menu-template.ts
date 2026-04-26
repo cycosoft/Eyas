@@ -38,7 +38,6 @@ export function buildMenuTemplate(context: MenuContext): MenuTemplate {
  */
 function createAppSubmenu(context: MenuContext): MenuTemplate {
 	const {
-		showAbout,
 		onOpenSettings = (): void => { },
 		onShowWhatsNew = (): void => { },
 		updateStatus,
@@ -51,7 +50,6 @@ function createAppSubmenu(context: MenuContext): MenuTemplate {
 		: { label: `⬆️ Check for updates`, click: onCheckForUpdates };
 
 	return [
-		{ label: `ℹ️ &About`, click: showAbout },
 		{ label: `⚙️ &Settings`, click: onOpenSettings },
 		{ label: `✨ &Changelog`, click: onShowWhatsNew },
 		updateStatusItem,

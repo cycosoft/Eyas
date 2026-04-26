@@ -27,7 +27,6 @@
 		:viewport-margin="0"
 	>
 		<v-list
-			:items="menuItems"
 			class="py-1"
 			density="compact"
 			rounded="lg"
@@ -35,9 +34,14 @@
 			@mouseenter="onListEnter()"
 			@mouseleave="delayedClose()"
 		>
-			<template #append>
-				<v-icon icon="mdi-arrow-top-right" />
-			</template>
+			<v-list-item
+				v-for="item in menuItems"
+				:key="item.value"
+				:title="item.title"
+				:value="item.value"
+				:prepend-icon="item.icon"
+				@click="onItemClick(item)"
+			/>
 		</v-list>
 	</v-menu>
 </template>
@@ -58,7 +62,7 @@ const groups: NavGroup[] = [
 		name: `File`,
 		logo: eyasLogo,
 		submenu: [
-			{ title: `Open Test`, value: `open-test` },
+			{ title: `About Eyas`, value: `about`, icon: `mdi-information-outline` },
 			{ title: `Recent Tests`, value: `recent-tests` },
 			{ title: `Close`, value: `close` }
 		]
@@ -137,6 +141,15 @@ function onListEnter(): void {
 	clearTimeout(closeTimeout);
 }
 
+function onItemClick(item: NavItem): void {
+	if (item.value === `about`) {
+		window.eyas?.send(`show-about` as ChannelName);
+	}
+
+	menu.value = false;
+	window.eyas?.send(`hide-ui` as ChannelName);
+}
+
 function delayedClose(): void {
 	clearTimeout(closeTimeout);
 	closeTimeout = window.setTimeout(() => {
@@ -147,7 +160,7 @@ function delayedClose(): void {
 }
 
 // expose for testing
-defineExpose({ menu, menuItems, activator, activate, onListEnter, delayedClose });
+defineExpose({ menu, menuItems, activator, activate, onListEnter, onItemClick, delayedClose });
 </script>
 
 <style scoped>

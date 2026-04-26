@@ -140,7 +140,6 @@ export const menuService: MenuService = {
 	 * @returns Partial MenuContext with application handlers.
 	 */
 	getAppHandlers: (ctx: CoreContext): Partial<MenuContext> => ({
-		showAbout: (): void => ctx.showAbout(),
 		quit: (): void => { app.quit(); },
 		onOpenSettings: (): void => ctx.onOpenSettings(),
 		onShowWhatsNew: (): void => ctx.uiEvent(`show-whats-new`, true),

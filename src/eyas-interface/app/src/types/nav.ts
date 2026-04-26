@@ -2,6 +2,7 @@
 export type NavItem = {
 	title: string;
 	value: string;
+	icon?: string;
 };
 
 /** A top-level navigation group with a dropdown submenu */

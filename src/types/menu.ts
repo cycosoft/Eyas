@@ -35,7 +35,6 @@ export type MenuContext = {
 	testNetworkEnabled: IsActive;
 	sessionAge: FormattedDuration;
 	cacheSize: ByteCount | FormattedDuration;
-	showAbout: () => void;
 	onOpenSettings?: () => void;
 	onShowWhatsNew?: () => void;
 	quit: () => void;

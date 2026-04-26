@@ -32,6 +32,7 @@ describe(`AppHeader`, () => {
 					VAppBar: { template: `<div><slot /></div>` },
 					VMenu: { template: `<div><slot /></div>` },
 					VList: { template: `<div><slot /></div>` },
+					VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
 					VBtn: { template: `<button @focus="$emit('focus', $event)" @mouseenter="$emit('mouseenter', $event)" @mouseleave="$emit('mouseleave', $event)"><slot /></button>` },
 					VIcon: true,
 					VImg: true
@@ -169,6 +170,20 @@ describe(`AppHeader`, () => {
 
 			vi.advanceTimersByTime(600);
 			expect(vm.menu).toBe(true); // still open
+		});
+
+		test(`onItemClick() sends show-about IPC for 'about' item`, () => {
+			const vm = wrapper.vm as unknown as AppHeaderVM;
+			vm.onItemClick({ title: `About`, value: `about` });
+			expect(mockSend).toHaveBeenCalledWith(`show-about`);
+		});
+
+		test(`onItemClick() closes menu and sends hide-ui IPC`, () => {
+			const vm = wrapper.vm as unknown as AppHeaderVM;
+			vm.menu = true;
+			vm.onItemClick({ title: `Item`, value: `item` });
+			expect(vm.menu).toBe(false);
+			expect(mockSend).toHaveBeenCalledWith(`hide-ui`);
 		});
 	});
 });

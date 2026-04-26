@@ -71,6 +71,9 @@ function initAppIpcListeners(ctx: CoreContext): void {
 		const parsed = parseURL(url);
 		ctx.navigate(parsed ? parsed.toString() : url, openInBrowser, !openInBrowser);
 	});
+
+	// show the about dialog
+	ipcMain.on(`show-about`, () => { ctx.showAbout(); });
 }
 
 /**

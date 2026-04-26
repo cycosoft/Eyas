@@ -218,9 +218,6 @@ describe(`MenuService Helpers`, () => {
 			const handlers = menuService.getAppHandlers(mockCtx);
 
 			test(`should map app lifecycle methods`, () => {
-				handlers.showAbout?.();
-				expect(mockCtx.showAbout).toHaveBeenCalled();
-
 				handlers.onOpenSettings?.();
 				expect(mockCtx.onOpenSettings).toHaveBeenCalled();
 

@@ -24,7 +24,8 @@ contextBridge.exposeInMainWorld(`eyas`, {
 			`save-setting`,
 			`get-settings`,
 			`renderer-ready-for-modals`,
-			`whats-new-closed`
+			`whats-new-closed`,
+			`show-about`
 		];
 
 		if (validChannels.includes(channel)) {
