@@ -160,6 +160,7 @@ export type NavItem = {
 	title: LabelString;
 	value: LabelString;
 	icon?: string;
+	color?: string;
 };
 
 /** A top-level navigation group with a dropdown submenu */
@@ -181,6 +182,7 @@ export type AppHeaderVM = {
 	menu: boolean;
 	menuItems: NavItem[];
 	activator: Element | undefined;
+	groups: NavGroup[];
 	activate: (event: NavActivateEvent, group: NavGroup) => void;
 	onMouseEnter: (event: NavActivateEvent, group: NavGroup) => void;
 	onItemClick: (item: NavItem) => void;

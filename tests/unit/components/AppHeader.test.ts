@@ -5,7 +5,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import AppHeader from '@/components/AppHeader.vue';
 import useModalsStore from '@/stores/modals.js';
 import type { WindowWithEyas } from '@registry/ipc.js';
-import type { AppHeaderVM } from '@registry/components.js';
+import type { AppHeaderVM, NavGroup, NavItem, NavActivateEvent } from '@registry/components.js';
 import type { ChannelName } from '@registry/primitives.js';
 
 describe(`AppHeader`, () => {
@@ -220,8 +220,8 @@ describe(`AppHeader`, () => {
 
 		test(`'File' menu has 'Exit' item with correct icon and color`, () => {
 			const vm = wrapper.vm as unknown as AppHeaderVM;
-			const fileMenu = vm.groups.find(g => g.name === `File`);
-			const exitItem = fileMenu?.submenu?.find(i => i.value === `exit`);
+			const fileMenu = vm.groups.find((g: NavGroup) => g.name === `File`);
+			const exitItem = fileMenu?.submenu?.find((i: NavItem) => i.value === `exit`);
 			expect(exitItem).toBeDefined();
 			expect(exitItem?.title).toBe(`Exit`);
 			expect(exitItem?.icon).toBe(`mdi-power`);
