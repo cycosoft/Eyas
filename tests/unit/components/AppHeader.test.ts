@@ -33,7 +33,8 @@ describe(`AppHeader`, () => {
 					VMenu: { template: `<div><slot /></div>` },
 					VList: { template: `<div><slot /></div>` },
 					VBtn: { template: `<button @focus="$emit('focus', $event)" @mouseenter="$emit('mouseenter', $event)" @mouseleave="$emit('mouseleave', $event)"><slot /></button>` },
-					VIcon: true
+					VIcon: true,
+					VImg: true
 				}
 			}
 		});
@@ -47,6 +48,12 @@ describe(`AppHeader`, () => {
 
 	test(`renders without crashing`, () => {
 		expect(wrapper.exists()).toBe(true);
+	});
+
+	test(`renders logo instead of text for 'File' menu`, () => {
+		const fileBtn = wrapper.findAll(`button`)[0];
+		expect(fileBtn.find(`v-img-stub`).exists()).toBe(true);
+		expect(fileBtn.text()).not.toContain(`File`);
 	});
 
 	describe(`menu activation`, () => {

@@ -3,12 +3,20 @@
 		<v-btn
 			v-for="group in groups"
 			:key="group.name"
-			:text="group.name"
+			class="px-3"
+			rounded="xs"
 			append-icon="mdi-chevron-down"
 			@focus="activate($event, group)"
 			@mouseenter="activate($event, group)"
 			@mouseleave="delayedClose()"
-		/>
+		>
+			<v-img
+				v-if="group.logo"
+				:src="group.logo"
+				class="menu-logo mr-n1"
+			/>
+			<span v-else>{{ group.name }}</span>
+		</v-btn>
 	</v-app-bar>
 
 	<v-menu
@@ -37,6 +45,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import eyasLogo from '@/assets/eyas-logo.svg';
 import type { NavGroup, NavItem, NavActivateEvent, PendingNavOpen } from '@/types/nav.js';
 import type { ChannelName } from '@registry/primitives.js';
 
@@ -48,6 +57,7 @@ const menuItems = ref<NavItem[]>([]);
 const groups: NavGroup[] = [
 	{
 		name: `File`,
+		logo: eyasLogo,
 		submenu: [
 			{ title: `Open Test`, value: `open-test` },
 			{ title: `Recent Tests`, value: `recent-tests` },
@@ -140,4 +150,11 @@ function delayedClose(): void {
 // expose for testing
 defineExpose({ menu, menuItems, activator, activate, onListEnter, delayedClose });
 </script>
+
+<style scoped>
+.menu-logo {
+	height: 1.5em;
+	width: 1.5em;
+}
+</style>
 

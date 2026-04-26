@@ -7,6 +7,7 @@ export type NavItem = {
 /** A top-level navigation group with a dropdown submenu */
 export type NavGroup = {
 	name: string;
+	logo?: string;
 	submenu: NavItem[];
 };
 
