@@ -53,10 +53,16 @@ describe(`navigation.service.ts unit tests`, () => {
 		vi.clearAllMocks();
 		mockCtx = {
 			$appWindow: {
-				loadURL: vi.fn(),
 				setTitle: vi.fn(),
 				setContentSize: vi.fn(),
 				webContents: {
+					getURL: vi.fn().mockReturnValue(`https://test.com`),
+					getTitle: vi.fn().mockReturnValue(`Page Title`)
+				}
+			},
+			$testLayer: {
+				webContents: {
+					loadURL: vi.fn(),
 					getURL: vi.fn().mockReturnValue(`https://test.com`),
 					getTitle: vi.fn().mockReturnValue(`Page Title`)
 				}
@@ -88,14 +94,14 @@ describe(`navigation.service.ts unit tests`, () => {
 
 	test(`navigate should use default domain if path is missing`, () => {
 		navigationService.navigate(mockCtx);
-		expect(mockCtx.$appWindow?.loadURL).toHaveBeenCalledWith(`https://default.com`);
+		expect(mockCtx.$testLayer?.webContents.loadURL).toHaveBeenCalledWith(`https://default.com`);
 		expect(mockCtx.toggleEyasUI).toHaveBeenCalledWith(false);
 	});
 
 	test(`navigate should open in browser if requested and not local test`, () => {
 		navigationService.navigate(mockCtx, `https://external.com` as DomainUrl, true);
 		expect(shell.openExternal).toHaveBeenCalledWith(`https://external.com`);
-		expect(mockCtx.$appWindow?.loadURL).not.toHaveBeenCalled();
+		expect(mockCtx.$testLayer?.webContents.loadURL).not.toHaveBeenCalled();
 		expect(mockCtx.toggleEyasUI).toHaveBeenCalledWith(false); // Default behavior
 	});
 
@@ -107,7 +113,7 @@ describe(`navigation.service.ts unit tests`, () => {
 
 	test(`navigateVariable should substitute variables and navigate`, () => {
 		navigationService.navigateVariable(mockCtx, `{url}/path` as DomainUrl);
-		expect(mockCtx.$appWindow?.loadURL).toHaveBeenCalledWith(`https://default.com/path`);
+		expect(mockCtx.$testLayer?.webContents.loadURL).toHaveBeenCalledWith(`https://default.com/path`);
 	});
 
 	test(`navigateVariable should show warning if env url is missing`, () => {
@@ -122,7 +128,7 @@ describe(`navigation.service.ts unit tests`, () => {
 		await navigationService.startAFreshTest(mockCtx);
 		expect(testServerService.clearPort).toHaveBeenCalled();
 		expect(mockCtx.setIsInitializing).toHaveBeenCalledWith(true);
-		expect(mockCtx.$appWindow?.loadURL).toHaveBeenCalled();
+		expect(mockCtx.$testLayer?.webContents.loadURL).toHaveBeenCalled();
 	});
 
 	test(`getAppTitleWithContext should return formatted title`, () => {

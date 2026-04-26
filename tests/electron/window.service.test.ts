@@ -48,7 +48,8 @@ describe(`window.service.ts unit tests`, () => {
 				on: vi.fn(),
 				send: vi.fn(),
 				focus: vi.fn(),
-				isFocused: vi.fn().mockReturnValue(true)
+				isFocused: vi.fn().mockReturnValue(true),
+				getTitle: vi.fn().mockReturnValue(`Test Title`)
 			}
 		};
 
@@ -69,6 +70,14 @@ describe(`window.service.ts unit tests`, () => {
 		mockCtx = {
 			$appWindow: mockWindow,
 			$eyasLayer: mockLayer,
+			$testLayer: {
+				setBounds: vi.fn(),
+				webContents: {
+					on: vi.fn(),
+					loadURL: vi.fn(),
+					getTitle: vi.fn().mockReturnValue(`Test Title`)
+				}
+			},
 			$currentViewport: [800, 600],
 			$paths: { eventBridge: `bridge.js`, testPreload: `preload.js`, icon: `icon.png`, configLoader: ``, packageJson: ``, constants: ``, pathUtils: ``, timeUtils: ``, testSrc: null, uiSource: ``, eyasInterface: ``, splashScreen: `` },
 			$config: null,
@@ -76,6 +85,7 @@ describe(`window.service.ts unit tests`, () => {
 			$isDev: false,
 			setAppWindow: vi.fn(),
 			setEyasLayer: vi.fn(),
+			setTestLayer: vi.fn(),
 			setMenu: vi.fn(),
 			setIsInitializing: vi.fn(),
 			getAppTitle: vi.fn().mockReturnValue(`Eyas`),
@@ -101,6 +111,12 @@ describe(`window.service.ts unit tests`, () => {
 			windowService.handleResize(mockCtx);
 
 			expect(mockLayer.setBounds).toHaveBeenCalledWith({ x: 0, y: 0, width: 1024, height: 768 });
+			expect(mockCtx.$testLayer?.setBounds).toHaveBeenCalledWith({
+				x: 0,
+				y: EYAS_HEADER_HEIGHT,
+				width: 1024,
+				height: 768 - EYAS_HEADER_HEIGHT
+			});
 		});
 
 		test(`when UI layer is passive (header height), updates width but keeps header height on resize`, () => {
@@ -112,6 +128,12 @@ describe(`window.service.ts unit tests`, () => {
 			windowService.handleResize(mockCtx);
 
 			expect(mockLayer.setBounds).toHaveBeenCalledWith({ x: 0, y: 0, width: 1024, height: EYAS_HEADER_HEIGHT });
+			expect(mockCtx.$testLayer?.setBounds).toHaveBeenCalledWith({
+				x: 0,
+				y: EYAS_HEADER_HEIGHT,
+				width: 1024,
+				height: 768 - EYAS_HEADER_HEIGHT
+			});
 		});
 
 		test(`skips resize if dimensions have not changed`, () => {

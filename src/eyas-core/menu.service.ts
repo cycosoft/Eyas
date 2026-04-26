@@ -21,8 +21,9 @@ export const menuService: MenuService = {
 
 		const sessionAge = ctx.getSessionAge();
 		let cacheSize = 0;
+		const webContents = ctx.$testLayer?.webContents || $appWindow.webContents;
 		try {
-			cacheSize = await $appWindow.webContents.session.getCacheSize();
+			cacheSize = await webContents.session.getCacheSize();
 		} catch {
 			// ignore
 		}
@@ -156,20 +157,24 @@ export const menuService: MenuService = {
 	getNavigationHandlers: (ctx: CoreContext): Partial<MenuContext> => ({
 		navigateHome: (): void => ctx.navigate(),
 		reload: (): void => {
-			if (ctx.$isInitializing || !ctx.$appWindow) return;
-			ctx.$appWindow.webContents.reloadIgnoringCache();
+			const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
+			if (ctx.$isInitializing || !webContents) return;
+			webContents.reloadIgnoringCache();
 		},
 		back: (): void => {
-			if (ctx.$isInitializing || !ctx.$appWindow) return;
-			ctx.$appWindow.webContents.goBack();
+			const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
+			if (ctx.$isInitializing || !webContents) return;
+			webContents.goBack();
 		},
 		forward: (): void => {
-			if (ctx.$isInitializing || !ctx.$appWindow) return;
-			ctx.$appWindow.webContents.goForward();
+			const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
+			if (ctx.$isInitializing || !webContents) return;
+			webContents.goForward();
 		},
 		copyUrl: (): void => {
-			if (ctx.$isInitializing || !ctx.$appWindow) return;
-			clipboard.writeText(ctx.$appWindow.webContents.getURL());
+			const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
+			if (ctx.$isInitializing || !webContents) return;
+			clipboard.writeText(webContents.getURL());
 		}
 	}),
 
@@ -203,7 +208,7 @@ export const menuService: MenuService = {
 		onStopTestServer: (): Promise<void> => ctx.stopTestServer(),
 		testServerHttpsEnabled: ctx.$testServerHttpsEnabled,
 		onToggleTestServerHttps: (): void => ctx.onToggleTestServerHttps(),
-		toggleTestDevTools: (): void => { ctx.$appWindow?.webContents.toggleDevTools(); },
+		toggleTestDevTools: (): void => { (ctx.$testLayer || ctx.$appWindow)?.webContents.toggleDevTools(); } ,
 		openUiDevTools: (): void => ctx.$eyasLayer?.webContents.openDevTools({ mode: `detach` })
 	})
 };

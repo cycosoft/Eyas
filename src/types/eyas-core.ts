@@ -27,6 +27,7 @@ export type CoreContext = {
 	// State
 	$appWindow: BrowserWindow | null;
 	$eyasLayer: WebContentsView | null;
+	$testLayer: WebContentsView | null;
 	$config: ValidatedConfig | null;
 	$configToLoad: ConfigToLoad;
 	$testNetworkEnabled: IsActive;
@@ -64,6 +65,7 @@ export type CoreContext = {
 	setPendingStartupModal: (modal: StartupModal | null) => void;
 	setAppWindow: (window: BrowserWindow | null) => void;
 	setEyasLayer: (layer: WebContentsView | null) => void;
+	setTestLayer: (layer: WebContentsView | null) => void;
 	setConfigToLoad: (config: ConfigToLoad) => void;
 	setConfig: (config: ValidatedConfig) => void;
 

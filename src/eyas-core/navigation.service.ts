@@ -9,6 +9,7 @@ import type { CoreContext } from '@registry/eyas-core.js';
 import type { DomainUrl, AppTitle, HashString, IsActive } from '@registry/primitives.js';
 import type { PreventableEvent } from '@registry/core.js';
 import type { EnvironmentSettings } from '@registry/settings.js';
+import { EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
 
 /**
  * Navigates the application window to the specified path or the default test domain.
@@ -45,7 +46,8 @@ function navigate(ctx: CoreContext, path?: DomainUrl, openInBrowser?: IsActive, 
 		shell.openExternal(path);
 	} else {
 		// otherwise load the requested path in the app window
-		ctx.$appWindow.loadURL(path);
+		const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
+		webContents?.loadURL(path);
 	}
 
 	// ensure the UI is closed so the user can interact with the content
@@ -216,7 +218,7 @@ function initFreshTestViewports(ctx: CoreContext): void {
 	// reset the current viewport to the first in the list
 	ctx.$currentViewport[0] = ctx.$allViewports[0].width;
 	ctx.$currentViewport[1] = ctx.$allViewports[0].height;
-	ctx.$appWindow?.setContentSize(ctx.$currentViewport[0], ctx.$currentViewport[1]);
+	ctx.$appWindow?.setContentSize(ctx.$currentViewport[0], ctx.$currentViewport[1] + EYAS_HEADER_HEIGHT);
 }
 
 /**
@@ -243,7 +245,8 @@ function setupFreshTestSource(ctx: CoreContext): void {
  * @returns The formatted application title.
  */
 function getAppTitleWithContext(ctx: CoreContext, rawPageTitle?: AppTitle): AppTitle {
-	const rawUrl = ctx.$appWindow ? ctx.$appWindow.webContents.getURL() : null;
+	const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
+	const rawUrl = webContents ? webContents.getURL() : null;
 
 	// ignore data: URLs in the address bar
 	const url = (rawUrl?.startsWith(`data:`) ? undefined : rawUrl) || undefined;

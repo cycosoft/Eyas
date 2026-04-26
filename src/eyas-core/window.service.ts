@@ -18,17 +18,31 @@ export const windowService: WindowService = {
 		const window = new BrowserWindow({
 			useContentSize: true,
 			width: $currentViewport[0],
-			height: $currentViewport[1],
+			height: $currentViewport[1] + EYAS_HEADER_HEIGHT,
 			title: ctx.getAppTitle(),
 			icon: $paths.icon,
 			show: false,
 			webPreferences: {
-				preload: $paths.testPreload,
 				partition: `persist:${$config?.meta.testId}`
 			}
 		});
 
 		ctx.setAppWindow(window);
+
+		const testLayer = new WebContentsView({
+			webPreferences: {
+				preload: $paths.testPreload,
+				partition: `persist:${$config?.meta.testId}`
+			}
+		});
+		ctx.setTestLayer(testLayer);
+		window.contentView.addChildView(testLayer);
+		testLayer.setBounds({
+			x: 0,
+			y: EYAS_HEADER_HEIGHT,
+			width: $currentViewport[0],
+			height: $currentViewport[1]
+		});
 	},
 
 	/**
@@ -136,12 +150,14 @@ export const windowService: WindowService = {
 
 		$appWindow.on(`page-title-updated`, (evt, title) => ctx.onTitleUpdate(evt, title));
 
-		$appWindow.webContents.on(`did-finish-load`, () => {
-			$appWindow.setTitle(ctx.getAppTitle($appWindow.webContents.getTitle()));
+		const testWebContents = ctx.$testLayer?.webContents || $appWindow.webContents;
+
+		testWebContents.on(`did-finish-load`, () => {
+			$appWindow.setTitle(ctx.getAppTitle(testWebContents.getTitle()));
 			ctx.setMenu();
 		});
 
-		$appWindow.webContents.on(`did-start-navigation`, (_event, url) => {
+		testWebContents.on(`did-start-navigation`, (_event, url) => {
 			if (!url.startsWith(`data:text/html`) && url !== `about:blank`) {
 				if (ctx.$isInitializing) {
 					ctx.setIsInitializing(false);
@@ -150,7 +166,7 @@ export const windowService: WindowService = {
 			}
 		});
 
-		$appWindow.webContents.on(`did-fail-load`, (_event, errorCode, errorDescription) => {
+		testWebContents.on(`did-fail-load`, (_event, errorCode, errorDescription) => {
 			console.error(`Navigation failed: ${errorCode} - ${errorDescription}`);
 		});
 
@@ -189,6 +205,13 @@ export const windowService: WindowService = {
 		const newLayerHeight = isActive ? newHeight : EYAS_HEADER_HEIGHT;
 
 		$eyasLayer.setBounds({ x: 0, y: 0, width: newWidth, height: newLayerHeight });
+
+		ctx.$testLayer?.setBounds({
+			x: 0,
+			y: EYAS_HEADER_HEIGHT,
+			width: newWidth,
+			height: newHeight - EYAS_HEADER_HEIGHT
+		});
 
 		ctx.setMenu();
 	},
