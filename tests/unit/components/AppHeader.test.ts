@@ -226,6 +226,7 @@ describe(`AppHeader`, () => {
 			expect(exitItem?.title).toBe(`Exit`);
 			expect(exitItem?.icon).toBe(`mdi-power`);
 			expect(exitItem?.color).toBe(`error`);
+			expect(exitItem?.shortcut).toBe(`Ctrl+Q`);
 		});
 
 		test(`onItemClick() closes menu and sends hide-ui IPC`, async () => {

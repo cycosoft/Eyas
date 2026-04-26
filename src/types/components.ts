@@ -161,12 +161,14 @@ export type NavItem = {
 	value: LabelString;
 	icon?: string;
 	color?: string;
+	shortcut?: string;
 };
 
 /** A top-level navigation group with a dropdown submenu */
 export type NavGroup = {
 	name: LabelString;
 	logo?: string;
+	shortcut?: string;
 	submenu: NavItem[];
 };
 

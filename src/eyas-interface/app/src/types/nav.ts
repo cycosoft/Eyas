@@ -1,16 +1,22 @@
+import type { MenuLabel, MenuAccelerator, IconName } from '@registry/primitives.js';
+
 /** A single item in a navigation group's submenu */
 export type NavItem = {
-	title: string;
+	title: MenuLabel;
 	value: string;
-	icon?: string;
+	icon?: IconName;
 	color?: string;
+	shortcut?: MenuAccelerator;
+	mnemonic?: string;
 };
 
 /** A top-level navigation group with a dropdown submenu */
 export type NavGroup = {
-	name: string;
+	name: MenuLabel;
 	logo?: string;
 	submenu: NavItem[];
+	shortcut?: MenuAccelerator;
+	mnemonic?: string;
 };
 
 /** Data for a navigation group that is waiting to be opened */

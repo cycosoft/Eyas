@@ -18,7 +18,11 @@
 				:src="group.logo"
 				class="menu-logo mr-n1"
 			/>
-			<span v-else>{{ group.name }}</span>
+			<!-- eslint-disable-next-line vue/no-v-html -->
+			<span
+				v-else
+				v-html="getMnemonicName(group)"
+			/>
 		</v-btn>
 	</v-app-bar>
 
@@ -41,14 +45,28 @@
 			<v-list-item
 				v-for="item in menuItems"
 				:key="item.value"
-				:title="item.title"
+				slim
 				:value="item.value"
 				:prepend-icon="item.icon"
 				:color="item.color"
 				:class="{ [`text-${item.color}`]: item.color }"
 				data-qa="btn-nav-item"
 				@click="onItemClick(item)"
-			/>
+			>
+				<div class="d-flex align-center w-100">
+					<!-- eslint-disable-next-line vue/no-v-html -->
+					<span
+						class="flex-grow-1"
+						v-html="getMnemonicName(item)"
+					/>
+					<span
+						v-if="item.shortcut"
+						class="text-disabled ml-4 menu-shortcut"
+					>
+						{{ item.shortcut }}
+					</span>
+				</div>
+			</v-list-item>
 		</v-list>
 	</v-menu>
 </template>
@@ -56,51 +74,13 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
 import useModalsStore from '@/stores/modals.js';
-import eyasLogo from '@/assets/eyas-logo.svg';
 import type { NavGroup, NavItem, NavActivateEvent, PendingNavOpen } from '@/types/nav.js';
 import type { ChannelName } from '@registry/primitives.js';
+import { groups, getMnemonicName } from './AppHeader.logic.js';
 
 const menu = ref(false);
 const activator = ref<Element | undefined>();
 const menuItems = ref<NavItem[]>([]);
-
-// placeholder groups — replace with real application menus when ready
-const groups: NavGroup[] = [
-	{
-		name: `File`,
-		logo: eyasLogo,
-		submenu: [
-			{ title: `About Eyas`, value: `about`, icon: `mdi-information-outline` },
-			{ title: `Recent Tests`, value: `recent-tests` },
-			{ title: `Exit`, value: `exit`, icon: `mdi-power`, color: `error` }
-		]
-	},
-	{
-		name: `View`,
-		submenu: [
-			{ title: `Zoom In`, value: `zoom-in` },
-			{ title: `Zoom Out`, value: `zoom-out` },
-			{ title: `Reset Zoom`, value: `reset-zoom` },
-			{ title: `Full Screen`, value: `full-screen` }
-		]
-	},
-	{
-		name: `Tools`,
-		submenu: [
-			{ title: `Settings`, value: `settings` },
-			{ title: `Test Server`, value: `test-server` },
-			{ title: `DevTools`, value: `devtools` }
-		]
-	},
-	{
-		name: `Help`,
-		submenu: [
-			{ title: `What's New`, value: `whats-new` },
-			{ title: `Documentation`, value: `docs` },
-			{ title: `Report an Issue`, value: `report-issue` }
-		]
-	}
-];
 
 // Fallback delay (ms) to open the menu if the IPC event never fires.
 const RESIZE_FALLBACK_MS = 200;
@@ -203,5 +183,9 @@ defineExpose({ menu, menuItems, activator, activate, onMouseEnter, onItemClick }
 	height: 1.5em;
 	width: 1.5em;
 }
-</style>
 
+.menu-shortcut {
+	font-size: 0.65rem !important;
+	opacity: 0.6 !important;
+}
+</style>
