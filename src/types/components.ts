@@ -178,12 +178,11 @@ export type NavActivateEvent = {
  * Type helper for the AppHeader Vue component's ViewModel in tests.
  */
 export type AppHeaderVM = {
-	menu: IsActive;
+	menu: boolean;
 	menuItems: NavItem[];
 	activator: Element | undefined;
 	activate: (event: NavActivateEvent, group: NavGroup) => void;
-	onListEnter: () => void;
+	onMouseEnter: (event: NavActivateEvent, group: NavGroup) => void;
 	onItemClick: (item: NavItem) => void;
-	delayedClose: () => void;
 	$nextTick: () => Promise<void>;
 };

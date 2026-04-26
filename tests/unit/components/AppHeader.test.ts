@@ -33,7 +33,7 @@ describe(`AppHeader`, () => {
 					VMenu: { template: `<div><slot /></div>` },
 					VList: { template: `<div><slot /></div>` },
 					VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
-					VBtn: { template: `<button @focus="$emit('focus', $event)" @mouseenter="$emit('mouseenter', $event)" @mouseleave="$emit('mouseleave', $event)"><slot /></button>` },
+					VBtn: { template: `<button @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
 					VIcon: true,
 					VImg: true
 				}
@@ -127,50 +127,61 @@ describe(`AppHeader`, () => {
 			expect(vm.menu).toBe(true);
 		});
 
-		test(`activate() opens menu immediately when menu is already open (glide)`, async () => {
+		test(`activate() toggles menu off if already open for the same group`, async () => {
 			const vm = wrapper.vm as unknown as AppHeaderVM;
-			vm.menu = true;
+			const fakeEl = document.createElement(`button`);
+			const group = { name: `Test`, submenu: [] };
 
-			vm.activate({ currentTarget: document.createElement(`button`) }, { name: `Test`, submenu: [] });
+			vm.menu = true;
+			vm.activator = fakeEl;
+
+			vm.activate({ currentTarget: fakeEl } as unknown as NavActivateEvent, group);
 			await wrapper.vm.$nextTick();
 
-			// Already at full height — no wait needed
-			expect(vm.menu).toBe(true);
+			expect(vm.menu).toBe(false);
+		});
+
+		test(`onMouseEnter() activates only when menu is already open`, async () => {
+			const vm = wrapper.vm as unknown as AppHeaderVM;
+			const fakeEl = document.createElement(`button`);
+			const group = { name: `Test`, submenu: [{ title: `Item`, value: `item` }] };
+
+			// 1. Menu is closed -> onMouseEnter should NOT activate
+			vm.menu = false;
+			vm.onMouseEnter({ currentTarget: fakeEl } as unknown as NavActivateEvent, group);
+			await wrapper.vm.$nextTick();
+			expect(vm.menu).toBe(false);
+
+			// 2. Menu is open -> onMouseEnter SHOULD activate for a DIFFERENT group
+			vm.menu = true;
+			vm.activator = document.createElement(`div`); // different from fakeEl
+			vm.onMouseEnter({ currentTarget: fakeEl } as unknown as NavActivateEvent, group);
+			await wrapper.vm.$nextTick();
+			expect(vm.menuItems).toEqual(group.submenu);
+
+			// 3. Menu is open -> onMouseEnter should NOT activate for the SAME group
+			const otherGroup = { name: `Other`, submenu: [] };
+			vm.activator = fakeEl;
+			vm.onMouseEnter({ currentTarget: fakeEl } as unknown as NavActivateEvent, otherGroup);
+			await wrapper.vm.$nextTick();
+			expect(vm.menuItems).not.toEqual(otherGroup.submenu);
 		});
 	});
 
 	describe(`menu close`, () => {
-		test(`delayedClose() closes menu after 600ms`, async () => {
+		test(`menu watch sends hide-ui IPC when menu closes`, async () => {
 			const vm = wrapper.vm as unknown as AppHeaderVM;
 			vm.menu = true;
+			await wrapper.vm.$nextTick();
 
-			vm.delayedClose();
-			expect(vm.menu).toBe(true); // not closed yet
-
-			vi.advanceTimersByTime(600);
-			expect(vm.menu).toBe(false);
-		});
-
-		test(`delayedClose() sends hide-ui IPC after timeout`, async () => {
-			const vm = wrapper.vm as unknown as AppHeaderVM;
-			vm.menu = true;
-
-			vm.delayedClose();
+			vm.menu = false;
+			await wrapper.vm.$nextTick();
 			vi.advanceTimersByTime(600);
 
 			expect(mockSend).toHaveBeenCalledWith(`hide-ui`);
 		});
 
-		test(`onListEnter() cancels a pending close`, async () => {
-			const vm = wrapper.vm as unknown as AppHeaderVM;
-			vm.menu = true;
 
-			vm.delayedClose();
-			vm.onListEnter(); // cancel the close
-
-			vi.advanceTimersByTime(600);
-			expect(vm.menu).toBe(true); // still open
-		});
 
 		test(`onItemClick() sends show-about IPC for 'about' item`, () => {
 			const vm = wrapper.vm as unknown as AppHeaderVM;
@@ -184,11 +195,15 @@ describe(`AppHeader`, () => {
 			expect(mockSend).toHaveBeenCalledWith(`show-test-server-setup`);
 		});
 
-		test(`onItemClick() closes menu and sends hide-ui IPC`, () => {
+		test(`onItemClick() closes menu and sends hide-ui IPC`, async () => {
 			const vm = wrapper.vm as unknown as AppHeaderVM;
 			vm.menu = true;
+			await wrapper.vm.$nextTick();
+
 			vm.onItemClick({ title: `Item`, value: `item` });
 			expect(vm.menu).toBe(false);
+			await wrapper.vm.$nextTick();
+			vi.advanceTimersByTime(600);
 			expect(mockSend).toHaveBeenCalledWith(`hide-ui`);
 		});
 	});

@@ -1,14 +1,16 @@
 <template>
-	<v-app-bar density="compact" data-qa="app-header">
+	<v-app-bar
+		density="compact"
+		data-qa="app-header"
+	>
 		<v-btn
 			v-for="group in groups"
 			:key="group.name"
 			class="px-3"
 			rounded="xs"
 			append-icon="mdi-chevron-down"
-			@focus="activate($event, group)"
-			@mouseenter="activate($event, group)"
-			@mouseleave="delayedClose()"
+			@click="activate($event, group)"
+			@mouseenter="onMouseEnter($event, group)"
 		>
 			<v-img
 				v-if="group.logo"
@@ -25,14 +27,15 @@
 		location="bottom end"
 		:offset="4"
 		:viewport-margin="0"
+		:open-on-click="false"
+		:open-on-hover="false"
+		:open-on-focus="false"
 	>
 		<v-list
 			class="py-1"
 			density="compact"
 			rounded="lg"
 			border
-			@mouseenter="onListEnter()"
-			@mouseleave="delayedClose()"
 		>
 			<v-list-item
 				v-for="item in menuItems"
@@ -47,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import eyasLogo from '@/assets/eyas-logo.svg';
 import type { NavGroup, NavItem, NavActivateEvent, PendingNavOpen } from '@/types/nav.js';
 import type { ChannelName } from '@registry/primitives.js';
@@ -101,6 +104,12 @@ let closeTimeout = -1;
 let resizeFallback = -1;
 let pendingOpen: PendingNavOpen | null = null;
 
+watch(menu, isOpen => {
+	if (!isOpen) {
+		delayedClose();
+	}
+});
+
 function openMenu(targetEl: Element, group: NavGroup): void {
 	activator.value = targetEl;
 	menuItems.value = group.submenu;
@@ -119,11 +128,14 @@ onMounted(() => {
 });
 
 function activate(event: NavActivateEvent, group: NavGroup): void {
-	clearTimeout(closeTimeout);
-
 	const target = event.currentTarget;
 
 	if (menu.value) {
+		if (activator.value === target) {
+			menu.value = false;
+			return;
+		}
+
 		// Layer already at full height — glide to the new item immediately
 		openMenu(target, group);
 	} else {
@@ -137,8 +149,10 @@ function activate(event: NavActivateEvent, group: NavGroup): void {
 	}
 }
 
-function onListEnter(): void {
-	clearTimeout(closeTimeout);
+function onMouseEnter(event: NavActivateEvent, group: NavGroup): void {
+	if (menu.value && activator.value !== event.currentTarget) {
+		openMenu(event.currentTarget, group);
+	}
 }
 
 function onItemClick(item: NavItem): void {
@@ -159,20 +173,19 @@ function onItemClick(item: NavItem): void {
 	}
 
 	menu.value = false;
-	window.eyas?.send(`hide-ui` as ChannelName);
 }
 
 function delayedClose(): void {
-	clearTimeout(closeTimeout);
+	window.clearTimeout(closeTimeout);
 	closeTimeout = window.setTimeout(() => {
-		menu.value = false;
-		// layer is no longer needed at full height — collapse back to header
-		window.eyas?.send(`hide-ui` as ChannelName);
+		if (!menu.value) {
+			window.eyas?.send(`hide-ui` as ChannelName);
+		}
 	}, 600);
 }
 
 // expose for testing
-defineExpose({ menu, menuItems, activator, activate, onListEnter, onItemClick, delayedClose });
+defineExpose({ menu, menuItems, activator, activate, onMouseEnter, onItemClick });
 </script>
 
 <style scoped>
