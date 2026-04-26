@@ -22,7 +22,6 @@
 	<v-menu
 		v-model="menu"
 		:activator="activator"
-		:content-class="``"
 		location="bottom end"
 		:offset="4"
 		:viewport-margin="0"
