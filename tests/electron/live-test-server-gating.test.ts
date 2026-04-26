@@ -11,7 +11,6 @@ const minimalContext: MenuContext = {
 	testNetworkEnabled: true,
 	sessionAge: `0m`,
 	cacheSize: 0,
-	showAbout: noop,
 	quit: noop,
 	startAFreshTest: noop,
 	copyUrl: noop,

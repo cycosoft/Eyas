@@ -27,13 +27,13 @@ test.describe(`Application Menu`, () => {
 		expect(labels.some(l => l.includes(`Tools`))).toBe(true);
 	});
 
-	test(`app-name menu has About and Exit`, async () => {
+	test(`app-name menu has Settings and Exit`, async () => {
 		const menuStructure = await getMenuStructure(electronApp);
-		const appMenu = menuStructure.find(m => m.submenu && m.submenu.some(si => si.label.includes(`About`)));
+		const appMenu = menuStructure.find(m => m.submenu && m.submenu.some(si => si.label.includes(`Exit`)));
 		expect(appMenu).toBeDefined();
 
 		const submenuLabels = appMenu.submenu.map(item => item.label);
-		expect(submenuLabels.some(l => l.includes(`About`))).toBe(true);
+		expect(submenuLabels.some(l => l.includes(`Settings`))).toBe(true);
 		expect(submenuLabels.some(l => l.includes(`Exit`))).toBe(true);
 	});
 });

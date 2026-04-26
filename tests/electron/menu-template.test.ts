@@ -11,7 +11,6 @@ const minimalContext: MenuContext = {
 	testNetworkEnabled: true,
 	sessionAge: `0m`,
 	cacheSize: 0,
-	showAbout: noop,
 	quit: noop,
 	startAFreshTest: noop,
 	copyUrl: noop,
@@ -68,14 +67,14 @@ describe(`Root menu structure`, () => {
 // ─── Eyas menu ────────────────────────────────────────────────────────────
 
 describe(`Eyas menu`, () => {
-	test(`first submenu contains About then separator then Exit in order`, () => {
+	test(`first submenu contains Settings then separator then Exit in order`, () => {
 		const template = buildMenuTemplate(minimalContext);
 		const submenu = template[0].submenu as MenuItemConstructorOptions[];
-		const aboutIndex = submenu.findIndex(item => item.label && item.label.includes(`About`));
+		const settingsIndex = submenu.findIndex(item => item.label && item.label.includes(`Settings`));
 		const separatorIndex = submenu.findIndex(item => item.type === `separator`);
 		const exitIndex = submenu.findIndex(item => item.label && item.label.includes(`Exit`));
-		expect(aboutIndex).toBeGreaterThanOrEqual(0);
-		expect(separatorIndex).toBeGreaterThan(aboutIndex);
+		expect(settingsIndex).toBeGreaterThanOrEqual(0);
+		expect(separatorIndex).toBeGreaterThan(settingsIndex);
 		expect(exitIndex).toBeGreaterThan(separatorIndex);
 	});
 
@@ -97,13 +96,11 @@ describe(`Eyas menu`, () => {
 		expect(settingsItem.click).toBe(onOpenSettings);
 	});
 
-	test(`Settings item appears between About and Check for updates`, () => {
+	test(`Settings item appears before Check for updates`, () => {
 		const template = buildMenuTemplate(minimalContext);
 		const submenu = template[0].submenu as MenuItemConstructorOptions[];
-		const aboutIndex = submenu.findIndex(item => item.label && item.label.includes(`About`));
 		const settingsIndex = submenu.findIndex(item => item.label && item.label.includes(`Settings`));
 		const checkIndex = submenu.findIndex(item => item.label && item.label.includes(`Check for updates`));
-		expect(settingsIndex).toBeGreaterThan(aboutIndex);
 		expect(settingsIndex).toBeLessThan(checkIndex);
 	});
 

@@ -159,11 +159,13 @@ export type VersionMismatchData = {
 export type NavItem = {
 	title: LabelString;
 	value: LabelString;
+	icon?: string;
 };
 
 /** A top-level navigation group with a dropdown submenu */
 export type NavGroup = {
 	name: LabelString;
+	logo?: string;
 	submenu: NavItem[];
 };
 
@@ -181,6 +183,7 @@ export type AppHeaderVM = {
 	activator: Element | undefined;
 	activate: (event: NavActivateEvent, group: NavGroup) => void;
 	onListEnter: () => void;
+	onItemClick: (item: NavItem) => void;
 	delayedClose: () => void;
 	$nextTick: () => Promise<void>;
 };
