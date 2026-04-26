@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 import type { VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import AppHeader from '@/components/AppHeader.vue';
+import useModalsStore from '@/stores/modals.js';
 import type { WindowWithEyas } from '@registry/ipc.js';
 import type { AppHeaderVM } from '@registry/components.js';
 import type { ChannelName } from '@registry/primitives.js';
@@ -180,6 +181,22 @@ describe(`AppHeader`, () => {
 
 			expect(mockSend).toHaveBeenCalledWith(`hide-ui`);
 		});
+		test(`menu watch does NOT send hide-ui IPC when menu closes if a modal is visible`, async () => {
+			const vm = wrapper.vm as unknown as AppHeaderVM;
+			const modalsStore = useModalsStore();
+
+			// mock an open modal
+			modalsStore.track(`test-modal`);
+
+			vm.menu = true;
+			await wrapper.vm.$nextTick();
+
+			vm.menu = false;
+			await wrapper.vm.$nextTick();
+			vi.advanceTimersByTime(600);
+
+			expect(mockSend).not.toHaveBeenCalledWith(`hide-ui`);
+		});
 
 
 
@@ -193,6 +210,22 @@ describe(`AppHeader`, () => {
 			const vm = wrapper.vm as unknown as AppHeaderVM;
 			vm.onItemClick({ title: `Test Server`, value: `test-server` });
 			expect(mockSend).toHaveBeenCalledWith(`show-test-server-setup`);
+		});
+
+		test(`onItemClick() sends request-exit IPC for 'exit' item`, () => {
+			const vm = wrapper.vm as unknown as AppHeaderVM;
+			vm.onItemClick({ title: `Exit`, value: `exit` });
+			expect(mockSend).toHaveBeenCalledWith(`request-exit`);
+		});
+
+		test(`'File' menu has 'Exit' item with correct icon and color`, () => {
+			const vm = wrapper.vm as unknown as AppHeaderVM;
+			const fileMenu = vm.groups.find(g => g.name === `File`);
+			const exitItem = fileMenu?.submenu?.find(i => i.value === `exit`);
+			expect(exitItem).toBeDefined();
+			expect(exitItem?.title).toBe(`Exit`);
+			expect(exitItem?.icon).toBe(`mdi-power`);
+			expect(exitItem?.color).toBe(`error`);
 		});
 
 		test(`onItemClick() closes menu and sends hide-ui IPC`, async () => {

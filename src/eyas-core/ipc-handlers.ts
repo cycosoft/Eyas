@@ -42,6 +42,11 @@ function initAppIpcListeners(ctx: CoreContext): void {
 	// hide the UI when requested
 	ipcMain.on(`hide-ui`, () => { ctx.toggleEyasUI(false); });
 
+	// request the app to exit (triggers the confirmation dialog)
+	ipcMain.on(`request-exit`, () => {
+		ctx.requestExit();
+	});
+
 	// Whenever the UI layer has requested to close the app
 	ipcMain.on(`app-exit`, () => {
 		if (!ctx.$appWindow) { return; }

@@ -181,6 +181,7 @@ const coreContextFunctions = {
 	onTitleUpdate: (evt: PreventableEvent, title: AppTitle): void => navigationService.onTitleUpdate(getCoreContext(), evt, title),
 	triggerBufferedModal: (): void => uiService.triggerBufferedModal(getCoreContext()),
 	manageAppClose: (evt: PreventableEvent): void => appService.manageAppClose(getCoreContext(), evt),
+	requestExit: (): void => appService.requestExit(),
 	showAbout: (): void => appService.showAbout(getCoreContext()),
 	clearCache: (): void => appService.clearCache(getCoreContext()),
 	getSessionAge: (): FormattedDuration => appService.getSessionAge(getCoreContext()),

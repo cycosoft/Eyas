@@ -221,3 +221,29 @@ export async function runUiScript(electronApp, script) {
 		}
 	}, script);
 }
+
+/**
+ * Gets the current height of the UI layer (the first BrowserView).
+ * @param {import('@playwright/test').ElectronApplication} electronApp
+ * @returns {Promise<number>}
+ */
+export async function getUiLayerHeight(electronApp) {
+	return electronApp.evaluate(({ BrowserWindow }) => {
+		const windows = BrowserWindow.getAllWindows();
+		if (windows.length > 0) {
+			const window = windows[0];
+			// Support for Electron 30+ WebContentsView
+			if (window.contentView && window.contentView.children && window.contentView.children.length > 0) {
+				return window.contentView.children[0].getBounds().height;
+			}
+			// Fallback for older Electron BrowserView
+			if (window.getBrowserViews) {
+				const views = window.getBrowserViews();
+				if (views.length > 0) {
+					return views[0].getBounds().height;
+				}
+			}
+		}
+		return 0;
+	});
+}

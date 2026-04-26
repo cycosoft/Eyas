@@ -27,6 +27,9 @@ export default defineStore(`modals`, {
 	getters: {
 		lastOpenedById(): ModalId | undefined {
 			return this.visible.at(-1);
+		},
+		hasVisibleModals(): boolean {
+			return this.visible.length > 0;
 		}
 	}
 });

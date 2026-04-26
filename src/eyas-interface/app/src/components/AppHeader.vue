@@ -9,6 +9,7 @@
 			class="px-3"
 			rounded="xs"
 			append-icon="mdi-chevron-down"
+			:data-qa="`btn-nav-group-${group.name.toLowerCase()}`"
 			@click="activate($event, group)"
 			@mouseenter="onMouseEnter($event, group)"
 		>
@@ -43,6 +44,9 @@
 				:title="item.title"
 				:value="item.value"
 				:prepend-icon="item.icon"
+				:color="item.color"
+				:class="{ [`text-${item.color}`]: item.color }"
+				data-qa="btn-nav-item"
 				@click="onItemClick(item)"
 			/>
 		</v-list>
@@ -51,6 +55,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
+import useModalsStore from '@/stores/modals.js';
 import eyasLogo from '@/assets/eyas-logo.svg';
 import type { NavGroup, NavItem, NavActivateEvent, PendingNavOpen } from '@/types/nav.js';
 import type { ChannelName } from '@registry/primitives.js';
@@ -67,7 +72,7 @@ const groups: NavGroup[] = [
 		submenu: [
 			{ title: `About Eyas`, value: `about`, icon: `mdi-information-outline` },
 			{ title: `Recent Tests`, value: `recent-tests` },
-			{ title: `Close`, value: `close` }
+			{ title: `Exit`, value: `exit`, icon: `mdi-power`, color: `error` }
 		]
 	},
 	{
@@ -172,13 +177,18 @@ function onItemClick(item: NavItem): void {
 		window.eyas?.send(`show-whats-new` as ChannelName);
 	}
 
+	if (item.value === `exit`) {
+		window.eyas?.send(`request-exit` as ChannelName);
+	}
+
 	menu.value = false;
 }
 
 function delayedClose(): void {
+	const modalsStore = useModalsStore();
 	window.clearTimeout(closeTimeout);
 	closeTimeout = window.setTimeout(() => {
-		if (!menu.value) {
+		if (!menu.value && !modalsStore.hasVisibleModals) {
 			window.eyas?.send(`hide-ui` as ChannelName);
 		}
 	}, 600);
