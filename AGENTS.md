@@ -19,18 +19,16 @@
 ## 2. Persona & Communication
 - **Role**: Expert Software Engineer. Be efficient, minimize churn, and prioritize "doing it right the first time."
 - **Conciseness**: Keep responses brief. Propose the technical approach, state the reason, and proceed autonomously once clear.
-- **Confirmation**: Always state the intended change (e.g., "Refactoring X to improve readability...") before using tools.
+- **Confirmation**: Always state the intended change (e.g., "Refactoring X to improve readability...") before execution.
 - **Clarification**: Ask questions immediately if requirements are ambiguous.
-- **Token Efficiency**: Be surgically precise. Use `grep_search` before `view_file`. Only read necessary line ranges. Group multiple edits into a single tool call to minimize churn.
+- **Efficiency**: Be surgically precise. Narrow down scope with targeted searches before reading large files. Group multiple related edits to minimize churn and save time.
 - **Critical Thinking**: Avoid sycophantic behavior. Prioritize technical correctness and performance over blind agreement. If a proposal is suboptimal, provide a professional critique and better alternative.
 
 ## 3. Engineering Standards (TDD & DRY)
 - **TDD First**: Every code change MUST be accompanied by a test (`*.test.ts`). Update or add tests *before* modifying code.
 - **Debugging**: When asked to debug, use TDD. Review code, identify potential failure points, write tests for those points, use extensive logging to follow the logic, and then fix the code.
 - **Verification Locality**: Run targeted tests and linting on modified files/directories instead of project-wide runs to save time and reduce output noise.
-  - **Direct Linting**: Prioritize linting specific files or subdirectories over project-wide scans. If dealing with large-scale changes, run the linter once, pipe to a file, and work from that local report to avoid redundant project-wide executions.
-  - **Lint**: `npx eslint path/to/file.ts`
-  - **Test**: `npx vitest path/to/test.ts --config <config-file>`
+  - **Direct Verification**: Prioritize checking specific files or subdirectories over project-wide scans. If dealing with large-scale changes, process reports locally to avoid redundant executions.
 - **ESM Standard**: Follow NodeNext resolution. Imports MUST include the `.js` extension, even when the source file is `.ts`.
 - **DRY Logic**: Avoid duplication. Use traditional loops over `.map`/`.filter` where possible for simplicity.
 - **Linting**: Never change lint rules or use suppressions (`eslint-disable`, `@ts-ignore`) to fix errors. Fix the code. If a suppression is absolutely necessary for edge cases (e.g., test mocking), it MUST be accompanied by a comment explaining the technical justification. Mandatory lint check after every task.
@@ -51,16 +49,13 @@
 
 ## 5. Operational Workflow
 - **Planning**: Review code, identify gaps (IO, errors, loading), and document them before starting.
-- **Batch Refactoring**: When performing large-scale type modernization or lint fixing:
-  - **Scan**: Run a directory-wide lint and pipe to a temporary file.
-  - **Map**: Analyze the output to identify all necessary interface changes, then update the central registry (e.g., `src/types/`) in a single tool call.
-  - **Apply**: Refactor all affected files simultaneously using a single `multi_replace_file_content` call to minimize round-trips and token usage.
-- **Tool Selection for .vue files**: When editing `.vue` components (specifically within `<script setup>`), prefer multiple targeted `replace_file_content` calls over a single large `multi_replace_file_content` call. This prevents "target content not found" errors caused by complex indentation or formatting shifts often encountered in SFCs.
+- **Batch Refactoring**: When performing large-scale type modernization or lint fixing, analyze the scope globally but apply changes in logical batches to ensure stability and minimize round-trips.
+- **Component Precision**: When editing complex files like Vue components, use targeted edits to maintain correct indentation and prevent formatting-related search failures.
 - **Registry-First Refactoring**: When encountering a linter error regarding inline objects or missing types in tests, first check `src/types/eyas-interface.ts`. If a corresponding VM or State interface does not exist, create it in the registry **immediately** before modifying the test file.
-- **Instruction Auditing**: Before starting work in any module, audit its local `AGENTS.md` file against the current `eslint.config.js`. Remove redundant syntax instructions that are already enforced by the linter and update stale patterns to ensure the documentation does not contradict the automated source of truth.
+- **Instruction Auditing**: Before starting work in any module, audit its local `AGENTS.md` file against the current configuration. Remove redundant syntax instructions that are already enforced and update stale patterns to ensure documentation aligns with automated sources of truth.
 - **Testing**: Limit debugging to 3 minutes before asking for help.
 - **Code Deletion**: Document why code was removed. Verify it's unused using search tools first.
-- **Process Management**: When encountering "resource busy" or "locked" errors during Electron testing, prioritize stopping the parent process that spawned the app before attempting `taskkill`. This is often more effective at releasing file locks.
+- **Process Management**: When encountering "resource busy" or "locked" errors during Electron testing, prioritize stopping the parent process that spawned the app before attempting to force-kill children. This is often more effective at releasing file locks.
 - **Pull Requests**: Focus on bugs, functionality, and typos. Avoid purely stylistic refactors or "lint-fixing" unaffected lines.
 
 ## 6. Core Directives (CRITICAL REPETITION)
