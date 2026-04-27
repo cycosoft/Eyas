@@ -17,6 +17,7 @@ dist/
 test-results/
 playwright-report/
 .test-data/
+.test-data-v2/
 out/
 tests/.test-user-data-sequencing/
 tests/.test-user-data-trigger/
