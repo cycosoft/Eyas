@@ -196,7 +196,7 @@ export const windowService: WindowService = {
 		if (!$appWindow) { return; }
 
 		const [newWidth, newHeight] = $appWindow.getContentSize();
-		
+
 		// update the viewport state
 		$currentViewport[0] = newWidth;
 		$currentViewport[1] = newHeight;
@@ -251,7 +251,7 @@ export const windowService: WindowService = {
 		// load a default blank page into the test layer so the background doesn't show as black
 		const blankPage = `data:text/html,` + encodeURIComponent(`<html><body></body></html>`);
 		ctx.$testLayer?.webContents.loadURL(blankPage);
-		
+
 		// Playwright's `electron.launch()` waits for the primary host BrowserWindow to finish its
 		// initial navigation. Since our host window is just a bare container and we moved navigation
 		// to the $testLayer, Playwright hangs forever. Navigating the window satisfies Playwright.

@@ -67,15 +67,13 @@ describe(`Root menu structure`, () => {
 // ─── Eyas menu ────────────────────────────────────────────────────────────
 
 describe(`Eyas menu`, () => {
-	test(`first submenu contains Settings then separator then Exit in order`, () => {
+	test(`first submenu contains Settings and does NOT contain Exit`, () => {
 		const template = buildMenuTemplate(minimalContext);
 		const submenu = template[0].submenu as MenuItemConstructorOptions[];
 		const settingsIndex = submenu.findIndex(item => item.label && item.label.includes(`Settings`));
-		const separatorIndex = submenu.findIndex(item => item.type === `separator`);
 		const exitIndex = submenu.findIndex(item => item.label && item.label.includes(`Exit`));
 		expect(settingsIndex).toBeGreaterThanOrEqual(0);
-		expect(separatorIndex).toBeGreaterThan(settingsIndex);
-		expect(exitIndex).toBeGreaterThan(separatorIndex);
+		expect(exitIndex).toBe(-1);
 	});
 
 	test(`app submenu contains a Settings item`, () => {

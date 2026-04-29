@@ -41,8 +41,7 @@ function createAppSubmenu(context: MenuContext): MenuTemplate {
 		onOpenSettings = (): void => { },
 		onShowWhatsNew = (): void => { },
 		updateStatus,
-		onCheckForUpdates,
-		quit
+		onCheckForUpdates
 	} = context;
 
 	const updateStatusItem = updateStatus === `downloading`
@@ -52,9 +51,7 @@ function createAppSubmenu(context: MenuContext): MenuTemplate {
 	return [
 		{ label: `⚙️ &Settings`, click: onOpenSettings },
 		{ label: `✨ &Changelog`, click: onShowWhatsNew },
-		updateStatusItem,
-		{ type: `separator` },
-		{ label: `🚪 &Exit`, accelerator: `CmdOrCtrl+Q`, click: quit }
+		updateStatusItem
 	];
 }
 
