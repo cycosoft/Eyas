@@ -17,7 +17,7 @@ import type { EnvironmentSettings } from '@registry/settings.js';
  * @param openInBrowser Whether to open the path in an external browser.
  */
 function navigate(ctx: CoreContext, path?: DomainUrl, openInBrowser?: IsActive, closeUi: IsActive = true): void {
-	if (!ctx.$appWindow) { return; }
+	if (!ctx.$appWindow && !ctx.$testLayer) { return; }
 
 	// setup
 	let runningTestSource = false;
@@ -44,8 +44,9 @@ function navigate(ctx: CoreContext, path?: DomainUrl, openInBrowser?: IsActive, 
 		// open the requested url in the default browser
 		shell.openExternal(path);
 	} else {
-		// otherwise load the requested path in the app window
-		ctx.$appWindow.loadURL(path);
+		// load in the test layer (child view) or fall back to the app window
+		const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
+		webContents?.loadURL(path);
 	}
 
 	// ensure the UI is closed so the user can interact with the content
@@ -243,7 +244,9 @@ function setupFreshTestSource(ctx: CoreContext): void {
  * @returns The formatted application title.
  */
 function getAppTitleWithContext(ctx: CoreContext, rawPageTitle?: AppTitle): AppTitle {
-	const rawUrl = ctx.$appWindow ? ctx.$appWindow.webContents.getURL() : null;
+	// prefer the test layer's webContents since it holds the actual test page URL
+	const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
+	const rawUrl = webContents ? webContents.getURL() : null;
 
 	// ignore data: URLs in the address bar
 	const url = (rawUrl?.startsWith(`data:`) ? undefined : rawUrl) || undefined;

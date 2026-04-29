@@ -177,9 +177,10 @@ describe(`index.ts refactoring unit tests`, () => {
 	test(`createAppWindow should instantiate BrowserWindow`, () => {
 		const ctx = {
 			setAppWindow: vi.fn(),
+			setTestLayer: vi.fn(),
 			$config: { meta: { testId: `test` } },
 			$currentViewport: [1366, 768],
-			$paths: { icon: `test.png` },
+			$paths: { icon: `test.png`, testPreload: `preload.js` },
 			getAppTitle: vi.fn().mockReturnValue(`Test`)
 		} as unknown as CoreContext;
 		windowService.createAppWindow(ctx);

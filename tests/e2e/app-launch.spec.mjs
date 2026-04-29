@@ -10,7 +10,9 @@ test(`app launches and displays UI`, async () => {
 	expect(process.pid).toBeGreaterThan(0);
 
 	// Verify we have a window
-	const window = await electronApp.firstWindow();
+	const windows = electronApp.windows();
+	expect(windows.length).toBeGreaterThan(0);
+	const window = windows[0];
 	expect(window).not.toBeNull();
 
 	// Wait a bit for the app to fully initialize
@@ -25,7 +27,9 @@ test(`app launches with eyas:// URL in argv (start-up request path)`, async () =
 	expect(electronApp.process()).not.toBeNull();
 	expect(electronApp.process().pid).toBeGreaterThan(0);
 
-	const window = await electronApp.firstWindow();
+	const windows = electronApp.windows();
+	expect(windows.length).toBeGreaterThan(0);
+	const window = windows[0];
 	expect(window).not.toBeNull();
 
 	await new Promise(resolve => setTimeout(resolve, 1000));

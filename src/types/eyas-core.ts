@@ -27,6 +27,7 @@ export type CoreContext = {
 	// State
 	$appWindow: BrowserWindow | null;
 	$eyasLayer: WebContentsView | null;
+	$testLayer: WebContentsView | null;
 	$config: ValidatedConfig | null;
 	$configToLoad: ConfigToLoad;
 	$testNetworkEnabled: IsActive;
@@ -64,6 +65,7 @@ export type CoreContext = {
 	setPendingStartupModal: (modal: StartupModal | null) => void;
 	setAppWindow: (window: BrowserWindow | null) => void;
 	setEyasLayer: (layer: WebContentsView | null) => void;
+	setTestLayer: (layer: WebContentsView | null) => void;
 	setConfigToLoad: (config: ConfigToLoad) => void;
 	setConfig: (config: ValidatedConfig) => void;
 
@@ -157,13 +159,37 @@ export type AppService = {
 	checkExpiration: (ctx: CoreContext) => void;
 	trackEvent: (ctx: CoreContext, event: MPEventName, extraData?: MetadataRecord) => Promise<void>;
 };
-/** Mock of WebContents for testing */
+/** Mock of WebContents for testing (used by $eyasLayer) */
 export type CoreMockWebContents = {
 	loadURL: (url: DomainUrl) => void;
 	on: (event: string, cb: (...args: unknown[]) => void) => void;
 	send: (channel: ChannelName, ...args: unknown[]) => void;
 	focus: () => void;
 	isFocused: () => boolean;
+};
+
+/** Mock of session for test layer */
+export type CoreMockTestLayerSession = {
+	getCacheSize: () => Promise<number>;
+};
+
+/** Mock of WebContents for the test layer (broader API surface) */
+export type CoreMockTestLayerWebContents = {
+	loadURL: (url: DomainUrl) => void;
+	on: (event: string, cb: (...args: unknown[]) => void) => void;
+	getURL: () => string;
+	getTitle: () => string;
+	reloadIgnoringCache: () => void;
+	goBack: () => void;
+	goForward: () => void;
+	toggleDevTools: () => void;
+	session: CoreMockTestLayerSession;
+};
+
+/** Mock of a WebContentsView used as the test content layer */
+export type CoreMockTestLayer = {
+	setBounds: (bounds: Rectangle) => void;
+	webContents: CoreMockTestLayerWebContents;
 };
 
 /** Mock of WebRequest for testing */

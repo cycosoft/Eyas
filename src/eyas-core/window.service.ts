@@ -18,17 +18,33 @@ export const windowService: WindowService = {
 		const window = new BrowserWindow({
 			useContentSize: true,
 			width: $currentViewport[0],
-			height: $currentViewport[1],
+			height: $currentViewport[1] + EYAS_HEADER_HEIGHT,
 			title: ctx.getAppTitle(),
 			icon: $paths.icon,
 			show: false,
+			webPreferences: {
+				partition: `persist:${$config?.meta.testId}`
+			}
+		});
+
+		ctx.setAppWindow(window);
+
+		// Create a dedicated child view for the test content, positioned below the header
+		const testLayer = new WebContentsView({
 			webPreferences: {
 				preload: $paths.testPreload,
 				partition: `persist:${$config?.meta.testId}`
 			}
 		});
 
-		ctx.setAppWindow(window);
+		ctx.setTestLayer(testLayer);
+		window.contentView.addChildView(testLayer);
+		testLayer.setBounds({
+			x: 0,
+			y: EYAS_HEADER_HEIGHT,
+			width: $currentViewport[0],
+			height: $currentViewport[1]
+		});
 	},
 
 	/**
@@ -136,12 +152,16 @@ export const windowService: WindowService = {
 
 		$appWindow.on(`page-title-updated`, (evt, title) => ctx.onTitleUpdate(evt, title));
 
-		$appWindow.webContents.on(`did-finish-load`, () => {
-			$appWindow.setTitle(ctx.getAppTitle($appWindow.webContents.getTitle()));
+		// Route content-load lifecycle events through the test layer (the child view)
+		// so that title updates and navigation state track the *test* content, not the host window.
+		const testWebContents = ctx.$testLayer?.webContents || $appWindow.webContents;
+
+		testWebContents.on(`did-finish-load`, () => {
+			$appWindow.setTitle(ctx.getAppTitle(testWebContents.getTitle()));
 			ctx.setMenu();
 		});
 
-		$appWindow.webContents.on(`did-start-navigation`, (_event, url) => {
+		testWebContents.on(`did-start-navigation`, (_event, url) => {
 			if (!url.startsWith(`data:text/html`) && url !== `about:blank`) {
 				if (ctx.$isInitializing) {
 					ctx.setIsInitializing(false);
@@ -150,7 +170,7 @@ export const windowService: WindowService = {
 			}
 		});
 
-		$appWindow.webContents.on(`did-fail-load`, (_event, errorCode, errorDescription) => {
+		testWebContents.on(`did-fail-load`, (_event, errorCode, errorDescription) => {
 			console.error(`Navigation failed: ${errorCode} - ${errorDescription}`);
 		});
 
@@ -190,6 +210,14 @@ export const windowService: WindowService = {
 
 		$eyasLayer.setBounds({ x: 0, y: 0, width: newWidth, height: newLayerHeight });
 
+		// Resize the test content layer to fill the area below the header
+		ctx.$testLayer?.setBounds({
+			x: 0,
+			y: EYAS_HEADER_HEIGHT,
+			width: newWidth,
+			height: newHeight - EYAS_HEADER_HEIGHT
+		});
+
 		ctx.setMenu();
 	},
 
@@ -216,8 +244,14 @@ export const windowService: WindowService = {
 		// when the splash screen content has loaded, set a new more specific time
 		splashScreen.webContents.on(`did-finish-load`, () => { splashVisible = performance.now(); });
 
-		// load a default page so the app doesn't start black
-		ctx.$appWindow?.loadURL(`data:text/html,` + encodeURIComponent(`<html><body></body></html>`));
+		// load a default blank page into the test layer so the background doesn't show as black
+		const blankPage = `data:text/html,` + encodeURIComponent(`<html><body></body></html>`);
+		ctx.$testLayer?.webContents.loadURL(blankPage);
+		
+		// Playwright's `electron.launch()` waits for the primary host BrowserWindow to finish its
+		// initial navigation. Since our host window is just a bare container and we moved navigation
+		// to the $testLayer, Playwright hangs forever. Navigating the window satisfies Playwright.
+		ctx.$appWindow?.loadURL(blankPage);
 
 		// track the app launch event
 		ctx.trackEvent(MP_EVENTS.core.launch);

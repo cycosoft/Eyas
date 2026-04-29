@@ -47,6 +47,7 @@ import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActiv
 const $isDev = process.argv.includes(`--dev`) as IsActive;
 let $appWindow: BrowserWindow | null = null;
 let $eyasLayer: WebContentsView | null = null;
+let $testLayer: WebContentsView | null = null;
 let $config: ValidatedConfig | null = null;
 let $configToLoad: ConfigToLoad = {};
 let $testNetworkEnabled: IsActive = true;
@@ -158,6 +159,7 @@ const coreContextSetters = {
 	setPendingStartupModal: (modal: StartupModal | null): void => { $pendingStartupModal = modal; },
 	setAppWindow: (window: BrowserWindow | null): void => { $appWindow = window; },
 	setEyasLayer: (layer: WebContentsView | null): void => { $eyasLayer = layer; },
+	setTestLayer: (layer: WebContentsView | null): void => { $testLayer = layer; },
 	setConfigToLoad: (config: ConfigToLoad): void => { $configToLoad = config; },
 	setConfig: (config: ValidatedConfig): void => { $config = config; }
 };
@@ -197,6 +199,7 @@ function getCoreContext(): CoreContext {
 	$coreContext = {
 		get $appWindow(): BrowserWindow | null { return $appWindow; },
 		get $eyasLayer(): WebContentsView | null { return $eyasLayer; },
+		get $testLayer(): WebContentsView | null { return $testLayer; },
 		get $config(): ValidatedConfig | null { return $config; },
 		get $configToLoad(): ConfigToLoad { return $configToLoad; },
 		get $testNetworkEnabled(): IsActive { return $testNetworkEnabled; },

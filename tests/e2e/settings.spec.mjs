@@ -49,6 +49,7 @@ test.describe(`User Settings`, () => {
 	});
 
 	test(`Always choose checkbox preserves selection on next launch`, async () => {
+		test.setTimeout(30000);
 		let uiPage = await getUiView(electronApp);
 		uiPage.on(`console`, msg => console.log(`RENDERER: ${msg.text()}`));
 

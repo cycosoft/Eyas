@@ -140,17 +140,24 @@ describe(`MenuService Helpers`, () => {
 	describe(`getContext and handlers`, () => {
 		const mockWindow = {
 			webContents: {
-				reloadIgnoringCache: vi.fn(),
-				goBack: vi.fn(),
-				goForward: vi.fn(),
-				getURL: vi.fn(() => `https://current.url`),
-				toggleDevTools: vi.fn(),
+				getStoragePath: vi.fn(() => `/mock/path`),
 				session: {
 					getStoragePath: vi.fn(() => `/mock/path`),
 					getCacheSize: vi.fn(async () => 100)
 				}
 			}
 		} as unknown as BrowserWindow;
+
+		const mockTestLayer = {
+			webContents: {
+				reloadIgnoringCache: vi.fn(),
+				goBack: vi.fn(),
+				goForward: vi.fn(),
+				getURL: vi.fn(() => `https://current.url`),
+				toggleDevTools: vi.fn(),
+				session: { getCacheSize: vi.fn(async () => 100) }
+			}
+		};
 
 		const mockCtx = {
 			showAbout: vi.fn(),
@@ -171,6 +178,7 @@ describe(`MenuService Helpers`, () => {
 				installUpdate: vi.fn()
 			},
 			$appWindow: mockWindow,
+			$testLayer: mockTestLayer,
 			$eyasLayer: {
 				webContents: {
 					openDevTools: vi.fn()
@@ -210,7 +218,7 @@ describe(`MenuService Helpers`, () => {
 			await menuService.refresh(mockCtx);
 
 			expect(mockCtx.getSessionAge).toHaveBeenCalled();
-			expect(mockWindow.webContents.session.getCacheSize).toHaveBeenCalled();
+			expect(mockTestLayer.webContents.session.getCacheSize).toHaveBeenCalled();
 			expect(Menu.buildFromTemplate).toHaveBeenCalled();
 			expect(Menu.setApplicationMenu).toHaveBeenCalled();
 		});
@@ -243,16 +251,16 @@ describe(`MenuService Helpers`, () => {
 
 			test(`browser controls should call webContents methods`, () => {
 				handlers.reload?.();
-				expect(mockWindow.webContents.reloadIgnoringCache).toHaveBeenCalled();
+				expect(mockTestLayer.webContents.reloadIgnoringCache).toHaveBeenCalled();
 
 				handlers.back?.();
-				expect(mockWindow.webContents.goBack).toHaveBeenCalled();
+				expect(mockTestLayer.webContents.goBack).toHaveBeenCalled();
 
 				handlers.forward?.();
-				expect(mockWindow.webContents.goForward).toHaveBeenCalled();
+				expect(mockTestLayer.webContents.goForward).toHaveBeenCalled();
 
 				handlers.copyUrl?.();
-				expect(mockWindow.webContents.getURL).toHaveBeenCalled();
+				expect(mockTestLayer.webContents.getURL).toHaveBeenCalled();
 				expect(clipboard.writeText).toHaveBeenCalledWith(`https://current.url`);
 			});
 		});
@@ -293,7 +301,7 @@ describe(`MenuService Helpers`, () => {
 
 			test(`should handle dev tools`, () => {
 				handlers.toggleTestDevTools?.();
-				expect(mockWindow.webContents.toggleDevTools).toHaveBeenCalled();
+				expect(mockTestLayer.webContents.toggleDevTools).toHaveBeenCalled();
 
 				handlers.openUiDevTools?.();
 				expect(mockCtx.$eyasLayer?.webContents.openDevTools).toHaveBeenCalledWith({ mode: `detach` });

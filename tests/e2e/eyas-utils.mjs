@@ -49,10 +49,15 @@ export async function launchEyas(extraArgs = [], userDataDir = null, cwd = null,
 	// Store the user data dir on the app object for later reuse if needed
 	electronApp._userDataDir = userDataDir;
 
-	const window = await electronApp.firstWindow();
-	await window.waitForLoadState(`domcontentloaded`);
+	// In the new WebContentsView architecture, the host BrowserWindow doesn't navigate.
+	// Instead of using Playwright's firstWindow() (which expects a navigating page),
+	// we just wait until at least one window exists in the electronApp context.
+	for (let i = 0; i < 20; i++) {
+		if (electronApp.windows().length > 0) break;
+		await new Promise(resolve => setTimeout(resolve, 500));
+	}
 
-	// Give the app a moment to initialize its layers
+	// Give the app a moment to initialize its child views
 	await new Promise(resolve => setTimeout(resolve, 1000));
 
 	return electronApp;
@@ -66,7 +71,7 @@ export async function launchEyas(extraArgs = [], userDataDir = null, cwd = null,
 export async function getUiView(electronApp) {
 	let ui;
 	for (let i = 0; i < 20; i++) {
-		ui = electronApp.windows().find(p => p.url().startsWith(`ui://eyas.interface`));
+		ui = electronApp.windows().find(p => p.url().includes(`index.html`) || p.url().includes(`localhost`));
 		if (ui) break;
 		await new Promise(resolve => setTimeout(resolve, 500));
 	}
@@ -201,7 +206,14 @@ export async function emitIpcMessage(electronApp, channel, ...args) {
 export async function getAppWindowUrl(electronApp) {
 	return electronApp.evaluate(({ BrowserWindow }) => {
 		const windows = BrowserWindow.getAllWindows();
-		return windows.length > 0 ? windows[0].webContents.getURL() : ``;
+		if (windows.length > 0) {
+			const window = windows[0];
+			if (window.contentView && window.contentView.children && window.contentView.children.length > 0) {
+				// children[0] is $testLayer
+				return window.contentView.children[0].webContents.getURL();
+			}
+		}
+		return ``;
 	});
 }
 
@@ -214,16 +226,17 @@ export async function runUiScript(electronApp, script) {
 	return electronApp.evaluate(({ BrowserWindow }, script) => {
 		const windows = BrowserWindow.getAllWindows();
 		if (windows.length > 0) {
-			const browserViews = windows[0].getBrowserViews();
-			if (browserViews.length > 0) {
-				return browserViews[0].webContents.executeJavaScript(script);
+			const window = windows[0];
+			if (window.contentView && window.contentView.children && window.contentView.children.length > 1) {
+				// children[1] is $eyasLayer (the UI)
+				return window.contentView.children[1].webContents.executeJavaScript(script);
 			}
 		}
 	}, script);
 }
 
 /**
- * Gets the current height of the UI layer (the first BrowserView).
+ * Gets the current height of the UI layer (the second WebContentsView).
  * @param {import('@playwright/test').ElectronApplication} electronApp
  * @returns {Promise<number>}
  */
@@ -233,15 +246,9 @@ export async function getUiLayerHeight(electronApp) {
 		if (windows.length > 0) {
 			const window = windows[0];
 			// Support for Electron 30+ WebContentsView
-			if (window.contentView && window.contentView.children && window.contentView.children.length > 0) {
-				return window.contentView.children[0].getBounds().height;
-			}
-			// Fallback for older Electron BrowserView
-			if (window.getBrowserViews) {
-				const views = window.getBrowserViews();
-				if (views.length > 0) {
-					return views[0].getBounds().height;
-				}
+			if (window.contentView && window.contentView.children && window.contentView.children.length > 1) {
+				// children[1] is $eyasLayer (the UI)
+				return window.contentView.children[1].getBounds().height;
 			}
 		}
 		return 0;

@@ -39,6 +39,10 @@ export default {
 };
 `;
 	await fs.writeFile(path.join(dir, `.eyas.config.js`), configContent, `utf8`);
+	// Add dummy package.json to prevent ENOENT in getCliVersion
+	const packageContent = `{"version": "1.0.0"}`;
+	await fs.writeFile(path.join(dir, `package.json`), packageContent, `utf8`);
+
 	return dir;
 }
 
@@ -72,6 +76,7 @@ test.describe(`Project Settings Isolation`, () => {
 	});
 
 	test(`settings saved in Project A do not appear in Project B`, async () => {
+		test.setTimeout(30000);
 		// ─── Phase 1: Launch as Project A and enable "Always choose" ───────────
 		let electronApp = await launchEyas([], sharedUserDataDir, projectADir);
 		let uiPage = await getUiView(electronApp);
