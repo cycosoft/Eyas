@@ -160,7 +160,7 @@ export type AppService = {
 	trackEvent: (ctx: CoreContext, event: MPEventName, extraData?: MetadataRecord) => Promise<void>;
 };
 /** Mock of WebContents for testing (used by $eyasLayer) */
-export type CoreMockWebContents = {
+type CoreMockWebContents = {
 	loadURL: (url: DomainUrl) => void;
 	on: (event: string, cb: (...args: unknown[]) => void) => void;
 	send: (channel: ChannelName, ...args: unknown[]) => void;
@@ -169,12 +169,12 @@ export type CoreMockWebContents = {
 };
 
 /** Mock of session for test layer */
-export type CoreMockTestLayerSession = {
+type CoreMockTestLayerSession = {
 	getCacheSize: () => Promise<number>;
 };
 
 /** Mock of WebContents for the test layer (broader API surface) */
-export type CoreMockTestLayerWebContents = {
+type CoreMockTestLayerWebContents = {
 	loadURL: (url: DomainUrl) => void;
 	on: (event: string, cb: (...args: unknown[]) => void) => void;
 	getURL: () => string;
@@ -193,23 +193,23 @@ export type CoreMockTestLayer = {
 };
 
 /** Mock of WebRequest for testing */
-export type CoreMockWebRequest = {
+type CoreMockWebRequest = {
 	onBeforeRequest: (...args: unknown[]) => void;
 };
 
 /** Mock of Session for testing */
-export type CoreMockSession = {
+type CoreMockSession = {
 	webRequest: CoreMockWebRequest;
 };
 
 /** Mock of BrowserWindow WebContents for testing */
-export type CoreMockWindowWebContents = {
+type CoreMockWindowWebContents = {
 	on: (event: string, cb: (...args: unknown[]) => void) => void;
 	session: CoreMockSession;
 };
 
 /** Mock of ContentView for testing */
-export type CoreMockContentView = {
+type CoreMockContentView = {
 	addChildView: (view: unknown) => void;
 };
 

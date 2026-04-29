@@ -1,7 +1,7 @@
 import type { AppName, IsActive, FormattedDuration, ByteCount, UpdateStatus, MenuLabel, DomainUrl, MenuAccelerator, MetadataKey } from './primitives.js';
 
 /** A single menu item descriptor */
-export type MenuItem = {
+type MenuItem = {
 	label?: MenuLabel;
 	type?: `normal` | `separator` | `submenu` | `checkbox` | `radio`;
 	enabled?: IsActive;

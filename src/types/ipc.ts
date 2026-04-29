@@ -7,7 +7,7 @@ export type EnvironmentSelectedPayload = DomainUrl | EnvironmentChoice;
 /**
  * Interface for the 'eyas' object injected into the browser window.
  */
-export type EyasInterface = {
+type EyasInterface = {
 	send: (channel: ChannelName, ...args: unknown[]) => void;
 	receive: (channel: ChannelName, callback: (...args: unknown[]) => void) => void;
 };

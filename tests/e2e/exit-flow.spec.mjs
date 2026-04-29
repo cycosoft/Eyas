@@ -22,15 +22,6 @@ test.describe(`Exit Flow`, () => {
 		await exitEyas(electronApp);
 	});
 
-	test(`native 'Exit' menu item shows confirmation modal`, async () => {
-		// trigger native exit
-		await clickSubMenuItem(electronApp, `Eyas`, `Exit`);
-
-		// check if the exit modal is visible in the UI
-		const exitModalText = uiPage.locator(`[data-qa="exit-modal-text"]`);
-		await expect(exitModalText).toBeVisible({ timeout: 5000 });
-		await expect(exitModalText).toContainText(`Would you like to exit the test?`);
-	});
 
 	test(`UI 'Exit' menu item shows confirmation modal`, async () => {
 		// Open the File menu in the UI

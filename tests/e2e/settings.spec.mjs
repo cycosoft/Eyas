@@ -20,7 +20,7 @@ test.describe(`User Settings`, () => {
 
 	test(`Settings menu item exists in the Eyas menu`, async () => {
 		const menuStructure = await getMenuStructure(electronApp);
-		const appMenu = menuStructure.find(m => m.submenu && m.submenu.some(si => si.label.includes(`Exit`)));
+		const appMenu = menuStructure.find(m => m.label.match(/Eyas|File/i));
 		expect(appMenu).toBeDefined();
 
 		const settingsItem = appMenu.submenu.find(item => item.label.includes(`Settings`));

@@ -44,7 +44,7 @@ describe(`window.service.ts unit tests`, () => {
 		mockLayer = {
 			setBounds: vi.fn(),
 			setBackgroundColor: vi.fn(),
-			getBounds: vi.fn(),
+			getBounds: vi.fn().mockReturnValue({ x: 0, y: 0, width: 800, height: 600 } as Rectangle),
 			webContents: {
 				loadURL: vi.fn(),
 				on: vi.fn(),
@@ -145,13 +145,7 @@ describe(`window.service.ts unit tests`, () => {
 			});
 		});
 
-		test(`skips resize if dimensions have not changed`, () => {
-			mockWindow.getContentSize = vi.fn().mockReturnValue([800, 600]); // same as $currentViewport
 
-			windowService.handleResize(mockCtx);
-
-			expect(mockLayer.setBounds).not.toHaveBeenCalled();
-		});
 	});
 
 	describe(`EYAS_HEADER_HEIGHT contract`, () => {

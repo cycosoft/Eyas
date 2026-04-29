@@ -39,7 +39,7 @@ export type CertBundle = {
 };
 
 /** Extensions for the Express Request object */
-export type EyasRequestExtensions = {
+type EyasRequestExtensions = {
 	_safePath?: FileSystemPath;
 }
 

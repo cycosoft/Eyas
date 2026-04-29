@@ -26,7 +26,7 @@ export type LinkConfig = {
 	external?: IsActive;
 }
 
-export type OutputConfig = {
+type OutputConfig = {
 	expires: DurationHours;
 }
 

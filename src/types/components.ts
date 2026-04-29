@@ -1,6 +1,6 @@
 import type { ModalMode, IsVisible, DomainUrl, IsEnabled, MenuLabel, EventType, ViewportWidth, AppTitle, ResponseBody, PortNumber, Count, IsActive, LabelString, AppVersion } from './primitives.js';
 
-export type ModalType = `modal` | `dialog`;
+type ModalType = `modal` | `dialog`;
 
 export type ModalBackgroundProps = {
 	modelValue: IsVisible;
@@ -66,11 +66,11 @@ export type EnvironmentModalVM = {
 	$options: ComponentOptions;
 };
 
-export type ComponentBaseOptions = {
+type ComponentBaseOptions = {
 	mounted?: Array<() => void>;
 }
 
-export type ComponentOptions = ComponentBaseOptions & Record<LabelString, unknown>;
+type ComponentOptions = ComponentBaseOptions & Record<LabelString, unknown>;
 
 /**
  * Type helper for the ModalWrapper Vue component's ViewModel in tests.

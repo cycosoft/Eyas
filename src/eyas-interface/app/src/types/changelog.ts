@@ -1,6 +1,6 @@
 import type { LabelString, AppVersion, DomainUrl } from '@registry/primitives.js';
 
-export type ChangelogItem = {
+type ChangelogItem = {
 	text: LabelString;
 	subItems?: LabelString[];
 	subItemsType?: `ordered` | `unordered`;
@@ -13,17 +13,17 @@ export type ChangelogEntry = {
 	listType?: `ordered` | `unordered`;
 }
 
-export type MarkdownTextToken = {
+type MarkdownTextToken = {
 	type: `text`;
 	content: LabelString;
 }
 
-export type MarkdownCodeToken = {
+type MarkdownCodeToken = {
 	type: `code`;
 	content: LabelString;
 }
 
-export type MarkdownLinkToken = {
+type MarkdownLinkToken = {
 	type: `link`;
 	content: LabelString;
 	url: DomainUrl;

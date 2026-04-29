@@ -50,7 +50,7 @@ export type EnvironmentChoice = {
 }
 
 /** A single environment choice with a title */
-export type EnvironmentTitle = {
+type EnvironmentTitle = {
 	title?: AppTitle;
 }
 
