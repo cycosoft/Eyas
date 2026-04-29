@@ -167,11 +167,14 @@ function onItemClick(item: NavItem): void {
 function delayedClose(): void {
 	const modalsStore = useModalsStore();
 	window.clearTimeout(closeTimeout);
+
+	// Wait for the menu's close transition to complete (~250-300ms)
+	// before shrinking the layer, provided no modals have opened.
 	closeTimeout = window.setTimeout(() => {
 		if (!menu.value && !modalsStore.hasVisibleModals) {
 			window.eyas?.send(`hide-ui` as ChannelName);
 		}
-	}, 600);
+	}, 300);
 }
 
 // expose for testing

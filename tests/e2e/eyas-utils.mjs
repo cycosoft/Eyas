@@ -254,3 +254,38 @@ export async function getUiLayerHeight(electronApp) {
 		return 0;
 	});
 }
+
+/**
+ * Gets the current bounds of the test layer (the first WebContentsView).
+ * @param {import('@playwright/test').ElectronApplication} electronApp
+ * @returns {Promise<{x: number, y: number, width: number, height: number}>}
+ */
+export async function getTestLayerBounds(electronApp) {
+	return electronApp.evaluate(({ BrowserWindow }) => {
+		const windows = BrowserWindow.getAllWindows();
+		if (windows.length > 0) {
+			const window = windows[0];
+			if (window.contentView && window.contentView.children && window.contentView.children.length > 0) {
+				// children[0] is $testLayer
+				const bounds = window.contentView.children[0].getBounds();
+				return { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height };
+			}
+		}
+		return { x: 0, y: 0, width: 0, height: 0 };
+	});
+}
+
+/**
+ * Gets the content size of the main application window.
+ * @param {import('@playwright/test').ElectronApplication} electronApp
+ * @returns {Promise<[number, number]>}
+ */
+export async function getAppWindowContentSize(electronApp) {
+	return electronApp.evaluate(({ BrowserWindow }) => {
+		const windows = BrowserWindow.getAllWindows();
+		if (windows.length > 0) {
+			return windows[0].getContentSize();
+		}
+		return [0, 0];
+	});
+}

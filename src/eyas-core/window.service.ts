@@ -134,6 +134,7 @@ export const windowService: WindowService = {
 
 			setTimeout(() => {
 				ctx.$appWindow?.show();
+				windowService.handleResize(ctx);
 				splashScreen.destroy();
 			}, splashTimeout);
 		});
@@ -191,32 +192,35 @@ export const windowService: WindowService = {
 	 * @param ctx The core context.
 	 */
 	handleResize(ctx: CoreContext): void {
-		const { $appWindow, $eyasLayer, $currentViewport } = ctx;
-		if (!$appWindow || !$eyasLayer) { return; }
+		const { $appWindow, $eyasLayer, $testLayer, $currentViewport } = ctx;
+		if (!$appWindow) { return; }
 
 		const [newWidth, newHeight] = $appWindow.getContentSize();
-		if (newWidth === $currentViewport[0] && newHeight === $currentViewport[1]) {
-			return;
-		}
-
+		
+		// update the viewport state
 		$currentViewport[0] = newWidth;
 		$currentViewport[1] = newHeight;
 
-		// determine if the UI layer is currently active (full screen) or passive (header only)
-		// by comparing its current height to the known header height constant.
-		const currentLayerHeight = $eyasLayer.getBounds().height;
-		const isActive = currentLayerHeight > EYAS_HEADER_HEIGHT;
-		const newLayerHeight = isActive ? newHeight : EYAS_HEADER_HEIGHT;
+		// Resize the UI layer if it exists
+		if ($eyasLayer) {
+			// determine if the UI layer is currently active (full screen) or passive (header only)
+			// by comparing its current height to the known header height constant.
+			const currentLayerHeight = $eyasLayer.getBounds().height;
+			const isActive = currentLayerHeight > EYAS_HEADER_HEIGHT;
+			const newLayerHeight = isActive ? newHeight : EYAS_HEADER_HEIGHT;
 
-		$eyasLayer.setBounds({ x: 0, y: 0, width: newWidth, height: newLayerHeight });
+			$eyasLayer.setBounds({ x: 0, y: 0, width: newWidth, height: newLayerHeight });
+		}
 
-		// Resize the test content layer to fill the area below the header
-		ctx.$testLayer?.setBounds({
-			x: 0,
-			y: EYAS_HEADER_HEIGHT,
-			width: newWidth,
-			height: newHeight - EYAS_HEADER_HEIGHT
-		});
+		// Resize the test content layer if it exists
+		if ($testLayer) {
+			$testLayer.setBounds({
+				x: 0,
+				y: EYAS_HEADER_HEIGHT,
+				width: newWidth,
+				height: newHeight - EYAS_HEADER_HEIGHT
+			});
+		}
 
 		ctx.setMenu();
 	},
