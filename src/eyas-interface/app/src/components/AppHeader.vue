@@ -18,11 +18,12 @@
 				:src="group.logo"
 				class="menu-logo mr-n1"
 			/>
-			<!-- eslint-disable-next-line vue/no-v-html -->
-			<span
-				v-else
-				v-html="getMnemonicName(group)"
-			/>
+			<span v-else>
+				<template v-for="(part, i) in group.mnemonicParts" :key="i">
+					<u v-if="part.isMnemonic">{{ part.text }}</u>
+					<template v-else>{{ part.text }}</template>
+				</template>
+			</span>
 		</v-btn>
 	</v-app-bar>
 
@@ -54,11 +55,12 @@
 				@click="onItemClick(item)"
 			>
 				<div class="d-flex align-center w-100">
-					<!-- eslint-disable-next-line vue/no-v-html -->
-					<span
-						class="flex-grow-1"
-						v-html="getMnemonicName(item)"
-					/>
+					<span class="flex-grow-1">
+						<template v-for="(part, i) in item.mnemonicParts" :key="i">
+							<u v-if="part.isMnemonic">{{ part.text }}</u>
+							<template v-else>{{ part.text }}</template>
+						</template>
+					</span>
 					<span
 						v-if="item.shortcut"
 						class="text-disabled ml-4 menu-shortcut"
@@ -76,7 +78,7 @@ import { ref, onMounted, watch } from 'vue';
 import useModalsStore from '@/stores/modals.js';
 import type { NavGroup, NavItem, NavActivateEvent, PendingNavOpen } from '@/types/nav.js';
 import type { ChannelName } from '@registry/primitives.js';
-import { groups, getMnemonicName } from './AppHeader.logic.js';
+import { groups } from './AppHeader.logic.js';
 
 const menu = ref(false);
 const activator = ref<Element | undefined>();

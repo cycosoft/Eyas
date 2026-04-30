@@ -8,6 +8,7 @@ export type NavItem = {
 	color?: string;
 	shortcut?: MenuAccelerator;
 	mnemonic?: string;
+	mnemonicParts?: MnemonicPart[];
 };
 
 /** A top-level navigation group with a dropdown submenu */
@@ -17,6 +18,7 @@ export type NavGroup = {
 	submenu: NavItem[];
 	shortcut?: MenuAccelerator;
 	mnemonic?: string;
+	mnemonicParts?: MnemonicPart[];
 };
 
 /** Data for a navigation group that is waiting to be opened */
@@ -28,4 +30,10 @@ export type PendingNavOpen = {
 /** Event payload for navigation group activation */
 export type NavActivateEvent = {
 	currentTarget: Element;
+};
+
+/** A single part of a mnemonic-enabled label */
+export type MnemonicPart = {
+	text: string;
+	isMnemonic: boolean;
 };

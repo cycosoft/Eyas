@@ -1,6 +1,5 @@
 import eyasLogo from '@/assets/eyas-logo.svg';
-import type { NavGroup, NavItem } from '@/types/nav.js';
-import type { MenuLabel } from '@registry/primitives.js';
+import type { NavGroup, NavItem, MnemonicPart } from '@/types/nav.js';
 
 /**
  * The navigation groups displayed in the application header.
@@ -47,11 +46,11 @@ export const groups: NavGroup[] = [
 ];
 
 /**
- * Returns the name or title with the mnemonic character underlined.
+ * Returns the name or title split into parts for mnemonic underlining.
  * @param item The navigation group or item to format.
- * @returns The formatted name string (HTML).
+ * @returns The parts of the name string.
  */
-export function getMnemonicName(item: NavGroup | NavItem): MenuLabel {
+function getMnemonicParts(item: NavGroup | NavItem): MnemonicPart[] {
 	const label = `name` in item ? item.name : item.title;
 	let mnemonic = item.mnemonic?.toLowerCase();
 
@@ -60,14 +59,34 @@ export function getMnemonicName(item: NavGroup | NavItem): MenuLabel {
 	}
 
 	if (!mnemonic) {
-		return label as MenuLabel;
+		return [{ text: label, isMnemonic: false }];
 	}
 
 	const index = label.toLowerCase().indexOf(mnemonic);
 
 	if (index === -1) {
-		return label as MenuLabel;
+		return [{ text: label, isMnemonic: false }];
 	}
 
-	return `${label.slice(0, index)}<u>${label[index]}</u>${label.slice(index + 1)}` as MenuLabel;
+	const parts: MnemonicPart[] = [];
+
+	if (index > 0) {
+		parts.push({ text: label.slice(0, index), isMnemonic: false });
+	}
+
+	parts.push({ text: label[index], isMnemonic: true });
+
+	if (index < label.length - 1) {
+		parts.push({ text: label.slice(index + 1), isMnemonic: false });
+	}
+
+	return parts;
+}
+
+// Pre-calculate mnemonic parts for all static navigation groups and items
+for (const group of groups) {
+	group.mnemonicParts = getMnemonicParts(group);
+	for (const item of group.submenu) {
+		item.mnemonicParts = getMnemonicParts(item);
+	}
 }
