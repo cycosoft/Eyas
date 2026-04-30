@@ -13,7 +13,7 @@ export const uiService: UIService = {
 	 * @param ctx The core context.
 	 * @param enable Whether to enable (show) or disable (hide) the UI layer.
 	 */
-	toggleEyasUI(ctx: CoreContext, enable: IsActive): void {
+	toggleEyasUI(ctx: CoreContext, enable: IsActive, forceImmediate: IsActive = false): void {
 		if (!ctx.$eyasLayer) { return; }
 
 		if (enable) {
@@ -35,13 +35,17 @@ export const uiService: UIService = {
 			// close all modals in the UI
 			ctx.$eyasLayer.webContents.send(`close-modals`);
 
-			// shrink the layer to header height so the persistent header remains visible,
-			// while the content view below receives all mouse events.
-			// the WebContentsView remains loaded and can still receive IPC messages.
-			ctx.$eyasLayer.setBounds({ x: 0, y: 0, width: ctx.$currentViewport[0], height: EYAS_HEADER_HEIGHT });
+			// if requested to shrink immediately OR if there are no animations to wait for
+			// (we default to waiting for the renderer to send 'hide-ui' when it's ready)
+			if (forceImmediate) {
+				// shrink the layer to header height so the persistent header remains visible,
+				// while the content view below receives all mouse events.
+				// the WebContentsView remains loaded and can still receive IPC messages.
+				ctx.$eyasLayer.setBounds({ x: 0, y: 0, width: ctx.$currentViewport[0], height: EYAS_HEADER_HEIGHT });
 
-			// notify renderer that the layer has collapsed
-			ctx.$eyasLayer.webContents.send(`ui-hidden`);
+				// notify renderer that the layer has collapsed
+				ctx.$eyasLayer.webContents.send(`ui-hidden`);
+			}
 		}
 	},
 

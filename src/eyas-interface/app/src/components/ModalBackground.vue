@@ -1,5 +1,10 @@
 <template>
-	<v-overlay class="custom-background" :model-value="modelValue" :scrim="true">
+	<v-overlay
+		class="custom-background"
+		:model-value="modelValue"
+		:scrim="true"
+		@after-leave="$emit(`after-leave`)"
+	>
 		<template v-if="contentVisible">
 			<div class="bottom-right">
 				<span class="cursor-pointer" @click="openInBrowser(`https://cycosoft.com`)">
@@ -21,6 +26,7 @@ import type { ModalBackgroundProps } from '@/../../../types/components.js';
 import type { DomainUrl, ChannelName } from '@/../../../types/primitives.js';
 
 defineProps<ModalBackgroundProps>();
+defineEmits<{ (e: `after-leave`): void }>();
 
 const openInBrowser = (url: DomainUrl): void => {
 	window.eyas?.send(`launch-link` as ChannelName, { url, openInBrowser: true });

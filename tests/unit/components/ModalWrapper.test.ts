@@ -1,16 +1,20 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import type { VueWrapper } from '@vue/test-utils';
+import { createPinia, setActivePinia } from 'pinia';
 import ModalWrapper from '@/components/ModalWrapper.vue';
 import type { WindowWithEyas } from '@registry/ipc.js';
 import type { ModalWrapperVM } from '@registry/components.js';
+import ModalStore from '@/stores/modals.js';
 
 // Removed local type definition
 
 describe(`ModalWrapper`, () => {
 	let wrapper: VueWrapper;
 	beforeEach(() => {
+		setActivePinia(createPinia());
 		(window as unknown as WindowWithEyas).eyas = { send: vi.fn(), receive: vi.fn() };
+		ModalStore().$reset();
 
 
 
@@ -83,5 +87,31 @@ describe(`ModalWrapper`, () => {
 		expect(document.querySelector(`.v-card`)).not.toBeNull();
 		expect(document.querySelector(`.test-content`)).not.toBeNull();
 		expect(document.querySelector(`.v-card-actions`)).not.toBeNull();
+	});
+
+	test(`sends hide-ui immediately when no modals are open`, async () => {
+		// Ensure store is empty first
+		await wrapper.setProps({ modelValue: false });
+
+		const vm = wrapper.vm as any;
+		vm.hideUi();
+
+		expect(window.eyas?.send).toHaveBeenCalledWith(`hide-ui`);
+	});
+
+	test(`does NOT send hide-ui if other modals are still open`, async () => {
+		// Component A is already mounted with modelValue: true (tracked in store)
+		// We'll simulate another modal being tracked by manually tracking
+		const store = ModalStore();
+		store.track('other-modal' as any);
+
+		// Now close our component A
+		await wrapper.setProps({ modelValue: false });
+
+		const vm = wrapper.vm as any;
+		vm.hideUi();
+
+		// Should NOT have sent hide-ui because 'other-modal' is still in store
+		expect(window.eyas?.send).not.toHaveBeenCalledWith(`hide-ui`);
 	});
 });

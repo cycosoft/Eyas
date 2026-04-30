@@ -70,7 +70,7 @@ export type CoreContext = {
 	setConfig: (config: ValidatedConfig) => void;
 
 	// Functions
-	toggleEyasUI: (enable: IsActive) => void;
+	toggleEyasUI: (enable: IsActive, forceImmediate?: IsActive) => void;
 	trackEvent: (event: MPEventName, extraData?: Record<string, unknown>) => Promise<void>;
 	stopTestServer: () => Promise<void>;
 	startAFreshTest: (forceShow?: IsActive) => Promise<void>;
@@ -135,7 +135,7 @@ export type MenuService = {
 
 /** UI Service interface */
 export type UIService = {
-	toggleEyasUI: (ctx: CoreContext, enable: IsActive) => void;
+	toggleEyasUI: (ctx: CoreContext, enable: IsActive, forceImmediate?: IsActive) => void;
 	focusUI: (ctx: CoreContext) => void;
 	uiEvent: (ctx: CoreContext, eventName: ChannelName, ...args: unknown[]) => void;
 	triggerBufferedModal: (ctx: CoreContext) => void;

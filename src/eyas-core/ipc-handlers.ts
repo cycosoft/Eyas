@@ -40,7 +40,7 @@ function initAppIpcListeners(ctx: CoreContext): void {
 	ipcMain.on(`show-ui`, () => { ctx.toggleEyasUI(true); });
 
 	// hide the UI when requested
-	ipcMain.on(`hide-ui`, () => { ctx.toggleEyasUI(false); });
+	ipcMain.on(`hide-ui`, () => { ctx.toggleEyasUI(false, true); });
 
 	// request the app to exit (triggers the confirmation dialog)
 	ipcMain.on(`request-exit`, () => {

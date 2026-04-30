@@ -165,7 +165,7 @@ const coreContextSetters = {
 };
 
 const coreContextFunctions = {
-	toggleEyasUI: (enable: IsActive): void => uiService.toggleEyasUI(getCoreContext(), enable),
+	toggleEyasUI: (enable: IsActive, forceImmediate?: IsActive): void => uiService.toggleEyasUI(getCoreContext(), enable, forceImmediate),
 	trackEvent: (event: MPEventName, extraData?: MetadataRecord): Promise<void> => appService.trackEvent(getCoreContext(), event, extraData),
 	stopTestServer: (): Promise<void> => testServerService.stop(getCoreContext()),
 	startAFreshTest: (forceShow?: IsActive): Promise<void> => navigationService.startAFreshTest(getCoreContext(), forceShow),
