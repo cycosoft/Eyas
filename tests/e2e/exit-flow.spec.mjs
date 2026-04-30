@@ -3,7 +3,6 @@ import {
 	launchEyas,
 	exitEyas,
 	getUiView,
-	clickSubMenuItem,
 	ensureEnvironmentSelected,
 	getUiLayerHeight
 } from './eyas-utils.mjs';

@@ -93,7 +93,7 @@ describe(`ModalWrapper`, () => {
 		// Ensure store is empty first
 		await wrapper.setProps({ modelValue: false });
 
-		const vm = wrapper.vm as any;
+		const vm = wrapper.vm as unknown as ModalWrapperVM;
 		vm.hideUi();
 
 		expect(window.eyas?.send).toHaveBeenCalledWith(`hide-ui`);
@@ -103,12 +103,12 @@ describe(`ModalWrapper`, () => {
 		// Component A is already mounted with modelValue: true (tracked in store)
 		// We'll simulate another modal being tracked by manually tracking
 		const store = ModalStore();
-		store.track('other-modal' as any);
+		store.track(`other-modal`);
 
 		// Now close our component A
 		await wrapper.setProps({ modelValue: false });
 
-		const vm = wrapper.vm as any;
+		const vm = wrapper.vm as unknown as ModalWrapperVM;
 		vm.hideUi();
 
 		// Should NOT have sent hide-ui because 'other-modal' is still in store

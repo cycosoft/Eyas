@@ -17,6 +17,10 @@ export type ModalWrapperEmits = {
 	(e: `update:modelValue`, value: IsVisible): void;
 }
 
+export type ModalBackgroundEmits = {
+	(e: `after-leave`): void;
+}
+
 /**
  * Type helper for the Vue component's ViewModel in tests.
  */
@@ -77,6 +81,7 @@ type ComponentOptions = ComponentBaseOptions & Record<LabelString, unknown>;
  */
 export type ModalWrapperVM = {
 	pinDialogWidth: () => void;
+	hideUi: () => void;
 	dialogWidth: ViewportWidth | string;
 	calculatedMinWidth: ViewportWidth | string;
 	$nextTick: () => Promise<void>;

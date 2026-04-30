@@ -48,8 +48,14 @@ describe(`ui.service.ts unit tests`, () => {
 		expect(mockCtx.$eyasLayer?.webContents.focus).toHaveBeenCalled();
 	});
 
-	test(`toggleEyasUI(false) should close modals and shrink to header height`, () => {
+	test(`toggleEyasUI(false) should close modals but NOT shrink by default`, () => {
 		uiService.toggleEyasUI(mockCtx, false);
+		expect(mockCtx.$eyasLayer?.webContents.send).toHaveBeenCalledWith(`close-modals`);
+		expect(mockCtx.$eyasLayer?.setBounds).not.toHaveBeenCalled();
+	});
+
+	test(`toggleEyasUI(false, true) should close modals and shrink immediately`, () => {
+		uiService.toggleEyasUI(mockCtx, false, true);
 		expect(mockCtx.$eyasLayer?.webContents.send).toHaveBeenCalledWith(`close-modals`);
 		expect(mockCtx.$eyasLayer?.setBounds).toHaveBeenCalledWith({ x: 0, y: 0, width: 800, height: EYAS_HEADER_HEIGHT });
 	});

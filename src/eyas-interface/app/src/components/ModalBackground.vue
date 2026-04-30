@@ -22,11 +22,11 @@
 </template>
 
 <script setup lang="ts">
-import type { ModalBackgroundProps } from '@/../../../types/components.js';
+import type { ModalBackgroundProps, ModalBackgroundEmits } from '@/../../../types/components.js';
 import type { DomainUrl, ChannelName } from '@/../../../types/primitives.js';
 
 defineProps<ModalBackgroundProps>();
-defineEmits<{ (e: `after-leave`): void }>();
+defineEmits<ModalBackgroundEmits>();
 
 const openInBrowser = (url: DomainUrl): void => {
 	window.eyas?.send(`launch-link` as ChannelName, { url, openInBrowser: true });
