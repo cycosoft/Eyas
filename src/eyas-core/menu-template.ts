@@ -58,11 +58,8 @@ function createTestSubmenu(context: MenuContext): MenuTemplate {
 	const {
 		isConfigLoaded = false,
 		isEnvironmentPending = false,
-		isInitializing = false,
 		startAFreshTest,
-		linkItems,
-		onStartTestServer,
-		testServerActive = false
+		linkItems
 	} = context;
 
 	const enabled = isConfigLoaded && !isEnvironmentPending;
@@ -74,14 +71,6 @@ function createTestSubmenu(context: MenuContext): MenuTemplate {
 		submenu.push({ type: `separator` });
 		submenu.push({ label: `🔗 &Links`, submenu: linkItems, enabled });
 	}
-
-	submenu.push({ type: `separator` });
-
-	submenu.push({
-		label: `📡 Live Test Server`,
-		click: onStartTestServer,
-		enabled: enabled && !isInitializing && !testServerActive
-	});
 
 	return submenu;
 }

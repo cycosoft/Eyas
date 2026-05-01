@@ -1,5 +1,5 @@
 import eyasLogo from '@/assets/eyas-logo.svg';
-import type { NavGroup, NavItem, MnemonicPart, BrowserControl } from '@registry/components.js';
+import type { NavGroup, NavItem, MnemonicPart, BrowserControl, NavItemValue, ActionHandler } from '@registry/components.js';
 import type { BrowserAction, IsActive, ChannelName } from '@registry/primitives.js';
 
 /**
@@ -19,11 +19,17 @@ export const groups: NavGroup[] = [
 	},
 	{
 		name: `Tools`,
+		title: `Technical Tools`,
 		shortcut: `Alt+T`,
 		submenu: [
-			{ title: `Settings`, value: `settings`, shortcut: `Ctrl+,`, mnemonic: `S` },
-			{ title: `Test Server`, value: `test-server`, mnemonic: `T` },
-			{ title: `DevTools`, value: `devtools`, shortcut: `F12`, mnemonic: `D` }
+			{ title: `Live Test Server`, value: `test-server`, icon: `mdi-earth`, mnemonic: `T` },
+			{ title: `divider`, value: `divider-1`, divider: true },
+			{ title: `Viewport`, value: `viewport`, icon: `mdi-aspect-ratio`, appendIcon: `mdi-chevron-right`, mnemonic: `V` },
+			{ title: `divider`, value: `divider-2`, divider: true },
+			{ title: `Cache`, value: `cache`, icon: `mdi-flash`, appendIcon: `mdi-chevron-right`, mnemonic: `C` },
+			{ title: `divider`, value: `divider-3`, divider: true },
+			{ title: `Developer Tools (UI)`, value: `devtools-ui`, icon: `mdi-view-grid`, mnemonic: `U` },
+			{ title: `Developer Tools (Test)`, value: `devtools-test`, icon: `mdi-flask`, shortcut: `F12`, mnemonic: `D` }
 		]
 	}
 ];
@@ -139,4 +145,23 @@ export function handleBrowserControlClick(action: BrowserAction): void {
 	};
 
 	actions[action]?.();
+}
+
+/**
+ * Handles a click event on a navigation menu item.
+ * @param value The value of the clicked item.
+ */
+export function handleNavItemClick(value: NavItemValue): void {
+	const actions: Record<NavItemValue, ActionHandler> = {
+		about: () => { window.eyas?.send(`show-about` as ChannelName); },
+		'test-server': () => { window.eyas?.send(`show-test-server-setup` as ChannelName); },
+		settings: () => { window.eyas?.send(`show-settings` as ChannelName); },
+		'whats-new': () => { window.eyas?.send(`show-whats-new` as ChannelName, true); },
+		changelog: () => { window.eyas?.send(`show-whats-new` as ChannelName, true); },
+		exit: () => { window.eyas?.send(`request-exit` as ChannelName); },
+		'devtools-ui': () => { window.eyas?.send(`open-devtools-ui` as ChannelName); },
+		'devtools-test': () => { window.eyas?.send(`open-devtools-test` as ChannelName); }
+	};
+
+	actions[value]?.();
 }

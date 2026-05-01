@@ -94,6 +94,20 @@ function initAppIpcListeners(ctx: CoreContext): void {
 	ipcMain.on(`browser-forward`, () => ctx.goForward());
 	ipcMain.on(`browser-reload`, () => ctx.reload());
 	ipcMain.on(`browser-home`, () => ctx.navigate());
+
+	// devtools
+	ipcMain.on(`open-devtools-ui`, () => {
+		if (ctx.$eyasLayer && !ctx.$eyasLayer.webContents.isDestroyed()) {
+			ctx.$eyasLayer.webContents.openDevTools({ mode: `detach` });
+		}
+	});
+
+	ipcMain.on(`open-devtools-test`, () => {
+		const webContents = (ctx.$testLayer || ctx.$appWindow)?.webContents;
+		if (webContents && !webContents.isDestroyed()) {
+			webContents.toggleDevTools();
+		}
+	});
 }
 
 /**

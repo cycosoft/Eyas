@@ -54,14 +54,6 @@ export type MenuContext = {
 	updateStatus?: UpdateStatus;
 	onCheckForUpdates: () => void;
 	onInstallUpdate: () => void;
-	testServerActive?: IsActive;
-	testServerRemainingTime?: FormattedDuration;
-	onStartTestServer: () => void;
-	onStopTestServer?: () => void | Promise<void>;
-	onCopyTestServerUrl?: () => void;
-	onOpenTestServerInBrowser?: (event?: unknown, url?: DomainUrl) => void;
-	testServerHttpsEnabled?: IsActive;
-	onToggleTestServerHttps?: () => void;
 	toggleTestDevTools: () => void;
 	isInitializing?: IsActive;
 	isConfigLoaded?: IsActive;

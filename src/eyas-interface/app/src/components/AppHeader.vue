@@ -8,6 +8,7 @@
 				class="px-3"
 				rounded="xs"
 				append-icon="mdi-chevron-down"
+				:title="group.title"
 				:data-qa="`btn-nav-group-${group.name.toLowerCase()}`"
 				@click="activate($event, group)"
 				@mouseenter="onMouseEnter($event, group)"
@@ -68,32 +69,35 @@
 			rounded="lg"
 			border
 		>
-			<v-list-item
-				v-for="item in menuItems"
-				:key="item.value"
-				slim
-				:value="item.value"
-				:prepend-icon="item.icon"
-				:color="item.color"
-				:class="{ [`text-${item.color}`]: item.color }"
-				data-qa="btn-nav-item"
-				@click="onItemClick(item)"
-			>
-				<div class="d-flex align-center w-100">
-					<span class="flex-grow-1">
-						<template v-for="(part, i) in item.mnemonicParts" :key="i">
-							<u v-if="part.isMnemonic">{{ part.text }}</u>
-							<template v-else>{{ part.text }}</template>
-						</template>
-					</span>
-					<span
-						v-if="item.shortcut"
-						class="text-disabled ml-4 menu-shortcut"
-					>
-						{{ item.shortcut }}
-					</span>
-				</div>
-			</v-list-item>
+			<template v-for="item in menuItems" :key="item.value">
+				<v-divider v-if="item.divider" class="my-1 mx-2" />
+				<v-list-item
+					v-else
+					slim
+					:value="item.value"
+					:prepend-icon="item.icon"
+					:append-icon="item.appendIcon"
+					:color="item.color"
+					:class="{ [`text-${item.color}`]: item.color }"
+					data-qa="btn-nav-item"
+					@click="onItemClick(item)"
+				>
+					<div class="d-flex align-center w-100">
+						<span class="flex-grow-1">
+							<template v-for="(part, i) in item.mnemonicParts" :key="i">
+								<u v-if="part.isMnemonic">{{ part.text }}</u>
+								<template v-else>{{ part.text }}</template>
+							</template>
+						</span>
+						<span
+							v-if="item.shortcut"
+							class="text-disabled ml-4 menu-shortcut"
+						>
+							{{ item.shortcut }}
+						</span>
+					</div>
+				</v-list-item>
+			</template>
 		</v-list>
 	</v-menu>
 </template>
@@ -112,7 +116,8 @@ import {
 	goBack,
 	goForward,
 	reload,
-	goHome
+	goHome,
+	handleNavItemClick
 } from './AppHeader.logic.js';
 
 const menu = ref(false);
@@ -185,26 +190,7 @@ function onMouseEnter(event: NavActivateEvent, group: NavGroup): void {
 }
 
 function onItemClick(item: NavItem): void {
-	if (item.value === `about`) {
-		window.eyas?.send(`show-about` as ChannelName);
-	}
-
-	if (item.value === `test-server`) {
-		window.eyas?.send(`show-test-server-setup` as ChannelName);
-	}
-
-	if (item.value === `settings`) {
-		window.eyas?.send(`show-settings` as ChannelName);
-	}
-
-	if (item.value === `whats-new` || item.value === `changelog`) {
-		window.eyas?.send(`show-whats-new` as ChannelName, true);
-	}
-
-	if (item.value === `exit`) {
-		window.eyas?.send(`request-exit` as ChannelName);
-	}
-
+	handleNavItemClick(item.value);
 	menu.value = false;
 }
 

@@ -28,14 +28,6 @@ const minimalContext: MenuContext = {
 	updateStatus: `idle`,
 	onCheckForUpdates: noop,
 	onInstallUpdate: noop,
-	testServerActive: false,
-	testServerRemainingTime: ``,
-	onStartTestServer: noop,
-	onStopTestServer: noop,
-	onCopyTestServerUrl: noop,
-	onOpenTestServerInBrowser: noop,
-	testServerHttpsEnabled: false,
-	onToggleTestServerHttps: noop,
 	toggleTestDevTools: noop
 };
 
@@ -196,50 +188,6 @@ describe(`Test menu`, () => {
 		expect(linksItem).toBeUndefined();
 	});
 
-	test(`when testServerActive is false, Test menu includes Live Test Server item as enabled`, () => {
-		const onStartTestServer = (): void => { };
-		const ctx = { ...minimalContext, testServerActive: false, isConfigLoaded: true, onStartTestServer };
-		const template = buildMenuTemplate(ctx as MenuContext);
-		const testMenu = template[1] as MenuItemConstructorOptions;
-		const startItem = (testMenu.submenu as MenuItemConstructorOptions[]).find(item => item.label && item.label.includes(`Live Test Server`));
-		if (!startItem) throw new Error();
-		expect(startItem).toBeDefined();
-		expect(startItem.enabled).toBe(true);
-		expect(startItem.click).toBe(onStartTestServer);
-	});
-
-	test(`when testServerActive is true, Test menu includes Live Test Server item as disabled`, () => {
-		const ctx = { ...minimalContext, testServerActive: true };
-		const template = buildMenuTemplate(ctx as MenuContext);
-		const testMenu = template[1] as MenuItemConstructorOptions;
-		const startItem = (testMenu.submenu as MenuItemConstructorOptions[]).find(item => item.label && item.label.includes(`Live Test Server`));
-		if (!startItem) throw new Error();
-		expect(startItem).toBeDefined();
-		expect(startItem.enabled).toBe(false);
-	});
-
-	test(`when testServerActive is true, Test menu does NOT include 'Test Server running for...' item`, () => {
-		const ctx = { ...minimalContext, testServerActive: true, testServerRemainingTime: `29m` };
-		const template = buildMenuTemplate(ctx as MenuContext);
-		const testMenu = template[1] as MenuItemConstructorOptions;
-		const statusItem = (testMenu.submenu as MenuItemConstructorOptions[]).find(item => item.label && item.label.includes(`Test Server running`));
-		expect(statusItem).toBeUndefined();
-	});
-
-	test(`when testServerActive is true, template does NOT include a top-level status item at the end`, () => {
-		const ctx = { ...minimalContext, testServerActive: true, testServerRemainingTime: `15m` };
-		const template = buildMenuTemplate(ctx as MenuContext);
-		const labels = template.map(item => item.label);
-		expect(labels.some(l => typeof l === `string` && l.includes(`Test Server running`))).toBe(false);
-	});
-
-	test(`when testServerActive is false, template does not include top-level status item at the end`, () => {
-		const ctx = { ...minimalContext, testServerActive: false };
-		const template = buildMenuTemplate(ctx as MenuContext);
-		const last = template[template.length - 1] as MenuItemConstructorOptions;
-		expect(last.label).not.toMatch(/Exposed for/);
-	});
-
 	test(`when isInitializing is true, Test menu is disabled`, () => {
 		const ctx = { ...minimalContext, isInitializing: true };
 		const template = buildMenuTemplate(ctx as MenuContext);
@@ -370,16 +318,6 @@ describe(`Development Tools menu`, () => {
 		const devToolsItem = (toolsMenu.submenu as MenuItemConstructorOptions[]).find(i => i.label && i.label.toLowerCase().includes(`developer tools`));
 		if (!devToolsItem) throw new Error();
 		expect(devToolsItem).toBeDefined();
-	});
-
-	test(`template does NOT include Enable HTTPS option in Development Tools menu`, () => {
-		const onToggle = (): void => { };
-		const ctx = { ...minimalContext, testServerHttpsEnabled: true, onToggleTestServerHttps: onToggle };
-		const template = buildMenuTemplate(ctx as MenuContext);
-		const toolsMenu = template[3] as MenuItemConstructorOptions;
-		expect(toolsMenu).toBeDefined();
-		const httpsItem = (toolsMenu.submenu as MenuItemConstructorOptions[]).find(s => s.label && s.label.toLowerCase().includes(`https`));
-		expect(httpsItem).toBeUndefined();
 	});
 
 	test(`when isInitializing is true, Development Tools menu is disabled`, () => {

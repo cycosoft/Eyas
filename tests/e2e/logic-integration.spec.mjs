@@ -76,17 +76,6 @@ test.describe(`Logic-Driven Integration Tests`, () => {
 			useCustomDomain: false
 		});
 
-		// Verify the menu shows the test server is running
-		// The interval for menu updates in index.js is 60s, but setMenu is called immediately after start
-		const menu = await waitForMenuUpdate(electronApp, m => {
-			const testMenu = m.find(item => item.label.includes(`Test`));
-			return testMenu && testMenu.submenu && testMenu.submenu.some(item => item.label.includes(`Live Test Server`) && !item.enabled);
-		});
-
-		const testMenu = menu.find(item => item.label.includes(`Test`));
-		const testServerItem = testMenu.submenu.find(item => item.label.includes(`Live Test Server`));
-		expect(testServerItem.enabled).toBe(false);
-
 		// Verify the new modal is presented to the user
 		const uiPage = await getUiView(electronApp);
 
@@ -108,16 +97,5 @@ test.describe(`Logic-Driven Integration Tests`, () => {
 
 		// Wait for the modal to be hidden
 		await expect(modalTitle).not.toBeVisible();
-
-		// Verify the menu clears out the "Test Server running" entry
-		const updatedMenu = await waitForMenuUpdate(electronApp, m => {
-			const mTestMenu = m.find(item => item.label.includes(`Test`));
-			if (!mTestMenu || !mTestMenu.submenu) return true;
-			return mTestMenu.submenu.some(item => item.label.includes(`Live Test Server`) && item.enabled);
-		});
-
-		const finalTestMenu = updatedMenu.find(item => item.label.includes(`Test`));
-		const runningItem = finalTestMenu.submenu.find(item => item.label.includes(`Live Test Server`));
-		expect(runningItem.enabled).toBe(true);
 	});
 });

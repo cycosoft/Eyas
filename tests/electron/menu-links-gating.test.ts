@@ -31,9 +31,7 @@ const minimalContext: MenuContext = {
 	updateStatus: `idle`,
 	onCheckForUpdates: noop,
 	onInstallUpdate: noop,
-	testServerActive: false,
-	toggleTestDevTools: noop,
-	onStartTestServer: noop
+	toggleTestDevTools: noop
 };
 
 describe(`Menu links and DevTools gating (Refined)`, () => {

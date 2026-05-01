@@ -160,11 +160,19 @@ export type VersionMismatchData = {
 	testVersion?: AppVersion;
 };
 
+/** A semantic value for a navigation item */
+export type NavItemValue = string;
+
+/** A semantic handler for a navigation action */
+export type ActionHandler = () => void;
+
 /** A single item in a navigation group's submenu */
 export type NavItem = {
 	title: MenuLabel;
-	value: string;
+	value: NavItemValue;
 	icon?: IconName;
+	appendIcon?: IconName;
+	divider?: boolean;
 	color?: string;
 	shortcut?: MenuAccelerator;
 	mnemonic?: string;
@@ -174,6 +182,7 @@ export type NavItem = {
 /** A top-level navigation group with a dropdown submenu */
 export type NavGroup = {
 	name: MenuLabel;
+	title?: string;
 	logo?: string;
 	submenu: NavItem[];
 	shortcut?: MenuAccelerator;

@@ -7,7 +7,7 @@ import { parseURL } from '@scripts/parse-url.js';
 import type { MenuService, CoreContext } from '@registry/eyas-core.js';
 import type { MenuTemplate, LinkMenuHandlers, MenuContextParams, MenuContext } from '@registry/menu.js';
 import type { ValidatedConfig, LinkConfig } from '@registry/config.js';
-import type { DomainUrl, FormattedDuration } from '@registry/primitives.js';
+import type { DomainUrl } from '@registry/primitives.js';
 
 /** Service for managing the application menu */
 export const menuService: MenuService = {
@@ -193,12 +193,6 @@ export const menuService: MenuService = {
 		updateStatus: (ctx.updateService.getStatus() as `idle` | `downloading` | `downloaded`) || `idle`,
 		onCheckForUpdates: (): void => ctx.updateService.checkForUpdates(),
 		onInstallUpdate: (): void => ctx.updateService.installUpdate(),
-		testServerActive: !!ctx.$lastTestServerOptions,
-		testServerRemainingTime: `` as FormattedDuration,
-		onStartTestServer: (): void => { ctx.showTestServerSetup(); },
-		onStopTestServer: (): Promise<void> => ctx.stopTestServer(),
-		testServerHttpsEnabled: ctx.$testServerHttpsEnabled,
-		onToggleTestServerHttps: (): void => ctx.onToggleTestServerHttps(),
 		toggleTestDevTools: (): void => {
 			const webContents = (ctx.$testLayer || ctx.$appWindow)?.webContents;
 			if (webContents && !webContents.isDestroyed()) {

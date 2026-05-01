@@ -204,8 +204,6 @@ describe(`MenuService Helpers`, () => {
 				links: []
 			},
 			$testNetworkEnabled: true,
-			$lastTestServerOptions: { port: 3000 },
-			$testServerHttpsEnabled: false,
 			$isEnvironmentPending: false
 		} as unknown as CoreContext;
 
@@ -221,7 +219,6 @@ describe(`MenuService Helpers`, () => {
 			expect(context.sessionAge).toBe(`1m`);
 			expect(context.cacheSize).toBe(100);
 			expect(context.testNetworkEnabled).toBe(true);
-			expect(context.testServerActive).toBe(true);
 		});
 
 		test(`refresh should gather all state and call Menu.setApplicationMenu`, async () => {
@@ -293,12 +290,6 @@ describe(`MenuService Helpers`, () => {
 			test(`should handle test server lifecycle`, () => {
 				handlers.startAFreshTest?.();
 				expect(mockCtx.startAFreshTest).toHaveBeenCalledWith(true);
-
-				handlers.onStartTestServer?.();
-				expect(mockCtx.showTestServerSetup).toHaveBeenCalled();
-
-				handlers.onStopTestServer?.();
-				expect(mockCtx.stopTestServer).toHaveBeenCalled();
 			});
 
 			test(`should handle updates`, () => {
