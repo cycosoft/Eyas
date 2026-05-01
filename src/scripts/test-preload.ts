@@ -20,7 +20,7 @@ declare global {
 // via ( https://stackoverflow.com/a/59814127 )
 contextBridge.exposeInMainWorld(`eyas`, {
 	send: (channel: ChannelName, data?: unknown): void => {
-		// whitelist channels
+		// test layer is heavily restricted
 		const validChannels: ChannelName[] = [
 			`network-status`
 		];
@@ -31,6 +31,7 @@ contextBridge.exposeInMainWorld(`eyas`, {
 	},
 
 	receive: (channel: ChannelName, func: (...args: unknown[]) => void): void => {
+		// test layer cannot currently receive any events
 		const validChannels: ChannelName[] = [];
 
 		if (validChannels.includes(channel)) {

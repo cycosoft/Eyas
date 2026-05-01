@@ -1,26 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import fs from 'fs';
-import path from 'path';
-import type { ChannelName, ResponseBody, MenuLabel } from '@registry/primitives.js';
-
-const bridgeSrc = fs.readFileSync(
-	path.join(import.meta.dirname, `../../src/scripts/event-bridge.ts`),
-	`utf8`
-);
-
-// Extract the send and receive whitelists from the source by parsing their array literals
-function extractWhitelist(src: ResponseBody, label: MenuLabel): ChannelName[] {
-	// Find the array after "const validChannels" within the context of the send or receive block
-	// We search for each occurrence sequentially
-	const matches = [...src.matchAll(/const validChannels\s*=\s*\[([^\]]+)\]/g)];
-	const idx = label === `send` ? 0 : 1;
-	if (!matches[idx]) return [];
-	const arrayContent = matches[idx][1];
-	return [...arrayContent.matchAll(/`([^`]+)`/g)].map(m => m[1]);
-}
-
-const sendChannels = extractWhitelist(bridgeSrc, `send`);
-const receiveChannels = extractWhitelist(bridgeSrc, `receive`);
+import { VALID_SEND_CHANNELS, VALID_RECEIVE_CHANNELS } from '@registry/ipc.js';
 
 describe(`event-bridge channel whitelists`, () => {
 	describe(`send channels`, () => {
@@ -42,7 +21,7 @@ describe(`event-bridge channel whitelists`, () => {
 		];
 
 		test.each(required)(`includes channel: %s`, channel => {
-			expect(sendChannels).toContain(channel);
+			expect(VALID_SEND_CHANNELS).toContain(channel);
 		});
 	});
 
@@ -63,7 +42,7 @@ describe(`event-bridge channel whitelists`, () => {
 		];
 
 		test.each(required)(`includes channel: %s`, channel => {
-			expect(receiveChannels).toContain(channel);
+			expect(VALID_RECEIVE_CHANNELS).toContain(channel);
 		});
 	});
 });

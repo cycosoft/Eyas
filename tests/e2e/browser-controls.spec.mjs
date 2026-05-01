@@ -26,12 +26,8 @@ test.describe(`Browser Controls`, () => {
 		// Wait for the UI layer to be ready
 		const homeBtn = uiPage.locator(`[data-qa="btn-browser-home"]`);
 		await expect(homeBtn).toBeVisible({ timeout: 10000 });
-		
-		// Setup a spy on the IPC channel to verify the event is sent
-		let homeIpcReceived = false;
-		electronApp.on('console', msg => {
-			if (msg.text().includes('browser-home')) homeIpcReceived = true;
-		});
+
+
 
 		// Click Home
 		await homeBtn.click();
@@ -41,7 +37,7 @@ test.describe(`Browser Controls`, () => {
 		// Actually, let's just make sure the UI closes (menu disappears).
 		// Wait for a short time
 		await uiPage.waitForTimeout(1000);
-		
+
 		// Just getting here without timeout means the button works.
 	});
 });
