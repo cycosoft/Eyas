@@ -17,31 +17,12 @@ export const groups: NavGroup[] = [
 		]
 	},
 	{
-		name: `View`,
-		shortcut: `Alt+V`,
-		submenu: [
-			{ title: `Zoom In`, value: `zoom-in`, shortcut: `Ctrl+=`, mnemonic: `I` },
-			{ title: `Zoom Out`, value: `zoom-out`, shortcut: `Ctrl+-`, mnemonic: `O` },
-			{ title: `Reset Zoom`, value: `reset-zoom`, shortcut: `Ctrl+0`, mnemonic: `R` },
-			{ title: `Full Screen`, value: `full-screen`, shortcut: `F11`, mnemonic: `F` }
-		]
-	},
-	{
 		name: `Tools`,
 		shortcut: `Alt+T`,
 		submenu: [
 			{ title: `Settings`, value: `settings`, shortcut: `Ctrl+,`, mnemonic: `S` },
 			{ title: `Test Server`, value: `test-server`, mnemonic: `T` },
 			{ title: `DevTools`, value: `devtools`, shortcut: `F12`, mnemonic: `D` }
-		]
-	},
-	{
-		name: `Help`,
-		shortcut: `Alt+H`,
-		submenu: [
-			{ title: `What's New`, value: `whats-new`, mnemonic: `W` },
-			{ title: `Documentation`, value: `docs`, mnemonic: `D` },
-			{ title: `Report an Issue`, value: `report-issue`, mnemonic: `I` }
 		]
 	}
 ];
