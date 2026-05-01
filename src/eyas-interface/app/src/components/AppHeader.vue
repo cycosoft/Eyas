@@ -76,7 +76,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
 import useModalsStore from '@/stores/modals.js';
-import type { NavGroup, NavItem, NavActivateEvent, PendingNavOpen } from '@/types/nav.js';
+import type { NavGroup, NavItem, NavActivateEvent, PendingNavOpen } from '@registry/components.js';
 import type { ChannelName } from '@registry/primitives.js';
 import { groups } from './AppHeader.logic.js';
 

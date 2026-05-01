@@ -67,39 +67,13 @@ describe(`Root menu structure`, () => {
 // ─── Eyas menu ────────────────────────────────────────────────────────────
 
 describe(`Eyas menu`, () => {
-	test(`first submenu contains Settings and does NOT contain Exit`, () => {
+	test(`first submenu does NOT contain Settings and does NOT contain Exit`, () => {
 		const template = buildMenuTemplate(minimalContext);
 		const submenu = template[0].submenu as MenuItemConstructorOptions[];
 		const settingsIndex = submenu.findIndex(item => item.label && item.label.includes(`Settings`));
 		const exitIndex = submenu.findIndex(item => item.label && item.label.includes(`Exit`));
-		expect(settingsIndex).toBeGreaterThanOrEqual(0);
+		expect(settingsIndex).toBe(-1);
 		expect(exitIndex).toBe(-1);
-	});
-
-	test(`app submenu contains a Settings item`, () => {
-		const template = buildMenuTemplate(minimalContext);
-		const submenu = template[0].submenu as MenuItemConstructorOptions[];
-		const settingsItem = submenu.find(item => item.label && item.label.includes(`Settings`));
-		if (!settingsItem) throw new Error();
-		expect(settingsItem).toBeDefined();
-	});
-
-	test(`Settings item uses the onOpenSettings click handler from context`, () => {
-		const onOpenSettings = (): void => { };
-		const ctx = { ...minimalContext, onOpenSettings };
-		const template = buildMenuTemplate(ctx as MenuContext);
-		const submenu = template[0].submenu as MenuItemConstructorOptions[];
-		const settingsItem = submenu.find(item => item.label && item.label.includes(`Settings`));
-		if (!settingsItem) throw new Error();
-		expect(settingsItem.click).toBe(onOpenSettings);
-	});
-
-	test(`Settings item appears before Check for updates`, () => {
-		const template = buildMenuTemplate(minimalContext);
-		const submenu = template[0].submenu as MenuItemConstructorOptions[];
-		const settingsIndex = submenu.findIndex(item => item.label && item.label.includes(`Settings`));
-		const checkIndex = submenu.findIndex(item => item.label && item.label.includes(`Check for updates`));
-		expect(settingsIndex).toBeLessThan(checkIndex);
 	});
 
 	test(`buildMenuTemplate works without onOpenSettings in context (uses noop default)`, () => {

@@ -98,6 +98,22 @@ export async function ensureEnvironmentSelected(uiPage) {
 }
 
 /**
+ * Opens the Settings modal via the header menu.
+ * @param {import('@playwright/test').Page} uiPage
+ */
+export async function openSettingsModal(uiPage) {
+	// Click the 'File' menu (which uses the logo)
+	const fileMenuBtn = uiPage.locator(`[data-qa="btn-nav-group-file"]`);
+	await expect(fileMenuBtn).toBeVisible({ timeout: 10000 });
+	await fileMenuBtn.click();
+
+	// Find and click the 'App/Project Settings' item
+	const settingsMenuItem = uiPage.locator(`[data-qa="btn-nav-item"]`, { hasText: `App/Project Settings` });
+	await expect(settingsMenuItem).toBeVisible({ timeout: 5000 });
+	await settingsMenuItem.click();
+}
+
+/**
  * Wait for the menu to update by polling.
  * @param {import('@playwright/test').ElectronApplication} electronApp
  * @param {Function} predicate

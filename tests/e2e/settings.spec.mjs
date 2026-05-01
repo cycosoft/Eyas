@@ -2,9 +2,9 @@ import { test, expect } from '@playwright/test';
 import {
 	launchEyas,
 	exitEyas,
-	getMenuStructure,
-	clickSubMenuItem,
-	getUiView
+	getUiView,
+	openSettingsModal,
+	ensureEnvironmentSelected
 } from './eyas-utils.mjs';
 
 test.describe(`User Settings`, () => {
@@ -18,28 +18,16 @@ test.describe(`User Settings`, () => {
 		await exitEyas(electronApp);
 	});
 
-	test(`Settings menu item exists in the Eyas menu`, async () => {
-		const menuStructure = await getMenuStructure(electronApp);
-		const appMenu = menuStructure.find(m => m.label.match(/Eyas|File/i));
-		expect(appMenu).toBeDefined();
-
-		const settingsItem = appMenu.submenu.find(item => item.label.includes(`Settings`));
-		expect(settingsItem).toBeDefined();
-		expect(settingsItem.label).toContain(`Settings`);
-	});
-
-	test(`clicking Settings opens the Settings modal`, async () => {
+	test(`clicking 'App/Project Settings' opens the Settings modal`, async () => {
 		const uiPage = await getUiView(electronApp);
 
-		// Optional: log renderer console to help debugging
-		uiPage.on(`console`, msg => console.log(`RENDERER: ${msg.text()}`));
+		// Ensure environment is selected (clears initial modal)
+		await ensureEnvironmentSelected(uiPage);
 
-		// Open the settings modal from the menu
-		await clickSubMenuItem(electronApp, `Eyas`, `Settings`);
+		// Open the settings modal
+		await openSettingsModal(uiPage);
 
 		const settingsTabProject = uiPage.locator(`[data-qa="settings-tab-project"]`);
-
-		// Wait for visibility
 		await expect(settingsTabProject).toBeVisible({ timeout: 10000 });
 		await expect(settingsTabProject).toHaveText(`Project`);
 

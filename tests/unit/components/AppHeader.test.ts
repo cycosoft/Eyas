@@ -218,6 +218,12 @@ describe(`AppHeader`, () => {
 			expect(mockSend).toHaveBeenCalledWith(`request-exit`);
 		});
 
+		test(`onItemClick() sends show-settings IPC for 'settings' item`, () => {
+			const vm = wrapper.vm as unknown as AppHeaderVM;
+			vm.onItemClick({ title: `App/Project Settings`, value: `settings` });
+			expect(mockSend).toHaveBeenCalledWith(`show-settings`);
+		});
+
 		test(`'File' menu has 'Exit' item with correct icon and color`, () => {
 			const vm = wrapper.vm as unknown as AppHeaderVM;
 			const fileMenu = vm.groups.find((g: NavGroup) => g.name === `File`);
@@ -227,6 +233,16 @@ describe(`AppHeader`, () => {
 			expect(exitItem?.icon).toBe(`mdi-power`);
 			expect(exitItem?.color).toBe(`error`);
 			expect(exitItem?.shortcut).toBe(`Ctrl+Q`);
+		});
+
+		test(`'File' menu has 'App/Project Settings' item with correct icon`, () => {
+			const vm = wrapper.vm as unknown as AppHeaderVM;
+			const fileMenu = vm.groups.find((g: NavGroup) => g.name === `File`);
+			const settingsItem = fileMenu?.submenu?.find((i: NavItem) => i.title === `App/Project Settings`);
+			expect(settingsItem).toBeDefined();
+			expect(settingsItem?.value).toBe(`settings`);
+			expect(settingsItem?.icon).toBe(`mdi-cog`);
+			expect(settingsItem?.mnemonic).toBe(`S`);
 		});
 
 		test(`onItemClick() closes menu and sends hide-ui IPC`, async () => {

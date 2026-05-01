@@ -26,6 +26,9 @@ contextBridge.exposeInMainWorld(`eyas`, {
 			`renderer-ready-for-modals`,
 			`whats-new-closed`,
 			`show-about`,
+			`show-settings`,
+			`show-whats-new`,
+			`show-test-server-setup`,
 			`request-exit`
 		];
 

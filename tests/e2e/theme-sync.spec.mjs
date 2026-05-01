@@ -3,7 +3,8 @@ import {
 	launchEyas,
 	exitEyas,
 	getUiView,
-	clickSubMenuItem
+	openSettingsModal,
+	ensureEnvironmentSelected
 } from './eyas-utils.mjs';
 
 test.describe(`Theme Synchronization`, () => {
@@ -23,8 +24,11 @@ test.describe(`Theme Synchronization`, () => {
 		// Capture console logs for debugging
 		uiPage.on(`console`, msg => console.log(`RENDERER LOG: ${msg.text()}`));
 
+		// Clear environment modal if visible
+		await ensureEnvironmentSelected(uiPage);
+
 		// Open Settings modal
-		await clickSubMenuItem(electronApp, `Eyas`, `Settings`);
+		await openSettingsModal(uiPage);
 
 		// Wait for modal to appear and switch to App tab
 		const appTab = uiPage.locator(`[data-qa="settings-tab-app"]`);
@@ -41,7 +45,8 @@ test.describe(`Theme Synchronization`, () => {
 	test(`changing theme to Light updates the UI class`, async () => {
 		const uiPage = await getUiView(electronApp);
 
-		await clickSubMenuItem(electronApp, `Eyas`, `Settings`);
+		await ensureEnvironmentSelected(uiPage);
+		await openSettingsModal(uiPage);
 		await uiPage.locator(`[data-qa="settings-tab-app"]`).click();
 
 		// Select Light mode

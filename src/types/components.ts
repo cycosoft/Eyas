@@ -1,4 +1,4 @@
-import type { ModalMode, IsVisible, DomainUrl, IsEnabled, MenuLabel, EventType, ViewportWidth, AppTitle, ResponseBody, PortNumber, Count, IsActive, LabelString, AppVersion } from './primitives.js';
+import type { ModalMode, IsVisible, DomainUrl, IsEnabled, MenuLabel, EventType, ViewportWidth, AppTitle, ResponseBody, PortNumber, Count, IsActive, LabelString, AppVersion, IconName, MenuAccelerator } from './primitives.js';
 
 type ModalType = `modal` | `dialog`;
 
@@ -162,19 +162,35 @@ export type VersionMismatchData = {
 
 /** A single item in a navigation group's submenu */
 export type NavItem = {
-	title: LabelString;
-	value: LabelString;
-	icon?: string;
+	title: MenuLabel;
+	value: string;
+	icon?: IconName;
 	color?: string;
-	shortcut?: string;
+	shortcut?: MenuAccelerator;
+	mnemonic?: string;
+	mnemonicParts?: MnemonicPart[];
 };
 
 /** A top-level navigation group with a dropdown submenu */
 export type NavGroup = {
-	name: LabelString;
+	name: MenuLabel;
 	logo?: string;
-	shortcut?: string;
 	submenu: NavItem[];
+	shortcut?: MenuAccelerator;
+	mnemonic?: string;
+	mnemonicParts?: MnemonicPart[];
+};
+
+/** A single part of a mnemonic-enabled label */
+export type MnemonicPart = {
+	text: string;
+	isMnemonic: boolean;
+};
+
+/** Data for a navigation group that is waiting to be opened */
+export type PendingNavOpen = {
+	target: Element;
+	group: NavGroup;
 };
 
 /** Event payload for navigation group activation */

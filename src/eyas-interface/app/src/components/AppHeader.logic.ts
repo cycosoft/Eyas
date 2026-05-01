@@ -1,5 +1,5 @@
 import eyasLogo from '@/assets/eyas-logo.svg';
-import type { NavGroup, NavItem, MnemonicPart } from '@/types/nav.js';
+import type { NavGroup, NavItem, MnemonicPart } from '@registry/components.js';
 
 /**
  * The navigation groups displayed in the application header.
@@ -11,7 +11,7 @@ export const groups: NavGroup[] = [
 		shortcut: `Alt+F`,
 		submenu: [
 			{ title: `About Eyas`, value: `about`, icon: `mdi-information-outline`, mnemonic: `A` },
-			{ title: `Recent Tests`, value: `recent-tests`, mnemonic: `R` },
+			{ title: `App/Project Settings`, value: `settings`, icon: `mdi-cog`, mnemonic: `S` },
 			{ title: `Exit`, value: `exit`, icon: `mdi-power`, color: `error`, shortcut: `Ctrl+Q`, mnemonic: `x` }
 		]
 	},
