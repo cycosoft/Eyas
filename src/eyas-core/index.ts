@@ -193,6 +193,7 @@ const coreContextFunctions = {
 	goBack: (): void => navigationService.goBack(getCoreContext()),
 	goForward: (): void => navigationService.goForward(getCoreContext()),
 	reload: (): void => navigationService.reload(getCoreContext()),
+	updateNavigationState: (): void => navigationService.updateNavigationState(getCoreContext()),
 	initIpcHandlers: (): void => initIpcHandlers(getCoreContext())
 };
 

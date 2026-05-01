@@ -47,8 +47,15 @@ export const VALID_RECEIVE_CHANNELS = [
 	`setting-saved`,
 	`settings-loaded`,
 	`show-whats-new`,
-	`ui-shown`
+	`ui-shown`,
+	`navigation-state-updated`
 ] as const;
+
+/** Payload for the 'navigation-state-updated' IPC event */
+export type NavigationStatePayload = {
+	canGoBack: IsActive;
+	canGoForward: IsActive;
+};
 
 type SendChannel = typeof VALID_SEND_CHANNELS[number];
 type ReceiveChannel = typeof VALID_RECEIVE_CHANNELS[number];

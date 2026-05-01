@@ -1,5 +1,6 @@
 import eyasLogo from '@/assets/eyas-logo.svg';
 import type { NavGroup, NavItem, MnemonicPart, BrowserControl } from '@registry/components.js';
+import type { BrowserAction, IsActive, ChannelName } from '@registry/primitives.js';
 
 /**
  * The navigation groups displayed in the application header.
@@ -81,4 +82,61 @@ for (const group of groups) {
 	for (const item of group.submenu) {
 		item.mnemonicParts = getMnemonicParts(item);
 	}
+}
+
+/**
+ * Checks if a browser control should be disabled based on the current stack state.
+ * @param action The browser action to check.
+ * @param canGoBack Whether the back stack is non-empty.
+ * @param canGoForward Whether the forward stack is non-empty.
+ * @returns True if the control should be disabled.
+ */
+export function isControlDisabled(action: BrowserAction, canGoBack: IsActive, canGoForward: IsActive): IsActive {
+	if (action === `back`) { return !canGoBack; }
+	if (action === `forward`) { return !canGoForward; }
+	return false;
+}
+
+/**
+ * Navigates the test layer back in history.
+ */
+export function goBack(): void {
+	window.eyas?.send(`browser-back` as ChannelName);
+}
+
+/**
+ * Navigates the test layer forward in history.
+ */
+export function goForward(): void {
+	window.eyas?.send(`browser-forward` as ChannelName);
+}
+
+/**
+ * Reloads the current page in the test layer.
+ */
+export function reload(): void {
+	window.eyas?.send(`browser-reload` as ChannelName);
+}
+
+/**
+ * Navigates the test layer to the test home page.
+ */
+export function goHome(): void {
+	window.eyas?.send(`browser-home` as ChannelName);
+}
+
+/**
+ * Handles a click event on a browser control button.
+ * @param action The action to perform.
+ * @param handlers Handlers for each navigation action.
+ */
+export function handleBrowserControlClick(action: BrowserAction): void {
+	const actions: Record<BrowserAction, () => void> = {
+		back: goBack,
+		forward: goForward,
+		reload,
+		home: goHome
+	};
+
+	actions[action]?.();
 }

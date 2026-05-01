@@ -4,13 +4,12 @@ import type { VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import AppHeader from '@/components/AppHeader.vue';
 import useModalsStore from '@/stores/modals.js';
-import type { WindowWithEyas } from '@registry/ipc.js';
+import type { WindowWithEyas, ChannelName, NavigationStatePayload } from '@registry/ipc.js';
 import type { AppHeaderVM, NavGroup, NavItem, NavActivateEvent } from '@registry/components.js';
-import type { ChannelName } from '@registry/primitives.js';
 
 describe(`AppHeader`, () => {
 	let wrapper: VueWrapper;
-	let uiShownCallback: (() => void) | null = null;
+	let uiShownCallback: ((...args: unknown[]) => void) | null = null;
 	let mockSend: Mock;
 
 	beforeEach(() => {
@@ -20,7 +19,7 @@ describe(`AppHeader`, () => {
 		uiShownCallback = null;
 		(window as unknown as WindowWithEyas).eyas = {
 			send: mockSend,
-			receive: vi.fn((channel: ChannelName, cb: () => void) => {
+			receive: vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
 				if (channel === `ui-shown`) {
 					uiShownCallback = cb;
 				}
@@ -50,6 +49,42 @@ describe(`AppHeader`, () => {
 
 	test(`renders without crashing`, () => {
 		expect(wrapper.exists()).toBe(true);
+	});
+
+	test(`updates navigation button states via IPC`, async () => {
+		let navCallback: ((payload: NavigationStatePayload) => void) | null = null;
+
+		(window as unknown as WindowWithEyas).eyas.receive = vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
+			if (channel === `navigation-state-updated`) {
+				navCallback = cb as (payload: NavigationStatePayload) => void;
+			}
+			if (channel === `ui-shown`) {
+				uiShownCallback = cb;
+			}
+		});
+
+		wrapper = mount(AppHeader, {
+			global: {
+				stubs: {
+					VAppBar: { template: `<div><slot /></div>` },
+					VMenu: { template: `<div><slot /></div>` },
+					VList: { template: `<div><slot /></div>` },
+					VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
+					VBtn: { template: `<button @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
+					VIcon: true,
+					VImg: true
+				}
+			}
+		});
+
+		if (navCallback) {
+			(navCallback as any)({ canGoBack: true, canGoForward: true }); // eslint-disable-line @typescript-eslint/no-explicit-any
+		}
+		await wrapper.vm.$nextTick();
+
+		const newVm = wrapper.vm as unknown as AppHeaderVM;
+		expect(newVm.canGoBack).toBe(true);
+		expect(newVm.canGoForward).toBe(true);
 	});
 
 	test(`renders logo instead of text for 'File' menu`, () => {

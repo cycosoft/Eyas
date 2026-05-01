@@ -98,6 +98,7 @@ export type CoreContext = {
 	goBack: () => void;
 	goForward: () => void;
 	reload: () => void;
+	updateNavigationState: () => void;
 	initIpcHandlers: () => void;
 
 	// Services

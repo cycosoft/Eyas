@@ -214,6 +214,8 @@ export type AppHeaderVM = {
 	activator: Element | undefined;
 	groups: NavGroup[];
 	browserControls: BrowserControl[];
+	canGoBack: boolean;
+	canGoForward: boolean;
 	activate: (event: NavActivateEvent, group: NavGroup) => void;
 	onMouseEnter: (event: NavActivateEvent, group: NavGroup) => void;
 	onItemClick: (item: NavItem) => void;

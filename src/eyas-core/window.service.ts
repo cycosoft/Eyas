@@ -128,6 +128,7 @@ export const windowService: WindowService = {
 		layer.webContents.on(`did-finish-load`, async () => {
 			if (layer.webContents.isDestroyed()) { return; }
 			await ctx.startAFreshTest();
+			ctx.updateNavigationState();
 			ctx.checkStartupSequence();
 
 			const splashMinTime = 750;
@@ -164,6 +165,12 @@ export const windowService: WindowService = {
 			if (testWebContents.isDestroyed() || $appWindow.isDestroyed()) { return; }
 			$appWindow.setTitle(ctx.getAppTitle(testWebContents.getTitle()));
 			ctx.setMenu();
+			ctx.updateNavigationState();
+		});
+
+		testWebContents.on(`did-navigate-in-page`, () => {
+			if (testWebContents.isDestroyed() || $appWindow.isDestroyed()) { return; }
+			ctx.updateNavigationState();
 		});
 
 		testWebContents.on(`did-start-navigation`, (_event, url) => {
@@ -172,6 +179,7 @@ export const windowService: WindowService = {
 					ctx.setIsInitializing(false);
 					ctx.setMenu();
 				}
+				ctx.updateNavigationState();
 			}
 		});
 

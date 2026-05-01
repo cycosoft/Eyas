@@ -58,17 +58,30 @@ describe(`navigation.service.ts unit tests`, () => {
 				isDestroyed: vi.fn().mockReturnValue(false),
 				webContents: {
 					getURL: vi.fn().mockReturnValue(`https://test.com`),
-					getTitle: vi.fn().mockReturnValue(`Page Title`),
-					isDestroyed: vi.fn().mockReturnValue(false)
+					navigationHistory: {
+						canGoBack: vi.fn().mockReturnValue(true),
+						canGoForward: vi.fn().mockReturnValue(true),
+						goBack: vi.fn(),
+						goForward: vi.fn()
+					},
+					isDestroyed: vi.fn().mockReturnValue(false),
+					reloadIgnoringCache: vi.fn(),
+					loadURL: vi.fn()
 				}
 			},
 			$testLayer: {
 				isDestroyed: vi.fn().mockReturnValue(false),
 				webContents: {
-					loadURL: vi.fn(),
 					getURL: vi.fn().mockReturnValue(`https://test.com`),
-					getTitle: vi.fn().mockReturnValue(`Page Title`),
-					isDestroyed: vi.fn().mockReturnValue(false)
+					navigationHistory: {
+						canGoBack: vi.fn().mockReturnValue(true),
+						canGoForward: vi.fn().mockReturnValue(true),
+						goBack: vi.fn(),
+						goForward: vi.fn()
+					},
+					isDestroyed: vi.fn().mockReturnValue(false),
+					reloadIgnoringCache: vi.fn(),
+					loadURL: vi.fn()
 				}
 			},
 			$testDomain: `https://default.com` as DomainUrl,
@@ -147,18 +160,18 @@ describe(`navigation.service.ts unit tests`, () => {
 		expect(mockCtx.$appWindow?.setTitle).toHaveBeenCalledWith(`App Title`);
 	});
 
-	test(`goBack should call webContents goBack`, () => {
+	test(`goBack should call webContents navigationHistory.goBack`, () => {
 		const mockGoBack = vi.fn();
 		const testLayer = mockCtx.$testLayer as NonNullable<CoreContext[`$testLayer`]>;
-		testLayer.webContents.goBack = mockGoBack;
+		testLayer.webContents.navigationHistory.goBack = mockGoBack;
 		navigationService.goBack(mockCtx);
 		expect(mockGoBack).toHaveBeenCalled();
 	});
 
-	test(`goForward should call webContents goForward`, () => {
+	test(`goForward should call webContents navigationHistory.goForward`, () => {
 		const mockGoForward = vi.fn();
 		const testLayer = mockCtx.$testLayer as NonNullable<CoreContext[`$testLayer`]>;
-		testLayer.webContents.goForward = mockGoForward;
+		testLayer.webContents.navigationHistory.goForward = mockGoForward;
 		navigationService.goForward(mockCtx);
 		expect(mockGoForward).toHaveBeenCalled();
 	});

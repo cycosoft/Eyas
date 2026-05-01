@@ -37,7 +37,8 @@
 						class="mx-0"
 						rounded="lg"
 						:data-qa="`btn-browser-${control.action}`"
-						@click="onBrowserControlClick(control.action)"
+						:disabled="isControlDisabled(control.action, canGoBack, canGoForward)"
+						@click="handleBrowserControlClick(control.action)"
 					>
 						<v-icon
 							:icon="control.icon"
@@ -101,12 +102,24 @@
 import { ref, onMounted, watch } from 'vue';
 import useModalsStore from '@/stores/modals.js';
 import type { NavGroup, NavItem, NavActivateEvent, PendingNavOpen } from '@registry/components.js';
-import type { ChannelName, BrowserAction } from '@registry/primitives.js';
-import { groups, browserControls } from './AppHeader.logic.js';
+import type { ChannelName, BrowserAction, IsActive } from '@registry/primitives.js';
+import type { NavigationStatePayload } from '@registry/ipc.js';
+import {
+	groups,
+	browserControls,
+	isControlDisabled,
+	handleBrowserControlClick,
+	goBack,
+	goForward,
+	reload,
+	goHome
+} from './AppHeader.logic.js';
 
 const menu = ref(false);
 const activator = ref<Element | undefined>();
 const menuItems = ref<NavItem[]>([]);
+const canGoBack = ref(false);
+const canGoForward = ref(false);
 
 // Fallback delay (ms) to open the menu if the IPC event never fires.
 const RESIZE_FALLBACK_MS = 200;
@@ -136,6 +149,11 @@ function triggerOpen(): void {
 
 onMounted(() => {
 	window.eyas?.receive(`ui-shown` as ChannelName, triggerOpen);
+	window.eyas?.receive(`navigation-state-updated` as ChannelName, (data: unknown) => {
+		const payload = data as NavigationStatePayload;
+		canGoBack.value = payload.canGoBack;
+		canGoForward.value = payload.canGoForward;
+	});
 });
 
 function activate(event: NavActivateEvent, group: NavGroup): void {
@@ -190,29 +208,6 @@ function onItemClick(item: NavItem): void {
 	menu.value = false;
 }
 
-function onBrowserControlClick(action: BrowserAction): void {
-	if (action === `back`) { goBack(); }
-	if (action === `forward`) { goForward(); }
-	if (action === `reload`) { reload(); }
-	if (action === `home`) { goHome(); }
-}
-
-function goBack(): void {
-	window.eyas?.send(`browser-back` as ChannelName);
-}
-
-function goForward(): void {
-	window.eyas?.send(`browser-forward` as ChannelName);
-}
-
-function reload(): void {
-	window.eyas?.send(`browser-reload` as ChannelName);
-}
-
-function goHome(): void {
-	window.eyas?.send(`browser-home` as ChannelName);
-}
-
 function delayedClose(): void {
 	const modalsStore = useModalsStore();
 	window.clearTimeout(closeTimeout);
@@ -231,10 +226,12 @@ defineExpose({
 	menu,
 	menuItems,
 	activator,
+	canGoBack,
+	canGoForward,
 	activate,
 	onMouseEnter,
 	onItemClick,
-	onBrowserControlClick,
+	onBrowserControlClick: handleBrowserControlClick,
 	goBack,
 	goForward,
 	reload,

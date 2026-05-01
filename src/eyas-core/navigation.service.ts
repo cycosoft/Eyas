@@ -253,6 +253,20 @@ function reload(ctx: CoreContext): void {
 	webContents.reloadIgnoringCache();
 }
 
+/**
+ * Updates the navigation state in the UI layer.
+ * @param ctx The core context.
+ */
+function updateNavigationState(ctx: CoreContext): void {
+	const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
+	if (!webContents || webContents.isDestroyed()) { return; }
+
+	ctx.uiEvent(`navigation-state-updated`, {
+		canGoBack: webContents.navigationHistory.canGoBack(),
+		canGoForward: webContents.navigationHistory.canGoForward()
+	});
+}
+
 export const navigationService = {
 	navigate,
 	navigateVariable,
@@ -261,5 +275,6 @@ export const navigationService = {
 	onTitleUpdate,
 	goBack,
 	goForward,
-	reload
+	reload,
+	updateNavigationState
 };
