@@ -3,57 +3,61 @@
 		density="compact"
 		data-qa="app-header"
 	>
-		<v-btn
-			v-for="group in groups"
-			:key="group.name"
-			class="px-3"
-			rounded="xs"
-			append-icon="mdi-chevron-down"
-			:data-qa="`btn-nav-group-${group.name.toLowerCase()}`"
-			@click="activate($event, group)"
-			@mouseenter="onMouseEnter($event, group)"
-		>
-			<v-img
-				v-if="group.logo"
-				:src="group.logo"
-				class="menu-logo mr-n1"
-			/>
-			<span v-else>
-				<template v-for="(part, i) in group.mnemonicParts" :key="i">
-					<u v-if="part.isMnemonic">{{ part.text }}</u>
-					<template v-else>{{ part.text }}</template>
-				</template>
-			</span>
-		</v-btn>
-
-		<v-divider
-			vertical
-			inset
-			class="mx-1"
-		/>
-
-		<v-btn
-			v-for="control in browserControls"
-			:key="control.action"
-			icon
-			variant="text"
-			density="compact"
-			class="mx-0"
-			:data-qa="`btn-browser-${control.action}`"
-			@click="onBrowserControlClick(control.action)"
-		>
-			<v-icon
-				:icon="control.icon"
-				size="small"
-			/>
-			<v-tooltip
-				activator="parent"
-				location="bottom"
-				open-delay="500"
+		<template v-for="group in groups" :key="group.name">
+			<v-btn
+				class="px-3"
+				rounded="xs"
+				append-icon="mdi-chevron-down"
+				:data-qa="`btn-nav-group-${group.name.toLowerCase()}`"
+				@click="activate($event, group)"
+				@mouseenter="onMouseEnter($event, group)"
 			>
-				{{ control.label }}
-			</v-tooltip>
-		</v-btn>
+				<v-img
+					v-if="group.logo"
+					:src="group.logo"
+					class="menu-logo mr-n1"
+				/>
+				<span v-else>
+					<template v-for="(part, i) in group.mnemonicParts" :key="i">
+						<u v-if="part.isMnemonic">{{ part.text }}</u>
+						<template v-else>{{ part.text }}</template>
+					</template>
+				</span>
+			</v-btn>
+
+			<template v-if="group.name === 'File'">
+				<v-divider
+					vertical
+					inset
+					class="mx-1"
+				/>
+
+				<v-btn
+					v-for="control in browserControls"
+					:key="control.action"
+					icon
+					variant="text"
+					density="compact"
+					class="mx-0"
+					:data-qa="`btn-browser-${control.action}`"
+					@click="onBrowserControlClick(control.action)"
+				>
+					<v-icon
+						:icon="control.icon"
+						size="small"
+					/>
+					<v-tooltip
+						activator="parent"
+						location="bottom"
+						open-delay="500"
+					>
+						{{ control.label }}
+					</v-tooltip>
+				</v-btn>
+
+				<v-spacer />
+			</template>
+		</template>
 	</v-app-bar>
 
 	<v-menu
