@@ -29,9 +29,6 @@ test.describe(`Test Layer Dimensions`, () => {
 			return testLayerBounds.width;
 		}, { timeout: 10000 }).toBeGreaterThan(0);
 
-		console.log(`Window Content Size: ${windowWidth}x${windowHeight}`);
-		console.log(`Test Layer Bounds: ${testLayerBounds.width}x${testLayerBounds.height} at (${testLayerBounds.x}, ${testLayerBounds.y})`);
-
 		// Polling wait for dimensions to match
 		await expect.poll(async () => {
 			[windowWidth, windowHeight] = await getAppWindowContentSize(electronApp);
