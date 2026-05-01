@@ -1,21 +1,16 @@
 import { test, expect } from '@playwright/test';
-import { launchEyas, exitEyas, getUiView, clickSubMenuItem, getMenuStructure } from './eyas-utils.mjs';
+import { launchEyas, exitEyas, getUiView, openChangelogModal, ensureEnvironmentSelected } from './eyas-utils.mjs';
 
 test(`WhatsNew modal should be scrollable`, async () => {
 	const electronApp = await launchEyas();
 	const uiPage = await getUiView(electronApp);
 
 	try {
-		// Find the app menu (first item usually contains "Changelog")
-		const menuStructure = await getMenuStructure(electronApp);
-		const appMenu = menuStructure.find(m => m.submenu && m.submenu.some(si => si.label.includes(`Changelog`)));
+		// Ensure environment is selected (clears initial modal)
+		await ensureEnvironmentSelected(uiPage);
 
-		if (!appMenu) {
-			throw new Error(`Could not find "Changelog" in the application menu.`);
-		}
-
-		// Click "Changelog"
-		await clickSubMenuItem(electronApp, appMenu.label, `Changelog`);
+		// Open the Changelog modal via the UI
+		await openChangelogModal(uiPage);
 
 		// Wait for the modal to appear
 		const modalContent = uiPage.locator(`[data-qa="whats-new-modal"]`);

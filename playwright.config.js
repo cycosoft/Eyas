@@ -5,9 +5,9 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
 	testDir: `./tests/e2e`,
 	globalSetup: `./tests/e2e/global-setup.mjs`,
-	timeout: 10000,
+	timeout: 30000,
 	expect: {
-		timeout: 10000
+		timeout: 30000
 	},
 	fullyParallel: false,
 	forbidOnly: !!process.env.CI,

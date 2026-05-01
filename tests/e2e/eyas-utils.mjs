@@ -85,9 +85,9 @@ export async function getUiView(electronApp) {
 export async function ensureEnvironmentSelected(uiPage) {
 	const envModalTitle = uiPage.locator(`[data-qa="environment-modal-title"]`);
 
-	// Wait up to 5s for the modal to potentially appear
+	// Wait up to 2s for the modal to potentially appear
 	try {
-		await expect(envModalTitle).toBeVisible({ timeout: 5000 });
+		await expect(envModalTitle).toBeVisible({ timeout: 2000 });
 		await uiPage.locator(`[data-qa="btn-env"]`).first().click();
 		await expect(envModalTitle).not.toBeVisible();
 		// Wait for navigation/menu update
@@ -111,6 +111,22 @@ export async function openSettingsModal(uiPage) {
 	const settingsMenuItem = uiPage.locator(`[data-qa="btn-nav-item"]`, { hasText: `App/Project Settings` });
 	await expect(settingsMenuItem).toBeVisible({ timeout: 5000 });
 	await settingsMenuItem.click();
+}
+
+/**
+ * Opens the Changelog modal via the header menu.
+ * @param {import('@playwright/test').Page} uiPage
+ */
+export async function openChangelogModal(uiPage) {
+	// Click the 'File' menu
+	const fileMenuBtn = uiPage.locator(`[data-qa="btn-nav-group-file"]`);
+	await expect(fileMenuBtn).toBeVisible({ timeout: 10000 });
+	await fileMenuBtn.click();
+
+	// Find and click the 'Changelog' item
+	const changelogMenuItem = uiPage.locator(`[data-qa="btn-nav-item"]`, { hasText: `Changelog` });
+	await expect(changelogMenuItem).toBeVisible({ timeout: 5000 });
+	await changelogMenuItem.click();
 }
 
 /**
