@@ -234,6 +234,6 @@ export function updateViewports(viewports: Viewport[], currentWidth: ViewportWid
  * @param width The target width.
  * @param height The target height.
  */
-export function setViewport(width: ViewportWidth, height: ViewportHeight): void {
+function setViewport(width: ViewportWidth, height: ViewportHeight): void {
 	window.eyas?.send(`set-viewport` as ChannelName, [width, height]);
 }

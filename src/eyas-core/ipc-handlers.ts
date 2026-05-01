@@ -13,7 +13,7 @@ import type {
 	SaveSettingPayload,
 	TestServerSetupPayload
 } from '@registry/ipc.js';
-import type { IsActive, AppVersion } from '@registry/primitives.js';
+import type { IsActive, AppVersion, ViewportWidth, ViewportHeight } from '@registry/primitives.js';
 
 /**
  * Initializes all IPC handlers for the application.
@@ -110,7 +110,7 @@ function initAppIpcListeners(ctx: CoreContext): void {
 	});
 
 	// viewport management
-	ipcMain.on(`set-viewport`, (_event, [width, height]: [number, number]) => {
+	ipcMain.on(`set-viewport`, (_event, [width, height]: [ViewportWidth, ViewportHeight]) => {
 		ctx.$appWindow?.setContentSize(width, height + EYAS_HEADER_HEIGHT);
 	});
 }

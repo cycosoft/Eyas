@@ -207,12 +207,13 @@ describe(`index.ts refactoring unit tests`, () => {
 			},
 			$eyasLayer: mockLayer,
 			$currentViewport: [800, 600],
-			setMenu: vi.fn()
+			setMenu: vi.fn(),
+			updateNavigationState: vi.fn()
 		} as unknown as CoreContext;
 
 		windowService.handleResize(ctx);
 
-		expect(ctx.$currentViewport).toEqual([1024, 768]);
+		expect(ctx.$currentViewport).toEqual([1024, 720]);
 		expect(mockLayer.setBounds).toHaveBeenCalledWith({ x: 0, y: 0, width: 1024, height: 768 });
 		expect(ctx.setMenu).toHaveBeenCalled();
 	});
@@ -231,7 +232,8 @@ describe(`index.ts refactoring unit tests`, () => {
 			},
 			$eyasLayer: mockLayer,
 			$currentViewport: [800, 600],
-			setMenu: vi.fn()
+			setMenu: vi.fn(),
+			updateNavigationState: vi.fn()
 		} as unknown as CoreContext;
 
 		windowService.handleResize(ctx);

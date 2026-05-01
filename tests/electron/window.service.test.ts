@@ -115,6 +115,7 @@ describe(`window.service.ts unit tests`, () => {
 			checkExpiration: vi.fn(),
 			manageAppClose: vi.fn(),
 			onTitleUpdate: vi.fn(),
+			updateNavigationState: vi.fn(),
 			$isInitializing: false
 		} as unknown as CoreContext;
 	});
