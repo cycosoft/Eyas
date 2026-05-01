@@ -190,6 +190,9 @@ async function resetFreshTestState(ctx: CoreContext): Promise<void> {
 
 	// Reset test server settings
 	testServerService.resetSettings(ctx);
+
+	// signal that history should be cleared on the next load
+	ctx.setShouldClearHistory(true);
 }
 
 /**
@@ -261,7 +264,8 @@ function updateNavigationState(ctx: CoreContext): void {
 	const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
 	if (!webContents || webContents.isDestroyed()) { return; }
 
-	ctx.uiEvent(`navigation-state-updated`, {
+	// push navigation state to the UI layer
+	ctx.$eyasLayer?.webContents.send(`navigation-state-updated`, {
 		canGoBack: webContents.navigationHistory.canGoBack(),
 		canGoForward: webContents.navigationHistory.canGoForward()
 	});

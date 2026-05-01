@@ -105,6 +105,7 @@ describe(`navigation.service.ts unit tests`, () => {
 			setTestDomainRaw: vi.fn(),
 			setEnvKey: vi.fn(),
 			setAllViewports: vi.fn(),
+			setShouldClearHistory: vi.fn(),
 			stopTestServer: vi.fn()
 		} as unknown as CoreContext;
 	});
@@ -141,10 +142,11 @@ describe(`navigation.service.ts unit tests`, () => {
 		expect(dialog.showMessageBoxSync).toHaveBeenCalled();
 	});
 
-	test(`startAFreshTest should reset state and navigate`, async () => {
+	test(`startAFreshTest should reset state, signal history clear, and navigate`, async () => {
 		await navigationService.startAFreshTest(mockCtx);
 		expect(testServerService.clearPort).toHaveBeenCalled();
 		expect(mockCtx.setIsInitializing).toHaveBeenCalledWith(true);
+		expect(mockCtx.setShouldClearHistory).toHaveBeenCalledWith(true);
 		expect(mockCtx.$testLayer?.webContents.loadURL).toHaveBeenCalled();
 	});
 

@@ -69,6 +69,7 @@ let $isInitializing: IsActive = true;
 let $isEnvironmentPending: IsPending = false;
 let $pendingStartupModal: StartupModal | null = null;
 let $isStartupSequenceChecked: IsActive = false;
+let $shouldClearHistory: IsActive = false;
 
 const $paths = {
 	icon: _path.join($roots.eyas, `eyas-assets`, `eyas-logo.png`),
@@ -161,7 +162,8 @@ const coreContextSetters = {
 	setEyasLayer: (layer: WebContentsView | null): void => { $eyasLayer = layer; },
 	setTestLayer: (layer: WebContentsView | null): void => { $testLayer = layer; },
 	setConfigToLoad: (config: ConfigToLoad): void => { $configToLoad = config; },
-	setConfig: (config: ValidatedConfig): void => { $config = config; }
+	setConfig: (config: ValidatedConfig): void => { $config = config; },
+	setShouldClearHistory: (clear: IsActive): void => { $shouldClearHistory = clear; }
 };
 
 const coreContextFunctions = {
@@ -224,6 +226,7 @@ function getCoreContext(): CoreContext {
 		get _appVersion(): AppVersion { return _appVersion as AppVersion; },
 		get $pendingStartupModal(): StartupModal | null { return $pendingStartupModal; },
 		get $isDev(): IsActive { return $isDev; },
+		get $shouldClearHistory(): IsActive { return $shouldClearHistory; },
 		...coreContextSetters,
 		...coreContextFunctions,
 		updateService,

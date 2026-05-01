@@ -165,6 +165,13 @@ export const windowService: WindowService = {
 			if (testWebContents.isDestroyed() || $appWindow.isDestroyed()) { return; }
 			$appWindow.setTitle(ctx.getAppTitle(testWebContents.getTitle()));
 			ctx.setMenu();
+
+			// clear history if requested (e.g. on fresh test start)
+			if (ctx.$shouldClearHistory) {
+				testWebContents.navigationHistory.clear();
+				ctx.setShouldClearHistory(false);
+			}
+
 			ctx.updateNavigationState();
 		});
 

@@ -48,6 +48,7 @@ export type CoreContext = {
 	_appVersion: AppVersion;
 	$pendingStartupModal: StartupModal | null;
 	$isDev: IsActive;
+	$shouldClearHistory: IsActive;
 
 	// Setters (to avoid direct mutation if possible, but keep simple for now)
 	setTestNetworkEnabled: (enabled: IsActive) => void;
@@ -68,6 +69,7 @@ export type CoreContext = {
 	setTestLayer: (layer: WebContentsView | null) => void;
 	setConfigToLoad: (config: ConfigToLoad) => void;
 	setConfig: (config: ValidatedConfig) => void;
+	setShouldClearHistory: (clear: IsActive) => void;
 
 	// Functions
 	toggleEyasUI: (enable: IsActive, forceImmediate?: IsActive) => void;
