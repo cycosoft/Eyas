@@ -42,13 +42,6 @@
 							:icon="control.icon"
 							size="small"
 						/>
-						<v-tooltip
-							activator="parent"
-							location="bottom"
-							open-delay="500"
-						>
-							{{ control.label }}
-						</v-tooltip>
 					</v-btn>
 				</div>
 
