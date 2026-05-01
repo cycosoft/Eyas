@@ -159,21 +159,9 @@ export const menuService: MenuService = {
 	 */
 	getNavigationHandlers: (ctx: CoreContext): Partial<MenuContext> => ({
 		navigateHome: (): void => ctx.navigate(),
-		reload: (): void => {
-			const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
-			if (ctx.$isInitializing || !webContents || webContents.isDestroyed()) return;
-			webContents.reloadIgnoringCache();
-		},
-		back: (): void => {
-			const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
-			if (ctx.$isInitializing || !webContents || webContents.isDestroyed()) return;
-			webContents.goBack();
-		},
-		forward: (): void => {
-			const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
-			if (ctx.$isInitializing || !webContents || webContents.isDestroyed()) return;
-			webContents.goForward();
-		},
+		reload: (): void => ctx.reload(),
+		back: (): void => ctx.goBack(),
+		forward: (): void => ctx.goForward(),
 		copyUrl: (): void => {
 			const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
 			if (ctx.$isInitializing || !webContents || webContents.isDestroyed()) return;

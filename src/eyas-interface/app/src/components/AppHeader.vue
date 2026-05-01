@@ -25,6 +25,35 @@
 				</template>
 			</span>
 		</v-btn>
+
+		<v-divider
+			vertical
+			inset
+			class="mx-1"
+		/>
+
+		<v-btn
+			v-for="control in browserControls"
+			:key="control.action"
+			icon
+			variant="text"
+			density="compact"
+			class="mx-0"
+			:data-qa="`btn-browser-${control.action}`"
+			@click="onBrowserControlClick(control.action)"
+		>
+			<v-icon
+				:icon="control.icon"
+				size="small"
+			/>
+			<v-tooltip
+				activator="parent"
+				location="bottom"
+				open-delay="500"
+			>
+				{{ control.label }}
+			</v-tooltip>
+		</v-btn>
 	</v-app-bar>
 
 	<v-menu
@@ -77,8 +106,8 @@
 import { ref, onMounted, watch } from 'vue';
 import useModalsStore from '@/stores/modals.js';
 import type { NavGroup, NavItem, NavActivateEvent, PendingNavOpen } from '@registry/components.js';
-import type { ChannelName } from '@registry/primitives.js';
-import { groups } from './AppHeader.logic.js';
+import type { ChannelName, BrowserAction } from '@registry/primitives.js';
+import { groups, browserControls } from './AppHeader.logic.js';
 
 const menu = ref(false);
 const activator = ref<Element | undefined>();
@@ -166,6 +195,29 @@ function onItemClick(item: NavItem): void {
 	menu.value = false;
 }
 
+function onBrowserControlClick(action: BrowserAction): void {
+	if (action === `back`) { goBack(); }
+	if (action === `forward`) { goForward(); }
+	if (action === `reload`) { reload(); }
+	if (action === `home`) { goHome(); }
+}
+
+function goBack(): void {
+	window.eyas?.send(`browser-back` as ChannelName);
+}
+
+function goForward(): void {
+	window.eyas?.send(`browser-forward` as ChannelName);
+}
+
+function reload(): void {
+	window.eyas?.send(`browser-reload` as ChannelName);
+}
+
+function goHome(): void {
+	window.eyas?.send(`browser-home` as ChannelName);
+}
+
 function delayedClose(): void {
 	const modalsStore = useModalsStore();
 	window.clearTimeout(closeTimeout);
@@ -180,7 +232,19 @@ function delayedClose(): void {
 }
 
 // expose for testing
-defineExpose({ menu, menuItems, activator, activate, onMouseEnter, onItemClick });
+defineExpose({
+	menu,
+	menuItems,
+	activator,
+	activate,
+	onMouseEnter,
+	onItemClick,
+	onBrowserControlClick,
+	goBack,
+	goForward,
+	reload,
+	goHome
+});
 </script>
 
 <style scoped>

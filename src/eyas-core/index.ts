@@ -190,6 +190,9 @@ const coreContextFunctions = {
 	getAppTitle: (title?: AppTitle): AppTitle => navigationService.getAppTitleWithContext(getCoreContext(), title),
 	setupWebRequestInterception: (): void => setupWebRequestInterception(getCoreContext()),
 	checkExpiration: (): void => appService.checkExpiration(getCoreContext()),
+	goBack: (): void => navigationService.goBack(getCoreContext()),
+	goForward: (): void => navigationService.goForward(getCoreContext()),
+	reload: (): void => navigationService.reload(getCoreContext()),
 	initIpcHandlers: (): void => initIpcHandlers(getCoreContext())
 };
 

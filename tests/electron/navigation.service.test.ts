@@ -146,4 +146,28 @@ describe(`navigation.service.ts unit tests`, () => {
 		expect(evt.preventDefault).toHaveBeenCalled();
 		expect(mockCtx.$appWindow?.setTitle).toHaveBeenCalledWith(`App Title`);
 	});
+
+	test(`goBack should call webContents goBack`, () => {
+		const mockGoBack = vi.fn();
+		const testLayer = mockCtx.$testLayer as NonNullable<CoreContext[`$testLayer`]>;
+		testLayer.webContents.goBack = mockGoBack;
+		navigationService.goBack(mockCtx);
+		expect(mockGoBack).toHaveBeenCalled();
+	});
+
+	test(`goForward should call webContents goForward`, () => {
+		const mockGoForward = vi.fn();
+		const testLayer = mockCtx.$testLayer as NonNullable<CoreContext[`$testLayer`]>;
+		testLayer.webContents.goForward = mockGoForward;
+		navigationService.goForward(mockCtx);
+		expect(mockGoForward).toHaveBeenCalled();
+	});
+
+	test(`reload should call webContents reloadIgnoringCache`, () => {
+		const mockReload = vi.fn();
+		const testLayer = mockCtx.$testLayer as NonNullable<CoreContext[`$testLayer`]>;
+		testLayer.webContents.reloadIgnoringCache = mockReload;
+		navigationService.reload(mockCtx);
+		expect(mockReload).toHaveBeenCalled();
+	});
 });

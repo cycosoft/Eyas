@@ -88,6 +88,12 @@ function initAppIpcListeners(ctx: CoreContext): void {
 
 	// show the test server setup modal
 	ipcMain.on(`show-test-server-setup`, () => { ctx.showTestServerSetup(); });
+
+	// browser controls
+	ipcMain.on(`browser-back`, () => ctx.goBack());
+	ipcMain.on(`browser-forward`, () => ctx.goForward());
+	ipcMain.on(`browser-reload`, () => ctx.reload());
+	ipcMain.on(`browser-home`, () => ctx.navigate());
 }
 
 /**

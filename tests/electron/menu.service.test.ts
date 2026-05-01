@@ -176,6 +176,9 @@ describe(`MenuService Helpers`, () => {
 			clearCache: vi.fn(),
 			stopTestServer: vi.fn(),
 			onToggleTestServerHttps: vi.fn(),
+			goBack: vi.fn(),
+			goForward: vi.fn(),
+			reload: vi.fn(),
 			getSessionAge: vi.fn(() => `1m`),
 			updateService: {
 				getStatus: vi.fn(() => `idle`),
@@ -256,15 +259,15 @@ describe(`MenuService Helpers`, () => {
 				expect(mockCtx.navigate).toHaveBeenCalled();
 			});
 
-			test(`browser controls should call webContents methods`, () => {
+			test(`browser controls should call context navigation methods`, () => {
 				handlers.reload?.();
-				expect(mockTestLayer.webContents.reloadIgnoringCache).toHaveBeenCalled();
+				expect(mockCtx.reload).toHaveBeenCalled();
 
 				handlers.back?.();
-				expect(mockTestLayer.webContents.goBack).toHaveBeenCalled();
+				expect(mockCtx.goBack).toHaveBeenCalled();
 
 				handlers.forward?.();
-				expect(mockTestLayer.webContents.goForward).toHaveBeenCalled();
+				expect(mockCtx.goForward).toHaveBeenCalled();
 
 				handlers.copyUrl?.();
 				expect(mockTestLayer.webContents.getURL).toHaveBeenCalled();

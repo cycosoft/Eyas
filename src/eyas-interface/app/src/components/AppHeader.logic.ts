@@ -1,5 +1,5 @@
 import eyasLogo from '@/assets/eyas-logo.svg';
-import type { NavGroup, NavItem, MnemonicPart } from '@registry/components.js';
+import type { NavGroup, NavItem, MnemonicPart, BrowserControl } from '@registry/components.js';
 
 /**
  * The navigation groups displayed in the application header.
@@ -25,6 +25,16 @@ export const groups: NavGroup[] = [
 			{ title: `DevTools`, value: `devtools`, shortcut: `F12`, mnemonic: `D` }
 		]
 	}
+];
+
+/**
+ * The browser controls displayed in the application header.
+ */
+export const browserControls: BrowserControl[] = [
+	{ icon: `mdi-arrow-left`, action: `back`, label: `Back` },
+	{ icon: `mdi-arrow-right`, action: `forward`, label: `Forward` },
+	{ icon: `mdi-refresh`, action: `reload`, label: `Reload` },
+	{ icon: `mdi-home`, action: `home`, label: `Home` }
 ];
 
 /**

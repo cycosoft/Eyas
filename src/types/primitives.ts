@@ -53,6 +53,7 @@ export type StepId = string;
 export type VariableValue = string;
 export type VariableType = string;
 export type FieldName = string;
+export type BrowserAction = string;
 
 // File System
 export type FileSystemPath = string;

@@ -278,5 +278,47 @@ describe(`AppHeader`, () => {
 			vi.advanceTimersByTime(600);
 			expect(mockSend).toHaveBeenCalledWith(`hide-ui`);
 		});
+
+		describe(`browser controls`, () => {
+			test(`goBack() sends browser-back IPC`, () => {
+				const vm = wrapper.vm as unknown as AppHeaderVM;
+				vm.goBack();
+				expect(mockSend).toHaveBeenCalledWith(`browser-back`);
+			});
+
+			test(`goForward() sends browser-forward IPC`, () => {
+				const vm = wrapper.vm as unknown as AppHeaderVM;
+				vm.goForward();
+				expect(mockSend).toHaveBeenCalledWith(`browser-forward`);
+			});
+
+			test(`reload() sends browser-reload IPC`, () => {
+				const vm = wrapper.vm as unknown as AppHeaderVM;
+				vm.reload();
+				expect(mockSend).toHaveBeenCalledWith(`browser-reload`);
+			});
+
+			test(`goHome() sends browser-home IPC`, () => {
+				const vm = wrapper.vm as unknown as AppHeaderVM;
+				vm.goHome();
+				expect(mockSend).toHaveBeenCalledWith(`browser-home`);
+			});
+
+			test(`onBrowserControlClick() triggers correct IPC messages`, () => {
+				const vm = wrapper.vm as unknown as AppHeaderVM;
+
+				vm.onBrowserControlClick(`back`);
+				expect(mockSend).toHaveBeenCalledWith(`browser-back`);
+
+				vm.onBrowserControlClick(`forward`);
+				expect(mockSend).toHaveBeenCalledWith(`browser-forward`);
+
+				vm.onBrowserControlClick(`reload`);
+				expect(mockSend).toHaveBeenCalledWith(`browser-reload`);
+
+				vm.onBrowserControlClick(`home`);
+				expect(mockSend).toHaveBeenCalledWith(`browser-home`);
+			});
+		});
 	});
 });

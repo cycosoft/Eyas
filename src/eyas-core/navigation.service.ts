@@ -223,10 +223,43 @@ function setupFreshTestSource(ctx: CoreContext): void {
 	}
 }
 
+/**
+ * Navigates the test layer back in history.
+ * @param ctx The core context.
+ */
+function goBack(ctx: CoreContext): void {
+	const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
+	if (ctx.$isInitializing || !webContents || webContents.isDestroyed()) { return; }
+	webContents.goBack();
+}
+
+/**
+ * Navigates the test layer forward in history.
+ * @param ctx The core context.
+ */
+function goForward(ctx: CoreContext): void {
+	const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
+	if (ctx.$isInitializing || !webContents || webContents.isDestroyed()) { return; }
+	webContents.goForward();
+}
+
+/**
+ * Reloads the test layer, ignoring cache.
+ * @param ctx The core context.
+ */
+function reload(ctx: CoreContext): void {
+	const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
+	if (ctx.$isInitializing || !webContents || webContents.isDestroyed()) { return; }
+	webContents.reloadIgnoringCache();
+}
+
 export const navigationService = {
 	navigate,
 	navigateVariable,
 	startAFreshTest,
 	getAppTitleWithContext,
-	onTitleUpdate
+	onTitleUpdate,
+	goBack,
+	goForward,
+	reload
 };

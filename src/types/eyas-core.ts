@@ -95,6 +95,9 @@ export type CoreContext = {
 	getAppTitle: (title?: AppTitle) => AppTitle;
 	setupWebRequestInterception: () => void;
 	checkExpiration: () => void;
+	goBack: () => void;
+	goForward: () => void;
+	reload: () => void;
 	initIpcHandlers: () => void;
 
 	// Services
