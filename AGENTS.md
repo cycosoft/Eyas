@@ -65,3 +65,9 @@
 > - **Always get explicit approval** before starting ambiguous work.
 > - **Always keep it DRY.**
 > - **Always use TypeScript** with shared interfaces from `src/types/`.
+
+## 7. Change Precision & Scope Control
+- **Surgical Bug Fixing**: Prioritize fixing the specific failure point identified (e.g., via stack trace) over "proactive safety patterns."
+- **Avoid Refactor Spirals**: If a bug fix triggers a secondary housekeeping rule (like `max-lines` linting), evaluate if the scope can be narrowed to avoid the refactor.
+- **Cost-Benefit of Churn**: Avoid structural refactors (file splitting, logic extraction) unless the current file is genuinely unmaintainable or the user explicitly requests it. The token and stability cost of a refactor often outweighs the benefit of minor linting compliance.
+- **Registry-First Lifecycle**: If a fix requires a new method call on a mocked object, update the central mock registry and types BEFORE modifying the tests.
