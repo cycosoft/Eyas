@@ -230,7 +230,7 @@ function setupFreshTestSource(ctx: CoreContext): void {
 function goBack(ctx: CoreContext): void {
 	const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
 	if (ctx.$isInitializing || !webContents || webContents.isDestroyed()) { return; }
-	webContents.goBack();
+	webContents.navigationHistory.goBack();
 }
 
 /**
@@ -240,7 +240,7 @@ function goBack(ctx: CoreContext): void {
 function goForward(ctx: CoreContext): void {
 	const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
 	if (ctx.$isInitializing || !webContents || webContents.isDestroyed()) { return; }
-	webContents.goForward();
+	webContents.navigationHistory.goForward();
 }
 
 /**
