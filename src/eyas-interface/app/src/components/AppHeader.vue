@@ -31,9 +31,10 @@
 						v-for="control in browserControls"
 						:key="control.action"
 						icon
-						variant="text"
+						variant="plain"
+						:ripple="false"
 						density="compact"
-						class="mx-0 text-medium-emphasis"
+						class="mx-0"
 						rounded="lg"
 						:data-qa="`btn-browser-${control.action}`"
 						@click="onBrowserControlClick(control.action)"
