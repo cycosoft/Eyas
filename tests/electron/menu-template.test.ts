@@ -171,15 +171,11 @@ describe(`Test menu`, () => {
 		expect(envItem.click).toBe(startAFreshTest);
 	});
 
-	test(`Test submenu contains Test Home using navigateHome`, () => {
-		const navigateHome = (): void => { };
-		const ctx = { ...minimalContext, navigateHome };
-		const template = buildMenuTemplate(ctx as MenuContext);
+	test(`Test submenu does NOT contain Test Home`, () => {
+		const template = buildMenuTemplate(minimalContext);
 		const testMenu = template[1] as MenuItemConstructorOptions;
 		const homeItem = (testMenu.submenu as MenuItemConstructorOptions[]).find(item => item.label && item.label.toLowerCase().includes(`home`));
-		if (!homeItem) throw new Error();
-		expect(homeItem).toBeDefined();
-		expect(homeItem.click).toBe(navigateHome);
+		expect(homeItem).toBeUndefined();
 	});
 
 	test(`Test submenu contains a Links submenu when linkItems is non-empty`, () => {
@@ -274,39 +270,25 @@ describe(`Browser menu`, () => {
 		expect(item.click).toBe(copyUrl);
 	});
 
-	test(`Browser submenu contains Reload with reload handler`, () => {
-		const reload = (): void => { };
-		const ctx = { ...minimalContext, reload };
-		const template = buildMenuTemplate(ctx as MenuContext);
+	test(`Browser submenu does NOT contain Reload`, () => {
+		const template = buildMenuTemplate(minimalContext);
 		const browserMenu = template[2] as MenuItemConstructorOptions;
 		const item = (browserMenu.submenu as MenuItemConstructorOptions[]).find(i => i.label && i.label.toLowerCase().includes(`reload`));
-		if (!item) throw new Error();
-		expect(item).toBeDefined();
-		expect(item.click).toBe(reload);
+		expect(item).toBeUndefined();
 	});
 
-	test(`Browser submenu contains Back with back handler`, () => {
-		const back = (): void => { };
-		const ctx = { ...minimalContext, back };
-		const template = buildMenuTemplate(ctx as MenuContext);
+	test(`Browser submenu does NOT contain Back`, () => {
+		const template = buildMenuTemplate(minimalContext);
 		const browserMenu = template[2] as MenuItemConstructorOptions;
 		const item = (browserMenu.submenu as MenuItemConstructorOptions[]).find(i => i.label && i.label.toLowerCase().includes(`back`));
-		if (!item) throw new Error();
-		expect(item).toBeDefined();
-		expect(item.click).toBe(back);
-		expect(item.label).toContain(`◀️`);
+		expect(item).toBeUndefined();
 	});
 
-	test(`Browser submenu contains Forward with forward handler`, () => {
-		const forward = (): void => { };
-		const ctx = { ...minimalContext, forward };
-		const template = buildMenuTemplate(ctx as MenuContext);
+	test(`Browser submenu does NOT contain Forward`, () => {
+		const template = buildMenuTemplate(minimalContext);
 		const browserMenu = template[2] as MenuItemConstructorOptions;
 		const item = (browserMenu.submenu as MenuItemConstructorOptions[]).find(i => i.label && i.label.toLowerCase().includes(`forward`));
-		if (!item) throw new Error();
-		expect(item).toBeDefined();
-		expect(item.click).toBe(forward);
-		expect(item.label).toContain(`▶️`);
+		expect(item).toBeUndefined();
 	});
 
 	test(`Browser submenu does NOT contain Go Online/Offline toggle`, () => {

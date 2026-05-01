@@ -60,7 +60,6 @@ function createTestSubmenu(context: MenuContext): MenuTemplate {
 		isEnvironmentPending = false,
 		isInitializing = false,
 		startAFreshTest,
-		navigateHome,
 		linkItems,
 		onStartTestServer,
 		testServerActive = false
@@ -68,8 +67,7 @@ function createTestSubmenu(context: MenuContext): MenuTemplate {
 
 	const enabled = isConfigLoaded && !isEnvironmentPending;
 	const submenu: MenuTemplate = [
-		{ label: `🔄 &Reset Test Environment`, click: startAFreshTest, enabled },
-		{ label: `🏠 Test &Home`, click: navigateHome, enabled }
+		{ label: `🔄 &Reset Test Environment`, click: startAFreshTest, enabled }
 	];
 
 	if (linkItems.length) {
@@ -96,9 +94,6 @@ function createBrowserSubmenu(context: MenuContext): MenuTemplate {
 		isConfigLoaded = false,
 		isInitializing = false,
 		copyUrl,
-		reload,
-		back,
-		forward,
 		viewportItems
 	} = context;
 
@@ -106,10 +101,6 @@ function createBrowserSubmenu(context: MenuContext): MenuTemplate {
 
 	return [
 		{ label: `📋 &Copy URL`, click: copyUrl, enabled },
-		{ type: `separator` },
-		{ label: `🔄 &Reload`, accelerator: `CmdOrCtrl+R`, click: reload, enabled },
-		{ label: `◀️ &Back`, accelerator: `CmdOrCtrl+Left`, click: back, enabled },
-		{ label: `▶️ &Forward`, accelerator: `CmdOrCtrl+Right`, click: forward, enabled },
 		{ type: `separator` },
 		{ label: `📐 &Viewport`, submenu: viewportItems }
 	];
