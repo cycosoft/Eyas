@@ -118,8 +118,9 @@ test.describe(`Project Settings Isolation`, () => {
 
 		const envModalA2 = uiPage.locator(`[data-qa="environment-modal-title"]`);
 
-		// Give the app a moment to potentially show the modal (it should NOT)
-		await new Promise(resolve => setTimeout(resolve, 3000));
+		// Wait for the app header to be visible, which indicates the app has loaded
+		// and the modal was skipped.
+		await expect(uiPage.locator(`[data-qa="app-header"]`)).toBeVisible({ timeout: 10_000 });
 		await expect(envModalA2).not.toBeVisible({
 			message: `Project A should skip the modal because "Always choose" was already saved`
 		});

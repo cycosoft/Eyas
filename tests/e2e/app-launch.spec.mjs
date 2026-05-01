@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { launchEyas, exitEyas } from './eyas-utils.mjs';
+import { launchEyas, exitEyas, getUiView } from './eyas-utils.mjs';
 
 test(`app launches and displays UI`, async () => {
 	const electronApp = await launchEyas();
@@ -9,14 +9,10 @@ test(`app launches and displays UI`, async () => {
 	expect(process).not.toBeNull();
 	expect(process.pid).toBeGreaterThan(0);
 
-	// Verify we have a window
-	const windows = electronApp.windows();
-	expect(windows.length).toBeGreaterThan(0);
-	const window = windows[0];
-	expect(window).not.toBeNull();
-
-	// Wait a bit for the app to fully initialize
-	await new Promise(resolve => setTimeout(resolve, 1000));
+	// Verify the UI view is ready
+	const uiPage = await getUiView(electronApp);
+	expect(uiPage).not.toBeNull();
+	await expect(uiPage).toHaveURL(/index\.html|localhost/);
 
 	await exitEyas(electronApp);
 });
@@ -27,12 +23,9 @@ test(`app launches with eyas:// URL in argv (start-up request path)`, async () =
 	expect(electronApp.process()).not.toBeNull();
 	expect(electronApp.process().pid).toBeGreaterThan(0);
 
-	const windows = electronApp.windows();
-	expect(windows.length).toBeGreaterThan(0);
-	const window = windows[0];
-	expect(window).not.toBeNull();
-
-	await new Promise(resolve => setTimeout(resolve, 1000));
+	// Verify the UI view is ready
+	const uiPage = await getUiView(electronApp);
+	expect(uiPage).not.toBeNull();
 
 	await exitEyas(electronApp);
 });

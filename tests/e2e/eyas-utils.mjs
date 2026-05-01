@@ -49,16 +49,18 @@ export async function launchEyas(extraArgs = [], userDataDir = null, cwd = null,
 	// Store the user data dir on the app object for later reuse if needed
 	electronApp._userDataDir = userDataDir;
 
-	// In the new WebContentsView architecture, the host BrowserWindow doesn't navigate.
-	// Instead of using Playwright's firstWindow() (which expects a navigating page),
-	// we just wait until at least one window exists in the electronApp context.
+	// Ensure at least one window is open and the application menu is initialized
+	// with our custom items before returning to the test.
 	for (let i = 0; i < 20; i++) {
-		if (electronApp.windows().length > 0) break;
-		await new Promise(resolve => setTimeout(resolve, 500));
-	}
+		const hasWindow = electronApp.windows().length > 0;
+		const hasCustomMenu = await electronApp.evaluate(({ Menu }) => {
+			const menu = Menu.getApplicationMenu();
+			return menu && menu.items.some(item => item.label.includes(`Test`));
+		}).catch(() => false);
 
-	// Give the app a moment to initialize its child views
-	await new Promise(resolve => setTimeout(resolve, 1000));
+		if (hasWindow && hasCustomMenu) break;
+		await new Promise(resolve => setTimeout(resolve, 250));
+	}
 
 	return electronApp;
 }
@@ -90,9 +92,10 @@ export async function ensureEnvironmentSelected(uiPage) {
 		await expect(envModalTitle).toBeVisible({ timeout: 2000 });
 		await uiPage.locator(`[data-qa="btn-env"]`).first().click();
 		await expect(envModalTitle).not.toBeVisible();
-		// Wait for navigation/menu update
-		await new Promise(resolve => setTimeout(resolve, 1000));
+		// Wait for the app header to be visible, which indicates the navigation finished
+		await expect(uiPage.locator(`[data-qa="app-header"]`)).toBeVisible({ timeout: 10000 });
 	} catch {
+
 		// Modal might not be required or already cleared
 	}
 }
@@ -162,16 +165,26 @@ export async function exitEyas(electronApp) {
 				ipcMain.emit(`app-exit`);
 			}
 		});
-		// Wait a bit for the app to process the exit
-		await new Promise(resolve => setTimeout(resolve, 1000));
 	} catch {
 		// ignore
 	} finally {
 		await electronApp.close().catch(() => { });
+
 		// Forcefully kill the process to ensure the single-instance lock is released
 		// before any subsequent launch in the same test run.
 		if (electronPid) {
-			try { process.kill(electronPid, `SIGKILL`); } catch { /* ignore — may already be gone */ }
+			try { process.kill(electronPid, `SIGKILL`); } catch { /* ignore */ }
+
+			// Wait for the process to actually disappear (up to 2s)
+			// to avoid ENOTEMPTY errors when cleaning up test data directories.
+			for (let i = 0; i < 20; i++) {
+				try {
+					process.kill(electronPid, 0);
+					await new Promise(resolve => setTimeout(resolve, 100));
+				} catch {
+					break;
+				}
+			}
 		}
 	}
 }
@@ -236,17 +249,18 @@ export async function emitIpcMessage(electronApp, channel, ...args) {
  * @returns {Promise<string>}
  */
 export async function getAppWindowUrl(electronApp) {
-	return electronApp.evaluate(({ BrowserWindow }) => {
-		const windows = BrowserWindow.getAllWindows();
-		if (windows.length > 0) {
-			const window = windows[0];
-			if (window.contentView && window.contentView.children && window.contentView.children.length > 0) {
-				// children[0] is $testLayer
+	for (let i = 0; i < 20; i++) {
+		const url = await electronApp.evaluate(({ BrowserWindow }) => {
+			const window = BrowserWindow.getAllWindows()[0];
+			if (window?.contentView?.children?.length > 0) {
 				return window.contentView.children[0].webContents.getURL();
 			}
-		}
-		return ``;
-	});
+			return null;
+		});
+		if (url && url !== `about:blank` && !url.startsWith(`data:text/html`)) return url;
+		await new Promise(resolve => setTimeout(resolve, 250));
+	}
+	return ``;
 }
 
 /**
@@ -273,18 +287,18 @@ export async function runUiScript(electronApp, script) {
  * @returns {Promise<number>}
  */
 export async function getUiLayerHeight(electronApp) {
-	return electronApp.evaluate(({ BrowserWindow }) => {
-		const windows = BrowserWindow.getAllWindows();
-		if (windows.length > 0) {
-			const window = windows[0];
-			// Support for Electron 30+ WebContentsView
-			if (window.contentView && window.contentView.children && window.contentView.children.length > 1) {
-				// children[1] is $eyasLayer (the UI)
+	for (let i = 0; i < 20; i++) {
+		const height = await electronApp.evaluate(({ BrowserWindow }) => {
+			const window = BrowserWindow.getAllWindows()[0];
+			if (window?.contentView?.children?.length > 1) {
 				return window.contentView.children[1].getBounds().height;
 			}
-		}
-		return 0;
-	});
+			return null;
+		});
+		if (height !== null && height > 0) return height;
+		await new Promise(resolve => setTimeout(resolve, 250));
+	}
+	return 0;
 }
 
 /**
@@ -293,18 +307,19 @@ export async function getUiLayerHeight(electronApp) {
  * @returns {Promise<{x: number, y: number, width: number, height: number}>}
  */
 export async function getTestLayerBounds(electronApp) {
-	return electronApp.evaluate(({ BrowserWindow }) => {
-		const windows = BrowserWindow.getAllWindows();
-		if (windows.length > 0) {
-			const window = windows[0];
-			if (window.contentView && window.contentView.children && window.contentView.children.length > 0) {
-				// children[0] is $testLayer
-				const bounds = window.contentView.children[0].getBounds();
-				return { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height };
+	for (let i = 0; i < 20; i++) {
+		const bounds = await electronApp.evaluate(({ BrowserWindow }) => {
+			const window = BrowserWindow.getAllWindows()[0];
+			if (window?.contentView?.children?.length > 0) {
+				const b = window.contentView.children[0].getBounds();
+				return { x: b.x, y: b.y, width: b.width, height: b.height };
 			}
-		}
-		return { x: 0, y: 0, width: 0, height: 0 };
-	});
+			return null;
+		});
+		if (bounds && bounds.width > 0) return bounds;
+		await new Promise(resolve => setTimeout(resolve, 250));
+	}
+	return { x: 0, y: 0, width: 0, height: 0 };
 }
 
 /**

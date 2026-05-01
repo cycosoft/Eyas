@@ -20,17 +20,32 @@ test.describe(`Test Layer Dimensions`, () => {
 	});
 
 	test(`initial dimensions should be correct on launch`, async () => {
-		const [windowWidth, windowHeight] = await getAppWindowContentSize(electronApp);
-		const testLayerBounds = await getTestLayerBounds(electronApp);
+		// Wait for the layers to synchronize with the window size
+		let windowWidth, windowHeight, testLayerBounds;
+
+		await expect.poll(async () => {
+			[windowWidth, windowHeight] = await getAppWindowContentSize(electronApp);
+			testLayerBounds = await getTestLayerBounds(electronApp);
+			return testLayerBounds.width;
+		}, { timeout: 10000 }).toBeGreaterThan(0);
 
 		console.log(`Window Content Size: ${windowWidth}x${windowHeight}`);
 		console.log(`Test Layer Bounds: ${testLayerBounds.width}x${testLayerBounds.height} at (${testLayerBounds.x}, ${testLayerBounds.y})`);
 
-		// Expected height is window height minus the header
-		const expectedHeight = windowHeight - EYAS_HEADER_HEIGHT;
+		// Polling wait for dimensions to match
+		await expect.poll(async () => {
+			[windowWidth, windowHeight] = await getAppWindowContentSize(electronApp);
+			testLayerBounds = await getTestLayerBounds(electronApp);
+			const expectedHeight = windowHeight - EYAS_HEADER_HEIGHT;
 
-		expect(testLayerBounds.width).toBe(windowWidth);
-		expect(testLayerBounds.height).toBe(expectedHeight);
-		expect(testLayerBounds.y).toBe(EYAS_HEADER_HEIGHT);
+			return (
+				testLayerBounds.width === windowWidth &&
+				testLayerBounds.height === expectedHeight &&
+				testLayerBounds.y === EYAS_HEADER_HEIGHT
+			);
+		}, {
+			message: `Test layer dimensions did not synchronize with window dimensions`,
+			timeout: 10000
+		}).toBe(true);
 	});
 });
