@@ -18,7 +18,6 @@ export type MenuTemplate = MenuItem[];
 export type MenuContextParams = {
 	sessionAge: FormattedDuration;
 	cacheSize: ByteCount;
-	viewportItems: MenuItem[];
 	linkItems: MenuItem[];
 }
 
@@ -49,7 +48,6 @@ export type MenuContext = {
 	clearCache: () => void;
 	openCacheFolder: () => void;
 	refreshMenu: () => void;
-	viewportItems: MenuItem[];
 	linkItems: MenuItem[];
 	updateStatus?: UpdateStatus;
 	onCheckForUpdates: () => void;

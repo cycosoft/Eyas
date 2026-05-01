@@ -49,6 +49,16 @@ export async function launchEyas(extraArgs = [], userDataDir = null, cwd = null,
 	// Store the user data dir on the app object for later reuse if needed
 	electronApp._userDataDir = userDataDir;
 
+	// Pipe stdout and stderr to the console for debugging
+	electronApp.process().stdout.on(`data`, data => console.log(`[APP STDOUT]: ${data}`));
+	electronApp.process().stderr.on(`data`, data => console.error(`[APP STDERR]: ${data}`));
+
+	// Pipe console messages from the UI layer
+	const uiView = await getUiView(electronApp);
+	if (uiView) {
+		uiView.on(`console`, msg => console.log(`[UI CONSOLE]: ${msg.text()}`));
+	}
+
 	// Ensure at least one window is open and the application menu is initialized
 	// with our custom items before returning to the test.
 	for (let i = 0; i < 20; i++) {

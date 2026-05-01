@@ -31,7 +31,6 @@ export const menuService: MenuService = {
 			// ignore
 		}
 
-		const viewportItems = menuService.getViewportMenuItems(ctx);
 		const linkItems = menuService.getLinkMenuItems($config, {
 			navigate: (path, openInBrowser) => ctx.navigate(path, openInBrowser),
 			navigateVariable: url => ctx.navigateVariable(url)
@@ -40,7 +39,6 @@ export const menuService: MenuService = {
 		const context = menuService.getContext(ctx, {
 			sessionAge,
 			cacheSize,
-			viewportItems,
 			linkItems
 		});
 
@@ -48,41 +46,6 @@ export const menuService: MenuService = {
 		Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 	},
 
-	/**
-	 * Builds the list of viewport menu items based on the current configuration and viewport.
-	 * @param ctx The core context of the application.
-	 * @returns An array of menu item objects for the viewport submenu.
-	 */
-	getViewportMenuItems: (ctx: CoreContext): MenuTemplate => {
-		const { $appWindow, $allViewports, $currentViewport } = ctx;
-		if (!$appWindow || $appWindow.isDestroyed()) { return []; }
-
-		const tolerance = 2;
-		const viewportItems: MenuTemplate = [];
-		let defaultsFound = false;
-
-		$allViewports.forEach(res => {
-			const [width, height] = $currentViewport || [];
-			const isSizeMatch = Math.abs(res.width - width) <= tolerance && Math.abs(res.height - height) <= tolerance;
-			if (!defaultsFound && res.isDefault) {
-				viewportItems.push({ type: `separator` });
-				defaultsFound = true;
-			}
-			viewportItems.push({
-				label: `${isSizeMatch ? `🔘 ` : ``}${res.label} (${res.width} x ${res.height})`,
-				click: () => $appWindow.setContentSize(res.width, res.height)
-			});
-		});
-
-		if ($currentViewport.length === 2 && !$allViewports.some(res => Math.abs(res.width - $currentViewport[0]) <= tolerance && Math.abs(res.height - $currentViewport[1]) <= tolerance)) {
-			viewportItems.unshift(
-				{ label: `🔘 Current (${$currentViewport[0]} x ${$currentViewport[1]})`, click: () => $appWindow.setContentSize($currentViewport[0], $currentViewport[1]) },
-				{ type: `separator` }
-			);
-		}
-
-		return viewportItems;
-	},
 
 	/**
 	 * Builds the list of link menu items from the configuration.
@@ -122,7 +85,7 @@ export const menuService: MenuService = {
 	 * @returns The fully assembled MenuContext object.
 	 */
 	getContext: (ctx: CoreContext, params: MenuContextParams): MenuContext => {
-		const { sessionAge, cacheSize, viewportItems, linkItems } = params;
+		const { sessionAge, cacheSize, linkItems } = params;
 
 		return {
 			appName: `Eyas`,
@@ -130,7 +93,6 @@ export const menuService: MenuService = {
 			testNetworkEnabled: ctx.$testNetworkEnabled,
 			sessionAge,
 			cacheSize,
-			viewportItems,
 			linkItems,
 			...menuService.getAppHandlers(ctx),
 			...menuService.getNavigationHandlers(ctx),

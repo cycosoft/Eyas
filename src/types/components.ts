@@ -177,6 +177,8 @@ export type NavItem = {
 	shortcut?: MenuAccelerator;
 	mnemonic?: string;
 	mnemonicParts?: MnemonicPart[];
+	submenu?: NavItem[];
+	click?: () => void;
 };
 
 /** A top-level navigation group with a dropdown submenu */

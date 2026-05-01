@@ -220,7 +220,7 @@ export const windowService: WindowService = {
 
 		// update the viewport state
 		$currentViewport[0] = newWidth;
-		$currentViewport[1] = newHeight;
+		$currentViewport[1] = newHeight - EYAS_HEADER_HEIGHT;
 
 		// Resize the UI layer if it exists
 		if ($eyasLayer && !$eyasLayer.webContents.isDestroyed()) {
@@ -244,6 +244,7 @@ export const windowService: WindowService = {
 		}
 
 		ctx.setMenu();
+		ctx.updateNavigationState();
 	},
 
 	/**

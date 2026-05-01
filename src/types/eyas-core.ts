@@ -131,7 +131,6 @@ export type UpdateService = {
 /** Menu Service interface */
 export type MenuService = {
 	refresh: (ctx: CoreContext) => Promise<void>;
-	getViewportMenuItems: (ctx: CoreContext) => MenuTemplate;
 	getLinkMenuItems: (config: ValidatedConfig | null, handlers: LinkMenuHandlers) => MenuTemplate;
 	getContext: (ctx: CoreContext, params: MenuContextParams) => MenuContext;
 	getAppHandlers: (ctx: CoreContext) => Partial<MenuContext>;

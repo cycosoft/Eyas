@@ -1,5 +1,5 @@
 import type { ProjectId, DomainUrl, IsActive, SettingKey } from './primitives.js';
-import type { EnvironmentChoice } from './core.js';
+import type { EnvironmentChoice, Viewport, ViewportSize } from './core.js';
 
 /** Payload for selecting a test environment */
 export type EnvironmentSelectedPayload = DomainUrl | EnvironmentChoice;
@@ -30,7 +30,8 @@ export const VALID_SEND_CHANNELS = [
 	`browser-forward`,
 	`browser-reload`,
 	`browser-home`,
-	`open-external`
+	`open-external`,
+	`set-viewport`
 ] as const;
 
 export const VALID_RECEIVE_CHANNELS = [
@@ -55,6 +56,8 @@ export const VALID_RECEIVE_CHANNELS = [
 export type NavigationStatePayload = {
 	canGoBack: IsActive;
 	canGoForward: IsActive;
+	viewports?: Viewport[];
+	currentViewport?: ViewportSize;
 };
 
 type SendChannel = typeof VALID_SEND_CHANNELS[number];

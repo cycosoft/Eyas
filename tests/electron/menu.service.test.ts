@@ -1,12 +1,10 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import type { BrowserWindow } from 'electron';
 import type { ValidatedConfig } from '@registry/config.js';
-import type { MenuLabel } from '@registry/primitives.js';
 import type { CoreContext } from '@registry/eyas-core.js';
 import { shell, clipboard, Menu } from 'electron';
 import { menuService } from '@core/menu.service.js';
 
-type MockMenuItem = { label?: MenuLabel; type?: string };
 
 // Mock electron
 vi.mock(`electron`, () => ({
@@ -42,56 +40,6 @@ describe(`MenuService Helpers`, () => {
 		vi.clearAllMocks();
 	});
 
-	describe(`getViewportMenuItems`, () => {
-		const mockWindow = {
-			setContentSize: vi.fn(),
-			isDestroyed: vi.fn().mockReturnValue(false)
-		} as unknown as BrowserWindow;
-
-		const allViewports = [
-			{ label: `Desktop`, width: 1366, height: 768, isDefault: true },
-			{ label: `Tablet`, width: 768, height: 1024, isDefault: true },
-			{ label: `Mobile`, width: 360, height: 640, isDefault: true }
-		];
-
-		const mockCtx = {
-			$appWindow: mockWindow,
-			$allViewports: allViewports,
-			$currentViewport: [1366, 768]
-		} as unknown as CoreContext;
-
-		test(`should return empty array if no app window`, () => {
-			expect(menuService.getViewportMenuItems({ ...mockCtx, $appWindow: null } as unknown as CoreContext)).toEqual([]);
-		});
-
-		test(`should identify selected viewport with 🔘 and inject separator`, () => {
-			const items = menuService.getViewportMenuItems(mockCtx);
-
-			// Should have separator before Desktop because it's default
-			expect(items[0].type).toBe(`separator`);
-			expect(items[1].label).toContain(`🔘 Desktop`);
-			expect(items[2].label).not.toContain(`🔘`);
-		});
-
-		test(`should handle tolerance for matching`, () => {
-			const items = menuService.getViewportMenuItems({ ...mockCtx, $currentViewport: [1367, 769] } as unknown as CoreContext); // 1px off
-			expect(items[1].label).toContain(`🔘 Desktop`);
-		});
-
-		test(`should inject "Current" item if no match found`, () => {
-			const items = menuService.getViewportMenuItems({ ...mockCtx, $currentViewport: [1000, 1000] } as unknown as CoreContext);
-			expect(items[0].label).toBe(`🔘 Current (1000 x 1000)`);
-			expect(items[1].type).toBe(`separator`);
-			expect(items.some((i: MockMenuItem) => i.label?.includes(`🔘 Desktop`))).toBe(false);
-		});
-
-		test(`click handler should call setContentSize`, () => {
-			const items = menuService.getViewportMenuItems(mockCtx);
-			const desktopItem = items[1];
-			(desktopItem.click as () => void)();
-			expect(mockWindow.setContentSize).toHaveBeenCalledWith(1366, 768);
-		});
-	});
 
 	describe(`getLinkMenuItems`, () => {
 		const handlers = {
@@ -211,7 +159,6 @@ describe(`MenuService Helpers`, () => {
 			const params = {
 				sessionAge: `1m`,
 				cacheSize: 100,
-				viewportItems: [],
 				linkItems: []
 			};
 			const context = menuService.getContext(mockCtx, params);

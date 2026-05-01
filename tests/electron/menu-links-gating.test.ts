@@ -26,7 +26,6 @@ const minimalContext: MenuContext = {
 	clearCache: noop,
 	openCacheFolder: noop,
 	refreshMenu: noop,
-	viewportItems: [],
 	linkItems: [],
 	updateStatus: `idle`,
 	onCheckForUpdates: noop,

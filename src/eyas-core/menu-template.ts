@@ -82,16 +82,13 @@ function createBrowserSubmenu(context: MenuContext): MenuTemplate {
 	const {
 		isConfigLoaded = false,
 		isInitializing = false,
-		copyUrl,
-		viewportItems
+		copyUrl
 	} = context;
 
 	const enabled = isConfigLoaded && !isInitializing;
 
 	return [
-		{ label: `📋 &Copy URL`, click: copyUrl, enabled },
-		{ type: `separator` },
-		{ label: `📐 &Viewport`, submenu: viewportItems }
+		{ label: `📋 &Copy URL`, click: copyUrl, enabled }
 	];
 }
 

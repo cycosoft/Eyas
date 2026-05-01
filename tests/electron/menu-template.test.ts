@@ -23,7 +23,6 @@ const minimalContext: MenuContext = {
 	clearCache: noop,
 	openCacheFolder: noop,
 	refreshMenu: noop,
-	viewportItems: [{ label: `Desktop (1366 x 768)`, click: noop }],
 	linkItems: [],
 	updateStatus: `idle`,
 	onCheckForUpdates: noop,
@@ -246,15 +245,6 @@ describe(`Browser menu`, () => {
 		expect(item).toBeUndefined();
 	});
 
-	test(`Browser submenu contains a Viewport submenu`, () => {
-		const ctx = { ...minimalContext, viewportItems: [{ label: `Desktop (1366 x 768)`, click: noop }] };
-		const template = buildMenuTemplate(ctx as MenuContext);
-		const browserMenu = template[2] as MenuItemConstructorOptions;
-		const viewportItem = (browserMenu.submenu as MenuItemConstructorOptions[]).find(i => i.label && i.label.toLowerCase().includes(`viewport`));
-		if (!viewportItem) throw new Error();
-		expect(viewportItem).toBeDefined();
-		expect(Array.isArray(viewportItem.submenu)).toBe(true);
-	});
 
 	test(`when isInitializing is true, Browser menu is disabled`, () => {
 		const ctx = { ...minimalContext, isInitializing: true };

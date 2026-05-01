@@ -1,11 +1,13 @@
 import eyasLogo from '@/assets/eyas-logo.svg';
+import { reactive } from 'vue';
 import type { NavGroup, NavItem, MnemonicPart, BrowserControl, NavItemValue, ActionHandler } from '@registry/components.js';
-import type { BrowserAction, IsActive, ChannelName } from '@registry/primitives.js';
+import type { BrowserAction, IsActive, ChannelName, ViewportWidth, ViewportHeight } from '@registry/primitives.js';
+import type { Viewport } from '@registry/core.js';
 
 /**
  * The navigation groups displayed in the application header.
  */
-export const groups: NavGroup[] = [
+export const groups = reactive<NavGroup[]>([
 	{
 		name: `File`,
 		logo: eyasLogo,
@@ -32,7 +34,7 @@ export const groups: NavGroup[] = [
 			{ title: `Developer Tools (Test)`, value: `devtools-test`, icon: `mdi-flask`, shortcut: `F12`, mnemonic: `D` }
 		]
 	}
-];
+]);
 
 /**
  * The browser controls displayed in the application header.
@@ -152,6 +154,12 @@ export function handleBrowserControlClick(action: BrowserAction): void {
  * @param value The value of the clicked item.
  */
 export function handleNavItemClick(value: NavItemValue): void {
+	if (value.startsWith(`set-viewport:`)) {
+		const [, width, height] = value.split(`:`);
+		setViewport(Number(width), Number(height));
+		return;
+	}
+
 	const actions: Record<NavItemValue, ActionHandler> = {
 		about: () => { window.eyas?.send(`show-about` as ChannelName); },
 		'test-server': () => { window.eyas?.send(`show-test-server-setup` as ChannelName); },
@@ -164,4 +172,68 @@ export function handleNavItemClick(value: NavItemValue): void {
 	};
 
 	actions[value]?.();
+}
+
+/**
+ * Updates the viewport submenu items based on the provided viewports.
+ * @param viewports The list of available viewports.
+ * @param currentWidth The current viewport width.
+ * @param currentHeight The current viewport height.
+ */
+export function updateViewports(viewports: Viewport[], currentWidth: ViewportWidth, currentHeight: ViewportHeight): void {
+	const toolsGroup = groups.find(g => g.name === `Tools`);
+	if (!toolsGroup) { return; }
+
+	const viewportItem = toolsGroup.submenu.find(i => i.value === `viewport`);
+	if (!viewportItem) { return; }
+
+	const submenu: NavItem[] = [];
+
+	// Add "Current" item if it doesn't match any in the list (with some tolerance)
+	const tolerance = 2;
+	const isMatched = viewports.some(v => Math.abs(v.width - currentWidth) <= tolerance && Math.abs(v.height - currentHeight) <= tolerance);
+
+	if (!isMatched) {
+		submenu.push({
+			title: `🔘 Current (${currentWidth} x ${currentHeight})`,
+			value: `set-viewport:${currentWidth}:${currentHeight}`,
+			icon: `mdi-crop-free`,
+			click: () => setViewport(currentWidth, currentHeight)
+		});
+		submenu.push({ title: `divider`, value: `viewport-divider-current`, divider: true });
+	}
+
+	// Add all viewports
+	viewports.forEach((v, index) => {
+		const isSelected = Math.abs(v.width - currentWidth) <= tolerance && Math.abs(v.height - currentHeight) <= tolerance;
+		const prefix = isSelected ? `🔘 ` : ``;
+
+		// Add separator before defaults if they aren't the first items
+		if (v.isDefault && index > 0 && !viewports[index - 1].isDefault) {
+			submenu.push({ title: `divider`, value: `viewport-divider-${index}`, divider: true });
+		}
+
+		submenu.push({
+			title: `${prefix}${v.label} (${v.width} x ${v.height})`,
+			value: `set-viewport:${v.width}:${v.height}`,
+			icon: v.isDefault ? `mdi-devices` : `mdi-cellphone-link`,
+			click: () => setViewport(v.width, v.height)
+		});
+	});
+
+	// Pre-calculate mnemonic parts for the new submenu items
+	for (const item of submenu) {
+		item.mnemonicParts = getMnemonicParts(item);
+	}
+
+	viewportItem.submenu = submenu;
+}
+
+/**
+ * Sets the application viewport to the specified dimensions.
+ * @param width The target width.
+ * @param height The target height.
+ */
+export function setViewport(width: ViewportWidth, height: ViewportHeight): void {
+	window.eyas?.send(`set-viewport` as ChannelName, [width, height]);
 }

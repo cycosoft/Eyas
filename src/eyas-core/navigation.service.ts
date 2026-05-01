@@ -3,6 +3,7 @@ import semver from 'semver';
 import { parseURL } from '@scripts/parse-url.js';
 import { substituteEnvVariables, hasRemainingVariables } from '@scripts/variable-utils.js';
 import * as settingsService from './settings-service.js';
+import { EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { DomainUrl, IsActive } from '@registry/primitives.js';
 import type { EnvironmentSettings } from '@registry/settings.js';
@@ -206,7 +207,10 @@ function initFreshTestViewports(ctx: CoreContext): void {
 	// reset the current viewport to the first in the list
 	ctx.$currentViewport[0] = ctx.$allViewports[0].width;
 	ctx.$currentViewport[1] = ctx.$allViewports[0].height;
-	ctx.$appWindow?.setContentSize(ctx.$currentViewport[0], ctx.$currentViewport[1]);
+	ctx.$appWindow?.setContentSize(ctx.$currentViewport[0], ctx.$currentViewport[1] + EYAS_HEADER_HEIGHT);
+
+	// notify the UI of the new viewports
+	updateNavigationState(ctx);
 }
 
 /**
@@ -267,7 +271,9 @@ function updateNavigationState(ctx: CoreContext): void {
 	// push navigation state to the UI layer
 	ctx.$eyasLayer?.webContents.send(`navigation-state-updated`, {
 		canGoBack: webContents.navigationHistory.canGoBack(),
-		canGoForward: webContents.navigationHistory.canGoForward()
+		canGoForward: webContents.navigationHistory.canGoForward(),
+		viewports: ctx.$allViewports,
+		currentViewport: ctx.$currentViewport
 	});
 }
 

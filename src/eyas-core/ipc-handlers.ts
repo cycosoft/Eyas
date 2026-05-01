@@ -4,7 +4,7 @@ import { parseURL } from '@scripts/parse-url.js';
 import * as settingsService from './settings-service.js';
 import * as testServer from './test-server/test-server.js';
 import * as testServerTimeout from './test-server/test-server-timeout.js';
-import { TEST_SERVER_SESSION_DURATION_MS } from '@scripts/constants.js';
+import { TEST_SERVER_SESSION_DURATION_MS, EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
 import { MP_EVENTS } from './metrics-events.js';
 
 import type {
@@ -107,6 +107,11 @@ function initAppIpcListeners(ctx: CoreContext): void {
 		if (webContents && !webContents.isDestroyed()) {
 			webContents.toggleDevTools();
 		}
+	});
+
+	// viewport management
+	ipcMain.on(`set-viewport`, (_event, [width, height]: [number, number]) => {
+		ctx.$appWindow?.setContentSize(width, height + EYAS_HEADER_HEIGHT);
 	});
 }
 

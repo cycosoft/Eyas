@@ -96,6 +96,51 @@
 							{{ item.shortcut }}
 						</span>
 					</div>
+
+					<v-menu
+						v-if="item.submenu"
+						activator="parent"
+						location="end top"
+						:offset="12"
+						open-on-hover
+						submenu
+					>
+						<v-list
+							class="py-1"
+							density="compact"
+							rounded="lg"
+							border
+						>
+							<template v-for="sub in item.submenu" :key="sub.value">
+								<v-divider v-if="sub.divider" class="my-1 mx-2" />
+								<v-list-item
+									v-else
+									slim
+									:value="sub.value"
+									:prepend-icon="sub.icon"
+									:color="sub.color"
+									:class="{ [`text-${sub.color}`]: sub.color }"
+									data-qa="btn-nav-item"
+									@click="onItemClick(sub)"
+								>
+									<div class="d-flex align-center w-100">
+										<span class="flex-grow-1">
+											<template v-for="(part, i) in sub.mnemonicParts" :key="i">
+												<u v-if="part.isMnemonic">{{ part.text }}</u>
+												<template v-else>{{ part.text }}</template>
+											</template>
+										</span>
+										<span
+											v-if="sub.shortcut"
+											class="text-disabled ml-4 menu-shortcut"
+										>
+											{{ sub.shortcut }}
+										</span>
+									</div>
+								</v-list-item>
+							</template>
+						</v-list>
+					</v-menu>
 				</v-list-item>
 			</template>
 		</v-list>
@@ -117,7 +162,8 @@ import {
 	goForward,
 	reload,
 	goHome,
-	handleNavItemClick
+	handleNavItemClick,
+	updateViewports
 } from './AppHeader.logic.js';
 
 const menu = ref(false);
@@ -158,6 +204,10 @@ onMounted(() => {
 		const payload = data as NavigationStatePayload;
 		canGoBack.value = payload.canGoBack;
 		canGoForward.value = payload.canGoForward;
+
+		if (payload.viewports && payload.currentViewport) {
+			updateViewports(payload.viewports, payload.currentViewport[0], payload.currentViewport[1]);
+		}
 	});
 });
 
@@ -190,7 +240,11 @@ function onMouseEnter(event: NavActivateEvent, group: NavGroup): void {
 }
 
 function onItemClick(item: NavItem): void {
-	handleNavItemClick(item.value);
+	if (item.click) {
+		item.click();
+	} else {
+		handleNavItemClick(item.value);
+	}
 	menu.value = false;
 }
 
