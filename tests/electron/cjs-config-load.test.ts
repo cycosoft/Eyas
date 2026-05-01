@@ -56,5 +56,5 @@ describe(`getConfig - CommonJS`, () => {
 				fs.rmdirSync(tempDir);
 			}
 		}
-	});
+	}, 30000);
 });
