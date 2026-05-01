@@ -76,6 +76,7 @@ export const windowService: WindowService = {
 		splashScreen.webContents.loadURL(splashUrl);
 
 		splashScreen.webContents.on(`did-finish-load`, () => {
+			if (splashScreen.isDestroyed()) { return; }
 			splashScreen.center();
 			splashScreen.show();
 		});
@@ -125,6 +126,7 @@ export const windowService: WindowService = {
 		layer.webContents.loadURL(url);
 
 		layer.webContents.on(`did-finish-load`, async () => {
+			if (layer.webContents.isDestroyed()) { return; }
 			await ctx.startAFreshTest();
 			ctx.checkStartupSequence();
 
@@ -133,6 +135,7 @@ export const windowService: WindowService = {
 			const splashTimeout = splashDelta > splashMinTime ? 0 : splashMinTime - splashDelta;
 
 			setTimeout(() => {
+				if (ctx.$appWindow?.isDestroyed() || splashScreen.isDestroyed()) { return; }
 				ctx.$appWindow?.show();
 				windowService.handleResize(ctx);
 				splashScreen.destroy();
@@ -158,6 +161,7 @@ export const windowService: WindowService = {
 		const testWebContents = ctx.$testLayer?.webContents || $appWindow.webContents;
 
 		testWebContents.on(`did-finish-load`, () => {
+			if (testWebContents.isDestroyed() || $appWindow.isDestroyed()) { return; }
 			$appWindow.setTitle(ctx.getAppTitle(testWebContents.getTitle()));
 			ctx.setMenu();
 		});
@@ -177,11 +181,13 @@ export const windowService: WindowService = {
 
 		$appWindow.webContents.on(`did-create-window`, win => {
 			win.on(`page-title-updated`, (evt, title) => {
+				if (win.isDestroyed()) { return; }
 				evt.preventDefault();
 				win.setTitle(ctx.getAppTitle(title));
 			});
 
 			win.webContents.on(`did-finish-load`, () => {
+				if (win.isDestroyed() || win.webContents.isDestroyed()) { return; }
 				win.setTitle(ctx.getAppTitle(win.webContents.getTitle()));
 			});
 		});
@@ -193,7 +199,7 @@ export const windowService: WindowService = {
 	 */
 	handleResize(ctx: CoreContext): void {
 		const { $appWindow, $eyasLayer, $testLayer, $currentViewport } = ctx;
-		if (!$appWindow) { return; }
+		if (!$appWindow || $appWindow.isDestroyed()) { return; }
 
 		const [newWidth, newHeight] = $appWindow.getContentSize();
 
@@ -202,7 +208,7 @@ export const windowService: WindowService = {
 		$currentViewport[1] = newHeight;
 
 		// Resize the UI layer if it exists
-		if ($eyasLayer) {
+		if ($eyasLayer && !$eyasLayer.webContents.isDestroyed()) {
 			// determine if the UI layer is currently active (full screen) or passive (header only)
 			// by comparing its current height to the known header height constant.
 			const currentLayerHeight = $eyasLayer.getBounds().height;
@@ -213,7 +219,7 @@ export const windowService: WindowService = {
 		}
 
 		// Resize the test content layer if it exists
-		if ($testLayer) {
+		if ($testLayer && !$testLayer.webContents.isDestroyed()) {
 			$testLayer.setBounds({
 				x: 0,
 				y: EYAS_HEADER_HEIGHT,
@@ -246,7 +252,10 @@ export const windowService: WindowService = {
 		let splashVisible = performance.now();
 
 		// when the splash screen content has loaded, set a new more specific time
-		splashScreen.webContents.on(`did-finish-load`, () => { splashVisible = performance.now(); });
+		splashScreen.webContents.on(`did-finish-load`, () => {
+			if (splashScreen.isDestroyed()) { return; }
+			splashVisible = performance.now();
+		});
 
 		// load a default blank page into the test layer so the background doesn't show as black
 		const blankPage = `data:text/html,` + encodeURIComponent(`<html><body></body></html>`);

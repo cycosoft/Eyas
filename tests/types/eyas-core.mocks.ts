@@ -13,6 +13,7 @@ export type CoreMockLayer = {
 	getBounds: () => Rectangle;
 	setBackgroundColor: (color: string) => void;
 	setBounds: (bounds: Rectangle) => void;
+	isDestroyed: () => boolean;
 	webContents: CoreMockWebContents;
 };
 
@@ -41,6 +42,7 @@ type CoreMockTestLayerWebContents = {
 	loadURL: (url: DomainUrl) => void;
 	on: (event: string, cb: (...args: unknown[]) => void) => void;
 	reloadIgnoringCache: () => void;
+	isDestroyed: () => boolean;
 	session: CoreMockTestLayerSession;
 	toggleDevTools: () => void;
 };
@@ -51,6 +53,7 @@ type CoreMockWebContents = {
 	isFocused: () => boolean;
 	loadURL: (url: DomainUrl) => void;
 	on: (event: string, cb: (...args: unknown[]) => void) => void;
+	isDestroyed: () => boolean;
 	send: (channel: ChannelName, ...args: unknown[]) => void;
 };
 
@@ -66,6 +69,7 @@ export type CoreMockWindow = {
 	contentView: CoreMockContentView;
 	getContentSize: () => ViewportSize;
 	on: (event: string, cb: (...args: unknown[]) => void) => void;
+	isDestroyed: () => boolean;
 	webContents: CoreMockWindowWebContents;
 };
 

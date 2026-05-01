@@ -17,14 +17,16 @@ export const menuService: MenuService = {
 	 */
 	refresh: async (ctx: CoreContext): Promise<void> => {
 		const { $appWindow, $config } = ctx;
-		if (!$appWindow || !$config) { return; }
+		if (!$appWindow || $appWindow.isDestroyed() || !$config) { return; }
 
 		const sessionAge = ctx.getSessionAge();
 		let cacheSize = 0;
 		// Prefer the test layer session since it shares the partition with test content
 		const webContents = ctx.$testLayer?.webContents || $appWindow.webContents;
 		try {
-			cacheSize = await webContents.session.getCacheSize();
+			if (webContents && !webContents.isDestroyed()) {
+				cacheSize = await webContents.session.getCacheSize();
+			}
 		} catch {
 			// ignore
 		}
@@ -53,7 +55,7 @@ export const menuService: MenuService = {
 	 */
 	getViewportMenuItems: (ctx: CoreContext): MenuTemplate => {
 		const { $appWindow, $allViewports, $currentViewport } = ctx;
-		if (!$appWindow) { return []; }
+		if (!$appWindow || $appWindow.isDestroyed()) { return []; }
 
 		const tolerance = 2;
 		const viewportItems: MenuTemplate = [];
@@ -159,22 +161,22 @@ export const menuService: MenuService = {
 		navigateHome: (): void => ctx.navigate(),
 		reload: (): void => {
 			const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
-			if (ctx.$isInitializing || !webContents) return;
+			if (ctx.$isInitializing || !webContents || webContents.isDestroyed()) return;
 			webContents.reloadIgnoringCache();
 		},
 		back: (): void => {
 			const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
-			if (ctx.$isInitializing || !webContents) return;
+			if (ctx.$isInitializing || !webContents || webContents.isDestroyed()) return;
 			webContents.goBack();
 		},
 		forward: (): void => {
 			const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
-			if (ctx.$isInitializing || !webContents) return;
+			if (ctx.$isInitializing || !webContents || webContents.isDestroyed()) return;
 			webContents.goForward();
 		},
 		copyUrl: (): void => {
 			const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
-			if (ctx.$isInitializing || !webContents) return;
+			if (ctx.$isInitializing || !webContents || webContents.isDestroyed()) return;
 			clipboard.writeText(webContents.getURL());
 		}
 	}),
@@ -193,7 +195,7 @@ export const menuService: MenuService = {
 		},
 		clearCache: (): void => { ctx.clearCache(); },
 		openCacheFolder: (): void => {
-			if (!ctx.$appWindow) { return; }
+			if (!ctx.$appWindow || ctx.$appWindow.isDestroyed()) { return; }
 			const storagePath = ctx.$appWindow.webContents.session.getStoragePath();
 			if (storagePath) {
 				shell.openPath(storagePath);
@@ -209,7 +211,16 @@ export const menuService: MenuService = {
 		onStopTestServer: (): Promise<void> => ctx.stopTestServer(),
 		testServerHttpsEnabled: ctx.$testServerHttpsEnabled,
 		onToggleTestServerHttps: (): void => ctx.onToggleTestServerHttps(),
-		toggleTestDevTools: (): void => { (ctx.$testLayer || ctx.$appWindow)?.webContents.toggleDevTools(); },
-		openUiDevTools: (): void => ctx.$eyasLayer?.webContents.openDevTools({ mode: `detach` })
+		toggleTestDevTools: (): void => {
+			const webContents = (ctx.$testLayer || ctx.$appWindow)?.webContents;
+			if (webContents && !webContents.isDestroyed()) {
+				webContents.toggleDevTools();
+			}
+		},
+		openUiDevTools: (): void => {
+			if (ctx.$eyasLayer && !ctx.$eyasLayer.webContents.isDestroyed()) {
+				ctx.$eyasLayer.webContents.openDevTools({ mode: `detach` });
+			}
+		}
 	})
 };

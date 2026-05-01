@@ -44,7 +44,8 @@ describe(`MenuService Helpers`, () => {
 
 	describe(`getViewportMenuItems`, () => {
 		const mockWindow = {
-			setContentSize: vi.fn()
+			setContentSize: vi.fn(),
+			isDestroyed: vi.fn().mockReturnValue(false)
 		} as unknown as BrowserWindow;
 
 		const allViewports = [
@@ -139,8 +140,10 @@ describe(`MenuService Helpers`, () => {
 
 	describe(`getContext and handlers`, () => {
 		const mockWindow = {
+			isDestroyed: vi.fn().mockReturnValue(false),
 			webContents: {
 				getStoragePath: vi.fn(() => `/mock/path`),
+				isDestroyed: vi.fn().mockReturnValue(false),
 				session: {
 					getStoragePath: vi.fn(() => `/mock/path`),
 					getCacheSize: vi.fn(async () => 100)
@@ -149,12 +152,14 @@ describe(`MenuService Helpers`, () => {
 		} as unknown as BrowserWindow;
 
 		const mockTestLayer = {
+			isDestroyed: vi.fn().mockReturnValue(false),
 			webContents: {
 				reloadIgnoringCache: vi.fn(),
 				goBack: vi.fn(),
 				goForward: vi.fn(),
 				getURL: vi.fn(() => `https://current.url`),
 				toggleDevTools: vi.fn(),
+				isDestroyed: vi.fn().mockReturnValue(false),
 				session: { getCacheSize: vi.fn(async () => 100) }
 			}
 		};
@@ -180,8 +185,10 @@ describe(`MenuService Helpers`, () => {
 			$appWindow: mockWindow,
 			$testLayer: mockTestLayer,
 			$eyasLayer: {
+				isDestroyed: vi.fn().mockReturnValue(false),
 				webContents: {
-					openDevTools: vi.fn()
+					openDevTools: vi.fn(),
+					isDestroyed: vi.fn().mockReturnValue(false)
 				}
 			},
 			$allViewports: [

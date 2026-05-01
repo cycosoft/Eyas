@@ -14,18 +14,22 @@ vi.mock(`electron`, () => ({
 		show: vi.fn(),
 		destroy: vi.fn(),
 		setTitle: vi.fn(),
+		isDestroyed: vi.fn().mockReturnValue(false),
 		on: vi.fn(),
 		webContents: {
 			on: vi.fn(),
+			isDestroyed: vi.fn().mockReturnValue(false),
 			getTitle: vi.fn().mockReturnValue(`Test Title`)
 		}
 	})),
 	WebContentsView: vi.fn().mockImplementation(() => ({
 		setBounds: vi.fn(),
 		setBackgroundColor: vi.fn(),
+		isDestroyed: vi.fn().mockReturnValue(false),
 		webContents: {
 			loadURL: vi.fn(),
 			on: vi.fn(),
+			isDestroyed: vi.fn().mockReturnValue(false),
 			getTitle: vi.fn().mockReturnValue(`Test Title`)
 		}
 	}))
@@ -46,11 +50,13 @@ describe(`window.service.ts unit tests`, () => {
 			setBounds: vi.fn(),
 			setBackgroundColor: vi.fn(),
 			getBounds: vi.fn().mockReturnValue({ x: 0, y: 0, width: 800, height: 600 } as Rectangle),
+			isDestroyed: vi.fn().mockReturnValue(false),
 			webContents: {
 				loadURL: vi.fn(),
 				on: vi.fn(),
 				send: vi.fn(),
 				focus: vi.fn(),
+				isDestroyed: vi.fn().mockReturnValue(false),
 				isFocused: vi.fn().mockReturnValue(true)
 			}
 		};
@@ -66,6 +72,7 @@ describe(`window.service.ts unit tests`, () => {
 				goBack: vi.fn(),
 				goForward: vi.fn(),
 				toggleDevTools: vi.fn(),
+				isDestroyed: vi.fn().mockReturnValue(false),
 				session: { getCacheSize: vi.fn(async () => 0) }
 			}
 		};
@@ -73,6 +80,7 @@ describe(`window.service.ts unit tests`, () => {
 		mockWindow = {
 			getContentSize: vi.fn().mockReturnValue([800, 600]),
 			on: vi.fn(),
+			isDestroyed: vi.fn().mockReturnValue(false),
 			webContents: {
 				on: vi.fn(),
 				session: {

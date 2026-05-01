@@ -2,13 +2,19 @@ import { shell, dialog } from 'electron';
 import semver from 'semver';
 import { parseURL } from '@scripts/parse-url.js';
 import { substituteEnvVariables, hasRemainingVariables } from '@scripts/variable-utils.js';
-import { getAppTitle, sanitizePageTitle } from '@scripts/get-app-title.js';
-import { testServerService } from './test-server.service.js';
 import * as settingsService from './settings-service.js';
 import type { CoreContext } from '@registry/eyas-core.js';
-import type { DomainUrl, AppTitle, HashString, IsActive } from '@registry/primitives.js';
-import type { PreventableEvent } from '@registry/core.js';
+import type { DomainUrl, IsActive } from '@registry/primitives.js';
 import type { EnvironmentSettings } from '@registry/settings.js';
+import {
+	isAppClosed,
+	shouldOpenExternal,
+	loadUrlInTestLayer,
+	getAppTitleWithContext,
+	onTitleUpdate,
+	hashDomains
+} from './navigation.logic.js';
+import { testServerService } from './test-server.service.js';
 
 /**
  * Navigates the application window to the specified path or the default test domain.
@@ -17,36 +23,16 @@ import type { EnvironmentSettings } from '@registry/settings.js';
  * @param openInBrowser Whether to open the path in an external browser.
  */
 function navigate(ctx: CoreContext, path?: DomainUrl, openInBrowser?: IsActive, closeUi: IsActive = true): void {
-	if (!ctx.$appWindow && !ctx.$testLayer) { return; }
-
-	// setup
-	let runningTestSource = false;
+	if (isAppClosed(ctx)) { return; }
 
 	// if the path wasn't provided (default to local test source)
-	if (!path) {
-		// store that we're running the local test source
-		runningTestSource = true;
+	const runningTestSource = !path;
+	const targetPath = path || ctx.$testDomain;
 
-		// if there's a custom domain, go there OR default to the local test source
-		path = ctx.$testDomain;
-	}
-
-	if (
-		// if requested to open in the browser AND
-		openInBrowser &&
-		(
-			// not running the local test OR
-			!runningTestSource ||
-			// the test server is running AND we're running the local test
-			(testServerService.getState() && runningTestSource)
-		)
-	) {
-		// open the requested url in the default browser
-		shell.openExternal(path);
+	if (shouldOpenExternal(openInBrowser, runningTestSource)) {
+		shell.openExternal(targetPath);
 	} else {
-		// load in the test layer (child view) or fall back to the app window
-		const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
-		webContents?.loadURL(path);
+		loadUrlInTestLayer(ctx, targetPath);
 	}
 
 	// ensure the UI is closed so the user can interact with the content
@@ -66,9 +52,9 @@ function navigateVariable(ctx: CoreContext, url: DomainUrl): void {
 	// substitute all Eyas-managed env variables (_env.url, _env.key, testdomain)
 	const output = substituteEnvVariables(url, env);
 
-	// if substitution returned null, the env url is required but not yet set
+	// if the substitution returned null, the env url is required but not yet set
 	if (output === null) {
-		if (!ctx.$appWindow) { return; }
+		if (!ctx.$appWindow || ctx.$appWindow.isDestroyed()) { return; }
 
 		// alert the user that they need to select an environment first
 		dialog.showMessageBoxSync(ctx.$appWindow, {
@@ -87,7 +73,7 @@ function navigateVariable(ctx: CoreContext, url: DomainUrl): void {
 		ctx.uiEvent(`show-variables-modal`, output);
 	} else {
 		// just pass through to navigate
-		navigate(ctx, parseURL(output)?.toString());
+		navigate(ctx, parseURL(output)?.toString() as DomainUrl);
 	}
 }
 
@@ -235,53 +221,6 @@ function setupFreshTestSource(ctx: CoreContext): void {
 		ctx.setTestDomain(sourceOnWeb.toString() as DomainUrl);
 		ctx.setEnvKey(null); // source URLs have no key
 	}
-}
-
-/**
- * Calculates the application title with current page and environment context.
- * @param ctx The core context.
- * @param rawPageTitle The raw page title from the browser.
- * @returns The formatted application title.
- */
-function getAppTitleWithContext(ctx: CoreContext, rawPageTitle?: AppTitle): AppTitle {
-	// prefer the test layer's webContents since it holds the actual test page URL
-	const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
-	const rawUrl = webContents ? webContents.getURL() : null;
-
-	// ignore data: URLs in the address bar
-	const url = (rawUrl?.startsWith(`data:`) ? undefined : rawUrl) || undefined;
-
-	// Sanitize the page title against the raw URL (before data: nulling)
-	const pageTitle = sanitizePageTitle(rawPageTitle, rawUrl || ``);
-
-	// Return the built title
-	return getAppTitle(ctx.$config?.title || ``, ctx.$config?.version || ``, url, pageTitle);
-}
-
-/**
- * Handles the page title update event from the browser.
- * @param ctx The core context.
- * @param evt The preventable event.
- * @param title The new page title.
- */
-function onTitleUpdate(ctx: CoreContext, evt: PreventableEvent, title: AppTitle): void {
-	// Disregard the default behavior
-	evt.preventDefault();
-
-	// update the title, passing the new document.title
-	ctx.$appWindow?.setTitle(getAppTitleWithContext(ctx, title));
-}
-
-/**
- * djb2 hash of a domains array — detects any structural change.
- * @param domains The domains array.
- * @returns Unsigned 32-bit hex string.
- */
-function hashDomains(domains: unknown[]): HashString {
-	const str = JSON.stringify(domains);
-	let h = 5381;
-	for (let i = 0; i < str.length; i++) { h = (h * 33) ^ str.charCodeAt(i); }
-	return (h >>> 0).toString(16);
 }
 
 export const navigationService = {

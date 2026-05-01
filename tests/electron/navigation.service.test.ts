@@ -55,16 +55,20 @@ describe(`navigation.service.ts unit tests`, () => {
 			$appWindow: {
 				setTitle: vi.fn(),
 				setContentSize: vi.fn(),
+				isDestroyed: vi.fn().mockReturnValue(false),
 				webContents: {
 					getURL: vi.fn().mockReturnValue(`https://test.com`),
-					getTitle: vi.fn().mockReturnValue(`Page Title`)
+					getTitle: vi.fn().mockReturnValue(`Page Title`),
+					isDestroyed: vi.fn().mockReturnValue(false)
 				}
 			},
 			$testLayer: {
+				isDestroyed: vi.fn().mockReturnValue(false),
 				webContents: {
 					loadURL: vi.fn(),
 					getURL: vi.fn().mockReturnValue(`https://test.com`),
-					getTitle: vi.fn().mockReturnValue(`Page Title`)
+					getTitle: vi.fn().mockReturnValue(`Page Title`),
+					isDestroyed: vi.fn().mockReturnValue(false)
 				}
 			},
 			$testDomain: `https://default.com` as DomainUrl,

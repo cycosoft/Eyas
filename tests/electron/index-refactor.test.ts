@@ -24,6 +24,7 @@ vi.mock(`electron`, () => ({
 				loadURL: vi.fn(),
 				getURL: vi.fn().mockReturnValue(`https://test.com`),
 				getTitle: vi.fn().mockReturnValue(`Test Title`),
+				isDestroyed: vi.fn().mockReturnValue(false),
 				session: {
 					webRequest: {
 						onBeforeRequest: vi.fn()
@@ -41,6 +42,7 @@ vi.mock(`electron`, () => ({
 			setContentSize: vi.fn(),
 			getContentSize: vi.fn().mockReturnValue([1366, 768]),
 			setTitle: vi.fn(),
+			isDestroyed: vi.fn().mockReturnValue(false),
 			removeListener: vi.fn()
 		};
 	}),
@@ -51,9 +53,11 @@ vi.mock(`electron`, () => ({
 				loadURL: vi.fn(),
 				send: vi.fn(),
 				focus: vi.fn(),
+				isDestroyed: vi.fn().mockReturnValue(false),
 				isFocused: vi.fn().mockReturnValue(true)
 			},
 			setBounds: vi.fn(),
+			isDestroyed: vi.fn().mockReturnValue(false),
 			getBounds: vi.fn().mockReturnValue({ width: 1366, height: 768 })
 		};
 	}),
@@ -64,9 +68,11 @@ vi.mock(`electron`, () => ({
 				loadURL: vi.fn(),
 				send: vi.fn(),
 				focus: vi.fn(),
+				isDestroyed: vi.fn().mockReturnValue(false),
 				isFocused: vi.fn().mockReturnValue(true)
 			},
 			setBounds: vi.fn(),
+			isDestroyed: vi.fn().mockReturnValue(false),
 			getBounds: vi.fn().mockReturnValue({ width: 1366, height: 768 })
 		};
 	}),
@@ -190,10 +196,15 @@ describe(`index.ts refactoring unit tests`, () => {
 	test(`handleResize should update viewport and bounds`, () => {
 		const mockLayer = {
 			getBounds: vi.fn().mockReturnValue({ width: 800, height: 600 }),
-			setBounds: vi.fn()
+			setBounds: vi.fn(),
+			isDestroyed: vi.fn().mockReturnValue(false),
+			webContents: { isDestroyed: vi.fn().mockReturnValue(false) }
 		};
 		const ctx = {
-			$appWindow: { getContentSize: vi.fn().mockReturnValue([1024, 768]) },
+			$appWindow: {
+				getContentSize: vi.fn().mockReturnValue([1024, 768]),
+				isDestroyed: vi.fn().mockReturnValue(false)
+			},
 			$eyasLayer: mockLayer,
 			$currentViewport: [800, 600],
 			setMenu: vi.fn()
@@ -209,10 +220,15 @@ describe(`index.ts refactoring unit tests`, () => {
 	test(`handleResize should ALWAYS update bounds even if current layer is 0x0`, () => {
 		const mockLayer = {
 			getBounds: vi.fn().mockReturnValue({ width: 0, height: 0 }),
-			setBounds: vi.fn()
+			setBounds: vi.fn(),
+			isDestroyed: vi.fn().mockReturnValue(false),
+			webContents: { isDestroyed: vi.fn().mockReturnValue(false) }
 		};
 		const ctx = {
-			$appWindow: { getContentSize: vi.fn().mockReturnValue([1024, 768]) },
+			$appWindow: {
+				getContentSize: vi.fn().mockReturnValue([1024, 768]),
+				isDestroyed: vi.fn().mockReturnValue(false)
+			},
 			$eyasLayer: mockLayer,
 			$currentViewport: [800, 600],
 			setMenu: vi.fn()
