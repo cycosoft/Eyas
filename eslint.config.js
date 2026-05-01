@@ -15,7 +15,8 @@ export default tseslint.config(
 			`.build/**`,
 			`.pre-build/**`,
 			`.test-data/**`,
-			`playwright-report/**`
+			`playwright-report/**`,
+			`tests/tmp/**`
 		]
 	},
 

@@ -14,6 +14,7 @@ The type registry is the single source of truth for all data structures in Eyas.
 - **Domain-Based**: Group types by domain (e.g., `menu.ts`, `test-server.ts`).
 - **Primitives**: Base semantic aliases reside in `primitives.ts`.
 - **Component Registry**: Interface-specific structures reside in `components.ts`.
+- **Test-Specific Types**: Types used exclusively for testing (e.g., mocks, stubs) must reside in the `tests/types/` directory to ensure complete physical isolation from production definitions.
 
 ## Rules & Constraints
 - **Registry-First**: Before defining an inline object in a component or function, check if a type already exists in `src/types/`. If not, create it.

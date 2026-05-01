@@ -2,7 +2,7 @@ import type { BrowserWindow, WebContentsView } from 'electron';
 import type { ValidatedConfig } from './config.js';
 import type { TestServerOptions } from './test-server.js';
 import type { IsActive, IsPending, DomainUrl, MPEventName, ChannelName, TimestampMS, AppVersion, EnvironmentKey, AppTitle, FormattedDuration, RetryCount, UpdateStatus, MetadataRecord } from './primitives.js';
-import type { PreventableEvent, Viewport, ViewportSize, StartupModal, ConfigToLoad, Rectangle } from './core.js';
+import type { PreventableEvent, Viewport, ViewportSize, StartupModal, ConfigToLoad } from './core.js';
 import type { FilePath } from './primitives.js';
 import type { MenuTemplate, LinkMenuHandlers, MenuContextParams, MenuContext } from './menu.js';
 
@@ -158,77 +158,4 @@ export type AppService = {
 	handleReady: (ctx: CoreContext) => Promise<void>;
 	checkExpiration: (ctx: CoreContext) => void;
 	trackEvent: (ctx: CoreContext, event: MPEventName, extraData?: MetadataRecord) => Promise<void>;
-};
-/** Mock of WebContents for testing (used by $eyasLayer) */
-type CoreMockWebContents = {
-	loadURL: (url: DomainUrl) => void;
-	on: (event: string, cb: (...args: unknown[]) => void) => void;
-	send: (channel: ChannelName, ...args: unknown[]) => void;
-	focus: () => void;
-	isFocused: () => boolean;
-};
-
-/** Mock of session for test layer */
-type CoreMockTestLayerSession = {
-	getCacheSize: () => Promise<number>;
-};
-
-/** Mock of WebContents for the test layer (broader API surface) */
-type CoreMockTestLayerWebContents = {
-	loadURL: (url: DomainUrl) => void;
-	on: (event: string, cb: (...args: unknown[]) => void) => void;
-	getURL: () => string;
-	getTitle: () => string;
-	reloadIgnoringCache: () => void;
-	goBack: () => void;
-	goForward: () => void;
-	toggleDevTools: () => void;
-	session: CoreMockTestLayerSession;
-};
-
-/** Mock of a WebContentsView used as the test content layer */
-export type CoreMockTestLayer = {
-	setBounds: (bounds: Rectangle) => void;
-	webContents: CoreMockTestLayerWebContents;
-};
-
-/** Mock of WebRequest for testing */
-type CoreMockWebRequest = {
-	onBeforeRequest: (...args: unknown[]) => void;
-};
-
-/** Mock of Session for testing */
-type CoreMockSession = {
-	webRequest: CoreMockWebRequest;
-};
-
-/** Mock of BrowserWindow WebContents for testing */
-type CoreMockWindowWebContents = {
-	on: (event: string, cb: (...args: unknown[]) => void) => void;
-	session: CoreMockSession;
-};
-
-/** Mock of ContentView for testing */
-type CoreMockContentView = {
-	addChildView: (view: unknown) => void;
-};
-
-/**
- * Mock of a WebContentsView for testing.
- */
-export type CoreMockLayer = {
-	setBounds: (bounds: Rectangle) => void;
-	setBackgroundColor: (color: string) => void;
-	getBounds: () => Rectangle;
-	webContents: CoreMockWebContents;
-};
-
-/**
- * Mock of a BrowserWindow for testing.
- */
-export type CoreMockWindow = {
-	getContentSize: () => ViewportSize;
-	on: (event: string, cb: (...args: unknown[]) => void) => void;
-	webContents: CoreMockWindowWebContents;
-	contentView: CoreMockContentView;
 };

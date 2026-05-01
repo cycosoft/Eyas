@@ -9,6 +9,7 @@
     "src/scripts/**/*",
     "tests/electron/**/*",
     "tests/setup/**/*",
+    "tests/types/**/*",
     "electron.vite.config.ts",
     "vitest.config.interface.ts",
     "vitest.config.electron.ts",
@@ -26,6 +27,7 @@
       "@registry/*": ["./src/types/*"],
       "@assets/*": ["./src/eyas-assets/*"],
       "@setup/*": ["./tests/setup/*"],
+      "@test-registry/*": ["./tests/types/*"],
       "@root/*": ["./*"]
     },
     "types": ["node"],

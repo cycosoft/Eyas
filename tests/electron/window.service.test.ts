@@ -1,7 +1,8 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { windowService } from '@core/window.service.js';
 import { EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
-import type { CoreContext, CoreMockLayer, CoreMockWindow, CoreMockTestLayer } from '@registry/eyas-core.js';
+import type { CoreContext } from '@registry/eyas-core.js';
+import type { CoreMockLayer, CoreMockWindow, CoreMockTestLayer } from '@test-registry/eyas-core.mocks.js';
 import type { Rectangle } from '@registry/core.js';
 
 // Mock electron
