@@ -21,7 +21,7 @@
     "dev:fixes": "sudo xattr -r -d com.apple.quarantine ./",
     "_____________TEST_______________": "",
     "check": "npm run type-check && npm run lint && npm run audit-dead-code && npm run test:interface:unit && npm run test:electron:unit && npm run test:demo:unit && npm run test:electron:e2e && npm audit",
-    "test:electron:e2e": "npm run compile:build && playwright test",
+    "test:electron:e2e": "playwright test",
     "test:electron:unit": "vitest run --config vitest.config.electron.ts",
     "test:interface:unit": "vitest run --config vitest.config.interface.ts",
     "test:demo:unit": "vitest run --config vitest.config.demo.ts",
