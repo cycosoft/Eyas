@@ -56,6 +56,7 @@
 - **Testing**: Limit debugging to 3 minutes before asking for help.
 - **Code Deletion**: Document why code was removed. Verify it's unused using search tools first.
 - **Process Management**: When encountering "resource busy" or "locked" errors during Electron testing, prioritize stopping the parent process that spawned the app before attempting to force-kill children. This is often more effective at releasing file locks.
+- **E2E Synchronization**: When writing or fixing Electron E2E tests using a fresh `userDataDir`, always account for "First Run" blocking states. Explicitly call `ensureEnvironmentSelected` (or equivalent) to clear initial modals before attempting to interact with application menus or header elements.
 - **Pull Requests**: Focus on bugs, functionality, and typos. Avoid purely stylistic refactors or "lint-fixing" unaffected lines.
 
 ## 6. Core Directives (CRITICAL REPETITION)
@@ -70,4 +71,5 @@
 - **Surgical Bug Fixing**: Prioritize fixing the specific failure point identified (e.g., via stack trace) over "proactive safety patterns."
 - **Avoid Refactor Spirals**: If a bug fix triggers a secondary housekeeping rule (like `max-lines` linting), evaluate if the scope can be narrowed to avoid the refactor.
 - **Cost-Benefit of Churn**: Avoid structural refactors (file splitting, logic extraction) unless the current file is genuinely unmaintainable or the user explicitly requests it. The token and stability cost of a refactor often outweighs the benefit of minor linting compliance.
-- **Registry-First Lifecycle**: If a fix requires a new method call on a mocked object, update the central mock registry and types BEFORE modifying the tests.
+- **Registry-First Lifecycle**: If a fix requires a new method call on a mocked object, update the central mock registry and types BEFORE modifying the tests.
+- **Header Integrity**: When adding both imports and logic to a file, prioritize `multi_replace_file_content` over sequential `replace_file_content` calls. This ensures the file header (imports/constants) and the logic remain synchronized and prevents accidental regression of imports during the edit process.
