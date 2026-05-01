@@ -34,6 +34,8 @@
 - **Linting**: Never change lint rules or use suppressions (`eslint-disable`, `@ts-ignore`) to fix errors. Fix the code. If a suppression is absolutely necessary for edge cases (e.g., test mocking), it MUST be accompanied by a comment explaining the technical justification. Mandatory lint check after every task.
 - **Atomic Changes**: One responsibility per change. Focus on bugs, functionality, and type safety; avoid purely stylistic refactors. Ensure behavioral parity during structural changes.
 - **Type Leaks**: Avoid anonymous object structures even within casting syntax (e.g., `as { default: T }`). These are considered "Type Leaks." Always use a named meta-type from `src/types/` (e.g., `ModuleWithDefault<T>`) to wrap these structures.
+- **Test Narrowing Safety**: When mocking event-driven callbacks (e.g., IPC listeners) that are assigned inside the mock, TypeScript may narrow the callback variable to `never` at the call site. Use explicit type assertions (e.g., `(callback as any)(...)`) or `// eslint-disable-line` to bypass these narrowing errors in test flows.
+- **API Migration Awareness**: When migrating to newer internal or external APIs, prioritize updating all dependent unit tests immediately. Common failures occur when tests mock specific method names that have been renamed or relocated (e.g., `webContents.goBack` to `webContents.navigationHistory.goBack`).
 
 ## 4. Technology Stack & Patterns
 - **Local Rules**: Refer to module-specific `AGENTS.md` in `src/types/`, `src/eyas-core/`, `src/eyas-interface/`, or `tests/` for environment-specific patterns. **Adaptive Rules**: If a local `AGENTS.md` is missing or insufficient for a module, suggest creating or updating it to capture recurring patterns and maintain shared context.
@@ -46,6 +48,7 @@
   - **State-First Extraction**: When splitting a large orchestrator, prioritize moving global state variables into a shared state module or class BEFORE extracting logic. This prevents complex dependency injection chains.
   - **Explicit Lambda Wrapping**: When injecting dependencies via a factory context (e.g., `getCoreContext`), always wrap function calls in lambdas (e.g., `() => helper(ctx)`) to ensure the correct context is bound at invocation time.
   - **Incremental Verification**: Do not attempt to move entire logical domains in a single pass. Break them into smaller, testable sub-modules and verify at each step.
+  - **Proactive Component Extraction**: When adding state or complex handlers to a Vue component, proactively move logic to a sibling `.logic.ts` file if the script block approaches 120 lines. This prevents "linting spirals" where a final verification fails due to the 150-line `max-lines-per-block` rule.
 
 ## 5. Operational Workflow
 - **Planning**: Review code, identify gaps (IO, errors, loading), and document them before starting.
