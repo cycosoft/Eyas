@@ -12,6 +12,7 @@ export const groups: NavGroup[] = [
 		submenu: [
 			{ title: `About Eyas`, value: `about`, icon: `mdi-information-outline`, mnemonic: `A` },
 			{ title: `App/Project Settings`, value: `settings`, icon: `mdi-cog`, mnemonic: `S` },
+			{ title: `Changelog`, value: `changelog`, icon: `mdi-history`, mnemonic: `C` },
 			{ title: `Exit`, value: `exit`, icon: `mdi-power`, color: `error`, shortcut: `Ctrl+Q`, mnemonic: `x` }
 		]
 	},

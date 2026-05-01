@@ -224,6 +224,18 @@ describe(`AppHeader`, () => {
 			expect(mockSend).toHaveBeenCalledWith(`show-settings`);
 		});
 
+		test(`onItemClick() sends show-whats-new IPC with true for 'changelog' item`, () => {
+			const vm = wrapper.vm as unknown as AppHeaderVM;
+			vm.onItemClick({ title: `Changelog`, value: `changelog` });
+			expect(mockSend).toHaveBeenCalledWith(`show-whats-new`, true);
+		});
+
+		test(`onItemClick() sends show-whats-new IPC with true for 'whats-new' item`, () => {
+			const vm = wrapper.vm as unknown as AppHeaderVM;
+			vm.onItemClick({ title: `What's New`, value: `whats-new` });
+			expect(mockSend).toHaveBeenCalledWith(`show-whats-new`, true);
+		});
+
 		test(`'File' menu has 'Exit' item with correct icon and color`, () => {
 			const vm = wrapper.vm as unknown as AppHeaderVM;
 			const fileMenu = vm.groups.find((g: NavGroup) => g.name === `File`);
@@ -243,6 +255,16 @@ describe(`AppHeader`, () => {
 			expect(settingsItem?.value).toBe(`settings`);
 			expect(settingsItem?.icon).toBe(`mdi-cog`);
 			expect(settingsItem?.mnemonic).toBe(`S`);
+		});
+
+		test(`'File' menu has 'Changelog' item with correct icon`, () => {
+			const vm = wrapper.vm as unknown as AppHeaderVM;
+			const fileMenu = vm.groups.find((g: NavGroup) => g.name === `File`);
+			const changelogItem = fileMenu?.submenu?.find((i: NavItem) => i.title === `Changelog`);
+			expect(changelogItem).toBeDefined();
+			expect(changelogItem?.value).toBe(`changelog`);
+			expect(changelogItem?.icon).toBe(`mdi-history`);
+			expect(changelogItem?.mnemonic).toBe(`C`);
 		});
 
 		test(`onItemClick() closes menu and sends hide-ui IPC`, async () => {

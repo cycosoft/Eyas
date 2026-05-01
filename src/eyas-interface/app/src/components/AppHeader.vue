@@ -155,8 +155,8 @@ function onItemClick(item: NavItem): void {
 		window.eyas?.send(`show-settings` as ChannelName);
 	}
 
-	if (item.value === `whats-new`) {
-		window.eyas?.send(`show-whats-new` as ChannelName);
+	if (item.value === `whats-new` || item.value === `changelog`) {
+		window.eyas?.send(`show-whats-new` as ChannelName, true);
 	}
 
 	if (item.value === `exit`) {
