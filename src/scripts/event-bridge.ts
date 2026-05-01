@@ -29,7 +29,11 @@ contextBridge.exposeInMainWorld(`eyas`, {
 			`show-settings`,
 			`show-whats-new`,
 			`show-test-server-setup`,
-			`request-exit`
+			`request-exit`,
+			`browser-back`,
+			`browser-forward`,
+			`browser-reload`,
+			`browser-home`
 		];
 
 		if (validChannels.includes(channel)) {
