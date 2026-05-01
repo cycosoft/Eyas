@@ -26,34 +26,31 @@
 			</v-btn>
 
 			<template v-if="group.name === 'File'">
-				<v-divider
-					vertical
-					inset
-					class="mx-1"
-				/>
-
-				<v-btn
-					v-for="control in browserControls"
-					:key="control.action"
-					icon
-					variant="text"
-					density="compact"
-					class="mx-0"
-					:data-qa="`btn-browser-${control.action}`"
-					@click="onBrowserControlClick(control.action)"
-				>
-					<v-icon
-						:icon="control.icon"
-						size="small"
-					/>
-					<v-tooltip
-						activator="parent"
-						location="bottom"
-						open-delay="500"
+				<div class="d-flex align-center ml-2 pa-1 rounded-lg border">
+					<v-btn
+						v-for="control in browserControls"
+						:key="control.action"
+						icon
+						variant="text"
+						density="compact"
+						class="mx-0 text-medium-emphasis"
+						rounded="lg"
+						:data-qa="`btn-browser-${control.action}`"
+						@click="onBrowserControlClick(control.action)"
 					>
-						{{ control.label }}
-					</v-tooltip>
-				</v-btn>
+						<v-icon
+							:icon="control.icon"
+							size="small"
+						/>
+						<v-tooltip
+							activator="parent"
+							location="bottom"
+							open-delay="500"
+						>
+							{{ control.label }}
+						</v-tooltip>
+					</v-btn>
+				</div>
 
 				<v-spacer />
 			</template>
