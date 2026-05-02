@@ -27,7 +27,7 @@
 ## 3. Engineering Standards (TDD & DRY)
 - **TDD First**: Every code change MUST be accompanied by a test (`*.test.ts`). Update or add tests *before* modifying code.
 - **Debugging**: When asked to debug, use TDD. Review code, identify potential failure points, write tests for those points, use extensive logging to follow the logic, and then fix the code.
-- **Verification Locality**: Run targeted tests and linting on modified files/directories instead of project-wide runs to save time and reduce output noise.
+- **Verification Locality**: Run targeted tests and linting on modified files/directories instead of project-wide runs to save time and reduce output noise. Avoid project-wide checks like `npm run check` until the implementation is fully verified by targeted tests.
   - **Direct Verification**: Prioritize checking specific files or subdirectories over project-wide scans. If dealing with large-scale changes, process reports locally to avoid redundant executions.
 - **ESM Standard**: Follow NodeNext resolution. Imports MUST include the `.js` extension, even when the source file is `.ts`.
 - **DRY Logic**: Avoid duplication. Use traditional loops over `.map`/`.filter` where possible for simplicity.
@@ -64,6 +64,7 @@
   - **Wait for State**: Use Playwright's `waitForSelector`, `expect(...).toBeVisible()`, or custom IPC signals to detect when the application is ready.
   - **Avoid Invisibility Waits**: Instead of waiting N seconds to "prove" something *doesn't* appear, wait for the element that *should* appear once the background logic completes (e.g., the app header).
 - **Pull Requests**: Focus on bugs, functionality, and typos. Avoid purely stylistic refactors or "lint-fixing" unaffected lines.
+- **Focused Testing**: Prioritize running specific test files (e.g., `npx playwright test path/to/test.spec.mjs`) during development. Defer full suite runs and project-wide linting (`npm run check`) until the specific feature or fix is verified and stable.
 
 ## 6. Core Directives (CRITICAL REPETITION)
 > [!IMPORTANT]
