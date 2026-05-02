@@ -254,14 +254,14 @@ export function updateCache(cacheSize: number, sessionAge: string, isDev: boolea
 	if (!cacheItem) { return; }
 
 	const submenu: NavItem[] = [
-		{ title: `⏳ Age: ${sessionAge}`, value: `cache-age`, icon: `mdi-clock-outline` },
-		{ title: `💾 Size: ${cacheSize} bytes`, value: `cache-size`, icon: `mdi-database-outline` },
+		{ title: `Age: ${sessionAge}`, value: `cache-age`, icon: `mdi-clock-outline` },
+		{ title: `Size: ${cacheSize} bytes`, value: `cache-size`, icon: `mdi-database-outline` },
 		{ title: `divider`, value: `cache-divider-1`, divider: true },
-		{ title: `🗑️ Clear`, value: `clear-cache`, icon: `mdi-delete-sweep`, mnemonic: `C` }
+		{ title: `Clear`, value: `clear-cache`, icon: `mdi-delete-sweep`, mnemonic: `C` }
 	];
 
 	if (isDev) {
-		submenu.push({ title: `📂 Open Cache Folder`, value: `open-cache-folder`, icon: `mdi-folder-open`, mnemonic: `O` });
+		submenu.push({ title: `Open Cache Folder`, value: `open-cache-folder`, icon: `mdi-folder-open`, mnemonic: `O` });
 	}
 
 	// Pre-calculate mnemonic parts for the new submenu items
