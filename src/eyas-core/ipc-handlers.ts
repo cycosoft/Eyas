@@ -36,28 +36,26 @@ export function initIpcHandlers(ctx: CoreContext): void {
  * @param ctx The core context.
  */
 function initAppIpcListeners(ctx: CoreContext): void {
-	// show the UI at full height when requested (e.g. header dropdown opened)
+	initCoreIpcListeners(ctx);
+	initBrowserIpcListeners(ctx);
+	initDevToolsIpcListeners(ctx);
+	initViewportIpcListeners(ctx);
+	initCacheIpcListeners(ctx);
+}
+
+/**
+ * Initializes core application IPC listeners.
+ * @param ctx The core context.
+ */
+function initCoreIpcListeners(ctx: CoreContext): void {
 	ipcMain.on(`show-ui`, () => { ctx.toggleEyasUI(true); });
-
-	// hide the UI when requested
 	ipcMain.on(`hide-ui`, () => { ctx.toggleEyasUI(false, true); });
+	ipcMain.on(`request-exit`, () => { ctx.requestExit(); });
 
-	// request the app to exit (triggers the confirmation dialog)
-	ipcMain.on(`request-exit`, () => {
-		ctx.requestExit();
-	});
-
-	// Whenever the UI layer has requested to close the app
 	ipcMain.on(`app-exit`, () => {
 		if (!ctx.$appWindow) { return; }
-
-		// remove the close event listener so we don't get stuck in a loop
 		ctx.$appWindow.removeListener(`close`, ctx.manageAppClose);
-
-		// track that the app is being closed
 		ctx.trackEvent(MP_EVENTS.core.exit);
-
-		// Shut down test server if running, then exit
 		ctx.stopTestServer();
 		app.quit();
 	});
@@ -70,32 +68,33 @@ function initAppIpcListeners(ctx: CoreContext): void {
 		}
 	});
 
-	// listen for the user to launch a link
 	ipcMain.on(`launch-link`, (_event, { url, openInBrowser }: LaunchLinkPayload) => {
-		// navigate to the requested url
 		const parsed = parseURL(url);
 		ctx.navigate(parsed ? parsed.toString() : url, openInBrowser, !openInBrowser);
 	});
 
-	// show the about dialog
 	ipcMain.on(`show-about`, () => { ctx.showAbout(); });
-
-	// show the settings modal
 	ipcMain.on(`show-settings`, () => { ctx.onOpenSettings(); });
-
-	// show the what's new modal
 	ipcMain.on(`show-whats-new`, () => { ctx.uiEvent(`show-whats-new`, true); });
-
-	// show the test server setup modal
 	ipcMain.on(`show-test-server-setup`, () => { ctx.showTestServerSetup(); });
+}
 
-	// browser controls
+/**
+ * Initializes browser control IPC listeners.
+ * @param ctx The core context.
+ */
+function initBrowserIpcListeners(ctx: CoreContext): void {
 	ipcMain.on(`browser-back`, () => ctx.goBack());
 	ipcMain.on(`browser-forward`, () => ctx.goForward());
 	ipcMain.on(`browser-reload`, () => ctx.reload());
 	ipcMain.on(`browser-home`, () => ctx.navigate());
+}
 
-	// devtools
+/**
+ * Initializes devtools IPC listeners.
+ * @param ctx The core context.
+ */
+function initDevToolsIpcListeners(ctx: CoreContext): void {
 	ipcMain.on(`open-devtools-ui`, () => {
 		if (ctx.$eyasLayer && !ctx.$eyasLayer.webContents.isDestroyed()) {
 			ctx.$eyasLayer.webContents.openDevTools({ mode: `detach` });
@@ -108,13 +107,23 @@ function initAppIpcListeners(ctx: CoreContext): void {
 			webContents.toggleDevTools();
 		}
 	});
+}
 
-	// viewport management
+/**
+ * Initializes viewport management IPC listeners.
+ * @param ctx The core context.
+ */
+function initViewportIpcListeners(ctx: CoreContext): void {
 	ipcMain.on(`set-viewport`, (_event, [width, height]: [ViewportWidth, ViewportHeight]) => {
 		ctx.$appWindow?.setContentSize(width, height + EYAS_HEADER_HEIGHT);
 	});
+}
 
-	// cache management
+/**
+ * Initializes cache management IPC listeners.
+ * @param ctx The core context.
+ */
+function initCacheIpcListeners(ctx: CoreContext): void {
 	ipcMain.on(`clear-cache`, async () => {
 		ctx.clearCache();
 		await ctx.updateNavigationState();

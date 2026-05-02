@@ -1,7 +1,7 @@
 import eyasLogo from '@/assets/eyas-logo.svg';
 import { reactive } from 'vue';
 import type { NavGroup, NavItem, MnemonicPart, BrowserControl, NavItemValue, ActionHandler } from '@registry/components.js';
-import type { BrowserAction, IsActive, ChannelName, ViewportWidth, ViewportHeight } from '@registry/primitives.js';
+import type { BrowserAction, IsActive, ChannelName, ViewportWidth, ViewportHeight, ByteCount, DurationString } from '@registry/primitives.js';
 import type { Viewport } from '@registry/core.js';
 
 /**
@@ -246,7 +246,7 @@ function setViewport(width: ViewportWidth, height: ViewportHeight): void {
  * @param sessionAge The current session age string.
  * @param isDev Whether the application is running in development mode.
  */
-export function updateCache(cacheSize: number, sessionAge: string, isDev: boolean): void {
+export function updateCache(cacheSize: ByteCount, sessionAge: DurationString, isDev: IsActive): void {
 	const toolsGroup = groups.find(g => g.name === `Tools`);
 	if (!toolsGroup) { return; }
 
@@ -254,8 +254,8 @@ export function updateCache(cacheSize: number, sessionAge: string, isDev: boolea
 	if (!cacheItem) { return; }
 
 	const submenu: NavItem[] = [
-		{ title: `Age: ${sessionAge}`, value: `cache-age`, icon: `mdi-clock-outline` },
-		{ title: `Size: ${cacheSize} bytes`, value: `cache-size`, icon: `mdi-database-outline` },
+		{ title: `Age: ${sessionAge}`, value: `cache-age`, icon: `mdi-clock-outline`, actionable: false },
+		{ title: `Size: ${cacheSize} bytes`, value: `cache-size`, icon: `mdi-database-outline`, actionable: false },
 		{ title: `divider`, value: `cache-divider-1`, divider: true },
 		{ title: `Clear`, value: `clear-cache`, icon: `mdi-delete-sweep`, mnemonic: `C` }
 	];

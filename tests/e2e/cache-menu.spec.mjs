@@ -29,7 +29,7 @@ test.describe(`Cache Menu Interaction`, () => {
 		// 2. Find the 'Cache' item and hover to see submenu
 		const cacheItem = uiPage.locator(`[data-qa="btn-nav-item"]`, { hasText: `Cache` });
 		await expect(cacheItem).toBeVisible({ timeout: 5000 });
-		
+
 		// Hover to trigger submenu
 		await cacheItem.hover();
 
@@ -43,6 +43,12 @@ test.describe(`Cache Menu Interaction`, () => {
 		await expect(ageItem).toBeVisible({ timeout: 5000 });
 		await expect(sizeItem).toBeVisible({ timeout: 5000 });
 		await expect(clearItem).toBeVisible({ timeout: 5000 });
+
+		// 4. Verify Age and Size are non-actionable (default cursor and no pointer events)
+		await expect(ageItem).toHaveCSS(`cursor`, `default`);
+		await expect(ageItem).toHaveCSS(`pointer-events`, `none`);
+		await expect(sizeItem).toHaveCSS(`cursor`, `default`);
+		await expect(sizeItem).toHaveCSS(`pointer-events`, `none`);
 	});
 
 	test(`clicking 'Clear' in the Cache submenu clears the cache`, async () => {
@@ -60,18 +66,18 @@ test.describe(`Cache Menu Interaction`, () => {
 		// 3. Verify size is present
 		const sizeItem = uiPage.locator(`[data-qa="btn-nav-item"]`, { hasText: /Size:/ });
 		await expect(sizeItem).toBeVisible();
-		
+
 		// 4. Click 'Clear'
 		const clearItem = uiPage.locator(`[data-qa="btn-nav-item"]`, { hasText: `Clear` });
 		await clearItem.click();
 
 		// 5. Menu should close. Reopen to check size.
 		// Wait for menu to close and state to update
-		await uiPage.waitForTimeout(1000); 
+		await uiPage.waitForTimeout(1000);
 
 		await toolsMenuBtn.click();
 		await cacheItem.hover();
-		
+
 		// 6. Verify size is updated (should be 0 or very small)
 		// Note: Electron might not report exactly 0 immediately, but it should be much smaller or 0.
 		await expect(sizeItem).toHaveText(/Size: 0 bytes/);

@@ -19,10 +19,7 @@
 					class="menu-logo mr-n1"
 				/>
 				<span v-else>
-					<template v-for="(part, i) in group.mnemonicParts" :key="i">
-						<u v-if="part.isMnemonic">{{ part.text }}</u>
-						<template v-else>{{ part.text }}</template>
-					</template>
+					<template v-for="(part, i) in group.mnemonicParts" :key="i"><u v-if="part.isMnemonic">{{ part.text }}</u><template v-else>{{ part.text }}</template></template>
 				</span>
 			</v-btn>
 
@@ -78,16 +75,17 @@
 					:prepend-icon="item.icon"
 					:append-icon="item.appendIcon"
 					:color="item.color"
-					:class="{ [`text-${item.color}`]: item.color }"
+					:ripple="item.actionable !== false"
+					:class="{
+						[`text-${item.color}`]: item.color,
+						'non-actionable': item.actionable === false
+					}"
 					data-qa="btn-nav-item"
-					@click="onItemClick(item)"
+					@click="item.actionable === false ? undefined : onItemClick(item)"
 				>
 					<div class="d-flex align-center w-100">
 						<span class="flex-grow-1">
-							<template v-for="(part, i) in item.mnemonicParts" :key="i">
-								<u v-if="part.isMnemonic">{{ part.text }}</u>
-								<template v-else>{{ part.text }}</template>
-							</template>
+							<template v-for="(part, i) in item.mnemonicParts" :key="i"><u v-if="part.isMnemonic">{{ part.text }}</u><template v-else>{{ part.text }}</template></template>
 						</span>
 						<span
 							v-if="item.shortcut"
@@ -119,16 +117,17 @@
 									:value="sub.value"
 									:prepend-icon="sub.icon"
 									:color="sub.color"
-									:class="{ [`text-${sub.color}`]: sub.color }"
+									:ripple="sub.actionable !== false"
+									:class="{
+										[`text-${sub.color}`]: sub.color,
+										'non-actionable': sub.actionable === false
+									}"
 									data-qa="btn-nav-item"
-									@click="onItemClick(sub)"
+									@click="sub.actionable === false ? undefined : onItemClick(sub)"
 								>
 									<div class="d-flex align-center w-100">
 										<span class="flex-grow-1">
-											<template v-for="(part, i) in sub.mnemonicParts" :key="i">
-												<u v-if="part.isMnemonic">{{ part.text }}</u>
-												<template v-else>{{ part.text }}</template>
-											</template>
+											<template v-for="(part, i) in sub.mnemonicParts" :key="i"><u v-if="part.isMnemonic">{{ part.text }}</u><template v-else>{{ part.text }}</template></template>
 										</span>
 										<span
 											v-if="sub.shortcut"
@@ -153,19 +152,7 @@ import useModalsStore from '@/stores/modals.js';
 import type { NavGroup, NavItem, NavActivateEvent, PendingNavOpen } from '@registry/components.js';
 import type { ChannelName } from '@registry/primitives.js';
 import type { NavigationStatePayload } from '@registry/ipc.js';
-import {
-	groups,
-	browserControls,
-	isControlDisabled,
-	handleBrowserControlClick,
-	goBack,
-	goForward,
-	reload,
-	goHome,
-	handleNavItemClick,
-	updateViewports,
-	updateCache
-} from './AppHeader.logic.js';
+import { groups, browserControls, isControlDisabled, handleBrowserControlClick, goBack, goForward, reload, goHome, handleNavItemClick, updateViewports, updateCache } from './AppHeader.logic.js';
 
 const menu = ref(false);
 const activator = ref<Element | undefined>();
@@ -293,5 +280,14 @@ defineExpose({
 .menu-shortcut {
 	font-size: 0.65rem !important;
 	opacity: 0.6 !important;
+}
+
+.non-actionable {
+	cursor: default !important;
+	pointer-events: none;
+}
+
+.non-actionable:hover {
+	background: transparent !important;
 }
 </style>

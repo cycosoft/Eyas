@@ -179,6 +179,7 @@ export type NavItem = {
 	mnemonicParts?: MnemonicPart[];
 	submenu?: NavItem[];
 	click?: () => void;
+	actionable?: boolean;
 };
 
 /** A top-level navigation group with a dropdown submenu */
