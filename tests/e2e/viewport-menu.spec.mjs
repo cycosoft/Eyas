@@ -51,25 +51,24 @@ test.describe(`Viewport Menu Interaction`, () => {
 		// 1. Click the 'Tools' menu
 		const toolsMenuBtn = uiPage.locator(`[data-qa="btn-nav-group-tools"]`);
 		const initialSize = await getAppWindowContentSize(electronApp);
-		console.log(`INITIAL SIZE:`, initialSize);
 		await toolsMenuBtn.click();
 
 		// 2. Hover the 'Viewport' item to open submenu
 		const viewportItem = uiPage.locator(`[data-qa="btn-nav-item"]`, { hasText: `Viewport` });
 		await viewportItem.hover();
 
-		// 3. Click the 'Mobile' viewport (450 x 950)
+		// 3. Click the 'Mobile' viewport (360 x 640)
 		// We use a more specific selector and wait for it to be visible
-		const mobileItem = uiPage.locator(`.v-menu [data-qa="btn-nav-item"]`, { hasText: `Mobile` });
+		const mobileItem = uiPage.locator(`.v-menu .v-list-item`, { hasText: `Mobile` });
 		await expect(mobileItem).toBeVisible({ timeout: 5000 });
-		await mobileItem.click({ force: true });
+		await mobileItem.click();
 
 		// 4. Verify the window size
-		// Note: The content size will be 450x950.
+		// Note: The content size will be 360x640.
 		// The actual window size will be slightly larger due to the header (48px).
 		await expect.poll(async () => {
 			const size = await getAppWindowContentSize(electronApp);
 			return size;
-		}, { timeout: 10000 }).toEqual([450, 998]);
+		}, { timeout: 10000 }).toEqual([360, 688]);
 	});
 });
