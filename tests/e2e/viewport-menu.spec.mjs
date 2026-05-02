@@ -50,7 +50,6 @@ test.describe(`Viewport Menu Interaction`, () => {
 
 		// 1. Click the 'Tools' menu
 		const toolsMenuBtn = uiPage.locator(`[data-qa="btn-nav-group-tools"]`);
-		const initialSize = await getAppWindowContentSize(electronApp);
 		await toolsMenuBtn.click();
 
 		// 2. Hover the 'Viewport' item to open submenu
