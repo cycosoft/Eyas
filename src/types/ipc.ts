@@ -4,6 +4,9 @@ import type { EnvironmentChoice, Viewport, ViewportSize } from './core.js';
 /** Payload for selecting a test environment */
 export type EnvironmentSelectedPayload = DomainUrl | EnvironmentChoice;
 
+/** The current state of the application update process */
+export type UpdateStatus = `idle` | `downloading` | `downloaded`;
+
 export const VALID_SEND_CHANNELS = [
 	`app-exit`,
 	`hide-ui`,
@@ -35,7 +38,9 @@ export const VALID_SEND_CHANNELS = [
 	`clear-cache`,
 	`open-cache-folder`,
 	`open-devtools-ui`,
-	`open-devtools-test`
+	`open-devtools-test`,
+	`check-for-updates`,
+	`install-update`
 ] as const;
 
 export const VALID_RECEIVE_CHANNELS = [
@@ -53,7 +58,8 @@ export const VALID_RECEIVE_CHANNELS = [
 	`settings-loaded`,
 	`show-whats-new`,
 	`ui-shown`,
-	`navigation-state-updated`
+	`navigation-state-updated`,
+	`update-status-updated`
 ] as const;
 
 /** Payload for the 'navigation-state-updated' IPC event */

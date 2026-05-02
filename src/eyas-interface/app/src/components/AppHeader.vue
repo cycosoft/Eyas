@@ -10,7 +10,7 @@
 				append-icon="mdi-chevron-down"
 				:title="group.title"
 				:data-qa="`btn-nav-group-${group.name.toLowerCase()}`"
-				:active="activeGroup === group.name"
+				:active="state.activeGroup === group.name"
 				@click="activate($event, group)"
 				@mouseenter="onMouseEnter($event, group)"
 			>
@@ -47,6 +47,24 @@
 				</div>
 
 				<v-spacer />
+
+				<v-btn
+					icon
+					density="compact"
+					variant="text"
+					class="mr-1"
+					data-qa="btn-broadcast"
+					:title="updateInfo.title"
+					:disabled="updateInfo.disabled"
+					:color="updateInfo.color"
+					:class="{ 'pulse-animation': updateStatus === 'downloading' }"
+					@click="handleBroadcastClick"
+				>
+					<v-icon
+						:icon="updateInfo.icon"
+						size="small"
+					/>
+				</v-btn>
 			</template>
 		</template>
 	</v-app-bar>
@@ -68,7 +86,7 @@
 			rounded="lg"
 			border
 		>
-			<template v-for="item in menuItems" :key="item.value">
+			<template v-for="item in state.menuItems" :key="item.value">
 				<v-divider v-if="item.divider" class="my-1 mx-2" />
 				<v-list-item
 					v-else
@@ -151,54 +169,72 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
-import useModalsStore from '@/stores/modals.js';
-import type { NavGroup, NavItem, NavActivateEvent, PendingNavOpen } from '@registry/components.js';
-import type { ChannelName, MenuLabel } from '@registry/primitives.js';
+import { onMounted, watch, toRefs, computed } from 'vue';
+import type { ChannelName } from '@registry/primitives.js';
 import type { NavigationStatePayload } from '@registry/ipc.js';
-import { groups, browserControls, isControlDisabled, handleBrowserControlClick, goBack, goForward, reload, goHome, handleNavItemClick, updateViewports, updateCache, updateTools } from './AppHeader.logic.js';
+import {
+	groups,
+	state,
+	browserControls,
+	isControlDisabled,
+	handleBrowserControlClick,
+	goBack,
+	goForward,
+	reload,
+	goHome,
+	updateViewports,
+	updateCache,
+	updateTools,
+	handleBroadcastClick,
+	activate,
+	onMouseEnter,
+	onItemClick,
+	delayedClose,
+	triggerOpen
+} from './AppHeader.logic.js';
 
-const menu = ref(false);
-const activeGroup = ref<MenuLabel | null>(null);
-const activator = ref<Element | undefined>();
-const menuItems = ref<NavItem[]>([]);
-const canGoBack = ref(false);
-const canGoForward = ref(false);
+const { menu, activator, canGoBack, canGoForward, updateStatus } = toRefs(state);
 
-// Fallback delay (ms) to open the menu if the IPC event never fires.
-const RESIZE_FALLBACK_MS = 200;
+const updateInfo = computed(() => {
+	if (updateStatus.value === `downloading`) {
+		return {
+			icon: `mdi-cloud-download`,
+			color: `info`,
+			title: `Downloading update...`,
+			disabled: true
+		};
+	}
 
-let closeTimeout = -1;
-let resizeFallback = -1;
-let pendingOpen: PendingNavOpen | null = null;
+	if (updateStatus.value === `downloaded`) {
+		return {
+			icon: `mdi-arrow-up-bold-circle-outline`,
+			color: `success`,
+			title: `Update available - Click to restart`,
+			disabled: false
+		};
+	}
+
+	return {
+		icon: `mdi-arrow-up-bold-circle-outline`,
+		color: undefined,
+		title: `Check for updates`,
+		disabled: false
+	};
+});
 
 watch(menu, isOpen => {
 	if (!isOpen) {
 		delayedClose();
-		activeGroup.value = null;
+		state.activeGroup = null;
 	}
 });
-
-function openMenu(targetEl: Element, group: NavGroup): void {
-	activator.value = targetEl;
-	menuItems.value = group.submenu;
-	activeGroup.value = group.name;
-	menu.value = true;
-}
-
-function triggerOpen(): void {
-	if (!pendingOpen) { return; }
-	window.clearTimeout(resizeFallback);
-	openMenu(pendingOpen.target, pendingOpen.group);
-	pendingOpen = null;
-}
 
 onMounted(() => {
 	window.eyas?.receive(`ui-shown` as ChannelName, triggerOpen);
 	window.eyas?.receive(`navigation-state-updated` as ChannelName, (data: unknown) => {
 		const payload = data as NavigationStatePayload;
-		canGoBack.value = payload.canGoBack;
-		canGoForward.value = payload.canGoForward;
+		state.canGoBack = payload.canGoBack;
+		state.canGoForward = payload.canGoForward;
 
 		if (payload.viewports && payload.currentViewport) {
 			updateViewports(payload.viewports, payload.currentViewport[0], payload.currentViewport[1]);
@@ -212,66 +248,17 @@ onMounted(() => {
 			updateTools(!!payload.isDev);
 		}
 	});
+
+	window.eyas?.receive(`update-status-updated` as ChannelName, (status: `idle` | `downloading` | `downloaded`) => {
+		state.updateStatus = status;
+	});
 });
-
-function activate(event: NavActivateEvent, group: NavGroup): void {
-	const target = event.currentTarget;
-
-	if (menu.value) {
-		if (activator.value === target) {
-			menu.value = false;
-			return;
-		}
-
-		// Layer already at full height — glide to the new item immediately
-		openMenu(target, group);
-	} else {
-		// Layer is at header height. Request expansion, then wait for the IPC
-		// event that confirms setBounds has propagated.
-		pendingOpen = { target, group };
-		window.eyas?.send(`show-ui` as ChannelName);
-
-		window.clearTimeout(resizeFallback);
-		resizeFallback = window.setTimeout(triggerOpen, RESIZE_FALLBACK_MS);
-	}
-}
-
-function onMouseEnter(event: NavActivateEvent, group: NavGroup): void {
-	if (menu.value && activator.value !== event.currentTarget) {
-		openMenu(event.currentTarget, group);
-	}
-}
-
-function onItemClick(item: NavItem): void {
-	if (item.click) {
-		item.click();
-	} else {
-		handleNavItemClick(item.value);
-	}
-
-	if (!item.submenu) {
-		menu.value = false;
-	}
-}
-
-function delayedClose(): void {
-	const modalsStore = useModalsStore();
-	window.clearTimeout(closeTimeout);
-
-	// Wait for the menu's close transition to complete (~250-300ms)
-	// before shrinking the layer, provided no modals have opened.
-	closeTimeout = window.setTimeout(() => {
-		if (!menu.value && !modalsStore.hasVisibleModals) {
-			window.eyas?.send(`hide-ui` as ChannelName);
-		}
-	}, 300);
-}
 
 // expose for testing
 defineExpose({
 	menu,
-	menuItems,
-	activator,
+	menuItems: toRefs(state).menuItems,
+	activator: toRefs(state).activator,
 	canGoBack,
 	canGoForward,
 	activate,
@@ -281,7 +268,8 @@ defineExpose({
 	goBack,
 	goForward,
 	reload,
-	goHome
+	goHome,
+	handleBroadcastClick
 });
 </script>
 
@@ -292,5 +280,15 @@ defineExpose({
 .v-btn--active, .v-list-item--active {
 	background-color: rgba(var(--v-theme-primary), 0.1) !important;
 	color: rgb(var(--v-theme-primary)) !important;
+}
+
+.pulse-animation {
+	animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+	0% { opacity: 1; }
+	50% { opacity: 0.5; }
+	100% { opacity: 1; }
 }
 </style>

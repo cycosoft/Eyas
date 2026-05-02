@@ -66,6 +66,9 @@ function initCoreIpcListeners(ctx: CoreContext): void {
 			ctx.setIsStartupSequenceChecked(true);
 			ctx.checkStartupSequence();
 		}
+
+		// send the current update status to the renderer
+		ctx.uiEvent(`update-status-updated` as ChannelName, ctx.updateService.getStatus());
 	});
 
 	ipcMain.on(`launch-link`, (_event, { url, openInBrowser }: LaunchLinkPayload) => {
@@ -77,6 +80,8 @@ function initCoreIpcListeners(ctx: CoreContext): void {
 	ipcMain.on(`show-settings`, () => { ctx.onOpenSettings(); });
 	ipcMain.on(`show-whats-new`, () => { ctx.uiEvent(`show-whats-new`, true); });
 	ipcMain.on(`show-test-server-setup`, () => { ctx.showTestServerSetup(); });
+	ipcMain.on(`check-for-updates`, () => { ctx.updateService.checkForUpdates(); });
+	ipcMain.on(`install-update`, () => { ctx.updateService.installUpdate(); });
 }
 
 /**

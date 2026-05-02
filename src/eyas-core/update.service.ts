@@ -36,11 +36,13 @@ export const updateService: UpdateService = {
 		autoUpdater.on(`update-available`, () => {
 			$updateStatus = `downloading`;
 			ctx.setMenu();
+			ctx.uiEvent(`update-status-updated` as ChannelName, $updateStatus);
 		});
 
 		autoUpdater.on(`update-downloaded`, () => {
 			$updateStatus = `downloaded`;
 			ctx.setMenu();
+			ctx.uiEvent(`update-status-updated` as ChannelName, $updateStatus);
 		});
 
 		/** Handles showing a dialog if the user manually checked and no update was found */
