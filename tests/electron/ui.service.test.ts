@@ -44,7 +44,7 @@ describe(`ui.service.ts unit tests`, () => {
 
 	test(`toggleEyasUI(true) should restore full bounds and focus the layer`, () => {
 		uiService.toggleEyasUI(mockCtx, true);
-		expect(mockCtx.$eyasLayer?.setBounds).toHaveBeenCalledWith({ x: 0, y: 0, width: 800, height: 600 });
+		expect(mockCtx.$eyasLayer?.setBounds).toHaveBeenCalledWith({ x: 0, y: 0, width: 800, height: 600 + EYAS_HEADER_HEIGHT });
 		expect(mockCtx.$eyasLayer?.webContents.focus).toHaveBeenCalled();
 	});
 

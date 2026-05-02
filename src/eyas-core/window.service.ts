@@ -113,7 +113,7 @@ export const windowService: WindowService = {
 			x: 0,
 			y: 0,
 			width: ctx.$currentViewport[0],
-			height: ctx.$currentViewport[1]
+			height: EYAS_HEADER_HEIGHT
 		});
 
 		// make the layer transparent

@@ -154,12 +154,12 @@
 import { ref, onMounted, watch } from 'vue';
 import useModalsStore from '@/stores/modals.js';
 import type { NavGroup, NavItem, NavActivateEvent, PendingNavOpen } from '@registry/components.js';
-import type { ChannelName } from '@registry/primitives.js';
+import type { ChannelName, MenuLabel } from '@registry/primitives.js';
 import type { NavigationStatePayload } from '@registry/ipc.js';
 import { groups, browserControls, isControlDisabled, handleBrowserControlClick, goBack, goForward, reload, goHome, handleNavItemClick, updateViewports, updateCache } from './AppHeader.logic.js';
 
 const menu = ref(false);
-const activeGroup = ref<string | null>(null);
+const activeGroup = ref<MenuLabel | null>(null);
 const activator = ref<Element | undefined>();
 const menuItems = ref<NavItem[]>([]);
 const canGoBack = ref(false);
@@ -282,30 +282,15 @@ defineExpose({
 </script>
 
 <style scoped>
-.menu-logo {
-	height: 1.5em;
-	width: 1.5em;
-}
-
-.menu-shortcut {
-	font-size: 0.65rem !important;
-	opacity: 0.6 !important;
-}
+.menu-logo { height: 1.5em; width: 1.5em; }
+.menu-shortcut { font-size: 0.65rem !important; opacity: 0.6 !important; }
 
 .non-actionable {
 	cursor: default !important;
 	pointer-events: none;
 }
 
-.non-actionable:hover {
-	background: transparent !important;
-}
-
-.v-btn--active {
-	background-color: rgba(var(--v-theme-primary), 0.1) !important;
-	color: rgb(var(--v-theme-primary)) !important;
-}
-
+.v-btn--active,
 .v-list-item--active {
 	background-color: rgba(var(--v-theme-primary), 0.1) !important;
 	color: rgb(var(--v-theme-primary)) !important;

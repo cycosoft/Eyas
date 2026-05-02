@@ -23,7 +23,7 @@ export const uiService: UIService = {
 				x: 0,
 				y: 0,
 				width: ctx.$currentViewport[0],
-				height: ctx.$currentViewport[1]
+				height: ctx.$currentViewport[1] + EYAS_HEADER_HEIGHT
 			});
 
 			// give the layer focus
