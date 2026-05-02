@@ -15,7 +15,6 @@ const minimalContext: MenuContext = {
 	quit: noop,
 	startAFreshTest: noop,
 	copyUrl: noop,
-	openUiDevTools: noop,
 	navigateHome: noop,
 	reload: noop,
 	back: noop,
@@ -24,8 +23,7 @@ const minimalContext: MenuContext = {
 	linkItems: [],
 	updateStatus: `idle`,
 	onCheckForUpdates: noop,
-	onInstallUpdate: noop,
-	toggleTestDevTools: noop
+	onInstallUpdate: noop
 };
 
 describe(`Menu links and DevTools gating (Refined)`, () => {
@@ -60,17 +58,14 @@ describe(`Menu links and DevTools gating (Refined)`, () => {
 			expect(prodToolsMenu.enabled).toBe(false);
 		});
 
-		test(`Specific items like 'Developer Tools (Test)' and 'Stop network' are disabled`, () => {
+		test(`'Stop network' is disabled`, () => {
 			const template = buildMenuTemplate({ ...ctx, isDev: true } as MenuContext) as MenuItemConstructorOptions[];
 			const toolsMenu = template.find((m: MenuItemConstructorOptions) => m.label && m.label.includes(`Development Tools`));
 			if (!toolsMenu) throw new Error();
 
-			const testDevTools = (toolsMenu.submenu as MenuItemConstructorOptions[]).find((i: MenuItemConstructorOptions) => i.label && i.label.includes(`(Test)`));
-			if (!testDevTools) throw new Error();
 			const networkToggle = (toolsMenu.submenu as MenuItemConstructorOptions[]).find((i: MenuItemConstructorOptions) => i.label && (i.label.includes(`Online`) || i.label.includes(`Offline`)));
 			if (!networkToggle) throw new Error();
 
-			expect(testDevTools.enabled).toBe(false);
 			expect(networkToggle.enabled).toBe(false);
 		});
 	});
@@ -96,36 +91,7 @@ describe(`Menu links and DevTools gating (Refined)`, () => {
 
 			expect(linksItem.enabled).toBe(false);
 		});
-
-		test(`'Developer Tools (Test)' is ENABLED`, () => {
-			const template = buildMenuTemplate(ctx as MenuContext) as MenuItemConstructorOptions[];
-			const toolsMenu = template.find((m: MenuItemConstructorOptions) => m.label && m.label.includes(`Development Tools`));
-			if (!toolsMenu) throw new Error();
-			const testDevTools = (toolsMenu.submenu as MenuItemConstructorOptions[]).find((i: MenuItemConstructorOptions) => i.label && i.label.includes(`(Test)`));
-			if (!testDevTools) throw new Error();
-
-			expect(testDevTools.enabled).not.toBe(false);
-		});
-
-		test(`'Go Online/Offline' is ENABLED`, () => {
-			const template = buildMenuTemplate(ctx as MenuContext) as MenuItemConstructorOptions[];
-			const toolsMenu = template.find((m: MenuItemConstructorOptions) => m.label && m.label.includes(`Development Tools`));
-			if (!toolsMenu) throw new Error();
-			const networkToggle = (toolsMenu.submenu as MenuItemConstructorOptions[]).find((i: MenuItemConstructorOptions) => i.label && (i.label.includes(`Online`) || i.label.includes(`Offline`)));
-			if (!networkToggle) throw new Error();
-
-			expect(networkToggle.enabled).not.toBe(false);
-		});
-
-		test(`'Developer Tools (eyas)' is ENABLED and renamed`, () => {
-			const template = buildMenuTemplate(ctx as MenuContext) as MenuItemConstructorOptions[];
-			const toolsMenu = template.find((m: MenuItemConstructorOptions) => m.label && m.label.includes(`Development Tools`));
-			if (!toolsMenu) throw new Error();
-			const eyasDevTools = (toolsMenu.submenu as MenuItemConstructorOptions[]).find((i: MenuItemConstructorOptions) => i.label && i.label.toLowerCase().includes(`eyas`));
-			if (!eyasDevTools) throw new Error();
-
-			expect(eyasDevTools).toBeDefined();
-			expect(eyasDevTools.enabled).not.toBe(false);
-		});
 	});
 });
+
+

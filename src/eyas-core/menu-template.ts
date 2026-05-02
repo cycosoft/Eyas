@@ -97,33 +97,14 @@ function createBrowserSubmenu(context: MenuContext): MenuTemplate {
  */
 function createToolsSubmenu(context: MenuContext): MenuTemplate {
 	const {
-		isDev,
 		isConfigLoaded = false,
 		testNetworkEnabled,
-		toggleNetwork,
-		toggleTestDevTools,
-		openUiDevTools
+		toggleNetwork
 	} = context;
 
-	const submenu: MenuTemplate = [
-		{ label: `${testNetworkEnabled ? `🚫 &Go Offline` : `📶 &Go Online`}`, click: toggleNetwork, enabled: isConfigLoaded },
-		{ type: `separator` },
-		{
-			label: `⚙️ &Developer Tools${isDev ? ` (Test)` : ``}`,
-			accelerator: `F12`,
-			click: toggleTestDevTools,
-			enabled: isConfigLoaded
-		}
+	return [
+		{ label: `${testNetworkEnabled ? `🚫 &Go Offline` : `📶 &Go Online`}`, click: toggleNetwork, enabled: isConfigLoaded }
 	];
-
-	if (isDev) {
-		submenu.push({
-			label: `⚙️ Developer Tools (&eyas)`,
-			accelerator: `CmdOrCtrl+Shift+J`,
-			click: openUiDevTools
-		});
-	}
-
-	return submenu;
 }
+
 

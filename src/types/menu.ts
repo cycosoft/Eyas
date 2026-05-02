@@ -35,7 +35,6 @@ export type MenuContext = {
 	quit: () => void;
 	startAFreshTest: () => void | Promise<void>;
 	copyUrl: () => void;
-	openUiDevTools: () => void;
 	navigateHome: () => void;
 	reload: () => void;
 	back: () => void;
@@ -45,7 +44,6 @@ export type MenuContext = {
 	updateStatus?: UpdateStatus;
 	onCheckForUpdates: () => void;
 	onInstallUpdate: () => void;
-	toggleTestDevTools: () => void;
 	isInitializing?: IsActive;
 	isConfigLoaded?: IsActive;
 	isEnvironmentPending?: IsActive;

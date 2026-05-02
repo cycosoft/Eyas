@@ -129,17 +129,7 @@ export const menuService: MenuService = {
 		},
 		updateStatus: (ctx.updateService.getStatus() as `idle` | `downloading` | `downloaded`) || `idle`,
 		onCheckForUpdates: (): void => ctx.updateService.checkForUpdates(),
-		onInstallUpdate: (): void => ctx.updateService.installUpdate(),
-		toggleTestDevTools: (): void => {
-			const webContents = (ctx.$testLayer || ctx.$appWindow)?.webContents;
-			if (webContents && !webContents.isDestroyed()) {
-				webContents.toggleDevTools();
-			}
-		},
-		openUiDevTools: (): void => {
-			if (ctx.$eyasLayer && !ctx.$eyasLayer.webContents.isDestroyed()) {
-				ctx.$eyasLayer.webContents.openDevTools({ mode: `detach` });
-			}
-		}
+		onInstallUpdate: (): void => ctx.updateService.installUpdate()
 	})
+
 };

@@ -235,13 +235,7 @@ describe(`MenuService Helpers`, () => {
 				expect(mockCtx.updateService.installUpdate).toHaveBeenCalled();
 			});
 
-			test(`should handle dev tools`, () => {
-				handlers.toggleTestDevTools?.();
-				expect(mockTestLayer.webContents.toggleDevTools).toHaveBeenCalled();
-
-				handlers.openUiDevTools?.();
-				expect(mockCtx.$eyasLayer?.webContents.openDevTools).toHaveBeenCalledWith({ mode: `detach` });
-			});
 		});
 	});
 });
+

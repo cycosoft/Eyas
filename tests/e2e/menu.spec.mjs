@@ -34,7 +34,16 @@ test.describe(`Application Menu`, () => {
 
 		const submenuLabels = appMenu.submenu.map(item => item.label);
 		expect(submenuLabels.some(l => l.includes(`Settings`))).toBe(false);
-
 		expect(submenuLabels.some(l => l.includes(`Exit`))).toBe(false);
 	});
+
+	test(`'Development Tools' menu does NOT have Developer Tools items`, async () => {
+		const menuStructure = await getMenuStructure(electronApp);
+		const toolsMenu = menuStructure.find(m => m.label.includes(`Tools`));
+		expect(toolsMenu).toBeDefined();
+
+		const submenuLabels = toolsMenu.submenu.map(item => item.label);
+		expect(submenuLabels.some(l => l.includes(`Developer Tools`))).toBe(false);
+	});
 });
+

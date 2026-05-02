@@ -12,7 +12,6 @@ const minimalContext: MenuContext = {
 	quit: noop,
 	startAFreshTest: noop,
 	copyUrl: noop,
-	openUiDevTools: noop,
 	navigateHome: noop,
 	reload: noop,
 	back: noop,
@@ -21,8 +20,7 @@ const minimalContext: MenuContext = {
 	linkItems: [],
 	updateStatus: `idle`,
 	onCheckForUpdates: noop,
-	onInstallUpdate: noop,
-	toggleTestDevTools: noop
+	onInstallUpdate: noop
 };
 
 // ─── Root-level structure ──────────────────────────────────────────────────
@@ -279,13 +277,7 @@ describe(`Development Tools menu`, () => {
 	});
 
 
-	test(`Tools submenu contains Developer Tools item`, () => {
-		const template = buildMenuTemplate(minimalContext);
-		const toolsMenu = template[3] as MenuItemConstructorOptions;
-		const devToolsItem = (toolsMenu.submenu as MenuItemConstructorOptions[]).find(i => i.label && i.label.toLowerCase().includes(`developer tools`));
-		if (!devToolsItem) throw new Error();
-		expect(devToolsItem).toBeDefined();
-	});
+
 
 	test(`when isInitializing is true, Development Tools menu is disabled`, () => {
 		const ctx = { ...minimalContext, isInitializing: true };
