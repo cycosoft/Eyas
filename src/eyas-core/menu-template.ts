@@ -101,26 +101,12 @@ function createToolsSubmenu(context: MenuContext): MenuTemplate {
 		isConfigLoaded = false,
 		testNetworkEnabled,
 		toggleNetwork,
-		sessionAge,
-		cacheSize,
-		refreshMenu,
-		clearCache,
-		openCacheFolder,
 		toggleTestDevTools,
 		openUiDevTools
 	} = context;
 
-	const cacheSubmenu: MenuTemplate = [
-		{ label: `⏳ Age: ${sessionAge}`, click: refreshMenu },
-		{ label: `💾 Size: ${cacheSize} bytes`, click: refreshMenu },
-		{ label: `🗑️ &Clear`, click: clearCache },
-		...(isDev ? [{ label: `📂 Open Cache Folder`, click: openCacheFolder }] : [])
-	];
-
 	const submenu: MenuTemplate = [
 		{ label: `${testNetworkEnabled ? `🚫 &Go Offline` : `📶 &Go Online`}`, click: toggleNetwork, enabled: isConfigLoaded },
-		{ type: `separator` },
-		{ label: `📦 &Cache`, submenu: cacheSubmenu, enabled: isConfigLoaded },
 		{ type: `separator` },
 		{
 			label: `⚙️ &Developer Tools${isDev ? ` (Test)` : ``}`,

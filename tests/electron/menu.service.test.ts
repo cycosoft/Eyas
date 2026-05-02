@@ -2,7 +2,7 @@ import { describe, test, expect, vi, beforeEach } from 'vitest';
 import type { BrowserWindow } from 'electron';
 import type { ValidatedConfig } from '@registry/config.js';
 import type { CoreContext } from '@registry/eyas-core.js';
-import { shell, clipboard, Menu } from 'electron';
+import { clipboard, Menu } from 'electron';
 import { menuService } from '@core/menu.service.js';
 
 
@@ -157,22 +157,16 @@ describe(`MenuService Helpers`, () => {
 
 		test(`getContext should assemble all handlers and state`, () => {
 			const params = {
-				sessionAge: `1m`,
-				cacheSize: 100,
 				linkItems: []
 			};
 			const context = menuService.getContext(mockCtx, params);
 			expect(context.appName).toBe(`Eyas`);
-			expect(context.sessionAge).toBe(`1m`);
-			expect(context.cacheSize).toBe(100);
 			expect(context.testNetworkEnabled).toBe(true);
 		});
 
 		test(`refresh should gather all state and call Menu.setApplicationMenu`, async () => {
 			await menuService.refresh(mockCtx);
 
-			expect(mockCtx.getSessionAge).toHaveBeenCalled();
-			expect(mockTestLayer.webContents.session.getCacheSize).toHaveBeenCalled();
 			expect(Menu.buildFromTemplate).toHaveBeenCalled();
 			expect(Menu.setApplicationMenu).toHaveBeenCalled();
 		});
@@ -222,16 +216,10 @@ describe(`MenuService Helpers`, () => {
 		describe(`getTestServerHandlers`, () => {
 			const handlers = menuService.getTestServerHandlers(mockCtx);
 
-			test(`should handle network and cache`, () => {
+			test(`should handle network`, () => {
 				handlers.toggleNetwork?.();
 				expect(mockCtx.setTestNetworkEnabled).toHaveBeenCalledWith(false);
 				expect(mockCtx.setMenu).toHaveBeenCalled();
-
-				handlers.clearCache?.();
-				expect(mockCtx.clearCache).toHaveBeenCalled();
-
-				handlers.openCacheFolder?.();
-				expect(shell.openPath).toHaveBeenCalledWith(`/mock/path`);
 			});
 
 			test(`should handle test server lifecycle`, () => {

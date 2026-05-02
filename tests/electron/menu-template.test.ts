@@ -9,8 +9,6 @@ const minimalContext: MenuContext = {
 	appName: `Eyas`,
 	isDev: false,
 	testNetworkEnabled: true,
-	sessionAge: `0m`,
-	cacheSize: 0,
 	quit: noop,
 	startAFreshTest: noop,
 	copyUrl: noop,
@@ -20,9 +18,6 @@ const minimalContext: MenuContext = {
 	back: noop,
 	forward: noop,
 	toggleNetwork: noop,
-	clearCache: noop,
-	openCacheFolder: noop,
-	refreshMenu: noop,
 	linkItems: [],
 	updateStatus: `idle`,
 	onCheckForUpdates: noop,
@@ -283,24 +278,6 @@ describe(`Development Tools menu`, () => {
 		expect(item.click).toBe(toggleNetwork);
 	});
 
-	test(`Tools submenu contains a Cache submenu with Age, Size, and Clear items`, () => {
-		const ctx = { ...minimalContext, sessionAge: `5m`, cacheSize: 1024 };
-		const template = buildMenuTemplate(ctx as MenuContext);
-		const toolsMenu = template[3] as MenuItemConstructorOptions;
-		const cacheItem = (toolsMenu.submenu as MenuItemConstructorOptions[]).find(i => i.label && i.label.toLowerCase().includes(`cache`));
-		if (!cacheItem) throw new Error();
-		expect(cacheItem).toBeDefined();
-		expect(Array.isArray(cacheItem.submenu)).toBe(true);
-		const ageItem = (cacheItem.submenu as MenuItemConstructorOptions[]).find(i => i.label && i.label.toLowerCase().includes(`age`));
-		if (!ageItem) throw new Error();
-		const sizeItem = (cacheItem.submenu as MenuItemConstructorOptions[]).find(i => i.label && i.label.toLowerCase().includes(`size`));
-		if (!sizeItem) throw new Error();
-		const clearItem = (cacheItem.submenu as MenuItemConstructorOptions[]).find(i => i.label && i.label.toLowerCase().includes(`clear`));
-		if (!clearItem) throw new Error();
-		expect(ageItem).toBeDefined();
-		expect(sizeItem).toBeDefined();
-		expect(clearItem).toBeDefined();
-	});
 
 	test(`Tools submenu contains Developer Tools item`, () => {
 		const template = buildMenuTemplate(minimalContext);

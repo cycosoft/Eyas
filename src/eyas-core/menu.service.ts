@@ -1,4 +1,4 @@
-import { Menu, app, clipboard, shell } from 'electron';
+import { Menu, app, clipboard } from 'electron';
 import { buildMenuTemplate } from './menu-template.js';
 import { isVariableLinkValid } from '@scripts/variable-utils.js';
 import { parseURL } from '@scripts/parse-url.js';
@@ -19,26 +19,12 @@ export const menuService: MenuService = {
 		const { $appWindow, $config } = ctx;
 		if (!$appWindow || $appWindow.isDestroyed() || !$config) { return; }
 
-		const sessionAge = ctx.getSessionAge();
-		let cacheSize = 0;
-		// Prefer the test layer session since it shares the partition with test content
-		const webContents = ctx.$testLayer?.webContents || $appWindow.webContents;
-		try {
-			if (webContents && !webContents.isDestroyed()) {
-				cacheSize = await webContents.session.getCacheSize();
-			}
-		} catch {
-			// ignore
-		}
-
 		const linkItems = menuService.getLinkMenuItems($config, {
 			navigate: (path, openInBrowser) => ctx.navigate(path, openInBrowser),
 			navigateVariable: url => ctx.navigateVariable(url)
 		});
 
 		const context = menuService.getContext(ctx, {
-			sessionAge,
-			cacheSize,
 			linkItems
 		});
 
@@ -85,14 +71,12 @@ export const menuService: MenuService = {
 	 * @returns The fully assembled MenuContext object.
 	 */
 	getContext: (ctx: CoreContext, params: MenuContextParams): MenuContext => {
-		const { sessionAge, cacheSize, linkItems } = params;
+		const { linkItems } = params;
 
 		return {
 			appName: `Eyas`,
 			isDev: process.argv.includes(`--dev`),
 			testNetworkEnabled: ctx.$testNetworkEnabled,
-			sessionAge,
-			cacheSize,
 			linkItems,
 			...menuService.getAppHandlers(ctx),
 			...menuService.getNavigationHandlers(ctx),
@@ -143,15 +127,6 @@ export const menuService: MenuService = {
 			ctx.setTestNetworkEnabled(!ctx.$testNetworkEnabled);
 			ctx.setMenu();
 		},
-		clearCache: (): void => { ctx.clearCache(); },
-		openCacheFolder: (): void => {
-			if (!ctx.$appWindow || ctx.$appWindow.isDestroyed()) { return; }
-			const storagePath = ctx.$appWindow.webContents.session.getStoragePath();
-			if (storagePath) {
-				shell.openPath(storagePath);
-			}
-		},
-		refreshMenu: (): Promise<void> => ctx.setMenu(),
 		updateStatus: (ctx.updateService.getStatus() as `idle` | `downloading` | `downloaded`) || `idle`,
 		onCheckForUpdates: (): void => ctx.updateService.checkForUpdates(),
 		onInstallUpdate: (): void => ctx.updateService.installUpdate(),

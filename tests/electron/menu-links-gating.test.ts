@@ -12,8 +12,6 @@ const minimalContext: MenuContext = {
 	isEnvironmentPending: false,
 	isInitializing: false,
 	testNetworkEnabled: true,
-	sessionAge: `0m`,
-	cacheSize: 0,
 	quit: noop,
 	startAFreshTest: noop,
 	copyUrl: noop,
@@ -23,9 +21,6 @@ const minimalContext: MenuContext = {
 	back: noop,
 	forward: noop,
 	toggleNetwork: noop,
-	clearCache: noop,
-	openCacheFolder: noop,
-	refreshMenu: noop,
 	linkItems: [],
 	updateStatus: `idle`,
 	onCheckForUpdates: noop,
@@ -131,27 +126,6 @@ describe(`Menu links and DevTools gating (Refined)`, () => {
 
 			expect(eyasDevTools).toBeDefined();
 			expect(eyasDevTools.enabled).not.toBe(false);
-		});
-	});
-
-	describe(`Global Settings`, () => {
-		test(`Cache submenu items are always enabled if config is loaded`, () => {
-			const ctx = {
-				...minimalContext,
-				isConfigLoaded: true,
-				isInitializing: true
-			};
-			const template = buildMenuTemplate(ctx as MenuContext) as MenuItemConstructorOptions[];
-			const toolsMenu = template.find((m: MenuItemConstructorOptions) => m.label && m.label.includes(`Development Tools`));
-			if (!toolsMenu) throw new Error();
-			const cacheItem = (toolsMenu.submenu as MenuItemConstructorOptions[]).find((i: MenuItemConstructorOptions) => i.label && i.label.includes(`Cache`));
-			if (!cacheItem) throw new Error();
-
-			(cacheItem.submenu as MenuItemConstructorOptions[]).forEach((i: MenuItemConstructorOptions) => {
-				if (i.label) {
-					expect(i.enabled).not.toBe(false);
-				}
-			});
 		});
 	});
 });

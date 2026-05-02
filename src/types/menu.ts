@@ -1,4 +1,4 @@
-import type { AppName, IsActive, FormattedDuration, ByteCount, UpdateStatus, MenuLabel, DomainUrl, MenuAccelerator, MetadataKey } from './primitives.js';
+import type { AppName, IsActive, UpdateStatus, MenuLabel, DomainUrl, MenuAccelerator, MetadataKey } from './primitives.js';
 
 /** A single menu item descriptor */
 type MenuItem = {
@@ -16,8 +16,6 @@ export type MenuTemplate = MenuItem[];
 
 /** Parameters for getMenuContext */
 export type MenuContextParams = {
-	sessionAge: FormattedDuration;
-	cacheSize: ByteCount;
 	linkItems: MenuItem[];
 }
 
@@ -32,8 +30,6 @@ export type MenuContext = {
 	appName: AppName;
 	isDev: IsActive;
 	testNetworkEnabled: IsActive;
-	sessionAge: FormattedDuration;
-	cacheSize: ByteCount | FormattedDuration;
 	onOpenSettings?: () => void;
 	onShowWhatsNew?: () => void;
 	quit: () => void;
@@ -45,9 +41,6 @@ export type MenuContext = {
 	back: () => void;
 	forward: () => void;
 	toggleNetwork: () => void;
-	clearCache: () => void;
-	openCacheFolder: () => void;
-	refreshMenu: () => void;
 	linkItems: MenuItem[];
 	updateStatus?: UpdateStatus;
 	onCheckForUpdates: () => void;
