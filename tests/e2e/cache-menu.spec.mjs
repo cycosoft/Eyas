@@ -80,6 +80,6 @@ test.describe(`Cache Menu Interaction`, () => {
 
 		// 6. Verify size is updated (should be 0 or very small)
 		// Note: Electron might not report exactly 0 immediately, but it should be much smaller or 0.
-		await expect(sizeItem).toHaveText(/Size: 0 bytes/);
+		await expect(sizeItem).toHaveText(/Size: 0 Bytes/);
 	});
 });

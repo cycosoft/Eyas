@@ -1,6 +1,7 @@
 import eyasLogo from '@/assets/eyas-logo.svg';
 import { reactive } from 'vue';
 import type { NavGroup, NavItem, MnemonicPart, BrowserControl, NavItemValue, ActionHandler } from '@registry/components.js';
+import { formatBytes } from '@/utils/format.utils.js';
 import type { BrowserAction, IsActive, ChannelName, ViewportWidth, ViewportHeight, ByteCount, DurationString } from '@registry/primitives.js';
 import type { Viewport } from '@registry/core.js';
 
@@ -255,7 +256,7 @@ export function updateCache(cacheSize: ByteCount, sessionAge: DurationString, is
 
 	const submenu: NavItem[] = [
 		{ title: `Age: ${sessionAge}`, value: `cache-age`, icon: `mdi-clock-outline`, actionable: false },
-		{ title: `Size: ${cacheSize} bytes`, value: `cache-size`, icon: `mdi-database-outline`, actionable: false },
+		{ title: `Size: ${formatBytes(cacheSize)}`, value: `cache-size`, icon: `mdi-database-outline`, actionable: false },
 		{ title: `divider`, value: `cache-divider-1`, divider: true },
 		{ title: `Clear`, value: `clear-cache`, icon: `mdi-delete-sweep`, mnemonic: `C` }
 	];
