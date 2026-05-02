@@ -10,6 +10,7 @@
 				append-icon="mdi-chevron-down"
 				:title="group.title"
 				:data-qa="`btn-nav-group-${group.name.toLowerCase()}`"
+				:active="activeGroup === group.name"
 				@click="activate($event, group)"
 				@mouseenter="onMouseEnter($event, group)"
 			>
@@ -81,6 +82,7 @@
 						[`text-${item.color}`]: item.color,
 						'non-actionable': item.actionable === false
 					}"
+					:active="item.selected"
 					data-qa="btn-nav-item"
 					@click="item.actionable === false ? undefined : onItemClick(item)"
 				>
@@ -123,6 +125,7 @@
 										[`text-${sub.color}`]: sub.color,
 										'non-actionable': sub.actionable === false
 									}"
+									:active="sub.selected"
 									data-qa="btn-nav-item"
 									@click="sub.actionable === false ? undefined : onItemClick(sub)"
 								>
@@ -156,6 +159,7 @@ import type { NavigationStatePayload } from '@registry/ipc.js';
 import { groups, browserControls, isControlDisabled, handleBrowserControlClick, goBack, goForward, reload, goHome, handleNavItemClick, updateViewports, updateCache } from './AppHeader.logic.js';
 
 const menu = ref(false);
+const activeGroup = ref<string | null>(null);
 const activator = ref<Element | undefined>();
 const menuItems = ref<NavItem[]>([]);
 const canGoBack = ref(false);
@@ -171,12 +175,14 @@ let pendingOpen: PendingNavOpen | null = null;
 watch(menu, isOpen => {
 	if (!isOpen) {
 		delayedClose();
+		activeGroup.value = null;
 	}
 });
 
 function openMenu(targetEl: Element, group: NavGroup): void {
 	activator.value = targetEl;
 	menuItems.value = group.submenu;
+	activeGroup.value = group.name;
 	menu.value = true;
 }
 
@@ -293,5 +299,15 @@ defineExpose({
 
 .non-actionable:hover {
 	background: transparent !important;
+}
+
+.v-btn--active {
+	background-color: rgba(var(--v-theme-primary), 0.1) !important;
+	color: rgb(var(--v-theme-primary)) !important;
+}
+
+.v-list-item--active {
+	background-color: rgba(var(--v-theme-primary), 0.1) !important;
+	color: rgb(var(--v-theme-primary)) !important;
 }
 </style>

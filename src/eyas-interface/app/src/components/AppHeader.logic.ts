@@ -198,9 +198,10 @@ export function updateViewports(viewports: Viewport[], currentWidth: ViewportWid
 
 	if (!isMatched) {
 		submenu.push({
-			title: `🔘 Current (${currentWidth} x ${currentHeight})`,
+			title: `Current (${currentWidth} x ${currentHeight})`,
 			value: `set-viewport:${currentWidth}:${currentHeight}`,
 			icon: `mdi-crop-free`,
+			selected: true,
 			click: () => setViewport(currentWidth, currentHeight)
 		});
 		submenu.push({ title: `divider`, value: `viewport-divider-current`, divider: true });
@@ -209,7 +210,6 @@ export function updateViewports(viewports: Viewport[], currentWidth: ViewportWid
 	// Add all viewports
 	viewports.forEach((v, index) => {
 		const isSelected = Math.abs(v.width - currentWidth) <= tolerance && Math.abs(v.height - currentHeight) <= tolerance;
-		const prefix = isSelected ? `🔘 ` : ``;
 
 		// Add separator before defaults if they aren't the first items
 		if (v.isDefault && index > 0 && !viewports[index - 1].isDefault) {
@@ -217,9 +217,10 @@ export function updateViewports(viewports: Viewport[], currentWidth: ViewportWid
 		}
 
 		submenu.push({
-			title: `${prefix}${v.label} (${v.width} x ${v.height})`,
+			title: `${v.label} (${v.width} x ${v.height})`,
 			value: `set-viewport:${v.width}:${v.height}`,
 			icon: v.isDefault ? `mdi-devices` : `mdi-cellphone-link`,
+			selected: isSelected,
 			click: () => setViewport(v.width, v.height)
 		});
 	});

@@ -177,6 +177,7 @@ export type NavItem = {
 	shortcut?: MenuAccelerator;
 	mnemonic?: string;
 	mnemonicParts?: MnemonicPart[];
+	selected?: IsActive;
 	submenu?: NavItem[];
 	click?: () => void;
 	actionable?: boolean;
