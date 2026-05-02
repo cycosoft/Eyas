@@ -1,4 +1,4 @@
-import { ipcMain, nativeTheme, app } from 'electron';
+import { ipcMain, nativeTheme, app, shell } from 'electron';
 import type { CoreContext } from '@registry/eyas-core.js';
 import { parseURL } from '@scripts/parse-url.js';
 import * as settingsService from './settings-service.js';
@@ -112,6 +112,20 @@ function initAppIpcListeners(ctx: CoreContext): void {
 	// viewport management
 	ipcMain.on(`set-viewport`, (_event, [width, height]: [ViewportWidth, ViewportHeight]) => {
 		ctx.$appWindow?.setContentSize(width, height + EYAS_HEADER_HEIGHT);
+	});
+
+	// cache management
+	ipcMain.on(`clear-cache`, async () => {
+		ctx.clearCache();
+		await ctx.updateNavigationState();
+	});
+
+	ipcMain.on(`open-cache-folder`, () => {
+		if (!ctx.$appWindow || ctx.$appWindow.isDestroyed()) { return; }
+		const storagePath = ctx.$appWindow.webContents.session.getStoragePath();
+		if (storagePath) {
+			shell.openPath(storagePath);
+		}
 	});
 }
 

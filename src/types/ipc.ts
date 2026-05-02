@@ -31,7 +31,9 @@ export const VALID_SEND_CHANNELS = [
 	`browser-reload`,
 	`browser-home`,
 	`open-external`,
-	`set-viewport`
+	`set-viewport`,
+	`clear-cache`,
+	`open-cache-folder`
 ] as const;
 
 export const VALID_RECEIVE_CHANNELS = [
@@ -58,6 +60,9 @@ export type NavigationStatePayload = {
 	canGoForward: IsActive;
 	viewports?: Viewport[];
 	currentViewport?: ViewportSize;
+	cacheSize?: number;
+	sessionAge?: string;
+	isDev?: boolean;
 };
 
 type SendChannel = typeof VALID_SEND_CHANNELS[number];

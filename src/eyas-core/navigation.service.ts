@@ -264,16 +264,26 @@ function reload(ctx: CoreContext): void {
  * Updates the navigation state in the UI layer.
  * @param ctx The core context.
  */
-function updateNavigationState(ctx: CoreContext): void {
+async function updateNavigationState(ctx: CoreContext): Promise<void> {
 	const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
 	if (!webContents || webContents.isDestroyed()) { return; }
+
+	let cacheSize = 0;
+	try {
+		cacheSize = await webContents.session.getCacheSize();
+	} catch {
+		// ignore
+	}
 
 	// push navigation state to the UI layer
 	ctx.$eyasLayer?.webContents.send(`navigation-state-updated`, {
 		canGoBack: webContents.navigationHistory.canGoBack(),
 		canGoForward: webContents.navigationHistory.canGoForward(),
 		viewports: ctx.$allViewports,
-		currentViewport: ctx.$currentViewport
+		currentViewport: ctx.$currentViewport,
+		cacheSize,
+		sessionAge: ctx.getSessionAge(),
+		isDev: ctx.$isDev
 	});
 }
 

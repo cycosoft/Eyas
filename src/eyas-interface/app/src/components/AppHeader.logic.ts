@@ -28,7 +28,7 @@ export const groups = reactive<NavGroup[]>([
 			{ title: `divider`, value: `divider-1`, divider: true },
 			{ title: `Viewport`, value: `viewport`, icon: `mdi-aspect-ratio`, appendIcon: `mdi-chevron-right`, mnemonic: `V` },
 			{ title: `divider`, value: `divider-2`, divider: true },
-			{ title: `Cache`, value: `cache`, icon: `mdi-flash`, appendIcon: `mdi-chevron-right`, mnemonic: `C` },
+			{ title: `Cache`, value: `cache`, icon: `mdi-flash`, appendIcon: `mdi-chevron-right`, mnemonic: `C`, submenu: [] },
 			{ title: `divider`, value: `divider-3`, divider: true },
 			{ title: `Developer Tools (UI)`, value: `devtools-ui`, icon: `mdi-view-grid`, mnemonic: `U` },
 			{ title: `Developer Tools (Test)`, value: `devtools-test`, icon: `mdi-flask`, shortcut: `F12`, mnemonic: `D` }
@@ -168,7 +168,9 @@ export function handleNavItemClick(value: NavItemValue): void {
 		changelog: () => { window.eyas?.send(`show-whats-new` as ChannelName, true); },
 		exit: () => { window.eyas?.send(`request-exit` as ChannelName); },
 		'devtools-ui': () => { window.eyas?.send(`open-devtools-ui` as ChannelName); },
-		'devtools-test': () => { window.eyas?.send(`open-devtools-test` as ChannelName); }
+		'devtools-test': () => { window.eyas?.send(`open-devtools-test` as ChannelName); },
+		'clear-cache': () => { window.eyas?.send(`clear-cache` as ChannelName); },
+		'open-cache-folder': () => { window.eyas?.send(`open-cache-folder` as ChannelName); }
 	};
 
 	actions[value]?.();
@@ -236,4 +238,36 @@ export function updateViewports(viewports: Viewport[], currentWidth: ViewportWid
  */
 function setViewport(width: ViewportWidth, height: ViewportHeight): void {
 	window.eyas?.send(`set-viewport` as ChannelName, [width, height]);
+}
+
+/**
+ * Updates the cache submenu items based on the provided cache info.
+ * @param cacheSize The current cache size in bytes.
+ * @param sessionAge The current session age string.
+ * @param isDev Whether the application is running in development mode.
+ */
+export function updateCache(cacheSize: number, sessionAge: string, isDev: boolean): void {
+	const toolsGroup = groups.find(g => g.name === `Tools`);
+	if (!toolsGroup) { return; }
+
+	const cacheItem = toolsGroup.submenu.find(i => i.value === `cache`);
+	if (!cacheItem) { return; }
+
+	const submenu: NavItem[] = [
+		{ title: `⏳ Age: ${sessionAge}`, value: `cache-age`, icon: `mdi-clock-outline` },
+		{ title: `💾 Size: ${cacheSize} bytes`, value: `cache-size`, icon: `mdi-database-outline` },
+		{ title: `divider`, value: `cache-divider-1`, divider: true },
+		{ title: `🗑️ Clear`, value: `clear-cache`, icon: `mdi-delete-sweep`, mnemonic: `C` }
+	];
+
+	if (isDev) {
+		submenu.push({ title: `📂 Open Cache Folder`, value: `open-cache-folder`, icon: `mdi-folder-open`, mnemonic: `O` });
+	}
+
+	// Pre-calculate mnemonic parts for the new submenu items
+	for (const item of submenu) {
+		item.mnemonicParts = getMnemonicParts(item);
+	}
+
+	cacheItem.submenu = submenu;
 }

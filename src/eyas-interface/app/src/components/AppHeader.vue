@@ -163,7 +163,8 @@ import {
 	reload,
 	goHome,
 	handleNavItemClick,
-	updateViewports
+	updateViewports,
+	updateCache
 } from './AppHeader.logic.js';
 
 const menu = ref(false);
@@ -207,6 +208,10 @@ onMounted(() => {
 
 		if (payload.viewports && payload.currentViewport) {
 			updateViewports(payload.viewports, payload.currentViewport[0], payload.currentViewport[1]);
+		}
+
+		if (payload.cacheSize !== undefined && payload.sessionAge !== undefined) {
+			updateCache(payload.cacheSize, payload.sessionAge, !!payload.isDev);
 		}
 	});
 });
