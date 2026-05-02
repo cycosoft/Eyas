@@ -355,5 +355,86 @@ describe(`AppHeader`, () => {
 				expect(mockSend).toHaveBeenCalledWith(`browser-home`);
 			});
 		});
+
+		describe(`developer tools`, () => {
+			test(`onItemClick() sends open-devtools-ui IPC for 'devtools-ui' item`, () => {
+				const vm = wrapper.vm as unknown as AppHeaderVM;
+				vm.onItemClick({ title: `Developer Tools (Eyas)`, value: `devtools-ui` });
+				expect(mockSend).toHaveBeenCalledWith(`open-devtools-ui`);
+			});
+
+			test(`onItemClick() sends open-devtools-test IPC for 'devtools-test' item`, () => {
+				const vm = wrapper.vm as unknown as AppHeaderVM;
+				vm.onItemClick({ title: `Developer Tools (Test)`, value: `devtools-test` });
+				expect(mockSend).toHaveBeenCalledWith(`open-devtools-test`);
+			});
+
+			test(`'Developer Tools (Eyas)' is hidden when isDev is false`, async () => {
+				let navCallback: ((payload: NavigationStatePayload) => void) | null = null;
+				(window as unknown as WindowWithEyas).eyas.receive = vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
+					if (channel === `navigation-state-updated`) {
+						navCallback = cb as (payload: NavigationStatePayload) => void;
+					}
+				});
+
+				wrapper = mount(AppHeader, {
+					global: {
+						stubs: {
+							VAppBar: { template: `<div><slot /></div>` },
+							VMenu: { template: `<div><slot /></div>` },
+							VList: { template: `<div><slot /></div>` },
+							VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
+							VBtn: { template: `<button @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
+							VIcon: true,
+							VImg: true
+						}
+					}
+				});
+
+				if (navCallback) {
+					(navCallback as any)({ isDev: false }); // eslint-disable-line @typescript-eslint/no-explicit-any
+				}
+				await wrapper.vm.$nextTick();
+
+				const vm = wrapper.vm as unknown as AppHeaderVM;
+				const toolsMenu = vm.groups.find((g: NavGroup) => g.name === `Tools`);
+				const eyasDevTools = toolsMenu?.submenu?.find((i: NavItem) => i.value === `devtools-ui`);
+				expect(eyasDevTools).toBeUndefined();
+			});
+
+			test(`'Developer Tools (Eyas)' is shown when isDev is true`, async () => {
+				let navCallback: ((payload: NavigationStatePayload) => void) | null = null;
+				(window as unknown as WindowWithEyas).eyas.receive = vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
+					if (channel === `navigation-state-updated`) {
+						navCallback = cb as (payload: NavigationStatePayload) => void;
+					}
+				});
+
+				wrapper = mount(AppHeader, {
+					global: {
+						stubs: {
+							VAppBar: { template: `<div><slot /></div>` },
+							VMenu: { template: `<div><slot /></div>` },
+							VList: { template: `<div><slot /></div>` },
+							VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
+							VBtn: { template: `<button @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
+							VIcon: true,
+							VImg: true
+						}
+					}
+				});
+
+				if (navCallback) {
+					(navCallback as any)({ isDev: true }); // eslint-disable-line @typescript-eslint/no-explicit-any
+				}
+				await wrapper.vm.$nextTick();
+
+				const vm = wrapper.vm as unknown as AppHeaderVM;
+				const toolsMenu = vm.groups.find((g: NavGroup) => g.name === `Tools`);
+				const eyasDevTools = toolsMenu?.submenu?.find((i: NavItem) => i.value === `devtools-ui`);
+				expect(eyasDevTools).toBeDefined();
+				expect(eyasDevTools?.title).toBe(`Developer Tools (Eyas)`);
+			});
+		});
 	});
 });

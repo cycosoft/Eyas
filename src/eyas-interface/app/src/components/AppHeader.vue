@@ -156,7 +156,7 @@ import useModalsStore from '@/stores/modals.js';
 import type { NavGroup, NavItem, NavActivateEvent, PendingNavOpen } from '@registry/components.js';
 import type { ChannelName, MenuLabel } from '@registry/primitives.js';
 import type { NavigationStatePayload } from '@registry/ipc.js';
-import { groups, browserControls, isControlDisabled, handleBrowserControlClick, goBack, goForward, reload, goHome, handleNavItemClick, updateViewports, updateCache } from './AppHeader.logic.js';
+import { groups, browserControls, isControlDisabled, handleBrowserControlClick, goBack, goForward, reload, goHome, handleNavItemClick, updateViewports, updateCache, updateTools } from './AppHeader.logic.js';
 
 const menu = ref(false);
 const activeGroup = ref<MenuLabel | null>(null);
@@ -206,6 +206,10 @@ onMounted(() => {
 
 		if (payload.cacheSize !== undefined && payload.sessionAge !== undefined) {
 			updateCache(payload.cacheSize, payload.sessionAge, !!payload.isDev);
+		}
+
+		if (payload.isDev !== undefined) {
+			updateTools(!!payload.isDev);
 		}
 	});
 });
@@ -284,14 +288,8 @@ defineExpose({
 <style scoped>
 .menu-logo { height: 1.5em; width: 1.5em; }
 .menu-shortcut { font-size: 0.65rem !important; opacity: 0.6 !important; }
-
-.non-actionable {
-	cursor: default !important;
-	pointer-events: none;
-}
-
-.v-btn--active,
-.v-list-item--active {
+.non-actionable { cursor: default !important; pointer-events: none; }
+.v-btn--active, .v-list-item--active {
 	background-color: rgba(var(--v-theme-primary), 0.1) !important;
 	color: rgb(var(--v-theme-primary)) !important;
 }

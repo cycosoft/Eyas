@@ -31,7 +31,7 @@ export const groups = reactive<NavGroup[]>([
 			{ title: `divider`, value: `divider-2`, divider: true },
 			{ title: `Cache`, value: `cache`, icon: `mdi-flash`, appendIcon: `mdi-chevron-right`, mnemonic: `C`, submenu: [] },
 			{ title: `divider`, value: `divider-3`, divider: true },
-			{ title: `Developer Tools (UI)`, value: `devtools-ui`, icon: `mdi-view-grid`, mnemonic: `U` },
+			{ title: `Developer Tools (Eyas)`, value: `devtools-ui`, icon: `mdi-view-grid`, mnemonic: `U` },
 			{ title: `Developer Tools (Test)`, value: `devtools-test`, icon: `mdi-flask`, shortcut: `F12`, mnemonic: `D` }
 		]
 	}
@@ -106,47 +106,14 @@ export function isControlDisabled(action: BrowserAction, canGoBack: IsActive, ca
 	return false;
 }
 
-/**
- * Navigates the test layer back in history.
- */
-export function goBack(): void {
-	window.eyas?.send(`browser-back` as ChannelName);
-}
+export const goBack = (): void => window.eyas?.send(`browser-back` as ChannelName);
+export const goForward = (): void => window.eyas?.send(`browser-forward` as ChannelName);
+export const reload = (): void => window.eyas?.send(`browser-reload` as ChannelName);
+export const goHome = (): void => window.eyas?.send(`browser-home` as ChannelName);
 
-/**
- * Navigates the test layer forward in history.
- */
-export function goForward(): void {
-	window.eyas?.send(`browser-forward` as ChannelName);
-}
-
-/**
- * Reloads the current page in the test layer.
- */
-export function reload(): void {
-	window.eyas?.send(`browser-reload` as ChannelName);
-}
-
-/**
- * Navigates the test layer to the test home page.
- */
-export function goHome(): void {
-	window.eyas?.send(`browser-home` as ChannelName);
-}
-
-/**
- * Handles a click event on a browser control button.
- * @param action The action to perform.
- * @param handlers Handlers for each navigation action.
- */
+/** Handles a click event on a browser control button. */
 export function handleBrowserControlClick(action: BrowserAction): void {
-	const actions: Record<BrowserAction, () => void> = {
-		back: goBack,
-		forward: goForward,
-		reload,
-		home: goHome
-	};
-
+	const actions: Record<BrowserAction, () => void> = { back: goBack, forward: goForward, reload, home: goHome };
 	actions[action]?.();
 }
 
@@ -272,4 +239,39 @@ export function updateCache(cacheSize: ByteCount, sessionAge: DurationString, is
 	}
 
 	cacheItem.submenu = submenu;
+}
+
+/**
+ * Updates the Tools menu items based on the application state.
+ * @param isDev Whether the application is running in development mode.
+ */
+export function updateTools(isDev: IsActive): void {
+	const toolsGroup = groups.find(g => g.name === `Tools`);
+	if (!toolsGroup) { return; }
+
+	const devToolsUiIndex = toolsGroup.submenu.findIndex(i => i.value === `devtools-ui`);
+
+	// only show the Eyas devtools in dev mode
+	if (isDev) {
+		if (devToolsUiIndex === -1) {
+			// Find the index of devtools-test to insert before it
+			const devToolsTestIndex = toolsGroup.submenu.findIndex(i => i.value === `devtools-test`);
+			const insertIndex = devToolsTestIndex === -1 ? toolsGroup.submenu.length : devToolsTestIndex;
+
+			toolsGroup.submenu.splice(insertIndex, 0, {
+				title: `Developer Tools (Eyas)`,
+				value: `devtools-ui`,
+				icon: `mdi-view-grid`,
+				mnemonic: `U`
+			});
+
+			// Re-calculate mnemonic parts for the new item
+			const newItem = toolsGroup.submenu[insertIndex];
+			newItem.mnemonicParts = getMnemonicParts(newItem);
+		}
+	} else {
+		if (devToolsUiIndex !== -1) {
+			toolsGroup.submenu.splice(devToolsUiIndex, 1);
+		}
+	}
 }

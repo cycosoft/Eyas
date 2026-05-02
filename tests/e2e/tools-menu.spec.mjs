@@ -59,7 +59,7 @@ test.describe(`Tools Menu Interaction`, () => {
 		const toolsMenuBtn = uiPage.locator(`[data-qa="btn-nav-group-tools"]`);
 		await toolsMenuBtn.click();
 
-		const devToolsUiItem = uiPage.locator(`[data-qa="btn-nav-item"]`, { hasText: `Developer Tools (UI)` });
+		const devToolsUiItem = uiPage.locator(`[data-qa="btn-nav-item"]`, { hasText: `Developer Tools (Eyas)` });
 		const devToolsTestItem = uiPage.locator(`[data-qa="btn-nav-item"]`, { hasText: `Developer Tools (Test)` });
 
 		await expect(devToolsUiItem).toBeVisible();

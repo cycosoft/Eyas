@@ -33,7 +33,9 @@ export const VALID_SEND_CHANNELS = [
 	`open-external`,
 	`set-viewport`,
 	`clear-cache`,
-	`open-cache-folder`
+	`open-cache-folder`,
+	`open-devtools-ui`,
+	`open-devtools-test`
 ] as const;
 
 export const VALID_RECEIVE_CHANNELS = [
