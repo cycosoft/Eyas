@@ -59,6 +59,7 @@
 		:open-on-click="false"
 		:open-on-hover="false"
 		:open-on-focus="false"
+		:close-on-content-click="false"
 	>
 		<v-list
 			class="py-1"
@@ -237,7 +238,10 @@ function onItemClick(item: NavItem): void {
 	} else {
 		handleNavItemClick(item.value);
 	}
-	menu.value = false;
+
+	if (!item.submenu) {
+		menu.value = false;
+	}
 }
 
 function delayedClose(): void {
