@@ -6,7 +6,7 @@
 		@keyup.enter="update"
 		@keyup.u="update"
 	>
-		<v-card>
+		<v-card max-width="450">
 			<v-card-title class="text-h5">
 				Update Ready to Install
 			</v-card-title>
