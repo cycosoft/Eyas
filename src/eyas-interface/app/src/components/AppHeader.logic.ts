@@ -37,7 +37,7 @@ export function handleBroadcastClick(): void {
 		return;
 	}
 
-	if (state.updateStatus === `idle`) {
+	if (state.updateStatus === `idle` || state.updateStatus === `error`) {
 		window.eyas?.send(`check-for-updates` as ChannelName);
 	}
 }
@@ -161,8 +161,8 @@ export const updateInfo = computed(() => {
 			color: `error`,
 			title: `Update check failed`,
 			disabled: false,
-			variant: `text` as const,
-			ripple: true
+			variant: `plain` as const,
+			ripple: false
 		};
 	}
 

@@ -109,7 +109,17 @@ describe(`AppHeader Update Button`, () => {
 		expect(btn.find(`v-icon-stub`).attributes(`icon`)).toBe(`mdi-progress-close`);
 		expect(btn.attributes(`title`)).toBe(`Update check failed`);
 		expect(btn.attributes(`color`)).toBe(`error`);
-		expect(btn.attributes(`variant`)).toBe(`text`);
-		expect(btn.attributes(`ripple`)).toBe(`true`);
+		expect(btn.attributes(`variant`)).toBe(`plain`);
+		expect(btn.attributes(`ripple`)).toBe(`false`);
+	});
+
+	test(`calls check-for-updates when clicked in error state`, async () => {
+		if (updateCallback) { updateCallback(`error`); }
+		await wrapper.vm.$nextTick();
+
+		const btn = wrapper.find(`[data-qa="btn-broadcast"]`);
+		await btn.trigger(`click`);
+
+		expect(mockSend).toHaveBeenCalledWith(`check-for-updates`);
 	});
 });
