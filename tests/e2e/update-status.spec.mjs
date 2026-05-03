@@ -24,7 +24,6 @@ test.describe(`Update Status Visuals`, () => {
 
 		// Helper to check state
 		const checkState = async (status, iconClass, colorClass, animationClass = null) => {
-			console.log(`Checking state: ${status}`);
 			await emitIpcToRenderer(electronApp, `update-status-updated`, status);
 
 			// Wait for the icon to change
@@ -41,7 +40,6 @@ test.describe(`Update Status Visuals`, () => {
 			} else {
 				await expect(btn).not.toHaveClass(/blink-animation/, { timeout: 10000 });
 			}
-			console.log(`State ${status} verified`);
 		};
 
 		// 1. Idle (Default)

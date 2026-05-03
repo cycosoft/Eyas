@@ -55,11 +55,12 @@ describe(`test-preload`, () => {
 
 		it(`injectWithAnonymousScope should wrap function body in anonymous scope`, () => {
 			function testFn(): void {
-				console.log(`test`);
+				const x = 1;
+				void x;
 			}
 			const injected = injectWithAnonymousScope(testFn);
 			expect(injected).toContain(`(() => {`);
-			expect(injected).toContain(`console.log(\`test\`);`);
+			expect(injected).toContain(`const x = 1;`);
 			expect(injected).toContain(`})();`);
 		});
 	});
