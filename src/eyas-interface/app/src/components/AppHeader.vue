@@ -51,7 +51,8 @@
 				<v-btn
 					icon
 					density="compact"
-					variant="text"
+					:variant="updateInfo.variant"
+					:ripple="updateInfo.ripple"
 					class="mr-1"
 					data-qa="btn-broadcast"
 					:title="updateInfo.title"

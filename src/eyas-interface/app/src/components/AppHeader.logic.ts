@@ -127,7 +127,9 @@ export const updateInfo = computed(() => {
 			icon: `mdi-progress-clock`,
 			color: `primary`,
 			title: `Checking for updates...`,
-			disabled: true
+			disabled: true,
+			variant: `text` as const,
+			ripple: true
 		};
 	}
 
@@ -136,7 +138,9 @@ export const updateInfo = computed(() => {
 			icon: `mdi-progress-download`,
 			color: `primary`,
 			title: `Downloading update...`,
-			disabled: true
+			disabled: true,
+			variant: `text` as const,
+			ripple: true
 		};
 	}
 
@@ -145,7 +149,9 @@ export const updateInfo = computed(() => {
 			icon: `mdi-progress-alert`,
 			color: `warning`,
 			title: `Update available - Click to restart`,
-			disabled: false
+			disabled: false,
+			variant: `text` as const,
+			ripple: true
 		};
 	}
 
@@ -154,14 +160,18 @@ export const updateInfo = computed(() => {
 			icon: `mdi-progress-close`,
 			color: `error`,
 			title: `Update check failed`,
-			disabled: false
+			disabled: false,
+			variant: `text` as const,
+			ripple: true
 		};
 	}
 
 	return {
 		icon: `mdi-progress-check`,
 		color: undefined,
-		disabled: false
+		disabled: false,
+		variant: `plain` as const,
+		ripple: false
 	};
 });
 

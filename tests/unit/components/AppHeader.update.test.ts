@@ -31,7 +31,7 @@ describe(`AppHeader Update Button`, () => {
 					VMenu: { template: `<div><slot /></div>` },
 					VList: { template: `<div><slot /></div>` },
 					VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
-					VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
+					VBtn: { template: `<button :disabled="$attrs.disabled" :variant="$attrs.variant" :ripple="$attrs.ripple" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
 					VIcon: true,
 					VImg: true
 				}
@@ -48,7 +48,8 @@ describe(`AppHeader Update Button`, () => {
 		const btn = wrapper.find(`[data-qa="btn-broadcast"]`);
 		expect(btn.exists()).toBe(true);
 		expect(btn.find(`v-icon-stub`).attributes(`icon`)).toBe(`mdi-progress-check`);
-		expect(btn.attributes(`title`)).toBeUndefined();
+		expect(btn.attributes(`variant`)).toBe(`plain`);
+		expect(btn.attributes(`ripple`)).toBe(`false`);
 	});
 
 	test(`calls check-for-updates when clicked in idle state`, async () => {
@@ -67,6 +68,8 @@ describe(`AppHeader Update Button`, () => {
 		expect(btn.attributes(`title`)).toBe(`Checking for updates...`);
 		expect(btn.attributes()).toHaveProperty(`disabled`);
 		expect(btn.attributes(`color`)).toBe(`primary`);
+		expect(btn.attributes(`variant`)).toBe(`text`);
+		expect(btn.attributes(`ripple`)).toBe(`true`);
 		expect(btn.classes()).toContain(`blink-animation`);
 	});
 
@@ -78,6 +81,8 @@ describe(`AppHeader Update Button`, () => {
 		expect(btn.find(`v-icon-stub`).attributes(`icon`)).toBe(`mdi-progress-download`);
 		expect(btn.attributes(`title`)).toBe(`Downloading update...`);
 		expect(btn.attributes()).toHaveProperty(`disabled`);
+		expect(btn.attributes(`variant`)).toBe(`text`);
+		expect(btn.attributes(`ripple`)).toBe(`true`);
 		expect(btn.classes()).toContain(`blink-animation`);
 	});
 
@@ -89,6 +94,8 @@ describe(`AppHeader Update Button`, () => {
 		expect(btn.find(`v-icon-stub`).attributes(`icon`)).toBe(`mdi-progress-alert`);
 		expect(btn.attributes(`title`)).toBe(`Update available - Click to restart`);
 		expect(btn.attributes(`color`)).toBe(`warning`);
+		expect(btn.attributes(`variant`)).toBe(`text`);
+		expect(btn.attributes(`ripple`)).toBe(`true`);
 
 		await btn.trigger(`click`);
 		expect(mockSend).toHaveBeenCalledWith(`install-update`);
@@ -102,5 +109,7 @@ describe(`AppHeader Update Button`, () => {
 		expect(btn.find(`v-icon-stub`).attributes(`icon`)).toBe(`mdi-progress-close`);
 		expect(btn.attributes(`title`)).toBe(`Update check failed`);
 		expect(btn.attributes(`color`)).toBe(`error`);
+		expect(btn.attributes(`variant`)).toBe(`text`);
+		expect(btn.attributes(`ripple`)).toBe(`true`);
 	});
 });
