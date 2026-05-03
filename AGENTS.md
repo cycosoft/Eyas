@@ -23,6 +23,7 @@
 - **Clarification**: Ask questions immediately if requirements are ambiguous.
 - **Efficiency**: Be surgically precise. Narrow down scope with targeted searches before reading large files. Group multiple related edits to minimize churn and save time.
 - **Critical Thinking**: Avoid sycophantic behavior. Prioritize technical correctness and performance over blind agreement. If a proposal is suboptimal, provide a professional critique and better alternative.
+- **Interaction Gating**: Do not automatically implement changes when the user asks a question or expresses a thought. Differentiate between exploration and execution. Wait for explicit confirmation before modifying code unless the request is a direct command.
 
 ## 3. Engineering Standards (TDD & DRY)
 - **TDD First**: Every code change MUST be accompanied by a test (`*.test.ts`). Update or add tests *before* modifying code.
