@@ -29,6 +29,39 @@ const RESIZE_FALLBACK_MS = 200;
 let closeTimeout = -1;
 let resizeFallback = -1;
 let pendingOpen: PendingNavOpen | null = null;
+let checkingStartTime = 0;
+let statusTimeout = -1;
+let pendingStatus: UpdateStatus | null = null;
+
+/**
+ * Handles update status changes from the main process.
+ * @param status The new update status.
+ */
+export function handleUpdateStatusUpdate(status: UpdateStatus): void {
+	window.clearTimeout(statusTimeout);
+
+	if (status === `checking`) {
+		state.updateStatus = status;
+		checkingStartTime = Date.now();
+		pendingStatus = null;
+		return;
+	}
+
+	const MIN_CHECK_MS = 500;
+	const elapsed = Date.now() - checkingStartTime;
+
+	if (state.updateStatus === `checking` && elapsed < MIN_CHECK_MS) {
+		pendingStatus = status;
+		statusTimeout = window.setTimeout(() => {
+			state.updateStatus = pendingStatus || status;
+			pendingStatus = null;
+		}, MIN_CHECK_MS - elapsed);
+		return;
+	}
+
+	state.updateStatus = status;
+	pendingStatus = null;
+}
 
 /** Handles a click event on the broadcast button. */
 export function handleBroadcastClick(): void {
@@ -197,10 +230,4 @@ export function handleNavigationUpdate(data: unknown): void {
 	}
 }
 
-/**
- * Handles update status changes from the main process.
- * @param status The new update status.
- */
-export function handleUpdateStatusUpdate(status: UpdateStatus): void {
-	state.updateStatus = status;
-}
+

@@ -11,6 +11,7 @@ describe(`AppHeader Update Button`, () => {
 	let updateCallback: ((status: UpdateStatus) => void) | null = null;
 
 	beforeEach(() => {
+		vi.useFakeTimers();
 		setActivePinia(createPinia());
 		mockSend = vi.fn();
 		updateCallback = null;
@@ -42,6 +43,7 @@ describe(`AppHeader Update Button`, () => {
 	afterEach(() => {
 		if (wrapper) { wrapper.unmount(); }
 		vi.clearAllMocks();
+		vi.useRealTimers();
 	});
 
 	test(`renders the check for updates button by default`, () => {
@@ -71,6 +73,21 @@ describe(`AppHeader Update Button`, () => {
 		expect(btn.attributes(`variant`)).toBe(`text`);
 		expect(btn.attributes(`ripple`)).toBe(`true`);
 		expect(btn.classes()).toContain(`blink-animation`);
+	});
+
+	test(`enforces a minimum duration for the checking state`, async () => {
+		if (updateCallback) {
+			updateCallback(`checking`);
+			updateCallback(`error`);
+		}
+		await wrapper.vm.$nextTick();
+
+		const btn = wrapper.find(`[data-qa="btn-broadcast"]`);
+		expect(btn.find(`v-icon-stub`).attributes(`icon`)).toBe(`mdi-progress-clock`);
+
+		vi.advanceTimersByTime(500);
+		await wrapper.vm.$nextTick();
+		expect(btn.find(`v-icon-stub`).attributes(`icon`)).toBe(`mdi-progress-close`);
 	});
 
 	test(`shows downloading state`, async () => {
