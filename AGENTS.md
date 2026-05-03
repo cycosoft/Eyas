@@ -80,3 +80,17 @@
 - **Cost-Benefit of Churn**: Avoid structural refactors (file splitting, logic extraction) unless the current file is genuinely unmaintainable or the user explicitly requests it. The token and stability cost of a refactor often outweighs the benefit of minor linting compliance.
 - **Registry-First Lifecycle**: If a fix requires a new method call on a mocked object, update the central mock registry and types BEFORE modifying the tests.
 - **Header Integrity**: When adding both imports and logic to a file, prioritize `multi_replace_file_content` over sequential `replace_file_content` calls. This ensures the file header (imports/constants) and the logic remain synchronized and prevents accidental regression of imports during the edit process.
+
+## 8. Efficiency Tiers & Work Streams
+- **Tier 1: Visual/Cosmetic Iteration**
+  - **Definition**: Changes to CSS, labels, or UI layout that do not touch application logic or IPC.
+  - **Workflow**: Rapid Edit -> Manual/User Verification.
+  - **Verification**: Skip full test suites. Run *only* `npx eslint <file> --fix` locally. Batch full verification at the end of the task.
+- **Tier 2: Targeted Functional Fixes**
+  - **Definition**: Logic changes in a single module or component.
+  - **Workflow**: TDD (Targeted Test) -> Code -> Targeted Verification.
+  - **Verification**: Run `npx vitest <file>` or `npx playwright test <file>`. Skip project-wide checks until the feature is stable.
+- **Tier 3: Final Integration (The "Check-In" Gate)**
+  - **Definition**: Completion of a feature branch or complex refactor.
+  - **Workflow**: Full project validation.
+  - **Verification**: Mandatory `npm run check` before concluding the session or task.
