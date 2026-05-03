@@ -81,7 +81,14 @@ function initCoreIpcListeners(ctx: CoreContext): void {
 	ipcMain.on(`show-whats-new`, () => { ctx.uiEvent(`show-whats-new`, true); });
 	ipcMain.on(`show-test-server-setup`, () => { ctx.showTestServerSetup(); });
 	ipcMain.on(`check-for-updates`, () => { ctx.updateService.checkForUpdates(); });
-	ipcMain.on(`install-update`, () => { ctx.updateService.installUpdate(); });
+	ipcMain.on(`install-update`, () => {
+		if (ctx.$appWindow) {
+			ctx.$appWindow.removeListener(`close`, ctx.manageAppClose);
+			ctx.$appWindow.close();
+		}
+		ctx.updateService.installUpdate();
+	});
+	ipcMain.on(`request-update-ready-modal`, () => { ctx.uiEvent(`show-update-ready-modal`, true); });
 }
 
 /**

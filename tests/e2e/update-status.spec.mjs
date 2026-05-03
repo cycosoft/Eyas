@@ -49,6 +49,7 @@ test.describe(`Update Status Visuals`, () => {
 
 		// 1. Idle (Default)
 		// Icon should be mdi-progress-check
+		await emitIpcToRenderer(electronApp, `update-status-updated`, `idle`);
 		await expect(icon).toHaveClass(/mdi-progress-check/);
 
 		// 2. Checking

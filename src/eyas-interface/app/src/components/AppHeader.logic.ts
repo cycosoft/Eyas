@@ -66,7 +66,7 @@ export function handleUpdateStatusUpdate(status: UpdateStatus): void {
 /** Handles a click event on the broadcast button. */
 export function handleBroadcastClick(): void {
 	if (state.updateStatus === `downloaded`) {
-		window.eyas?.send(`install-update` as ChannelName);
+		window.eyas?.send(`request-update-ready-modal` as ChannelName);
 		return;
 	}
 

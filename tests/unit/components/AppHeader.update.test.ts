@@ -115,7 +115,7 @@ describe(`AppHeader Update Button`, () => {
 		expect(btn.attributes(`ripple`)).toBe(`true`);
 
 		await btn.trigger(`click`);
-		expect(mockSend).toHaveBeenCalledWith(`install-update`);
+		expect(mockSend).toHaveBeenCalledWith(`request-update-ready-modal`);
 	});
 
 	test(`shows error state`, async () => {

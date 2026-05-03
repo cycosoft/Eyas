@@ -9,6 +9,7 @@
 		<TestServerActiveModal />
 		<SettingsModal />
 		<WhatsNewModal />
+		<UpdateReadyModal />
 	</v-app>
 </template>
 
@@ -26,6 +27,7 @@ import TestServerSetupModal from '@/components/TestServerSetupModal.vue';
 import TestServerActiveModal from '@/components/TestServerActiveModal.vue';
 import SettingsModal from '@/components/SettingsModal.vue';
 import WhatsNewModal from '@/components/WhatsNewModal.vue';
+import UpdateReadyModal from '@/components/UpdateReadyModal.vue';
 import changelogData from '@/CHANGELOG.json';
 import type { ChannelName } from '@registry/primitives.js';
 

@@ -40,7 +40,8 @@ export const VALID_SEND_CHANNELS = [
 	`open-devtools-ui`,
 	`open-devtools-test`,
 	`check-for-updates`,
-	`install-update`
+	`install-update`,
+	`request-update-ready-modal`
 ] as const;
 
 export const VALID_RECEIVE_CHANNELS = [
@@ -59,7 +60,8 @@ export const VALID_RECEIVE_CHANNELS = [
 	`show-whats-new`,
 	`ui-shown`,
 	`navigation-state-updated`,
-	`update-status-updated`
+	`update-status-updated`,
+	`show-update-ready-modal`
 ] as const;
 
 /** Payload for the 'navigation-state-updated' IPC event */
