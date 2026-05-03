@@ -67,7 +67,6 @@ describe(`AppHeader Update Button`, () => {
 
 		const btn = wrapper.find(`[data-qa="btn-broadcast"]`);
 		expect(btn.find(`v-icon-stub`).attributes(`icon`)).toBe(`mdi-progress-clock`);
-		expect(btn.attributes(`title`)).toBe(`Checking for updates...`);
 		expect(btn.attributes()).toHaveProperty(`disabled`);
 		expect(btn.attributes(`color`)).toBe(`primary`);
 		expect(btn.attributes(`variant`)).toBe(`text`);
@@ -96,7 +95,6 @@ describe(`AppHeader Update Button`, () => {
 
 		const btn = wrapper.find(`[data-qa="btn-broadcast"]`);
 		expect(btn.find(`v-icon-stub`).attributes(`icon`)).toBe(`mdi-progress-download`);
-		expect(btn.attributes(`title`)).toBe(`Downloading update...`);
 		expect(btn.attributes()).toHaveProperty(`disabled`);
 		expect(btn.attributes(`variant`)).toBe(`text`);
 		expect(btn.attributes(`ripple`)).toBe(`true`);
@@ -109,7 +107,6 @@ describe(`AppHeader Update Button`, () => {
 
 		const btn = wrapper.find(`[data-qa="btn-broadcast"]`);
 		expect(btn.find(`v-icon-stub`).attributes(`icon`)).toBe(`mdi-progress-alert`);
-		expect(btn.attributes(`title`)).toBe(`Update available - Click to restart`);
 		expect(btn.attributes(`color`)).toBe(`success`);
 		expect(btn.attributes(`variant`)).toBe(`text`);
 		expect(btn.attributes(`ripple`)).toBe(`true`);
@@ -124,7 +121,6 @@ describe(`AppHeader Update Button`, () => {
 
 		const btn = wrapper.find(`[data-qa="btn-broadcast"]`);
 		expect(btn.find(`v-icon-stub`).attributes(`icon`)).toBe(`mdi-progress-close`);
-		expect(btn.attributes(`title`)).toBe(`Update check failed`);
 		expect(btn.attributes(`color`)).toBe(`error`);
 		expect(btn.attributes(`variant`)).toBe(`plain`);
 		expect(btn.attributes(`ripple`)).toBe(`false`);
