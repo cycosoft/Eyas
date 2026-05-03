@@ -5,7 +5,7 @@ import type { EnvironmentChoice, Viewport, ViewportSize } from './core.js';
 export type EnvironmentSelectedPayload = DomainUrl | EnvironmentChoice;
 
 /** The current state of the application update process */
-export type UpdateStatus = `idle` | `downloading` | `downloaded`;
+export type UpdateStatus = `idle` | `checking` | `downloading` | `downloaded`;
 
 export const VALID_SEND_CHANNELS = [
 	`app-exit`,

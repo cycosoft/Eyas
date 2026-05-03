@@ -1,9 +1,10 @@
-import { reactive } from 'vue';
+import { reactive, computed } from 'vue';
 import useModalsStore from '@/stores/modals.js';
 import type { NavGroup, NavItem, NavActivateEvent, PendingNavOpen } from '@registry/components.js';
 import type { ChannelName, MenuLabel } from '@registry/primitives.js';
 import type { UpdateStatus } from '@registry/ipc.js';
-import { handleNavItemClick } from './AppHeader.updates.js';
+import { handleNavItemClick, updateCache, updateTools, updateViewports } from './AppHeader.updates.js';
+import type { NavigationStatePayload } from '@registry/ipc.js';
 
 export * from './AppHeader.data.js';
 export * from './AppHeader.navigation.js';
@@ -23,7 +24,7 @@ export const state = reactive({
 });
 
 /** The fallback delay (ms) to open the menu if the IPC event never fires. */
-export const RESIZE_FALLBACK_MS = 200;
+const RESIZE_FALLBACK_MS = 200;
 
 let closeTimeout = -1;
 let resizeFallback = -1;
@@ -43,7 +44,7 @@ export function handleBroadcastClick(): void {
 
 
 /** Opens the navigation menu for a specific group. */
-export function openMenu(targetEl: Element, group: NavGroup): void {
+function openMenu(targetEl: Element, group: NavGroup): void {
 	state.activator = targetEl;
 	state.menuItems = group.submenu;
 	state.activeGroup = group.name;
@@ -118,4 +119,71 @@ export function delayedClose(): void {
 			window.eyas?.send(`hide-ui` as ChannelName);
 		}
 	}, 300);
+}
+
+/** Computed information for the update button. */
+export const updateInfo = computed(() => {
+	if (state.updateStatus === `checking`) {
+		return {
+			icon: `mdi-arrow-up-bold-circle-outline`,
+			color: `primary`,
+			title: `Checking for updates...`,
+			disabled: true
+		};
+	}
+
+	if (state.updateStatus === `downloading`) {
+		return {
+			icon: `mdi-cloud-download`,
+			color: `info`,
+			title: `Downloading update...`,
+			disabled: true
+		};
+	}
+
+	if (state.updateStatus === `downloaded`) {
+		return {
+			icon: `mdi-arrow-up-bold-circle-outline`,
+			color: `success`,
+			title: `Update available - Click to restart`,
+			disabled: false
+		};
+	}
+
+	return {
+		icon: `mdi-arrow-up-bold-circle-outline`,
+		color: undefined,
+		title: `Check for updates`,
+		disabled: false
+	};
+});
+
+/**
+ * Handles navigation state updates from the main process.
+ * @param data The navigation state payload.
+ */
+export function handleNavigationUpdate(data: unknown): void {
+	const payload = data as NavigationStatePayload;
+	state.canGoBack = payload.canGoBack;
+	state.canGoForward = payload.canGoForward;
+
+	if (payload.viewports && payload.currentViewport) {
+		updateViewports(payload.viewports, payload.currentViewport[0], payload.currentViewport[1]);
+	}
+
+	if (payload.cacheSize !== undefined && payload.sessionAge !== undefined) {
+		updateCache(payload.cacheSize, payload.sessionAge, !!payload.isDev);
+	}
+
+	if (payload.isDev !== undefined) {
+		updateTools(!!payload.isDev);
+	}
+}
+
+/**
+ * Handles update status changes from the main process.
+ * @param status The new update status.
+ */
+export function handleUpdateStatusUpdate(status: UpdateStatus): void {
+	state.updateStatus = status;
 }

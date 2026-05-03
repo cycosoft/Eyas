@@ -72,6 +72,7 @@ describe(`Update Service`, () => {
 		mockCtx = {
 			_appVersion: `1.2.3` as AppVersion,
 			setMenu: vi.fn(),
+			uiEvent: vi.fn(),
 			$appWindow: { id: 1 as Count } as unknown
 		} as unknown as CoreContext;
 	});

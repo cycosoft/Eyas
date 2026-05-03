@@ -4,7 +4,7 @@ import semver from 'semver';
 import { dialog } from 'electron';
 import { getNoUpdateAvailableDialogOptions } from './update-dialog.js';
 import type { UpdateService, CoreContext } from '@registry/eyas-core.js';
-import type { UpdateStatus, IsActive } from '@registry/primitives.js';
+import type { UpdateStatus, IsActive, ChannelName } from '@registry/primitives.js';
 
 let $updateStatus = `idle` as UpdateStatus;
 let $updateCheckUserTriggered: IsActive = false;
@@ -33,6 +33,12 @@ export const updateService: UpdateService = {
 			repo: `Eyas`
 		});
 
+		autoUpdater.on(`checking-for-update`, () => {
+			$updateStatus = `checking`;
+			ctx.setMenu();
+			ctx.uiEvent(`update-status-updated` as ChannelName, $updateStatus);
+		});
+
 		autoUpdater.on(`update-available`, () => {
 			$updateStatus = `downloading`;
 			ctx.setMenu();
@@ -47,6 +53,10 @@ export const updateService: UpdateService = {
 
 		/** Handles showing a dialog if the user manually checked and no update was found */
 		const showNoUpdateIfUserTriggered = (): void => {
+			$updateStatus = `idle`;
+			ctx.setMenu();
+			ctx.uiEvent(`update-status-updated` as ChannelName, $updateStatus);
+
 			if ($updateCheckUserTriggered) {
 				$updateCheckUserTriggered = false;
 				if (ctx.$appWindow) {

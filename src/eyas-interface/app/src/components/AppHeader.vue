@@ -57,7 +57,10 @@
 					:title="updateInfo.title"
 					:disabled="updateInfo.disabled"
 					:color="updateInfo.color"
-					:class="{ 'pulse-animation': updateStatus === 'downloading' }"
+					:class="{
+						'pulse-animation': updateStatus === 'downloading',
+						'blink-animation': updateStatus === 'checking'
+					}"
 					@click="handleBroadcastClick"
 				>
 					<v-icon
@@ -169,9 +172,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, watch, toRefs, computed } from 'vue';
+import { onMounted, watch, toRefs } from 'vue';
 import type { ChannelName } from '@registry/primitives.js';
-import type { NavigationStatePayload } from '@registry/ipc.js';
 import {
 	groups,
 	state,
@@ -182,45 +184,18 @@ import {
 	goForward,
 	reload,
 	goHome,
-	updateViewports,
-	updateCache,
-	updateTools,
 	handleBroadcastClick,
 	activate,
 	onMouseEnter,
 	onItemClick,
 	delayedClose,
-	triggerOpen
+	triggerOpen,
+	updateInfo,
+	handleNavigationUpdate,
+	handleUpdateStatusUpdate
 } from './AppHeader.logic.js';
 
 const { menu, activator, canGoBack, canGoForward, updateStatus } = toRefs(state);
-
-const updateInfo = computed(() => {
-	if (updateStatus.value === `downloading`) {
-		return {
-			icon: `mdi-cloud-download`,
-			color: `info`,
-			title: `Downloading update...`,
-			disabled: true
-		};
-	}
-
-	if (updateStatus.value === `downloaded`) {
-		return {
-			icon: `mdi-arrow-up-bold-circle-outline`,
-			color: `success`,
-			title: `Update available - Click to restart`,
-			disabled: false
-		};
-	}
-
-	return {
-		icon: `mdi-arrow-up-bold-circle-outline`,
-		color: undefined,
-		title: `Check for updates`,
-		disabled: false
-	};
-});
 
 watch(menu, isOpen => {
 	if (!isOpen) {
@@ -231,27 +206,8 @@ watch(menu, isOpen => {
 
 onMounted(() => {
 	window.eyas?.receive(`ui-shown` as ChannelName, triggerOpen);
-	window.eyas?.receive(`navigation-state-updated` as ChannelName, (data: unknown) => {
-		const payload = data as NavigationStatePayload;
-		state.canGoBack = payload.canGoBack;
-		state.canGoForward = payload.canGoForward;
-
-		if (payload.viewports && payload.currentViewport) {
-			updateViewports(payload.viewports, payload.currentViewport[0], payload.currentViewport[1]);
-		}
-
-		if (payload.cacheSize !== undefined && payload.sessionAge !== undefined) {
-			updateCache(payload.cacheSize, payload.sessionAge, !!payload.isDev);
-		}
-
-		if (payload.isDev !== undefined) {
-			updateTools(!!payload.isDev);
-		}
-	});
-
-	window.eyas?.receive(`update-status-updated` as ChannelName, (status: `idle` | `downloading` | `downloaded`) => {
-		state.updateStatus = status;
-	});
+	window.eyas?.receive(`navigation-state-updated` as ChannelName, handleNavigationUpdate);
+	window.eyas?.receive(`update-status-updated` as ChannelName, handleUpdateStatusUpdate);
 });
 
 // expose for testing
@@ -289,6 +245,16 @@ defineExpose({
 @keyframes pulse {
 	0% { opacity: 1; }
 	50% { opacity: 0.5; }
+	100% { opacity: 1; }
+}
+
+.blink-animation {
+	animation: blink 1s infinite;
+}
+
+@keyframes blink {
+	0% { opacity: 1; }
+	50% { opacity: 0.3; }
 	100% { opacity: 1; }
 }
 </style>

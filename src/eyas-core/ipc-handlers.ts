@@ -13,7 +13,7 @@ import type {
 	SaveSettingPayload,
 	TestServerSetupPayload
 } from '@registry/ipc.js';
-import type { IsActive, AppVersion, ViewportWidth, ViewportHeight } from '@registry/primitives.js';
+import type { IsActive, AppVersion, ViewportWidth, ViewportHeight, ChannelName } from '@registry/primitives.js';
 
 /**
  * Initializes all IPC handlers for the application.

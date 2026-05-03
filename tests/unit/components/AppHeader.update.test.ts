@@ -58,6 +58,18 @@ describe(`AppHeader Update Button`, () => {
 		expect(mockSend).toHaveBeenCalledWith(`check-for-updates`);
 	});
 
+	test(`shows checking state`, async () => {
+		if (updateCallback) { updateCallback(`checking`); }
+		await wrapper.vm.$nextTick();
+
+		const btn = wrapper.find(`[data-qa="btn-broadcast"]`);
+		expect(btn.find(`v-icon-stub`).attributes(`icon`)).toBe(`mdi-arrow-up-bold-circle-outline`);
+		expect(btn.attributes(`title`)).toBe(`Checking for updates...`);
+		expect(btn.attributes()).toHaveProperty(`disabled`);
+		expect(btn.attributes(`color`)).toBe(`primary`);
+		expect(btn.classes()).toContain(`blink-animation`);
+	});
+
 	test(`shows downloading state`, async () => {
 		if (updateCallback) { updateCallback(`downloading`); }
 		await wrapper.vm.$nextTick();
