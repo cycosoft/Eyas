@@ -121,11 +121,10 @@ export function delayedClose(): void {
 	}, 300);
 }
 
-/** Computed information for the update button. */
 export const updateInfo = computed(() => {
 	if (state.updateStatus === `checking`) {
 		return {
-			icon: `mdi-arrow-up-bold-circle-outline`,
+			icon: `mdi-progress-clock`,
 			color: `primary`,
 			title: `Checking for updates...`,
 			disabled: true
@@ -134,8 +133,8 @@ export const updateInfo = computed(() => {
 
 	if (state.updateStatus === `downloading`) {
 		return {
-			icon: `mdi-cloud-download`,
-			color: `info`,
+			icon: `mdi-progress-download`,
+			color: `primary`,
 			title: `Downloading update...`,
 			disabled: true
 		};
@@ -143,15 +142,24 @@ export const updateInfo = computed(() => {
 
 	if (state.updateStatus === `downloaded`) {
 		return {
-			icon: `mdi-arrow-up-bold-circle-outline`,
-			color: `success`,
+			icon: `mdi-progress-alert`,
+			color: `warning`,
 			title: `Update available - Click to restart`,
 			disabled: false
 		};
 	}
 
+	if (state.updateStatus === `error`) {
+		return {
+			icon: `mdi-progress-close`,
+			color: `error`,
+			title: `Update check failed`,
+			disabled: false
+		};
+	}
+
 	return {
-		icon: `mdi-arrow-up-bold-circle-outline`,
+		icon: `mdi-progress-check`,
 		color: undefined,
 		title: `Check for updates`,
 		disabled: false

@@ -250,6 +250,20 @@ export async function emitIpcMessage(electronApp, channel, ...args) {
 }
 
 /**
+ * Emits an IPC message from the main process to all renderer windows.
+ * @param {import('@playwright/test').ElectronApplication} electronApp
+ * @param {string} channel
+ * @param {any} args
+ */
+export async function emitIpcToRenderer(electronApp, channel, ...args) {
+	return electronApp.evaluate(({ webContents }, { channel, args }) => {
+		webContents.getAllWebContents().forEach(wc => {
+			wc.send(channel, ...args);
+		});
+	}, { channel, args });
+}
+
+/**
  * Gets the current URL of the main application window.
  * @param {import('@playwright/test').ElectronApplication} electronApp
  * @returns {Promise<string>}

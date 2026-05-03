@@ -132,4 +132,14 @@ describe(`Update Service`, () => {
 		updateService.installUpdate();
 		expect(autoUpdater.quitAndInstall).toHaveBeenCalled();
 	});
+
+	it(`should update status to error on update error`, () => {
+		updateService.init(mockCtx);
+
+		// Trigger the error event
+		(autoUpdater as unknown as AutoUpdaterMock).emit(`error`, new Error(`Update failed`));
+
+		expect(updateService.getStatus()).toBe(`error`);
+		expect(mockCtx.uiEvent).toHaveBeenCalledWith(expect.anything(), `error`);
+	});
 });

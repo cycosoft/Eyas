@@ -64,6 +64,14 @@ export const uiService: UIService = {
 	 * @param args Arguments to pass to the event.
 	 */
 	uiEvent(ctx: CoreContext, eventName: ChannelName, ...args: unknown[]): void {
+		// List of events that are NOT modals and don't need UI expansion or buffering
+		const nonModalEvents: ChannelName[] = [`update-status-updated` as ChannelName];
+
+		if (nonModalEvents.includes(eventName)) {
+			ctx.$eyasLayer?.webContents.send(eventName, ...args);
+			return;
+		}
+
 		// if the "What's New" modal is currently active, buffer this event
 		// (Except for the "What's New" modal itself)
 		if (ctx.$pendingStartupModal === null && eventName !== `show-whats-new`) {

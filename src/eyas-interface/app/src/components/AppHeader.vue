@@ -58,8 +58,7 @@
 					:disabled="updateInfo.disabled"
 					:color="updateInfo.color"
 					:class="{
-						'pulse-animation': updateStatus === 'downloading',
-						'blink-animation': updateStatus === 'checking'
+						'blink-animation': updateStatus === 'checking' || updateStatus === 'downloading'
 					}"
 					@click="handleBroadcastClick"
 				>
@@ -238,15 +237,7 @@ defineExpose({
 	color: rgb(var(--v-theme-primary)) !important;
 }
 
-.pulse-animation {
-	animation: pulse 2s infinite;
-}
 
-@keyframes pulse {
-	0% { opacity: 1; }
-	50% { opacity: 0.5; }
-	100% { opacity: 1; }
-}
 
 .blink-animation {
 	animation: blink 1s infinite;

@@ -47,7 +47,7 @@ describe(`AppHeader Update Button`, () => {
 	test(`renders the check for updates button by default`, () => {
 		const btn = wrapper.find(`[data-qa="btn-broadcast"]`);
 		expect(btn.exists()).toBe(true);
-		expect(btn.find(`v-icon-stub`).attributes(`icon`)).toBe(`mdi-arrow-up-bold-circle-outline`);
+		expect(btn.find(`v-icon-stub`).attributes(`icon`)).toBe(`mdi-progress-check`);
 		expect(btn.attributes(`title`)).toBe(`Check for updates`);
 	});
 
@@ -63,7 +63,7 @@ describe(`AppHeader Update Button`, () => {
 		await wrapper.vm.$nextTick();
 
 		const btn = wrapper.find(`[data-qa="btn-broadcast"]`);
-		expect(btn.find(`v-icon-stub`).attributes(`icon`)).toBe(`mdi-arrow-up-bold-circle-outline`);
+		expect(btn.find(`v-icon-stub`).attributes(`icon`)).toBe(`mdi-progress-clock`);
 		expect(btn.attributes(`title`)).toBe(`Checking for updates...`);
 		expect(btn.attributes()).toHaveProperty(`disabled`);
 		expect(btn.attributes(`color`)).toBe(`primary`);
@@ -75,10 +75,10 @@ describe(`AppHeader Update Button`, () => {
 		await wrapper.vm.$nextTick();
 
 		const btn = wrapper.find(`[data-qa="btn-broadcast"]`);
-		expect(btn.find(`v-icon-stub`).attributes(`icon`)).toBe(`mdi-cloud-download`);
+		expect(btn.find(`v-icon-stub`).attributes(`icon`)).toBe(`mdi-progress-download`);
 		expect(btn.attributes(`title`)).toBe(`Downloading update...`);
 		expect(btn.attributes()).toHaveProperty(`disabled`);
-		expect(btn.classes()).toContain(`pulse-animation`);
+		expect(btn.classes()).toContain(`blink-animation`);
 	});
 
 	test(`shows downloaded state and installs on click`, async () => {
@@ -86,11 +86,21 @@ describe(`AppHeader Update Button`, () => {
 		await wrapper.vm.$nextTick();
 
 		const btn = wrapper.find(`[data-qa="btn-broadcast"]`);
-		expect(btn.find(`v-icon-stub`).attributes(`icon`)).toBe(`mdi-arrow-up-bold-circle-outline`);
+		expect(btn.find(`v-icon-stub`).attributes(`icon`)).toBe(`mdi-progress-alert`);
 		expect(btn.attributes(`title`)).toBe(`Update available - Click to restart`);
-		expect(btn.attributes(`color`)).toBe(`success`);
+		expect(btn.attributes(`color`)).toBe(`warning`);
 
 		await btn.trigger(`click`);
 		expect(mockSend).toHaveBeenCalledWith(`install-update`);
+	});
+
+	test(`shows error state`, async () => {
+		if (updateCallback) { updateCallback(`error`); }
+		await wrapper.vm.$nextTick();
+
+		const btn = wrapper.find(`[data-qa="btn-broadcast"]`);
+		expect(btn.find(`v-icon-stub`).attributes(`icon`)).toBe(`mdi-progress-close`);
+		expect(btn.attributes(`title`)).toBe(`Update check failed`);
+		expect(btn.attributes(`color`)).toBe(`error`);
 	});
 });
