@@ -48,7 +48,7 @@ describe(`AppHeader Update Button`, () => {
 		const btn = wrapper.find(`[data-qa="btn-broadcast"]`);
 		expect(btn.exists()).toBe(true);
 		expect(btn.find(`v-icon-stub`).attributes(`icon`)).toBe(`mdi-progress-check`);
-		expect(btn.attributes(`title`)).toBe(`Check for updates`);
+		expect(btn.attributes(`title`)).toBeUndefined();
 	});
 
 	test(`calls check-for-updates when clicked in idle state`, async () => {

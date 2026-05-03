@@ -19,7 +19,6 @@ export const groups = reactive<NavGroup[]>([
 	},
 	{
 		name: `Tools`,
-		title: `Technical Tools`,
 		shortcut: `Alt+T`,
 		submenu: [
 			{ title: `Live Test Server`, value: `test-server`, icon: `mdi-earth`, mnemonic: `T` },

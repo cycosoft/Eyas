@@ -161,7 +161,6 @@ export const updateInfo = computed(() => {
 	return {
 		icon: `mdi-progress-check`,
 		color: undefined,
-		title: `Check for updates`,
 		disabled: false
 	};
 });
