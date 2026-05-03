@@ -166,9 +166,19 @@ export default tseslint.config(
 			'vue/component-api-style': [`error`, [`script-setup`]],
 			'vue/max-lines-per-block': [`error`, {
 				script: 150,
-				template: 250,
 				style: 100
-			}]
+			}],
+			'vue/no-restricted-syntax': [
+				`error`,
+				{
+					selector: `VAttribute[directive=false][key.name='title']`,
+					message: `The 'title' attribute is not allowed on HTML elements as it cannot be styled and may be clipped in the Eyas Desktop UI. Use 'v-tooltip' instead once we have a solution for view bounds.`
+				},
+				{
+					selector: `VAttribute[directive=true][key.name.name='bind'][key.argument.name='title']`,
+					message: `Binding to 'title' is not allowed as it cannot be styled and may be clipped in the Eyas Desktop UI. Use 'v-tooltip' instead once we have a solution for view bounds.`
+				}
+			]
 		}
 	},
 	{

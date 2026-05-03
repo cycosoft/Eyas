@@ -32,7 +32,7 @@ describe(`AppHeader Update Button`, () => {
 					VMenu: { template: `<div><slot /></div>` },
 					VList: { template: `<div><slot /></div>` },
 					VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
-					VBtn: { template: `<button :disabled="$attrs.disabled" :variant="$attrs.variant" :ripple="$attrs.ripple" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
+					VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
 					VIcon: true,
 					VImg: true
 				}

@@ -8,7 +8,6 @@
 				class="px-3"
 				rounded="xs"
 				append-icon="mdi-chevron-down"
-				:title="group.title"
 				:data-qa="`btn-nav-group-${group.name.toLowerCase()}`"
 				:active="state.activeGroup === group.name"
 				@click="activate($event, group)"
@@ -55,7 +54,6 @@
 					:ripple="updateInfo.ripple"
 					class="mr-1"
 					data-qa="btn-broadcast"
-					:title="updateInfo.title"
 					:disabled="updateInfo.disabled"
 					:color="updateInfo.color"
 					:class="{
