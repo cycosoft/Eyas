@@ -61,8 +61,8 @@ test.describe(`Update Status Visuals`, () => {
 		await checkState(`downloading`, `mdi-progress-download`, `text-primary`, `blink-animation`);
 
 		// 4. Downloaded
-		// Icon: mdi-progress-alert, Color: text-warning
-		await checkState(`downloaded`, `mdi-progress-alert`, `text-warning`);
+		// Icon: mdi-progress-alert, Color: text-success
+		await checkState(`downloaded`, `mdi-progress-alert`, `text-success`);
 
 		// 5. Error
 		// Icon: mdi-progress-close, Color: text-error

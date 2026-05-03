@@ -19,6 +19,7 @@ const vuetify = createVuetify({
 					'primary-container': `#4169e1`,
 					secondary: `#D05454`,
 					'secondary-container': `#dbe2fa`,
+					success: `#008562`,
 					surface: `#f7f9fb`,
 					background: `#f7f9fb`,
 					'on-surface': `#191c1e`,
