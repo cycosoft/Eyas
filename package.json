@@ -49,7 +49,7 @@
     "notarize:staple:verify:pkg": "xcrun stapler validate ./.runners/EyasInstaller-mac.pkg",
     "notarize:log": "xcrun notarytool log PASTE_LOG_ID_HERE --keychain-profile \"Eyas\"",
     "_____________SCRIPTS_____________": "",
-    "update": "npm-check-updates --interactive --format group,time --cooldown 3",
+    "update": "npm-check-updates --interactive --format group,time --cooldown 3 --reject vite",
     "audit-dead-code": "knip",
     "type-check": "tsc -b",
     "lint": "eslint . --fix",
