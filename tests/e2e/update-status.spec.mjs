@@ -22,6 +22,11 @@ test.describe(`Update Status Visuals`, () => {
 		const btn = uiPage.locator(`[data-qa="btn-broadcast"]`);
 		const icon = btn.locator(`i.v-icon`);
 
+		// Wait for the initial background update check to settle
+		await expect(icon).toHaveClass(/mdi-progress-check/, { timeout: 10000 });
+		// Give it a tiny moment to ensure no more pending IPCs are in flight
+		await uiPage.waitForTimeout(1000);
+
 		// Helper to check state
 		const checkState = async (status, iconClass, colorClass, animationClass = null) => {
 			await emitIpcToRenderer(electronApp, `update-status-updated`, status);
