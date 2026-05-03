@@ -8,47 +8,17 @@ import type { MenuContext, MenuTemplate } from '@registry/menu.js';
  */
 export function buildMenuTemplate(context: MenuContext): MenuTemplate {
 	const {
-		appName,
 		isDev,
-		isConfigLoaded = false,
-		updateStatus = `idle`,
-		onInstallUpdate
+		isConfigLoaded = false
 	} = context;
 
-	// ── Assemble root menu ────────────────────────────────────────────────────
 	const menu: MenuTemplate = [
-		{ label: `&${appName}`, submenu: createAppSubmenu(context) },
 		{ label: `🧪 &Test`, enabled: isConfigLoaded, submenu: createTestSubmenu(context) },
 		{ label: `🌐 &Browser`, enabled: isConfigLoaded, submenu: createBrowserSubmenu(context) },
 		{ label: `🔧 &Development Tools`, enabled: isConfigLoaded || isDev, submenu: createToolsSubmenu(context) }
 	];
 
-	if (updateStatus === `downloaded`) {
-		menu.push({
-			label: `⬆️ Update available – Restart to install`,
-			click: onInstallUpdate
-		});
-	}
-
 	return menu;
-}
-
-/**
- * Creates the "App" submenu (Eyas/About/Settings/etc).
- */
-function createAppSubmenu(context: MenuContext): MenuTemplate {
-	const {
-		updateStatus,
-		onCheckForUpdates
-	} = context;
-
-	const updateStatusItem = updateStatus === `downloading`
-		? { label: `⬆️ Downloading update...`, enabled: false }
-		: { label: `⬆️ Check for updates`, click: onCheckForUpdates };
-
-	return [
-		updateStatusItem
-	];
 }
 
 /**

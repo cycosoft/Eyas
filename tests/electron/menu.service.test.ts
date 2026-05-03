@@ -128,11 +128,6 @@ describe(`MenuService Helpers`, () => {
 			goForward: vi.fn(),
 			reload: vi.fn(),
 			getSessionAge: vi.fn(() => `1m`),
-			updateService: {
-				getStatus: vi.fn(() => `idle`),
-				checkForUpdates: vi.fn(),
-				installUpdate: vi.fn()
-			},
 			$appWindow: mockWindow,
 			$testLayer: mockTestLayer,
 			$eyasLayer: {
@@ -160,7 +155,6 @@ describe(`MenuService Helpers`, () => {
 				linkItems: []
 			};
 			const context = menuService.getContext(mockCtx, params);
-			expect(context.appName).toBe(`Eyas`);
 			expect(context.testNetworkEnabled).toBe(true);
 		});
 
@@ -226,15 +220,6 @@ describe(`MenuService Helpers`, () => {
 				handlers.startAFreshTest?.();
 				expect(mockCtx.startAFreshTest).toHaveBeenCalledWith(true);
 			});
-
-			test(`should handle updates`, () => {
-				expect(handlers.updateStatus).toBe(`idle`);
-				handlers.onCheckForUpdates?.();
-				expect(mockCtx.updateService.checkForUpdates).toHaveBeenCalled();
-				handlers.onInstallUpdate?.();
-				expect(mockCtx.updateService.installUpdate).toHaveBeenCalled();
-			});
-
 		});
 	});
 });

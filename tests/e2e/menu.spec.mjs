@@ -20,21 +20,10 @@ test.describe(`Application Menu`, () => {
 		const menuStructure = await getMenuStructure(electronApp);
 		const labels = menuStructure.map(item => item.label);
 
-		expect(labels.length).toBeGreaterThanOrEqual(4);
-		expect(labels.some(l => l.match(/Eyas|File/i))).toBe(true);
+		expect(labels.length).toBe(3);
 		expect(labels.some(l => l.includes(`Test`))).toBe(true);
 		expect(labels.some(l => l.includes(`Browser`))).toBe(true);
 		expect(labels.some(l => l.includes(`Tools`))).toBe(true);
-	});
-
-	test(`app-name menu does NOT have Settings and does NOT have Exit`, async () => {
-		const menuStructure = await getMenuStructure(electronApp);
-		const appMenu = menuStructure.find(m => m.label.match(/Eyas|File/i));
-		expect(appMenu).toBeDefined();
-
-		const submenuLabels = appMenu.submenu.map(item => item.label);
-		expect(submenuLabels.some(l => l.includes(`Settings`))).toBe(false);
-		expect(submenuLabels.some(l => l.includes(`Exit`))).toBe(false);
 	});
 
 	test(`'Development Tools' menu does NOT have Developer Tools items`, async () => {

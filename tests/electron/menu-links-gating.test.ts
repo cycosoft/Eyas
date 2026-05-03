@@ -6,7 +6,6 @@ import type { MenuContext } from '@registry/menu.js';
 const noop = (): void => { };
 
 const minimalContext: MenuContext = {
-	appName: `Eyas`,
 	isDev: false,
 	isConfigLoaded: true,
 	isEnvironmentPending: false,
@@ -20,10 +19,7 @@ const minimalContext: MenuContext = {
 	back: noop,
 	forward: noop,
 	toggleNetwork: noop,
-	linkItems: [],
-	updateStatus: `idle`,
-	onCheckForUpdates: noop,
-	onInstallUpdate: noop
+	linkItems: []
 };
 
 describe(`Menu links and DevTools gating (Refined)`, () => {

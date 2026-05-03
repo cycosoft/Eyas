@@ -1,4 +1,4 @@
-import type { AppName, IsActive, UpdateStatus, MenuLabel, DomainUrl, MenuAccelerator, MetadataKey } from './primitives.js';
+import type { IsActive, MenuLabel, DomainUrl, MenuAccelerator, MetadataKey } from './primitives.js';
 
 /** A single menu item descriptor */
 type MenuItem = {
@@ -27,7 +27,6 @@ export type LinkMenuHandlers = {
 
 /** Context required to build the application menu */
 export type MenuContext = {
-	appName: AppName;
 	isDev: IsActive;
 	testNetworkEnabled: IsActive;
 	onOpenSettings?: () => void;
@@ -41,9 +40,6 @@ export type MenuContext = {
 	forward: () => void;
 	toggleNetwork: () => void;
 	linkItems: MenuItem[];
-	updateStatus?: UpdateStatus;
-	onCheckForUpdates: () => void;
-	onInstallUpdate: () => void;
 	isInitializing?: IsActive;
 	isConfigLoaded?: IsActive;
 	isEnvironmentPending?: IsActive;

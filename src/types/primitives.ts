@@ -38,7 +38,6 @@ export type MenuLabel = string;
 export type AppTitle = string;
 export type ProjectId = string;
 export type SettingKey = string;
-export type AppName = string;
 export type AppVersion = string;
 export type ByteCount = number;
 export type DecimalCount = number;

@@ -74,7 +74,6 @@ export const menuService: MenuService = {
 		const { linkItems } = params;
 
 		return {
-			appName: `Eyas`,
 			isDev: process.argv.includes(`--dev`),
 			testNetworkEnabled: ctx.$testNetworkEnabled,
 			linkItems,
@@ -126,10 +125,7 @@ export const menuService: MenuService = {
 			if (ctx.$isInitializing) return;
 			ctx.setTestNetworkEnabled(!ctx.$testNetworkEnabled);
 			ctx.setMenu();
-		},
-		updateStatus: (ctx.updateService.getStatus() as `idle` | `downloading` | `downloaded`) || `idle`,
-		onCheckForUpdates: (): void => ctx.updateService.checkForUpdates(),
-		onInstallUpdate: (): void => ctx.updateService.installUpdate()
+		}
 	})
 
 };
