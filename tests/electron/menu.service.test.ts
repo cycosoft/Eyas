@@ -110,8 +110,8 @@ describe(`MenuService Helpers`, () => {
 
 		test(`should encode url and external state in value`, () => {
 			const items = menuService.getSerializableLinks(config);
-			expect(items[0].value).toBe(`launch-link:{"url":"https://google.com/","external":true}`);
-			expect(items[1].value).toBe(`launch-link:{"url":"http://local.test/","external":false}`);
+			expect(items[0].value).toBe(`launch-link:{"url":"https://google.com/","openInBrowser":true}`);
+			expect(items[1].value).toBe(`launch-link:{"url":"http://local.test/","openInBrowser":false}`);
 		});
 
 		test(`should identify variable links`, () => {

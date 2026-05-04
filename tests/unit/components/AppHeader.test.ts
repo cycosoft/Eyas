@@ -462,7 +462,7 @@ describe(`AppHeader`, () => {
 			});
 
 			const links: NavItem[] = [
-				{ title: `Google`, value: `launch-link:{"url":"https://google.com","external":true}` }
+				{ title: `Google`, value: `launch-link:{"url":"https://google.com","openInBrowser":true}` }
 			];
 
 			if (navCallback) {
@@ -478,7 +478,7 @@ describe(`AppHeader`, () => {
 
 		test(`onItemClick() sends launch-link IPC for link items`, () => {
 			const vm = wrapper.vm as unknown as AppHeaderVM;
-			const payload = { url: `https://google.com`, external: true };
+			const payload = { url: `https://google.com`, openInBrowser: true };
 			vm.onItemClick({ title: `Google`, value: `launch-link:${JSON.stringify(payload)}` });
 			expect(mockSend).toHaveBeenCalledWith(`launch-link`, payload);
 		});

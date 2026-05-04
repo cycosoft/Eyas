@@ -149,7 +149,7 @@ export const menuService: MenuService = {
 					title: label,
 					value: isVariable
 						? `launch-link-var:${link.url}`
-						: `launch-link:${JSON.stringify({ url: url.href, external: isExternal })}`,
+						: `launch-link:${JSON.stringify({ url: url.href, openInBrowser: isExternal })}`,
 					actionable: true
 				};
 			} catch {
