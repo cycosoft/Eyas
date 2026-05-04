@@ -3,7 +3,8 @@
 		density="compact"
 		data-qa="app-header"
 	>
-		<template v-for="group in groups" :key="group.name">
+		<!-- 1. File Group & Browser Controls -->
+		<template v-for="group in groups.filter(g => g.name === 'File')" :key="group.name">
 			<v-btn
 				class="px-3"
 				rounded="xs"
@@ -23,50 +24,81 @@
 				</span>
 			</v-btn>
 
-			<template v-if="group.name === 'File'">
-				<div class="d-flex align-center ml-2 pa-1 rounded-lg border">
-					<v-btn
-						v-for="control in browserControls"
-						:key="control.action"
-						icon
-						variant="plain"
-						:ripple="false"
-						density="compact"
-						class="mx-0"
-						rounded="lg"
-						:data-qa="`btn-browser-${control.action}`"
-						:disabled="isControlDisabled(control.action, canGoBack, canGoForward)"
-						@click="handleBrowserControlClick(control.action)"
-					>
-						<v-icon
-							:icon="control.icon"
-							size="small"
-						/>
-					</v-btn>
-				</div>
-
-				<v-spacer />
-
+			<div class="d-flex align-center ml-2 pa-1 rounded-lg border">
 				<v-btn
+					v-for="control in browserControls"
+					:key="control.action"
 					icon
+					variant="plain"
+					:ripple="false"
 					density="compact"
-					:variant="updateInfo.variant"
-					:ripple="updateInfo.ripple"
-					class="mr-1"
-					data-qa="btn-broadcast"
-					:disabled="updateInfo.disabled"
-					:color="updateInfo.color"
-					:class="{
-						'blink-animation': updateStatus === 'checking' || updateStatus === 'downloading'
-					}"
-					@click="handleBroadcastClick"
+					class="mx-0"
+					rounded="lg"
+					:data-qa="`btn-browser-${control.action}`"
+					:disabled="isControlDisabled(control.action, canGoBack, canGoForward)"
+					@click="handleBrowserControlClick(control.action)"
 				>
 					<v-icon
-						:icon="updateInfo.icon"
+						:icon="control.icon"
 						size="small"
 					/>
 				</v-btn>
-			</template>
+			</div>
+		</template>
+
+		<!-- 2. Links Group -->
+		<template v-for="group in groups.filter(g => g.name === 'Links')" :key="group.name">
+			<v-btn
+				v-if="group.submenu.length"
+				class="px-3 ml-2"
+				rounded="xs"
+				append-icon="mdi-chevron-down"
+				:data-qa="`btn-nav-group-${group.name.toLowerCase()}`"
+				:active="state.activeGroup === group.name"
+				@click="activate($event, group)"
+				@mouseenter="onMouseEnter($event, group)"
+			>
+				<template v-for="(part, i) in group.mnemonicParts" :key="i"><u v-if="part.isMnemonic">{{ part.text }}</u><template v-else>{{ part.text }}</template></template>
+			</v-btn>
+		</template>
+
+		<v-spacer />
+
+		<!-- 3. Update Status -->
+		<v-btn
+			v-if="updateInfo.icon"
+			icon
+			density="compact"
+			:variant="updateInfo.variant"
+			:ripple="updateInfo.ripple"
+			class="mr-1"
+			data-qa="btn-broadcast"
+			:disabled="updateInfo.disabled"
+			:color="updateInfo.color"
+			:class="{
+				'blink-animation': updateStatus === 'checking' || updateStatus === 'downloading'
+			}"
+			@click="handleBroadcastClick"
+		>
+			<v-icon
+				:icon="updateInfo.icon"
+				size="small"
+			/>
+		</v-btn>
+
+		<!-- 4. Tools Group -->
+		<template v-for="group in groups.filter(g => g.name === 'Tools')" :key="group.name">
+			<v-btn
+				class="px-3"
+				rounded="xs"
+				append-icon="mdi-chevron-down"
+				:data-qa="`btn-nav-group-${group.name.toLowerCase()}`"
+				:active="state.activeGroup === group.name"
+				@click="activate($event, group)"
+				@mouseenter="onMouseEnter($event, group)"
+			>
+				<template v-for="(part, i) in group.mnemonicParts" :key="i"><u v-if="part.isMnemonic">{{ part.text }}</u><template v-else>{{ part.text }}</template></template>
+			</v-btn>
 		</template>
 	</v-app-bar>
 

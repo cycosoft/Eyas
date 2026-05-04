@@ -9,6 +9,18 @@ import type { Viewport } from '@registry/core.js';
  * @param value The value of the clicked item.
  */
 export function handleNavItemClick(value: NavItemValue): void {
+	if (value.startsWith(`launch-link:`)) {
+		const payload = JSON.parse(value.replace(`launch-link:`, ``));
+		window.eyas?.send(`launch-link` as ChannelName, payload);
+		return;
+	}
+
+	if (value.startsWith(`launch-link-var:`)) {
+		const url = value.replace(`launch-link-var:`, ``);
+		window.eyas?.send(`show-variables-modal` as ChannelName, url);
+		return;
+	}
+
 	if (value.startsWith(`set-viewport:`)) {
 		const [, width, height] = value.split(`:`);
 		setViewport(Number(width), Number(height));
@@ -148,5 +160,20 @@ export function updateTools(isDev: IsActive): void {
 		if (devToolsUiIndex !== -1) {
 			toolsGroup.submenu.splice(devToolsUiIndex, 1);
 		}
+	}
+}
+
+/**
+ * Updates the Links menu items based on the provided links.
+ * @param links The list of serializable links.
+ */
+export function updateLinks(links: NavItem[]): void {
+	const linksGroup = groups.find(g => g.name === `Links`);
+	if (!linksGroup) { return; }
+
+	linksGroup.submenu = links;
+
+	for (const item of linksGroup.submenu) {
+		item.mnemonicParts = getMnemonicParts(item);
 	}
 }

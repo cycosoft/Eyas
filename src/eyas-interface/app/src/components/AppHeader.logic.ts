@@ -3,7 +3,7 @@ import useModalsStore from '@/stores/modals.js';
 import type { NavGroup, NavItem, NavActivateEvent, PendingNavOpen } from '@registry/components.js';
 import type { ChannelName, MenuLabel } from '@registry/primitives.js';
 import type { UpdateStatus } from '@registry/ipc.js';
-import { handleNavItemClick, updateCache, updateTools, updateViewports } from './AppHeader.updates.js';
+import { handleNavItemClick, updateCache, updateTools, updateViewports, updateLinks } from './AppHeader.updates.js';
 import type { NavigationStatePayload } from '@registry/ipc.js';
 
 export * from './AppHeader.data.js';
@@ -227,6 +227,10 @@ export function handleNavigationUpdate(data: unknown): void {
 
 	if (payload.isDev !== undefined) {
 		updateTools(!!payload.isDev);
+	}
+
+	if (payload.links) {
+		updateLinks(payload.links);
 	}
 }
 

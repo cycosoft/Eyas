@@ -5,6 +5,7 @@ import type { IsActive, IsPending, DomainUrl, MPEventName, ChannelName, Timestam
 import type { PreventableEvent, Viewport, ViewportSize, StartupModal, ConfigToLoad } from './core.js';
 import type { FilePath } from './primitives.js';
 import type { MenuTemplate, LinkMenuHandlers, MenuContextParams, MenuContext } from './menu.js';
+import type { NavItem } from './components.js';
 
 /** Paths used by the Eyas core orchestrator */
 export type EyasPaths = {
@@ -136,6 +137,7 @@ export type MenuService = {
 	getAppHandlers: (ctx: CoreContext) => Partial<MenuContext>;
 	getNavigationHandlers: (ctx: CoreContext) => Partial<MenuContext>;
 	getTestServerHandlers: (ctx: CoreContext) => Partial<MenuContext>;
+	getSerializableLinks: (config: ValidatedConfig | null) => NavItem[];
 };
 
 /** UI Service interface */

@@ -86,6 +86,45 @@ describe(`MenuService Helpers`, () => {
 		});
 	});
 
+	describe(`getSerializableLinks`, () => {
+		const config = {
+			links: [
+				{ label: `Google`, url: `https://google.com`, external: true },
+				{ label: `Local`, url: `http://local.test`, external: false },
+				{ label: `Variable`, url: `https://example.com/{myvar}`, external: false },
+				{ label: `Invalid`, url: `bad-url`, external: false }
+			]
+		} as unknown as ValidatedConfig;
+
+		test(`should return empty array if no config`, () => {
+			expect(menuService.getSerializableLinks(null)).toEqual([]);
+		});
+
+		test(`should return NavItem array with correct titles`, () => {
+			const items = menuService.getSerializableLinks(config);
+			expect(items).toHaveLength(4);
+			expect(items[0].title).toBe(`🌐 Google`);
+			expect(items[1].title).toBe(`Local`);
+			expect(items[3].title).toContain(`invalid entry`);
+		});
+
+		test(`should encode url and external state in value`, () => {
+			const items = menuService.getSerializableLinks(config);
+			expect(items[0].value).toBe(`launch-link:{"url":"https://google.com/","external":true}`);
+			expect(items[1].value).toBe(`launch-link:{"url":"http://local.test/","external":false}`);
+		});
+
+		test(`should identify variable links`, () => {
+			const items = menuService.getSerializableLinks(config);
+			expect(items[2].value).toBe(`launch-link-var:https://example.com/{myvar}`);
+		});
+
+		test(`should disable invalid links`, () => {
+			const items = menuService.getSerializableLinks(config);
+			expect(items[3].actionable).toBe(false);
+		});
+	});
+
 	describe(`getContext and handlers`, () => {
 		const mockWindow = {
 			isDestroyed: vi.fn().mockReturnValue(false),

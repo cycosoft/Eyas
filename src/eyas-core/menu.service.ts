@@ -8,6 +8,7 @@ import type { MenuService, CoreContext } from '@registry/eyas-core.js';
 import type { MenuTemplate, LinkMenuHandlers, MenuContextParams, MenuContext } from '@registry/menu.js';
 import type { ValidatedConfig, LinkConfig } from '@registry/config.js';
 import type { DomainUrl } from '@registry/primitives.js';
+import type { NavItem } from '@registry/components.js';
 
 /** Service for managing the application menu */
 export const menuService: MenuService = {
@@ -126,6 +127,38 @@ export const menuService: MenuService = {
 			ctx.setTestNetworkEnabled(!ctx.$testNetworkEnabled);
 			ctx.setMenu();
 		}
-	})
+	}),
 
+	/**
+	 * Returns a list of serializable link items for the renderer
+	 * @param config The validated configuration
+	 * @returns The list of serializable link items
+	 */
+	getSerializableLinks: (config: ValidatedConfig | null): NavItem[] => {
+		if (!config?.links) { return []; }
+
+		return config.links.map(link => {
+			const isExternal = !!link.external;
+			const label = isExternal ? `🌐 ${link.label}` : link.label;
+
+			try {
+				const url = new URL(link.url);
+				const isVariable = link.url.includes(`{`);
+
+				return {
+					title: label,
+					value: isVariable
+						? `launch-link-var:${link.url}`
+						: `launch-link:${JSON.stringify({ url: url.href, external: isExternal })}`,
+					actionable: true
+				};
+			} catch {
+				return {
+					title: `${label} (invalid entry)`,
+					value: ``,
+					actionable: false
+				};
+			}
+		});
+	}
 };

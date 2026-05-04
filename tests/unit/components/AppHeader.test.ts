@@ -437,4 +437,57 @@ describe(`AppHeader`, () => {
 			});
 		});
 	});
+
+	describe(`links menu`, () => {
+		test(`updates links from navigation state`, async () => {
+			let navCallback: ((payload: NavigationStatePayload) => void) | null = null;
+			(window as unknown as WindowWithEyas).eyas.receive = vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
+				if (channel === `navigation-state-updated`) {
+					navCallback = cb as (payload: NavigationStatePayload) => void;
+				}
+			});
+
+			wrapper = mount(AppHeader, {
+				global: {
+					stubs: {
+						VAppBar: { template: `<div><slot /></div>` },
+						VMenu: { template: `<div><slot /></div>` },
+						VList: { template: `<div><slot /></div>` },
+						VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
+						VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
+						VIcon: true,
+						VImg: true
+					}
+				}
+			});
+
+			const links: NavItem[] = [
+				{ title: `Google`, value: `launch-link:{"url":"https://google.com","external":true}` }
+			];
+
+			if (navCallback) {
+				(navCallback as any)({ links }); // eslint-disable-line @typescript-eslint/no-explicit-any
+			}
+			await wrapper.vm.$nextTick();
+
+			const vm = wrapper.vm as unknown as AppHeaderVM;
+			const linksGroup = vm.groups.find((g: NavGroup) => g.name === `Links`);
+			expect(linksGroup).toBeDefined();
+			expect(linksGroup?.submenu).toEqual(links);
+		});
+
+		test(`onItemClick() sends launch-link IPC for link items`, () => {
+			const vm = wrapper.vm as unknown as AppHeaderVM;
+			const payload = { url: `https://google.com`, external: true };
+			vm.onItemClick({ title: `Google`, value: `launch-link:${JSON.stringify(payload)}` });
+			expect(mockSend).toHaveBeenCalledWith(`launch-link`, payload);
+		});
+
+		test(`onItemClick() sends show-variables-modal IPC for variable link items`, () => {
+			const vm = wrapper.vm as unknown as AppHeaderVM;
+			const url = `https://example.com/{myvar}`;
+			vm.onItemClick({ title: `Variable`, value: `launch-link-var:${url}` });
+			expect(mockSend).toHaveBeenCalledWith(`show-variables-modal`, url);
+		});
+	});
 });

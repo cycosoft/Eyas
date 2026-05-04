@@ -283,7 +283,8 @@ async function updateNavigationState(ctx: CoreContext): Promise<void> {
 		currentViewport: ctx.$currentViewport,
 		cacheSize,
 		sessionAge: ctx.getSessionAge(),
-		isDev: ctx.$isDev
+		isDev: ctx.$isDev,
+		links: ctx.menuService.getSerializableLinks(ctx.$config)
 	});
 }
 

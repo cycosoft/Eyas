@@ -18,6 +18,11 @@ export const groups = reactive<NavGroup[]>([
 		]
 	},
 	{
+		name: `Links`,
+		mnemonic: `L`,
+		submenu: []
+	},
+	{
 		name: `Tools`,
 		shortcut: `Alt+T`,
 		submenu: [
