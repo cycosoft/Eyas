@@ -108,7 +108,7 @@ describe(`MenuService Helpers`, () => {
 			expect(items[1].title).toBe(`Local`);
 			expect(items[2].title).toBe(`Variable`);
 			expect(items[3].title).toBe(`Host Variable`);
-			expect(items[4].title).toContain(`invalid entry`);
+			expect(items[4].title).toBe(`Invalid (invalid entry: "bad-url")`);
 		});
 
 		test(`should encode url and external state in value`, () => {

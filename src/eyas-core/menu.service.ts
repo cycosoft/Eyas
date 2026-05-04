@@ -155,7 +155,7 @@ export const menuService: MenuService = {
 			}
 
 			return {
-				title: isValid ? label : `${label} (invalid entry)`,
+				title: isValid ? label : `${label} (invalid entry: "${link.url}")`,
 				value: isValid ? value : ``,
 				actionable: isValid
 			};

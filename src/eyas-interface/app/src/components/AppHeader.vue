@@ -133,6 +133,7 @@
 						[`text-${item.color}`]: item.color,
 						'non-actionable': item.actionable === false
 					}"
+					:disabled="item.actionable === false"
 					:active="item.selected"
 					data-qa="btn-nav-item"
 					@click="item.actionable === false ? undefined : onItemClick(item)"
@@ -176,6 +177,7 @@
 										[`text-${sub.color}`]: sub.color,
 										'non-actionable': sub.actionable === false
 									}"
+									:disabled="sub.actionable === false"
 									:active="sub.selected"
 									data-qa="btn-nav-item"
 									@click="sub.actionable === false ? undefined : onItemClick(sub)"
@@ -262,7 +264,7 @@ defineExpose({
 <style scoped>
 .menu-logo { height: 1.5em; width: 1.5em; }
 .menu-shortcut { font-size: 0.65rem !important; opacity: 0.6 !important; }
-.non-actionable { cursor: default !important; pointer-events: none; }
+.non-actionable { cursor: default !important; pointer-events: none; opacity: 0.5; }
 .v-btn--active, .v-list-item--active {
 	background-color: rgba(var(--v-theme-primary), 0.1) !important;
 	color: rgb(var(--v-theme-primary)) !important;
