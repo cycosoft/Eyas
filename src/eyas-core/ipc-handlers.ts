@@ -75,6 +75,9 @@ function initCoreIpcListeners(ctx: CoreContext): void {
 		const parsed = parseURL(url);
 		ctx.navigate(parsed ? parsed.toString() : url, openInBrowser, !openInBrowser);
 	});
+	ipcMain.on(`launch-link-variable`, (_event, url: DomainUrl) => {
+		ctx.navigateVariable(url);
+	});
 
 	ipcMain.on(`show-about`, () => { ctx.showAbout(); });
 	ipcMain.on(`show-settings`, () => { ctx.onOpenSettings(); });

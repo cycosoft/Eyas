@@ -14,6 +14,7 @@ export const VALID_SEND_CHANNELS = [
 	`show-ui`,
 	`environment-selected`,
 	`launch-link`,
+	`launch-link-variable`,
 	`network-status`,
 	`test-server-setup-continue`,
 	`test-server-setup-step`,

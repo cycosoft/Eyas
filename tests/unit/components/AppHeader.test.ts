@@ -483,11 +483,11 @@ describe(`AppHeader`, () => {
 			expect(mockSend).toHaveBeenCalledWith(`launch-link`, payload);
 		});
 
-		test(`onItemClick() sends show-variables-modal IPC for variable link items`, () => {
+		test(`onItemClick() sends launch-link-variable IPC for variable link items`, () => {
 			const vm = wrapper.vm as unknown as AppHeaderVM;
 			const url = `https://example.com/{myvar}`;
 			vm.onItemClick({ title: `Variable`, value: `launch-link-var:${url}` });
-			expect(mockSend).toHaveBeenCalledWith(`show-variables-modal`, url);
+			expect(mockSend).toHaveBeenCalledWith(`launch-link-variable`, url);
 		});
 	});
 });

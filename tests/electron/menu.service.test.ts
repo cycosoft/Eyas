@@ -92,6 +92,7 @@ describe(`MenuService Helpers`, () => {
 				{ label: `Google`, url: `https://google.com`, external: true },
 				{ label: `Local`, url: `http://local.test`, external: false },
 				{ label: `Variable`, url: `https://example.com/{myvar}`, external: false },
+				{ label: `Host Variable`, url: `https://{myvar}example.com`, external: false },
 				{ label: `Invalid`, url: `bad-url`, external: false }
 			]
 		} as unknown as ValidatedConfig;
@@ -102,10 +103,12 @@ describe(`MenuService Helpers`, () => {
 
 		test(`should return NavItem array with correct titles`, () => {
 			const items = menuService.getSerializableLinks(config);
-			expect(items).toHaveLength(4);
+			expect(items).toHaveLength(5);
 			expect(items[0].title).toBe(`🌐 Google`);
 			expect(items[1].title).toBe(`Local`);
-			expect(items[3].title).toContain(`invalid entry`);
+			expect(items[2].title).toBe(`Variable`);
+			expect(items[3].title).toBe(`Host Variable`);
+			expect(items[4].title).toContain(`invalid entry`);
 		});
 
 		test(`should encode url and external state in value`, () => {
@@ -117,11 +120,12 @@ describe(`MenuService Helpers`, () => {
 		test(`should identify variable links`, () => {
 			const items = menuService.getSerializableLinks(config);
 			expect(items[2].value).toBe(`launch-link-var:https://example.com/{myvar}`);
+			expect(items[3].value).toBe(`launch-link-var:https://{myvar}example.com`);
 		});
 
 		test(`should disable invalid links`, () => {
 			const items = menuService.getSerializableLinks(config);
-			expect(items[3].actionable).toBe(false);
+			expect(items[4].actionable).toBe(false);
 		});
 	});
 

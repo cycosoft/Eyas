@@ -140,25 +140,25 @@ export const menuService: MenuService = {
 		return config.links.map(link => {
 			const isExternal = !!link.external;
 			const label = isExternal ? `🌐 ${link.label}` : link.label;
+			const isVariable = link.url.includes(`{`);
 
-			try {
-				const url = new URL(link.url);
-				const isVariable = link.url.includes(`{`);
+			let isValid = false;
+			let value = ``;
 
-				return {
-					title: label,
-					value: isVariable
-						? `launch-link-var:${link.url}`
-						: `launch-link:${JSON.stringify({ url: url.href, openInBrowser: isExternal })}`,
-					actionable: true
-				};
-			} catch {
-				return {
-					title: `${label} (invalid entry)`,
-					value: ``,
-					actionable: false
-				};
+			if (isVariable) {
+				isValid = isVariableLinkValid(link.url);
+				value = `launch-link-var:${link.url}`;
+			} else {
+				const parsed = parseURL(link.url);
+				isValid = !!parsed;
+				value = `launch-link:${JSON.stringify({ url: parsed?.toString() || link.url, openInBrowser: isExternal })}`;
 			}
+
+			return {
+				title: isValid ? label : `${label} (invalid entry)`,
+				value: isValid ? value : ``,
+				actionable: isValid
+			};
 		});
 	}
 };

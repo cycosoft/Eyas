@@ -17,7 +17,7 @@ export function handleNavItemClick(value: NavItemValue): void {
 
 	if (value.startsWith(`launch-link-var:`)) {
 		const url = value.replace(`launch-link-var:`, ``);
-		window.eyas?.send(`show-variables-modal` as ChannelName, url);
+		window.eyas?.send(`launch-link-variable` as ChannelName, url);
 		return;
 	}
 
