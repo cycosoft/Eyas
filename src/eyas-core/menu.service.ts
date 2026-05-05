@@ -137,7 +137,7 @@ export const menuService: MenuService = {
 	getSerializableLinks: (config: ValidatedConfig | null): NavItem[] => {
 		if (!config?.links) { return []; }
 
-		return config.links.map(link => {
+		return config.links.map((link, index) => {
 			const isExternal = !!link.external;
 			const label = isExternal ? `🌐 ${link.label}` : link.label;
 			const isVariable = link.url.includes(`{`);
@@ -156,7 +156,7 @@ export const menuService: MenuService = {
 
 			return {
 				title: isValid ? label : `${label} (invalid entry: "${link.url}")`,
-				value: isValid ? value : ``,
+				value: isValid ? value : `invalid-link-${index}`,
 				actionable: isValid
 			};
 		});
