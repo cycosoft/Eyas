@@ -41,50 +41,6 @@ describe(`MenuService Helpers`, () => {
 	});
 
 
-	describe(`getLinkMenuItems`, () => {
-		const handlers = {
-			navigate: vi.fn(),
-			navigateVariable: vi.fn()
-		};
-
-		const config = {
-			links: [
-				{ label: `Google`, url: `https://google.com`, external: true },
-				{ label: `Local`, url: `http://local.test`, external: false },
-				{ label: `Variable`, url: `https://example.com/{myvar}`, external: false }
-			]
-		} as unknown as ValidatedConfig;
-
-		test(`should return empty array if no config`, () => {
-			expect(menuService.getLinkMenuItems(null, handlers)).toEqual([]);
-		});
-
-		test(`should correctly label external links with 🌐`, () => {
-			const items = menuService.getLinkMenuItems(config, handlers);
-			expect(items[0].label).toContain(`🌐 Google`);
-			expect(items[1].label).not.toContain(`🌐`);
-		});
-
-		test(`should use navigate for static links`, () => {
-			const items = menuService.getLinkMenuItems(config, handlers);
-			(items[0].click as () => void)();
-			expect(handlers.navigate).toHaveBeenCalledWith(`https://google.com/`, true);
-		});
-
-		test(`should use navigateVariable for links with variables`, () => {
-			const items = menuService.getLinkMenuItems(config, handlers);
-			(items[2].click as () => void)();
-			expect(handlers.navigateVariable).toHaveBeenCalledWith(`https://example.com/{myvar}`);
-		});
-
-		test(`should mark invalid links`, () => {
-			const badConfig = {
-				links: [{ label: `Bad`, url: `not-a-url`, external: false }]
-			} as unknown as ValidatedConfig;
-			const items = menuService.getLinkMenuItems(badConfig, handlers);
-			expect(items[0].label).toContain(`invalid entry`);
-		});
-	});
 
 	describe(`getSerializableLinks`, () => {
 		const config = {
@@ -194,10 +150,7 @@ describe(`MenuService Helpers`, () => {
 		} as unknown as CoreContext;
 
 		test(`getContext should assemble all handlers and state`, () => {
-			const params = {
-				linkItems: []
-			};
-			const context = menuService.getContext(mockCtx, params);
+			const context = menuService.getContext(mockCtx);
 			expect(context.testNetworkEnabled).toBe(true);
 		});
 

@@ -1,4 +1,4 @@
-import type { IsActive, MenuLabel, DomainUrl, MenuAccelerator, MetadataKey } from './primitives.js';
+import type { IsActive, MenuLabel, MenuAccelerator, MetadataKey } from './primitives.js';
 
 /** A single menu item descriptor */
 type MenuItem = {
@@ -14,17 +14,6 @@ type MenuItem = {
 /** A full menu template array */
 export type MenuTemplate = MenuItem[];
 
-/** Parameters for getMenuContext */
-export type MenuContextParams = {
-	linkItems: MenuItem[];
-}
-
-/** Handlers for navigation links in the menu */
-export type LinkMenuHandlers = {
-	navigate: (url?: DomainUrl, external?: IsActive) => void;
-	navigateVariable: (url: DomainUrl) => void;
-}
-
 /** Context required to build the application menu */
 export type MenuContext = {
 	isDev: IsActive;
@@ -39,7 +28,6 @@ export type MenuContext = {
 	back: () => void;
 	forward: () => void;
 	toggleNetwork: () => void;
-	linkItems: MenuItem[];
 	isInitializing?: IsActive;
 	isConfigLoaded?: IsActive;
 	isEnvironmentPending?: IsActive;

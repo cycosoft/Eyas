@@ -28,19 +28,13 @@ function createTestSubmenu(context: MenuContext): MenuTemplate {
 	const {
 		isConfigLoaded = false,
 		isEnvironmentPending = false,
-		startAFreshTest,
-		linkItems
+		startAFreshTest
 	} = context;
 
 	const enabled = isConfigLoaded && !isEnvironmentPending;
 	const submenu: MenuTemplate = [
 		{ label: `🔄 &Reset Test Environment`, click: startAFreshTest, enabled }
 	];
-
-	if (linkItems.length) {
-		submenu.push({ type: `separator` });
-		submenu.push({ label: `🔗 &Links`, submenu: linkItems, enabled });
-	}
 
 	return submenu;
 }

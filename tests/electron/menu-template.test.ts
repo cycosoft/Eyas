@@ -15,8 +15,7 @@ const minimalContext: MenuContext = {
 	reload: noop,
 	back: noop,
 	forward: noop,
-	toggleNetwork: noop,
-	linkItems: []
+	toggleNetwork: noop
 };
 
 // ─── Root-level structure ──────────────────────────────────────────────────
@@ -48,7 +47,7 @@ describe(`Test menu`, () => {
 		expect(Array.isArray(testMenu.submenu)).toBe(true);
 	});
 
-	test(`Test submenu contains Choose Test Environment using startAFreshTest`, () => {
+	test(`Test submenu contains a Reset Test Environment using startAFreshTest`, () => {
 		const startAFreshTest = (): void => { };
 		const ctx = { ...minimalContext, startAFreshTest };
 		const template = buildMenuTemplate(ctx as MenuContext);
@@ -64,24 +63,6 @@ describe(`Test menu`, () => {
 		const testMenu = template[0] as MenuItemConstructorOptions;
 		const homeItem = (testMenu.submenu as MenuItemConstructorOptions[]).find(item => item.label && item.label.toLowerCase().includes(`home`));
 		expect(homeItem).toBeUndefined();
-	});
-
-	test(`Test submenu contains a Links submenu when linkItems is non-empty`, () => {
-		const ctx = { ...minimalContext, linkItems: [{ label: `My Link`, click: noop }] };
-		const template = buildMenuTemplate(ctx as MenuContext);
-		const testMenu = template[0] as MenuItemConstructorOptions;
-		const linksItem = (testMenu.submenu as MenuItemConstructorOptions[]).find(item => item.label && item.label.toLowerCase().includes(`link`));
-		if (!linksItem) throw new Error();
-		expect(linksItem).toBeDefined();
-		expect(Array.isArray(linksItem.submenu)).toBe(true);
-	});
-
-	test(`Test submenu omits Links submenu when linkItems is empty`, () => {
-		const ctx = { ...minimalContext, linkItems: [] };
-		const template = buildMenuTemplate(ctx as MenuContext);
-		const testMenu = template[0] as MenuItemConstructorOptions;
-		const linksItem = (testMenu.submenu as MenuItemConstructorOptions[]).find(item => item.label && item.label.toLowerCase().includes(`link`));
-		expect(linksItem).toBeUndefined();
 	});
 
 	test(`when isInitializing is true, Test menu is disabled`, () => {

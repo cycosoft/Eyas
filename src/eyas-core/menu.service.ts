@@ -5,9 +5,9 @@ import { parseURL } from '@scripts/parse-url.js';
 
 // Types
 import type { MenuService, CoreContext } from '@registry/eyas-core.js';
-import type { MenuTemplate, LinkMenuHandlers, MenuContextParams, MenuContext } from '@registry/menu.js';
-import type { ValidatedConfig, LinkConfig } from '@registry/config.js';
-import type { DomainUrl, IsActive, LabelString } from '@registry/primitives.js';
+import type { MenuContext } from '@registry/menu.js';
+import type { ValidatedConfig } from '@registry/config.js';
+import type { IsActive, LabelString } from '@registry/primitives.js';
 import type { NavItem } from '@registry/components.js';
 
 /** Service for managing the application menu */
@@ -20,64 +20,23 @@ export const menuService: MenuService = {
 		const { $appWindow, $config } = ctx;
 		if (!$appWindow || $appWindow.isDestroyed() || !$config) { return; }
 
-		const linkItems = menuService.getLinkMenuItems($config, {
-			navigate: (path, openInBrowser) => ctx.navigate(path, openInBrowser),
-			navigateVariable: url => ctx.navigateVariable(url)
-		});
-
-		const context = menuService.getContext(ctx, {
-			linkItems
-		});
+		const context = menuService.getContext(ctx);
 
 		const template = buildMenuTemplate(context);
 		Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 	},
 
 
-	/**
-	 * Builds the list of link menu items from the configuration.
-	 * @param config The validated configuration.
-	 * @param handlers Handlers for navigation.
-	 * @returns An array of menu item objects for the links submenu.
-	 */
-	getLinkMenuItems: (config: ValidatedConfig | null, handlers: LinkMenuHandlers): MenuTemplate => {
-		if (!config) { return []; }
-
-		const linkItems: MenuTemplate = [];
-		config.links.forEach((item: LinkConfig) => {
-			const itemUrl = item.url;
-			let isValid;
-			let validUrl: DomainUrl | undefined;
-			const hasVariables = itemUrl.match(/{[^{}]+}/g)?.length;
-			if (hasVariables) {
-				isValid = isVariableLinkValid(itemUrl);
-			} else {
-				validUrl = parseURL(itemUrl)?.toString() as DomainUrl;
-				isValid = !!validUrl;
-			}
-			linkItems.push({
-				label: `${item.external ? `🌐 ` : ``}${item.label || item.url}${isValid ? `` : ` (invalid entry: "${item.url}")`}`,
-				click: () => hasVariables ? handlers.navigateVariable(itemUrl) : handlers.navigate(validUrl, item.external),
-				enabled: isValid
-			});
-		});
-
-		return linkItems;
-	},
 
 	/**
 	 * Assembles the menu context object required for building the application menu template.
 	 * @param ctx The core context of the application.
-	 * @param params Data required to build the context.
 	 * @returns The fully assembled MenuContext object.
 	 */
-	getContext: (ctx: CoreContext, params: MenuContextParams): MenuContext => {
-		const { linkItems } = params;
-
+	getContext: (ctx: CoreContext): MenuContext => {
 		return {
 			isDev: process.argv.includes(`--dev`),
 			testNetworkEnabled: ctx.$testNetworkEnabled,
-			linkItems,
 			...menuService.getAppHandlers(ctx),
 			...menuService.getNavigationHandlers(ctx),
 			...menuService.getTestServerHandlers(ctx)

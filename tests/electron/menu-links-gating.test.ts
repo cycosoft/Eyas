@@ -18,8 +18,7 @@ const minimalContext: MenuContext = {
 	reload: noop,
 	back: noop,
 	forward: noop,
-	toggleNetwork: noop,
-	linkItems: []
+	toggleNetwork: noop
 };
 
 describe(`Menu links and DevTools gating (Refined)`, () => {
@@ -66,28 +65,6 @@ describe(`Menu links and DevTools gating (Refined)`, () => {
 		});
 	});
 
-	describe(`State: Environment Pending`, () => {
-		const ctx = {
-			...minimalContext,
-			isConfigLoaded: true,
-			isEnvironmentPending: true,
-			isInitializing: true,
-			isDev: true
-		};
-
-		test(`'Test > Links' is disabled`, () => {
-			const template = buildMenuTemplate({
-				...ctx,
-				linkItems: [{ label: `Link 1`, click: noop }]
-			} as MenuContext) as MenuItemConstructorOptions[];
-			const testMenu = template.find((m: MenuItemConstructorOptions) => m.label && m.label.includes(`Test`));
-			if (!testMenu) throw new Error();
-			const linksItem = (testMenu.submenu as MenuItemConstructorOptions[]).find((i: MenuItemConstructorOptions) => i.label && i.label.includes(`Links`));
-			if (!linksItem) throw new Error();
-
-			expect(linksItem.enabled).toBe(false);
-		});
-	});
 });
 
 
