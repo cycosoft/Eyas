@@ -7,7 +7,7 @@ import { parseURL } from '@scripts/parse-url.js';
 import type { MenuService, CoreContext } from '@registry/eyas-core.js';
 import type { MenuTemplate, LinkMenuHandlers, MenuContextParams, MenuContext } from '@registry/menu.js';
 import type { ValidatedConfig, LinkConfig } from '@registry/config.js';
-import type { DomainUrl } from '@registry/primitives.js';
+import type { DomainUrl, IsActive, LabelString } from '@registry/primitives.js';
 import type { NavItem } from '@registry/components.js';
 
 /** Service for managing the application menu */
@@ -142,8 +142,8 @@ export const menuService: MenuService = {
 			const label = isExternal ? `🌐 ${link.label}` : link.label;
 			const isVariable = link.url.includes(`{`);
 
-			let isValid = false;
-			let value = ``;
+			let isValid: IsActive;
+			let value: LabelString;
 
 			if (isVariable) {
 				isValid = isVariableLinkValid(link.url);

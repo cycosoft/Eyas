@@ -20,7 +20,7 @@ test.describe(`Links Menu`, () => {
 
 	test(`displays the links menu when links are provided`, async () => {
 		const uiPage = await getUiView(electronApp);
-		
+
 		// Clear environment modal if it appears
 		await ensureEnvironmentSelected(uiPage);
 

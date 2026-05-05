@@ -240,30 +240,18 @@ function goBack(ctx: CoreContext): void {
 	webContents.navigationHistory.goBack();
 }
 
-/**
- * Navigates the test layer forward in history.
- * @param ctx The core context.
- */
 function goForward(ctx: CoreContext): void {
 	const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
 	if (ctx.$isInitializing || !webContents || webContents.isDestroyed()) { return; }
 	webContents.navigationHistory.goForward();
 }
 
-/**
- * Reloads the test layer, ignoring cache.
- * @param ctx The core context.
- */
 function reload(ctx: CoreContext): void {
 	const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
 	if (ctx.$isInitializing || !webContents || webContents.isDestroyed()) { return; }
 	webContents.reloadIgnoringCache();
 }
 
-/**
- * Updates the navigation state in the UI layer.
- * @param ctx The core context.
- */
 async function updateNavigationState(ctx: CoreContext): Promise<void> {
 	const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
 	if (!webContents || webContents.isDestroyed()) { return; }
@@ -271,9 +259,7 @@ async function updateNavigationState(ctx: CoreContext): Promise<void> {
 	let cacheSize = 0;
 	try {
 		cacheSize = await webContents.session.getCacheSize();
-	} catch {
-		// ignore
-	}
+	} catch { /* ignore */ }
 
 	// push navigation state to the UI layer
 	ctx.$eyasLayer?.webContents.send(`navigation-state-updated`, {

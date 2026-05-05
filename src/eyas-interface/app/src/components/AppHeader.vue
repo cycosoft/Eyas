@@ -58,7 +58,11 @@
 				@click="activate($event, group)"
 				@mouseenter="onMouseEnter($event, group)"
 			>
-				<template v-for="(part, i) in group.mnemonicParts" :key="i"><u v-if="part.isMnemonic">{{ part.text }}</u><template v-else>{{ part.text }}</template></template>
+				<template v-for="(part, i) in group.mnemonicParts" :key="i">
+					<u v-if="part.isMnemonic">{{ part.text }}</u><template v-else>
+						{{ part.text }}
+					</template>
+				</template>
 			</v-btn>
 		</template>
 
@@ -97,7 +101,11 @@
 				@click="activate($event, group)"
 				@mouseenter="onMouseEnter($event, group)"
 			>
-				<template v-for="(part, i) in group.mnemonicParts" :key="i"><u v-if="part.isMnemonic">{{ part.text }}</u><template v-else>{{ part.text }}</template></template>
+				<template v-for="(part, i) in group.mnemonicParts" :key="i">
+					<u v-if="part.isMnemonic">{{ part.text }}</u><template v-else>
+						{{ part.text }}
+					</template>
+				</template>
 			</v-btn>
 		</template>
 	</v-app-bar>
