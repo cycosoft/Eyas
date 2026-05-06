@@ -1,6 +1,5 @@
 import { describe, test, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
-import { mount } from '@vue/test-utils';
-import type { VueWrapper } from '@vue/test-utils';
+import { mount, type VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import AppHeader from '@/components/AppHeader.vue';
 import useModalsStore from '@/stores/modals.js';
@@ -29,13 +28,10 @@ describe(`AppHeader`, () => {
 		wrapper = mount(AppHeader, {
 			global: {
 				stubs: {
-					VAppBar: { template: `<div><slot /></div>` },
-					VMenu: { template: `<div><slot /></div>` },
-					VList: { template: `<div><slot /></div>` },
+					VAppBar: { template: `<div><slot /></div>` }, VMenu: { template: `<div><slot /></div>` }, VList: { template: `<div><slot /></div>` },
 					VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
 					VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
-					VIcon: true,
-					VImg: true
+					VIcon: true, VImg: true
 				}
 			}
 		});
@@ -47,9 +43,7 @@ describe(`AppHeader`, () => {
 		vi.useRealTimers();
 	});
 
-	test(`renders without crashing`, () => {
-		expect(wrapper.exists()).toBe(true);
-	});
+	test(`renders without crashing`, () => { expect(wrapper.exists()).toBe(true); });
 
 	test(`updates navigation button states via IPC`, async () => {
 		let navCallback: ((payload: NavigationStatePayload) => void) | null = null;
@@ -232,8 +226,6 @@ describe(`AppHeader`, () => {
 
 			expect(mockSend).not.toHaveBeenCalledWith(`hide-ui`);
 		});
-
-
 
 		test(`onItemClick() sends show-about IPC for 'about' item`, () => {
 			const vm = wrapper.vm as unknown as AppHeaderVM;
@@ -490,4 +482,17 @@ describe(`AppHeader`, () => {
 			expect(mockSend).toHaveBeenCalledWith(`launch-link-variable`, url);
 		});
 	});
+
+	describe(`omni-hub placeholders`, () => {
+		test(`renders the central container and all placeholder elements`, () => {
+			const container = wrapper.find(`[data-qa="omni-hub-container"]`);
+			expect(container.exists()).toBe(true);
+			expect(container.find(`[data-qa="omni-hub-lock"]`).exists()).toBe(true);
+			expect(container.find(`[data-qa="omni-hub-status"]`).text()).toContain(`Offline`);
+			expect(container.find(`[data-qa="omni-hub-url"]`).text()).toBe(`https://staging.eyas.app/environments/demo-v2`);
+			expect(container.find(`[data-qa="omni-hub-env-dropdown"]`).text()).toContain(`STAGING`);
+		});
+	});
 });
+
+

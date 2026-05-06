@@ -68,6 +68,29 @@
 
 		<v-spacer />
 
+		<!-- Center Omni-Hub (Placeholder Container) -->
+		<div class="omni-hub-container d-flex align-center border rounded-lg px-3 py-1 bg-surface-variant/10" style="max-width: 550px; height: 32px;" data-qa="omni-hub-container">
+			<!-- 1. Lock Icon Placeholder -->
+			<v-icon icon="mdi-lock" size="x-small" class="text-medium-emphasis mr-2" data-qa="omni-hub-lock" />
+
+			<!-- 2. Online Status Badge Placeholder (Offline status default) -->
+			<v-chip size="x-small" density="compact" variant="flat" color="error" class="mr-2 font-weight-bold text-uppercase" style="font-size: 8px !important; height: 18px;" data-qa="omni-hub-status">
+				Offline
+			</v-chip>
+
+			<!-- 3. URL Placeholder -->
+			<span class="text-caption font-mono text-medium-emphasis text-truncate mr-4" style="max-width: 240px; font-size: 10px !important; opacity: 0.8;" data-qa="omni-hub-url">
+				https://staging.eyas.app/environments/demo-v2
+			</span>
+
+			<!-- 4. Dropdown Button Placeholder -->
+			<v-btn size="x-small" density="compact" variant="tonal" color="info" append-icon="mdi-chevron-down" class="font-weight-bold text-uppercase" style="font-size: 8px !important; height: 18px;" data-qa="omni-hub-env-dropdown">
+				STAGING
+			</v-btn>
+		</div>
+
+		<v-spacer />
+
 		<!-- 3. Update Status -->
 		<v-btn
 			v-if="updateInfo.icon"
@@ -215,24 +238,10 @@
 import { onMounted, watch, toRefs } from 'vue';
 import type { ChannelName } from '@registry/primitives.js';
 import {
-	groups,
-	state,
-	browserControls,
-	isControlDisabled,
-	handleBrowserControlClick,
-	goBack,
-	goForward,
-	reload,
-	goHome,
-	handleBroadcastClick,
-	activate,
-	onMouseEnter,
-	onItemClick,
-	delayedClose,
-	triggerOpen,
-	updateInfo,
-	handleNavigationUpdate,
-	handleUpdateStatusUpdate
+	groups, state, browserControls, isControlDisabled, handleBrowserControlClick,
+	goBack, goForward, reload, goHome, handleBroadcastClick, activate,
+	onMouseEnter, onItemClick, delayedClose, triggerOpen, updateInfo,
+	handleNavigationUpdate, handleUpdateStatusUpdate
 } from './AppHeader.logic.js';
 
 const { menu, activator, canGoBack, canGoForward, updateStatus } = toRefs(state);
@@ -277,8 +286,6 @@ defineExpose({
 	background-color: rgba(var(--v-theme-primary), 0.1) !important;
 	color: rgb(var(--v-theme-primary)) !important;
 }
-
-
 
 .blink-animation {
 	animation: blink 1s infinite;
