@@ -69,7 +69,7 @@
 		<v-spacer />
 
 		<!-- Center Omni-Hub (Placeholder Container) -->
-		<div class="omni-hub-container d-flex align-center border rounded-lg px-3 py-1 bg-surface-variant/10" style="max-width: 550px; height: 32px;" data-qa="omni-hub-container">
+		<div class="omni-hub-container d-flex align-center border rounded-lg px-3 py-1 bg-surface-variant/10 mx-4 flex-grow-1" style="max-width: 800px; height: 32px;" data-qa="omni-hub-container">
 			<!-- 1. Lock Icon Placeholder -->
 			<v-icon icon="mdi-lock" size="x-small" class="text-medium-emphasis mr-2" data-qa="omni-hub-lock" />
 
@@ -79,7 +79,7 @@
 			</v-chip>
 
 			<!-- 3. URL Placeholder -->
-			<span class="text-caption font-mono text-medium-emphasis text-truncate mr-4" style="max-width: 240px; font-size: 10px !important; opacity: 0.8;" data-qa="omni-hub-url">
+			<span class="text-caption font-mono text-medium-emphasis text-truncate mr-4 flex-grow-1 text-center" style="font-size: 10px !important; opacity: 0.8;" data-qa="omni-hub-url">
 				https://staging.eyas.app/environments/demo-v2
 			</span>
 
