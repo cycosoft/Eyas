@@ -79,7 +79,7 @@
 			</v-chip>
 
 			<!-- 3. URL Placeholder -->
-			<span class="text-caption font-mono text-medium-emphasis text-truncate mr-4 flex-grow-1" style="min-width: 100px; font-size: 10px !important; opacity: 0.8;" data-qa="omni-hub-url">
+			<span class="text-caption font-mono text-medium-emphasis text-truncate mr-4 flex-grow-1 d-inline-block" style="min-width: 100px; width: 0; font-size: 10px !important; opacity: 0.8;" data-qa="omni-hub-url">
 				https://staging.eyas.app/environments/demo-v2
 			</span>
 
