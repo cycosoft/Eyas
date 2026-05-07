@@ -79,8 +79,22 @@
 			</v-chip>
 
 			<!-- 3. URL Placeholder -->
-			<span class="text-caption font-mono text-medium-emphasis text-truncate d-inline-block" style="flex-grow: 5; min-width: 100px; width: 0; font-size: 10px !important; opacity: 0.8;" data-qa="omni-hub-url">
-				https://staging.eyas.app/environments/demo-v2
+			<span
+				class="text-caption text-truncate d-inline-block"
+				:class="{
+					'font-mono text-medium-emphasis': !displayUrlInfo.isFallback,
+					'text-disabled': displayUrlInfo.isFallback
+				}"
+				:style="{
+					flexGrow: 5,
+					minWidth: '100px',
+					width: 0,
+					fontSize: '10px !important',
+					opacity: displayUrlInfo.isFallback ? 0.5 : 0.8
+				}"
+				data-qa="omni-hub-url"
+			>
+				{{ displayUrlInfo.text }}
 			</span>
 
 			<!-- 4. Dropdown Button Placeholder -->
@@ -241,7 +255,7 @@ import {
 	groups, state, browserControls, isControlDisabled, handleBrowserControlClick,
 	goBack, goForward, reload, goHome, handleBroadcastClick, activate,
 	onMouseEnter, onItemClick, delayedClose, triggerOpen, updateInfo,
-	handleNavigationUpdate, handleUpdateStatusUpdate
+	handleNavigationUpdate, handleUpdateStatusUpdate, displayUrlInfo
 } from './AppHeader.logic.js';
 
 const { menu, activator, canGoBack, canGoForward, updateStatus } = toRefs(state);
@@ -274,7 +288,8 @@ defineExpose({
 	goForward,
 	reload,
 	goHome,
-	handleBroadcastClick
+	handleBroadcastClick,
+	displayUrlInfo
 });
 </script>
 

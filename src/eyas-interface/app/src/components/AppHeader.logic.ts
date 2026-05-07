@@ -1,6 +1,6 @@
 import { reactive, computed } from 'vue';
 import useModalsStore from '@/stores/modals.js';
-import type { NavGroup, NavItem, NavActivateEvent, PendingNavOpen } from '@registry/components.js';
+import type { NavGroup, NavItem, NavActivateEvent, PendingNavOpen, DisplayUrlInfo } from '@registry/components.js';
 import type { ChannelName, MenuLabel } from '@registry/primitives.js';
 import type { UpdateStatus } from '@registry/ipc.js';
 import { handleNavItemClick, updateCache, updateTools, updateViewports, updateLinks } from './AppHeader.updates.js';
@@ -20,7 +20,8 @@ export const state = reactive({
 	menuItems: [] as NavItem[],
 	canGoBack: false,
 	canGoForward: false,
-	updateStatus: `idle` as UpdateStatus
+	updateStatus: `idle` as UpdateStatus,
+	currentUrl: ``
 });
 
 /** The fallback delay (ms) to open the menu if the IPC event never fires. */
@@ -209,6 +210,18 @@ export const updateInfo = computed(() => {
 });
 
 /**
+ * Computes the displayed URL text and fallback state.
+ */
+export const displayUrlInfo = computed<DisplayUrlInfo>(() => {
+	const url = state.currentUrl;
+	const isFallback = !url || url === `about:blank` || url.startsWith(`data:`);
+	return {
+		text: isFallback ? `Load a New Eyas to Get Started` : url,
+		isFallback
+	};
+});
+
+/**
  * Handles navigation state updates from the main process.
  * @param data The navigation state payload.
  */
@@ -216,6 +229,10 @@ export function handleNavigationUpdate(data: unknown): void {
 	const payload = data as NavigationStatePayload;
 	state.canGoBack = payload.canGoBack;
 	state.canGoForward = payload.canGoForward;
+
+	if (payload.currentUrl !== undefined) {
+		state.currentUrl = payload.currentUrl;
+	}
 
 	if (payload.viewports && payload.currentViewport) {
 		updateViewports(payload.viewports, payload.currentViewport[0], payload.currentViewport[1]);

@@ -270,7 +270,8 @@ async function updateNavigationState(ctx: CoreContext): Promise<void> {
 		cacheSize,
 		sessionAge: ctx.getSessionAge(),
 		isDev: ctx.$isDev,
-		links: ctx.menuService.getSerializableLinks(ctx.$config)
+		links: ctx.menuService.getSerializableLinks(ctx.$config),
+		currentUrl: webContents.getURL()
 	});
 }
 

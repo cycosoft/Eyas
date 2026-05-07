@@ -218,6 +218,12 @@ export type NavActivateEvent = {
 	currentTarget: Element;
 };
 
+/** Information computed for the URL display in the central Omni-Hub bar. */
+export type DisplayUrlInfo = {
+	text: string;
+	isFallback: boolean;
+};
+
 /**
  * Type helper for the AppHeader Vue component's ViewModel in tests.
  */
@@ -238,4 +244,5 @@ export type AppHeaderVM = {
 	reload: () => void;
 	goHome: () => void;
 	$nextTick: () => Promise<void>;
+	displayUrlInfo: DisplayUrlInfo;
 };

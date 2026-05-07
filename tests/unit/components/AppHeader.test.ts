@@ -483,14 +483,75 @@ describe(`AppHeader`, () => {
 		});
 	});
 
-	describe(`omni-hub placeholders`, () => {
-		test(`renders the central container and all placeholder elements`, () => {
+	describe(`omni-hub central display`, () => {
+		test(`renders the central container and all placeholder elements with default fallback text`, () => {
 			const container = wrapper.find(`[data-qa="omni-hub-container"]`);
 			expect(container.exists()).toBe(true);
 			expect(container.find(`[data-qa="omni-hub-lock"]`).exists()).toBe(true);
 			expect(container.find(`[data-qa="omni-hub-status"]`).text()).toContain(`Offline`);
-			expect(container.find(`[data-qa="omni-hub-url"]`).text()).toBe(`https://staging.eyas.app/environments/demo-v2`);
+			expect(container.find(`[data-qa="omni-hub-url"]`).text()).toBe(`Load a New Eyas to Get Started`);
 			expect(container.find(`[data-qa="omni-hub-env-dropdown"]`).text()).toContain(`STAGING`);
+		});
+
+		test(`updates URL and handles fallbacks according to display rules`, async () => {
+			let navCallback: ((payload: NavigationStatePayload) => void) | null = null;
+
+			(window as unknown as WindowWithEyas).eyas.receive = vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
+				if (channel === `navigation-state-updated`) {
+					navCallback = cb as (payload: NavigationStatePayload) => void;
+				}
+				if (channel === `ui-shown`) {
+					uiShownCallback = cb;
+				}
+			});
+
+			wrapper = mount(AppHeader, {
+				global: {
+					stubs: {
+						VAppBar: { template: `<div><slot /></div>` },
+						VMenu: { template: `<div><slot /></div>` },
+						VList: { template: `<div><slot /></div>` },
+						VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
+						VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
+						VIcon: true,
+						VImg: true
+					}
+				}
+			});
+
+			const vm = wrapper.vm as unknown as AppHeaderVM;
+
+			// 1. Initial State (no URL loaded yet, fallback should apply)
+			expect(vm.displayUrlInfo.text).toBe(`Load a New Eyas to Get Started`);
+			expect(vm.displayUrlInfo.isFallback).toBe(true);
+
+			// 2. Load about:blank (fallback should apply)
+			if (navCallback) {
+				(navCallback as any)({ canGoBack: false, canGoForward: false, currentUrl: `about:blank` }); // eslint-disable-line @typescript-eslint/no-explicit-any
+			}
+			await wrapper.vm.$nextTick();
+			expect(vm.displayUrlInfo.text).toBe(`Load a New Eyas to Get Started`);
+			expect(vm.displayUrlInfo.isFallback).toBe(true);
+
+			// 3. Load a data URI (fallback should apply)
+			if (navCallback) {
+				(navCallback as any)({ canGoBack: false, canGoForward: false, currentUrl: `data:text/html,<html></html>` }); // eslint-disable-line @typescript-eslint/no-explicit-any
+			}
+			await wrapper.vm.$nextTick();
+			expect(vm.displayUrlInfo.text).toBe(`Load a New Eyas to Get Started`);
+			expect(vm.displayUrlInfo.isFallback).toBe(true);
+
+			// 4. Load a real URL
+			const targetUrl = `https://staging.eyas.app/environments/demo-v2`;
+			if (navCallback) {
+				(navCallback as any)({ canGoBack: false, canGoForward: false, currentUrl: targetUrl }); // eslint-disable-line @typescript-eslint/no-explicit-any
+			}
+			await wrapper.vm.$nextTick();
+			expect(vm.displayUrlInfo.text).toBe(targetUrl);
+			expect(vm.displayUrlInfo.isFallback).toBe(false);
+
+			const urlSpan = wrapper.find(`[data-qa="omni-hub-url"]`);
+			expect(urlSpan.text()).toBe(targetUrl);
 		});
 	});
 });

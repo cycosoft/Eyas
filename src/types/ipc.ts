@@ -76,6 +76,7 @@ export type NavigationStatePayload = {
 	sessionAge?: string;
 	isDev?: boolean;
 	links?: NavItem[];
+	currentUrl?: string;
 };
 
 type SendChannel = typeof VALID_SEND_CHANNELS[number];
