@@ -114,6 +114,7 @@
 
 				<v-menu
 					v-if="environments.length > 1"
+					v-model="envMenu"
 					activator="parent"
 					location="bottom center"
 					:offset="4"
@@ -296,12 +297,20 @@ import {
 	activeEnvironmentTitle, selectEnvironment
 } from './AppHeader.logic.js';
 
-const { menu, activator, canGoBack, canGoForward, updateStatus, environments, currentEnvironment } = toRefs(state);
+const { menu, activator, canGoBack, canGoForward, updateStatus, environments, currentEnvironment, envMenu } = toRefs(state);
 
 watch(menu, isOpen => {
 	if (!isOpen) {
 		delayedClose();
 		state.activeGroup = null;
+	}
+});
+
+watch(envMenu, isOpen => {
+	if (isOpen) {
+		window.eyas?.send(`show-ui` as ChannelName);
+	} else {
+		delayedClose();
 	}
 });
 

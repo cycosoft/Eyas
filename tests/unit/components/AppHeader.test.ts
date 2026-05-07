@@ -658,6 +658,23 @@ describe(`AppHeader`, () => {
 			});
 			expect(mockSend).toHaveBeenCalledWith(`environment-selected`, environments[1]);
 		});
+
+		test(`expands UI layer when envMenu becomes true and collapses it after delay when false`, async () => {
+			const vm = wrapper.vm as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+			// 1. Open the env menu
+			vm.envMenu = true;
+			await wrapper.vm.$nextTick();
+			expect(mockSend).toHaveBeenCalledWith(`show-ui`);
+
+			// 2. Close the env menu
+			vm.envMenu = false;
+			await wrapper.vm.$nextTick();
+
+			// Fast forward 310ms
+			vi.advanceTimersByTime(310);
+			expect(mockSend).toHaveBeenCalledWith(`hide-ui`);
+		});
 	});
 });
 

@@ -16,6 +16,7 @@ export * from './AppHeader.updates.js';
  */
 export const state = reactive({
 	menu: false,
+	envMenu: false,
 	activeGroup: null as MenuLabel | null,
 	activator: undefined as Element | undefined,
 	menuItems: [] as NavItem[],
@@ -154,7 +155,7 @@ export function delayedClose(): void {
 	window.clearTimeout(closeTimeout);
 
 	closeTimeout = window.setTimeout(() => {
-		if (!state.menu && !modalsStore.hasVisibleModals) {
+		if (!state.menu && !state.envMenu && !modalsStore.hasVisibleModals) {
 			window.eyas?.send(`hide-ui` as ChannelName);
 		}
 	}, 300);
