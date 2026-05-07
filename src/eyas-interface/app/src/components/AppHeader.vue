@@ -98,8 +98,44 @@
 			</span>
 
 			<!-- 4. Dropdown Button Placeholder -->
-			<v-btn size="x-small" density="compact" variant="tonal" color="info" append-icon="mdi-chevron-down" class="font-weight-bold text-uppercase" style="font-size: 8px !important; height: 18px;" data-qa="omni-hub-env-dropdown">
-				STAGING
+			<v-btn
+				size="x-small"
+				density="compact"
+				variant="tonal"
+				color="info"
+				:append-icon="environments.length > 1 ? 'mdi-chevron-down' : undefined"
+				class="font-weight-bold text-uppercase"
+				style="font-size: 8px !important; height: 18px;"
+				data-qa="omni-hub-env-dropdown"
+				:disabled="environments.length <= 1"
+			>
+				{{ activeEnvironmentTitle }}
+
+				<v-menu
+					v-if="environments.length > 1"
+					activator="parent"
+					location="bottom center"
+					:offset="4"
+				>
+					<v-list
+						class="py-1"
+						density="compact"
+						rounded="lg"
+						border
+					>
+						<v-list-item
+							v-for="(env, index) in environments"
+							:key="env.url"
+							slim
+							class="env-item font-weight-bold text-uppercase"
+							style="font-size: 10px;"
+							:active="env.url === currentEnvironment"
+							@click="selectEnvironment(env, index)"
+						>
+							{{ env.title }}
+						</v-list-item>
+					</v-list>
+				</v-menu>
 			</v-btn>
 		</div>
 
@@ -255,10 +291,11 @@ import {
 	groups, state, browserControls, isControlDisabled, handleBrowserControlClick,
 	goBack, goForward, reload, goHome, handleBroadcastClick, activate,
 	onMouseEnter, onItemClick, delayedClose, triggerOpen, updateInfo,
-	handleNavigationUpdate, handleUpdateStatusUpdate, displayUrlInfo
+	handleNavigationUpdate, handleUpdateStatusUpdate, displayUrlInfo,
+	activeEnvironmentTitle, selectEnvironment
 } from './AppHeader.logic.js';
 
-const { menu, activator, canGoBack, canGoForward, updateStatus } = toRefs(state);
+const { menu, activator, canGoBack, canGoForward, updateStatus, environments, currentEnvironment } = toRefs(state);
 
 watch(menu, isOpen => {
 	if (!isOpen) {
@@ -289,7 +326,11 @@ defineExpose({
 	reload,
 	goHome,
 	handleBroadcastClick,
-	displayUrlInfo
+	displayUrlInfo,
+	environments,
+	currentEnvironment,
+	activeEnvironmentTitle,
+	selectEnvironment
 });
 </script>
 

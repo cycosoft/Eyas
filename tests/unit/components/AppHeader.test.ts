@@ -554,6 +554,111 @@ describe(`AppHeader`, () => {
 			expect(urlSpan.text()).toBe(targetUrl);
 		});
 	});
+
+	describe(`environments dropdown`, () => {
+		let navCallback: ((payload: NavigationStatePayload) => void) | null = null;
+
+		beforeEach(() => {
+			(window as unknown as WindowWithEyas).eyas.receive = vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
+				if (channel === `navigation-state-updated`) {
+					navCallback = cb as (payload: NavigationStatePayload) => void;
+				}
+				if (channel === `ui-shown`) {
+					uiShownCallback = cb;
+				}
+			});
+
+			wrapper = mount(AppHeader, {
+				global: {
+					stubs: {
+						VAppBar: { template: `<div><slot /></div>` },
+						VMenu: { template: `<div><slot /></div>` },
+						VList: { template: `<div><slot /></div>` },
+						VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
+						VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
+						VIcon: true,
+						VImg: true
+					}
+				}
+			});
+		});
+
+		test(`renders fallback text STAGING when there are no environments`, () => {
+			const dropdownBtn = wrapper.find(`[data-qa="omni-hub-env-dropdown"]`);
+			expect(dropdownBtn.text()).toContain(`STAGING`);
+		});
+
+		test(`renders SELECT ENV when environments are defined but none is selected`, async () => {
+			if (navCallback) {
+				(navCallback as any)({ // eslint-disable-line @typescript-eslint/no-explicit-any
+					canGoBack: false,
+					canGoForward: false,
+					environments: [
+						{ url: `dev.eyas.cycosoft.com`, title: `Development` },
+						{ url: `staging.eyas.cycosoft.com`, title: `Staging` }
+					]
+				});
+			}
+			await wrapper.vm.$nextTick();
+			const dropdownBtn = wrapper.find(`[data-qa="omni-hub-env-dropdown"]`);
+			expect(dropdownBtn.text()).toContain(`SELECT ENV`);
+		});
+
+		test(`renders the current environment title when selected`, async () => {
+			if (navCallback) {
+				(navCallback as any)({ // eslint-disable-line @typescript-eslint/no-explicit-any
+					canGoBack: false,
+					canGoForward: false,
+					environments: [
+						{ url: `dev.eyas.cycosoft.com`, title: `Development` },
+						{ url: `staging.eyas.cycosoft.com`, title: `Staging` }
+					],
+					currentEnvironment: `staging.eyas.cycosoft.com`
+				});
+			}
+			await wrapper.vm.$nextTick();
+			const dropdownBtn = wrapper.find(`[data-qa="omni-hub-env-dropdown"]`);
+			expect(dropdownBtn.text()).toContain(`Staging`);
+		});
+
+		test(`renders environment list items without number badges and fires IPC on click`, async () => {
+			const environments = [
+				{ url: `dev.eyas.cycosoft.com`, title: `Development`, key: `dev.` },
+				{ url: `staging.eyas.cycosoft.com`, title: `Staging`, key: `staging.` }
+			];
+
+			if (navCallback) {
+				(navCallback as any)({ // eslint-disable-line @typescript-eslint/no-explicit-any
+					canGoBack: false,
+					canGoForward: false,
+					environments,
+					currentEnvironment: `dev.eyas.cycosoft.com`,
+					projectId: `test-project`,
+					domainsHash: `hash123`
+				});
+			}
+			await wrapper.vm.$nextTick();
+
+			const envItems = wrapper.findAll(`.env-item`);
+			expect(envItems.length).toBe(2);
+			expect(envItems[0].text()).toBe(`Development`);
+			expect(envItems[1].text()).toBe(`Staging`);
+
+			await envItems[1].trigger(`click`);
+
+			expect(mockSend).toHaveBeenCalledWith(`save-setting`, {
+				key: `env.lastChoice`,
+				value: environments[1],
+				projectId: `test-project`
+			});
+			expect(mockSend).toHaveBeenCalledWith(`save-setting`, {
+				key: `env.lastChoiceHash`,
+				value: `hash123`,
+				projectId: `test-project`
+			});
+			expect(mockSend).toHaveBeenCalledWith(`environment-selected`, environments[1]);
+		});
+	});
 });
 
 

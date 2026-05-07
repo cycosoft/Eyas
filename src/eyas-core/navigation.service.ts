@@ -261,7 +261,6 @@ async function updateNavigationState(ctx: CoreContext): Promise<void> {
 		cacheSize = await webContents.session.getCacheSize();
 	} catch { /* ignore */ }
 
-	// push navigation state to the UI layer
 	ctx.$eyasLayer?.webContents.send(`navigation-state-updated`, {
 		canGoBack: webContents.navigationHistory.canGoBack(),
 		canGoForward: webContents.navigationHistory.canGoForward(),
@@ -271,7 +270,11 @@ async function updateNavigationState(ctx: CoreContext): Promise<void> {
 		sessionAge: ctx.getSessionAge(),
 		isDev: ctx.$isDev,
 		links: ctx.menuService.getSerializableLinks(ctx.$config),
-		currentUrl: webContents.getURL()
+		currentUrl: webContents.getURL(),
+		environments: ctx.$config?.domains || [],
+		currentEnvironment: ctx.$testDomainRaw,
+		projectId: ctx.$config?.meta.projectId || undefined,
+		domainsHash: ctx.$config?.domains ? hashDomains(ctx.$config.domains) : null
 	});
 }
 

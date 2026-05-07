@@ -1,5 +1,5 @@
-import type { ProjectId, DomainUrl, IsActive, SettingKey } from './primitives.js';
-import type { EnvironmentChoice, Viewport, ViewportSize } from './core.js';
+import type { ProjectId, DomainUrl, IsActive, SettingKey, HashString } from './primitives.js';
+import type { EnvironmentChoice, Viewport, ViewportSize, EnvironmentChoiceWithTitle } from './core.js';
 import type { NavItem } from './components.js';
 
 /** Payload for selecting a test environment */
@@ -77,6 +77,10 @@ export type NavigationStatePayload = {
 	isDev?: boolean;
 	links?: NavItem[];
 	currentUrl?: string;
+	environments?: EnvironmentChoiceWithTitle[];
+	currentEnvironment?: DomainUrl | null;
+	projectId?: ProjectId;
+	domainsHash?: HashString | null;
 };
 
 type SendChannel = typeof VALID_SEND_CHANNELS[number];

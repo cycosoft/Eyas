@@ -1,7 +1,8 @@
 import { reactive, computed } from 'vue';
 import useModalsStore from '@/stores/modals.js';
 import type { NavGroup, NavItem, NavActivateEvent, PendingNavOpen, DisplayUrlInfo } from '@registry/components.js';
-import type { ChannelName, MenuLabel } from '@registry/primitives.js';
+import type { ChannelName, MenuLabel, ProjectId, DomainUrl, HashString, ListIndex } from '@registry/primitives.js';
+import type { EnvironmentChoiceWithTitle } from '@registry/core.js';
 import type { UpdateStatus } from '@registry/ipc.js';
 import { handleNavItemClick, updateCache, updateTools, updateViewports, updateLinks } from './AppHeader.updates.js';
 import type { NavigationStatePayload } from '@registry/ipc.js';
@@ -21,7 +22,11 @@ export const state = reactive({
 	canGoBack: false,
 	canGoForward: false,
 	updateStatus: `idle` as UpdateStatus,
-	currentUrl: ``
+	currentUrl: ``,
+	environments: [] as EnvironmentChoiceWithTitle[],
+	currentEnvironment: null as DomainUrl | null,
+	projectId: undefined as ProjectId | undefined,
+	domainsHash: null as HashString | null
 });
 
 /** The fallback delay (ms) to open the menu if the IPC event never fires. */
@@ -249,6 +254,57 @@ export function handleNavigationUpdate(data: unknown): void {
 	if (payload.links) {
 		updateLinks(payload.links);
 	}
+
+	if (payload.environments !== undefined) {
+		state.environments = payload.environments;
+	}
+
+	if (payload.currentEnvironment !== undefined) {
+		state.currentEnvironment = payload.currentEnvironment;
+	}
+
+	if (payload.projectId !== undefined) {
+		state.projectId = payload.projectId;
+	}
+
+	if (payload.domainsHash !== undefined) {
+		state.domainsHash = payload.domainsHash;
+	}
+}
+
+/**
+ * Computes the displayed environment title based on the active domain URL.
+ */
+export const activeEnvironmentTitle = computed(() => {
+	if (!state.currentEnvironment) {
+		return state.environments.length > 0 ? `SELECT ENV` : `STAGING`;
+	}
+	const matched = state.environments.find(env => env.url === state.currentEnvironment);
+	return matched ? matched.title : state.currentEnvironment;
+});
+
+/**
+ * Selects an environment, saves preferences, and dispatches IPC actions to navigate.
+ */
+export function selectEnvironment(env: EnvironmentChoiceWithTitle, _index: ListIndex): void {
+	const projectId = state.projectId ?? undefined;
+	const domainCopy = JSON.parse(JSON.stringify(env));
+
+	window.eyas?.send(`save-setting` as ChannelName, {
+		key: `env.lastChoice`,
+		value: domainCopy,
+		projectId
+	});
+
+	if (state.domainsHash) {
+		window.eyas?.send(`save-setting` as ChannelName, {
+			key: `env.lastChoiceHash`,
+			value: state.domainsHash,
+			projectId
+		});
+	}
+
+	window.eyas?.send(`environment-selected` as ChannelName, domainCopy);
 }
 
 
