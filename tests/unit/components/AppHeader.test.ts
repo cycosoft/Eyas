@@ -490,7 +490,7 @@ describe(`AppHeader`, () => {
 			expect(container.find(`[data-qa="omni-hub-lock"]`).exists()).toBe(true);
 			expect(container.find(`[data-qa="omni-hub-status"]`).text()).toContain(`Offline`);
 			expect(container.find(`[data-qa="omni-hub-url"]`).text()).toBe(`Load a New Eyas to Get Started`);
-			expect(container.find(`[data-qa="omni-hub-env-dropdown"]`).text()).toContain(`STAGING`);
+			expect(container.find(`[data-qa="omni-hub-env-dropdown"]`).exists()).toBe(false);
 		});
 
 		test(`updates URL and handles fallbacks according to display rules`, async () => {
@@ -583,9 +583,9 @@ describe(`AppHeader`, () => {
 			});
 		});
 
-		test(`renders fallback text STAGING when there are no environments`, () => {
+		test(`does not render the environment dropdown button when there are no environments`, () => {
 			const dropdownBtn = wrapper.find(`[data-qa="omni-hub-env-dropdown"]`);
-			expect(dropdownBtn.text()).toContain(`STAGING`);
+			expect(dropdownBtn.exists()).toBe(false);
 		});
 
 		test(`renders SELECT ENV when environments are defined but none is selected`, async () => {

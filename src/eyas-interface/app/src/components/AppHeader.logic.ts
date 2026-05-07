@@ -277,7 +277,7 @@ export function handleNavigationUpdate(data: unknown): void {
  */
 export const activeEnvironmentTitle = computed(() => {
 	if (!state.currentEnvironment) {
-		return state.environments.length > 0 ? `SELECT ENV` : `STAGING`;
+		return `SELECT ENV`;
 	}
 	const matched = state.environments.find(env => env.url === state.currentEnvironment);
 	return matched ? matched.title : state.currentEnvironment;

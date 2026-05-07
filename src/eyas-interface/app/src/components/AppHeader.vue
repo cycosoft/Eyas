@@ -99,6 +99,7 @@
 
 			<!-- 4. Dropdown Button Placeholder -->
 			<v-btn
+				v-if="environments.length > 0"
 				size="x-small"
 				density="compact"
 				variant="tonal"
