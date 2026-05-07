@@ -9,12 +9,12 @@ describe(`getAppTitle`, () => {
 		expect(result).toBe(`Test App :: 1.0.0 ✨`);
 	});
 
-	test(`should include the URL if provided`, () => {
+	test(`should not include the URL if provided`, () => {
 		const title = `Test App`;
 		const version = `1.0.0`;
 		const url = `https://example.com`;
 		const result = getAppTitle(title, version, url);
-		expect(result).toBe(`Test App :: 1.0.0 ✨ ( https://example.com )`);
+		expect(result).toBe(`Test App :: 1.0.0 ✨`);
 	});
 
 	test(`should handle empty title or version`, () => {
@@ -22,17 +22,17 @@ describe(`getAppTitle`, () => {
 		expect(getAppTitle(`Test`, ``)).toBe(`Test ::  ✨`);
 	});
 
-	test(`should include data: URLs (utility remains flexible)`, () => {
+	test(`should not include data: URLs`, () => {
 		const title = `Test App`;
 		const version = `1.0.0`;
 		const url = `data:text/html,<html></html>`;
 		const result = getAppTitle(title, version, url);
-		expect(result).toBe(`Test App :: 1.0.0 ✨ ( data:text/html,<html></html> )`);
+		expect(result).toBe(`Test App :: 1.0.0 ✨`);
 	});
 
-	test(`should include pageTitle between version and URL`, () => {
+	test(`should include pageTitle and omit URL`, () => {
 		const result = getAppTitle(`Test App`, `1.0.0`, `https://example.com`, `My Page`);
-		expect(result).toBe(`Test App :: 1.0.0 ✨ — My Page ( https://example.com )`);
+		expect(result).toBe(`Test App :: 1.0.0 ✨ — My Page`);
 	});
 
 	test(`should include pageTitle even with no URL`, () => {
@@ -41,8 +41,8 @@ describe(`getAppTitle`, () => {
 	});
 
 	test(`should omit pageTitle when empty or whitespace`, () => {
-		expect(getAppTitle(`Test App`, `1.0.0`, `https://example.com`, ``)).toBe(`Test App :: 1.0.0 ✨ ( https://example.com )`);
-		expect(getAppTitle(`Test App`, `1.0.0`, `https://example.com`, `   `)).toBe(`Test App :: 1.0.0 ✨ ( https://example.com )`);
+		expect(getAppTitle(`Test App`, `1.0.0`, `https://example.com`, ``)).toBe(`Test App :: 1.0.0 ✨`);
+		expect(getAppTitle(`Test App`, `1.0.0`, `https://example.com`, `   `)).toBe(`Test App :: 1.0.0 ✨`);
 	});
 });
 

@@ -33,20 +33,16 @@ export function sanitizePageTitle(rawPageTitle: LabelString | null | undefined, 
  * Generates the application title based on the provided title, version, and optional URL.
  * @param {LabelString} title The title of the application.
  * @param {AppVersion} version The version string.
- * @param {DomainUrl} [url] The current URL being viewed (optional).
+ * @param {DomainUrl} [url] The current URL being viewed (optional - unused/deprecated).
  * @param {LabelString} [pageTitle] The document.title set by the web page (optional).
  * @returns {LabelString} The formatted application title.
  */
-export function getAppTitle(title: LabelString, version: AppVersion, url?: DomainUrl, pageTitle?: LabelString): LabelString {
+export function getAppTitle(title: LabelString, version: AppVersion, _url?: DomainUrl, pageTitle?: LabelString): LabelString {
 	let output = `${title} :: ${version} ✨`;
 
 	// Add the page title if it's a non-empty, non-whitespace string
 	if (pageTitle?.trim()) {
 		output += ` — ${pageTitle.trim()}`;
-	}
-
-	if (url) {
-		output += ` ( ${url} )`;
 	}
 
 	return output;
