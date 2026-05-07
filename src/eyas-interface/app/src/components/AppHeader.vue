@@ -69,12 +69,12 @@
 		<v-spacer />
 
 		<!-- Center Omni-Hub (Placeholder Container) -->
-		<div class="omni-hub-container d-flex align-center border rounded-lg px-3 py-1 bg-surface-variant/10 mx-4" style="flex-grow: 5; max-width: 800px; height: 32px;" data-qa="omni-hub-container">
+		<div class="omni-hub-container d-flex align-center border rounded-lg px-3 py-1 bg-surface-variant/10 mx-4" style="flex-grow: 5; width: 0; max-width: 800px; height: 32px; overflow: hidden;" data-qa="omni-hub-container">
 			<!-- 1. Lock Icon Placeholder -->
-			<v-icon icon="mdi-lock" size="x-small" class="text-medium-emphasis mr-2" data-qa="omni-hub-lock" />
+			<v-icon icon="mdi-lock" size="x-small" class="text-medium-emphasis mr-2" style="flex-shrink: 0;" data-qa="omni-hub-lock" />
 
 			<!-- 2. Online Status Badge Placeholder (Offline status default) -->
-			<v-chip size="x-small" density="compact" variant="flat" color="error" class="mr-2 font-weight-bold text-uppercase" style="font-size: 8px !important; height: 18px;" data-qa="omni-hub-status">
+			<v-chip size="x-small" density="compact" variant="flat" color="error" class="mr-2 font-weight-bold text-uppercase" style="font-size: 8px !important; height: 18px; flex-shrink: 0;" data-qa="omni-hub-status">
 				Offline
 			</v-chip>
 
@@ -106,7 +106,7 @@
 				color="info"
 				:append-icon="environments.length > 1 ? 'mdi-chevron-down' : undefined"
 				class="font-weight-bold text-uppercase"
-				style="font-size: 8px !important; height: 18px;"
+				style="font-size: 8px !important; height: 18px; flex-shrink: 0;"
 				data-qa="omni-hub-env-dropdown"
 				:disabled="environments.length <= 1"
 			>
