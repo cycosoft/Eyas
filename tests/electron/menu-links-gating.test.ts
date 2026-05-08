@@ -12,7 +12,6 @@ const minimalContext: MenuContext = {
 	isInitializing: false,
 	testNetworkEnabled: true,
 	quit: noop,
-	startAFreshTest: noop,
 	copyUrl: noop,
 	navigateHome: noop,
 	reload: noop,
@@ -29,14 +28,11 @@ describe(`Menu links and DevTools gating (Refined)`, () => {
 			isInitializing: true // At startup
 		};
 
-		test(`root menus 'Test' and 'Browser' are disabled`, () => {
+		test(`root menu 'Browser' is disabled`, () => {
 			const template = buildMenuTemplate(ctx as MenuContext) as MenuItemConstructorOptions[];
-			const testMenu = template.find((m: MenuItemConstructorOptions) => m.label && m.label.includes(`Test`));
-			if (!testMenu) throw new Error();
 			const browserMenu = template.find((m: MenuItemConstructorOptions) => m.label && m.label.includes(`Browser`));
 			if (!browserMenu) throw new Error();
 
-			expect(testMenu.enabled).toBe(false);
 			expect(browserMenu.enabled).toBe(false);
 		});
 

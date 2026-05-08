@@ -20,8 +20,7 @@ test.describe(`Application Menu`, () => {
 		const menuStructure = await getMenuStructure(electronApp);
 		const labels = menuStructure.map(item => item.label);
 
-		expect(labels.length).toBe(3);
-		expect(labels.some(l => l.includes(`Test`))).toBe(true);
+		expect(labels.length).toBe(2);
 		expect(labels.some(l => l.includes(`Browser`))).toBe(true);
 		expect(labels.some(l => l.includes(`Tools`))).toBe(true);
 	});

@@ -211,11 +211,6 @@ describe(`MenuService Helpers`, () => {
 				expect(mockCtx.setTestNetworkEnabled).toHaveBeenCalledWith(false);
 				expect(mockCtx.setMenu).toHaveBeenCalled();
 			});
-
-			test(`should handle test server lifecycle`, () => {
-				handlers.startAFreshTest?.();
-				expect(mockCtx.startAFreshTest).toHaveBeenCalledWith(true);
-			});
 		});
 	});
 });

@@ -13,30 +13,11 @@ export function buildMenuTemplate(context: MenuContext): MenuTemplate {
 	} = context;
 
 	const menu: MenuTemplate = [
-		{ label: `🧪 &Test`, enabled: isConfigLoaded, submenu: createTestSubmenu(context) },
 		{ label: `🌐 &Browser`, enabled: isConfigLoaded, submenu: createBrowserSubmenu(context) },
 		{ label: `🔧 &Development Tools`, enabled: isConfigLoaded || isDev, submenu: createToolsSubmenu(context) }
 	];
 
 	return menu;
-}
-
-/**
- * Creates the "Test" submenu.
- */
-function createTestSubmenu(context: MenuContext): MenuTemplate {
-	const {
-		isConfigLoaded = false,
-		isEnvironmentPending = false,
-		startAFreshTest
-	} = context;
-
-	const enabled = isConfigLoaded && !isEnvironmentPending;
-	const submenu: MenuTemplate = [
-		{ label: `🔄 &Reset Test Environment`, click: startAFreshTest, enabled }
-	];
-
-	return submenu;
 }
 
 /**

@@ -80,7 +80,6 @@ export const menuService: MenuService = {
 	 * @returns Partial MenuContext with test server and development handlers.
 	 */
 	getTestServerHandlers: (ctx: CoreContext): Partial<MenuContext> => ({
-		startAFreshTest: (): Promise<void> => ctx.startAFreshTest(true),
 		toggleNetwork: (): void => {
 			if (ctx.$isInitializing) return;
 			ctx.setTestNetworkEnabled(!ctx.$testNetworkEnabled);
