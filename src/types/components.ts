@@ -229,6 +229,7 @@ export type DisplayUrlInfo = {
  */
 export type AppHeaderVM = {
 	menu: boolean;
+	envMenu: boolean;
 	menuItems: NavItem[];
 	activator: Element | undefined;
 	groups: NavGroup[];
@@ -243,6 +244,8 @@ export type AppHeaderVM = {
 	goForward: () => void;
 	reload: () => void;
 	goHome: () => void;
+	handleHeaderMouseEnter: () => void;
+	handleHeaderMouseLeave: () => void;
 	$nextTick: () => Promise<void>;
 	displayUrlInfo: DisplayUrlInfo;
 };

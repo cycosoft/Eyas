@@ -2,6 +2,8 @@
 	<v-app-bar
 		density="compact"
 		data-qa="app-header"
+		@mouseenter="handleHeaderMouseEnter"
+		@mouseleave="handleHeaderMouseLeave"
 	>
 		<!-- 1. File Group & Browser Controls -->
 		<template v-for="group in groups.filter(g => g.name === 'File')" :key="group.name">
@@ -69,7 +71,7 @@
 		<v-spacer />
 
 		<!-- Center Omni-Hub (Placeholder Container) -->
-		<div class="omni-hub-container d-flex align-center border rounded-lg px-3 py-1 bg-surface-variant/10 mx-4" style="flex-grow: 5; width: 0; max-width: 800px; height: 32px; overflow: hidden;" data-qa="omni-hub-container">
+		<div class="omni-hub-container d-flex align-center border rounded-lg px-3 py-1 bg-surface-variant/10 mx-4" style="flex-grow: 15; width: 0; max-width: 800px; height: 32px; overflow: hidden;" data-qa="omni-hub-container">
 			<!-- 1. Lock Icon Placeholder -->
 			<v-icon icon="mdi-lock" size="x-small" class="text-medium-emphasis mr-2" style="flex-shrink: 0;" data-qa="omni-hub-lock" />
 
@@ -95,6 +97,13 @@
 				data-qa="omni-hub-url"
 			>
 				{{ displayUrlInfo.text }}
+				<v-tooltip
+					v-if="!displayUrlInfo.isFallback"
+					location="bottom"
+					activator="parent"
+				>
+					Click to Copy
+				</v-tooltip>
 			</span>
 
 			<!-- 4. Dropdown Button Placeholder -->
@@ -294,7 +303,8 @@ import {
 	goBack, goForward, reload, goHome, handleBroadcastClick, activate,
 	onMouseEnter, onItemClick, delayedClose, triggerOpen, updateInfo,
 	handleNavigationUpdate, handleUpdateStatusUpdate, displayUrlInfo,
-	activeEnvironmentTitle, selectEnvironment
+	activeEnvironmentTitle, selectEnvironment, handleHeaderMouseEnter,
+	handleHeaderMouseLeave
 } from './AppHeader.logic.js';
 
 const { menu, activator, canGoBack, canGoForward, updateStatus, environments, currentEnvironment, envMenu } = toRefs(state);
@@ -340,7 +350,9 @@ defineExpose({
 	environments,
 	currentEnvironment,
 	activeEnvironmentTitle,
-	selectEnvironment
+	selectEnvironment,
+	handleHeaderMouseEnter,
+	handleHeaderMouseLeave
 });
 </script>
 

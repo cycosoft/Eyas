@@ -198,6 +198,29 @@ describe(`AppHeader`, () => {
 		});
 	});
 
+	describe(`header hover behavior`, () => {
+		test(`handleHeaderMouseEnter() sends show-ui IPC and clears close timer`, () => {
+			const vm = wrapper.vm as unknown as AppHeaderVM;
+			vm.handleHeaderMouseEnter();
+			expect(mockSend).toHaveBeenCalledWith(`show-ui`);
+		});
+
+		test(`handleHeaderMouseLeave() starts delayed close and sends hide-ui after timeout`, async () => {
+			const vm = wrapper.vm as unknown as AppHeaderVM;
+			vm.menu = false;
+			vm.envMenu = false;
+			const modalsStore = useModalsStore();
+			modalsStore.$reset();
+
+			vm.handleHeaderMouseLeave();
+			await wrapper.vm.$nextTick();
+
+			// fast forward past delayedClose timeout (300ms)
+			vi.advanceTimersByTime(310);
+			expect(mockSend).toHaveBeenCalledWith(`hide-ui`);
+		});
+	});
+
 	describe(`menu close`, () => {
 		test(`menu watch sends hide-ui IPC when menu closes`, async () => {
 			const vm = wrapper.vm as unknown as AppHeaderVM;
@@ -514,7 +537,8 @@ describe(`AppHeader`, () => {
 						VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
 						VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
 						VIcon: true,
-						VImg: true
+						VImg: true,
+						VTooltip: { template: `<div class="v-tooltip"><slot /></div>` }
 					}
 				}
 			});
@@ -524,6 +548,7 @@ describe(`AppHeader`, () => {
 			// 1. Initial State (no URL loaded yet, fallback should apply)
 			expect(vm.displayUrlInfo.text).toBe(`Load a New Eyas to Get Started`);
 			expect(vm.displayUrlInfo.isFallback).toBe(true);
+			expect(wrapper.find(`[data-qa="omni-hub-url"]`).find(`.v-tooltip`).exists()).toBe(false);
 
 			// 2. Load about:blank (fallback should apply)
 			if (navCallback) {
@@ -532,6 +557,7 @@ describe(`AppHeader`, () => {
 			await wrapper.vm.$nextTick();
 			expect(vm.displayUrlInfo.text).toBe(`Load a New Eyas to Get Started`);
 			expect(vm.displayUrlInfo.isFallback).toBe(true);
+			expect(wrapper.find(`[data-qa="omni-hub-url"]`).find(`.v-tooltip`).exists()).toBe(false);
 
 			// 3. Load a data URI (fallback should apply)
 			if (navCallback) {
@@ -540,6 +566,7 @@ describe(`AppHeader`, () => {
 			await wrapper.vm.$nextTick();
 			expect(vm.displayUrlInfo.text).toBe(`Load a New Eyas to Get Started`);
 			expect(vm.displayUrlInfo.isFallback).toBe(true);
+			expect(wrapper.find(`[data-qa="omni-hub-url"]`).find(`.v-tooltip`).exists()).toBe(false);
 
 			// 4. Load a real URL
 			const targetUrl = `https://staging.eyas.app/environments/demo-v2`;
@@ -551,7 +578,11 @@ describe(`AppHeader`, () => {
 			expect(vm.displayUrlInfo.isFallback).toBe(false);
 
 			const urlSpan = wrapper.find(`[data-qa="omni-hub-url"]`);
-			expect(urlSpan.text()).toBe(targetUrl);
+			expect(urlSpan.text()).toContain(targetUrl);
+
+			const tooltip = urlSpan.find(`.v-tooltip`);
+			expect(tooltip.exists()).toBe(true);
+			expect(tooltip.text()).toContain(`Click to Copy`);
 		});
 	});
 

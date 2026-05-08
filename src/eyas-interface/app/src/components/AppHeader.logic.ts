@@ -161,6 +161,17 @@ export function delayedClose(): void {
 	}, 300);
 }
 
+/** Handles mouse enter on the entire app header. */
+export function handleHeaderMouseEnter(): void {
+	window.clearTimeout(closeTimeout);
+	window.eyas?.send(`show-ui` as ChannelName);
+}
+
+/** Handles mouse leave from the entire app header. */
+export function handleHeaderMouseLeave(): void {
+	delayedClose();
+}
+
 export const updateInfo = computed(() => {
 	if (state.updateStatus === `checking`) {
 		return {
