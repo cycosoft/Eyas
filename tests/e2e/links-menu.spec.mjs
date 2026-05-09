@@ -24,13 +24,17 @@ test.describe(`Links Menu`, () => {
 		// Clear environment modal if it appears
 		await ensureEnvironmentSelected(uiPage);
 
-		// 1. Initially the Links button should NOT be visible (empty config)
+		const linksBtn = uiPage.locator(`[data-qa="btn-nav-group-links"]`);
+
+		// Wait for initial demo configuration links to render to ensure startup has fully settled
+		await expect(linksBtn).toBeVisible({ timeout: 10000 });
+
+		// 1. Send empty links via IPC to verify the button hides
 		await emitIpcToRenderer(electronApp, `navigation-state-updated`, {
 			canGoBack: false,
 			canGoForward: false,
 			links: []
 		});
-		const linksBtn = uiPage.locator(`[data-qa="btn-nav-group-links"]`);
 		await expect(linksBtn).not.toBeVisible();
 
 		// 2. Send links via IPC

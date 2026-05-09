@@ -55,18 +55,6 @@ export async function launchEyas(extraArgs = [], userDataDir = null, cwd = null,
 		uiView.on(`console`, msg => console.log(`[UI CONSOLE]: ${msg.text()}`));
 	}
 
-	// Ensure at least one window is open and the application menu is initialized
-	// with our custom items before returning to the test.
-	for (let i = 0; i < 20; i++) {
-		const hasWindow = electronApp.windows().length > 0;
-		const hasCustomMenu = await electronApp.evaluate(({ Menu }) => {
-			const menu = Menu.getApplicationMenu();
-			return menu && menu.items.some(item => item.label.includes(`Test`));
-		}).catch(() => false);
-
-		if (hasWindow && hasCustomMenu) break;
-		await new Promise(resolve => setTimeout(resolve, 250));
-	}
 
 	return electronApp;
 }
