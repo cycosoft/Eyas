@@ -137,6 +137,7 @@ watch(tooltipVisible, isOpen => {
 	height: 32px;
 	overflow: hidden;
 	position: relative;
+	--v-border-opacity: 0.06 !important;
 }
 
 .lock-icon {
