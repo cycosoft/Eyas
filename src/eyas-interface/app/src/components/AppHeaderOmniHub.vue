@@ -4,12 +4,6 @@
 		v-ripple="!displayUrlInfo.isFallback"
 		class="omni-hub-container d-flex align-center border rounded-lg px-3 py-1 bg-surface-variant/10 mx-4"
 		:style="{
-			flexGrow: 15,
-			width: 0,
-			maxWidth: '800px',
-			height: '32px',
-			overflow: 'hidden',
-			position: 'relative',
 			cursor: displayUrlInfo.isFallback ? 'default' : 'pointer'
 		}"
 		data-qa="omni-hub-container"
@@ -20,8 +14,8 @@
 			:icon="displayUrlInfo.isSecure ? 'mdi-lock' : 'mdi-lock-off'"
 			size="x-small"
 			:color="displayUrlInfo.isSecure ? undefined : 'error'"
+			class="lock-icon"
 			:class="displayUrlInfo.isSecure ? 'text-medium-emphasis mr-2' : 'mr-2'"
-			style="flex-shrink: 0; cursor: default;"
 			data-qa="omni-hub-lock"
 			@click.stop
 			@mousedown.stop
@@ -33,8 +27,7 @@
 			density="compact"
 			variant="tonal"
 			:color="testNetworkEnabled ? 'success' : 'error'"
-			class="mr-2 font-weight-bold text-uppercase"
-			style="font-size: 8px !important; height: 18px; flex-shrink: 0; cursor: pointer; border: 1px solid currentColor !important;"
+			class="status-chip mr-2 font-weight-bold text-uppercase"
 			data-qa="omni-hub-status"
 			@click.stop="toggleNetwork"
 			@mousedown.stop
@@ -44,16 +37,12 @@
 
 		<!-- 3. URL Placeholder -->
 		<span
-			class="text-caption text-truncate d-inline-block"
+			class="url-text text-caption text-truncate d-inline-block"
 			:class="{
 				'font-mono text-medium-emphasis': !displayUrlInfo.isFallback,
 				'text-disabled': displayUrlInfo.isFallback
 			}"
 			:style="{
-				flexGrow: 5,
-				minWidth: '100px',
-				width: 0,
-				fontSize: '10px !important',
 				opacity: displayUrlInfo.isFallback ? 0.5 : 0.8
 			}"
 			data-qa="omni-hub-url"
@@ -79,8 +68,7 @@
 			variant="tonal"
 			color="info"
 			:append-icon="environments.length > 1 ? 'mdi-chevron-down' : undefined"
-			class="font-weight-bold text-uppercase"
-			style="font-size: 8px !important; height: 18px; flex-shrink: 0;"
+			class="env-btn font-weight-bold text-uppercase"
 			data-qa="omni-hub-env-dropdown"
 			:disabled="environments.length <= 1"
 		>
@@ -104,7 +92,6 @@
 						:key="env.url"
 						slim
 						class="env-item font-weight-bold text-uppercase"
-						style="font-size: 10px;"
 						:active="env.url === currentEnvironment"
 						@click="selectEnvironment(env, index)"
 					>
@@ -141,3 +128,44 @@ watch(tooltipVisible, isOpen => {
 	}
 });
 </script>
+
+<style scoped>
+.omni-hub-container {
+	flex-grow: 15;
+	width: 0;
+	max-width: 800px;
+	height: 32px;
+	overflow: hidden;
+	position: relative;
+}
+
+.lock-icon {
+	flex-shrink: 0;
+	cursor: default;
+}
+
+.status-chip {
+	font-size: 8px !important;
+	height: 18px;
+	flex-shrink: 0;
+	cursor: pointer;
+	border: 1px solid currentColor !important;
+}
+
+.url-text {
+	flex-grow: 5;
+	min-width: 100px;
+	width: 0;
+	font-size: 10px !important;
+}
+
+.env-btn {
+	font-size: 8px !important;
+	height: 18px;
+	flex-shrink: 0;
+}
+
+.env-item {
+	font-size: 10px;
+}
+</style>
