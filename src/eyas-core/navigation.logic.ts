@@ -59,6 +59,42 @@ export function getAppTitleWithContext(ctx: CoreContext, rawPageTitle?: AppTitle
 	return getAppTitle(ctx.$config?.title || ``, ctx.$config?.version || ``, url, pageTitle);
 }
 
+export type AppTitleParts = {
+	appName: string;
+	appVersion: string;
+	pageTitle: string;
+};
+
+/**
+ * Calculates the individual application title parts with current context.
+ * @param ctx The core context.
+ * @param rawPageTitle The raw page title from the browser.
+ * @returns An object containing appName, appVersion, and pageTitle.
+ */
+export function getAppTitlePartsWithContext(ctx: CoreContext, rawPageTitle?: AppTitle): AppTitleParts {
+	const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
+	let pageTitle = rawPageTitle || ``;
+	let rawUrl = ``;
+
+	if (webContents && !webContents.isDestroyed()) {
+		rawUrl = webContents.getURL();
+		if (!pageTitle) {
+			try {
+				pageTitle = webContents.getTitle();
+			} catch { /* ignore */ }
+		}
+	}
+
+	const sanitized = sanitizePageTitle(pageTitle, rawUrl);
+	const config = ctx.$config;
+
+	return {
+		appName: (config && config.title) || ``,
+		appVersion: (config && config.version) || ``,
+		pageTitle: sanitized || ``
+	};
+}
+
 /**
  * Handles the page title update event from the browser.
  * @param ctx The core context.

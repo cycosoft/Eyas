@@ -2,17 +2,11 @@
 	<v-system-bar
 		height="30"
 		data-qa="window-system-bar"
-		class="window-system-bar px-4 d-flex align-center bg-surface border-b"
+		class="window-system-bar px-4 d-flex align-center justify-start bg-surface border-b"
 		@mouseenter="handleHeaderMouseEnter"
 		@mouseleave="handleHeaderMouseLeave"
 	>
-		<v-img
-			:src="eyasLogo"
-			class="mr-2"
-			max-height="16"
-			max-width="16"
-		/>
-		<span class="text-caption font-weight-medium text-medium-emphasis">{{ appTitle }}</span>
+		<span class="system-bar-title text-high-emphasis">{{ displayAppTitle }}</span>
 	</v-system-bar>
 	<v-app-bar
 		density="compact"
@@ -219,14 +213,13 @@
 <script setup lang="ts">
 import { onMounted, watch, toRefs } from 'vue';
 import type { ChannelName } from '@registry/primitives.js';
-import eyasLogo from '@/assets/eyas-logo.svg';
 import {
 	groups, state, browserControls, isControlDisabled, handleBrowserControlClick,
 	goBack, goForward, reload, goHome, handleBroadcastClick, activate,
 	onMouseEnter, onItemClick, delayedClose, triggerOpen, updateInfo,
 	handleNavigationUpdate, handleUpdateStatusUpdate, displayUrlInfo,
 	activeEnvironmentTitle, selectEnvironment, handleHeaderMouseEnter,
-	handleHeaderMouseLeave, handleUrlClick, resetTooltipText
+	handleHeaderMouseLeave, handleUrlClick, resetTooltipText, displayAppTitle
 } from './AppHeader.logic.js';
 
 import AppHeaderOmniHub from './AppHeaderOmniHub.vue';
@@ -275,7 +268,8 @@ defineExpose({
 	handleHeaderMouseLeave,
 	handleUrlClick,
 	resetTooltipText,
-	appTitle
+	appTitle,
+	displayAppTitle
 });
 </script>
 
@@ -296,5 +290,9 @@ defineExpose({
 	0% { opacity: 1; }
 	50% { opacity: 0.3; }
 	100% { opacity: 1; }
+}
+.system-bar-title {
+	font-size: 0.75rem;
+	font-weight: 800;
 }
 </style>

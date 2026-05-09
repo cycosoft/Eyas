@@ -84,6 +84,9 @@ export type NavigationStatePayload = {
 	domainsHash?: HashString | null;
 	testNetworkEnabled?: IsActive;
 	appTitle?: string;
+	appName?: string;
+	appVersion?: string;
+	pageTitle?: string;
 };
 
 type SendChannel = typeof VALID_SEND_CHANNELS[number];

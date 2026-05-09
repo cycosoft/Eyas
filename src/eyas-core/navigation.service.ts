@@ -12,6 +12,7 @@ import {
 	shouldOpenExternal,
 	loadUrlInTestLayer,
 	getAppTitleWithContext,
+	getAppTitlePartsWithContext,
 	onTitleUpdate,
 	hashDomains
 } from './navigation.logic.js';
@@ -261,6 +262,8 @@ async function updateNavigationState(ctx: CoreContext): Promise<void> {
 		cacheSize = await webContents.session.getCacheSize();
 	} catch { /* ignore */ }
 
+	const titleParts = getAppTitlePartsWithContext(ctx);
+
 	ctx.$eyasLayer?.webContents.send(`navigation-state-updated`, {
 		canGoBack: webContents.navigationHistory.canGoBack(),
 		canGoForward: webContents.navigationHistory.canGoForward(),
@@ -276,7 +279,10 @@ async function updateNavigationState(ctx: CoreContext): Promise<void> {
 		projectId: ctx.$config?.meta.projectId || undefined,
 		domainsHash: ctx.$config?.domains ? hashDomains(ctx.$config.domains) : null,
 		testNetworkEnabled: ctx.$testNetworkEnabled,
-		appTitle: getAppTitleWithContext(ctx)
+		appTitle: getAppTitleWithContext(ctx),
+		appName: titleParts.appName,
+		appVersion: titleParts.appVersion,
+		pageTitle: titleParts.pageTitle
 	});
 }
 
@@ -285,6 +291,7 @@ export const navigationService = {
 	navigateVariable,
 	startAFreshTest,
 	getAppTitleWithContext,
+	getAppTitlePartsWithContext,
 	onTitleUpdate,
 	goBack,
 	goForward,

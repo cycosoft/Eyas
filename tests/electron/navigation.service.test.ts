@@ -58,6 +58,7 @@ describe(`navigation.service.ts unit tests`, () => {
 				isDestroyed: vi.fn().mockReturnValue(false),
 				webContents: {
 					getURL: vi.fn().mockReturnValue(`https://test.com`),
+					getTitle: vi.fn().mockReturnValue(`Page Title`),
 					navigationHistory: {
 						canGoBack: vi.fn().mockReturnValue(true),
 						canGoForward: vi.fn().mockReturnValue(true),
@@ -73,6 +74,7 @@ describe(`navigation.service.ts unit tests`, () => {
 				isDestroyed: vi.fn().mockReturnValue(false),
 				webContents: {
 					getURL: vi.fn().mockReturnValue(`https://test.com`),
+					getTitle: vi.fn().mockReturnValue(`Page Title`),
 					navigationHistory: {
 						canGoBack: vi.fn().mockReturnValue(true),
 						canGoForward: vi.fn().mockReturnValue(true),
@@ -153,6 +155,15 @@ describe(`navigation.service.ts unit tests`, () => {
 	test(`getAppTitleWithContext should return formatted title`, () => {
 		const title = navigationService.getAppTitleWithContext(mockCtx, `Page Title`);
 		expect(title).toBe(`App Title`);
+	});
+
+	test(`getAppTitlePartsWithContext should return structured title parts`, () => {
+		const parts = navigationService.getAppTitlePartsWithContext(mockCtx, `Page Title`);
+		expect(parts).toEqual({
+			appName: ``,
+			appVersion: ``,
+			pageTitle: `Page Title`
+		});
 	});
 
 	test(`onTitleUpdate should prevent default and set window title`, () => {

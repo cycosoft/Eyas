@@ -258,4 +258,5 @@ export type AppHeaderVM = {
 	$nextTick: () => Promise<void>;
 	displayUrlInfo: DisplayUrlInfo;
 	appTitle: string;
+	displayAppTitle: string;
 };

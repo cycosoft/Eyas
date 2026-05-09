@@ -34,7 +34,10 @@ export const state = reactive({
 	domainsHash: null as HashString | null,
 	isHeaderHovered: false,
 	testNetworkEnabled: true,
-	appTitle: `Eyas`
+	appTitle: `Eyas`,
+	appName: `Eyas`,
+	appVersion: ``,
+	pageTitle: ``
 });
 
 /** The fallback delay (ms) to open the menu if the IPC event never fires. */
@@ -184,8 +187,14 @@ export function handleNavigationUpdate(data: unknown): void {
 	state.canGoBack = payload.canGoBack;
 	state.canGoForward = payload.canGoForward;
 
-	if (payload.currentUrl !== undefined) {
-		state.currentUrl = payload.currentUrl;
+	const keys: Array<keyof typeof state> = [
+		`currentUrl`, `environments`, `currentEnvironment`, `projectId`,
+		`domainsHash`, `testNetworkEnabled`, `appTitle`, `appName`, `appVersion`, `pageTitle`
+	];
+	for (const key of keys) {
+		if (payload[key] !== undefined) {
+			(state as any)[key] = payload[key]; // eslint-disable-line @typescript-eslint/no-explicit-any
+		}
 	}
 
 	if (payload.viewports && payload.currentViewport) {
@@ -202,30 +211,6 @@ export function handleNavigationUpdate(data: unknown): void {
 
 	if (payload.links) {
 		updateLinks(payload.links);
-	}
-
-	if (payload.environments !== undefined) {
-		state.environments = payload.environments;
-	}
-
-	if (payload.currentEnvironment !== undefined) {
-		state.currentEnvironment = payload.currentEnvironment;
-	}
-
-	if (payload.projectId !== undefined) {
-		state.projectId = payload.projectId;
-	}
-
-	if (payload.domainsHash !== undefined) {
-		state.domainsHash = payload.domainsHash;
-	}
-
-	if (payload.testNetworkEnabled !== undefined) {
-		state.testNetworkEnabled = payload.testNetworkEnabled;
-	}
-
-	if (payload.appTitle !== undefined) {
-		state.appTitle = payload.appTitle;
 	}
 }
 
@@ -272,5 +257,24 @@ export function toggleNetwork(): void {
 	state.testNetworkEnabled = nextState;
 	window.eyas?.send(`network-status` as ChannelName, nextState);
 }
+
+/**
+ * Computes the system-bar title, converting to uppercase and stripping any emojis.
+ * Built from raw components: appName, appVersion, and pageTitle.
+ */
+export const displayAppTitle = computed(() => {
+	const name = state.appName ? state.appName.trim().toUpperCase() : ``;
+	const version = state.appVersion ? state.appVersion.trim().toUpperCase() : ``;
+	const page = state.pageTitle ? state.pageTitle.trim().toUpperCase() : ``;
+
+	let title = name;
+	if (version) {
+		title += ` :: ${version}`;
+	}
+	if (page) {
+		title += ` — ${page}`;
+	}
+	return title;
+});
 
 
