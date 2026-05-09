@@ -31,10 +31,10 @@
 		<v-chip
 			size="x-small"
 			density="compact"
-			variant="flat"
+			variant="tonal"
 			:color="testNetworkEnabled ? 'success' : 'error'"
 			class="mr-2 font-weight-bold text-uppercase"
-			style="font-size: 8px !important; height: 18px; flex-shrink: 0; cursor: pointer;"
+			style="font-size: 8px !important; height: 18px; flex-shrink: 0; cursor: pointer; border: 1px solid currentColor !important;"
 			data-qa="omni-hub-status"
 			@click.stop="toggleNetwork"
 			@mousedown.stop
