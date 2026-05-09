@@ -102,6 +102,7 @@ const filterResults = (name, { currentVersion: _currentVersion, upgradedVersion 
 };
 
 // Default export ONLY contains valid NCU options
+/** @public */
 export default {
 	format: [`group`, `time`],
 	cooldown: 3,
