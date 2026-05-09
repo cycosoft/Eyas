@@ -291,8 +291,6 @@ defineExpose({
 	50% { opacity: 0.3; }
 	100% { opacity: 1; }
 }
-.system-bar-title {
-	font-size: 0.75rem;
-	font-weight: 800;
-}
+.window-system-bar { user-select: none; }
+.system-bar-title { font-size: 0.75rem; font-weight: 800; user-select: none; }
 </style>
