@@ -17,9 +17,10 @@
 	>
 		<!-- 1. Lock Icon Placeholder -->
 		<v-icon
-			icon="mdi-lock"
+			:icon="displayUrlInfo.isSecure ? 'mdi-lock' : 'mdi-lock-off'"
 			size="x-small"
-			class="text-medium-emphasis mr-2"
+			:color="displayUrlInfo.isSecure ? undefined : 'error'"
+			:class="displayUrlInfo.isSecure ? 'text-medium-emphasis mr-2' : 'mr-2'"
 			style="flex-shrink: 0; cursor: default;"
 			data-qa="omni-hub-lock"
 			@click.stop

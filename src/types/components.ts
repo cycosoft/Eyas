@@ -222,6 +222,7 @@ export type NavActivateEvent = {
 export type DisplayUrlInfo = {
 	text: string;
 	isFallback: boolean;
+	isSecure: boolean;
 };
 
 /** The [x, y] screen coordinates of the user's cursor. */

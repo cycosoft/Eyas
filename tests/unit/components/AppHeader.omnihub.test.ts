@@ -289,6 +289,60 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 			await omniHubContainer.trigger(`click`);
 			expect(mockSend).not.toHaveBeenCalledWith(`browser-copy-url`);
 		});
+
+		test(`renders secure mdi-lock icon for secure URLs and mdi-lock-off red icon for insecure http URLs`, async () => {
+			let navCallback: ((payload: NavigationStatePayload) => void) | null = null;
+			(window as unknown as WindowWithEyas).eyas.receive = vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
+				if (channel === `navigation-state-updated`) {
+					navCallback = cb as (payload: NavigationStatePayload) => void;
+				}
+			});
+
+			wrapper = mount(AppHeader, {
+				global: {
+					stubs: {
+						VAppBar: { template: `<div><slot /></div>` },
+						VMenu: { template: `<div><slot /></div>` },
+						VList: { template: `<div><slot /></div>` },
+						VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
+						VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
+						VIcon: true,
+						VImg: true
+					}
+				}
+			});
+
+			const lockIcon = wrapper.find(`[data-qa="omni-hub-lock"]`);
+			expect(lockIcon.exists()).toBe(true);
+
+			// 1. Initial/Fallback: should be secure
+			expect(lockIcon.attributes(`icon`)).toBe(`mdi-lock`);
+			expect(lockIcon.attributes(`color`)).toBeUndefined();
+
+			// 2. Load secure HTTPS URL
+			if (navCallback) {
+				(navCallback as any)({ canGoBack: false, canGoForward: false, currentUrl: `https://secure-site.com` }); // eslint-disable-line @typescript-eslint/no-explicit-any
+			}
+			await wrapper.vm.$nextTick();
+			expect(lockIcon.attributes(`icon`)).toBe(`mdi-lock`);
+			expect(lockIcon.attributes(`color`)).toBeUndefined();
+
+			// 3. Load secure EYAS URL
+			if (navCallback) {
+				(navCallback as any)({ canGoBack: false, canGoForward: false, currentUrl: `eyas://local.test` }); // eslint-disable-line @typescript-eslint/no-explicit-any
+			}
+			await wrapper.vm.$nextTick();
+			expect(lockIcon.attributes(`icon`)).toBe(`mdi-lock`);
+			expect(lockIcon.attributes(`color`)).toBeUndefined();
+
+			// 4. Load insecure HTTP URL
+			if (navCallback) {
+				(navCallback as any)({ canGoBack: false, canGoForward: false, currentUrl: `http://insecure-site.com` }); // eslint-disable-line @typescript-eslint/no-explicit-any
+			}
+			await wrapper.vm.$nextTick();
+			expect(lockIcon.attributes(`icon`)).toBe(`mdi-lock-off`);
+			expect(lockIcon.attributes(`color`)).toBe(`error`);
+		});
 	});
 
 	describe(`environments dropdown`, () => {

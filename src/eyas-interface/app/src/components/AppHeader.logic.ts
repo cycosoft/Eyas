@@ -165,9 +165,11 @@ export function resetTooltipText(): void {
 export const displayUrlInfo = computed<DisplayUrlInfo>(() => {
 	const url = state.currentUrl;
 	const isFallback = !url || url === `about:blank` || url.startsWith(`data:`);
+	const isSecure = isFallback || !url.startsWith(`http://`);
 	return {
 		text: isFallback ? `Load a New Eyas to Get Started` : url,
-		isFallback
+		isFallback,
+		isSecure
 	};
 });
 
