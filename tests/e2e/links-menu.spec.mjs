@@ -2,7 +2,6 @@ import { test, expect } from '@playwright/test';
 import {
 	launchEyas,
 	exitEyas,
-	emitIpcToRenderer,
 	getUiView,
 	ensureEnvironmentSelected
 } from './eyas-utils.mjs';
@@ -29,36 +28,13 @@ test.describe(`Links Menu`, () => {
 		// Wait for initial demo configuration links to render to ensure startup has fully settled
 		await expect(linksBtn).toBeVisible({ timeout: 10000 });
 
-		// 1. Send empty links via IPC to verify the button hides
-		await emitIpcToRenderer(electronApp, `navigation-state-updated`, {
-			canGoBack: false,
-			canGoForward: false,
-			links: []
-		});
-		await expect(linksBtn).not.toBeVisible();
-
-		// 2. Send links via IPC
-		const links = [
-			{ title: `Google`, value: `launch-link:{"url":"https://google.com/","external":true}` },
-			{ title: `Variable`, value: `launch-link-var:https://example.com/{myvar}` }
-		];
-		await emitIpcToRenderer(electronApp, `navigation-state-updated`, {
-			canGoBack: false,
-			canGoForward: false,
-			links
-		});
-
-		// 3. Links button should now be visible
-		await expect(linksBtn).toBeVisible();
-		await expect(linksBtn).toContainText(`Links`);
-
-		// 4. Click the Links button to open the menu
+		// Click the Links button to open the menu
 		await linksBtn.click();
 
-		// 5. Check if menu items are visible
+		// Check if menu items are visible and match the real config links
 		const menuItems = uiPage.locator(`[data-qa="btn-nav-item"]`);
-		await expect(menuItems).toHaveCount(2);
-		await expect(menuItems.nth(0)).toContainText(`Google`);
-		await expect(menuItems.nth(1)).toContainText(`Variable`);
+		await expect(menuItems).toHaveCount(6);
+		await expect(menuItems.nth(0)).toContainText(`Eyas Home`);
+		await expect(menuItems.nth(1)).toContainText(`Environments Demo`);
 	});
 });

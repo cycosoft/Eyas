@@ -29,7 +29,6 @@ export default defineConfig({
 			rollupOptions: {
 				input: {
 					index: resolve(import.meta.dirname, `src/eyas-core/index.js`),
-					'menu-template': resolve(import.meta.dirname, `src/eyas-core/menu-template.js`),
 					'update-dialog': resolve(import.meta.dirname, `src/eyas-core/update-dialog.js`),
 					'metrics-events': resolve(import.meta.dirname, `src/eyas-core/metrics-events.js`),
 					'settings-service': resolve(import.meta.dirname, `src/eyas-core/settings-service.js`),

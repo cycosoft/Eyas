@@ -5,7 +5,6 @@ import type { CoreContext } from '@registry/eyas-core.js';
 import { Menu } from 'electron';
 import { menuService } from '@core/menu.service.js';
 
-
 // Mock electron
 vi.mock(`electron`, () => ({
 	app: {
@@ -39,8 +38,6 @@ describe(`MenuService Helpers`, () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
-
-
 
 	describe(`getSerializableLinks`, () => {
 		const config = {
@@ -85,129 +82,19 @@ describe(`MenuService Helpers`, () => {
 		});
 	});
 
-	describe(`getContext and handlers`, () => {
+	describe(`refresh`, () => {
 		const mockWindow = {
-			isDestroyed: vi.fn().mockReturnValue(false),
-			webContents: {
-				getStoragePath: vi.fn(() => `/mock/path`),
-				isDestroyed: vi.fn().mockReturnValue(false),
-				session: {
-					getStoragePath: vi.fn(() => `/mock/path`),
-					getCacheSize: vi.fn(async () => 100)
-				}
-			}
+			isDestroyed: vi.fn().mockReturnValue(false)
 		} as unknown as BrowserWindow;
 
-		const mockTestLayer = {
-			isDestroyed: vi.fn().mockReturnValue(false),
-			webContents: {
-				reloadIgnoringCache: vi.fn(),
-				goBack: vi.fn(),
-				goForward: vi.fn(),
-				getURL: vi.fn(() => `https://current.url`),
-				toggleDevTools: vi.fn(),
-				isDestroyed: vi.fn().mockReturnValue(false),
-				session: { getCacheSize: vi.fn(async () => 100) }
-			}
-		};
-
 		const mockCtx = {
-			showAbout: vi.fn(),
-			onOpenSettings: vi.fn(),
-			showTestServerSetup: vi.fn(),
-			uiEvent: vi.fn(),
-			navigate: vi.fn(),
-			startAFreshTest: vi.fn(),
-			setTestNetworkEnabled: vi.fn(),
-			setMenu: vi.fn(),
-			clearCache: vi.fn(),
-			stopTestServer: vi.fn(),
-			onToggleTestServerHttps: vi.fn(),
-			goBack: vi.fn(),
-			goForward: vi.fn(),
-			reload: vi.fn(),
-			getSessionAge: vi.fn(() => `1m`),
-			$appWindow: mockWindow,
-			$testLayer: mockTestLayer,
-			$eyasLayer: {
-				isDestroyed: vi.fn().mockReturnValue(false),
-				webContents: {
-					openDevTools: vi.fn(),
-					isDestroyed: vi.fn().mockReturnValue(false)
-				}
-			},
-			$allViewports: [
-				{ label: `Desktop`, width: 1366, height: 768, isDefault: true }
-			],
-			$currentViewport: [1366, 768],
-			$isInitializing: false,
-			$config: {
-				meta: { isConfigLoaded: true },
-				links: []
-			},
-			$testNetworkEnabled: true,
-			$isEnvironmentPending: false
+			$appWindow: mockWindow
 		} as unknown as CoreContext;
 
-		test(`getContext should assemble all handlers and state`, () => {
-			const context = menuService.getContext(mockCtx);
-			expect(context.testNetworkEnabled).toBe(true);
-		});
-
-		test(`refresh should gather all state and call Menu.setApplicationMenu`, async () => {
+		test(`refresh should call Menu.setApplicationMenu with null`, async () => {
 			await menuService.refresh(mockCtx);
 
-			expect(Menu.buildFromTemplate).toHaveBeenCalled();
-			expect(Menu.setApplicationMenu).toHaveBeenCalled();
-		});
-
-		describe(`getAppHandlers`, () => {
-			const handlers = menuService.getAppHandlers(mockCtx);
-
-			test(`should map app lifecycle methods`, () => {
-				handlers.onOpenSettings?.();
-				expect(mockCtx.onOpenSettings).toHaveBeenCalled();
-
-				handlers.onShowWhatsNew?.();
-				expect(mockCtx.uiEvent).toHaveBeenCalledWith(`show-whats-new`, true);
-			});
-
-			test(`should map status flags`, () => {
-				expect(handlers.isInitializing).toBe(false);
-				expect(handlers.isConfigLoaded).toBe(true);
-				expect(handlers.isEnvironmentPending).toBe(false);
-			});
-		});
-
-		describe(`getNavigationHandlers`, () => {
-			const handlers = menuService.getNavigationHandlers(mockCtx);
-
-			test(`navigateHome should call navigate`, () => {
-				handlers.navigateHome?.();
-				expect(mockCtx.navigate).toHaveBeenCalled();
-			});
-
-			test(`browser controls should call context navigation methods`, () => {
-				handlers.reload?.();
-				expect(mockCtx.reload).toHaveBeenCalled();
-
-				handlers.back?.();
-				expect(mockCtx.goBack).toHaveBeenCalled();
-
-				handlers.forward?.();
-				expect(mockCtx.goForward).toHaveBeenCalled();
-			});
-		});
-
-		describe(`getTestServerHandlers`, () => {
-			const handlers = menuService.getTestServerHandlers(mockCtx);
-
-			test(`should handle network`, () => {
-				handlers.toggleNetwork?.();
-				expect(mockCtx.setTestNetworkEnabled).toHaveBeenCalledWith(false);
-				expect(mockCtx.setMenu).toHaveBeenCalled();
-			});
+			expect(Menu.setApplicationMenu).toHaveBeenCalledWith(null);
 		});
 	});
 });
-

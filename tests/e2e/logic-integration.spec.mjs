@@ -4,7 +4,6 @@ import {
 	exitEyas,
 	emitIpcMessage,
 	getAppWindowUrl,
-	waitForMenuUpdate,
 	getUiView
 } from './eyas-utils.mjs';
 
@@ -36,29 +35,22 @@ test.describe(`Logic-Driven Integration Tests`, () => {
 		expect(currentUrl).toContain(targetUrl);
 	});
 
-	test(`network toggle via IPC updates menu state`, async () => {
-		// Initial state is true in index.js
+	test(`network toggle via IPC updates UI state`, async () => {
+		const uiPage = await getUiView(electronApp);
+
+		// Initial state is true in index.js, so the badge should display 'Online'
+		const statusChip = uiPage.locator(`[data-qa="omni-hub-status"]`);
+		await expect(statusChip).toContainText(`Online`);
+
+		// Disable network via IPC
 		await emitIpcMessage(electronApp, `network-status`, false);
 
-		// Verify menu updates to reflect offline status
-		const menu = await waitForMenuUpdate(electronApp, m => {
-			const devTools = m.find(item => item.label.includes(`Development Tools`));
-			return devTools && devTools.submenu && devTools.submenu.some(item => item.label.includes(`&Go Online`));
-		});
-
-		const devTools = menu.find(item => item.label.includes(`Development Tools`));
-		const toggleItem = devTools.submenu.find(item => item.label.includes(`&Go Online`));
-		expect(toggleItem).toBeDefined();
+		// Verify status chip updates to reflect offline status
+		await expect(statusChip).toContainText(`Offline`);
 
 		// Toggle back
 		await emitIpcMessage(electronApp, `network-status`, true);
-		const menuOnline = await waitForMenuUpdate(electronApp, m => {
-			const devTools = m.find(item => item.label.includes(`Development Tools`));
-			return devTools && devTools.submenu && devTools.submenu.some(item => item.label.includes(`&Go Offline`));
-		});
-
-		const toggleItemOnline = menuOnline.find(item => item.label.includes(`Development Tools`)).submenu.find(item => item.label.includes(`&Go Offline`));
-		expect(toggleItemOnline).toBeDefined();
+		await expect(statusChip).toContainText(`Online`);
 	});
 
 	test(`test server setup via IPC starts the server`, async () => {
