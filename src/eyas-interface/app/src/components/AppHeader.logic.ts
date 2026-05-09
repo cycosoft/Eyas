@@ -27,7 +27,8 @@ export const state = reactive({
 	environments: [] as EnvironmentChoiceWithTitle[],
 	currentEnvironment: null as DomainUrl | null,
 	projectId: undefined as ProjectId | undefined,
-	domainsHash: null as HashString | null
+	domainsHash: null as HashString | null,
+	isHeaderHovered: false
 });
 
 /** The fallback delay (ms) to open the menu if the IPC event never fires. */
@@ -155,7 +156,7 @@ export function delayedClose(): void {
 	window.clearTimeout(closeTimeout);
 
 	closeTimeout = window.setTimeout(() => {
-		if (!state.menu && !state.envMenu && !modalsStore.hasVisibleModals) {
+		if (!state.isHeaderHovered && !state.menu && !state.envMenu && !modalsStore.hasVisibleModals) {
 			window.eyas?.send(`hide-ui` as ChannelName);
 		}
 	}, 300);
@@ -163,12 +164,14 @@ export function delayedClose(): void {
 
 /** Handles mouse enter on the entire app header. */
 export function handleHeaderMouseEnter(): void {
+	state.isHeaderHovered = true;
 	window.clearTimeout(closeTimeout);
 	window.eyas?.send(`show-ui` as ChannelName);
 }
 
 /** Handles mouse leave from the entire app header. */
 export function handleHeaderMouseLeave(): void {
+	state.isHeaderHovered = false;
 	delayedClose();
 }
 

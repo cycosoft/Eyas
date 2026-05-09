@@ -3,6 +3,7 @@ import { mount, type VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import AppHeader from '@/components/AppHeader.vue';
 import useModalsStore from '@/stores/modals.js';
+import { state } from '@/components/AppHeader.logic.js';
 import type { WindowWithEyas, ChannelName, NavigationStatePayload } from '@registry/ipc.js';
 import type { AppHeaderVM, NavGroup, NavItem, NavActivateEvent } from '@registry/components.js';
 
@@ -16,6 +17,11 @@ describe(`AppHeader`, () => {
 		setActivePinia(createPinia());
 		mockSend = vi.fn();
 		uiShownCallback = null;
+
+		// Reset module-level reactive state to prevent leaks
+		state.isHeaderHovered = false;
+		state.menu = false;
+		state.envMenu = false;
 		(window as unknown as WindowWithEyas).eyas = {
 			send: mockSend,
 			receive: vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
@@ -218,6 +224,34 @@ describe(`AppHeader`, () => {
 			// fast forward past delayedClose timeout (300ms)
 			vi.advanceTimersByTime(310);
 			expect(mockSend).toHaveBeenCalledWith(`hide-ui`);
+		});
+
+		test(`delayedClose() does NOT hide UI if mouse is hovering over the app header`, async () => {
+			const vm = wrapper.vm as unknown as AppHeaderVM;
+			vm.menu = false;
+			vm.envMenu = false;
+			const modalsStore = useModalsStore();
+			modalsStore.$reset();
+
+			vm.handleHeaderMouseEnter(); // sets isHeaderHovered to true
+			await wrapper.vm.$nextTick();
+
+			vm.handleHeaderMouseLeave(); // sets isHeaderHovered to false
+			await wrapper.vm.$nextTick();
+
+			vm.handleHeaderMouseEnter(); // sets isHeaderHovered to true again
+			await wrapper.vm.$nextTick();
+
+			// trigger the delayed close (e.g. simulating envMenu closed watch callback)
+			mockSend.mockClear();
+			vm.envMenu = true;
+			await wrapper.vm.$nextTick();
+			vm.envMenu = false;
+			await wrapper.vm.$nextTick();
+
+			// fast forward past delayedClose timeout (300ms)
+			vi.advanceTimersByTime(310);
+			expect(mockSend).not.toHaveBeenCalledWith(`hide-ui`);
 		});
 	});
 
