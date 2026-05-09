@@ -158,6 +158,7 @@ export default tseslint.config(
 			],
 
 			// Vue Specific Rules
+			'vue/no-static-inline-styles': `error`,
 			'vue/html-indent': [`error`, `tab`, {
 				alignAttributesVertically: false
 			}],
