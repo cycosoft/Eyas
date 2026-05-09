@@ -2,7 +2,7 @@ import { describe, test, expect, vi, beforeEach } from 'vitest';
 import type { BrowserWindow } from 'electron';
 import type { ValidatedConfig } from '@registry/config.js';
 import type { CoreContext } from '@registry/eyas-core.js';
-import { clipboard, Menu } from 'electron';
+import { Menu } from 'electron';
 import { menuService } from '@core/menu.service.js';
 
 
@@ -196,10 +196,6 @@ describe(`MenuService Helpers`, () => {
 
 				handlers.forward?.();
 				expect(mockCtx.goForward).toHaveBeenCalled();
-
-				handlers.copyUrl?.();
-				expect(mockTestLayer.webContents.getURL).toHaveBeenCalled();
-				expect(clipboard.writeText).toHaveBeenCalledWith(`https://current.url`);
 			});
 		});
 

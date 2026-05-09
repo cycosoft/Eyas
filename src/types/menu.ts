@@ -21,7 +21,6 @@ export type MenuContext = {
 	onOpenSettings?: () => void;
 	onShowWhatsNew?: () => void;
 	quit: () => void;
-	copyUrl: () => void;
 	navigateHome: () => void;
 	reload: () => void;
 	back: () => void;

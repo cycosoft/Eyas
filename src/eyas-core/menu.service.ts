@@ -1,4 +1,4 @@
-import { Menu, app, clipboard } from 'electron';
+import { Menu, app } from 'electron';
 import { buildMenuTemplate } from './menu-template.js';
 import { isVariableLinkValid } from '@scripts/variable-utils.js';
 import { parseURL } from '@scripts/parse-url.js';
@@ -66,12 +66,7 @@ export const menuService: MenuService = {
 		navigateHome: (): void => ctx.navigate(),
 		reload: (): void => ctx.reload(),
 		back: (): void => ctx.goBack(),
-		forward: (): void => ctx.goForward(),
-		copyUrl: (): void => {
-			const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
-			if (ctx.$isInitializing || !webContents || webContents.isDestroyed()) return;
-			clipboard.writeText(webContents.getURL());
-		}
+		forward: (): void => ctx.goForward()
 	}),
 
 	/**

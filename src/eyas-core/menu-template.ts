@@ -13,28 +13,10 @@ export function buildMenuTemplate(context: MenuContext): MenuTemplate {
 	} = context;
 
 	const menu: MenuTemplate = [
-		{ label: `🌐 &Browser`, enabled: isConfigLoaded, submenu: createBrowserSubmenu(context) },
 		{ label: `🔧 &Development Tools`, enabled: isConfigLoaded || isDev, submenu: createToolsSubmenu(context) }
 	];
 
 	return menu;
-}
-
-/**
- * Creates the "Browser" submenu.
- */
-function createBrowserSubmenu(context: MenuContext): MenuTemplate {
-	const {
-		isConfigLoaded = false,
-		isInitializing = false,
-		copyUrl
-	} = context;
-
-	const enabled = isConfigLoaded && !isInitializing;
-
-	return [
-		{ label: `📋 &Copy URL`, click: copyUrl, enabled }
-	];
 }
 
 /**
