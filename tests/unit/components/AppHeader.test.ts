@@ -584,8 +584,10 @@ describe(`AppHeader`, () => {
 			expect(tooltip.exists()).toBe(true);
 			expect(tooltip.text()).toContain(`Click to Copy`);
 
+			const omniHubContainer = wrapper.find(`[data-qa="omni-hub-container"]`);
+
 			// 5. Test click-to-copy behavior on valid URL
-			await urlSpan.trigger(`click`);
+			await omniHubContainer.trigger(`click`);
 			expect(mockSend).toHaveBeenCalledWith(`browser-copy-url`);
 
 			// 6. Test that click-to-copy does NOT trigger on fallback URL
@@ -594,7 +596,7 @@ describe(`AppHeader`, () => {
 				(navCallback as any)({ canGoBack: false, canGoForward: false, currentUrl: `about:blank` }); // eslint-disable-line @typescript-eslint/no-explicit-any
 			}
 			await wrapper.vm.$nextTick();
-			await urlSpan.trigger(`click`);
+			await omniHubContainer.trigger(`click`);
 			expect(mockSend).not.toHaveBeenCalledWith(`browser-copy-url`);
 		});
 	});
