@@ -33,7 +33,8 @@ export const state = reactive({
 	projectId: undefined as ProjectId | undefined,
 	domainsHash: null as HashString | null,
 	isHeaderHovered: false,
-	testNetworkEnabled: true
+	testNetworkEnabled: true,
+	appTitle: `Eyas`
 });
 
 /** The fallback delay (ms) to open the menu if the IPC event never fires. */
@@ -221,6 +222,10 @@ export function handleNavigationUpdate(data: unknown): void {
 
 	if (payload.testNetworkEnabled !== undefined) {
 		state.testNetworkEnabled = payload.testNetworkEnabled;
+	}
+
+	if (payload.appTitle !== undefined) {
+		state.appTitle = payload.appTitle;
 	}
 }
 

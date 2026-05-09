@@ -257,4 +257,5 @@ export type AppHeaderVM = {
 	resetTooltipText: () => void;
 	$nextTick: () => Promise<void>;
 	displayUrlInfo: DisplayUrlInfo;
+	appTitle: string;
 };

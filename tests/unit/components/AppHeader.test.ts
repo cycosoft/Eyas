@@ -39,7 +39,8 @@ describe(`AppHeader`, () => {
 					VAppBar: { template: `<div><slot /></div>` }, VMenu: { template: `<div><slot /></div>` }, VList: { template: `<div><slot /></div>` },
 					VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
 					VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
-					VIcon: true, VImg: true
+					VIcon: true, VImg: true,
+					VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` }
 				}
 			}
 		});
@@ -74,7 +75,8 @@ describe(`AppHeader`, () => {
 					VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
 					VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
 					VIcon: true,
-					VImg: true
+					VImg: true,
+					VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` }
 				}
 			}
 		});
@@ -405,6 +407,45 @@ describe(`AppHeader`, () => {
 				vm.onBrowserControlClick(`home`);
 				expect(mockSend).toHaveBeenCalledWith(`browser-home`);
 			});
+		});
+	});
+
+	describe(`v-system-bar`, () => {
+		test(`renders system bar with the correct title`, async () => {
+			const systemBar = wrapper.find(`.v-system-bar`);
+			expect(systemBar.exists()).toBe(true);
+
+			const titleSpan = systemBar.find(`span`);
+			expect(titleSpan.text()).toBe(`Eyas`);
+
+			// update navigation state and check if it updates the title
+			let navCallback: ((payload: NavigationStatePayload) => void) | null = null;
+			(window as unknown as WindowWithEyas).eyas.receive = vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
+				if (channel === `navigation-state-updated`) {
+					navCallback = cb as (payload: NavigationStatePayload) => void;
+				}
+			});
+
+			// Re-mount wrapper to hook the new receive mock
+			wrapper = mount(AppHeader, {
+				global: {
+					stubs: {
+						VAppBar: { template: `<div><slot /></div>` }, VMenu: { template: `<div><slot /></div>` }, VList: { template: `<div><slot /></div>` },
+						VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
+						VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
+						VIcon: true, VImg: true,
+						VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` }
+					}
+				}
+			});
+
+			if (navCallback) {
+				(navCallback as any)({ canGoBack: true, canGoForward: true, appTitle: `Eyas :: 1.0.0 ✨` }); // eslint-disable-line @typescript-eslint/no-explicit-any
+			}
+			await wrapper.vm.$nextTick();
+
+			const newVm = wrapper.vm as unknown as AppHeaderVM;
+			expect(newVm.appTitle).toBe(`Eyas :: 1.0.0 ✨`);
 		});
 	});
 });

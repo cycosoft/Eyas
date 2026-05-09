@@ -1,4 +1,19 @@
 <template>
+	<v-system-bar
+		height="30"
+		data-qa="window-system-bar"
+		class="window-system-bar px-4 d-flex align-center bg-surface border-b"
+		@mouseenter="handleHeaderMouseEnter"
+		@mouseleave="handleHeaderMouseLeave"
+	>
+		<v-img
+			:src="eyasLogo"
+			class="mr-2"
+			max-height="16"
+			max-width="16"
+		/>
+		<span class="text-caption font-weight-medium text-medium-emphasis">{{ appTitle }}</span>
+	</v-system-bar>
 	<v-app-bar
 		density="compact"
 		data-qa="app-header"
@@ -204,6 +219,7 @@
 <script setup lang="ts">
 import { onMounted, watch, toRefs } from 'vue';
 import type { ChannelName } from '@registry/primitives.js';
+import eyasLogo from '@/assets/eyas-logo.svg';
 import {
 	groups, state, browserControls, isControlDisabled, handleBrowserControlClick,
 	goBack, goForward, reload, goHome, handleBroadcastClick, activate,
@@ -215,7 +231,7 @@ import {
 
 import AppHeaderOmniHub from './AppHeaderOmniHub.vue';
 
-const { menu, activator, canGoBack, canGoForward, updateStatus, environments, currentEnvironment, tooltipVisible, tooltipText, cursorPos } = toRefs(state);
+const { menu, activator, canGoBack, canGoForward, updateStatus, environments, currentEnvironment, tooltipVisible, tooltipText, cursorPos, appTitle } = toRefs(state);
 
 watch(menu, isOpen => {
 	if (!isOpen) {
@@ -258,7 +274,8 @@ defineExpose({
 	handleHeaderMouseEnter,
 	handleHeaderMouseLeave,
 	handleUrlClick,
-	resetTooltipText
+	resetTooltipText,
+	appTitle
 });
 </script>
 

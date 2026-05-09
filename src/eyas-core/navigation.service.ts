@@ -275,7 +275,8 @@ async function updateNavigationState(ctx: CoreContext): Promise<void> {
 		currentEnvironment: ctx.$testDomainRaw,
 		projectId: ctx.$config?.meta.projectId || undefined,
 		domainsHash: ctx.$config?.domains ? hashDomains(ctx.$config.domains) : null,
-		testNetworkEnabled: ctx.$testNetworkEnabled
+		testNetworkEnabled: ctx.$testNetworkEnabled,
+		appTitle: getAppTitleWithContext(ctx)
 	});
 }
 

@@ -36,4 +36,4 @@ export const SETTINGS_DEFAULTS = {
 // The pixel height of the persistent Eyas header/navigation bar.
 // Matches the height of a Vuetify v-app-bar with density="compact".
 // Update this value if the header design changes.
-export const EYAS_HEADER_HEIGHT = 48;
+export const EYAS_HEADER_HEIGHT = 78;
