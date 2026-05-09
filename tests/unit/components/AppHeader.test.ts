@@ -22,6 +22,8 @@ describe(`AppHeader`, () => {
 		state.isHeaderHovered = false;
 		state.menu = false;
 		state.envMenu = false;
+		state.tooltipVisible = false;
+		state.tooltipText = `Click to Copy`;
 		(window as unknown as WindowWithEyas).eyas = {
 			send: mockSend,
 			receive: vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
@@ -618,15 +620,32 @@ describe(`AppHeader`, () => {
 			const tooltip = urlSpan.find(`.v-tooltip`);
 			expect(tooltip.exists()).toBe(true);
 			expect(tooltip.text()).toContain(`Click to Copy`);
+			expect(vm.tooltipText).toBe(`Click to Copy`);
 			// Verify cursor-position target is bound (not the fixed string 'cursor')
 			expect(vm.cursorPos).toEqual([0, 0]);
 			expect(tooltip.attributes(`data-model-value`)).toBe(`false`);
 
 			const omniHubContainer = wrapper.find(`[data-qa="omni-hub-container"]`);
 
-			// 5. Test click-to-copy behavior on valid URL
+			// 5. Test click-to-copy behavior on valid URL and dynamic tooltip text change
 			await omniHubContainer.trigger(`click`);
 			expect(mockSend).toHaveBeenCalledWith(`browser-copy-url`);
+			expect(vm.tooltipText).toBe(`Copied!`);
+
+			// Fast-forward 2000ms to test timeout reversion
+			vi.advanceTimersByTime(2000);
+			expect(vm.tooltipText).toBe(`Click to Copy`);
+
+			// Click again to set back to Copied! and test closure reversion
+			await omniHubContainer.trigger(`click`);
+			expect(vm.tooltipText).toBe(`Copied!`);
+
+			// Simulate tooltip open and then close to trigger the watcher reversion
+			state.tooltipVisible = true;
+			await wrapper.vm.$nextTick();
+			state.tooltipVisible = false;
+			await wrapper.vm.$nextTick();
+			expect(vm.tooltipText).toBe(`Click to Copy`);
 
 			// 6. Test that click-to-copy does NOT trigger on fallback URL
 			mockSend.mockClear();

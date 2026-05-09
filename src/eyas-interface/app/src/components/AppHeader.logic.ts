@@ -18,6 +18,7 @@ export const state = reactive({
 	menu: false,
 	envMenu: false,
 	tooltipVisible: false,
+	tooltipText: `Click to Copy`,
 	cursorPos: [0, 0] as CursorPosition,
 	activeGroup: null as MenuLabel | null,
 	activator: undefined as Element | undefined,
@@ -42,6 +43,7 @@ let pendingOpen: PendingNavOpen | null = null;
 let checkingStartTime = 0;
 let statusTimeout = -1;
 let pendingStatus: UpdateStatus | null = null;
+let copyTimeout = -1;
 
 /**
  * Handles update status changes from the main process.
@@ -180,7 +182,13 @@ export function handleHeaderMouseLeave(): void {
 /** Handles click on the URL to copy it to clipboard. */
 export function handleUrlClick(): void {
 	if (!displayUrlInfo.value.isFallback) {
+		window.clearTimeout(copyTimeout);
+		state.tooltipText = `Copied!`;
 		window.eyas?.send(`browser-copy-url` as ChannelName);
+
+		copyTimeout = window.setTimeout(() => {
+			state.tooltipText = `Click to Copy`;
+		}, 2000);
 	}
 }
 
@@ -188,6 +196,14 @@ export function handleUrlClick(): void {
 export function handleCursorMove(e: MouseEvent): void {
 	state.cursorPos = [e.clientX + 10, e.clientY + 10];
 }
+
+/** Resets the tooltip text and clears the active timeout. */
+export function resetTooltipText(): void {
+	window.clearTimeout(copyTimeout);
+	state.tooltipText = `Click to Copy`;
+}
+
+
 
 export const updateInfo = computed(() => {
 	if (state.updateStatus === `checking`) {

@@ -137,7 +137,7 @@
 					activator="parent"
 					:target="cursorPos"
 				>
-					Click to Copy
+					{{ tooltipText }}
 				</v-tooltip>
 			</span>
 
@@ -339,10 +339,10 @@ import {
 	onMouseEnter, onItemClick, delayedClose, triggerOpen, updateInfo,
 	handleNavigationUpdate, handleUpdateStatusUpdate, displayUrlInfo,
 	activeEnvironmentTitle, selectEnvironment, handleHeaderMouseEnter,
-	handleHeaderMouseLeave, handleUrlClick, handleCursorMove
+	handleHeaderMouseLeave, handleUrlClick, handleCursorMove, resetTooltipText
 } from './AppHeader.logic.js';
 
-const { menu, activator, canGoBack, canGoForward, updateStatus, environments, currentEnvironment, envMenu, tooltipVisible, cursorPos } = toRefs(state);
+const { menu, activator, canGoBack, canGoForward, updateStatus, environments, currentEnvironment, envMenu, tooltipVisible, tooltipText, cursorPos } = toRefs(state);
 
 watch(menu, isOpen => {
 	if (!isOpen) {
@@ -359,6 +359,12 @@ watch(envMenu, isOpen => {
 	}
 });
 
+watch(tooltipVisible, isOpen => {
+	if (!isOpen) {
+		resetTooltipText();
+	}
+});
+
 onMounted(() => {
 	window.eyas?.receive(`ui-shown` as ChannelName, triggerOpen);
 	window.eyas?.receive(`navigation-state-updated` as ChannelName, handleNavigationUpdate);
@@ -369,6 +375,7 @@ onMounted(() => {
 defineExpose({
 	menu,
 	tooltipVisible,
+	tooltipText,
 	cursorPos,
 	menuItems: toRefs(state).menuItems,
 	activator: toRefs(state).activator,
@@ -390,7 +397,8 @@ defineExpose({
 	selectEnvironment,
 	handleHeaderMouseEnter,
 	handleHeaderMouseLeave,
-	handleUrlClick
+	handleUrlClick,
+	resetTooltipText
 });
 </script>
 

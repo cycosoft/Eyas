@@ -234,6 +234,7 @@ export type AppHeaderVM = {
 	menu: boolean;
 	envMenu: boolean;
 	tooltipVisible: boolean;
+	tooltipText: string;
 	cursorPos: CursorPosition;
 	menuItems: NavItem[];
 	activator: Element | undefined;
@@ -252,6 +253,7 @@ export type AppHeaderVM = {
 	handleHeaderMouseEnter: () => void;
 	handleHeaderMouseLeave: () => void;
 	handleUrlClick: () => void;
+	resetTooltipText: () => void;
 	$nextTick: () => Promise<void>;
 	displayUrlInfo: DisplayUrlInfo;
 };
