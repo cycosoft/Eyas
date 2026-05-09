@@ -22,7 +22,12 @@
 			background-color: rgba(0, 0, 0, 0.4);
 			backdrop-filter: blur(3px);
 		}
-		body, .v-application { font-family: 'Manrope', system-ui, -apple-system, sans-serif !important; }
+		body, .v-application {
+			font-family: 'Manrope', system-ui, -apple-system, sans-serif !important;
+		}
+		body, body *:not(.v-icon):not(.mdi) {
+			letter-spacing: 1.15px !important;
+		}
 		.cursor-pointer { cursor: pointer; }
 
 		/* Global Glassmorphic Tooltip Override */
