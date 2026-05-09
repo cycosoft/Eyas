@@ -1,6 +1,6 @@
 import { reactive, computed } from 'vue';
 import useModalsStore from '@/stores/modals.js';
-import type { NavGroup, NavItem, NavActivateEvent, PendingNavOpen, DisplayUrlInfo } from '@registry/components.js';
+import type { NavGroup, NavItem, NavActivateEvent, PendingNavOpen, DisplayUrlInfo, CursorPosition } from '@registry/components.js';
 import type { ChannelName, MenuLabel, ProjectId, DomainUrl, HashString, ListIndex } from '@registry/primitives.js';
 import type { EnvironmentChoiceWithTitle } from '@registry/core.js';
 import type { UpdateStatus } from '@registry/ipc.js';
@@ -17,6 +17,8 @@ export * from './AppHeader.updates.js';
 export const state = reactive({
 	menu: false,
 	envMenu: false,
+	tooltipVisible: false,
+	cursorPos: [0, 0] as CursorPosition,
 	activeGroup: null as MenuLabel | null,
 	activator: undefined as Element | undefined,
 	menuItems: [] as NavItem[],
@@ -180,6 +182,11 @@ export function handleUrlClick(): void {
 	if (!displayUrlInfo.value.isFallback) {
 		window.eyas?.send(`browser-copy-url` as ChannelName);
 	}
+}
+
+/** Tracks the cursor's position for tooltip alignment. */
+export function handleCursorMove(e: MouseEvent): void {
+	state.cursorPos = [e.clientX + 10, e.clientY + 10];
 }
 
 export const updateInfo = computed(() => {

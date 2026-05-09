@@ -572,7 +572,7 @@ describe(`AppHeader`, () => {
 						VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
 						VIcon: true,
 						VImg: true,
-						VTooltip: { template: `<div class="v-tooltip"><slot /></div>` }
+						VTooltip: { template: `<div class="v-tooltip" :data-target="$attrs.target" :data-model-value="$attrs.modelValue"><slot /></div>` }
 					}
 				}
 			});
@@ -580,6 +580,7 @@ describe(`AppHeader`, () => {
 			const vm = wrapper.vm as unknown as AppHeaderVM;
 
 			// 1. Initial State (no URL loaded yet, fallback should apply)
+			expect(vm.tooltipVisible).toBe(false);
 			expect(vm.displayUrlInfo.text).toBe(`Load a New Eyas to Get Started`);
 			expect(vm.displayUrlInfo.isFallback).toBe(true);
 			expect(wrapper.find(`[data-qa="omni-hub-url"]`).find(`.v-tooltip`).exists()).toBe(false);
@@ -617,6 +618,9 @@ describe(`AppHeader`, () => {
 			const tooltip = urlSpan.find(`.v-tooltip`);
 			expect(tooltip.exists()).toBe(true);
 			expect(tooltip.text()).toContain(`Click to Copy`);
+			// Verify cursor-position target is bound (not the fixed string 'cursor')
+			expect(vm.cursorPos).toEqual([0, 0]);
+			expect(tooltip.attributes(`data-model-value`)).toBe(`false`);
 
 			const omniHubContainer = wrapper.find(`[data-qa="omni-hub-container"]`);
 

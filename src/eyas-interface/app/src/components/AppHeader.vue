@@ -127,12 +127,15 @@
 					opacity: displayUrlInfo.isFallback ? 0.5 : 0.8
 				}"
 				data-qa="omni-hub-url"
+				@mousemove="handleCursorMove"
 			>
 				{{ displayUrlInfo.text }}
 				<v-tooltip
 					v-if="!displayUrlInfo.isFallback"
-					location="bottom"
+					v-model="tooltipVisible"
+					location="bottom start"
 					activator="parent"
+					:target="cursorPos"
 				>
 					Click to Copy
 				</v-tooltip>
@@ -336,10 +339,10 @@ import {
 	onMouseEnter, onItemClick, delayedClose, triggerOpen, updateInfo,
 	handleNavigationUpdate, handleUpdateStatusUpdate, displayUrlInfo,
 	activeEnvironmentTitle, selectEnvironment, handleHeaderMouseEnter,
-	handleHeaderMouseLeave, handleUrlClick
+	handleHeaderMouseLeave, handleUrlClick, handleCursorMove
 } from './AppHeader.logic.js';
 
-const { menu, activator, canGoBack, canGoForward, updateStatus, environments, currentEnvironment, envMenu } = toRefs(state);
+const { menu, activator, canGoBack, canGoForward, updateStatus, environments, currentEnvironment, envMenu, tooltipVisible, cursorPos } = toRefs(state);
 
 watch(menu, isOpen => {
 	if (!isOpen) {
@@ -365,6 +368,8 @@ onMounted(() => {
 // expose for testing
 defineExpose({
 	menu,
+	tooltipVisible,
+	cursorPos,
 	menuItems: toRefs(state).menuItems,
 	activator: toRefs(state).activator,
 	canGoBack,

@@ -224,12 +224,17 @@ export type DisplayUrlInfo = {
 	isFallback: boolean;
 };
 
+/** The [x, y] screen coordinates of the user's cursor. */
+export type CursorPosition = [x: number, y: number];
+
 /**
  * Type helper for the AppHeader Vue component's ViewModel in tests.
  */
 export type AppHeaderVM = {
 	menu: boolean;
 	envMenu: boolean;
+	tooltipVisible: boolean;
+	cursorPos: CursorPosition;
 	menuItems: NavItem[];
 	activator: Element | undefined;
 	groups: NavGroup[];
