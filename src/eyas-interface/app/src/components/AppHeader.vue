@@ -6,7 +6,7 @@
 		@mouseenter="handleHeaderMouseEnter"
 		@mouseleave="handleHeaderMouseLeave"
 	>
-		<span class="system-bar-title text-high-emphasis">{{ displayAppTitle }}</span>
+		<span class="system-bar-title text-disabled">{{ displayAppTitle }}</span>
 	</v-system-bar>
 	<v-app-bar
 		density="compact"
