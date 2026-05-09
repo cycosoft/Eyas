@@ -153,10 +153,11 @@ watch(tooltipVisible, isOpen => {
 }
 
 .url-text {
-	flex-grow: 5;
+	flex-grow: 1;
 	min-width: 100px;
 	width: 0;
 	font-size: 10px !important;
+	margin-right: .25rem;
 }
 
 .env-btn {
