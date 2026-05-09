@@ -35,6 +35,7 @@ export const VALID_SEND_CHANNELS = [
 	`browser-forward`,
 	`browser-reload`,
 	`browser-home`,
+	`browser-copy-url`,
 	`open-external`,
 	`set-viewport`,
 	`clear-cache`,

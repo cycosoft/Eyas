@@ -92,9 +92,11 @@
 					minWidth: '100px',
 					width: 0,
 					fontSize: '10px !important',
-					opacity: displayUrlInfo.isFallback ? 0.5 : 0.8
+					opacity: displayUrlInfo.isFallback ? 0.5 : 0.8,
+					cursor: displayUrlInfo.isFallback ? 'default' : 'pointer'
 				}"
 				data-qa="omni-hub-url"
+				@click="handleUrlClick"
 			>
 				{{ displayUrlInfo.text }}
 				<v-tooltip
@@ -304,7 +306,7 @@ import {
 	onMouseEnter, onItemClick, delayedClose, triggerOpen, updateInfo,
 	handleNavigationUpdate, handleUpdateStatusUpdate, displayUrlInfo,
 	activeEnvironmentTitle, selectEnvironment, handleHeaderMouseEnter,
-	handleHeaderMouseLeave
+	handleHeaderMouseLeave, handleUrlClick
 } from './AppHeader.logic.js';
 
 const { menu, activator, canGoBack, canGoForward, updateStatus, environments, currentEnvironment, envMenu } = toRefs(state);
@@ -352,7 +354,8 @@ defineExpose({
 	activeEnvironmentTitle,
 	selectEnvironment,
 	handleHeaderMouseEnter,
-	handleHeaderMouseLeave
+	handleHeaderMouseLeave,
+	handleUrlClick
 });
 </script>
 

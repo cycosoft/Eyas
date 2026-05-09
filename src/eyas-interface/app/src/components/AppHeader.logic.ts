@@ -172,6 +172,13 @@ export function handleHeaderMouseLeave(): void {
 	delayedClose();
 }
 
+/** Handles click on the URL to copy it to clipboard. */
+export function handleUrlClick(): void {
+	if (!displayUrlInfo.value.isFallback) {
+		window.eyas?.send(`browser-copy-url` as ChannelName);
+	}
+}
+
 export const updateInfo = computed(() => {
 	if (state.updateStatus === `checking`) {
 		return {

@@ -1,5 +1,5 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
-import { app, BrowserWindow, ipcMain, session, protocol, type IpcMainEvent } from 'electron';
+import { app, BrowserWindow, ipcMain, session, protocol, clipboard, type IpcMainEvent } from 'electron';
 import type { EyasPaths } from '@registry/eyas-core.js';
 
 type BrowserWindowConstructor = { new (): BrowserWindow };
@@ -397,5 +397,35 @@ describe(`UI Expansion IPC`, () => {
 		showUiHandler({} as IpcMainEvent);
 
 		expect(ctx.toggleEyasUI).toHaveBeenCalledWith(true);
+	});
+});
+
+describe(`Browser Copy URL IPC`, () => {
+	test(`browser-copy-url IPC handler should write active URL to system clipboard`, () => {
+		const mockWebContents = {
+			getURL: vi.fn().mockReturnValue(`https://example.com/test-url`),
+			isDestroyed: vi.fn().mockReturnValue(false)
+		};
+		const ctx = {
+			$isInitializing: false,
+			$testLayer: {
+				webContents: mockWebContents
+			}
+		} as unknown as CoreContext;
+
+		let copyUrlHandler: unknown = null;
+		vi.spyOn(ipcMain, `on`).mockImplementation((channel, cb) => {
+			if (channel === `browser-copy-url`) { copyUrlHandler = cb; }
+			return ipcMain;
+		});
+
+		initIpcHandlers(ctx);
+
+		if (typeof copyUrlHandler !== `function`) { throw new Error(`browser-copy-url handler not registered`); }
+
+		copyUrlHandler({} as IpcMainEvent);
+
+		expect(mockWebContents.getURL).toHaveBeenCalled();
+		expect(clipboard.writeText).toHaveBeenCalledWith(`https://example.com/test-url`);
 	});
 });

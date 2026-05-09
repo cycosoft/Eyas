@@ -583,6 +583,19 @@ describe(`AppHeader`, () => {
 			const tooltip = urlSpan.find(`.v-tooltip`);
 			expect(tooltip.exists()).toBe(true);
 			expect(tooltip.text()).toContain(`Click to Copy`);
+
+			// 5. Test click-to-copy behavior on valid URL
+			await urlSpan.trigger(`click`);
+			expect(mockSend).toHaveBeenCalledWith(`browser-copy-url`);
+
+			// 6. Test that click-to-copy does NOT trigger on fallback URL
+			mockSend.mockClear();
+			if (navCallback) {
+				(navCallback as any)({ canGoBack: false, canGoForward: false, currentUrl: `about:blank` }); // eslint-disable-line @typescript-eslint/no-explicit-any
+			}
+			await wrapper.vm.$nextTick();
+			await urlSpan.trigger(`click`);
+			expect(mockSend).not.toHaveBeenCalledWith(`browser-copy-url`);
 		});
 	});
 

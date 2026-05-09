@@ -246,6 +246,7 @@ export type AppHeaderVM = {
 	goHome: () => void;
 	handleHeaderMouseEnter: () => void;
 	handleHeaderMouseLeave: () => void;
+	handleUrlClick: () => void;
 	$nextTick: () => Promise<void>;
 	displayUrlInfo: DisplayUrlInfo;
 };

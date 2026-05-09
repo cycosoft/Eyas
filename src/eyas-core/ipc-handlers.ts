@@ -1,4 +1,4 @@
-import { ipcMain, nativeTheme, app, shell } from 'electron';
+import { ipcMain, nativeTheme, app, shell, clipboard } from 'electron';
 import type { CoreContext } from '@registry/eyas-core.js';
 import { parseURL } from '@scripts/parse-url.js';
 import * as settingsService from './settings-service.js';
@@ -103,6 +103,11 @@ function initBrowserIpcListeners(ctx: CoreContext): void {
 	ipcMain.on(`browser-forward`, () => ctx.goForward());
 	ipcMain.on(`browser-reload`, () => ctx.reload());
 	ipcMain.on(`browser-home`, () => ctx.navigate());
+	ipcMain.on(`browser-copy-url`, () => {
+		const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
+		if (ctx.$isInitializing || !webContents || webContents.isDestroyed()) return;
+		clipboard.writeText(webContents.getURL());
+	});
 }
 
 /**
