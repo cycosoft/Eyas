@@ -32,14 +32,14 @@
 			size="x-small"
 			density="compact"
 			variant="flat"
-			color="error"
+			:color="testNetworkEnabled ? 'success' : 'error'"
 			class="mr-2 font-weight-bold text-uppercase"
-			style="font-size: 8px !important; height: 18px; flex-shrink: 0; cursor: default;"
+			style="font-size: 8px !important; height: 18px; flex-shrink: 0; cursor: pointer;"
 			data-qa="omni-hub-status"
-			@click.stop
+			@click.stop="toggleNetwork"
 			@mousedown.stop
 		>
-			Offline
+			{{ testNetworkEnabled ? 'Online' : 'Offline' }}
 		</v-chip>
 
 		<!-- 3. URL Placeholder -->
@@ -121,10 +121,11 @@ import { watch, toRefs } from 'vue';
 import type { ChannelName } from '@registry/primitives.js';
 import {
 	state, displayUrlInfo, activeEnvironmentTitle, selectEnvironment,
-	handleUrlClick, handleCursorMove, resetTooltipText, delayedClose
+	handleUrlClick, handleCursorMove, resetTooltipText, delayedClose,
+	toggleNetwork
 } from './AppHeader.logic.js';
 
-const { environments, currentEnvironment, envMenu, tooltipVisible, tooltipText, cursorPos } = toRefs(state);
+const { environments, currentEnvironment, envMenu, tooltipVisible, tooltipText, cursorPos, testNetworkEnabled } = toRefs(state);
 
 watch(envMenu, isOpen => {
 	if (isOpen) {

@@ -274,7 +274,8 @@ async function updateNavigationState(ctx: CoreContext): Promise<void> {
 		environments: ctx.$config?.domains || [],
 		currentEnvironment: ctx.$testDomainRaw,
 		projectId: ctx.$config?.meta.projectId || undefined,
-		domainsHash: ctx.$config?.domains ? hashDomains(ctx.$config.domains) : null
+		domainsHash: ctx.$config?.domains ? hashDomains(ctx.$config.domains) : null,
+		testNetworkEnabled: ctx.$testNetworkEnabled
 	});
 }
 

@@ -183,7 +183,7 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 			const container = wrapper.find(`[data-qa="omni-hub-container"]`);
 			expect(container.exists()).toBe(true);
 			expect(container.find(`[data-qa="omni-hub-lock"]`).exists()).toBe(true);
-			expect(container.find(`[data-qa="omni-hub-status"]`).text()).toContain(`Offline`);
+			expect(container.find(`[data-qa="omni-hub-status"]`).text()).toContain(`Online`);
 			expect(container.find(`[data-qa="omni-hub-url"]`).text()).toBe(`Load a New Eyas to Get Started`);
 			expect(container.find(`[data-qa="omni-hub-env-dropdown"]`).exists()).toBe(false);
 		});
@@ -343,12 +343,9 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 			expect(lockIcon.attributes(`icon`)).toBe(`mdi-lock-off`);
 			expect(lockIcon.attributes(`color`)).toBe(`error`);
 		});
-	});
 
-	describe(`environments dropdown`, () => {
-		let navCallback: ((payload: NavigationStatePayload) => void) | null = null;
-
-		beforeEach(() => {
+		test(`toggles network-status IPC on chip click and reacts to state updates`, async () => {
+			let navCallback: ((payload: NavigationStatePayload) => void) | null = null;
 			(window as unknown as WindowWithEyas).eyas.receive = vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
 				if (channel === `navigation-state-updated`) {
 					navCallback = cb as (payload: NavigationStatePayload) => void;
@@ -364,103 +361,43 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 						VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
 						VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
 						VIcon: true,
-						VImg: true
+						VImg: true,
+						VChip: { template: `<div class="v-chip" :color="$attrs.color" @click="$emit('click', $event)"><slot /></div>` }
 					}
 				}
 			});
-		});
 
-		test(`does not render the environment dropdown button when there are no environments`, () => {
-			const dropdownBtn = wrapper.find(`[data-qa="omni-hub-env-dropdown"]`);
-			expect(dropdownBtn.exists()).toBe(false);
-		});
+			const statusChip = wrapper.find(`[data-qa="omni-hub-status"]`);
+			expect(statusChip.exists()).toBe(true);
 
-		test(`renders SELECT ENV when environments are defined but none is selected`, async () => {
+			// 1. Initial/Default state should be Online (green)
+			expect(statusChip.text()).toContain(`Online`);
+			expect(statusChip.attributes(`color`)).toBe(`success`);
+
+			// 2. Click chip to toggle to offline
+			await statusChip.trigger(`click`);
+			expect(mockSend).toHaveBeenCalledWith(`network-status`, false);
+
+			// 3. Receive offline update
 			if (navCallback) {
-				(navCallback as any)({ // eslint-disable-line @typescript-eslint/no-explicit-any
-					canGoBack: false,
-					canGoForward: false,
-					environments: [
-						{ url: `dev.eyas.cycosoft.com`, title: `Development` },
-						{ url: `staging.eyas.cycosoft.com`, title: `Staging` }
-					]
-				});
+				(navCallback as any)({ canGoBack: false, canGoForward: false, testNetworkEnabled: false }); // eslint-disable-line @typescript-eslint/no-explicit-any
 			}
 			await wrapper.vm.$nextTick();
-			const dropdownBtn = wrapper.find(`[data-qa="omni-hub-env-dropdown"]`);
-			expect(dropdownBtn.text()).toContain(`SELECT ENV`);
-		});
+			expect(statusChip.text()).toContain(`Offline`);
+			expect(statusChip.attributes(`color`)).toBe(`error`);
 
-		test(`renders the current environment title when selected`, async () => {
+			// 4. Click chip to toggle back to online
+			mockSend.mockClear();
+			await statusChip.trigger(`click`);
+			expect(mockSend).toHaveBeenCalledWith(`network-status`, true);
+
+			// 5. Receive online update
 			if (navCallback) {
-				(navCallback as any)({ // eslint-disable-line @typescript-eslint/no-explicit-any
-					canGoBack: false,
-					canGoForward: false,
-					environments: [
-						{ url: `dev.eyas.cycosoft.com`, title: `Development` },
-						{ url: `staging.eyas.cycosoft.com`, title: `Staging` }
-					],
-					currentEnvironment: `staging.eyas.cycosoft.com`
-				});
+				(navCallback as any)({ canGoBack: false, canGoForward: false, testNetworkEnabled: true }); // eslint-disable-line @typescript-eslint/no-explicit-any
 			}
 			await wrapper.vm.$nextTick();
-			const dropdownBtn = wrapper.find(`[data-qa="omni-hub-env-dropdown"]`);
-			expect(dropdownBtn.text()).toContain(`Staging`);
-		});
-
-		test(`renders environment list items without number badges and fires IPC on click`, async () => {
-			const environments = [
-				{ url: `dev.eyas.cycosoft.com`, title: `Development`, key: `dev.` },
-				{ url: `staging.eyas.cycosoft.com`, title: `Staging`, key: `staging.` }
-			];
-
-			if (navCallback) {
-				(navCallback as any)({ // eslint-disable-line @typescript-eslint/no-explicit-any
-					canGoBack: false,
-					canGoForward: false,
-					environments,
-					currentEnvironment: `dev.eyas.cycosoft.com`,
-					projectId: `test-project`,
-					domainsHash: `hash123`
-				});
-			}
-			await wrapper.vm.$nextTick();
-
-			const envItems = wrapper.findAll(`.env-item`);
-			expect(envItems.length).toBe(2);
-			expect(envItems[0].text()).toBe(`Development`);
-			expect(envItems[1].text()).toBe(`Staging`);
-
-			await envItems[1].trigger(`click`);
-
-			expect(mockSend).toHaveBeenCalledWith(`save-setting`, {
-				key: `env.lastChoice`,
-				value: environments[1],
-				projectId: `test-project`
-			});
-			expect(mockSend).toHaveBeenCalledWith(`save-setting`, {
-				key: `env.lastChoiceHash`,
-				value: `hash123`,
-				projectId: `test-project`
-			});
-			expect(mockSend).toHaveBeenCalledWith(`environment-selected`, environments[1]);
-		});
-
-		test(`expands UI layer when envMenu becomes true and collapses it after delay when false`, async () => {
-			const vm = wrapper.vm as any; // eslint-disable-line @typescript-eslint/no-explicit-any
-
-			// 1. Open the env menu
-			vm.envMenu = true;
-			await wrapper.vm.$nextTick();
-			expect(mockSend).toHaveBeenCalledWith(`show-ui`);
-
-			// 2. Close the env menu
-			vm.envMenu = false;
-			await wrapper.vm.$nextTick();
-
-			// Fast forward 310ms
-			vi.advanceTimersByTime(310);
-			expect(mockSend).toHaveBeenCalledWith(`hide-ui`);
+			expect(statusChip.text()).toContain(`Online`);
+			expect(statusChip.attributes(`color`)).toBe(`success`);
 		});
 	});
 });

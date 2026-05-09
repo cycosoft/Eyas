@@ -82,6 +82,7 @@ export type NavigationStatePayload = {
 	currentEnvironment?: DomainUrl | null;
 	projectId?: ProjectId;
 	domainsHash?: HashString | null;
+	testNetworkEnabled?: IsActive;
 };
 
 type SendChannel = typeof VALID_SEND_CHANNELS[number];

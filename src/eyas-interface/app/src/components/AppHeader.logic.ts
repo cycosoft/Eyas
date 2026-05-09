@@ -32,7 +32,8 @@ export const state = reactive({
 	currentEnvironment: null as DomainUrl | null,
 	projectId: undefined as ProjectId | undefined,
 	domainsHash: null as HashString | null,
-	isHeaderHovered: false
+	isHeaderHovered: false,
+	testNetworkEnabled: true
 });
 
 /** The fallback delay (ms) to open the menu if the IPC event never fires. */
@@ -217,6 +218,10 @@ export function handleNavigationUpdate(data: unknown): void {
 	if (payload.domainsHash !== undefined) {
 		state.domainsHash = payload.domainsHash;
 	}
+
+	if (payload.testNetworkEnabled !== undefined) {
+		state.testNetworkEnabled = payload.testNetworkEnabled;
+	}
 }
 
 /**
@@ -252,6 +257,15 @@ export function selectEnvironment(env: EnvironmentChoiceWithTitle, _index: ListI
 	}
 
 	window.eyas?.send(`environment-selected` as ChannelName, domainCopy);
+}
+
+/**
+ * Toggles the online/offline network status and sends network-status IPC event.
+ */
+export function toggleNetwork(): void {
+	const nextState = !state.testNetworkEnabled;
+	state.testNetworkEnabled = nextState;
+	window.eyas?.send(`network-status` as ChannelName, nextState);
 }
 
 

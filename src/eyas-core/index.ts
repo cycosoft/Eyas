@@ -145,7 +145,10 @@ let $coreContext: CoreContext | null = null;
  * @returns The fully assembled CoreContext object.
  */
 const coreContextSetters = {
-	setTestNetworkEnabled: (enabled: IsActive): void => { $testNetworkEnabled = enabled; },
+	setTestNetworkEnabled: (enabled: IsActive): void => {
+		$testNetworkEnabled = enabled;
+		getCoreContext().updateNavigationState().catch(() => {});
+	},
 	setTestServerHttpsEnabled: (enabled: IsActive): void => { $testServerHttpsEnabled = enabled; },
 	setTestDomainRaw: (domain: DomainUrl | null): void => { $testDomainRaw = domain; },
 	setTestDomain: (domain: DomainUrl): void => { $testDomain = domain; },
