@@ -84,7 +84,7 @@ export default tseslint.config(
 			'no-unused-vars': `off`, // Handled by @typescript-eslint version
 			'no-redeclare': `off`, // Can be noisy with globals in separate configs
 			complexity: [`error`, 15],
-			'max-lines': [`warn`, 300],
+			'max-lines': [`error`, 300],
 			'max-lines-per-function': [`error`, { max: 50, skipBlankLines: true, skipComments: true, IIFEs: true }],
 			'max-params': [`error`, 4],
 			'import/max-dependencies': [`warn`, { max: 25 }],
@@ -216,7 +216,7 @@ export default tseslint.config(
 					message: `IPC channels must be typed using 'ChannelName'. Please use a cast (e.g., 'channel-name' as ChannelName) to ensure type safety and project-wide consistency.`
 				}
 			],
-			'max-lines': [`warn`, 500],
+			'max-lines': [`error`, 500],
 			'max-lines-per-function': `off`
 		}
 	},
