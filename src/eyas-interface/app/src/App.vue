@@ -72,3 +72,23 @@ onMounted(() => {
 window.addEventListener(`online`, () => window.eyas?.send(`network-status` as ChannelName, true));
 window.addEventListener(`offline`, () => window.eyas?.send(`network-status` as ChannelName, false));
 </script>
+
+<style>
+/* Constrain the main application wrapper below the system bar */
+.v-application__wrap {
+	margin-top: 30px;
+	height: calc(100vh - 30px) !important;
+	min-height: calc(100vh - 30px) !important;
+}
+
+/* Constrain all Vuetify overlays, scrims, menus, and dialogs below the system bar */
+.v-overlay-container {
+	top: 30px !important;
+	height: calc(100vh - 30px) !important;
+}
+
+/* Ensure the modal background dimming overlay respects the top boundary */
+.v-overlay__scrim {
+	margin-top: 30px;
+}
+</style>

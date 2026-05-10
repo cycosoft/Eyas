@@ -35,4 +35,16 @@ test.describe(`Frameless Window WCO Support`, () => {
 			height: 30
 		});
 	});
+
+	test(`should position main application wrap below system bar`, async () => {
+		// Clear environment selection so we get to the main page
+		await ensureEnvironmentSelected(uiPage);
+
+		const rect = await uiPage.evaluate(() => {
+			const el = document.querySelector(`.v-application__wrap`);
+			const r = el.getBoundingClientRect();
+			return { top: r.top };
+		});
+		expect(rect.top).toBe(30);
+	});
 });
