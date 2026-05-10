@@ -32,7 +32,8 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 					VAppBar: { template: `<div><slot /></div>` }, VMenu: { template: `<div><slot /></div>` }, VList: { template: `<div><slot /></div>` },
 					VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
 					VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
-					VIcon: true, VImg: true
+					VIcon: true, VImg: true,
+					VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` }
 				}
 			}
 		});
@@ -74,7 +75,8 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 						VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
 						VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
 						VIcon: true,
-						VImg: true
+						VImg: true,
+						VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` }
 					}
 				}
 			});
@@ -107,7 +109,8 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 						VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
 						VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
 						VIcon: true,
-						VImg: true
+						VImg: true,
+						VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` }
 					}
 				}
 			});
@@ -143,7 +146,8 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 						VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
 						VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
 						VIcon: true,
-						VImg: true
+						VImg: true,
+						VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` }
 					}
 				}
 			});
@@ -207,7 +211,8 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 						VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
 						VIcon: true,
 						VImg: true,
-						VTooltip: { template: `<div class="v-tooltip" :data-target="$attrs.target" :data-model-value="$attrs.modelValue"><slot /></div>` }
+						VTooltip: { template: `<div class="v-tooltip" :data-target="$attrs.target" :data-model-value="$attrs.modelValue"><slot /></div>` },
+						VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` }
 					}
 				}
 			});
@@ -307,7 +312,8 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 						VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
 						VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
 						VIcon: true,
-						VImg: true
+						VImg: true,
+						VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` }
 					}
 				}
 			});
@@ -362,7 +368,8 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 						VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
 						VIcon: true,
 						VImg: true,
-						VChip: { template: `<div class="v-chip" :color="$attrs.color" @click="$emit('click', $event)"><slot /></div>` }
+						VChip: { template: `<div class="v-chip" :color="$attrs.color" @click="$emit('click', $event)"><slot /></div>` },
+						VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` }
 					}
 				}
 			});

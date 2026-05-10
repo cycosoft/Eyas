@@ -6,7 +6,7 @@ import {
 	getAppWindowContentSize
 } from './eyas-utils.mjs';
 
-const EYAS_HEADER_HEIGHT = 48;
+const EYAS_HEADER_HEIGHT = 78;
 
 test.describe(`Test Layer Dimensions`, () => {
 	let electronApp;

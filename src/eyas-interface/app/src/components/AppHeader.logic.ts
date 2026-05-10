@@ -187,7 +187,7 @@ export function handleNavigationUpdate(data: unknown): void {
 	state.canGoBack = payload.canGoBack;
 	state.canGoForward = payload.canGoForward;
 
-	const keys: Array<keyof typeof state> = [
+	const keys: Array<keyof NavigationStatePayload & keyof typeof state> = [
 		`currentUrl`, `environments`, `currentEnvironment`, `projectId`,
 		`domainsHash`, `testNetworkEnabled`, `appTitle`, `configTitle`, `appVersion`, `pageTitle`
 	];

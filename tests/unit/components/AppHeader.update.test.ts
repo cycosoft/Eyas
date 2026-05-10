@@ -34,7 +34,8 @@ describe(`AppHeader Update Button`, () => {
 					VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
 					VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
 					VIcon: true,
-					VImg: true
+					VImg: true,
+					VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` }
 				}
 			}
 		});

@@ -440,7 +440,7 @@ describe(`AppHeader`, () => {
 			});
 
 			if (navCallback) {
-				navCallback({
+				((navCallback as unknown) as (payload: NavigationStatePayload) => void)({
 					canGoBack: true,
 					canGoForward: true,
 					configTitle: `Eyas`,

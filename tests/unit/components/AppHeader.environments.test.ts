@@ -31,7 +31,8 @@ describe(`AppHeader Environments Dropdown`, () => {
 					VAppBar: { template: `<div><slot /></div>` }, VMenu: { template: `<div><slot /></div>` }, VList: { template: `<div><slot /></div>` },
 					VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
 					VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
-					VIcon: true, VImg: true
+					VIcon: true, VImg: true,
+					VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` }
 				}
 			}
 		});
@@ -62,7 +63,8 @@ describe(`AppHeader Environments Dropdown`, () => {
 						VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
 						VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
 						VIcon: true,
-						VImg: true
+						VImg: true,
+						VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` }
 					}
 				}
 			});
