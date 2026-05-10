@@ -37,13 +37,6 @@ export function sanitizePageTitle(rawPageTitle: LabelString | null | undefined, 
  * @param {LabelString} [pageTitle] The document.title set by the web page (optional).
  * @returns {LabelString} The formatted application title.
  */
-export function getAppTitle(title: LabelString, version: AppVersion, _url?: DomainUrl, pageTitle?: LabelString): LabelString {
-	let output = `${title} :: ${version} ✨`;
-
-	// Add the page title if it's a non-empty, non-whitespace string
-	if (pageTitle?.trim()) {
-		output += ` — ${pageTitle.trim()}`;
-	}
-
-	return output;
+export function getAppTitle(title: LabelString, version: AppVersion, _url?: DomainUrl, _pageTitle?: LabelString): LabelString {
+	return `${version} | ${title}`;
 }

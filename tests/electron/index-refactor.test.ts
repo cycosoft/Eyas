@@ -1,6 +1,7 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { app, BrowserWindow, ipcMain, session, protocol, clipboard, type IpcMainEvent } from 'electron';
 import type { EyasPaths } from '@registry/eyas-core.js';
+import { EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
 
 type BrowserWindowConstructor = { new (): BrowserWindow };
 
@@ -213,7 +214,7 @@ describe(`index.ts refactoring unit tests`, () => {
 
 		windowService.handleResize(ctx);
 
-		expect(ctx.$currentViewport).toEqual([1024, 720]);
+		expect(ctx.$currentViewport).toEqual([1024, 768 - EYAS_HEADER_HEIGHT]);
 		expect(mockLayer.setBounds).toHaveBeenCalledWith({ x: 0, y: 0, width: 1024, height: 768 });
 		expect(ctx.setMenu).toHaveBeenCalled();
 	});
@@ -238,7 +239,7 @@ describe(`index.ts refactoring unit tests`, () => {
 
 		windowService.handleResize(ctx);
 
-		expect(mockLayer.setBounds).toHaveBeenCalledWith({ x: 0, y: 0, width: 1024, height: 48 }); // 48 is EYAS_HEADER_HEIGHT
+		expect(mockLayer.setBounds).toHaveBeenCalledWith({ x: 0, y: 0, width: 1024, height: EYAS_HEADER_HEIGHT });
 	});
 
 	test(`initElectronUi should orchestrate window startup`, async () => {
