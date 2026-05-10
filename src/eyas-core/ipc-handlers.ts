@@ -11,7 +11,8 @@ import type {
 	LaunchLinkPayload,
 	EnvironmentSelectedPayload,
 	SaveSettingPayload,
-	TestServerSetupPayload
+	TestServerSetupPayload,
+	TitleBarOverlayPayload
 } from '@registry/ipc.js';
 import type { IsActive, AppVersion, ViewportWidth, ViewportHeight, ChannelName, DomainUrl } from '@registry/primitives.js';
 
@@ -92,6 +93,15 @@ function initCoreIpcListeners(ctx: CoreContext): void {
 		ctx.updateService.installUpdate();
 	});
 	ipcMain.on(`request-update-ready-modal`, () => { ctx.uiEvent(`show-update-ready-modal`, true); });
+	ipcMain.on(`update-titlebar-overlay`, (_event, options: TitleBarOverlayPayload) => {
+		if (ctx.$appWindow && !ctx.$appWindow.isDestroyed()) {
+			ctx.$appWindow.setTitleBarOverlay({
+				color: options.color,
+				symbolColor: options.symbolColor,
+				height: 30
+			});
+		}
+	});
 }
 
 /**

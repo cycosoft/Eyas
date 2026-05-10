@@ -223,14 +223,23 @@ import {
 } from './AppHeader.logic.js';
 
 import AppHeaderOmniHub from './AppHeaderOmniHub.vue';
+import useModalsStore from '@/stores/modals.js';
 
 const { menu, activator, canGoBack, canGoForward, updateStatus, environments, currentEnvironment, tooltipVisible, tooltipText, cursorPos, appTitle } = toRefs(state);
+const modalsStore = useModalsStore();
 
 watch(menu, isOpen => {
 	if (!isOpen) {
 		delayedClose();
 		state.activeGroup = null;
 	}
+});
+
+watch(() => modalsStore.hasVisibleModals, hasModals => {
+	window.eyas?.send(`update-titlebar-overlay` as ChannelName, hasModals
+		? { color: `#1a1c1e`, symbolColor: `#ffffff` }
+		: { color: `#f7f9fb`, symbolColor: `#191c1e` }
+	);
 });
 
 onMounted(() => {

@@ -465,6 +465,28 @@ describe(`AppHeader`, () => {
 			expect(systemBar.classes()).toContain(`window-system-bar`);
 		});
 	});
+
+	describe(`window controls overlay dynamic color matching`, () => {
+		test(`sends update-titlebar-overlay with dark colors when a modal is opened`, async () => {
+			const modalsStore = useModalsStore();
+			mockSend.mockClear();
+			modalsStore.track(`test-modal`);
+			await wrapper.vm.$nextTick();
+			expect(mockSend).toHaveBeenCalledWith(`update-titlebar-overlay`, {
+				color: `#1a1c1e`, symbolColor: `#ffffff`
+			});
+		});
+
+		test(`sends update-titlebar-overlay with light colors when all modals are closed`, async () => {
+			const modalsStore = useModalsStore();
+			modalsStore.track(`test-modal`);
+			await wrapper.vm.$nextTick();
+			mockSend.mockClear();
+			modalsStore.untrack(`test-modal`);
+			await wrapper.vm.$nextTick();
+			expect(mockSend).toHaveBeenCalledWith(`update-titlebar-overlay`, {
+				color: `#f7f9fb`, symbolColor: `#191c1e`
+			});
+		});
+	});
 });
-
-

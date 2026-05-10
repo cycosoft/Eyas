@@ -44,7 +44,8 @@ export const VALID_SEND_CHANNELS = [
 	`open-devtools-test`,
 	`check-for-updates`,
 	`install-update`,
-	`request-update-ready-modal`
+	`request-update-ready-modal`,
+	`update-titlebar-overlay`
 ] as const;
 
 export const VALID_RECEIVE_CHANNELS = [
@@ -126,4 +127,12 @@ export type TestServerSetupPayload = {
 	useHttps: IsActive;
 	autoOpenBrowser: IsActive;
 	useCustomDomain: IsActive;
+};
+
+type ColorHex = string;
+
+/** Payload for the 'update-titlebar-overlay' IPC event */
+export type TitleBarOverlayPayload = {
+	color: ColorHex;
+	symbolColor: ColorHex;
 };
