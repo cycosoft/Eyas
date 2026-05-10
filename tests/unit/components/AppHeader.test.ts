@@ -40,7 +40,7 @@ describe(`AppHeader`, () => {
 					VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
 					VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
 					VIcon: true, VImg: true,
-					VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` }
+					VSystemBar: { template: `<div class="v-system-bar" v-bind="$attrs"><slot /></div>` }
 				}
 			}
 		});
@@ -76,7 +76,7 @@ describe(`AppHeader`, () => {
 					VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
 					VIcon: true,
 					VImg: true,
-					VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` }
+					VSystemBar: { template: `<div class="v-system-bar" v-bind="$attrs"><slot /></div>` }
 				}
 			}
 		});
@@ -434,7 +434,7 @@ describe(`AppHeader`, () => {
 						VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
 						VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
 						VIcon: true, VImg: true,
-						VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` }
+						VSystemBar: { template: `<div class="v-system-bar" v-bind="$attrs"><slot /></div>` }
 					}
 				}
 			});
@@ -458,6 +458,11 @@ describe(`AppHeader`, () => {
 			const systemBar = wrapper.find(`.v-system-bar`);
 			const titleSpan = systemBar.find(`span`);
 			expect(titleSpan.classes()).toContain(`system-bar-title`);
+		});
+
+		test(`applies window-system-bar class to the system bar for dragging support`, () => {
+			const systemBar = wrapper.find(`.v-system-bar`);
+			expect(systemBar.classes()).toContain(`window-system-bar`);
 		});
 	});
 });
