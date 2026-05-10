@@ -6,6 +6,27 @@ import useModalsStore from '@/stores/modals.js';
 import { state } from '@/components/AppHeader.logic.js';
 import type { WindowWithEyas, ChannelName, NavigationStatePayload } from '@registry/ipc.js';
 import type { AppHeaderVM, NavGroup, NavItem, NavActivateEvent } from '@registry/components.js';
+import type { GenericRecord, IsActive } from '@registry/primitives.js';
+
+import { ref } from 'vue';
+
+const mockIsDark = ref(false);
+vi.mock(`vuetify`, async importOriginal => {
+	// Cast required to bypass dynamic import type constraints in Mock context
+	const original = await importOriginal() as GenericRecord;
+	return {
+		...original,
+		useTheme: (): GenericRecord => ({
+			global: {
+				current: {
+					value: {
+						get dark(): IsActive { return mockIsDark.value; }
+					}
+				}
+			}
+		})
+	};
+});
 
 describe(`AppHeader`, () => {
 	let wrapper: VueWrapper;
@@ -19,11 +40,7 @@ describe(`AppHeader`, () => {
 		uiShownCallback = null;
 
 		// Reset module-level reactive state to prevent leaks
-		state.isHeaderHovered = false;
-		state.menu = false;
-		state.envMenu = false;
-		state.tooltipVisible = false;
-		state.tooltipText = `Click to Copy`;
+		Object.assign(state, { isHeaderHovered: false, menu: false, envMenu: false, tooltipVisible: false, tooltipText: `Click to Copy` });
 		(window as unknown as WindowWithEyas).eyas = {
 			send: mockSend,
 			receive: vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
@@ -69,14 +86,10 @@ describe(`AppHeader`, () => {
 		wrapper = mount(AppHeader, {
 			global: {
 				stubs: {
-					VAppBar: { template: `<div><slot /></div>` },
-					VMenu: { template: `<div><slot /></div>` },
-					VList: { template: `<div><slot /></div>` },
+					VAppBar: { template: `<div><slot /></div>` }, VMenu: { template: `<div><slot /></div>` }, VList: { template: `<div><slot /></div>` },
 					VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
 					VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
-					VIcon: true,
-					VImg: true,
-					VSystemBar: { template: `<div class="v-system-bar" v-bind="$attrs"><slot /></div>` }
+					VIcon: true, VImg: true, VSystemBar: { template: `<div class="v-system-bar" v-bind="$attrs"><slot /></div>` }
 				}
 			}
 		});
@@ -454,39 +467,34 @@ describe(`AppHeader`, () => {
 			expect(newVm.displayAppTitle).toBe(`EYAS :: 1.0.0 • GOOGLE`);
 		});
 
-		test(`applies system-bar-title class to the title span for styling/truncation`, () => {
+		test(`applies styling and dragging classes to the system bar`, () => {
 			const systemBar = wrapper.find(`.v-system-bar`);
-			const titleSpan = systemBar.find(`span`);
-			expect(titleSpan.classes()).toContain(`system-bar-title`);
-		});
-
-		test(`applies window-system-bar class to the system bar for dragging support`, () => {
-			const systemBar = wrapper.find(`.v-system-bar`);
+			expect(systemBar.find(`span`).classes()).toContain(`system-bar-title`);
 			expect(systemBar.classes()).toContain(`window-system-bar`);
 		});
 	});
-
 	describe(`window controls overlay dynamic color matching`, () => {
-		test(`sends update-titlebar-overlay with dark colors when a modal is opened`, async () => {
+		test(`updates overlay colors on modal and theme transitions`, async () => {
 			const modalsStore = useModalsStore();
 			mockSend.mockClear();
 			modalsStore.track(`test-modal`);
 			await wrapper.vm.$nextTick();
-			expect(mockSend).toHaveBeenCalledWith(`update-titlebar-overlay`, {
-				color: `#1a1c1e`, symbolColor: `#ffffff`
-			});
-		});
-
-		test(`sends update-titlebar-overlay with light colors when all modals are closed`, async () => {
-			const modalsStore = useModalsStore();
-			modalsStore.track(`test-modal`);
-			await wrapper.vm.$nextTick();
+			expect(mockSend).toHaveBeenCalledWith(`update-titlebar-overlay`, { color: `#949597`, symbolColor: `#ffffff` });
 			mockSend.mockClear();
 			modalsStore.untrack(`test-modal`);
 			await wrapper.vm.$nextTick();
-			expect(mockSend).toHaveBeenCalledWith(`update-titlebar-overlay`, {
-				color: `#f7f9fb`, symbolColor: `#191c1e`
-			});
+			expect(mockSend).toHaveBeenCalledWith(`update-titlebar-overlay`, { color: `#f7f9fb`, symbolColor: `#191c1e` });
+			mockSend.mockClear();
+			mockIsDark.value = true;
+			await wrapper.vm.$nextTick();
+			expect(mockSend).toHaveBeenCalledWith(`update-titlebar-overlay`, { color: `#212121`, symbolColor: `#ffffff` });
+			mockSend.mockClear();
+			modalsStore.track(`test-modal`);
+			await wrapper.vm.$nextTick();
+			expect(mockSend).toHaveBeenCalledWith(`update-titlebar-overlay`, { color: `#141414`, symbolColor: `#ffffff` });
+			modalsStore.untrack(`test-modal`);
+			mockIsDark.value = false;
+			await wrapper.vm.$nextTick();
 		});
 	});
 });

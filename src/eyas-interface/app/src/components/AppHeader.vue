@@ -211,7 +211,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, watch, toRefs } from 'vue';
+import { onMounted, watch, toRefs, computed } from 'vue';
+import { useTheme } from 'vuetify';
 import type { ChannelName } from '@registry/primitives.js';
 import {
 	groups, state, browserControls, isControlDisabled, handleBrowserControlClick,
@@ -227,6 +228,18 @@ import useModalsStore from '@/stores/modals.js';
 
 const { menu, activator, canGoBack, canGoForward, updateStatus, environments, currentEnvironment, tooltipVisible, tooltipText, cursorPos, appTitle } = toRefs(state);
 const modalsStore = useModalsStore();
+const theme = useTheme();
+
+const overlayColors = computed(() => {
+	const isDark = theme.global.current.value.dark;
+	if (modalsStore.hasVisibleModals) {
+		return { color: isDark ? `#141414` : `#949597`, symbolColor: `#ffffff` };
+	}
+	if (isDark) {
+		return { color: `#212121`, symbolColor: `#ffffff` };
+	}
+	return { color: `#f7f9fb`, symbolColor: `#191c1e` };
+});
 
 watch(menu, isOpen => {
 	if (!isOpen) {
@@ -235,12 +248,9 @@ watch(menu, isOpen => {
 	}
 });
 
-watch(() => modalsStore.hasVisibleModals, hasModals => {
-	window.eyas?.send(`update-titlebar-overlay` as ChannelName, hasModals
-		? { color: `#1a1c1e`, symbolColor: `#ffffff` }
-		: { color: `#f7f9fb`, symbolColor: `#191c1e` }
-	);
-});
+watch(overlayColors, colors => {
+	window.eyas?.send(`update-titlebar-overlay` as ChannelName, colors);
+}, { immediate: true });
 
 onMounted(() => {
 	window.eyas?.receive(`ui-shown` as ChannelName, triggerOpen);
@@ -250,35 +260,13 @@ onMounted(() => {
 
 // expose for testing
 defineExpose({
-	menu,
-	tooltipVisible,
-	tooltipText,
-	cursorPos,
-	envMenu: toRefs(state).envMenu,
-	menuItems: toRefs(state).menuItems,
-	activator: toRefs(state).activator,
-	canGoBack,
-	canGoForward,
-	activate,
-	onMouseEnter,
-	onItemClick,
-	onBrowserControlClick: handleBrowserControlClick,
-	goBack,
-	goForward,
-	reload,
-	goHome,
-	handleBroadcastClick,
-	displayUrlInfo,
-	environments,
-	currentEnvironment,
-	activeEnvironmentTitle,
-	selectEnvironment,
-	handleHeaderMouseEnter,
-	handleHeaderMouseLeave,
-	handleUrlClick,
-	resetTooltipText,
-	appTitle,
-	displayAppTitle
+	menu, tooltipVisible, tooltipText, cursorPos, canGoBack, canGoForward,
+	activate, onMouseEnter, onItemClick, onBrowserControlClick: handleBrowserControlClick,
+	goBack, goForward, reload, goHome, handleBroadcastClick, displayUrlInfo,
+	environments, currentEnvironment, activeEnvironmentTitle, selectEnvironment,
+	handleHeaderMouseEnter, handleHeaderMouseLeave, handleUrlClick, resetTooltipText,
+	appTitle, displayAppTitle, envMenu: toRefs(state).envMenu,
+	menuItems: toRefs(state).menuItems, activator: toRefs(state).activator
 });
 </script>
 
