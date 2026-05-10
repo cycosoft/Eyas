@@ -453,6 +453,12 @@ describe(`AppHeader`, () => {
 			const newVm = wrapper.vm as unknown as AppHeaderVM;
 			expect(newVm.displayAppTitle).toBe(`EYAS :: 1.0.0 • GOOGLE`);
 		});
+
+		test(`applies system-bar-title class to the title span for styling/truncation`, () => {
+			const systemBar = wrapper.find(`.v-system-bar`);
+			const titleSpan = systemBar.find(`span`);
+			expect(titleSpan.classes()).toContain(`system-bar-title`);
+		});
 	});
 });
 
