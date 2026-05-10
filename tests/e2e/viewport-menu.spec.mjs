@@ -4,7 +4,7 @@ import {
 	exitEyas,
 	getUiView,
 	ensureEnvironmentSelected,
-	getAppWindowContentSize
+	getTestLayerBounds
 } from './eyas-utils.mjs';
 
 test.describe(`Viewport Menu Interaction`, () => {
@@ -62,13 +62,13 @@ test.describe(`Viewport Menu Interaction`, () => {
 		await expect(mobileItem).toBeVisible({ timeout: 5000 });
 		await mobileItem.click();
 
-		// 4. Verify the window size
-		// Note: The content size will be 360x640.
-		// The actual window size will be slightly larger due to the header (78px).
-		// We allow both 718 and 720 to accommodate platform-specific minimum size constraints on Windows.
+		// 4. Verify the test layer is exactly the requested viewport dimensions.
+		// Checking test layer bounds directly is more meaningful than window content size
+		// because it validates what the tester actually sees, independent of the 78px header
+		// and any HiDPI pixel rounding applied by the OS to setContentSize().
 		await expect.poll(async () => {
-			const [width, height] = await getAppWindowContentSize(electronApp);
-			return width === 360 && (height === 718 || height === 720);
+			const bounds = await getTestLayerBounds(electronApp);
+			return bounds.width === 360 && bounds.height === 640;
 		}, { timeout: 10000 }).toBe(true);
 	});
 });

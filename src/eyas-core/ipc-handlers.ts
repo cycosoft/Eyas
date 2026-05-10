@@ -145,7 +145,13 @@ function initDevToolsIpcListeners(ctx: CoreContext): void {
  */
 function initViewportIpcListeners(ctx: CoreContext): void {
 	ipcMain.on(`set-viewport`, (_event, [width, height]: [ViewportWidth, ViewportHeight]) => {
+		// Store the exact requested dimensions as the canonical viewport.
+		// setContentSize can round by ~2px on HiDPI displays; setting testLayer
+		// directly here preserves the exact size the user asked for.
+		ctx.$currentViewport[0] = width;
+		ctx.$currentViewport[1] = height;
 		ctx.$appWindow?.setContentSize(width, height + EYAS_HEADER_HEIGHT);
+		ctx.$testLayer?.setBounds({ x: 0, y: EYAS_HEADER_HEIGHT, width, height });
 	});
 }
 

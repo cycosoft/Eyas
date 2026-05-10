@@ -61,7 +61,10 @@ test.describe(`UI Layer Expansion`, () => {
 		await expect.poll(async () => {
 			const currentHeight = await getUiLayerHeight(electronApp);
 			const [, windowHeight] = await getAppWindowContentSize(electronApp);
-			return currentHeight === windowHeight && windowHeight === newHeight;
+			// UI layer must track the actual window height.
+			// Windows DPI scaling may round setContentSize by ±2px, so we
+			// check that the window grew (is near newHeight) rather than exact equality.
+			return currentHeight === windowHeight && Math.abs(windowHeight - newHeight) <= 2;
 		}, {
 			message: `UI layer did not resize with window while expanded`,
 			timeout: 5000

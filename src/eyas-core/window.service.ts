@@ -214,29 +214,35 @@ export const windowService: WindowService = {
 		if (!$appWindow || $appWindow.isDestroyed()) { return; }
 
 		const [newWidth, newHeight] = $appWindow.getContentSize();
+		const newViewportHeight = newHeight - EYAS_HEADER_HEIGHT;
 
-		// update the viewport state
-		$currentViewport[0] = newWidth;
-		$currentViewport[1] = newHeight - EYAS_HEADER_HEIGHT;
+		// Only update $currentViewport on genuine manual resizes.
+		// HiDPI displays round setContentSize() by ~2px — a synthetic resize that
+		// must not override the exact viewport the user selected.
+		const isDpiRounding =
+			Math.abs(newWidth - $currentViewport[0]) <= 2 &&
+			Math.abs(newViewportHeight - $currentViewport[1]) <= 2;
 
-		// Resize the UI layer if it exists
+		if (!isDpiRounding) {
+			$currentViewport[0] = newWidth;
+			$currentViewport[1] = newViewportHeight;
+		}
+
+		// Resize the UI layer to match the actual window (always uses real window size)
 		if ($eyasLayer && !$eyasLayer.webContents.isDestroyed()) {
-			// determine if the UI layer is currently active (full screen) or passive (header only)
-			// by comparing its current height to the known header height constant.
 			const currentLayerHeight = $eyasLayer.getBounds().height;
 			const isActive = currentLayerHeight > EYAS_HEADER_HEIGHT;
 			const newLayerHeight = isActive ? newHeight : EYAS_HEADER_HEIGHT;
-
 			$eyasLayer.setBounds({ x: 0, y: 0, width: newWidth, height: newLayerHeight });
 		}
 
-		// Resize the test content layer if it exists
+		// Resize the test layer to the canonical $currentViewport (exact, not DPI-rounded)
 		if ($testLayer && !$testLayer.webContents.isDestroyed()) {
 			$testLayer.setBounds({
 				x: 0,
 				y: EYAS_HEADER_HEIGHT,
-				width: newWidth,
-				height: newHeight - EYAS_HEADER_HEIGHT
+				width: $currentViewport[0],
+				height: $currentViewport[1]
 			});
 		}
 
