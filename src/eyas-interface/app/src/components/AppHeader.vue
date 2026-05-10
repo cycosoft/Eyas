@@ -2,11 +2,12 @@
 	<v-system-bar
 		height="30"
 		data-qa="window-system-bar"
-		class="window-system-bar px-4 d-flex align-center justify-start bg-surface border-b"
+		class="window-system-bar px-4 d-flex align-center justify-start border-b"
+		:style="{ '--system-bar-bg': overlayColors.color }"
 		@mouseenter="handleHeaderMouseEnter"
 		@mouseleave="handleHeaderMouseLeave"
 	>
-		<span class="system-bar-title text-disabled">{{ displayAppTitle }}</span>
+		<span :class="['system-bar-title', modalsStore.hasVisibleModals ? 'scrim-active-text' : 'text-disabled']">{{ displayAppTitle }}</span>
 	</v-system-bar>
 	<v-app-bar
 		density="compact"
@@ -277,6 +278,7 @@ defineExpose({
 .v-btn--active, .v-list-item--active { background-color: rgba(var(--v-theme-primary), 0.1) !important; color: rgb(var(--v-theme-primary)) !important; }
 .blink-animation { animation: blink 1s infinite; }
 @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-.window-system-bar { -webkit-app-region: drag; user-select: none; --v-border-opacity: 0.06 !important; }
+.window-system-bar { -webkit-app-region: drag; user-select: none; --v-border-opacity: 0.06 !important; background-color: var(--system-bar-bg) !important; transition: background-color 0.15s ease; }
 .system-bar-title { font-size: 0.75rem; font-weight: 800; user-select: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.scrim-active-text { color: #ededed !important; }
 </style>

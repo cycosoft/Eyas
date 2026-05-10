@@ -17,13 +17,7 @@ vi.mock(`vuetify`, async importOriginal => {
 	return {
 		...original,
 		useTheme: (): GenericRecord => ({
-			global: {
-				current: {
-					value: {
-						get dark(): IsActive { return mockIsDark.value; }
-					}
-				}
-			}
+			global: { current: { value: { get dark(): IsActive { return mockIsDark.value; } } } }
 		})
 	};
 });
@@ -34,10 +28,8 @@ describe(`AppHeader`, () => {
 	let mockSend: Mock;
 
 	beforeEach(() => {
-		vi.useFakeTimers();
-		setActivePinia(createPinia());
-		mockSend = vi.fn();
-		uiShownCallback = null;
+		vi.useFakeTimers(); setActivePinia(createPinia());
+		mockSend = vi.fn(); uiShownCallback = null;
 
 		// Reset module-level reactive state to prevent leaks
 		Object.assign(state, { isHeaderHovered: false, menu: false, envMenu: false, tooltipVisible: false, tooltipText: `Click to Copy` });
@@ -64,9 +56,8 @@ describe(`AppHeader`, () => {
 	});
 
 	afterEach(() => {
-		if (wrapper) { wrapper.unmount(); }
-		vi.clearAllMocks();
-		vi.useRealTimers();
+		if (wrapper) wrapper.unmount();
+		vi.clearAllMocks(); vi.useRealTimers();
 	});
 
 	test(`renders without crashing`, () => { expect(wrapper.exists()).toBe(true); });
@@ -94,20 +85,16 @@ describe(`AppHeader`, () => {
 			}
 		});
 
-		if (navCallback) {
-			(navCallback as any)({ canGoBack: true, canGoForward: true }); // eslint-disable-line @typescript-eslint/no-explicit-any
-		}
+		if (navCallback) (navCallback as any)({ canGoBack: true, canGoForward: true }); // eslint-disable-line @typescript-eslint/no-explicit-any
 		await wrapper.vm.$nextTick();
 
 		const newVm = wrapper.vm as unknown as AppHeaderVM;
-		expect(newVm.canGoBack).toBe(true);
-		expect(newVm.canGoForward).toBe(true);
+		expect(newVm.canGoBack).toBe(true); expect(newVm.canGoForward).toBe(true);
 	});
 
 	test(`renders logo instead of text for 'File' menu`, () => {
 		const fileBtn = wrapper.findAll(`button`)[0];
-		expect(fileBtn.find(`v-img-stub`).exists()).toBe(true);
-		expect(fileBtn.text()).not.toContain(`File`);
+		expect(fileBtn.find(`v-img-stub`).exists()).toBe(true); expect(fileBtn.text()).not.toContain(`File`);
 	});
 
 	describe(`menu activation`, () => {
@@ -467,10 +454,22 @@ describe(`AppHeader`, () => {
 			expect(newVm.displayAppTitle).toBe(`EYAS :: 1.0.0 • GOOGLE`);
 		});
 
-		test(`applies styling and dragging classes to the system bar`, () => {
+		test(`applies dragging and reactive classes to system bar`, async () => {
+			const modalsStore = useModalsStore();
 			const systemBar = wrapper.find(`.v-system-bar`);
-			expect(systemBar.find(`span`).classes()).toContain(`system-bar-title`);
+			const titleSpan = systemBar.find(`span`);
+			expect(titleSpan.classes()).toContain(`system-bar-title`);
+			expect(titleSpan.classes()).toContain(`text-disabled`);
 			expect(systemBar.classes()).toContain(`window-system-bar`);
+
+			modalsStore.track(`test-modal`);
+			await wrapper.vm.$nextTick();
+			expect(titleSpan.classes()).toContain(`scrim-active-text`);
+			expect(titleSpan.classes()).not.toContain(`text-disabled`);
+
+			modalsStore.untrack(`test-modal`);
+			await wrapper.vm.$nextTick();
+			expect(titleSpan.classes()).toContain(`text-disabled`);
 		});
 	});
 	describe(`window controls overlay dynamic color matching`, () => {
