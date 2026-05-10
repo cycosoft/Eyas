@@ -84,7 +84,7 @@ export type NavigationStatePayload = {
 	domainsHash?: HashString | null;
 	testNetworkEnabled?: IsActive;
 	appTitle?: string;
-	appName?: string;
+	configTitle?: string;
 	appVersion?: string;
 	pageTitle?: string;
 };

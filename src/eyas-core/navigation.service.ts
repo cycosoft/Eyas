@@ -280,7 +280,7 @@ async function updateNavigationState(ctx: CoreContext): Promise<void> {
 		domainsHash: ctx.$config?.domains ? hashDomains(ctx.$config.domains) : null,
 		testNetworkEnabled: ctx.$testNetworkEnabled,
 		appTitle: getAppTitleWithContext(ctx),
-		appName: titleParts.appName,
+		configTitle: titleParts.configTitle,
 		appVersion: titleParts.appVersion,
 		pageTitle: titleParts.pageTitle
 	});

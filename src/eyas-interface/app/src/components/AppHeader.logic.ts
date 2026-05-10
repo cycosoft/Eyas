@@ -34,8 +34,8 @@ export const state = reactive({
 	domainsHash: null as HashString | null,
 	isHeaderHovered: false,
 	testNetworkEnabled: true,
-	appTitle: `Eyas`,
-	appName: `Eyas`,
+	appTitle: ``,
+	configTitle: ``,
 	appVersion: ``,
 	pageTitle: ``
 });
@@ -189,7 +189,7 @@ export function handleNavigationUpdate(data: unknown): void {
 
 	const keys: Array<keyof typeof state> = [
 		`currentUrl`, `environments`, `currentEnvironment`, `projectId`,
-		`domainsHash`, `testNetworkEnabled`, `appTitle`, `appName`, `appVersion`, `pageTitle`
+		`domainsHash`, `testNetworkEnabled`, `appTitle`, `configTitle`, `appVersion`, `pageTitle`
 	];
 	for (const key of keys) {
 		if (payload[key] !== undefined) {
@@ -260,21 +260,21 @@ export function toggleNetwork(): void {
 
 /**
  * Computes the system-bar title, converting to uppercase and stripping any emojis.
- * Built from raw components: appName, appVersion, and pageTitle.
+ * Built from raw components: configTitle, appVersion, and pageTitle.
  */
 export const displayAppTitle = computed(() => {
-	const name = state.appName ? state.appName.trim().toUpperCase() : ``;
+	const title = state.configTitle ? state.configTitle.trim().toUpperCase() : ``;
 	const version = state.appVersion ? state.appVersion.trim().toUpperCase() : ``;
 	const page = state.pageTitle ? state.pageTitle.trim().toUpperCase() : ``;
 
-	let title = name;
+	let result = title;
 	if (version) {
-		title += ` :: ${version}`;
+		result += ` :: ${version}`;
 	}
 	if (page) {
-		title += ` — ${page}`;
+		result += ` • ${page}`;
 	}
-	return title;
+	return result;
 });
 
 

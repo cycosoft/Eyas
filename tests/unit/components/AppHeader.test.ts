@@ -416,7 +416,7 @@ describe(`AppHeader`, () => {
 			expect(systemBar.exists()).toBe(true);
 
 			const titleSpan = systemBar.find(`span`);
-			expect(titleSpan.text()).toBe(`EYAS`);
+			expect(titleSpan.text()).toBe(``);
 
 			// update navigation state and check if it updates the title
 			let navCallback: ((payload: NavigationStatePayload) => void) | null = null;
@@ -443,7 +443,7 @@ describe(`AppHeader`, () => {
 				navCallback({
 					canGoBack: true,
 					canGoForward: true,
-					appName: `Eyas`,
+					configTitle: `Eyas`,
 					appVersion: `1.0.0`,
 					pageTitle: `Google`
 				});
@@ -451,7 +451,7 @@ describe(`AppHeader`, () => {
 			await wrapper.vm.$nextTick();
 
 			const newVm = wrapper.vm as unknown as AppHeaderVM;
-			expect(newVm.displayAppTitle).toBe(`EYAS :: 1.0.0 — GOOGLE`);
+			expect(newVm.displayAppTitle).toBe(`EYAS :: 1.0.0 • GOOGLE`);
 		});
 	});
 });

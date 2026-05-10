@@ -60,7 +60,7 @@ export function getAppTitleWithContext(ctx: CoreContext, rawPageTitle?: AppTitle
 }
 
 export type AppTitleParts = {
-	appName: string;
+	configTitle: string;
 	appVersion: string;
 	pageTitle: string;
 };
@@ -69,7 +69,7 @@ export type AppTitleParts = {
  * Calculates the individual application title parts with current context.
  * @param ctx The core context.
  * @param rawPageTitle The raw page title from the browser.
- * @returns An object containing appName, appVersion, and pageTitle.
+ * @returns An object containing configTitle, appVersion, and pageTitle.
  */
 export function getAppTitlePartsWithContext(ctx: CoreContext, rawPageTitle?: AppTitle): AppTitleParts {
 	const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
@@ -89,7 +89,7 @@ export function getAppTitlePartsWithContext(ctx: CoreContext, rawPageTitle?: App
 	const config = ctx.$config;
 
 	return {
-		appName: (config && config.title) || ``,
+		configTitle: (config && config.title) || ``,
 		appVersion: (config && config.version) || ``,
 		pageTitle: sanitized || ``
 	};

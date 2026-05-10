@@ -160,7 +160,7 @@ describe(`navigation.service.ts unit tests`, () => {
 	test(`getAppTitlePartsWithContext should return structured title parts`, () => {
 		const parts = navigationService.getAppTitlePartsWithContext(mockCtx, `Page Title`);
 		expect(parts).toEqual({
-			appName: ``,
+			configTitle: ``,
 			appVersion: ``,
 			pageTitle: `Page Title`
 		});
