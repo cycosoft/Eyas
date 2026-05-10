@@ -191,7 +191,14 @@ describe(`index.ts refactoring unit tests`, () => {
 			getAppTitle: vi.fn().mockReturnValue(`Test`)
 		} as unknown as CoreContext;
 		windowService.createAppWindow(ctx);
-		expect(BrowserWindow).toHaveBeenCalled();
+		expect(BrowserWindow).toHaveBeenCalledWith(expect.objectContaining({
+			titleBarStyle: `hidden`,
+			titleBarOverlay: expect.objectContaining({
+				color: `#f7f9fb`,
+				symbolColor: `#191c1e`,
+				height: 30
+			})
+		}));
 	});
 
 	test(`handleResize should update viewport and bounds`, () => {

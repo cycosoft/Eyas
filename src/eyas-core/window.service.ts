@@ -1,19 +1,20 @@
 import { BrowserWindow, WebContentsView } from 'electron';
 import type { CoreContext, WindowService } from '@registry/eyas-core.js';
 import { MP_EVENTS } from './metrics-events.js';
-import type { TimestampMS } from '@registry/primitives.js';
+import type { TimestampMS, GenericRecord } from '@registry/primitives.js';
 import { EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
 
-/**
- * Service for managing application windows and layers.
- */
+// Service for managing application windows and layers.
 export const windowService: WindowService = {
-	/**
-	 * Creates the main application window.
-	 * @param ctx The core context.
-	 */
+	// Creates the main application window.
 	createAppWindow(ctx: CoreContext): void {
 		const { $currentViewport, $paths, $config } = ctx;
+
+		const overlayConfig = {
+			color: `#f7f9fb`,
+			symbolColor: `#191c1e`,
+			height: 30
+		};
 
 		const window = new BrowserWindow({
 			useContentSize: true,
@@ -22,10 +23,15 @@ export const windowService: WindowService = {
 			title: ctx.getAppTitle(),
 			icon: $paths.icon,
 			show: false,
+			titleBarStyle: `hidden`,
+			titleBarOverlay: overlayConfig,
 			webPreferences: {
 				partition: `persist:${$config?.meta.testId}`
 			}
 		});
+
+		// Expose WCO configuration for E2E testing
+		(window as unknown as GenericRecord)._titleBarOverlayConfig = overlayConfig;
 
 		ctx.setAppWindow(window);
 
@@ -47,11 +53,7 @@ export const windowService: WindowService = {
 		});
 	},
 
-	/**
-	 * Creates a splash screen window.
-	 * @param ctx The core context.
-	 * @returns The created splash screen window.
-	 */
+	// Creates a splash screen window.
 	createSplashScreen(ctx: CoreContext): BrowserWindow {
 		const { $config } = ctx;
 		const isDev = process.argv.includes(`--dev`);
@@ -84,12 +86,7 @@ export const windowService: WindowService = {
 		return splashScreen;
 	},
 
-	/**
-	 * Initializes the Eyas UI layer as a WebContentsView.
-	 * @param ctx The core context.
-	 * @param splashScreen The splash screen window.
-	 * @param splashVisible The timestamp when the splash screen became visible.
-	 */
+	// Initializes the Eyas UI layer as a WebContentsView.
 	initEyasLayer(ctx: CoreContext, splashScreen: BrowserWindow, splashVisible: TimestampMS): void {
 		const { $appWindow, $paths, $config } = ctx;
 		if (!$appWindow) { return; }
