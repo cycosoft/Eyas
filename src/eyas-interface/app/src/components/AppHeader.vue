@@ -11,6 +11,7 @@
 	</v-system-bar>
 	<v-app-bar
 		density="compact"
+		flat
 		data-qa="app-header"
 		class="app-header border-t"
 		@mouseenter="handleHeaderMouseEnter"
@@ -282,5 +283,5 @@ defineExpose({
 .window-system-bar { -webkit-app-region: drag; user-select: none; background-color: var(--system-bar-bg) !important; }
 .system-bar-title { font-size: 0.75rem; font-weight: 800; user-select: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .scrim-active-text { color: #ededed !important; }
-.app-header { --v-border-opacity: 0.06 !important; }
+.app-header { --v-border-opacity: 0.06 !important; box-shadow: none !important; }
 </style>
