@@ -58,7 +58,7 @@ export function updateViewports(viewports: Viewport[], currentWidth: ViewportWid
 
 	const submenu: NavItem[] = [];
 
-	const tolerance = 2;
+	const tolerance = 5;
 	const isMatched = viewports.some(v => Math.abs(v.width - currentWidth) <= tolerance && Math.abs(v.height - currentHeight) <= tolerance);
 
 	if (!isMatched) {

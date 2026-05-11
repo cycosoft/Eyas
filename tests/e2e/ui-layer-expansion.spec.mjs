@@ -3,7 +3,8 @@ import {
 	launchEyas,
 	exitEyas,
 	getUiView,
-	getUiLayerHeight,
+	getUiLayerBounds,
+	getTestLayerBounds,
 	getAppWindowContentSize,
 	ensureEnvironmentSelected
 } from './eyas-utils.mjs';
@@ -23,32 +24,58 @@ test.describe(`UI Layer Expansion`, () => {
 		await exitEyas(electronApp);
 	});
 
-	test(`UI layer should expand to full window height when a menu is opened`, async () => {
+	test(`UI layer and Test layer dimensions must strictly adhere to decoupling rules`, async () => {
 		// 1. Clear the environment modal if it's visible
 		await ensureEnvironmentSelected(uiPage);
 
-		// 2. Check initial height (should be header height when no modals are open)
-		await expect.poll(async () => await getUiLayerHeight(electronApp), {
-			message: `UI layer did not collapse to header height after environment selection`,
-			timeout: 5000
-		}).toBe(EYAS_HEADER_HEIGHT);
+		// 2. Validate initial COLLAPSED state dimensions:
+		// - UI Layer width should equal actual window content width
+		// - UI Layer height should equal EYAS_HEADER_HEIGHT (78)
+		// - Test Layer dimensions should equal canonical viewport (1024x768)
+		await expect.poll(async () => {
+			const [windowWidth] = await getAppWindowContentSize(electronApp);
+			const uiBounds = await getUiLayerBounds(electronApp);
+			const testBounds = await getTestLayerBounds(electronApp);
+
+			return (
+				uiBounds.width === windowWidth &&
+				uiBounds.height === EYAS_HEADER_HEIGHT &&
+				testBounds.width === 1024 &&
+				testBounds.height === 768
+			);
+		}, {
+			message: `Initial collapsed layer dimensions are incorrect`,
+			timeout: 10000
+		}).toBe(true);
 
 		// 3. Click a menu button to expand the UI
 		const fileMenuBtn = uiPage.locator(`[data-qa="btn-nav-group-file"]`);
 		await expect(fileMenuBtn).toBeVisible();
 		await fileMenuBtn.click();
 
-		// 3. Verify the UI layer height matches the full window content height
+		// 4. Validate EXPANDED state dimensions:
+		// - UI Layer width should equal actual window content width
+		// - UI Layer height should equal actual window content height (modal covers full window)
+		// - Test Layer dimensions should remain at canonical viewport (1024x768)
 		await expect.poll(async () => {
-			const currentHeight = await getUiLayerHeight(electronApp);
-			const [, windowHeight] = await getAppWindowContentSize(electronApp);
-			return currentHeight === windowHeight;
+			const [windowWidth, windowHeight] = await getAppWindowContentSize(electronApp);
+			const uiBounds = await getUiLayerBounds(electronApp);
+			const testBounds = await getTestLayerBounds(electronApp);
+
+			return (
+				uiBounds.width === windowWidth &&
+				uiBounds.height === windowHeight &&
+				testBounds.width === 1024 &&
+				testBounds.height === 768
+			);
 		}, {
-			message: `UI layer did not expand to full window height`,
+			message: `Expanded state layer dimensions are incorrect`,
 			timeout: 5000
 		}).toBe(true);
 
-		// 4. Resize the window and verify the UI layer resizes with it
+		// 5. Resize the window and verify that both layers track the resize correctly:
+		// - UI Layer must stretch to match the new window width and height
+		// - Test Layer must ignore the DPI-rounding scale drift and retain canonical 1024x768
 		const [oldWidth, oldHeight] = await getAppWindowContentSize(electronApp);
 		const newWidth = oldWidth + 100;
 		const newHeight = oldHeight + 100;
@@ -59,14 +86,19 @@ test.describe(`UI Layer Expansion`, () => {
 		}, { newWidth, newHeight });
 
 		await expect.poll(async () => {
-			const currentHeight = await getUiLayerHeight(electronApp);
-			const [, windowHeight] = await getAppWindowContentSize(electronApp);
-			// UI layer must track the actual window height.
-			// Windows DPI scaling may round setContentSize by ±2px, so we
-			// check that the window grew (is near newHeight) rather than exact equality.
-			return currentHeight === windowHeight && Math.abs(windowHeight - newHeight) <= 2;
+			const [windowWidth, windowHeight] = await getAppWindowContentSize(electronApp);
+			const uiBounds = await getUiLayerBounds(electronApp);
+			const testBounds = await getTestLayerBounds(electronApp);
+
+			return (
+				uiBounds.width === windowWidth &&
+				uiBounds.height === windowHeight &&
+				testBounds.width === windowWidth &&
+				testBounds.height === windowHeight - EYAS_HEADER_HEIGHT &&
+				Math.abs(windowHeight - newHeight) <= 5 // allow for OS rounding threshold
+			);
 		}, {
-			message: `UI layer did not resize with window while expanded`,
+			message: `Resized state layer dimensions did not align with decoupling rules`,
 			timeout: 5000
 		}).toBe(true);
 	});

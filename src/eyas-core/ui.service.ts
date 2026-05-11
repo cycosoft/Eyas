@@ -17,13 +17,14 @@ export const uiService: UIService = {
 		if (!ctx.$eyasLayer) { return; }
 
 		if (enable) {
-			// restore the layer to full size, synced to the current window dimensions.
-			// this ensures the modal is centered and the scrim covers the full viewport.
+			// Restore the layer to full size, synced to the actual native window content dimensions.
+			// This ensures the modal is centered and the scrim covers the full viewport without gaps.
+			const [winWidth, winHeight] = ctx.$appWindow?.getContentSize() || [ctx.$currentViewport[0], ctx.$currentViewport[1] + EYAS_HEADER_HEIGHT];
 			ctx.$eyasLayer.setBounds({
 				x: 0,
 				y: 0,
-				width: ctx.$currentViewport[0],
-				height: ctx.$currentViewport[1] + EYAS_HEADER_HEIGHT
+				width: winWidth,
+				height: winHeight
 			});
 
 			// give the layer focus
@@ -38,10 +39,13 @@ export const uiService: UIService = {
 			// if requested to shrink immediately OR if there are no animations to wait for
 			// (we default to waiting for the renderer to send 'hide-ui' when it's ready)
 			if (forceImmediate) {
-				// shrink the layer to header height so the persistent header remains visible,
-				// while the content view below receives all mouse events.
-				// the WebContentsView remains loaded and can still receive IPC messages.
-				ctx.$eyasLayer.setBounds({ x: 0, y: 0, width: ctx.$currentViewport[0], height: EYAS_HEADER_HEIGHT });
+				const [winWidth] = ctx.$appWindow?.getContentSize() || [ctx.$currentViewport[0]];
+				ctx.$eyasLayer.setBounds({
+					x: 0,
+					y: 0,
+					width: winWidth,
+					height: EYAS_HEADER_HEIGHT
+				});
 
 				// notify renderer that the layer has collapsed
 				ctx.$eyasLayer.webContents.send(`ui-hidden`);

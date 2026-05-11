@@ -106,10 +106,11 @@ export const windowService: WindowService = {
 		$appWindow.contentView.addChildView(layer);
 
 		// set the initial bounds
+		const [winWidth] = $appWindow.getContentSize();
 		layer.setBounds({
 			x: 0,
 			y: 0,
-			width: ctx.$currentViewport[0],
+			width: winWidth,
 			height: EYAS_HEADER_HEIGHT
 		});
 
@@ -220,8 +221,8 @@ export const windowService: WindowService = {
 		// HiDPI displays round setContentSize() by ~2px — a synthetic resize that
 		// must not override the exact viewport the user selected.
 		const isDpiRounding =
-			Math.abs(newWidth - $currentViewport[0]) <= 2 &&
-			Math.abs(newViewportHeight - $currentViewport[1]) <= 2;
+			Math.abs(newWidth - $currentViewport[0]) <= 5 &&
+			Math.abs(newViewportHeight - $currentViewport[1]) <= 5;
 
 		if (!isDpiRounding) {
 			$currentViewport[0] = newWidth;

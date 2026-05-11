@@ -308,6 +308,27 @@ export async function getUiLayerHeight(electronApp) {
 	}
 	return 0;
 }
+ 
+ /**
+  * Gets the current bounds of the UI layer (the second WebContentsView).
+  * @param {import('@playwright/test').ElectronApplication} electronApp
+  * @returns {Promise<{x: number, y: number, width: number, height: number}>}
+  */
+ export async function getUiLayerBounds(electronApp) {
+ 	for (let i = 0; i < 20; i++) {
+ 		const bounds = await electronApp.evaluate(({ BrowserWindow }) => {
+ 			const window = BrowserWindow.getAllWindows()[0];
+ 			if (window?.contentView?.children?.length > 1) {
+ 				const b = window.contentView.children[1].getBounds();
+ 				return { x: b.x, y: b.y, width: b.width, height: b.height };
+ 			}
+ 			return null;
+ 		});
+ 		if (bounds && bounds.width > 0) return bounds;
+ 		await new Promise(resolve => setTimeout(resolve, 250));
+ 	}
+ 	return { x: 0, y: 0, width: 0, height: 0 };
+ }
 
 /**
  * Gets the current bounds of the test layer (the first WebContentsView).

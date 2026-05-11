@@ -29,19 +29,17 @@ test.describe(`Test Layer Dimensions`, () => {
 			return testLayerBounds.width;
 		}, { timeout: 10000 }).toBeGreaterThan(0);
 
-		// Polling wait for dimensions to match
+		// Polling wait for dimensions to match the initial default viewport (1024x768)
 		await expect.poll(async () => {
-			[windowWidth, windowHeight] = await getAppWindowContentSize(electronApp);
 			testLayerBounds = await getTestLayerBounds(electronApp);
-			const expectedHeight = windowHeight - EYAS_HEADER_HEIGHT;
 
 			return (
-				testLayerBounds.width === windowWidth &&
-				testLayerBounds.height === expectedHeight &&
+				testLayerBounds.width === 1024 &&
+				testLayerBounds.height === 768 &&
 				testLayerBounds.y === EYAS_HEADER_HEIGHT
 			);
 		}, {
-			message: `Test layer dimensions did not synchronize with window dimensions`,
+			message: `Test layer dimensions did not synchronize with the default 1024x768 viewport`,
 			timeout: 10000
 		}).toBe(true);
 	});
