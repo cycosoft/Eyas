@@ -3,10 +3,8 @@ import {
 	launchEyas,
 	exitEyas,
 	getTestLayerBounds,
-	getAppWindowContentSize
+	EYAS_HEADER_HEIGHT
 } from './eyas-utils.mjs';
-
-const EYAS_HEADER_HEIGHT = 78;
 
 test.describe(`Test Layer Dimensions`, () => {
 	let electronApp;
@@ -21,10 +19,9 @@ test.describe(`Test Layer Dimensions`, () => {
 
 	test(`initial dimensions should be correct on launch`, async () => {
 		// Wait for the layers to synchronize with the window size
-		let windowWidth, windowHeight, testLayerBounds;
+		let testLayerBounds;
 
 		await expect.poll(async () => {
-			[windowWidth, windowHeight] = await getAppWindowContentSize(electronApp);
 			testLayerBounds = await getTestLayerBounds(electronApp);
 			return testLayerBounds.width;
 		}, { timeout: 10000 }).toBeGreaterThan(0);

@@ -6,10 +6,9 @@ import {
 	getUiLayerBounds,
 	getTestLayerBounds,
 	getAppWindowContentSize,
-	ensureEnvironmentSelected
+	ensureEnvironmentSelected,
+	EYAS_HEADER_HEIGHT
 } from './eyas-utils.mjs';
-
-const EYAS_HEADER_HEIGHT = 78;
 
 test.describe(`UI Layer Expansion`, () => {
 	let electronApp;

@@ -10,6 +10,8 @@ import fs from 'fs-extra';
 
 /* eslint-disable import/no-commonjs */
 export const electronPath = require(`electron`);
+const constants = require(`../../out/scripts/constants.js`);
+export const EYAS_HEADER_HEIGHT = constants.EYAS_HEADER_HEIGHT;
 /* eslint-enable import/no-commonjs */
 
 /**
@@ -308,13 +310,13 @@ export async function getUiLayerHeight(electronApp) {
 	}
 	return 0;
 }
- 
- /**
+
+/**
   * Gets the current bounds of the UI layer (the second WebContentsView).
   * @param {import('@playwright/test').ElectronApplication} electronApp
   * @returns {Promise<{x: number, y: number, width: number, height: number}>}
   */
- export async function getUiLayerBounds(electronApp) {
+export async function getUiLayerBounds(electronApp) {
  	for (let i = 0; i < 20; i++) {
  		const bounds = await electronApp.evaluate(({ BrowserWindow }) => {
  			const window = BrowserWindow.getAllWindows()[0];
@@ -328,7 +330,7 @@ export async function getUiLayerHeight(electronApp) {
  		await new Promise(resolve => setTimeout(resolve, 250));
  	}
  	return { x: 0, y: 0, width: 0, height: 0 };
- }
+}
 
 /**
  * Gets the current bounds of the test layer (the first WebContentsView).
