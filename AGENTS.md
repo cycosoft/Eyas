@@ -83,6 +83,10 @@
 - **Header Integrity**: When adding both imports and logic to a file, prioritize `multi_replace_file_content` over sequential `replace_file_content` calls. This ensures the file header (imports/constants) and the logic remain synchronized and prevents accidental regression of imports during the edit process.
 
 ## 8. Efficiency Tiers & Work Streams
+- **Tier 0: Diagnostic / Temporary Logging (Zero-Gate Stream)**
+  - **Definition**: Adding temporary `console.log` statements, print traces, or debug probes requested by the user to diagnose problems.
+  - **Workflow**: Rapid Direct Edit -> Direct Run/Manual Verification.
+  - **Verification/Bypass Rules**: Completely bypass test writing (no TDD required), linter rules, formatting checks, and file quality-gate rules (e.g. ignore maximum line counts or style enforcement). Never perform secondary cleanups, file refactoring, or split logic when adding temporary debug logging.
 - **Tier 1: Visual/Cosmetic Iteration**
   - **Definition**: Changes to CSS, labels, or UI layout that do not touch application logic or IPC.
   - **Workflow**: Rapid Edit -> Manual/User Verification.
