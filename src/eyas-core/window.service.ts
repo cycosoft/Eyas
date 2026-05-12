@@ -295,7 +295,6 @@ export const windowService: WindowService = {
 		// listen for app events
 		this.initWindowListeners(ctx);
 		ctx.initIpcHandlers();
-
 		this.initEyasLayer(ctx, splashScreen, splashVisible);
 	}
 };

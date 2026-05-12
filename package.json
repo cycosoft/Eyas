@@ -54,7 +54,9 @@
     "type-check": "tsc -b",
     "lint": "eslint . --fix",
     "_encapsulated_sign:mac:pkg": "mv ./.runners/EyasInstaller-mac.pkg ./.runners/EyasInstaller-mac-unsigned.pkg && productsign --sign \"$CERT_NAME\" ./.runners/EyasInstaller-mac-unsigned.pkg ./.runners/EyasInstaller-mac.pkg",
-    "bump:build": "tsx src/scripts/bump-build-version.ts"
+    "bump:build": "tsx src/scripts/bump-build-version.ts",
+    "postinstall": "install-electron",
+    "//postinstall": "Temporary workaround for Electron 42+ compatibility with electron-vite. See: https://github.com/alex8088/electron-vite/issues/904"
   },
   "license": "MIT",
   "keywords": [
@@ -103,7 +105,7 @@
     "cross-env": "^10.1.0",
     "dotenv": "^17.4.2",
     "dotenv-cli": "^11.0.0",
-    "electron": "^41.5.0",
+    "electron": "^42.0.1",
     "electron-builder": "^26.8.1",
     "electron-vite": "^5.0.0",
     "eslint": "^10.3.0",
