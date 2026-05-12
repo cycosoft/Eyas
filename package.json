@@ -132,6 +132,7 @@
     "ws": "^7.0.0",
     "eslint-plugin-import": {
       "eslint": "$eslint"
-    }
+    },
+    "semver": "$semver"
   }
 }
