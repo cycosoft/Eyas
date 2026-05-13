@@ -50,7 +50,7 @@ describe(`getConfig`, () => {
 			const config = await getConfig(LOAD_TYPES.WEB, `eyas://example.com`);
 
 			expect(config.title).toBe(`Eyas`);
-			expect(config.version).toBe(`mock-branch.mock-hash`);
+			expect(config.version).toBe(``);
 			expect(config.viewports).toEqual([]);
 			expect(config.links).toEqual([]);
 			expect(config.meta.gitBranch).toBe(`mock-branch`);

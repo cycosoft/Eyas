@@ -73,8 +73,14 @@ describe(`get-config.validation`, () => {
 		test(`should return a validated config with defaults`, () => {
 			const config = validationUtils.validateConfig({});
 			expect(config.title).toBe(`Eyas`);
-			expect(config.version).toBe(`mock-branch.mock-hash`);
+			expect(config.version).toBe(``);
 			expect(config.meta.gitBranch).toBe(`mock-branch`);
+		});
+
+		test(`should return the version from config if provided`, () => {
+			const config = validationUtils.validateConfig({ version: `2.3.4` });
+			expect(config.title).toBe(`Eyas`);
+			expect(config.version).toBe(`2.3.4`);
 		});
 	});
 });
