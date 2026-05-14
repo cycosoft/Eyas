@@ -34,9 +34,7 @@
 - **DRY Logic**: Avoid duplication. Use traditional loops over `.map`/`.filter` where possible for simplicity.
 - **Linting**: Never change lint rules or use suppressions (`eslint-disable`, `@ts-ignore`) to fix errors. Fix the code. If a suppression is absolutely necessary for edge cases (e.g., test mocking), it MUST be accompanied by a comment explaining the technical justification. Mandatory lint check after every task.
 - **Atomic Changes**: One responsibility per change. Focus on bugs, functionality, and type safety; avoid purely stylistic refactors. Ensure behavioral parity during structural changes.
-- **Type Leaks**: Avoid anonymous object structures even within casting syntax (e.g., `as { default: T }`). These are considered "Type Leaks." Always use a named meta-type from `src/types/` (e.g., `ModuleWithDefault<T>`) to wrap these structures.
-- **Test Narrowing Safety**: When mocking event-driven callbacks (e.g., IPC listeners) that are assigned inside the mock, TypeScript may narrow the callback variable to `never` at the call site. Use explicit type assertions (e.g., `(callback as any)(...)`) or `// eslint-disable-line` to bypass these narrowing errors in test flows.
-- **API Migration Awareness**: When migrating to newer internal or external APIs, prioritize updating all dependent unit tests immediately. Common failures occur when tests mock specific method names that have been renamed or relocated (e.g., `webContents.goBack` to `webContents.navigationHistory.goBack`).
+- **TypeScript Gotchas**: Refer to `.agents/skills/typescript-gotchas/SKILL.md` for advanced edge-case mechanics covering type leaks, event listener narrowing, and API migration test awareness.
 
 ## 4. Technology Stack & Patterns
 - **Local Rules**: Refer to module-specific `AGENTS.md` in `src/types/`, `src/eyas-core/`, `src/eyas-interface/`, or `tests/` for environment-specific patterns. **Adaptive Rules**: If a local `AGENTS.md` is missing or insufficient for a module, suggest creating or updating it to capture recurring patterns and maintain shared context.
