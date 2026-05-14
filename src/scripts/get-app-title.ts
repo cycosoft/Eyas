@@ -38,5 +38,8 @@ export function sanitizePageTitle(rawPageTitle: LabelString | null | undefined, 
  * @returns {LabelString} The formatted application title.
  */
 export function getAppTitle(title: LabelString, version: AppVersion, _url?: DomainUrl, _pageTitle?: LabelString): LabelString {
+	if (!version || !version.trim()) {
+		return title;
+	}
 	return `${version} | ${title}`;
 }

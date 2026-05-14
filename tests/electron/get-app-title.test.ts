@@ -19,7 +19,7 @@ describe(`getAppTitle`, () => {
 
 	test(`should handle empty title or version`, () => {
 		expect(getAppTitle(``, `1.0.0`)).toBe(`1.0.0 | `);
-		expect(getAppTitle(`Test`, ``)).toBe(` | Test`);
+		expect(getAppTitle(`Test`, ``)).toBe(`Test`);
 	});
 
 	test(`should not include data: URLs`, () => {
