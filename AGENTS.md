@@ -43,13 +43,7 @@
 - **Language**: Strict TypeScript. Define interfaces in `src/types/`. Tests must import these types.
 - **Type Collocation**: Prioritize updating existing files in `src/types/` (e.g., `test-server.ts`) over creating new ones to maintain domain-based organization.
 - **Terminal**: Use `npx` directly. No global installs. Run commands only in the workspace root.
-- **Refactoring Patterns**:
-  - **Proxy Pattern**: When refactoring to satisfy linter rules (e.g., `max-lines`), prioritize keeping the public API/VM of a component or function intact. If logic is moved to a helper or utility, the original entry point should "proxy" the calls to maintain behavioral parity and test stability.
-  - **Logic Extraction**: Favor moving pure logic (calculations, formatting) to a sibling `.utils.ts` or `.logic.ts` file over structural changes that break the VM/interface contract.
-  - **State-First Extraction**: When splitting a large orchestrator, prioritize moving global state variables into a shared state module or class BEFORE extracting logic. This prevents complex dependency injection chains.
-  - **Explicit Lambda Wrapping**: When injecting dependencies via a factory context (e.g., `getCoreContext`), always wrap function calls in lambdas (e.g., `() => helper(ctx)`) to ensure the correct context is bound at invocation time.
-  - **Incremental Verification**: Do not attempt to move entire logical domains in a single pass. Break them into smaller, testable sub-modules and verify at each step.
-  - **Proactive Component Extraction**: When adding state or complex handlers to a Vue component, proactively move logic to a sibling `.logic.ts` file if the script block approaches 120 lines. This prevents "linting spirals" where a final verification fails due to the 150-line `max-lines-per-block` rule.
+- **Refactoring Patterns**: Refer to `.agents/skills/refactoring-patterns/SKILL.md` for standard architectural mechanics on line limits, proxying, and logic extraction.
 
 ## 5. Operational Workflow
 - **Planning**: Review code, identify gaps (IO, errors, loading), and document them before starting.
@@ -59,11 +53,7 @@
 - **Instruction Auditing**: Before starting work in any module, audit its local `AGENTS.md` file against the current configuration. Remove redundant syntax instructions that are already enforced and update stale patterns to ensure documentation aligns with automated sources of truth.
 - **Testing**: Limit debugging to 3 minutes before asking for help.
 - **Code Deletion**: Document why code was removed. Verify it's unused using search tools first.
-- **Process Management**: When encountering "resource busy" or "locked" errors during Electron testing, prioritize stopping the parent process that spawned the app before attempting to force-kill children. This is often more effective at releasing file locks.
-- **E2E Synchronization**: When writing or fixing Electron E2E tests using a fresh `userDataDir`, always account for "First Run" blocking states. Explicitly call `ensureEnvironmentSelected` (or equivalent) to clear initial modals before attempting to interact with application menus or header elements.
-- **Event-Driven E2E Tests**: Avoid hardcoded `setTimeout` calls (e.g., `new Promise(resolve => setTimeout(resolve, 3000))`) in E2E tests and utilities. These create "dead time" and slow down the suite.
-  - **Wait for State**: Use Playwright's `waitForSelector`, `expect(...).toBeVisible()`, or custom IPC signals to detect when the application is ready.
-  - **Avoid Invisibility Waits**: Instead of waiting N seconds to "prove" something *doesn't* appear, wait for the element that *should* appear once the background logic completes (e.g., the app header).
+- **Electron E2E Testing**: Refer to `.agents/skills/electron-e2e-testing/SKILL.md` for process lock handling, initial run modal clearing, and event-driven waiting.
 - **Pull Requests**: Focus on bugs, functionality, and typos. Avoid purely stylistic refactors or "lint-fixing" unaffected lines.
 - **Focused Testing**: Prioritize running specific test files (e.g., `npx playwright test path/to/test.spec.mjs`) during development. Defer full suite runs and project-wide linting (`npm run check`) until the specific feature or fix is verified and stable.
 
@@ -83,19 +73,4 @@
 - **Header Integrity**: When adding both imports and logic to a file, prioritize `multi_replace_file_content` over sequential `replace_file_content` calls. This ensures the file header (imports/constants) and the logic remain synchronized and prevents accidental regression of imports during the edit process.
 
 ## 8. Efficiency Tiers & Work Streams
-- **Tier 0: Diagnostic / Temporary Logging (Zero-Gate Stream)**
-  - **Definition**: Adding temporary `console.log` statements, print traces, or debug probes requested by the user to diagnose problems.
-  - **Workflow**: Rapid Direct Edit -> Direct Run/Manual Verification.
-  - **Verification/Bypass Rules**: Completely bypass test writing (no TDD required), linter rules, formatting checks, and file quality-gate rules (e.g. ignore maximum line counts or style enforcement). Never perform secondary cleanups, file refactoring, or split logic when adding temporary debug logging.
-- **Tier 1: Visual/Cosmetic Iteration**
-  - **Definition**: Changes to CSS, labels, or UI layout that do not touch application logic or IPC.
-  - **Workflow**: Rapid Edit -> Manual/User Verification.
-  - **Verification**: Skip full test suites. Run *only* `npx eslint <file> --fix` locally. Batch full verification at the end of the task.
-- **Tier 2: Targeted Functional Fixes**
-  - **Definition**: Logic changes in a single module or component.
-  - **Workflow**: TDD (Targeted Test) -> Code -> Targeted Verification.
-  - **Verification**: Run `npx vitest <file>` or `npx playwright test <file>`. Skip project-wide checks until the feature is stable.
-- **Tier 3: Final Integration (The "Check-In" Gate)**
-  - **Definition**: Completion of a feature branch or complex refactor.
-  - **Workflow**: Full project validation.
-  - **Verification**: Mandatory `npm run check` before concluding the session or task.
+Refer to `.agents/skills/efficiency-tiers/SKILL.md` for definitions, verification requirements, and bypass rules across Tiers 0 through 3.
