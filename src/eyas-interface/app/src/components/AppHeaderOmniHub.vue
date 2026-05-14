@@ -62,7 +62,7 @@
 
 		<!-- 4. Dropdown Button Placeholder -->
 		<v-btn
-			v-if="environments.length > 0"
+			v-if="environments.length > 0 && isViewingTestContent"
 			size="x-small"
 			density="compact"
 			variant="tonal"
@@ -109,7 +109,7 @@ import type { ChannelName } from '@registry/primitives.js';
 import {
 	state, displayUrlInfo, activeEnvironmentTitle, selectEnvironment,
 	handleUrlClick, handleCursorMove, resetTooltipText, delayedClose,
-	toggleNetwork
+	toggleNetwork, isViewingTestContent
 } from './AppHeader.logic.js';
 
 const { environments, currentEnvironment, envMenu, tooltipVisible, tooltipText, cursorPos, testNetworkEnabled } = toRefs(state);

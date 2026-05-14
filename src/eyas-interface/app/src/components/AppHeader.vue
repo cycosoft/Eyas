@@ -223,7 +223,8 @@ import {
 	onMouseEnter, onItemClick, delayedClose, triggerOpen, updateInfo,
 	handleNavigationUpdate, handleUpdateStatusUpdate, displayUrlInfo,
 	activeEnvironmentTitle, selectEnvironment, handleHeaderMouseEnter,
-	handleHeaderMouseLeave, handleUrlClick, resetTooltipText, displayAppTitle
+	handleHeaderMouseLeave, handleUrlClick, resetTooltipText, displayAppTitle,
+	isViewingTestContent
 } from './AppHeader.logic.js';
 
 import AppHeaderOmniHub from './AppHeaderOmniHub.vue';
@@ -268,7 +269,7 @@ defineExpose({
 	goBack, goForward, reload, goHome, handleBroadcastClick, displayUrlInfo,
 	environments, currentEnvironment, activeEnvironmentTitle, selectEnvironment,
 	handleHeaderMouseEnter, handleHeaderMouseLeave, handleUrlClick, resetTooltipText,
-	appTitle, displayAppTitle, envMenu: toRefs(state).envMenu,
+	appTitle, displayAppTitle, isViewingTestContent, envMenu: toRefs(state).envMenu,
 	menuItems: toRefs(state).menuItems, activator: toRefs(state).activator
 });
 </script>

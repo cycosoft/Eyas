@@ -20,6 +20,8 @@ describe(`AppHeader Environments Dropdown`, () => {
 		state.envMenu = false;
 		state.tooltipVisible = false;
 		state.tooltipText = `Click to Copy`;
+		state.currentUrl = ``;
+		state.currentEnvironment = null;
 		(window as unknown as WindowWithEyas).eyas = {
 			send: mockSend,
 			receive: vi.fn()
@@ -106,6 +108,42 @@ describe(`AppHeader Environments Dropdown`, () => {
 			await wrapper.vm.$nextTick();
 			const dropdownBtn = wrapper.find(`[data-qa="omni-hub-env-dropdown"]`);
 			expect(dropdownBtn.text()).toContain(`Staging`);
+		});
+
+		test(`does not render the environment dropdown button when navigated away to an external website`, async () => {
+			if (navCallback) {
+				(navCallback as any)({ // eslint-disable-line @typescript-eslint/no-explicit-any
+					canGoBack: false,
+					canGoForward: false,
+					environments: [
+						{ url: `dev.eyas.cycosoft.com`, title: `Development` },
+						{ url: `staging.eyas.cycosoft.com`, title: `Staging` }
+					],
+					currentEnvironment: `staging.eyas.cycosoft.com`,
+					currentUrl: `https://google.com`
+				});
+			}
+			await wrapper.vm.$nextTick();
+			const dropdownBtn = wrapper.find(`[data-qa="omni-hub-env-dropdown"]`);
+			expect(dropdownBtn.exists()).toBe(false);
+		});
+
+		test(`renders the environment dropdown button when viewing active test content`, async () => {
+			if (navCallback) {
+				(navCallback as any)({ // eslint-disable-line @typescript-eslint/no-explicit-any
+					canGoBack: false,
+					canGoForward: false,
+					environments: [
+						{ url: `dev.eyas.cycosoft.com`, title: `Development` },
+						{ url: `staging.eyas.cycosoft.com`, title: `Staging` }
+					],
+					currentEnvironment: `staging.eyas.cycosoft.com`,
+					currentUrl: `https://staging.eyas.cycosoft.com/login`
+				});
+			}
+			await wrapper.vm.$nextTick();
+			const dropdownBtn = wrapper.find(`[data-qa="omni-hub-env-dropdown"]`);
+			expect(dropdownBtn.exists()).toBe(true);
 		});
 
 		test(`renders environment list items without number badges and fires IPC on click`, async () => {
