@@ -156,11 +156,17 @@ export async function exitEyas(electronApp) {
 	} catch { /* ignore — app may already be shutting down */ }
 
 	try {
-		await electronApp.evaluate(({ ipcMain }) => {
-			if (ipcMain && ipcMain.emit) {
-				ipcMain.emit(`app-exit`);
-			}
-		});
+		// Attempt a clean exit via IPC, but do not wait indefinitely.
+		// On Windows, app.quit() can cause the process to exit before the evaluation
+		// response is sent, leading to a timeout in the test runner.
+		await Promise.race([
+			electronApp.evaluate(({ ipcMain }) => {
+				if (ipcMain && ipcMain.emit) {
+					ipcMain.emit(`app-exit`);
+				}
+			}),
+			new Promise(resolve => setTimeout(resolve, 3000))
+		]).catch(() => { });
 	} catch {
 		// ignore
 	} finally {
