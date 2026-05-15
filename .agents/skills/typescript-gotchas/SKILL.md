@@ -26,3 +26,14 @@ When mocking event-driven callbacks (e.g., IPC listeners) that are assigned insi
 
 ### 3. API Migration Awareness
 When migrating to newer internal or external APIs, prioritize updating all dependent unit tests immediately. Common failures occur when tests mock specific method names that have been renamed or relocated (e.g., `webContents.goBack` to `webContents.navigationHistory.goBack`).
+
+### 4. Module-level Constant Mocking
+When a module exports constants derived from the environment at import time (e.g. `export const isMac = process.platform === 'darwin'`), simply stubbing the environment variable *after* the import will fail. 
+- **Solution**: Use `vi.mock` with a factory and `vi.hoisted` to provide reactive mock values that can be updated between tests.
+- **Example**:
+```typescript
+const platformMocks = vi.hoisted(() => ({ isMac: false }));
+vi.mock('@scripts/platform-utils.js', () => platformMocks);
+// in test
+platformMocks.isMac = true;
+```

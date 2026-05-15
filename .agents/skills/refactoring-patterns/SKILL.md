@@ -40,3 +40,7 @@ When adding state or complex handlers to a Vue component, proactively move logic
 When a service or orchestrator exceeds `max-lines`, avoid generic `utils.ts` files. Split by logical domain using descriptive suffixes to maintain discoverability.
 - **Example**: `window.service.ts` -> `window.shortcuts.ts`, `window.resize.ts`.
 - **Enforcement**: If a file is at >90% of its line limit, plan for a domain-split *before* adding new features.
+
+### 8. Platform Utility Abstraction
+Avoid direct `process.platform` checks in business logic. Abstract OS-level detection into descriptive boolean constants (`isMac`, `isWindows`) within a central `platform-utils.ts` module. This improves readability and provides a single point of failure/mocking for tests.
+- **Example**: Replace `if (process.platform === 'darwin')` with `if (isMac)`.
