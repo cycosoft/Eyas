@@ -7,7 +7,7 @@ import type { SourcePath, HashString, LabelString } from "@registry/primitives.j
 const exec = util.promisify(childProcessExec);
 
 
-const OwnerName = `"Open Source Developer, Eric Higginson"`;
+const OwnerName = `"Open Source Developer Eric Higginson"`;
 const TimeStampServer = `http://time.certum.pl/`;
 
 type SignConfig = {
