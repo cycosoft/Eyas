@@ -35,3 +35,8 @@ Do not attempt to move entire logical domains in a single pass. Break them into 
 
 ### 6. Proactive Component Extraction
 When adding state or complex handlers to a Vue component, proactively move logic to a sibling `.logic.ts` file if the script block approaches 120 lines. This prevents "linting spirals" where a final verification fails due to the 150-line `max-lines-per-block` rule.
+
+### 7. Domain-First Splitting
+When a service or orchestrator exceeds `max-lines`, avoid generic `utils.ts` files. Split by logical domain using descriptive suffixes to maintain discoverability.
+- **Example**: `window.service.ts` -> `window.shortcuts.ts`, `window.resize.ts`.
+- **Enforcement**: If a file is at >90% of its line limit, plan for a domain-split *before* adding new features.
