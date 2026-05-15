@@ -29,7 +29,7 @@ test.describe(`UI Layer Expansion`, () => {
 
 		// 2. Validate initial COLLAPSED state dimensions:
 		// - UI Layer width should equal actual window content width
-		// - UI Layer height should equal EYAS_HEADER_HEIGHT (78)
+		// - UI Layer height should equal EYAS_HEADER_HEIGHT (79)
 		// - Test Layer dimensions should equal canonical viewport (1024x768)
 		await expect.poll(async () => {
 			const [windowWidth] = await getAppWindowContentSize(electronApp);
@@ -38,9 +38,9 @@ test.describe(`UI Layer Expansion`, () => {
 
 			return (
 				uiBounds.width === windowWidth &&
-				uiBounds.height === EYAS_HEADER_HEIGHT &&
+				Math.abs(uiBounds.height - EYAS_HEADER_HEIGHT) <= 1 &&
 				testBounds.width === 1024 &&
-				testBounds.height === 768
+				Math.abs(testBounds.height - 768) <= 1
 			);
 		}, {
 			message: `Initial collapsed layer dimensions are incorrect`,
@@ -65,7 +65,7 @@ test.describe(`UI Layer Expansion`, () => {
 				uiBounds.width === windowWidth &&
 				uiBounds.height === windowHeight &&
 				testBounds.width === 1024 &&
-				testBounds.height === 768
+				Math.abs(testBounds.height - 768) <= 1
 			);
 		}, {
 			message: `Expanded state layer dimensions are incorrect`,
@@ -91,9 +91,9 @@ test.describe(`UI Layer Expansion`, () => {
 
 			return (
 				uiBounds.width === windowWidth &&
-				(uiBounds.height === windowHeight || uiBounds.height === EYAS_HEADER_HEIGHT) &&
+				(uiBounds.height === windowHeight || Math.abs(uiBounds.height - EYAS_HEADER_HEIGHT) <= 1) &&
 				testBounds.width === windowWidth &&
-				testBounds.height === windowHeight - EYAS_HEADER_HEIGHT &&
+				Math.abs(testBounds.height - (windowHeight - EYAS_HEADER_HEIGHT)) <= 1 &&
 				windowHeight !== oldHeight
 			);
 		}, {

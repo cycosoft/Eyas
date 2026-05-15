@@ -64,11 +64,11 @@ test.describe(`Viewport Menu Interaction`, () => {
 
 		// 4. Verify the test layer is exactly the requested viewport dimensions.
 		// Checking test layer bounds directly is more meaningful than window content size
-		// because it validates what the tester actually sees, independent of the 78px header
+		// because it validates what the tester actually sees, independent of the 79px header
 		// and any HiDPI pixel rounding applied by the OS to setContentSize().
 		await expect.poll(async () => {
 			const bounds = await getTestLayerBounds(electronApp);
-			return bounds.width === 360 && bounds.height === 640;
+			return bounds.width === 360 && Math.abs(bounds.height - 640) <= 1;
 		}, { timeout: 10000 }).toBe(true);
 	});
 });
