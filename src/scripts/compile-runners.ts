@@ -7,6 +7,7 @@ import fs from "fs-extra";
 import type { Platform } from "electron-builder";
 import builder from "electron-builder";
 import { exec } from "child_process";
+import { pathToFileURL } from "url";
 import { getElectronBuilderConfig } from "./electron-builder-config.js";
 import type { SourcePath, IsActive } from "@registry/primitives.js";
 import { isMac as platformIsMac, isWindows as platformIsWin } from "./platform-utils.js";
@@ -64,11 +65,12 @@ type BuildPaths = {
  * @returns {BuildPaths} The paths for the project.
  */
 function getPaths(consumerRoot: SourcePath): BuildPaths {
+	const codesignPath = path.join(consumerRoot, `out`, `main`, `scripts`, `codesign-win.js`);
 	return {
 		icon: path.join(consumerRoot, `src`, `eyas-assets`, `eyas-logo.png`),
 		iconDbWin: path.join(consumerRoot, `src`, `eyas-assets`, `eyas-db.ico`),
 		iconDbMac: path.join(consumerRoot, `src`, `eyas-assets`, `eyas-db.icns`),
-		codesignWin: path.join(consumerRoot, `src`, `scripts`, `codesign-win.js`)
+		codesignWin: platformIsWin ? (pathToFileURL(codesignPath).href as SourcePath) : (codesignPath as SourcePath)
 	};
 }
 
