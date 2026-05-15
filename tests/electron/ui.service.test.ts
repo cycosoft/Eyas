@@ -27,6 +27,7 @@ describe(`ui.service.ts unit tests`, () => {
 				webContents: {
 					focus: vi.fn(),
 					isFocused: vi.fn().mockReturnValue(true),
+					isDestroyed: vi.fn().mockReturnValue(false),
 					send: vi.fn()
 				}
 			},

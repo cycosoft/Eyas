@@ -14,12 +14,17 @@ export const uiService: UIService = {
 	 * @param enable Whether to enable (show) or disable (hide) the UI layer.
 	 */
 	toggleEyasUI(ctx: CoreContext, enable: IsActive, forceImmediate: IsActive = false): void {
-		if (!ctx.$eyasLayer) { return; }
+		// Guard: skip if $eyasLayer is absent or has already been destroyed by Electron
+		// (e.g. when install-update closes $appWindow before a pending IPC fires).
+		if (!ctx.$eyasLayer || ctx.$eyasLayer.webContents.isDestroyed()) { return; }
 
 		if (enable) {
 			// Restore the layer to full size, synced to the actual native window content dimensions.
 			// This ensures the modal is centered and the scrim covers the full viewport without gaps.
-			const [winWidth, winHeight] = ctx.$appWindow?.getContentSize() || [ctx.$currentViewport[0], ctx.$currentViewport[1] + EYAS_HEADER_HEIGHT];
+			const appWindow = ctx.$appWindow;
+			const [winWidth, winHeight] = (appWindow && !appWindow.isDestroyed())
+				? appWindow.getContentSize()
+				: [ctx.$currentViewport[0], ctx.$currentViewport[1] + EYAS_HEADER_HEIGHT];
 			ctx.$eyasLayer.setBounds({
 				x: 0,
 				y: 0,
@@ -39,7 +44,10 @@ export const uiService: UIService = {
 			// if requested to shrink immediately OR if there are no animations to wait for
 			// (we default to waiting for the renderer to send 'hide-ui' when it's ready)
 			if (forceImmediate) {
-				const [winWidth] = ctx.$appWindow?.getContentSize() || [ctx.$currentViewport[0]];
+				const appWindow = ctx.$appWindow;
+				const [winWidth] = (appWindow && !appWindow.isDestroyed())
+					? appWindow.getContentSize()
+					: [ctx.$currentViewport[0]];
 				ctx.$eyasLayer.setBounds({
 					x: 0,
 					y: 0,
@@ -58,7 +66,9 @@ export const uiService: UIService = {
 	 * @param ctx The core context.
 	 */
 	focusUI(ctx: CoreContext): void {
-		ctx.$eyasLayer?.webContents.focus();
+		if (ctx.$eyasLayer && !ctx.$eyasLayer.webContents.isDestroyed()) {
+			ctx.$eyasLayer.webContents.focus();
+		}
 	},
 
 	/**
@@ -68,11 +78,14 @@ export const uiService: UIService = {
 	 * @param args Arguments to pass to the event.
 	 */
 	uiEvent(ctx: CoreContext, eventName: ChannelName, ...args: unknown[]): void {
+		// Guard: skip all UI events if $eyasLayer has been destroyed.
+		if (!ctx.$eyasLayer || ctx.$eyasLayer.webContents.isDestroyed()) { return; }
+
 		// List of events that are NOT modals and don't need UI expansion or buffering
 		const nonModalEvents: ChannelName[] = [`update-status-updated` as ChannelName];
 
 		if (nonModalEvents.includes(eventName)) {
-			ctx.$eyasLayer?.webContents.send(eventName, ...args);
+			ctx.$eyasLayer.webContents.send(eventName, ...args);
 			return;
 		}
 
@@ -90,7 +103,7 @@ export const uiService: UIService = {
 		this.toggleEyasUI(ctx, true);
 
 		// send the interaction to the UI layer
-		ctx.$eyasLayer?.webContents.send(eventName, ...args);
+		ctx.$eyasLayer.webContents.send(eventName, ...args);
 	},
 
 	/**
