@@ -35,6 +35,7 @@
 - **Linting**: Never change lint rules or use suppressions (`eslint-disable`, `@ts-ignore`) to fix errors. Fix the code. If a suppression is absolutely necessary for edge cases (e.g., test mocking), it MUST be accompanied by a comment explaining the technical justification. Mandatory lint check after every task.
 - **Atomic Changes**: One responsibility per change. Focus on bugs, functionality, and type safety; avoid purely stylistic refactors. Ensure behavioral parity during structural changes.
 - **TypeScript Gotchas**: Refer to `.agents/skills/typescript-gotchas/SKILL.md` for advanced edge-case mechanics covering type leaks, event listener narrowing, and API migration test awareness.
+- **Feature Flagging & Logic Bypassing**: When temporarily disabling logic, prefer using explicit boolean toggles or block comments over early returns to satisfy strict TSC unreachable code checks. Refer to `.agents/skills/feature-flagging/SKILL.md` for implementation patterns.
 
 ## 4. Technology Stack & Patterns
 - **Local Rules**: Refer to module-specific `AGENTS.md` in `src/types/`, `src/eyas-core/`, `src/eyas-interface/`, or `tests/` for environment-specific patterns. **Adaptive Rules**: If a local `AGENTS.md` is missing or insufficient for a module, suggest creating or updating it to capture recurring patterns and maintain shared context.
