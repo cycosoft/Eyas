@@ -3,6 +3,8 @@ import type { CoreContext, WindowService } from '@registry/eyas-core.js';
 import { MP_EVENTS } from './metrics-events.js';
 import type { TimestampMS, GenericRecord } from '@registry/primitives.js';
 import { EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
+import { registerShortcutListeners } from './window.shortcuts.js';
+import { handleResize } from './window.resize.js';
 
 // Service for managing application windows and layers.
 export const windowService: WindowService = {
@@ -44,6 +46,7 @@ export const windowService: WindowService = {
 		});
 
 		ctx.setTestLayer(testLayer);
+		registerShortcutListeners(ctx, testLayer.webContents);
 		window.contentView.addChildView(testLayer);
 		testLayer.setBounds({
 			x: 0,
@@ -122,6 +125,7 @@ export const windowService: WindowService = {
 			: `${uiDomain}/index.html`;
 
 		layer.webContents.loadURL(url);
+		registerShortcutListeners(ctx, layer.webContents);
 
 		layer.webContents.on(`did-finish-load`, async () => {
 			if (layer.webContents.isDestroyed()) { return; }
@@ -136,7 +140,7 @@ export const windowService: WindowService = {
 			setTimeout(() => {
 				if (ctx.$appWindow?.isDestroyed() || splashScreen.isDestroyed()) { return; }
 				ctx.$appWindow?.show();
-				windowService.handleResize(ctx);
+				handleResize(ctx);
 				splashScreen.destroy();
 			}, splashTimeout);
 		});
@@ -151,7 +155,7 @@ export const windowService: WindowService = {
 		if (!$appWindow) { return; }
 
 		$appWindow.on(`close`, ctx.manageAppClose);
-		$appWindow.on(`resize`, () => this.handleResize(ctx));
+		$appWindow.on(`resize`, () => handleResize(ctx));
 
 		$appWindow.on(`page-title-updated`, (evt, title) => ctx.onTitleUpdate(evt, title));
 
@@ -211,44 +215,7 @@ export const windowService: WindowService = {
 	 * @param ctx The core context.
 	 */
 	handleResize(ctx: CoreContext): void {
-		const { $appWindow, $eyasLayer, $testLayer, $currentViewport } = ctx;
-		if (!$appWindow || $appWindow.isDestroyed()) { return; }
-
-		const [newWidth, newHeight] = $appWindow.getContentSize();
-		const newViewportHeight = newHeight - EYAS_HEADER_HEIGHT;
-
-		// Only update $currentViewport on genuine manual resizes.
-		// HiDPI displays round setContentSize() by ~2px — a synthetic resize that
-		// must not override the exact viewport the user selected.
-		const isDpiRounding =
-			Math.abs(newWidth - $currentViewport[0]) <= 5 &&
-			Math.abs(newViewportHeight - $currentViewport[1]) <= 5;
-
-		if (!isDpiRounding) {
-			$currentViewport[0] = newWidth;
-			$currentViewport[1] = newViewportHeight;
-		}
-
-		// Resize the UI layer to match the actual window (always uses real window size)
-		if ($eyasLayer && !$eyasLayer.webContents.isDestroyed()) {
-			const currentLayerHeight = $eyasLayer.getBounds().height;
-			const isActive = currentLayerHeight > EYAS_HEADER_HEIGHT;
-			const newLayerHeight = isActive ? newHeight : EYAS_HEADER_HEIGHT;
-			$eyasLayer.setBounds({ x: 0, y: 0, width: newWidth, height: newLayerHeight });
-		}
-
-		// Resize the test layer to the canonical $currentViewport (exact, not DPI-rounded)
-		if ($testLayer && !$testLayer.webContents.isDestroyed()) {
-			$testLayer.setBounds({
-				x: 0,
-				y: EYAS_HEADER_HEIGHT,
-				width: $currentViewport[0],
-				height: $currentViewport[1]
-			});
-		}
-
-		ctx.setMenu();
-		ctx.updateNavigationState();
+		handleResize(ctx);
 	},
 
 	/**
