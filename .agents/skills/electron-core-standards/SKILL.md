@@ -32,3 +32,24 @@ The core process is responsible for system-level operations, file I/O, and the m
 - **ESM Standard**: Follow NodeNext resolution. Imports MUST include the `.js` extension.
 - **No UI Logic**: Formatting, display strings, and UI state should live in the `src/eyas-interface/`. The core process deals only with raw data and system commands.
 - **Error Handling**: All system calls (FS, Network) must be wrapped in try/catch blocks with appropriate logging via the Eyas logging system.
+
+### 4. Object Liveness Guards (CRITICAL)
+Electron objects stored in `CoreContext` (`$appWindow`, `$eyasLayer`, `$testLayer`) can be **destroyed** while still being truthy. Optional chaining (`?.`) only guards against `null/undefined` — it does NOT prevent `TypeError: Object has been destroyed`.
+
+**Always apply a two-part guard before operating on these objects:**
+```ts
+// ✅ Correct — checks both null AND destroyed state
+if (!ctx.$eyasLayer || ctx.$eyasLayer.webContents.isDestroyed()) { return; }
+
+// ✅ Correct — for conditional property access
+const appWindow = ctx.$appWindow;
+const size = (appWindow && !appWindow.isDestroyed()) ? appWindow.getContentSize() : fallback;
+
+// ❌ Wrong — truthy check alone; a destroyed object is still truthy
+if (!ctx.$eyasLayer) { return; }
+
+// ❌ Wrong — optional chaining does NOT catch destroyed objects
+ctx.$eyasLayer?.webContents.send(`event`);
+```
+
+**When this matters:** Any IPC handler that fires asynchronously (e.g., after `install-update` closes `$appWindow`) may race against object destruction. Guard every access.

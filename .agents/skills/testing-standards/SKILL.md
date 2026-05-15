@@ -44,3 +44,34 @@ Run only the relevant test file to save time and reduce token output overhead.
   - Use `vi.mock()` for external dependencies (e.g., `electron`, `fs`).
   - Never mock the logic you are testing.
 - **Behavioral Parity**: When refactoring code to satisfy linter rules (like `max-lines`), verify that existing tests pass BEFORE and AFTER the change.
+
+### 4. Electron WebContents Mocks (REQUIRED)
+Any Vitest mock that stubs an Electron `webContents` object **MUST** include `isDestroyed`. Production guards in `src/eyas-core/` call `webContents.isDestroyed()` before every send/focus operation. Omitting it causes:
+```
+TypeError: ctx.$eyasLayer.webContents.isDestroyed is not a function
+```
+
+**Correct mock shape:**
+```ts
+webContents: {
+    focus: vi.fn(),
+    send: vi.fn(),
+    isDestroyed: vi.fn().mockReturnValue(false),  // ← ALWAYS include, default false
+}
+```
+
+Default `false` = healthy object. To test the destroyed-guard path, override in-test:
+```ts
+vi.mocked(ctx.$eyasLayer.webContents.isDestroyed).mockReturnValue(true);
+```
+
+### 5. Verification Order for `src/eyas-core/` Changes
+Always follow this sequence to catch mock gaps before the slow E2E build cycle:
+```bash
+# 1. Fast unit check (~200ms)
+npx vitest run --config vitest.config.electron.ts tests/electron/<service>.test.ts
+# 2. Lint check
+npx eslint src/eyas-core/<service>.ts --max-warnings=0
+# 3. Targeted E2E only after units are green (~2 min)
+npx playwright test tests/e2e/<relevant>.spec.mjs
+```
