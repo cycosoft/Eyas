@@ -11,7 +11,7 @@ import { TEST_SERVER_SESSION_DURATION_MS } from '@/../../../scripts/constants.js
 
 describe(`TestServerActiveModal`, () => {
 	let wrapper: VueWrapper;
-	let callbacks: Record<ChannelName, (payload?: unknown) => void> = {};
+	let callbacks: Partial<Record<ChannelName, (payload?: unknown) => void>> = {};
 
 	beforeEach(() => {
 		callbacks = {};
@@ -204,7 +204,7 @@ describe(`TestServerActiveModal`, () => {
 
 			// Simulate backend responding with extended endTime (now + 2× session = > 30 min remaining)
 			const activeCb = callbacks[`show-test-server-active-modal`];
-			activeCb({ domain: `http://localhost`, startTime: Date.now(), endTime: Date.now() + TEST_SERVER_SESSION_DURATION_MS * 2 });
+			if (activeCb) activeCb({ domain: `http://localhost`, startTime: Date.now(), endTime: Date.now() + TEST_SERVER_SESSION_DURATION_MS * 2 });
 			await nextTick();
 			await nextTick();
 
@@ -216,7 +216,7 @@ describe(`TestServerActiveModal`, () => {
 			const newEndTime = Date.now() + TEST_SERVER_SESSION_DURATION_MS * 2;
 
 			const activeCb = callbacks[`show-test-server-active-modal`];
-			activeCb({ domain: `http://localhost`, startTime: Date.now(), endTime: newEndTime });
+			if (activeCb) activeCb({ domain: `http://localhost`, startTime: Date.now(), endTime: newEndTime });
 			await nextTick();
 			await nextTick();
 

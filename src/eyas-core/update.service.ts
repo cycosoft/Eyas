@@ -4,7 +4,7 @@ import semver from 'semver';
 import { dialog } from 'electron';
 import { getNoUpdateAvailableDialogOptions } from './update-dialog.js';
 import type { UpdateService, CoreContext } from '@registry/eyas-core.js';
-import type { UpdateStatus, IsActive } from '@registry/primitives.js';
+import type { UpdateStatus, IsActive, ChannelName } from '@registry/primitives.js';
 
 let $updateStatus = `idle` as UpdateStatus;
 let $updateCheckUserTriggered: IsActive = false;
@@ -33,35 +33,32 @@ export const updateService: UpdateService = {
 			repo: `Eyas`
 		});
 
-		autoUpdater.on(`update-available`, () => {
-			$updateStatus = `downloading`;
+		// Helper to broadcast status changes
+		const broadcastStatus = (status: UpdateStatus): void => {
+			$updateStatus = status;
 			ctx.setMenu();
-		});
+			ctx.uiEvent(`update-status-updated` as ChannelName, $updateStatus);
+		};
 
-		autoUpdater.on(`update-downloaded`, () => {
-			$updateStatus = `downloaded`;
-			ctx.setMenu();
-		});
+		// Set up event listeners
+		autoUpdater.on(`checking-for-update`, () => broadcastStatus(`checking`));
+		autoUpdater.on(`update-available`, () => broadcastStatus(`downloading`));
+		autoUpdater.on(`update-downloaded`, () => broadcastStatus(`downloaded`));
 
-		/** Handles showing a dialog if the user manually checked and no update was found */
-		const showNoUpdateIfUserTriggered = (): void => {
+		autoUpdater.on(`update-not-available`, () => {
+			broadcastStatus(`idle`);
 			if ($updateCheckUserTriggered) {
 				$updateCheckUserTriggered = false;
 				if (ctx.$appWindow) {
 					dialog.showMessageBox(ctx.$appWindow, getNoUpdateAvailableDialogOptions());
 				}
 			}
-		};
-
-		autoUpdater.on(`update-not-available`, showNoUpdateIfUserTriggered);
+		});
 
 		autoUpdater.on(`error`, (err: Error) => {
-			if (err.message?.includes(`404`)) {
-				console.error(`Auto-update error: update server not found`);
-			} else {
-				console.error(`Auto-update error:`, err);
-			}
-			showNoUpdateIfUserTriggered();
+			console.error(`Auto-update error:`, err);
+			broadcastStatus(`error`);
+			$updateCheckUserTriggered = false;
 		});
 
 		autoUpdater.checkForUpdates().catch(() => { });

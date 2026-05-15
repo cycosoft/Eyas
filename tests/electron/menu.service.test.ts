@@ -1,12 +1,11 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import type { BrowserWindow } from 'electron';
 import type { ValidatedConfig } from '@registry/config.js';
-import type { MenuLabel } from '@registry/primitives.js';
 import type { CoreContext } from '@registry/eyas-core.js';
-import { shell, clipboard, Menu } from 'electron';
+import { Menu } from 'electron';
 import { menuService } from '@core/menu.service.js';
 
-type MockMenuItem = { label?: MenuLabel; type?: string };
+import type { IsActive } from '@registry/primitives.js';
 
 // Mock electron
 vi.mock(`electron`, () => ({
@@ -37,269 +36,96 @@ vi.mock(`../../src/scripts/parse-url.js`, () => ({
 	})
 }));
 
+const mockPlatform = {
+	isMac: false
+};
+vi.mock(`../../src/scripts/platform-utils.js`, () => ({
+	get isMac(): IsActive { return mockPlatform.isMac; }
+}));
+
 describe(`MenuService Helpers`, () => {
-	beforeEach(() => {
+	beforeEach((): void => {
 		vi.clearAllMocks();
+		mockPlatform.isMac = false;
 	});
 
-	describe(`getViewportMenuItems`, () => {
-		const mockWindow = {
-			setContentSize: vi.fn()
-		} as unknown as BrowserWindow;
-
-		const allViewports = [
-			{ label: `Desktop`, width: 1366, height: 768, isDefault: true },
-			{ label: `Tablet`, width: 768, height: 1024, isDefault: true },
-			{ label: `Mobile`, width: 360, height: 640, isDefault: true }
-		];
-
-		const mockCtx = {
-			$appWindow: mockWindow,
-			$allViewports: allViewports,
-			$currentViewport: [1366, 768]
-		} as unknown as CoreContext;
-
-		test(`should return empty array if no app window`, () => {
-			expect(menuService.getViewportMenuItems({ ...mockCtx, $appWindow: null } as unknown as CoreContext)).toEqual([]);
-		});
-
-		test(`should identify selected viewport with 🔘 and inject separator`, () => {
-			const items = menuService.getViewportMenuItems(mockCtx);
-
-			// Should have separator before Desktop because it's default
-			expect(items[0].type).toBe(`separator`);
-			expect(items[1].label).toContain(`🔘 Desktop`);
-			expect(items[2].label).not.toContain(`🔘`);
-		});
-
-		test(`should handle tolerance for matching`, () => {
-			const items = menuService.getViewportMenuItems({ ...mockCtx, $currentViewport: [1367, 769] } as unknown as CoreContext); // 1px off
-			expect(items[1].label).toContain(`🔘 Desktop`);
-		});
-
-		test(`should inject "Current" item if no match found`, () => {
-			const items = menuService.getViewportMenuItems({ ...mockCtx, $currentViewport: [1000, 1000] } as unknown as CoreContext);
-			expect(items[0].label).toBe(`🔘 Current (1000 x 1000)`);
-			expect(items[1].type).toBe(`separator`);
-			expect(items.some((i: MockMenuItem) => i.label?.includes(`🔘 Desktop`))).toBe(false);
-		});
-
-		test(`click handler should call setContentSize`, () => {
-			const items = menuService.getViewportMenuItems(mockCtx);
-			const desktopItem = items[1];
-			(desktopItem.click as () => void)();
-			expect(mockWindow.setContentSize).toHaveBeenCalledWith(1366, 768);
-		});
-	});
-
-	describe(`getLinkMenuItems`, () => {
-		const handlers = {
-			navigate: vi.fn(),
-			navigateVariable: vi.fn()
-		};
-
+	describe(`getSerializableLinks`, () => {
 		const config = {
 			links: [
 				{ label: `Google`, url: `https://google.com`, external: true },
 				{ label: `Local`, url: `http://local.test`, external: false },
-				{ label: `Variable`, url: `https://example.com/{myvar}`, external: false }
+				{ label: `Variable`, url: `https://example.com/{myvar}`, external: false },
+				{ label: `Host Variable`, url: `https://{myvar}example.com`, external: false },
+				{ label: `Invalid`, url: `bad-url`, external: false }
 			]
 		} as unknown as ValidatedConfig;
 
 		test(`should return empty array if no config`, () => {
-			expect(menuService.getLinkMenuItems(null, handlers)).toEqual([]);
+			expect(menuService.getSerializableLinks(null)).toEqual([]);
 		});
 
-		test(`should correctly label external links with 🌐`, () => {
-			const items = menuService.getLinkMenuItems(config, handlers);
-			expect(items[0].label).toContain(`🌐 Google`);
-			expect(items[1].label).not.toContain(`🌐`);
+		test(`should return NavItem array with correct titles`, () => {
+			const items = menuService.getSerializableLinks(config);
+			expect(items).toHaveLength(5);
+			expect(items[0].title).toBe(`🌐 Google`);
+			expect(items[1].title).toBe(`Local`);
+			expect(items[2].title).toBe(`Variable`);
+			expect(items[3].title).toBe(`Host Variable`);
+			expect(items[4].title).toBe(`Invalid (invalid entry: "bad-url")`);
 		});
 
-		test(`should use navigate for static links`, () => {
-			const items = menuService.getLinkMenuItems(config, handlers);
-			(items[0].click as () => void)();
-			expect(handlers.navigate).toHaveBeenCalledWith(`https://google.com/`, true);
+		test(`should encode url and external state in value`, () => {
+			const items = menuService.getSerializableLinks(config);
+			expect(items[0].value).toBe(`launch-link:{"url":"https://google.com/","openInBrowser":true}`);
+			expect(items[1].value).toBe(`launch-link:{"url":"http://local.test/","openInBrowser":false}`);
 		});
 
-		test(`should use navigateVariable for links with variables`, () => {
-			const items = menuService.getLinkMenuItems(config, handlers);
-			(items[2].click as () => void)();
-			expect(handlers.navigateVariable).toHaveBeenCalledWith(`https://example.com/{myvar}`);
+		test(`should identify variable links`, () => {
+			const items = menuService.getSerializableLinks(config);
+			expect(items[2].value).toBe(`launch-link-var:https://example.com/{myvar}`);
+			expect(items[3].value).toBe(`launch-link-var:https://{myvar}example.com`);
 		});
 
-		test(`should mark invalid links`, () => {
-			const badConfig = {
-				links: [{ label: `Bad`, url: `not-a-url`, external: false }]
-			} as unknown as ValidatedConfig;
-			const items = menuService.getLinkMenuItems(badConfig, handlers);
-			expect(items[0].label).toContain(`invalid entry`);
+		test(`should disable invalid links`, () => {
+			const items = menuService.getSerializableLinks(config);
+			expect(items[4].actionable).toBe(false);
 		});
 	});
 
-	describe(`getContext and handlers`, () => {
+	describe(`refresh`, () => {
 		const mockWindow = {
-			webContents: {
-				reloadIgnoringCache: vi.fn(),
-				goBack: vi.fn(),
-				goForward: vi.fn(),
-				getURL: vi.fn(() => `https://current.url`),
-				toggleDevTools: vi.fn(),
-				session: {
-					getStoragePath: vi.fn(() => `/mock/path`),
-					getCacheSize: vi.fn(async () => 100)
-				}
-			}
+			isDestroyed: vi.fn().mockReturnValue(false)
 		} as unknown as BrowserWindow;
 
 		const mockCtx = {
-			showAbout: vi.fn(),
-			onOpenSettings: vi.fn(),
-			uiEvent: vi.fn(),
-			navigate: vi.fn(),
-			startAFreshTest: vi.fn(),
-			setTestNetworkEnabled: vi.fn(),
-			setMenu: vi.fn(),
-			clearCache: vi.fn(),
-			stopTestServer: vi.fn(),
-			onToggleTestServerHttps: vi.fn(),
-			getSessionAge: vi.fn(() => `1m`),
-			updateService: {
-				getStatus: vi.fn(() => `idle`),
-				checkForUpdates: vi.fn(),
-				installUpdate: vi.fn()
-			},
-			$appWindow: mockWindow,
-			$eyasLayer: {
-				webContents: {
-					openDevTools: vi.fn()
-				}
-			},
-			$allViewports: [
-				{ label: `Desktop`, width: 1366, height: 768, isDefault: true }
-			],
-			$currentViewport: [1366, 768],
-			$isInitializing: false,
-			$config: {
-				meta: { isConfigLoaded: true },
-				links: []
-			},
-			$testNetworkEnabled: true,
-			$lastTestServerOptions: { port: 3000 },
-			$testServerHttpsEnabled: false,
-			$isEnvironmentPending: false
+			$appWindow: mockWindow
 		} as unknown as CoreContext;
 
-		test(`getContext should assemble all handlers and state`, () => {
-			const params = {
-				sessionAge: `1m`,
-				cacheSize: 100,
-				viewportItems: [],
-				linkItems: []
-			};
-			const context = menuService.getContext(mockCtx, params);
-			expect(context.appName).toBe(`Eyas`);
-			expect(context.sessionAge).toBe(`1m`);
-			expect(context.cacheSize).toBe(100);
-			expect(context.testNetworkEnabled).toBe(true);
-			expect(context.testServerActive).toBe(true);
-		});
-
-		test(`refresh should gather all state and call Menu.setApplicationMenu`, async () => {
+		test(`refresh should call Menu.setApplicationMenu with null on non-macOS`, async () => {
+			mockPlatform.isMac = false;
 			await menuService.refresh(mockCtx);
 
-			expect(mockCtx.getSessionAge).toHaveBeenCalled();
-			expect(mockWindow.webContents.session.getCacheSize).toHaveBeenCalled();
-			expect(Menu.buildFromTemplate).toHaveBeenCalled();
+			expect(Menu.setApplicationMenu).toHaveBeenCalledWith(null);
+		});
+
+		test(`refresh should set custom menu on macOS`, async () => {
+			mockPlatform.isMac = true;
+			await menuService.refresh(mockCtx);
+
+			const template = vi.mocked(Menu.buildFromTemplate).mock.calls[0][0];
+			expect(template.length).toBe(2); // App menu and Edit menu
+
+			// Verify App menu has Exit but NOT About
+			const appMenu = template[0].submenu;
+			expect(appMenu).toContainEqual(expect.objectContaining({ label: `Exit`, role: `quit` }));
+			expect(appMenu).not.toContainEqual(expect.objectContaining({ role: `about` }));
+
+			// Verify Edit menu exists for shortcuts
+			expect(template[1].label).toBe(`Edit`);
+			expect(template[1].submenu).toContainEqual(expect.objectContaining({ role: `copy` }));
+			expect(template[1].submenu).toContainEqual(expect.objectContaining({ role: `paste` }));
+
 			expect(Menu.setApplicationMenu).toHaveBeenCalled();
-		});
-
-		describe(`getAppHandlers`, () => {
-			const handlers = menuService.getAppHandlers(mockCtx);
-
-			test(`should map app lifecycle methods`, () => {
-				handlers.showAbout?.();
-				expect(mockCtx.showAbout).toHaveBeenCalled();
-
-				handlers.onOpenSettings?.();
-				expect(mockCtx.onOpenSettings).toHaveBeenCalled();
-
-				handlers.onShowWhatsNew?.();
-				expect(mockCtx.uiEvent).toHaveBeenCalledWith(`show-whats-new`, true);
-			});
-
-			test(`should map status flags`, () => {
-				expect(handlers.isInitializing).toBe(false);
-				expect(handlers.isConfigLoaded).toBe(true);
-				expect(handlers.isEnvironmentPending).toBe(false);
-			});
-		});
-
-		describe(`getNavigationHandlers`, () => {
-			const handlers = menuService.getNavigationHandlers(mockCtx);
-
-			test(`navigateHome should call navigate`, () => {
-				handlers.navigateHome?.();
-				expect(mockCtx.navigate).toHaveBeenCalled();
-			});
-
-			test(`browser controls should call webContents methods`, () => {
-				handlers.reload?.();
-				expect(mockWindow.webContents.reloadIgnoringCache).toHaveBeenCalled();
-
-				handlers.back?.();
-				expect(mockWindow.webContents.goBack).toHaveBeenCalled();
-
-				handlers.forward?.();
-				expect(mockWindow.webContents.goForward).toHaveBeenCalled();
-
-				handlers.copyUrl?.();
-				expect(mockWindow.webContents.getURL).toHaveBeenCalled();
-				expect(clipboard.writeText).toHaveBeenCalledWith(`https://current.url`);
-			});
-		});
-
-		describe(`getTestServerHandlers`, () => {
-			const handlers = menuService.getTestServerHandlers(mockCtx);
-
-			test(`should handle network and cache`, () => {
-				handlers.toggleNetwork?.();
-				expect(mockCtx.setTestNetworkEnabled).toHaveBeenCalledWith(false);
-				expect(mockCtx.setMenu).toHaveBeenCalled();
-
-				handlers.clearCache?.();
-				expect(mockCtx.clearCache).toHaveBeenCalled();
-
-				handlers.openCacheFolder?.();
-				expect(shell.openPath).toHaveBeenCalledWith(`/mock/path`);
-			});
-
-			test(`should handle test server lifecycle`, () => {
-				handlers.startAFreshTest?.();
-				expect(mockCtx.startAFreshTest).toHaveBeenCalledWith(true);
-
-				handlers.onStartTestServer?.();
-				expect(mockCtx.uiEvent).toHaveBeenCalledWith(`show-test-server-setup`, true);
-
-				handlers.onStopTestServer?.();
-				expect(mockCtx.stopTestServer).toHaveBeenCalled();
-			});
-
-			test(`should handle updates`, () => {
-				expect(handlers.updateStatus).toBe(`idle`);
-				handlers.onCheckForUpdates?.();
-				expect(mockCtx.updateService.checkForUpdates).toHaveBeenCalled();
-				handlers.onInstallUpdate?.();
-				expect(mockCtx.updateService.installUpdate).toHaveBeenCalled();
-			});
-
-			test(`should handle dev tools`, () => {
-				handlers.toggleTestDevTools?.();
-				expect(mockWindow.webContents.toggleDevTools).toHaveBeenCalled();
-
-				handlers.openUiDevTools?.();
-				expect(mockCtx.$eyasLayer?.webContents.openDevTools).toHaveBeenCalled();
-			});
 		});
 	});
 });

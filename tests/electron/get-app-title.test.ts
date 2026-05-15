@@ -2,47 +2,47 @@ import { expect, test, describe } from 'vitest';
 import { getAppTitle, sanitizePageTitle } from '@scripts/get-app-title.js';
 
 describe(`getAppTitle`, () => {
-	test(`should return the title and version with emoji`, () => {
+	test(`should return the title and version without emoji`, () => {
 		const title = `Test App`;
 		const version = `1.0.0`;
 		const result = getAppTitle(title, version);
-		expect(result).toBe(`Test App :: 1.0.0 ✨`);
+		expect(result).toBe(`1.0.0 | Test App`);
 	});
 
-	test(`should include the URL if provided`, () => {
+	test(`should not include the URL if provided`, () => {
 		const title = `Test App`;
 		const version = `1.0.0`;
 		const url = `https://example.com`;
 		const result = getAppTitle(title, version, url);
-		expect(result).toBe(`Test App :: 1.0.0 ✨ ( https://example.com )`);
+		expect(result).toBe(`1.0.0 | Test App`);
 	});
 
 	test(`should handle empty title or version`, () => {
-		expect(getAppTitle(``, `1.0.0`)).toBe(` :: 1.0.0 ✨`);
-		expect(getAppTitle(`Test`, ``)).toBe(`Test ::  ✨`);
+		expect(getAppTitle(``, `1.0.0`)).toBe(`1.0.0 | `);
+		expect(getAppTitle(`Test`, ``)).toBe(`Test`);
 	});
 
-	test(`should include data: URLs (utility remains flexible)`, () => {
+	test(`should not include data: URLs`, () => {
 		const title = `Test App`;
 		const version = `1.0.0`;
 		const url = `data:text/html,<html></html>`;
 		const result = getAppTitle(title, version, url);
-		expect(result).toBe(`Test App :: 1.0.0 ✨ ( data:text/html,<html></html> )`);
+		expect(result).toBe(`1.0.0 | Test App`);
 	});
 
-	test(`should include pageTitle between version and URL`, () => {
+	test(`should ignore pageTitle and omit URL`, () => {
 		const result = getAppTitle(`Test App`, `1.0.0`, `https://example.com`, `My Page`);
-		expect(result).toBe(`Test App :: 1.0.0 ✨ — My Page ( https://example.com )`);
+		expect(result).toBe(`1.0.0 | Test App`);
 	});
 
-	test(`should include pageTitle even with no URL`, () => {
+	test(`should ignore pageTitle even with no URL`, () => {
 		const result = getAppTitle(`Test App`, `1.0.0`, undefined, `My Page`);
-		expect(result).toBe(`Test App :: 1.0.0 ✨ — My Page`);
+		expect(result).toBe(`1.0.0 | Test App`);
 	});
 
-	test(`should omit pageTitle when empty or whitespace`, () => {
-		expect(getAppTitle(`Test App`, `1.0.0`, `https://example.com`, ``)).toBe(`Test App :: 1.0.0 ✨ ( https://example.com )`);
-		expect(getAppTitle(`Test App`, `1.0.0`, `https://example.com`, `   `)).toBe(`Test App :: 1.0.0 ✨ ( https://example.com )`);
+	test(`should omit pageTitle and keep simple format`, () => {
+		expect(getAppTitle(`Test App`, `1.0.0`, `https://example.com`, ``)).toBe(`1.0.0 | Test App`);
+		expect(getAppTitle(`Test App`, `1.0.0`, `https://example.com`, `   `)).toBe(`1.0.0 | Test App`);
 	});
 });
 

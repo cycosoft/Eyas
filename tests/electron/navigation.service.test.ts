@@ -53,12 +53,37 @@ describe(`navigation.service.ts unit tests`, () => {
 		vi.clearAllMocks();
 		mockCtx = {
 			$appWindow: {
-				loadURL: vi.fn(),
 				setTitle: vi.fn(),
 				setContentSize: vi.fn(),
+				isDestroyed: vi.fn().mockReturnValue(false),
 				webContents: {
 					getURL: vi.fn().mockReturnValue(`https://test.com`),
-					getTitle: vi.fn().mockReturnValue(`Page Title`)
+					getTitle: vi.fn().mockReturnValue(`Page Title`),
+					navigationHistory: {
+						canGoBack: vi.fn().mockReturnValue(true),
+						canGoForward: vi.fn().mockReturnValue(true),
+						goBack: vi.fn(),
+						goForward: vi.fn()
+					},
+					isDestroyed: vi.fn().mockReturnValue(false),
+					reloadIgnoringCache: vi.fn(),
+					loadURL: vi.fn()
+				}
+			},
+			$testLayer: {
+				isDestroyed: vi.fn().mockReturnValue(false),
+				webContents: {
+					getURL: vi.fn().mockReturnValue(`https://test.com`),
+					getTitle: vi.fn().mockReturnValue(`Page Title`),
+					navigationHistory: {
+						canGoBack: vi.fn().mockReturnValue(true),
+						canGoForward: vi.fn().mockReturnValue(true),
+						goBack: vi.fn(),
+						goForward: vi.fn()
+					},
+					isDestroyed: vi.fn().mockReturnValue(false),
+					reloadIgnoringCache: vi.fn(),
+					loadURL: vi.fn()
 				}
 			},
 			$testDomain: `https://default.com` as DomainUrl,
@@ -82,25 +107,33 @@ describe(`navigation.service.ts unit tests`, () => {
 			setTestDomainRaw: vi.fn(),
 			setEnvKey: vi.fn(),
 			setAllViewports: vi.fn(),
+			setShouldClearHistory: vi.fn(),
 			stopTestServer: vi.fn()
 		} as unknown as CoreContext;
 	});
 
 	test(`navigate should use default domain if path is missing`, () => {
 		navigationService.navigate(mockCtx);
-		expect(mockCtx.$appWindow?.loadURL).toHaveBeenCalledWith(`https://default.com`);
+		expect(mockCtx.$testLayer?.webContents.loadURL).toHaveBeenCalledWith(`https://default.com`);
 		expect(mockCtx.toggleEyasUI).toHaveBeenCalledWith(false);
 	});
 
 	test(`navigate should open in browser if requested and not local test`, () => {
 		navigationService.navigate(mockCtx, `https://external.com` as DomainUrl, true);
 		expect(shell.openExternal).toHaveBeenCalledWith(`https://external.com`);
-		expect(mockCtx.$appWindow?.loadURL).not.toHaveBeenCalled();
+		expect(mockCtx.$testLayer?.webContents.loadURL).not.toHaveBeenCalled();
+		expect(mockCtx.toggleEyasUI).toHaveBeenCalledWith(false); // Default behavior
+	});
+
+	test(`navigate should NOT close UI if closeUi is false`, () => {
+		navigationService.navigate(mockCtx, `https://external.com` as DomainUrl, true, false);
+		expect(shell.openExternal).toHaveBeenCalledWith(`https://external.com`);
+		expect(mockCtx.toggleEyasUI).not.toHaveBeenCalled();
 	});
 
 	test(`navigateVariable should substitute variables and navigate`, () => {
 		navigationService.navigateVariable(mockCtx, `{url}/path` as DomainUrl);
-		expect(mockCtx.$appWindow?.loadURL).toHaveBeenCalledWith(`https://default.com/path`);
+		expect(mockCtx.$testLayer?.webContents.loadURL).toHaveBeenCalledWith(`https://default.com/path`);
 	});
 
 	test(`navigateVariable should show warning if env url is missing`, () => {
@@ -111,11 +144,12 @@ describe(`navigation.service.ts unit tests`, () => {
 		expect(dialog.showMessageBoxSync).toHaveBeenCalled();
 	});
 
-	test(`startAFreshTest should reset state and navigate`, async () => {
+	test(`startAFreshTest should reset state, signal history clear, and navigate`, async () => {
 		await navigationService.startAFreshTest(mockCtx);
 		expect(testServerService.clearPort).toHaveBeenCalled();
 		expect(mockCtx.setIsInitializing).toHaveBeenCalledWith(true);
-		expect(mockCtx.$appWindow?.loadURL).toHaveBeenCalled();
+		expect(mockCtx.setShouldClearHistory).toHaveBeenCalledWith(true);
+		expect(mockCtx.$testLayer?.webContents.loadURL).toHaveBeenCalled();
 	});
 
 	test(`getAppTitleWithContext should return formatted title`, () => {
@@ -123,10 +157,43 @@ describe(`navigation.service.ts unit tests`, () => {
 		expect(title).toBe(`App Title`);
 	});
 
+	test(`getAppTitlePartsWithContext should return structured title parts`, () => {
+		const parts = navigationService.getAppTitlePartsWithContext(mockCtx, `Page Title`);
+		expect(parts).toEqual({
+			configTitle: ``,
+			appVersion: ``,
+			pageTitle: `Page Title`
+		});
+	});
+
 	test(`onTitleUpdate should prevent default and set window title`, () => {
 		const evt = { preventDefault: vi.fn() };
 		navigationService.onTitleUpdate(mockCtx, evt as PreventableEvent, `New Title`);
 		expect(evt.preventDefault).toHaveBeenCalled();
 		expect(mockCtx.$appWindow?.setTitle).toHaveBeenCalledWith(`App Title`);
+	});
+
+	test(`goBack should call webContents navigationHistory.goBack`, () => {
+		const mockGoBack = vi.fn();
+		const testLayer = mockCtx.$testLayer as NonNullable<CoreContext[`$testLayer`]>;
+		testLayer.webContents.navigationHistory.goBack = mockGoBack;
+		navigationService.goBack(mockCtx);
+		expect(mockGoBack).toHaveBeenCalled();
+	});
+
+	test(`goForward should call webContents navigationHistory.goForward`, () => {
+		const mockGoForward = vi.fn();
+		const testLayer = mockCtx.$testLayer as NonNullable<CoreContext[`$testLayer`]>;
+		testLayer.webContents.navigationHistory.goForward = mockGoForward;
+		navigationService.goForward(mockCtx);
+		expect(mockGoForward).toHaveBeenCalled();
+	});
+
+	test(`reload should call webContents reloadIgnoringCache`, () => {
+		const mockReload = vi.fn();
+		const testLayer = mockCtx.$testLayer as NonNullable<CoreContext[`$testLayer`]>;
+		testLayer.webContents.reloadIgnoringCache = mockReload;
+		navigationService.reload(mockCtx);
+		expect(mockReload).toHaveBeenCalled();
 	});
 });

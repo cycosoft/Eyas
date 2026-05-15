@@ -15,7 +15,8 @@ export default tseslint.config(
 			`.build/**`,
 			`.pre-build/**`,
 			`.test-data/**`,
-			`playwright-report/**`
+			`playwright-report/**`,
+			`tests/tmp/**`
 		]
 	},
 
@@ -83,7 +84,7 @@ export default tseslint.config(
 			'no-unused-vars': `off`, // Handled by @typescript-eslint version
 			'no-redeclare': `off`, // Can be noisy with globals in separate configs
 			complexity: [`error`, 15],
-			'max-lines': [`warn`, 300],
+			'max-lines': [`error`, 300],
 			'max-lines-per-function': [`error`, { max: 50, skipBlankLines: true, skipComments: true, IIFEs: true }],
 			'max-params': [`error`, 4],
 			'import/max-dependencies': [`warn`, { max: 25 }],
@@ -157,6 +158,7 @@ export default tseslint.config(
 			],
 
 			// Vue Specific Rules
+			'vue/no-static-inline-styles': `error`,
 			'vue/html-indent': [`error`, `tab`, {
 				alignAttributesVertically: false
 			}],
@@ -165,9 +167,19 @@ export default tseslint.config(
 			'vue/component-api-style': [`error`, [`script-setup`]],
 			'vue/max-lines-per-block': [`error`, {
 				script: 150,
-				template: 250,
 				style: 100
-			}]
+			}],
+			'vue/no-restricted-syntax': [
+				`error`,
+				{
+					selector: `VAttribute[directive=false][key.name='title']`,
+					message: `The 'title' attribute is not allowed on HTML elements as it cannot be styled and may be clipped in the Eyas Desktop UI. Use 'v-tooltip' instead once we have a solution for view bounds.`
+				},
+				{
+					selector: `VAttribute[directive=true][key.name.name='bind'][key.argument.name='title']`,
+					message: `Binding to 'title' is not allowed as it cannot be styled and may be clipped in the Eyas Desktop UI. Use 'v-tooltip' instead once we have a solution for view bounds.`
+				}
+			]
 		}
 	},
 	{
@@ -205,7 +217,7 @@ export default tseslint.config(
 					message: `IPC channels must be typed using 'ChannelName'. Please use a cast (e.g., 'channel-name' as ChannelName) to ensure type safety and project-wide consistency.`
 				}
 			],
-			'max-lines': [`warn`, 500],
+			'max-lines': [`error`, 500],
 			'max-lines-per-function': `off`
 		}
 	},

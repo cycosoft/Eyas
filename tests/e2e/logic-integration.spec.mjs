@@ -4,7 +4,6 @@ import {
 	exitEyas,
 	emitIpcMessage,
 	getAppWindowUrl,
-	waitForMenuUpdate,
 	getUiView
 } from './eyas-utils.mjs';
 
@@ -36,29 +35,22 @@ test.describe(`Logic-Driven Integration Tests`, () => {
 		expect(currentUrl).toContain(targetUrl);
 	});
 
-	test(`network toggle via IPC updates menu state`, async () => {
-		// Initial state is true in index.js
+	test(`network toggle via IPC updates UI state`, async () => {
+		const uiPage = await getUiView(electronApp);
+
+		// Initial state is true in index.js, so the badge should display 'Online'
+		const statusChip = uiPage.locator(`[data-qa="omni-hub-status"]`);
+		await expect(statusChip).toContainText(`Online`);
+
+		// Disable network via IPC
 		await emitIpcMessage(electronApp, `network-status`, false);
 
-		// Verify menu updates to reflect offline status
-		const menu = await waitForMenuUpdate(electronApp, m => {
-			const devTools = m.find(item => item.label.includes(`Development Tools`));
-			return devTools && devTools.submenu && devTools.submenu.some(item => item.label.includes(`&Go Online`));
-		});
-
-		const devTools = menu.find(item => item.label.includes(`Development Tools`));
-		const toggleItem = devTools.submenu.find(item => item.label.includes(`&Go Online`));
-		expect(toggleItem).toBeDefined();
+		// Verify status chip updates to reflect offline status
+		await expect(statusChip).toContainText(`Offline`);
 
 		// Toggle back
 		await emitIpcMessage(electronApp, `network-status`, true);
-		const menuOnline = await waitForMenuUpdate(electronApp, m => {
-			const devTools = m.find(item => item.label.includes(`Development Tools`));
-			return devTools && devTools.submenu && devTools.submenu.some(item => item.label.includes(`&Go Offline`));
-		});
-
-		const toggleItemOnline = menuOnline.find(item => item.label.includes(`Development Tools`)).submenu.find(item => item.label.includes(`&Go Offline`));
-		expect(toggleItemOnline).toBeDefined();
+		await expect(statusChip).toContainText(`Online`);
 	});
 
 	test(`test server setup via IPC starts the server`, async () => {
@@ -75,17 +67,6 @@ test.describe(`Logic-Driven Integration Tests`, () => {
 			autoOpenBrowser: false,
 			useCustomDomain: false
 		});
-
-		// Verify the menu shows the test server is running
-		// The interval for menu updates in index.js is 60s, but setMenu is called immediately after start
-		const menu = await waitForMenuUpdate(electronApp, m => {
-			const testMenu = m.find(item => item.label.includes(`Test`));
-			return testMenu && testMenu.submenu && testMenu.submenu.some(item => item.label.includes(`Live Test Server`) && !item.enabled);
-		});
-
-		const testMenu = menu.find(item => item.label.includes(`Test`));
-		const testServerItem = testMenu.submenu.find(item => item.label.includes(`Live Test Server`));
-		expect(testServerItem.enabled).toBe(false);
 
 		// Verify the new modal is presented to the user
 		const uiPage = await getUiView(electronApp);
@@ -108,16 +89,5 @@ test.describe(`Logic-Driven Integration Tests`, () => {
 
 		// Wait for the modal to be hidden
 		await expect(modalTitle).not.toBeVisible();
-
-		// Verify the menu clears out the "Test Server running" entry
-		const updatedMenu = await waitForMenuUpdate(electronApp, m => {
-			const mTestMenu = m.find(item => item.label.includes(`Test`));
-			if (!mTestMenu || !mTestMenu.submenu) return true;
-			return mTestMenu.submenu.some(item => item.label.includes(`Live Test Server`) && item.enabled);
-		});
-
-		const finalTestMenu = updatedMenu.find(item => item.label.includes(`Test`));
-		const runningItem = finalTestMenu.submenu.find(item => item.label.includes(`Live Test Server`));
-		expect(runningItem.enabled).toBe(true);
 	});
 });

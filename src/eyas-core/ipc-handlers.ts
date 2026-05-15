@@ -1,19 +1,21 @@
-import { ipcMain, nativeTheme, app } from 'electron';
+import { ipcMain, nativeTheme, app, shell, clipboard } from 'electron';
 import type { CoreContext } from '@registry/eyas-core.js';
 import { parseURL } from '@scripts/parse-url.js';
 import * as settingsService from './settings-service.js';
 import * as testServer from './test-server/test-server.js';
 import * as testServerTimeout from './test-server/test-server-timeout.js';
-import { TEST_SERVER_SESSION_DURATION_MS } from '@scripts/constants.js';
+import { TEST_SERVER_SESSION_DURATION_MS, EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
 import { MP_EVENTS } from './metrics-events.js';
+import { isMac } from '@scripts/platform-utils.js';
 
 import type {
 	LaunchLinkPayload,
 	EnvironmentSelectedPayload,
 	SaveSettingPayload,
-	TestServerSetupPayload
+	TestServerSetupPayload,
+	TitleBarOverlayPayload
 } from '@registry/ipc.js';
-import type { IsActive, AppVersion } from '@registry/primitives.js';
+import type { IsActive, AppVersion, ViewportWidth, ViewportHeight, ChannelName, DomainUrl } from '@registry/primitives.js';
 
 /**
  * Initializes all IPC handlers for the application.
@@ -36,20 +38,26 @@ export function initIpcHandlers(ctx: CoreContext): void {
  * @param ctx The core context.
  */
 function initAppIpcListeners(ctx: CoreContext): void {
-	// hide the UI when requested
-	ipcMain.on(`hide-ui`, () => { ctx.toggleEyasUI(false); });
+	initCoreIpcListeners(ctx);
+	initBrowserIpcListeners(ctx);
+	initDevToolsIpcListeners(ctx);
+	initViewportIpcListeners(ctx);
+	initCacheIpcListeners(ctx);
+}
 
-	// Whenever the UI layer has requested to close the app
+/**
+ * Initializes core application IPC listeners.
+ * @param ctx The core context.
+ */
+function initCoreIpcListeners(ctx: CoreContext): void {
+	ipcMain.on(`show-ui`, () => { ctx.toggleEyasUI(true); });
+	ipcMain.on(`hide-ui`, () => { ctx.toggleEyasUI(false, true); });
+	ipcMain.on(`request-exit`, () => { ctx.requestExit(); });
+
 	ipcMain.on(`app-exit`, () => {
 		if (!ctx.$appWindow) { return; }
-
-		// remove the close event listener so we don't get stuck in a loop
 		ctx.$appWindow.removeListener(`close`, ctx.manageAppClose);
-
-		// track that the app is being closed
 		ctx.trackEvent(MP_EVENTS.core.exit);
-
-		// Shut down test server if running, then exit
 		ctx.stopTestServer();
 		app.quit();
 	});
@@ -60,13 +68,112 @@ function initAppIpcListeners(ctx: CoreContext): void {
 			ctx.setIsStartupSequenceChecked(true);
 			ctx.checkStartupSequence();
 		}
+
+		// send the current update status to the renderer
+		ctx.uiEvent(`update-status-updated` as ChannelName, ctx.updateService.getStatus());
 	});
 
-	// listen for the user to launch a link
 	ipcMain.on(`launch-link`, (_event, { url, openInBrowser }: LaunchLinkPayload) => {
-		// navigate to the requested url
 		const parsed = parseURL(url);
-		ctx.navigate(parsed ? parsed.toString() : url, openInBrowser);
+		ctx.navigate(parsed ? parsed.toString() : url, openInBrowser, !openInBrowser);
+	});
+	ipcMain.on(`launch-link-variable`, (_event, url: DomainUrl) => {
+		ctx.navigateVariable(url);
+	});
+
+	ipcMain.on(`show-about`, () => { ctx.showAbout(); });
+	ipcMain.on(`show-settings`, () => { ctx.onOpenSettings(); });
+	ipcMain.on(`show-whats-new`, () => { ctx.uiEvent(`show-whats-new`, true); });
+	ipcMain.on(`show-test-server-setup`, () => { ctx.showTestServerSetup(); });
+	ipcMain.on(`check-for-updates`, () => { ctx.updateService.checkForUpdates(); });
+	ipcMain.on(`install-update`, () => {
+		if (ctx.$appWindow) {
+			ctx.$appWindow.removeListener(`close`, ctx.manageAppClose);
+			ctx.$appWindow.close();
+		}
+		ctx.updateService.installUpdate();
+	});
+	ipcMain.on(`request-update-ready-modal`, () => { ctx.uiEvent(`show-update-ready-modal`, true); });
+	ipcMain.on(`update-titlebar-overlay`, (_event, options: TitleBarOverlayPayload) => {
+		// setTitleBarOverlay is only supported on Windows and Linux
+		if (isMac) { return; }
+
+		if (ctx.$appWindow && !ctx.$appWindow.isDestroyed()) {
+			ctx.$appWindow.setTitleBarOverlay({
+				color: options.color,
+				symbolColor: options.symbolColor,
+				height: 30
+			});
+		}
+	});
+}
+
+/**
+ * Initializes browser control IPC listeners.
+ * @param ctx The core context.
+ */
+function initBrowserIpcListeners(ctx: CoreContext): void {
+	ipcMain.on(`browser-back`, () => ctx.goBack());
+	ipcMain.on(`browser-forward`, () => ctx.goForward());
+	ipcMain.on(`browser-reload`, () => ctx.reload());
+	ipcMain.on(`browser-home`, () => ctx.navigate());
+	ipcMain.on(`browser-copy-url`, () => {
+		const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
+		if (ctx.$isInitializing || !webContents || webContents.isDestroyed()) return;
+		clipboard.writeText(webContents.getURL());
+	});
+}
+
+/**
+ * Initializes devtools IPC listeners.
+ * @param ctx The core context.
+ */
+function initDevToolsIpcListeners(ctx: CoreContext): void {
+	ipcMain.on(`open-devtools-ui`, () => {
+		if (ctx.$eyasLayer && !ctx.$eyasLayer.webContents.isDestroyed()) {
+			ctx.$eyasLayer.webContents.openDevTools({ mode: `detach` });
+		}
+	});
+
+	ipcMain.on(`open-devtools-test`, () => {
+		const webContents = (ctx.$testLayer || ctx.$appWindow)?.webContents;
+		if (webContents && !webContents.isDestroyed()) {
+			webContents.toggleDevTools();
+		}
+	});
+}
+
+/**
+ * Initializes viewport management IPC listeners.
+ * @param ctx The core context.
+ */
+function initViewportIpcListeners(ctx: CoreContext): void {
+	ipcMain.on(`set-viewport`, (_event, [width, height]: [ViewportWidth, ViewportHeight]) => {
+		// Store the exact requested dimensions as the canonical viewport.
+		// setContentSize can round by ~2px on HiDPI displays; setting testLayer
+		// directly here preserves the exact size the user asked for.
+		ctx.$currentViewport[0] = width;
+		ctx.$currentViewport[1] = height;
+		ctx.$appWindow?.setContentSize(width, height + EYAS_HEADER_HEIGHT);
+		ctx.$testLayer?.setBounds({ x: 0, y: EYAS_HEADER_HEIGHT, width, height });
+	});
+}
+/**
+ * Initializes cache management IPC listeners.
+ * @param ctx The core context.
+ */
+function initCacheIpcListeners(ctx: CoreContext): void {
+	ipcMain.on(`clear-cache`, async () => {
+		ctx.clearCache();
+		await ctx.updateNavigationState();
+	});
+
+	ipcMain.on(`open-cache-folder`, () => {
+		if (!ctx.$appWindow || ctx.$appWindow.isDestroyed()) { return; }
+		const storagePath = ctx.$appWindow.webContents.session.getStoragePath();
+		if (storagePath) {
+			shell.openPath(storagePath);
+		}
 	});
 }
 
@@ -156,13 +263,7 @@ function initTestServerIpcListeners(ctx: CoreContext): void {
 
 	// test server resume modal: user clicked Resume
 	ipcMain.on(`test-server-resume-confirm`, () => {
-		// if there are previous settings, restart with them
-		if (ctx.$lastTestServerOptions) {
-			ctx.doStartTestServer();
-		} else {
-			// otherwise just start with defaults
-			ctx.doStartTestServer();
-		}
+		ctx.doStartTestServer();
 	});
 
 	// test server active modal: user clicked End Session

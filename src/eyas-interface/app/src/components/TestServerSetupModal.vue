@@ -68,7 +68,7 @@
 					<p class="mb-2">
 						If you want to use a custom domain like <code>{{ hostnameForHosts }}</code>, manually add this line to your hosts file:
 					</p>
-					<v-sheet title="Click to copy" class="hosts-copy-block mt-2 pa-2 font-mono text-body-medium cursor-pointer d-flex justify-space-between align-center" rounded @click="copyHostsLine">
+					<v-sheet class="hosts-copy-block mt-2 pa-2 font-mono text-body-medium cursor-pointer d-flex justify-space-between align-center" rounded @click="copyHostsLine">
 						<code>{{ hostsLine }}</code>
 						<v-icon size="small" :icon="copyIcon" color="warning" />
 					</v-sheet>

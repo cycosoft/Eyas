@@ -1,5 +1,5 @@
 import type {
-	BrowserView
+	WebContentsView
 } from 'electron';
 import {
 	app,
@@ -46,7 +46,8 @@ import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActiv
 // global variables $
 const $isDev = process.argv.includes(`--dev`) as IsActive;
 let $appWindow: BrowserWindow | null = null;
-let $eyasLayer: BrowserView | null = null;
+let $eyasLayer: WebContentsView | null = null;
+let $testLayer: WebContentsView | null = null;
 let $config: ValidatedConfig | null = null;
 let $configToLoad: ConfigToLoad = {};
 let $testNetworkEnabled: IsActive = true;
@@ -68,6 +69,7 @@ let $isInitializing: IsActive = true;
 let $isEnvironmentPending: IsPending = false;
 let $pendingStartupModal: StartupModal | null = null;
 let $isStartupSequenceChecked: IsActive = false;
+let $shouldClearHistory: IsActive = false;
 
 const $paths = {
 	icon: _path.join($roots.eyas, `eyas-assets`, `eyas-logo.png`),
@@ -143,7 +145,10 @@ let $coreContext: CoreContext | null = null;
  * @returns The fully assembled CoreContext object.
  */
 const coreContextSetters = {
-	setTestNetworkEnabled: (enabled: IsActive): void => { $testNetworkEnabled = enabled; },
+	setTestNetworkEnabled: (enabled: IsActive): void => {
+		$testNetworkEnabled = enabled;
+		getCoreContext().updateNavigationState().catch(() => {});
+	},
 	setTestServerHttpsEnabled: (enabled: IsActive): void => { $testServerHttpsEnabled = enabled; },
 	setTestDomainRaw: (domain: DomainUrl | null): void => { $testDomainRaw = domain; },
 	setTestDomain: (domain: DomainUrl): void => { $testDomain = domain; },
@@ -157,22 +162,25 @@ const coreContextSetters = {
 	setAllViewports: (viewports: Viewport[]): void => { $allViewports = viewports; },
 	setPendingStartupModal: (modal: StartupModal | null): void => { $pendingStartupModal = modal; },
 	setAppWindow: (window: BrowserWindow | null): void => { $appWindow = window; },
-	setEyasLayer: (layer: BrowserView | null): void => { $eyasLayer = layer; },
+	setEyasLayer: (layer: WebContentsView | null): void => { $eyasLayer = layer; },
+	setTestLayer: (layer: WebContentsView | null): void => { $testLayer = layer; },
 	setConfigToLoad: (config: ConfigToLoad): void => { $configToLoad = config; },
-	setConfig: (config: ValidatedConfig): void => { $config = config; }
+	setConfig: (config: ValidatedConfig): void => { $config = config; },
+	setShouldClearHistory: (clear: IsActive): void => { $shouldClearHistory = clear; }
 };
 
 const coreContextFunctions = {
-	toggleEyasUI: (enable: IsActive): void => uiService.toggleEyasUI(getCoreContext(), enable),
+	toggleEyasUI: (enable: IsActive, forceImmediate?: IsActive): void => uiService.toggleEyasUI(getCoreContext(), enable, forceImmediate),
 	trackEvent: (event: MPEventName, extraData?: MetadataRecord): Promise<void> => appService.trackEvent(getCoreContext(), event, extraData),
 	stopTestServer: (): Promise<void> => testServerService.stop(getCoreContext()),
 	startAFreshTest: (forceShow?: IsActive): Promise<void> => navigationService.startAFreshTest(getCoreContext(), forceShow),
 	checkStartupSequence: (): void => uiService.checkStartupSequence(getCoreContext()),
-	navigate: (path?: DomainUrl, openInBrowser?: IsActive): void => navigationService.navigate(getCoreContext(), path, openInBrowser),
+	navigate: (path?: DomainUrl, openInBrowser?: IsActive, closeUi?: IsActive): void => navigationService.navigate(getCoreContext(), path, openInBrowser, closeUi),
 	navigateVariable: (url: DomainUrl): void => navigationService.navigateVariable(getCoreContext(), url),
 	setMenu: (): Promise<void> => menuService.refresh(getCoreContext()),
 	doStartTestServer: (autoOpenBrowser?: IsActive, customDomain?: DomainUrl | null): Promise<void> => testServerService.start(getCoreContext(), autoOpenBrowser, customDomain),
 	openTestServerInBrowserHandler: (_event?: unknown, url?: DomainUrl): void => testServerService.openInBrowser(getCoreContext(), url),
+	showTestServerSetup: (): Promise<void> => testServerService.showSetupModal(getCoreContext()),
 	uiEvent: (eventName: ChannelName, ...args: unknown[]): void => uiService.uiEvent(getCoreContext(), eventName, ...args),
 	onTestServerTimeout: (): void => appService.onTestServerTimeout(getCoreContext()),
 	onToggleTestServerHttps: (): void => testServerService.toggleHttps(getCoreContext()),
@@ -180,12 +188,17 @@ const coreContextFunctions = {
 	onTitleUpdate: (evt: PreventableEvent, title: AppTitle): void => navigationService.onTitleUpdate(getCoreContext(), evt, title),
 	triggerBufferedModal: (): void => uiService.triggerBufferedModal(getCoreContext()),
 	manageAppClose: (evt: PreventableEvent): void => appService.manageAppClose(getCoreContext(), evt),
+	requestExit: (): void => appService.requestExit(),
 	showAbout: (): void => appService.showAbout(getCoreContext()),
 	clearCache: (): void => appService.clearCache(getCoreContext()),
 	getSessionAge: (): FormattedDuration => appService.getSessionAge(getCoreContext()),
 	getAppTitle: (title?: AppTitle): AppTitle => navigationService.getAppTitleWithContext(getCoreContext(), title),
 	setupWebRequestInterception: (): void => setupWebRequestInterception(getCoreContext()),
 	checkExpiration: (): void => appService.checkExpiration(getCoreContext()),
+	goBack: (): void => navigationService.goBack(getCoreContext()),
+	goForward: (): void => navigationService.goForward(getCoreContext()),
+	reload: (): void => navigationService.reload(getCoreContext()),
+	updateNavigationState: (): Promise<void> => navigationService.updateNavigationState(getCoreContext()),
 	initIpcHandlers: (): void => initIpcHandlers(getCoreContext())
 };
 
@@ -194,7 +207,8 @@ function getCoreContext(): CoreContext {
 
 	$coreContext = {
 		get $appWindow(): BrowserWindow | null { return $appWindow; },
-		get $eyasLayer(): BrowserView | null { return $eyasLayer; },
+		get $eyasLayer(): WebContentsView | null { return $eyasLayer; },
+		get $testLayer(): WebContentsView | null { return $testLayer; },
 		get $config(): ValidatedConfig | null { return $config; },
 		get $configToLoad(): ConfigToLoad { return $configToLoad; },
 		get $testNetworkEnabled(): IsActive { return $testNetworkEnabled; },
@@ -215,6 +229,7 @@ function getCoreContext(): CoreContext {
 		get _appVersion(): AppVersion { return _appVersion as AppVersion; },
 		get $pendingStartupModal(): StartupModal | null { return $pendingStartupModal; },
 		get $isDev(): IsActive { return $isDev; },
+		get $shouldClearHistory(): IsActive { return $shouldClearHistory; },
 		...coreContextSetters,
 		...coreContextFunctions,
 		updateService,

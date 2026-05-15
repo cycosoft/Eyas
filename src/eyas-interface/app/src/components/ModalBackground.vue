@@ -1,12 +1,17 @@
 <template>
-	<v-overlay class="custom-background" :model-value="modelValue">
+	<v-overlay
+		class="custom-background"
+		:model-value="modelValue"
+		:scrim="true"
+		@after-leave="$emit(`after-leave`)"
+	>
 		<template v-if="contentVisible">
 			<div class="bottom-right">
 				<span class="cursor-pointer" @click="openInBrowser(`https://cycosoft.com`)">
 					<img
+						class="logo"
 						alt="Cycosoft, LLC logo"
 						src="@/assets/cycosoft-logo.svg"
-						width="175"
 					>
 				</span>
 			</div>
@@ -17,10 +22,11 @@
 </template>
 
 <script setup lang="ts">
-import type { ModalBackgroundProps } from '@/../../../types/components.js';
+import type { ModalBackgroundProps, ModalBackgroundEmits } from '@/../../../types/components.js';
 import type { DomainUrl, ChannelName } from '@/../../../types/primitives.js';
 
 defineProps<ModalBackgroundProps>();
+defineEmits<ModalBackgroundEmits>();
 
 const openInBrowser = (url: DomainUrl): void => {
 	window.eyas?.send(`launch-link` as ChannelName, { url, openInBrowser: true });
@@ -40,6 +46,12 @@ const openInBrowser = (url: DomainUrl): void => {
 		height: 100%;
 		align-items: flex-end;
 		justify-content: flex-end;
+	}
+
+	.logo {
+		margin-right: 1.5rem;
+		margin-bottom: 0.5rem;
+		width: 175px;
 	}
 }
 </style>

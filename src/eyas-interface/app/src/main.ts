@@ -1,6 +1,7 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import App from '@/App.vue';
+import '@fontsource/manrope';
 
 // Vuetify
 import 'vuetify/styles';
@@ -8,7 +9,28 @@ import '@mdi/font/css/materialdesignicons.css';
 import { createVuetify } from 'vuetify';
 
 // Vuetify
-const vuetify = createVuetify();
+const vuetify = createVuetify({
+	theme: {
+		defaultTheme: `light`,
+		themes: {
+			light: {
+				dark: false,
+				colors: {
+					primary: `#58A1D6`,
+					'primary-container': `#4169e1`,
+					secondary: `#D05454`,
+					'secondary-container': `#dbe2fa`,
+					success: `#008562`,
+					surface: `#f7f9fb`,
+					background: `#f7f9fb`,
+					'on-surface': `#191c1e`,
+					outline: `#74777f`,
+					'outline-variant': `#c4c5d6`
+				}
+			}
+		}
+	}
+});
 
 // create a new app instance to work with
 const app = createApp(App);

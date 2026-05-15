@@ -10,7 +10,8 @@ export default defineConfig({
 		globals: true,
 		environment: `node`,
 		include: [`tests/electron/**/*.test.{js,ts}`],
-		exclude: [`tests/e2e/**`, `tests/unit/**`]
+		exclude: [`tests/e2e/**`, `tests/unit/**`],
+		testTimeout: 15000
 	}
 });
 

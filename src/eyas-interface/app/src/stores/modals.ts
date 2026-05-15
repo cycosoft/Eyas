@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import type { ModalsState } from '@/types/modals.js';
-import type { ModalId } from '@/../../../types/primitives.js';
+import type { ModalId, IsActive } from '@/../../../types/primitives.js';
 
 export default defineStore(`modals`, {
 	state: (): ModalsState => ({
@@ -27,6 +27,9 @@ export default defineStore(`modals`, {
 	getters: {
 		lastOpenedById(): ModalId | undefined {
 			return this.visible.at(-1);
+		},
+		hasVisibleModals(): IsActive {
+			return this.visible.length > 0;
 		}
 	}
 });

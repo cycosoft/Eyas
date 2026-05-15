@@ -33,3 +33,7 @@ export const SETTINGS_DEFAULTS = {
 		useCustomDomain: false
 	}
 } as const;
+// Matches the height of a Vuetify v-app-bar with density="compact" (48) + v-system-bar (30) + 1px border.
+// Using 79 prevents the bottom border from being cut off in the UI layer.
+// NOTE: Odd heights can cause 1px rounding discrepancies on high-DPI (Retina) displays.
+export const EYAS_HEADER_HEIGHT = 79;

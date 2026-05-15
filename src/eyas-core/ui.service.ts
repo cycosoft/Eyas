@@ -2,6 +2,7 @@ import type { CoreContext, UIService } from '@registry/eyas-core.js';
 import type { IsActive, ChannelName } from '@registry/primitives.js';
 import type { AppSettings } from '@registry/core.js';
 import * as settingsService from './settings-service.js';
+import { EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
 
 /**
  * Service for managing the Eyas UI layer (overlay) and modal flows.
@@ -12,26 +13,51 @@ export const uiService: UIService = {
 	 * @param ctx The core context.
 	 * @param enable Whether to enable (show) or disable (hide) the UI layer.
 	 */
-	toggleEyasUI(ctx: CoreContext, enable: IsActive): void {
-		if (!ctx.$eyasLayer) { return; }
+	toggleEyasUI(ctx: CoreContext, enable: IsActive, forceImmediate: IsActive = false): void {
+		// Guard: skip if $eyasLayer is absent or has already been destroyed by Electron
+		// (e.g. when install-update closes $appWindow before a pending IPC fires).
+		if (!ctx.$eyasLayer || ctx.$eyasLayer.webContents.isDestroyed()) { return; }
 
 		if (enable) {
-			// set the bounds to the current viewport
+			// Restore the layer to full size, synced to the actual native window content dimensions.
+			// This ensures the modal is centered and the scrim covers the full viewport without gaps.
+			const appWindow = ctx.$appWindow;
+			const [winWidth, winHeight] = (appWindow && !appWindow.isDestroyed())
+				? appWindow.getContentSize()
+				: [ctx.$currentViewport[0], ctx.$currentViewport[1] + EYAS_HEADER_HEIGHT];
 			ctx.$eyasLayer.setBounds({
 				x: 0,
 				y: 0,
-				width: ctx.$currentViewport[0],
-				height: ctx.$currentViewport[1]
+				width: winWidth,
+				height: winHeight
 			});
 
 			// give the layer focus
 			this.focusUI(ctx);
+
+			// notify renderer that the layer has expanded
+			ctx.$eyasLayer.webContents.send(`ui-shown`);
 		} else {
 			// close all modals in the UI
 			ctx.$eyasLayer.webContents.send(`close-modals`);
 
-			// shrink the bounds to 0 to hide it
-			ctx.$eyasLayer.setBounds({ x: 0, y: 0, width: 0, height: 0 });
+			// if requested to shrink immediately OR if there are no animations to wait for
+			// (we default to waiting for the renderer to send 'hide-ui' when it's ready)
+			if (forceImmediate) {
+				const appWindow = ctx.$appWindow;
+				const [winWidth] = (appWindow && !appWindow.isDestroyed())
+					? appWindow.getContentSize()
+					: [ctx.$currentViewport[0]];
+				ctx.$eyasLayer.setBounds({
+					x: 0,
+					y: 0,
+					width: winWidth,
+					height: EYAS_HEADER_HEIGHT
+				});
+
+				// notify renderer that the layer has collapsed
+				ctx.$eyasLayer.webContents.send(`ui-hidden`);
+			}
 		}
 	},
 
@@ -40,37 +66,9 @@ export const uiService: UIService = {
 	 * @param ctx The core context.
 	 */
 	focusUI(ctx: CoreContext): void {
-		if (!ctx.$eyasLayer) { return; }
-
-		// track the number of attempts to focus the UI to prevent infinite loops
-		this.focusAttempts = (this.focusAttempts || 0) + 1;
-
-		// if the number of attempts is greater than 5
-		if (this.focusAttempts > 5) {
-			// reset the number of attempts
-			this.focusAttempts = 0;
-
-			// stop trying to focus the UI
-			return;
+		if (ctx.$eyasLayer && !ctx.$eyasLayer.webContents.isDestroyed()) {
+			ctx.$eyasLayer.webContents.focus();
 		}
-
-		// give the layer focus
-		ctx.$eyasLayer.webContents.focus();
-
-		// check if the UI is focused
-		setTimeout(() => {
-			if (!ctx.$eyasLayer) { return; }
-			const isFocused = ctx.$eyasLayer.webContents.isFocused();
-
-			// if the UI is not focused
-			if (!isFocused) {
-				// call the focus method again
-				this.focusUI(ctx);
-			} else {
-				// reset the number of attempts
-				this.focusAttempts = 0;
-			}
-		}, 250);
 	},
 
 	/**
@@ -80,6 +78,17 @@ export const uiService: UIService = {
 	 * @param args Arguments to pass to the event.
 	 */
 	uiEvent(ctx: CoreContext, eventName: ChannelName, ...args: unknown[]): void {
+		// Guard: skip all UI events if $eyasLayer has been destroyed.
+		if (!ctx.$eyasLayer || ctx.$eyasLayer.webContents.isDestroyed()) { return; }
+
+		// List of events that are NOT modals and don't need UI expansion or buffering
+		const nonModalEvents: ChannelName[] = [`update-status-updated` as ChannelName];
+
+		if (nonModalEvents.includes(eventName)) {
+			ctx.$eyasLayer.webContents.send(eventName, ...args);
+			return;
+		}
+
 		// if the "What's New" modal is currently active, buffer this event
 		// (Except for the "What's New" modal itself)
 		if (ctx.$pendingStartupModal === null && eventName !== `show-whats-new`) {
@@ -94,7 +103,7 @@ export const uiService: UIService = {
 		this.toggleEyasUI(ctx, true);
 
 		// send the interaction to the UI layer
-		ctx.$eyasLayer?.webContents.send(eventName, ...args);
+		ctx.$eyasLayer.webContents.send(eventName, ...args);
 	},
 
 	/**
@@ -152,6 +161,8 @@ export const uiService: UIService = {
 		});
 	},
 
-	/** Internal counter for focus attempts */
+	/**
+	 * Tracks the number of attempts to focus the UI layer.
+	 */
 	focusAttempts: 0
 };

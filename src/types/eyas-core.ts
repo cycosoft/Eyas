@@ -1,10 +1,10 @@
-import type { BrowserWindow, BrowserView } from 'electron';
+import type { BrowserWindow, WebContentsView } from 'electron';
 import type { ValidatedConfig } from './config.js';
 import type { TestServerOptions } from './test-server.js';
 import type { IsActive, IsPending, DomainUrl, MPEventName, ChannelName, TimestampMS, AppVersion, EnvironmentKey, AppTitle, FormattedDuration, RetryCount, UpdateStatus, MetadataRecord } from './primitives.js';
 import type { PreventableEvent, Viewport, ViewportSize, StartupModal, ConfigToLoad } from './core.js';
 import type { FilePath } from './primitives.js';
-import type { MenuTemplate, LinkMenuHandlers, MenuContextParams, MenuContext } from './menu.js';
+import type { NavItem } from './components.js';
 
 /** Paths used by the Eyas core orchestrator */
 export type EyasPaths = {
@@ -26,7 +26,8 @@ export type EyasPaths = {
 export type CoreContext = {
 	// State
 	$appWindow: BrowserWindow | null;
-	$eyasLayer: BrowserView | null;
+	$eyasLayer: WebContentsView | null;
+	$testLayer: WebContentsView | null;
 	$config: ValidatedConfig | null;
 	$configToLoad: ConfigToLoad;
 	$testNetworkEnabled: IsActive;
@@ -47,6 +48,7 @@ export type CoreContext = {
 	_appVersion: AppVersion;
 	$pendingStartupModal: StartupModal | null;
 	$isDev: IsActive;
+	$shouldClearHistory: IsActive;
 
 	// Setters (to avoid direct mutation if possible, but keep simple for now)
 	setTestNetworkEnabled: (enabled: IsActive) => void;
@@ -63,21 +65,24 @@ export type CoreContext = {
 	setAllViewports: (viewports: Viewport[]) => void;
 	setPendingStartupModal: (modal: StartupModal | null) => void;
 	setAppWindow: (window: BrowserWindow | null) => void;
-	setEyasLayer: (layer: BrowserView | null) => void;
+	setEyasLayer: (layer: WebContentsView | null) => void;
+	setTestLayer: (layer: WebContentsView | null) => void;
 	setConfigToLoad: (config: ConfigToLoad) => void;
 	setConfig: (config: ValidatedConfig) => void;
+	setShouldClearHistory: (clear: IsActive) => void;
 
 	// Functions
-	toggleEyasUI: (enable: IsActive) => void;
+	toggleEyasUI: (enable: IsActive, forceImmediate?: IsActive) => void;
 	trackEvent: (event: MPEventName, extraData?: Record<string, unknown>) => Promise<void>;
 	stopTestServer: () => Promise<void>;
 	startAFreshTest: (forceShow?: IsActive) => Promise<void>;
 	checkStartupSequence: () => void;
-	navigate: (path?: DomainUrl, openInBrowser?: IsActive) => void;
+	navigate: (path?: DomainUrl, openInBrowser?: IsActive, closeUi?: IsActive) => void;
 	navigateVariable: (url: DomainUrl) => void;
 	setMenu: () => Promise<void>;
 	doStartTestServer: (autoOpenBrowser?: IsActive, customDomain?: DomainUrl | null) => Promise<void>;
 	openTestServerInBrowserHandler: (_event?: unknown, url?: DomainUrl) => void;
+	showTestServerSetup: () => Promise<void>;
 	uiEvent: (eventName: ChannelName, ...args: unknown[]) => void;
 	onTestServerTimeout: () => void;
 	onToggleTestServerHttps: () => void;
@@ -85,12 +90,17 @@ export type CoreContext = {
 	onTitleUpdate: (evt: PreventableEvent, title: AppTitle) => void;
 	triggerBufferedModal: () => void;
 	manageAppClose: (evt: PreventableEvent) => void;
+	requestExit: () => void;
 	showAbout: () => void;
 	clearCache: () => void;
 	getSessionAge: () => FormattedDuration;
 	getAppTitle: (title?: AppTitle) => AppTitle;
 	setupWebRequestInterception: () => void;
 	checkExpiration: () => void;
+	goBack: () => void;
+	goForward: () => void;
+	reload: () => void;
+	updateNavigationState: () => Promise<void>;
 	initIpcHandlers: () => void;
 
 	// Services
@@ -121,17 +131,12 @@ export type UpdateService = {
 /** Menu Service interface */
 export type MenuService = {
 	refresh: (ctx: CoreContext) => Promise<void>;
-	getViewportMenuItems: (ctx: CoreContext) => MenuTemplate;
-	getLinkMenuItems: (config: ValidatedConfig | null, handlers: LinkMenuHandlers) => MenuTemplate;
-	getContext: (ctx: CoreContext, params: MenuContextParams) => MenuContext;
-	getAppHandlers: (ctx: CoreContext) => Partial<MenuContext>;
-	getNavigationHandlers: (ctx: CoreContext) => Partial<MenuContext>;
-	getTestServerHandlers: (ctx: CoreContext) => Partial<MenuContext>;
+	getSerializableLinks: (config: ValidatedConfig | null) => NavItem[];
 };
 
 /** UI Service interface */
 export type UIService = {
-	toggleEyasUI: (ctx: CoreContext, enable: IsActive) => void;
+	toggleEyasUI: (ctx: CoreContext, enable: IsActive, forceImmediate?: IsActive) => void;
 	focusUI: (ctx: CoreContext) => void;
 	uiEvent: (ctx: CoreContext, eventName: ChannelName, ...args: unknown[]) => void;
 	triggerBufferedModal: (ctx: CoreContext) => void;
@@ -148,6 +153,7 @@ export type AppService = {
 	getSessionAge: (ctx: CoreContext) => FormattedDuration;
 	manageAppClose: (ctx: CoreContext, evt: PreventableEvent) => void;
 	onTestServerTimeout: (ctx: CoreContext) => void;
+	requestExit: () => void;
 	init: (ctx: CoreContext) => Promise<void>;
 	setupProtocols: (ctx: CoreContext) => void;
 	handleReady: (ctx: CoreContext) => Promise<void>;

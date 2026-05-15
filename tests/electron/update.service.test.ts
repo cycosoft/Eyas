@@ -72,6 +72,7 @@ describe(`Update Service`, () => {
 		mockCtx = {
 			_appVersion: `1.2.3` as AppVersion,
 			setMenu: vi.fn(),
+			uiEvent: vi.fn(),
 			$appWindow: { id: 1 as Count } as unknown
 		} as unknown as CoreContext;
 	});
@@ -130,5 +131,15 @@ describe(`Update Service`, () => {
 	it(`should quit and install when installUpdate is called`, () => {
 		updateService.installUpdate();
 		expect(autoUpdater.quitAndInstall).toHaveBeenCalled();
+	});
+
+	it(`should update status to error on update error`, () => {
+		updateService.init(mockCtx);
+
+		// Trigger the error event
+		(autoUpdater as unknown as AutoUpdaterMock).emit(`error`, new Error(`Update failed`));
+
+		expect(updateService.getStatus()).toBe(`error`);
+		expect(mockCtx.uiEvent).toHaveBeenCalledWith(expect.anything(), `error`);
 	});
 });

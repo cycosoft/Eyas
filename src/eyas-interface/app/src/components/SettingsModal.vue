@@ -145,8 +145,9 @@ const projectAlwaysChoose = computed({
 
 onMounted(() => {
 	// Show this modal when requested by the main process
-	window.eyas?.receive(`show-settings-modal` as ChannelName, ({ project, app, projectId: newProjectId = null, systemTheme } = {}) => {
-		projectId.value = newProjectId;
+	window.eyas?.receive(`show-settings-modal` as ChannelName, (data = {}) => {
+		const { project, app, projectId: newProjectId, systemTheme } = data;
+		projectId.value = newProjectId ?? null;
 		settingsStore.loadFromPayload({ project, app, projectId: newProjectId, systemTheme });
 		activeTab.value = `project`;
 		toastVisible.value = false;

@@ -2,6 +2,7 @@
 	<ModalBackground
 		:model-value="modelValue"
 		:content-visible="backgroundContentVisible"
+		@after-leave="hideUi"
 	>
 		<v-dialog
 			:model-value="modelValue"
@@ -13,7 +14,6 @@
 			v-bind="$attrs"
 			:scrim="false"
 			@after-enter="pinDialogWidth"
-			@after-leave="hideUi"
 		>
 			<div :data-modal-id="id" class="modal-wrapper__content">
 				<slot />
@@ -67,8 +67,9 @@ watch(() => props.modelValue, newValue => {
 }, { immediate: true });
 
 const hideUi = (): void => {
-	// hide the UI if there are no other dialogs open
-	if (document.querySelectorAll(`.v-dialog`).length <= 1) {
+	// hide the UI if there are no other dialogs open. Triggered by the
+	// ModalBackground's @after-leave hook to ensure the overlay is fully gone.
+	if (!ModalStore().hasVisibleModals) {
 		window.eyas?.send(`hide-ui` as ChannelName);
 	}
 };
@@ -94,7 +95,8 @@ onMounted(() => {
 defineExpose({
 	pinDialogWidth,
 	dialogWidth,
-	calculatedMinWidth
+	calculatedMinWidth,
+	hideUi
 });
 </script>
 

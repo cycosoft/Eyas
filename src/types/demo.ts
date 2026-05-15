@@ -3,7 +3,7 @@ import type { ViewportLabel, ViewportWidth, ViewportHeight, IsDefault } from './
 /**
  * Represents a viewport configuration for the Eyas Demo site.
  */
-export type EyasViewport = {
+type EyasViewport = {
 	label: ViewportLabel;
 	width: ViewportWidth;
 	height: ViewportHeight;
@@ -12,7 +12,7 @@ export type EyasViewport = {
 /**
  * Represents the result of a viewport classification.
  */
-export type ViewportClassification = {
+type ViewportClassification = {
 	label: ViewportLabel;
 	default: IsDefault;
 };

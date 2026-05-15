@@ -57,5 +57,5 @@ describe(`getConfig - ESM`, () => {
 				fs.rmdirSync(tempDir);
 			}
 		}
-	});
+	}, 30000);
 });

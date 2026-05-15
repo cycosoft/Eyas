@@ -36,7 +36,7 @@ export function validateConfig(rawConfig: EyasConfig | null, isConfigLoaded: IsA
 		source: loadedConfig.source || resolve(roots.config, `dist`),
 		domains: validateCustomDomain(loadedConfig.domain || loadedConfig.domains),
 		title: (loadedConfig.title || `Eyas`).trim(),
-		version: (loadedConfig.version || `${getBranchName()}.${getCommitHash()}` || `Unspecified Version`).trim(),
+		version: (loadedConfig.version || ``).trim(),
 		viewports: loadedConfig.viewports || [],
 		links: loadedConfig.links || [],
 

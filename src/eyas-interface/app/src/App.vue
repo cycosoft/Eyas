@@ -1,8 +1,6 @@
 <template>
 	<v-app data-qa="app-container">
-		<!-- always display the blur so the user knows if the UI is active -->
-		<v-overlay :model-value="true" persistent />
-
+		<AppHeader />
 		<EnvironmentModal />
 		<VariablesModal />
 		<ExitModal />
@@ -11,6 +9,7 @@
 		<TestServerActiveModal />
 		<SettingsModal />
 		<WhatsNewModal />
+		<UpdateReadyModal />
 	</v-app>
 </template>
 
@@ -19,6 +18,7 @@ import { onMounted, watch, computed } from 'vue';
 import { useTheme } from 'vuetify';
 import { THEME_MODES } from '@scripts/constants.js';
 import useSettingsStore from '@/stores/settings.js';
+import AppHeader from '@/components/AppHeader.vue';
 import ExitModal from '@/components/ExitModal.vue';
 import EnvironmentModal from '@/components/EnvironmentModal.vue';
 import VariablesModal from '@/components/VariablesModal.vue';
@@ -27,6 +27,7 @@ import TestServerSetupModal from '@/components/TestServerSetupModal.vue';
 import TestServerActiveModal from '@/components/TestServerActiveModal.vue';
 import SettingsModal from '@/components/SettingsModal.vue';
 import WhatsNewModal from '@/components/WhatsNewModal.vue';
+import UpdateReadyModal from '@/components/UpdateReadyModal.vue';
 import changelogData from '@/CHANGELOG.json';
 import type { ChannelName } from '@registry/primitives.js';
 
@@ -71,3 +72,23 @@ onMounted(() => {
 window.addEventListener(`online`, () => window.eyas?.send(`network-status` as ChannelName, true));
 window.addEventListener(`offline`, () => window.eyas?.send(`network-status` as ChannelName, false));
 </script>
+
+<style>
+/* Constrain the main application wrapper below the system bar */
+.v-application__wrap {
+	margin-top: 30px;
+	height: calc(100vh - 30px) !important;
+	min-height: calc(100vh - 30px) !important;
+}
+
+/* Constrain all Vuetify overlays, scrims, menus, and dialogs below the system bar */
+.v-overlay-container {
+	top: 30px !important;
+	height: calc(100vh - 30px) !important;
+}
+
+/* Ensure the modal background dimming overlay respects the top boundary */
+.v-overlay__scrim {
+	margin-top: 30px;
+}
+</style>

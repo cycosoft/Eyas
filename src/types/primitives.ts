@@ -27,7 +27,7 @@ export type EventType = string;
 export type IsComputable = boolean;
 export type Count = number;
 export type TimerId = ReturnType<typeof setTimeout>;
-export type MetadataKey = string;
+type MetadataKey = string;
 export type CacheKey = string;
 export type GenericKey = string;
 export type MetadataRecord = Record<MetadataKey, unknown>;
@@ -38,9 +38,10 @@ export type MenuLabel = string;
 export type AppTitle = string;
 export type ProjectId = string;
 export type SettingKey = string;
-export type AppName = string;
 export type AppVersion = string;
 export type ByteCount = number;
+export type DecimalCount = number;
+export type FormattedByteString = string;
 export type UpdateStatus = string;
 export type ModalMode = string;
 export type ModalId = string;
@@ -53,6 +54,7 @@ export type StepId = string;
 export type VariableValue = string;
 export type VariableType = string;
 export type FieldName = string;
+export type BrowserAction = string;
 
 // File System
 export type FileSystemPath = string;
@@ -64,7 +66,7 @@ export type PortNumber = number;
 export type PortString = string;
 export type DomainUrl = string;
 export type ResponseBody = string;
-export type ChannelName = string;
+export type { ChannelName } from './ipc.js';
 export type CommandLine = string;
 export type CommandLineArgs = string[];
 
@@ -72,6 +74,8 @@ export type CommandLineArgs = string[];
 export type ViewportWidth = number;
 export type ViewportHeight = number;
 export type ViewportLabel = string;
+export type ScreenCoordinate = number;
+export type PixelDimension = number;
 
 // Identity / Identification
 export type HashString = string;

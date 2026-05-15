@@ -1,15 +1,106 @@
-import type { ChannelName, ProjectId, DomainUrl, IsActive, SettingKey } from './primitives.js';
-import type { EnvironmentChoice } from './core.js';
+import type { ProjectId, DomainUrl, IsActive, SettingKey, HashString } from './primitives.js';
+import type { EnvironmentChoice, Viewport, ViewportSize, EnvironmentChoiceWithTitle } from './core.js';
+import type { NavItem } from './components.js';
 
 /** Payload for selecting a test environment */
 export type EnvironmentSelectedPayload = DomainUrl | EnvironmentChoice;
 
+/** The current state of the application update process */
+export type UpdateStatus = `idle` | `checking` | `downloading` | `downloaded` | `error`;
+
+export const VALID_SEND_CHANNELS = [
+	`app-exit`,
+	`hide-ui`,
+	`show-ui`,
+	`environment-selected`,
+	`launch-link`,
+	`launch-link-variable`,
+	`network-status`,
+	`test-server-setup-continue`,
+	`test-server-setup-step`,
+	`test-server-resume-confirm`,
+	`test-server-stop`,
+	`test-server-open-browser`,
+	`test-server-extend`,
+	`save-setting`,
+	`get-settings`,
+	`renderer-ready-for-modals`,
+	`whats-new-closed`,
+	`show-about`,
+	`show-settings`,
+	`show-whats-new`,
+	`show-test-server-setup`,
+	`request-exit`,
+	`browser-back`,
+	`browser-forward`,
+	`browser-reload`,
+	`browser-home`,
+	`browser-copy-url`,
+	`open-external`,
+	`set-viewport`,
+	`clear-cache`,
+	`open-cache-folder`,
+	`open-devtools-ui`,
+	`open-devtools-test`,
+	`check-for-updates`,
+	`install-update`,
+	`request-update-ready-modal`,
+	`update-titlebar-overlay`
+] as const;
+
+export const VALID_RECEIVE_CHANNELS = [
+	`modal-exit-visible`,
+	`show-environment-modal`,
+	`show-variables-modal`,
+	`show-version-mismatch-modal`,
+	`show-test-server-setup-modal`,
+	`show-test-server-resume-modal`,
+	`show-test-server-active-modal`,
+	`test-server-timeout`,
+	`close-modals`,
+	`show-settings-modal`,
+	`setting-saved`,
+	`settings-loaded`,
+	`show-whats-new`,
+	`ui-shown`,
+	`navigation-state-updated`,
+	`update-status-updated`,
+	`show-update-ready-modal`
+] as const;
+
+/** Payload for the 'navigation-state-updated' IPC event */
+export type NavigationStatePayload = {
+	canGoBack: IsActive;
+	canGoForward: IsActive;
+	viewports?: Viewport[];
+	currentViewport?: ViewportSize;
+	cacheSize?: number;
+	sessionAge?: string;
+	isDev?: boolean;
+	links?: NavItem[];
+	currentUrl?: string;
+	environments?: EnvironmentChoiceWithTitle[];
+	currentEnvironment?: DomainUrl | null;
+	projectId?: ProjectId;
+	domainsHash?: HashString | null;
+	testNetworkEnabled?: IsActive;
+	appTitle?: string;
+	configTitle?: string;
+	appVersion?: string;
+	pageTitle?: string;
+	platform?: string;
+};
+
+type SendChannel = typeof VALID_SEND_CHANNELS[number];
+type ReceiveChannel = typeof VALID_RECEIVE_CHANNELS[number];
+export type ChannelName = SendChannel | ReceiveChannel;
+
 /**
  * Interface for the 'eyas' object injected into the browser window.
  */
-export type EyasInterface = {
-	send: (channel: ChannelName, ...args: unknown[]) => void;
-	receive: (channel: ChannelName, callback: (...args: unknown[]) => void) => void;
+type EyasInterface = {
+	send: (channel: SendChannel, ...args: unknown[]) => void;
+	receive: (channel: ReceiveChannel, callback: (...args: unknown[]) => void) => void;
 };
 
 /**
@@ -37,4 +128,12 @@ export type TestServerSetupPayload = {
 	useHttps: IsActive;
 	autoOpenBrowser: IsActive;
 	useCustomDomain: IsActive;
+};
+
+type ColorHex = string;
+
+/** Payload for the 'update-titlebar-overlay' IPC event */
+export type TitleBarOverlayPayload = {
+	color: ColorHex;
+	symbolColor: ColorHex;
 };

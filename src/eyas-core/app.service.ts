@@ -123,6 +123,13 @@ Runner: v${ctx._appVersion}
 	},
 
 	/**
+	 * Requests the application to exit gracefully.
+	 */
+	requestExit(): void {
+		app.quit();
+	},
+
+	/**
 	 * Handles the test server session timeout.
 	 * @param ctx The core context.
 	 */

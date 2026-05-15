@@ -1,6 +1,7 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { uiService } from '@core/ui.service.js';
-import type { CoreContext, UIService } from '@registry/eyas-core.js';
+import { EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
+import type { CoreContext } from '@registry/eyas-core.js';
 import type { ChannelName } from '@registry/primitives.js';
 import type { AppSettings } from '@registry/core.js';
 import type { ProjectSettings } from '@registry/settings.js';
@@ -26,6 +27,7 @@ describe(`ui.service.ts unit tests`, () => {
 				webContents: {
 					focus: vi.fn(),
 					isFocused: vi.fn().mockReturnValue(true),
+					isDestroyed: vi.fn().mockReturnValue(false),
 					send: vi.fn()
 				}
 			},
@@ -39,51 +41,29 @@ describe(`ui.service.ts unit tests`, () => {
 			uiEvent: vi.fn(),
 			triggerBufferedModal: vi.fn()
 		} as unknown as CoreContext;
-
-		// Reset internal state of the service
-		(uiService as UIService).focusAttempts = 0;
 	});
 
-	test(`toggleEyasUI(true) should show layer and focus`, () => {
+	test(`toggleEyasUI(true) should restore full bounds and focus the layer`, () => {
 		uiService.toggleEyasUI(mockCtx, true);
-		expect(mockCtx.$eyasLayer?.setBounds).toHaveBeenCalledWith({ x: 0, y: 0, width: 800, height: 600 });
+		expect(mockCtx.$eyasLayer?.setBounds).toHaveBeenCalledWith({ x: 0, y: 0, width: 800, height: 600 + EYAS_HEADER_HEIGHT });
 		expect(mockCtx.$eyasLayer?.webContents.focus).toHaveBeenCalled();
 	});
 
-	test(`toggleEyasUI(false) should hide layer and close modals`, () => {
+	test(`toggleEyasUI(false) should close modals but NOT shrink by default`, () => {
 		uiService.toggleEyasUI(mockCtx, false);
 		expect(mockCtx.$eyasLayer?.webContents.send).toHaveBeenCalledWith(`close-modals`);
-		expect(mockCtx.$eyasLayer?.setBounds).toHaveBeenCalledWith({ x: 0, y: 0, width: 0, height: 0 });
+		expect(mockCtx.$eyasLayer?.setBounds).not.toHaveBeenCalled();
 	});
 
-	test(`focusUI should retry if not focused`, () => {
-		if (!mockCtx.$eyasLayer) { throw new Error(`mockCtx.$eyasLayer is missing`); }
-		vi.mocked(mockCtx.$eyasLayer.webContents.isFocused)
-			.mockReturnValueOnce(false)
-			.mockReturnValueOnce(true);
+	test(`toggleEyasUI(false, true) should close modals and shrink immediately`, () => {
+		uiService.toggleEyasUI(mockCtx, false, true);
+		expect(mockCtx.$eyasLayer?.webContents.send).toHaveBeenCalledWith(`close-modals`);
+		expect(mockCtx.$eyasLayer?.setBounds).toHaveBeenCalledWith({ x: 0, y: 0, width: 800, height: EYAS_HEADER_HEIGHT });
+	});
 
+	test(`focusUI should focus the webContents`, () => {
 		uiService.focusUI(mockCtx);
 		expect(mockCtx.$eyasLayer?.webContents.focus).toHaveBeenCalledTimes(1);
-
-		vi.advanceTimersByTime(250);
-		expect(mockCtx.$eyasLayer?.webContents.focus).toHaveBeenCalledTimes(2);
-
-		vi.advanceTimersByTime(250);
-		expect(mockCtx.$eyasLayer?.webContents.focus).toHaveBeenCalledTimes(2); // No more retries
-	});
-
-	test(`focusUI should stop after 5 attempts`, () => {
-		if (!mockCtx.$eyasLayer) { throw new Error(`mockCtx.$eyasLayer is missing`); }
-		vi.mocked(mockCtx.$eyasLayer.webContents.isFocused).mockReturnValue(false);
-
-		uiService.focusUI(mockCtx); // 1
-		for (let i = 0; i < 4; i++) {
-			vi.advanceTimersByTime(250); // 2, 3, 4, 5
-		}
-		expect(mockCtx.$eyasLayer?.webContents.focus).toHaveBeenCalledTimes(5);
-
-		vi.advanceTimersByTime(250); // Should stop here
-		expect(mockCtx.$eyasLayer?.webContents.focus).toHaveBeenCalledTimes(5);
 	});
 
 	test(`uiEvent should buffer if Whats New is required`, () => {

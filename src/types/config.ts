@@ -20,13 +20,13 @@ export type DomainConfig = {
 	key?: LabelString;
 }
 
-export type LinkConfig = {
+type LinkConfig = {
 	label: LabelString;
 	url: DomainUrl;
 	external?: IsActive;
 }
 
-export type OutputConfig = {
+type OutputConfig = {
 	expires: DurationHours;
 }
 

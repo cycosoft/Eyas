@@ -1,6 +1,7 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
-import { app, BrowserWindow, ipcMain, session, protocol } from 'electron';
+import { app, BrowserWindow, ipcMain, session, protocol, clipboard, type IpcMainEvent } from 'electron';
 import type { EyasPaths } from '@registry/eyas-core.js';
+import { EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
 
 type BrowserWindowConstructor = { new (): BrowserWindow };
 
@@ -24,6 +25,7 @@ vi.mock(`electron`, () => ({
 				loadURL: vi.fn(),
 				getURL: vi.fn().mockReturnValue(`https://test.com`),
 				getTitle: vi.fn().mockReturnValue(`Test Title`),
+				isDestroyed: vi.fn().mockReturnValue(false),
 				session: {
 					webRequest: {
 						onBeforeRequest: vi.fn()
@@ -33,11 +35,31 @@ vi.mock(`electron`, () => ({
 			on: vi.fn(),
 			loadURL: vi.fn(),
 			addBrowserView: vi.fn(),
+			contentView: {
+				addChildView: vi.fn(),
+				removeInterfaceView: vi.fn()
+			},
 			show: vi.fn(),
 			setContentSize: vi.fn(),
 			getContentSize: vi.fn().mockReturnValue([1366, 768]),
 			setTitle: vi.fn(),
+			isDestroyed: vi.fn().mockReturnValue(false),
 			removeListener: vi.fn()
+		};
+	}),
+	WebContentsView: vi.fn().mockImplementation(function() {
+		return {
+			webContents: {
+				on: vi.fn(),
+				loadURL: vi.fn(),
+				send: vi.fn(),
+				focus: vi.fn(),
+				isDestroyed: vi.fn().mockReturnValue(false),
+				isFocused: vi.fn().mockReturnValue(true)
+			},
+			setBounds: vi.fn(),
+			isDestroyed: vi.fn().mockReturnValue(false),
+			getBounds: vi.fn().mockReturnValue({ width: 1366, height: 768 })
 		};
 	}),
 	BrowserView: vi.fn().mockImplementation(function() {
@@ -47,9 +69,11 @@ vi.mock(`electron`, () => ({
 				loadURL: vi.fn(),
 				send: vi.fn(),
 				focus: vi.fn(),
+				isDestroyed: vi.fn().mockReturnValue(false),
 				isFocused: vi.fn().mockReturnValue(true)
 			},
 			setBounds: vi.fn(),
+			isDestroyed: vi.fn().mockReturnValue(false),
 			getBounds: vi.fn().mockReturnValue({ width: 1366, height: 768 })
 		};
 	}),
@@ -160,32 +184,69 @@ describe(`index.ts refactoring unit tests`, () => {
 	test(`createAppWindow should instantiate BrowserWindow`, () => {
 		const ctx = {
 			setAppWindow: vi.fn(),
+			setTestLayer: vi.fn(),
 			$config: { meta: { testId: `test` } },
 			$currentViewport: [1366, 768],
-			$paths: { icon: `test.png` },
+			$paths: { icon: `test.png`, testPreload: `preload.js` },
 			getAppTitle: vi.fn().mockReturnValue(`Test`)
 		} as unknown as CoreContext;
 		windowService.createAppWindow(ctx);
-		expect(BrowserWindow).toHaveBeenCalled();
+		expect(BrowserWindow).toHaveBeenCalledWith(expect.objectContaining({
+			titleBarStyle: `hidden`,
+			titleBarOverlay: expect.objectContaining({
+				color: `#f7f9fb`,
+				symbolColor: `#191c1e`,
+				height: 30
+			})
+		}));
 	});
 
 	test(`handleResize should update viewport and bounds`, () => {
 		const mockLayer = {
 			getBounds: vi.fn().mockReturnValue({ width: 800, height: 600 }),
-			setBounds: vi.fn()
+			setBounds: vi.fn(),
+			isDestroyed: vi.fn().mockReturnValue(false),
+			webContents: { isDestroyed: vi.fn().mockReturnValue(false) }
 		};
 		const ctx = {
-			$appWindow: { getContentSize: vi.fn().mockReturnValue([1024, 768]) },
+			$appWindow: {
+				getContentSize: vi.fn().mockReturnValue([1024, 768]),
+				isDestroyed: vi.fn().mockReturnValue(false)
+			},
 			$eyasLayer: mockLayer,
 			$currentViewport: [800, 600],
-			setMenu: vi.fn()
+			setMenu: vi.fn(),
+			updateNavigationState: vi.fn()
 		} as unknown as CoreContext;
 
 		windowService.handleResize(ctx);
 
-		expect(ctx.$currentViewport).toEqual([1024, 768]);
+		expect(ctx.$currentViewport).toEqual([1024, 768 - EYAS_HEADER_HEIGHT]);
 		expect(mockLayer.setBounds).toHaveBeenCalledWith({ x: 0, y: 0, width: 1024, height: 768 });
 		expect(ctx.setMenu).toHaveBeenCalled();
+	});
+
+	test(`handleResize should ALWAYS update bounds even if current layer is 0x0`, () => {
+		const mockLayer = {
+			getBounds: vi.fn().mockReturnValue({ width: 0, height: 0 }),
+			setBounds: vi.fn(),
+			isDestroyed: vi.fn().mockReturnValue(false),
+			webContents: { isDestroyed: vi.fn().mockReturnValue(false) }
+		};
+		const ctx = {
+			$appWindow: {
+				getContentSize: vi.fn().mockReturnValue([1024, 768]),
+				isDestroyed: vi.fn().mockReturnValue(false)
+			},
+			$eyasLayer: mockLayer,
+			$currentViewport: [800, 600],
+			setMenu: vi.fn(),
+			updateNavigationState: vi.fn()
+		} as unknown as CoreContext;
+
+		windowService.handleResize(ctx);
+
+		expect(mockLayer.setBounds).toHaveBeenCalledWith({ x: 0, y: 0, width: 1024, height: EYAS_HEADER_HEIGHT });
 	});
 
 	test(`initElectronUi should orchestrate window startup`, async () => {
@@ -278,6 +339,7 @@ describe(`index.ts refactoring unit tests`, () => {
 		} as unknown as CoreContext;
 
 		initIpcHandlers(ctx);
+		expect(ipcMain.on).toHaveBeenCalledWith(`show-ui`, expect.any(Function));
 		expect(ipcMain.on).toHaveBeenCalledWith(`hide-ui`, expect.any(Function));
 		expect(ipcMain.on).toHaveBeenCalledWith(`app-exit`, expect.any(Function));
 		expect(ipcMain.on).toHaveBeenCalledWith(`network-status`, expect.any(Function));
@@ -318,5 +380,60 @@ describe(`index.ts refactoring unit tests`, () => {
 	test(`registerInternalProtocols should call protocol.registerSchemesAsPrivileged`, () => {
 		registerInternalProtocols();
 		expect(protocol.registerSchemesAsPrivileged).toHaveBeenCalled();
+	});
+});
+
+describe(`UI Expansion IPC`, () => {
+	test(`show-ui IPC handler should call toggleEyasUI(true)`, () => {
+		const ctx = {
+			toggleEyasUI: vi.fn(),
+			$eyasLayer: { webContents: { send: vi.fn() } }
+		} as unknown as CoreContext;
+
+		// get the handler registered by initIpcHandlers
+		let showUiHandler: unknown = null;
+		vi.spyOn(ipcMain, `on`).mockImplementation((channel, cb) => {
+			if (channel === `show-ui`) { showUiHandler = cb; }
+			return ipcMain;
+		});
+
+		initIpcHandlers(ctx);
+
+		if (typeof showUiHandler !== `function`) { throw new Error(`show-ui handler not registered`); }
+
+		// trigger the handler
+		showUiHandler({} as IpcMainEvent);
+
+		expect(ctx.toggleEyasUI).toHaveBeenCalledWith(true);
+	});
+});
+
+describe(`Browser Copy URL IPC`, () => {
+	test(`browser-copy-url IPC handler should write active URL to system clipboard`, () => {
+		const mockWebContents = {
+			getURL: vi.fn().mockReturnValue(`https://example.com/test-url`),
+			isDestroyed: vi.fn().mockReturnValue(false)
+		};
+		const ctx = {
+			$isInitializing: false,
+			$testLayer: {
+				webContents: mockWebContents
+			}
+		} as unknown as CoreContext;
+
+		let copyUrlHandler: unknown = null;
+		vi.spyOn(ipcMain, `on`).mockImplementation((channel, cb) => {
+			if (channel === `browser-copy-url`) { copyUrlHandler = cb; }
+			return ipcMain;
+		});
+
+		initIpcHandlers(ctx);
+
+		if (typeof copyUrlHandler !== `function`) { throw new Error(`browser-copy-url handler not registered`); }
+
+		copyUrlHandler({} as IpcMainEvent);
+
+		expect(mockWebContents.getURL).toHaveBeenCalled();
+		expect(clipboard.writeText).toHaveBeenCalledWith(`https://example.com/test-url`);
 	});
 });

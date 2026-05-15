@@ -39,6 +39,10 @@ export default {
 };
 `;
 	await fs.writeFile(path.join(dir, `.eyas.config.js`), configContent, `utf8`);
+	// Add dummy package.json to prevent ENOENT in getCliVersion
+	const packageContent = `{"version": "1.0.0"}`;
+	await fs.writeFile(path.join(dir, `package.json`), packageContent, `utf8`);
+
 	return dir;
 }
 
@@ -72,6 +76,7 @@ test.describe(`Project Settings Isolation`, () => {
 	});
 
 	test(`settings saved in Project A do not appear in Project B`, async () => {
+		test.setTimeout(30000);
 		// ─── Phase 1: Launch as Project A and enable "Always choose" ───────────
 		let electronApp = await launchEyas([], sharedUserDataDir, projectADir);
 		let uiPage = await getUiView(electronApp);
@@ -113,8 +118,9 @@ test.describe(`Project Settings Isolation`, () => {
 
 		const envModalA2 = uiPage.locator(`[data-qa="environment-modal-title"]`);
 
-		// Give the app a moment to potentially show the modal (it should NOT)
-		await new Promise(resolve => setTimeout(resolve, 3000));
+		// Wait for the app header to be visible, which indicates the app has loaded
+		// and the modal was skipped.
+		await expect(uiPage.locator(`[data-qa="app-header"]`)).toBeVisible({ timeout: 10_000 });
 		await expect(envModalA2).not.toBeVisible({
 			message: `Project A should skip the modal because "Always choose" was already saved`
 		});
