@@ -282,19 +282,13 @@ async function updateNavigationState(ctx: CoreContext): Promise<void> {
 		appTitle: getAppTitleWithContext(ctx),
 		configTitle: titleParts.configTitle,
 		appVersion: titleParts.appVersion,
-		pageTitle: titleParts.pageTitle
+		pageTitle: titleParts.pageTitle,
+		platform: process.platform
 	});
 }
 
 export const navigationService = {
-	navigate,
-	navigateVariable,
-	startAFreshTest,
-	getAppTitleWithContext,
-	getAppTitlePartsWithContext,
-	onTitleUpdate,
-	goBack,
-	goForward,
-	reload,
+	navigate, navigateVariable, startAFreshTest, getAppTitleWithContext,
+	getAppTitlePartsWithContext, onTitleUpdate, goBack, goForward, reload,
 	updateNavigationState
 };

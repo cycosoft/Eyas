@@ -151,6 +151,40 @@ describe(`AppHeader System Bar`, () => {
 			await wrapper.vm.$nextTick();
 			expect(titleSpan.classes()).toContain(`text-disabled`);
 		});
+
+		test(`applies platform-specific class to system bar`, async () => {
+			let navCallback: ((payload: NavigationStatePayload) => void) | null = null;
+			(window as unknown as WindowWithEyas).eyas.receive = vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
+				if (channel === `navigation-state-updated`) {
+					navCallback = cb as (payload: NavigationStatePayload) => void;
+				}
+			});
+
+			wrapper = mount(AppHeader, {
+				global: {
+					stubs: {
+						VAppBar: { template: `<div><slot /></div>` }, VMenu: { template: `<div><slot /></div>` }, VList: { template: `<div><slot /></div>` },
+						VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
+						VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
+						VIcon: true, VImg: true,
+						VSystemBar: { template: `<div class="v-system-bar" v-bind="$attrs"><slot /></div>` }
+					}
+				}
+			});
+
+			if (navCallback) {
+				((navCallback as unknown) as (payload: NavigationStatePayload) => void)({
+					canGoBack: true,
+					canGoForward: true,
+					platform: `darwin`
+				});
+			}
+			await wrapper.vm.$nextTick();
+
+			const systemBar = wrapper.find(`.v-system-bar`);
+			expect(systemBar.classes()).toContain(`is-darwin`);
+			expect(systemBar.classes()).toContain(`justify-center`);
+		});
 	});
 
 	describe(`window controls overlay dynamic color matching`, () => {

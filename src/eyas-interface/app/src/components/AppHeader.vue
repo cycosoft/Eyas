@@ -2,7 +2,7 @@
 	<v-system-bar
 		height="30"
 		data-qa="window-system-bar"
-		class="window-system-bar px-4 d-flex align-center justify-start"
+		:class="['window-system-bar d-flex align-center justify-center', `is-${state.platform}`]"
 		:style="{ '--system-bar-bg': overlayColors.color }"
 		@mouseenter="handleHeaderMouseEnter"
 		@mouseleave="handleHeaderMouseLeave"
@@ -281,7 +281,7 @@ defineExpose({
 .v-btn--active, .v-list-item--active { background-color: rgba(var(--v-theme-primary), 0.1) !important; color: rgb(var(--v-theme-primary)) !important; }
 .blink-animation { animation: blink 1s infinite; }
 @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-.window-system-bar { -webkit-app-region: drag; user-select: none; background-color: var(--system-bar-bg) !important; }
+.window-system-bar { -webkit-app-region: drag; user-select: none; background-color: var(--system-bar-bg) !important; padding-left: 140px !important; padding-right: 140px !important; }
 .system-bar-title { font-size: 0.75rem; font-weight: 800; user-select: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .scrim-active-text { color: #ededed !important; }
 .app-header { --v-border-opacity: 0.06 !important; box-shadow: none !important; }

@@ -37,7 +37,8 @@ export const state = reactive({
 	appTitle: ``,
 	configTitle: ``,
 	appVersion: ``,
-	pageTitle: ``
+	pageTitle: ``,
+	platform: ``
 });
 
 /** The fallback delay (ms) to open the menu if the IPC event never fires. */
@@ -189,7 +190,7 @@ export function handleNavigationUpdate(data: unknown): void {
 
 	const keys: Array<keyof NavigationStatePayload & keyof typeof state> = [
 		`currentUrl`, `environments`, `currentEnvironment`, `projectId`,
-		`domainsHash`, `testNetworkEnabled`, `appTitle`, `configTitle`, `appVersion`, `pageTitle`
+		`domainsHash`, `testNetworkEnabled`, `appTitle`, `configTitle`, `appVersion`, `pageTitle`, `platform`
 	];
 	for (const key of keys) {
 		if (payload[key] !== undefined) {
