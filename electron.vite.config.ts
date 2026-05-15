@@ -35,7 +35,8 @@ export default defineConfig({
 					'deep-link-handler': resolve(import.meta.dirname, `src/eyas-core/deep-link-handler.js`),
 					'test-server/test-server': resolve(import.meta.dirname, `src/eyas-core/test-server/test-server.js`),
 					'test-server/test-server-certs': resolve(import.meta.dirname, `src/eyas-core/test-server/test-server-certs.js`),
-					'test-server/test-server-timeout': resolve(import.meta.dirname, `src/eyas-core/test-server/test-server-timeout.js`)
+					'test-server/test-server-timeout': resolve(import.meta.dirname, `src/eyas-core/test-server/test-server-timeout.js`),
+					'scripts/codesign-win': resolve(import.meta.dirname, `src/scripts/codesign-win.js`)
 				},
 				output: {
 					// Output as native ESM. The root package.json has "type": "module",
