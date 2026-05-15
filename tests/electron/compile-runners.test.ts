@@ -31,30 +31,30 @@ vi.mock(`../../src/scripts/electron-builder-config.js`, () => ({
 	getElectronBuilderConfig: vi.fn().mockReturnValue({})
 }));
 
+const platformMocks = vi.hoisted(() => ({
+	isMac: false,
+	isWindows: false
+}));
+
+vi.mock(`@scripts/platform-utils.js`, () => platformMocks);
+
 describe(`compileRunners`, () => {
 	const originalEnv = process.env;
-	const originalPlatform = process.platform;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
 		process.env = { ...originalEnv };
-		// Reset to a default platform
-		Object.defineProperty(process, `platform`, {
-			value: `win32`,
-			writable: true
-		});
+		platformMocks.isWindows = true;
+		platformMocks.isMac = false;
 	});
 
 	afterEach(() => {
 		process.env = originalEnv;
-		Object.defineProperty(process, `platform`, {
-			value: originalPlatform,
-			writable: true
-		});
 	});
 
 	test(`should call builder.build with correct targets for Windows`, async () => {
-		Object.defineProperty(process, `platform`, { value: `win32` });
+		platformMocks.isWindows = true;
+		platformMocks.isMac = false;
 		await compileRunners();
 
 		expect(builder.build).toHaveBeenCalled();
@@ -64,7 +64,8 @@ describe(`compileRunners`, () => {
 	});
 
 	test(`should call builder.build with correct targets for Mac`, async () => {
-		Object.defineProperty(process, `platform`, { value: `darwin` });
+		platformMocks.isWindows = false;
+		platformMocks.isMac = true;
 		await compileRunners();
 
 		expect(builder.build).toHaveBeenCalled();
@@ -74,7 +75,8 @@ describe(`compileRunners`, () => {
 	});
 
 	test(`should copy .exe files to dist folder`, async () => {
-		Object.defineProperty(process, `platform`, { value: `win32` });
+		platformMocks.isWindows = true;
+		platformMocks.isMac = false;
 		vi.mocked(builder.build).mockResolvedValue([`C:/path/to/app.exe`]);
 
 		await compileRunners();
@@ -86,7 +88,8 @@ describe(`compileRunners`, () => {
 	});
 
 	test(`should not copy non-exe files`, async () => {
-		Object.defineProperty(process, `platform`, { value: `win32` });
+		platformMocks.isWindows = true;
+		platformMocks.isMac = false;
 		vi.mocked(builder.build).mockResolvedValue([`C:/path/to/app.zip`]);
 
 		await compileRunners();
@@ -96,7 +99,8 @@ describe(`compileRunners`, () => {
 
 	test(`should execute open folder command if EYAS_OPEN_RUNNERS is true`, async () => {
 		process.env.EYAS_OPEN_RUNNERS = `true`;
-		Object.defineProperty(process, `platform`, { value: `win32` });
+		platformMocks.isWindows = true;
+		platformMocks.isMac = false;
 
 		await compileRunners();
 
@@ -125,7 +129,8 @@ describe(`compileRunners`, () => {
 
 	test(`should execute 'open' command for Mac if EYAS_OPEN_RUNNERS is true`, async () => {
 		process.env.EYAS_OPEN_RUNNERS = `true`;
-		Object.defineProperty(process, `platform`, { value: `darwin` });
+		platformMocks.isWindows = false;
+		platformMocks.isMac = true;
 
 		await compileRunners();
 

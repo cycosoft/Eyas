@@ -9,6 +9,7 @@ import builder from "electron-builder";
 import { exec } from "child_process";
 import { getElectronBuilderConfig } from "./electron-builder-config.js";
 import type { SourcePath, IsActive } from "@registry/primitives.js";
+import { isMac as platformIsMac, isWindows as platformIsWin } from "./platform-utils.js";
 
 /**
  * Compiles the runners for the project.
@@ -17,8 +18,8 @@ import type { SourcePath, IsActive } from "@registry/primitives.js";
 export async function compileRunners(): Promise<void> {
 	const isDev = process.env.NODE_ENV === `dev`;
 	const isInstaller = process.env.PUBLISH_TYPE === `installer`;
-	const isMac = process.platform === `darwin`;
-	const isWin = process.platform === `win32`;
+	const isMac = platformIsMac;
+	const isWin = platformIsWin;
 	const consumerRoot = process.cwd();
 	const runnersRoot = path.join(consumerRoot, `.runners`);
 	const distRoot = path.join(consumerRoot, `dist`);

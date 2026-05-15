@@ -6,6 +6,7 @@ import * as testServer from './test-server/test-server.js';
 import * as testServerTimeout from './test-server/test-server-timeout.js';
 import { TEST_SERVER_SESSION_DURATION_MS, EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
 import { MP_EVENTS } from './metrics-events.js';
+import { isMac } from '@scripts/platform-utils.js';
 
 import type {
 	LaunchLinkPayload,
@@ -94,6 +95,9 @@ function initCoreIpcListeners(ctx: CoreContext): void {
 	});
 	ipcMain.on(`request-update-ready-modal`, () => { ctx.uiEvent(`show-update-ready-modal`, true); });
 	ipcMain.on(`update-titlebar-overlay`, (_event, options: TitleBarOverlayPayload) => {
+		// setTitleBarOverlay is only supported on Windows and Linux
+		if (isMac) { return; }
+
 		if (ctx.$appWindow && !ctx.$appWindow.isDestroyed()) {
 			ctx.$appWindow.setTitleBarOverlay({
 				color: options.color,
@@ -154,7 +158,6 @@ function initViewportIpcListeners(ctx: CoreContext): void {
 		ctx.$testLayer?.setBounds({ x: 0, y: EYAS_HEADER_HEIGHT, width, height });
 	});
 }
-
 /**
  * Initializes cache management IPC listeners.
  * @param ctx The core context.
@@ -260,13 +263,7 @@ function initTestServerIpcListeners(ctx: CoreContext): void {
 
 	// test server resume modal: user clicked Resume
 	ipcMain.on(`test-server-resume-confirm`, () => {
-		// if there are previous settings, restart with them
-		if (ctx.$lastTestServerOptions) {
-			ctx.doStartTestServer();
-		} else {
-			// otherwise just start with defaults
-			ctx.doStartTestServer();
-		}
+		ctx.doStartTestServer();
 	});
 
 	// test server active modal: user clicked End Session

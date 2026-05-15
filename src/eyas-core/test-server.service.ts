@@ -6,6 +6,7 @@ import { parseURL } from '@scripts/parse-url.js';
 import * as settingsService from './settings-service.js';
 import { TEST_SERVER_SESSION_DURATION_MS } from '@scripts/constants.js';
 import { formatDuration } from '@scripts/time-utils.js';
+import { isWindows } from '@scripts/platform-utils.js';
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { DomainUrl, FormattedDuration, IsEnabled, IsActive } from '@registry/primitives.js';
 
@@ -80,7 +81,6 @@ async function showSetupModal(ctx: CoreContext): Promise<void> {
 		const portHttps = await testServer.getAvailablePort(ctx.$testDomain, true);
 		const parsedTestDomain = parseURL(ctx.$testDomain);
 		const hostnameForHosts = (parsedTestDomain instanceof URL ? parsedTestDomain.hostname : null) || `test.local`;
-		const isWindows = process.platform === `win32`;
 
 		const projectId = ctx.$config?.meta?.projectId || null;
 		ctx.setTestServerHttpsEnabled(settingsService.get(`testServer.useHttps`, projectId ?? undefined) as IsEnabled);

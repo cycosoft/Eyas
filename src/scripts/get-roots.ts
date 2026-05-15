@@ -1,5 +1,6 @@
 import path from "path";
 import type { SourcePath, IsActive } from "@registry/primitives.js";
+import { isWindows } from "./platform-utils.js";
 
 // setup
 const isProd: IsActive = import.meta.dirname.includes(`node_modules`);
@@ -9,7 +10,7 @@ const moduleRoot: SourcePath = isProd
 	: consumerRoot;
 const eyasRoot: SourcePath = path.join(import.meta.dirname, `..`);
 const macExecutable = `.app/`;
-const configRoot: SourcePath = process.platform === `win32`
+const configRoot: SourcePath = isWindows
 	? process.env.PORTABLE_EXECUTABLE_DIR || consumerRoot
 	: path.join(import.meta.dirname.slice(0, import.meta.dirname.indexOf(macExecutable) + macExecutable.length), `..`);
 
