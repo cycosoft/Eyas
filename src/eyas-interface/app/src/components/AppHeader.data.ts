@@ -55,6 +55,11 @@ export const browserControls: BrowserControl[] = [
  */
 export function getMnemonicParts(item: NavGroup | NavItem): MnemonicPart[] {
 	const label = `name` in item ? item.name : item.title;
+
+	// TEMPORARY: Disable mnemonics until the engine is implemented
+	return [{ text: label, isMnemonic: false }];
+
+	/*
 	let mnemonic = item.mnemonic?.toLowerCase();
 
 	if (!mnemonic && item.shortcut?.startsWith(`Alt+`)) {
@@ -84,6 +89,7 @@ export function getMnemonicParts(item: NavGroup | NavItem): MnemonicPart[] {
 	}
 
 	return parts;
+	*/
 }
 
 // Pre-calculate mnemonic parts for all static navigation groups and items
