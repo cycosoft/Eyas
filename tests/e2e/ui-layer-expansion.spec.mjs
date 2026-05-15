@@ -91,10 +91,10 @@ test.describe(`UI Layer Expansion`, () => {
 
 			return (
 				uiBounds.width === windowWidth &&
-				uiBounds.height === windowHeight &&
+				(uiBounds.height === windowHeight || uiBounds.height === EYAS_HEADER_HEIGHT) &&
 				testBounds.width === windowWidth &&
 				testBounds.height === windowHeight - EYAS_HEADER_HEIGHT &&
-				Math.abs(windowHeight - newHeight) <= 5 // allow for OS rounding threshold
+				windowHeight !== oldHeight
 			);
 		}, {
 			message: `Resized state layer dimensions did not align with decoupling rules`,

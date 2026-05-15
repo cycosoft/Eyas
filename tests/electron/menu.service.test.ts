@@ -5,6 +5,8 @@ import type { CoreContext } from '@registry/eyas-core.js';
 import { Menu } from 'electron';
 import { menuService } from '@core/menu.service.js';
 
+import type { IsActive } from '@registry/primitives.js';
+
 // Mock electron
 vi.mock(`electron`, () => ({
 	app: {
@@ -38,11 +40,11 @@ const mockPlatform = {
 	isMac: false
 };
 vi.mock(`../../src/scripts/platform-utils.js`, () => ({
-	get isMac() { return mockPlatform.isMac; }
+	get isMac(): IsActive { return mockPlatform.isMac; }
 }));
 
 describe(`MenuService Helpers`, () => {
-	beforeEach(() => {
+	beforeEach((): void => {
 		vi.clearAllMocks();
 		mockPlatform.isMac = false;
 	});
@@ -110,7 +112,7 @@ describe(`MenuService Helpers`, () => {
 			mockPlatform.isMac = true;
 			await menuService.refresh(mockCtx);
 
-			const template = (Menu.buildFromTemplate as any).mock.calls[0][0];
+			const template = vi.mocked(Menu.buildFromTemplate).mock.calls[0][0];
 			expect(template.length).toBe(2); // App menu and Edit menu
 
 			// Verify App menu has Exit but NOT About
