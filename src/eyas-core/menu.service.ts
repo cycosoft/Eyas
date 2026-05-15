@@ -1,6 +1,8 @@
 import { Menu } from 'electron';
+import type { MenuItemConstructorOptions } from 'electron';
 import { isVariableLinkValid } from '@scripts/variable-utils.js';
 import { parseURL } from '@scripts/parse-url.js';
+import { isMac } from '@scripts/platform-utils.js';
 
 // Types
 import type { MenuService, CoreContext } from '@registry/eyas-core.js';
@@ -17,6 +19,33 @@ export const menuService: MenuService = {
 	refresh: async (ctx: CoreContext): Promise<void> => {
 		const { $appWindow } = ctx;
 		if (!$appWindow || $appWindow.isDestroyed()) { return; }
+
+		if (isMac) {
+			const template: MenuItemConstructorOptions[] = [
+				{
+					label: `Eyas`,
+					submenu: [
+						{ label: `Exit`, role: `quit` }
+					]
+				},
+				{
+					label: `Edit`,
+					submenu: [
+						{ role: `undo` },
+						{ role: `redo` },
+						{ type: `separator` },
+						{ role: `cut` },
+						{ role: `copy` },
+						{ role: `paste` },
+						{ role: `selectAll` }
+					]
+				}
+			];
+
+			const menu = Menu.buildFromTemplate(template);
+			Menu.setApplicationMenu(menu);
+			return;
+		}
 
 		Menu.setApplicationMenu(null);
 	},

@@ -34,9 +34,17 @@ vi.mock(`../../src/scripts/parse-url.js`, () => ({
 	})
 }));
 
+const mockPlatform = {
+	isMac: false
+};
+vi.mock(`../../src/scripts/platform-utils.js`, () => ({
+	get isMac() { return mockPlatform.isMac; }
+}));
+
 describe(`MenuService Helpers`, () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mockPlatform.isMac = false;
 	});
 
 	describe(`getSerializableLinks`, () => {
@@ -91,10 +99,31 @@ describe(`MenuService Helpers`, () => {
 			$appWindow: mockWindow
 		} as unknown as CoreContext;
 
-		test(`refresh should call Menu.setApplicationMenu with null`, async () => {
+		test(`refresh should call Menu.setApplicationMenu with null on non-macOS`, async () => {
+			mockPlatform.isMac = false;
 			await menuService.refresh(mockCtx);
 
 			expect(Menu.setApplicationMenu).toHaveBeenCalledWith(null);
+		});
+
+		test(`refresh should set custom menu on macOS`, async () => {
+			mockPlatform.isMac = true;
+			await menuService.refresh(mockCtx);
+
+			const template = (Menu.buildFromTemplate as any).mock.calls[0][0];
+			expect(template.length).toBe(2); // App menu and Edit menu
+
+			// Verify App menu has Exit but NOT About
+			const appMenu = template[0].submenu;
+			expect(appMenu).toContainEqual(expect.objectContaining({ label: `Exit`, role: `quit` }));
+			expect(appMenu).not.toContainEqual(expect.objectContaining({ role: `about` }));
+
+			// Verify Edit menu exists for shortcuts
+			expect(template[1].label).toBe(`Edit`);
+			expect(template[1].submenu).toContainEqual(expect.objectContaining({ role: `copy` }));
+			expect(template[1].submenu).toContainEqual(expect.objectContaining({ role: `paste` }));
+
+			expect(Menu.setApplicationMenu).toHaveBeenCalled();
 		});
 	});
 });
