@@ -170,6 +170,12 @@ export function resetTooltipText(): void {
 /**
  * Computes the displayed URL text and fallback state.
  */
+/**
+ * NOTE: For potential future DRY implementation, we can expose a helper:
+ * export const isTestLoaded = computed(() => !displayUrlInfo.value.isFallback);
+ * and replace occurrences of `displayUrlInfo.isFallback` / `!displayUrlInfo.isFallback`
+ * across the header components and logic.
+ */
 export const displayUrlInfo = computed<DisplayUrlInfo>(() => {
 	const url = state.currentUrl;
 	const isFallback = !url || url === `about:blank` || url.startsWith(`data:`);

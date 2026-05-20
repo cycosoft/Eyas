@@ -45,6 +45,8 @@ function initTestWebContentsListeners(
 
 	testWebContents.on(`console-message`, (_event, level) => {
 		if (testWebContents.isDestroyed() || $appWindow.isDestroyed()) { return; }
+		const url = testWebContents.getURL();
+		if (url.startsWith(`data:text/html`) || url === `about:blank`) { return; }
 		if (level === 3) {
 			ctx.setJSErrorsCount(ctx.$jsErrorsCount + 1);
 			ctx.updateNavigationState();
