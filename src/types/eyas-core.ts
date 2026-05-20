@@ -1,7 +1,7 @@
 import type { BrowserWindow, WebContentsView } from 'electron';
 import type { ValidatedConfig } from './config.js';
 import type { TestServerOptions } from './test-server.js';
-import type { IsActive, IsPending, DomainUrl, MPEventName, ChannelName, TimestampMS, AppVersion, EnvironmentKey, AppTitle, FormattedDuration, RetryCount, UpdateStatus, MetadataRecord } from './primitives.js';
+import type { IsActive, IsPending, DomainUrl, MPEventName, ChannelName, TimestampMS, AppVersion, EnvironmentKey, AppTitle, FormattedDuration, RetryCount, UpdateStatus, MetadataRecord, Count } from './primitives.js';
 import type { PreventableEvent, Viewport, ViewportSize, StartupModal, ConfigToLoad } from './core.js';
 import type { FilePath } from './primitives.js';
 import type { NavItem } from './components.js';
@@ -49,6 +49,8 @@ export type CoreContext = {
 	$pendingStartupModal: StartupModal | null;
 	$isDev: IsActive;
 	$shouldClearHistory: IsActive;
+	$jsErrorsCount: Count;
+	$jsWarningsCount: Count;
 
 	// Setters (to avoid direct mutation if possible, but keep simple for now)
 	setTestNetworkEnabled: (enabled: IsActive) => void;
@@ -70,6 +72,8 @@ export type CoreContext = {
 	setConfigToLoad: (config: ConfigToLoad) => void;
 	setConfig: (config: ValidatedConfig) => void;
 	setShouldClearHistory: (clear: IsActive) => void;
+	setJSErrorsCount: (count: Count) => void;
+	setJSWarningsCount: (count: Count) => void;
 
 	// Functions
 	toggleEyasUI: (enable: IsActive, forceImmediate?: IsActive) => void;

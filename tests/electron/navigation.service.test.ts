@@ -1,5 +1,5 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
-import { shell, dialog } from 'electron';
+import { shell, dialog, type WebContentsView } from 'electron';
 import { navigationService } from '@core/navigation.service.js';
 import { testServerService } from '@core/test-server.service.js';
 import type { CoreContext } from '@registry/eyas-core.js';
@@ -108,7 +108,15 @@ describe(`navigation.service.ts unit tests`, () => {
 			setEnvKey: vi.fn(),
 			setAllViewports: vi.fn(),
 			setShouldClearHistory: vi.fn(),
-			stopTestServer: vi.fn()
+			stopTestServer: vi.fn(),
+			$jsErrorsCount: 0,
+			$jsWarningsCount: 0,
+			setJSErrorsCount: vi.fn(),
+			setJSWarningsCount: vi.fn(),
+			getSessionAge: vi.fn().mockReturnValue(`1m`),
+			menuService: {
+				getSerializableLinks: vi.fn().mockReturnValue([])
+			}
 		} as unknown as CoreContext;
 	});
 
@@ -195,5 +203,23 @@ describe(`navigation.service.ts unit tests`, () => {
 		testLayer.webContents.reloadIgnoringCache = mockReload;
 		navigationService.reload(mockCtx);
 		expect(mockReload).toHaveBeenCalled();
+	});
+
+	test(`updateNavigationState should send navigation-state-updated with jsErrorsCount and jsWarningsCount`, async () => {
+		mockCtx.$jsErrorsCount = 3;
+		mockCtx.$jsWarningsCount = 7;
+		const mockSend = vi.fn();
+		mockCtx.$eyasLayer = {
+			webContents: {
+				send: mockSend
+			}
+		} as unknown as WebContentsView;
+
+		await navigationService.updateNavigationState(mockCtx);
+
+		expect(mockSend).toHaveBeenCalledWith(`navigation-state-updated`, expect.objectContaining({
+			jsErrorsCount: 3,
+			jsWarningsCount: 7
+		}));
 	});
 });

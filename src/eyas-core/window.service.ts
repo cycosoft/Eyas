@@ -1,3 +1,4 @@
+import type { WebContents } from 'electron';
 import { BrowserWindow, WebContentsView } from 'electron';
 import type { CoreContext, WindowService } from '@registry/eyas-core.js';
 import { MP_EVENTS } from './metrics-events.js';
@@ -5,6 +6,58 @@ import type { TimestampMS, GenericRecord } from '@registry/primitives.js';
 import { EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
 import { registerShortcutListeners } from './window.shortcuts.js';
 import { handleResize } from './window.resize.js';
+
+function initTestWebContentsListeners(
+	ctx: CoreContext,
+	testWebContents: WebContents,
+	$appWindow: BrowserWindow
+): void {
+	testWebContents.on(`did-finish-load`, () => {
+		if (testWebContents.isDestroyed() || $appWindow.isDestroyed()) { return; }
+		$appWindow.setTitle(ctx.getAppTitle(testWebContents.getTitle()));
+		ctx.setMenu();
+
+		// clear history if requested (e.g. on fresh test start)
+		if (ctx.$shouldClearHistory) {
+			testWebContents.navigationHistory.clear();
+			ctx.setShouldClearHistory(false);
+		}
+
+		ctx.updateNavigationState();
+	});
+
+	testWebContents.on(`did-navigate-in-page`, () => {
+		if (testWebContents.isDestroyed() || $appWindow.isDestroyed()) { return; }
+		ctx.updateNavigationState();
+	});
+
+	testWebContents.on(`did-start-navigation`, (_event, url) => {
+		ctx.setJSErrorsCount(0);
+		ctx.setJSWarningsCount(0);
+		if (!url.startsWith(`data:text/html`) && url !== `about:blank`) {
+			if (ctx.$isInitializing) {
+				ctx.setIsInitializing(false);
+				ctx.setMenu();
+			}
+			ctx.updateNavigationState();
+		}
+	});
+
+	testWebContents.on(`console-message`, (_event, level) => {
+		if (testWebContents.isDestroyed() || $appWindow.isDestroyed()) { return; }
+		if (level === 3) {
+			ctx.setJSErrorsCount(ctx.$jsErrorsCount + 1);
+			ctx.updateNavigationState();
+		} else if (level === 2) {
+			ctx.setJSWarningsCount(ctx.$jsWarningsCount + 1);
+			ctx.updateNavigationState();
+		}
+	});
+
+	testWebContents.on(`did-fail-load`, (_event, errorCode, errorDescription) => {
+		console.error(`Navigation failed: ${errorCode} - ${errorDescription}`);
+	});
+}
 
 // Service for managing application windows and layers.
 export const windowService: WindowService = {
@@ -163,38 +216,7 @@ export const windowService: WindowService = {
 		// so that title updates and navigation state track the *test* content, not the host window.
 		const testWebContents = ctx.$testLayer?.webContents || $appWindow.webContents;
 
-		testWebContents.on(`did-finish-load`, () => {
-			if (testWebContents.isDestroyed() || $appWindow.isDestroyed()) { return; }
-			$appWindow.setTitle(ctx.getAppTitle(testWebContents.getTitle()));
-			ctx.setMenu();
-
-			// clear history if requested (e.g. on fresh test start)
-			if (ctx.$shouldClearHistory) {
-				testWebContents.navigationHistory.clear();
-				ctx.setShouldClearHistory(false);
-			}
-
-			ctx.updateNavigationState();
-		});
-
-		testWebContents.on(`did-navigate-in-page`, () => {
-			if (testWebContents.isDestroyed() || $appWindow.isDestroyed()) { return; }
-			ctx.updateNavigationState();
-		});
-
-		testWebContents.on(`did-start-navigation`, (_event, url) => {
-			if (!url.startsWith(`data:text/html`) && url !== `about:blank`) {
-				if (ctx.$isInitializing) {
-					ctx.setIsInitializing(false);
-					ctx.setMenu();
-				}
-				ctx.updateNavigationState();
-			}
-		});
-
-		testWebContents.on(`did-fail-load`, (_event, errorCode, errorDescription) => {
-			console.error(`Navigation failed: ${errorCode} - ${errorDescription}`);
-		});
+		initTestWebContentsListeners(ctx, testWebContents, $appWindow);
 
 		$appWindow.webContents.on(`did-create-window`, win => {
 			win.on(`page-title-updated`, (evt, title) => {

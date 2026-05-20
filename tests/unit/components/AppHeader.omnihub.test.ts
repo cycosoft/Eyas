@@ -406,5 +406,60 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 			expect(statusChip.text()).toContain(`Online`);
 			expect(statusChip.attributes(`color`)).toBe(`success`);
 		});
+
+		test(`displays warning and error counts in header when they are greater than 0`, async () => {
+			const navCallbackContainer = {
+				current: null as ((payload: NavigationStatePayload) => void) | null
+			};
+			(window as unknown as WindowWithEyas).eyas.receive = vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
+				if (channel === `navigation-state-updated`) {
+					navCallbackContainer.current = cb as (payload: NavigationStatePayload) => void;
+				}
+			});
+
+			wrapper = mount(AppHeader, {
+				global: {
+					stubs: {
+						VAppBar: { template: `<div><slot /></div>` },
+						VMenu: { template: `<div><slot /></div>` },
+						VList: { template: `<div><slot /></div>` },
+						VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
+						VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
+						VIcon: { template: `<div class="v-icon" :data-icon="$attrs.icon"><slot /></div>` },
+						VImg: true,
+						VChip: { template: `<div class="v-chip" :color="$attrs.color" @click="$emit('click', $event)"><slot /></div>` },
+						VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` },
+						VTooltip: { template: `<div class="v-tooltip"><slot /></div>` }
+					}
+				}
+			});
+
+			// Initially, counts are 0/undefined and indicators should not exist
+			expect(wrapper.find(`[data-qa="omni-hub-errors"]`).exists()).toBe(false);
+			expect(wrapper.find(`[data-qa="omni-hub-warnings"]`).exists()).toBe(false);
+
+			// Receive update with errors and warnings
+			if (navCallbackContainer.current) {
+				navCallbackContainer.current({
+					canGoBack: false,
+					canGoForward: false,
+					jsErrorsCount: 3,
+					jsWarningsCount: 12
+				});
+			}
+			await wrapper.vm.$nextTick();
+
+			// Indicators should exist and display correct values
+			const errorIndicator = wrapper.find(`[data-qa="omni-hub-errors"]`);
+			const warningIndicator = wrapper.find(`[data-qa="omni-hub-warnings"]`);
+
+			expect(errorIndicator.exists()).toBe(true);
+			expect(errorIndicator.text()).toContain(`3`);
+			expect(errorIndicator.find(`[data-icon="mdi-alert-circle"]`).exists()).toBe(true);
+
+			expect(warningIndicator.exists()).toBe(true);
+			expect(warningIndicator.text()).toContain(`12`);
+			expect(warningIndicator.find(`[data-icon="mdi-alert"]`).exists()).toBe(true);
+		});
 	});
 });

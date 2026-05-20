@@ -89,6 +89,8 @@ export type NavigationStatePayload = {
 	appVersion?: string;
 	pageTitle?: string;
 	platform?: string;
+	jsErrorsCount?: number;
+	jsWarningsCount?: number;
 };
 
 type SendChannel = typeof VALID_SEND_CHANNELS[number];
