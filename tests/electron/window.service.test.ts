@@ -137,7 +137,7 @@ describe(`window.service.ts unit tests`, () => {
 			}) as unknown as typeof testLayer.webContents.on;
 		});
 
-		test(`should increment errors on non-fallback URLs when level is 3`, () => {
+		test(`should increment errors on non-fallback URLs when level is error`, () => {
 			windowService.initWindowListeners(mockCtx);
 			const callback = registeredListeners[`console-message`];
 			expect(callback).toBeDefined();
@@ -146,13 +146,13 @@ describe(`window.service.ts unit tests`, () => {
 			vi.mocked(testLayer.webContents.getURL).mockReturnValue(`https://test-site.com/home`);
 			mockCtx.$jsErrorsCount = 5;
 
-			callback(null, 3); // Level 3 = error
+			callback({ level: `error`, message: `Error message` });
 
 			expect(mockCtx.setJSErrorsCount).toHaveBeenCalledWith(6);
 			expect(mockCtx.updateNavigationState).toHaveBeenCalled();
 		});
 
-		test(`should increment warnings on non-fallback URLs when level is 2`, () => {
+		test(`should increment warnings on non-fallback URLs when level is warning`, () => {
 			windowService.initWindowListeners(mockCtx);
 			const callback = registeredListeners[`console-message`];
 			expect(callback).toBeDefined();
@@ -161,13 +161,13 @@ describe(`window.service.ts unit tests`, () => {
 			vi.mocked(testLayer.webContents.getURL).mockReturnValue(`https://test-site.com/home`);
 			mockCtx.$jsWarningsCount = 12;
 
-			callback(null, 2); // Level 2 = warning
+			callback({ level: `warning`, message: `Warning message` });
 
 			expect(mockCtx.setJSWarningsCount).toHaveBeenCalledWith(13);
 			expect(mockCtx.updateNavigationState).toHaveBeenCalled();
 		});
 
-		test(`should ignore warnings (level 2) on about:blank fallback URL`, () => {
+		test(`should ignore warnings on about:blank fallback URL`, () => {
 			windowService.initWindowListeners(mockCtx);
 			const callback = registeredListeners[`console-message`];
 			expect(callback).toBeDefined();
@@ -175,13 +175,13 @@ describe(`window.service.ts unit tests`, () => {
 			const testLayer = mockCtx.$testLayer as NonNullable<CoreContext[`$testLayer`]>;
 			vi.mocked(testLayer.webContents.getURL).mockReturnValue(`about:blank`);
 
-			callback(null, 2);
+			callback({ level: `warning`, message: `Warning message` });
 
 			expect(mockCtx.setJSWarningsCount).not.toHaveBeenCalled();
 			expect(mockCtx.updateNavigationState).not.toHaveBeenCalled();
 		});
 
-		test(`should ignore errors (level 3) on data:text/html fallback URL`, () => {
+		test(`should ignore errors on data:text/html fallback URL`, () => {
 			windowService.initWindowListeners(mockCtx);
 			const callback = registeredListeners[`console-message`];
 			expect(callback).toBeDefined();
@@ -189,7 +189,7 @@ describe(`window.service.ts unit tests`, () => {
 			const testLayer = mockCtx.$testLayer as NonNullable<CoreContext[`$testLayer`]>;
 			vi.mocked(testLayer.webContents.getURL).mockReturnValue(`data:text/html,<html></html>`);
 
-			callback(null, 3);
+			callback({ level: `error`, message: `Error message` });
 
 			expect(mockCtx.setJSErrorsCount).not.toHaveBeenCalled();
 			expect(mockCtx.updateNavigationState).not.toHaveBeenCalled();
