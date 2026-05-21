@@ -6,6 +6,24 @@ import { state } from '@/components/AppHeader.logic.js';
 import type { WindowWithEyas, ChannelName, NavigationStatePayload } from '@registry/ipc.js';
 import type { AppHeaderVM, NavGroup, NavItem } from '@registry/components.js';
 
+type StubName = string;
+type StubDefinition = unknown;
+
+function mountAppHeader(stubsOverride: Record<StubName, StubDefinition> = {}): VueWrapper {
+	return mount(AppHeader, {
+		global: {
+			stubs: {
+				VAppBar: { template: `<div><slot /></div>` }, VMenu: { template: `<div><slot /></div>` }, VList: { template: `<div><slot /></div>` },
+				VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
+				VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
+				VIcon: true, VImg: true,
+				VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` },
+				...stubsOverride
+			}
+		}
+	});
+}
+
 describe(`AppHeader OmniHub & Advanced Controls`, () => {
 	let wrapper: VueWrapper;
 	let mockSend: Mock;
@@ -26,17 +44,7 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 			receive: vi.fn()
 		};
 
-		wrapper = mount(AppHeader, {
-			global: {
-				stubs: {
-					VAppBar: { template: `<div><slot /></div>` }, VMenu: { template: `<div><slot /></div>` }, VList: { template: `<div><slot /></div>` },
-					VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
-					VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
-					VIcon: true, VImg: true,
-					VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` }
-				}
-			}
-		});
+		wrapper = mountAppHeader();
 	});
 
 	afterEach(() => {
@@ -66,20 +74,7 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 				}
 			});
 
-			wrapper = mount(AppHeader, {
-				global: {
-					stubs: {
-						VAppBar: { template: `<div><slot /></div>` },
-						VMenu: { template: `<div><slot /></div>` },
-						VList: { template: `<div><slot /></div>` },
-						VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
-						VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
-						VIcon: true,
-						VImg: true,
-						VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` }
-					}
-				}
-			});
+			wrapper = mountAppHeader();
 
 			if (navCallback) {
 				(navCallback as any)({ isDev: false }); // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -100,20 +95,7 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 				}
 			});
 
-			wrapper = mount(AppHeader, {
-				global: {
-					stubs: {
-						VAppBar: { template: `<div><slot /></div>` },
-						VMenu: { template: `<div><slot /></div>` },
-						VList: { template: `<div><slot /></div>` },
-						VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
-						VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
-						VIcon: true,
-						VImg: true,
-						VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` }
-					}
-				}
-			});
+			wrapper = mountAppHeader();
 
 			if (navCallback) {
 				(navCallback as any)({ isDev: true }); // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -137,20 +119,7 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 				}
 			});
 
-			wrapper = mount(AppHeader, {
-				global: {
-					stubs: {
-						VAppBar: { template: `<div><slot /></div>` },
-						VMenu: { template: `<div><slot /></div>` },
-						VList: { template: `<div><slot /></div>` },
-						VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
-						VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
-						VIcon: true,
-						VImg: true,
-						VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` }
-					}
-				}
-			});
+			wrapper = mountAppHeader();
 
 			const links: NavItem[] = [
 				{ title: `Google`, value: `launch-link:{"url":"https://google.com","openInBrowser":true}` }
@@ -201,20 +170,8 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 				}
 			});
 
-			wrapper = mount(AppHeader, {
-				global: {
-					stubs: {
-						VAppBar: { template: `<div><slot /></div>` },
-						VMenu: { template: `<div><slot /></div>` },
-						VList: { template: `<div><slot /></div>` },
-						VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
-						VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
-						VIcon: true,
-						VImg: true,
-						VTooltip: { template: `<div class="v-tooltip" :data-target="$attrs.target" :data-model-value="$attrs.modelValue"><slot /></div>` },
-						VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` }
-					}
-				}
+			wrapper = mountAppHeader({
+				VTooltip: { template: `<div class="v-tooltip" :data-target="$attrs.target" :data-model-value="$attrs.modelValue"><slot /></div>` }
 			});
 
 			const vm = wrapper.vm as unknown as AppHeaderVM;
@@ -303,20 +260,7 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 				}
 			});
 
-			wrapper = mount(AppHeader, {
-				global: {
-					stubs: {
-						VAppBar: { template: `<div><slot /></div>` },
-						VMenu: { template: `<div><slot /></div>` },
-						VList: { template: `<div><slot /></div>` },
-						VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
-						VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
-						VIcon: true,
-						VImg: true,
-						VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` }
-					}
-				}
-			});
+			wrapper = mountAppHeader();
 
 			const lockIcon = wrapper.find(`[data-qa="omni-hub-lock"]`);
 			expect(lockIcon.exists()).toBe(true);
@@ -358,20 +302,8 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 				}
 			});
 
-			wrapper = mount(AppHeader, {
-				global: {
-					stubs: {
-						VAppBar: { template: `<div><slot /></div>` },
-						VMenu: { template: `<div><slot /></div>` },
-						VList: { template: `<div><slot /></div>` },
-						VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
-						VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
-						VIcon: true,
-						VImg: true,
-						VChip: { template: `<div class="v-chip" :color="$attrs.color" @click="$emit('click', $event)"><slot /></div>` },
-						VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` }
-					}
-				}
+			wrapper = mountAppHeader({
+				VChip: { template: `<div class="v-chip" :color="$attrs.color" @click="$emit('click', $event)"><slot /></div>` }
 			});
 
 			const statusChip = wrapper.find(`[data-qa="omni-hub-status"]`);
@@ -417,21 +349,10 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 				}
 			});
 
-			wrapper = mount(AppHeader, {
-				global: {
-					stubs: {
-						VAppBar: { template: `<div><slot /></div>` },
-						VMenu: { template: `<div><slot /></div>` },
-						VList: { template: `<div><slot /></div>` },
-						VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
-						VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
-						VIcon: { template: `<div class="v-icon" :data-icon="$attrs.icon"><slot /></div>` },
-						VImg: true,
-						VChip: { template: `<div class="v-chip" :color="$attrs.color" @click="$emit('click', $event)"><slot /></div>` },
-						VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` },
-						VTooltip: { template: `<div class="v-tooltip"><slot /></div>` }
-					}
-				}
+			wrapper = mountAppHeader({
+				VIcon: { template: `<div class="v-icon" :data-icon="$attrs.icon"><slot /></div>` },
+				VChip: { template: `<div class="v-chip" :color="$attrs.color" @click="$emit('click', $event)"><slot /></div>` },
+				VTooltip: { template: `<div class="v-tooltip"><slot /></div>` }
 			});
 
 			// Initially, counts are 0/undefined and indicators should not exist
@@ -460,6 +381,35 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 			expect(warningIndicator.exists()).toBe(true);
 			expect(warningIndicator.text()).toContain(`12`);
 			expect(warningIndicator.find(`[data-icon="mdi-alert"]`).exists()).toBe(true);
+		});
+
+		test(`sends open-devtools-console IPC when indicators are clicked`, async () => {
+			let navCallback: ((payload: NavigationStatePayload) => void) | null = null;
+			(window as unknown as WindowWithEyas).eyas.receive = vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
+				if (channel === `navigation-state-updated`) {
+					navCallback = cb as (payload: NavigationStatePayload) => void;
+				}
+			});
+
+			wrapper = mountAppHeader({
+				VTooltip: { template: `<div class="v-tooltip"><slot /></div>` }
+			});
+
+			// Setup errors to make indicators visible
+			if (navCallback) {
+				(navCallback as any)({ // eslint-disable-line @typescript-eslint/no-explicit-any
+					canGoBack: false,
+					canGoForward: false,
+					jsErrorsCount: 1
+				});
+			}
+			await wrapper.vm.$nextTick();
+
+			const indicators = wrapper.find(`.omni-hub-indicators`);
+			expect(indicators.exists()).toBe(true);
+
+			await indicators.trigger(`click`);
+			expect(mockSend).toHaveBeenCalledWith(`open-devtools-console`);
 		});
 	});
 });

@@ -42,6 +42,7 @@ export const VALID_SEND_CHANNELS = [
 	`open-cache-folder`,
 	`open-devtools-ui`,
 	`open-devtools-test`,
+	`open-devtools-console`,
 	`check-for-updates`,
 	`install-update`,
 	`request-update-ready-modal`,

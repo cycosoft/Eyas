@@ -64,13 +64,13 @@
 		<div
 			v-if="jsErrorsCount > 0 || jsWarningsCount > 0"
 			class="d-flex align-center ml-2 pl-2 border-s mr-3 omni-hub-indicators"
-			@click.stop
+			@click.stop="openDevToolsConsole"
 			@mousedown.stop
 		>
 			<!-- Error Count -->
 			<div
 				v-if="jsErrorsCount > 0"
-				class="d-flex align-center mr-2 text-error cursor-help font-weight-bold"
+				class="d-flex align-center mr-2 text-error cursor-pointer font-weight-bold"
 				data-qa="omni-hub-errors"
 			>
 				<v-icon
@@ -87,7 +87,7 @@
 			<!-- Warning Count -->
 			<div
 				v-if="jsWarningsCount > 0"
-				class="d-flex align-center text-warning cursor-help font-weight-bold"
+				class="d-flex align-center text-warning cursor-pointer font-weight-bold"
 				data-qa="omni-hub-warnings"
 			>
 				<v-icon
@@ -169,6 +169,10 @@ watch(tooltipVisible, isOpen => {
 		resetTooltipText();
 	}
 });
+
+function openDevToolsConsole(): void {
+	window.eyas?.send(`open-devtools-console` as ChannelName);
+}
 </script>
 
 <style scoped>
@@ -221,5 +225,6 @@ watch(tooltipVisible, isOpen => {
 .omni-hub-indicators {
 	height: 16px;
 	border-color: rgba(var(--v-border-color), 0.15) !important;
+	cursor: pointer;
 }
 </style>
