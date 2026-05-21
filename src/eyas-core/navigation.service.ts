@@ -283,7 +283,9 @@ async function updateNavigationState(ctx: CoreContext): Promise<void> {
 		configTitle: titleParts.configTitle,
 		appVersion: titleParts.appVersion,
 		pageTitle: titleParts.pageTitle,
-		platform: process.platform
+		platform: process.platform,
+		jsErrorsCount: ctx.$jsErrorsCount,
+		jsWarningsCount: ctx.$jsWarningsCount
 	});
 }
 

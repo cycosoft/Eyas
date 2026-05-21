@@ -17,10 +17,7 @@ import type {
 } from '@registry/ipc.js';
 import type { IsActive, AppVersion, ViewportWidth, ViewportHeight, ChannelName, DomainUrl } from '@registry/primitives.js';
 
-/**
- * Initializes all IPC handlers for the application.
- * @param ctx The core context providing access to global state and orchestrator functions.
- */
+// Initializes all IPC handlers for the application.
 export function initIpcHandlers(ctx: CoreContext): void {
 	initAppIpcListeners(ctx);
 	initEnvironmentIpcListeners(ctx);
@@ -33,10 +30,7 @@ export function initIpcHandlers(ctx: CoreContext): void {
 	});
 }
 
-/**
- * Initializes application-level IPC listeners.
- * @param ctx The core context.
- */
+// Initializes application-level IPC listeners.
 function initAppIpcListeners(ctx: CoreContext): void {
 	initCoreIpcListeners(ctx);
 	initBrowserIpcListeners(ctx);
@@ -45,10 +39,7 @@ function initAppIpcListeners(ctx: CoreContext): void {
 	initCacheIpcListeners(ctx);
 }
 
-/**
- * Initializes core application IPC listeners.
- * @param ctx The core context.
- */
+// Initializes core application IPC listeners.
 function initCoreIpcListeners(ctx: CoreContext): void {
 	ipcMain.on(`show-ui`, () => { ctx.toggleEyasUI(true); });
 	ipcMain.on(`hide-ui`, () => { ctx.toggleEyasUI(false, true); });
@@ -108,10 +99,7 @@ function initCoreIpcListeners(ctx: CoreContext): void {
 	});
 }
 
-/**
- * Initializes browser control IPC listeners.
- * @param ctx The core context.
- */
+// Initializes browser control IPC listeners.
 function initBrowserIpcListeners(ctx: CoreContext): void {
 	ipcMain.on(`browser-back`, () => ctx.goBack());
 	ipcMain.on(`browser-forward`, () => ctx.goForward());
@@ -124,10 +112,7 @@ function initBrowserIpcListeners(ctx: CoreContext): void {
 	});
 }
 
-/**
- * Initializes devtools IPC listeners.
- * @param ctx The core context.
- */
+// Initializes devtools IPC listeners.
 function initDevToolsIpcListeners(ctx: CoreContext): void {
 	ipcMain.on(`open-devtools-ui`, () => {
 		if (ctx.$eyasLayer && !ctx.$eyasLayer.webContents.isDestroyed()) {
@@ -141,12 +126,28 @@ function initDevToolsIpcListeners(ctx: CoreContext): void {
 			webContents.toggleDevTools();
 		}
 	});
+
+	ipcMain.on(`open-devtools-console`, () => {
+		const webContents = (ctx.$testLayer || ctx.$appWindow)?.webContents;
+		if (webContents && !webContents.isDestroyed()) {
+			webContents.openDevTools({ mode: `detach` });
+			const interval = setInterval(() => {
+				if (webContents.isDestroyed()) {
+					clearInterval(interval);
+					return;
+				}
+				const devTools = webContents.devToolsWebContents;
+				if (devTools && !devTools.isDestroyed()) {
+					devTools.executeJavaScript(`UI.inspectorView.showPanel('console')`).catch(() => {});
+					clearInterval(interval);
+				}
+			}, 50);
+			setTimeout(() => clearInterval(interval), 5000);
+		}
+	});
 }
 
-/**
- * Initializes viewport management IPC listeners.
- * @param ctx The core context.
- */
+// Initializes viewport management IPC listeners.
 function initViewportIpcListeners(ctx: CoreContext): void {
 	ipcMain.on(`set-viewport`, (_event, [width, height]: [ViewportWidth, ViewportHeight]) => {
 		// Store the exact requested dimensions as the canonical viewport.
@@ -158,10 +159,7 @@ function initViewportIpcListeners(ctx: CoreContext): void {
 		ctx.$testLayer?.setBounds({ x: 0, y: EYAS_HEADER_HEIGHT, width, height });
 	});
 }
-/**
- * Initializes cache management IPC listeners.
- * @param ctx The core context.
- */
+// Initializes cache management IPC listeners.
 function initCacheIpcListeners(ctx: CoreContext): void {
 	ipcMain.on(`clear-cache`, async () => {
 		ctx.clearCache();
@@ -177,10 +175,7 @@ function initCacheIpcListeners(ctx: CoreContext): void {
 	});
 }
 
-/**
- * Initializes environment-related IPC listeners.
- * @param ctx The core context.
- */
+// Initializes environment-related IPC listeners.
 function initEnvironmentIpcListeners(ctx: CoreContext): void {
 	// update the network status
 	ipcMain.on(`network-status`, (_event, status: IsActive) => {
@@ -206,10 +201,7 @@ function initEnvironmentIpcListeners(ctx: CoreContext): void {
 	});
 }
 
-/**
- * Initializes settings-related IPC listeners.
- * @param ctx The core context.
- */
+// Initializes settings-related IPC listeners.
 function initSettingsIpcListeners(ctx: CoreContext): void {
 	// listen for a setting to be saved from the UI
 	ipcMain.on(`save-setting`, async (event, { key, value, projectId }: SaveSettingPayload) => {
@@ -248,10 +240,7 @@ function initSettingsIpcListeners(ctx: CoreContext): void {
 	});
 }
 
-/**
- * Initializes test server-related IPC listeners.
- * @param ctx The core context.
- */
+// Initializes test server-related IPC listeners.
 function initTestServerIpcListeners(ctx: CoreContext): void {
 	// test server setup modal: user clicked Continue, start the server
 	ipcMain.on(`test-server-setup-continue`, (_event, { useHttps, autoOpenBrowser, useCustomDomain }: TestServerSetupPayload) => {

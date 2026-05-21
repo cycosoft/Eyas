@@ -50,7 +50,7 @@ describe(`codesign-win`, () => {
 		expect(vi.mocked(exec)).toHaveBeenCalled();
 		const command = vi.mocked(exec).mock.calls[0][0];
 		expect(command).toContain(`signtool sign`);
-		expect(command).toContain(`/n "Open Source Developer, Eric Higginson"`);
+		expect(command).toContain(`/n "Open Source Developer Eric Higginson"`);
 		expect(command).toContain(`/fd sha256`);
 		expect(command).toContain(`/as`);
 		expect(command).toContain(`/tr http://time.certum.pl/`);

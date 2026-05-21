@@ -41,7 +41,7 @@ import type { CoreContext, EyasPaths } from '@registry/eyas-core.js';
 import type { ValidatedConfig } from '@registry/config.js';
 import type { TestServerOptions } from '@registry/test-server.js';
 import type { Viewport, ConfigToLoad, StartupModal, PreventableEvent, ViewportSize } from '@registry/core.js';
-import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActive, IsPending, DomainUrl, FormattedDuration, MPEventName, TimestampMS, AppTitle, AppVersion, EnvironmentKey, MetadataRecord, SystemTheme } from '@registry/primitives.js';
+import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActive, IsPending, DomainUrl, FormattedDuration, MPEventName, TimestampMS, AppTitle, AppVersion, EnvironmentKey, MetadataRecord, SystemTheme, Count } from '@registry/primitives.js';
 
 // global variables $
 const $isDev = process.argv.includes(`--dev`) as IsActive;
@@ -70,6 +70,8 @@ let $isEnvironmentPending: IsPending = false;
 let $pendingStartupModal: StartupModal | null = null;
 let $isStartupSequenceChecked: IsActive = false;
 let $shouldClearHistory: IsActive = false;
+let $jsErrorsCount = 0;
+let $jsWarningsCount = 0;
 
 const $paths = {
 	icon: _path.join($roots.eyas, `eyas-assets`, `eyas-logo.png`),
@@ -166,7 +168,9 @@ const coreContextSetters = {
 	setTestLayer: (layer: WebContentsView | null): void => { $testLayer = layer; },
 	setConfigToLoad: (config: ConfigToLoad): void => { $configToLoad = config; },
 	setConfig: (config: ValidatedConfig): void => { $config = config; },
-	setShouldClearHistory: (clear: IsActive): void => { $shouldClearHistory = clear; }
+	setShouldClearHistory: (clear: IsActive): void => { $shouldClearHistory = clear; },
+	setJSErrorsCount: (count: Count): void => { $jsErrorsCount = count; },
+	setJSWarningsCount: (count: Count): void => { $jsWarningsCount = count; }
 };
 
 const coreContextFunctions = {
@@ -230,6 +234,8 @@ function getCoreContext(): CoreContext {
 		get $pendingStartupModal(): StartupModal | null { return $pendingStartupModal; },
 		get $isDev(): IsActive { return $isDev; },
 		get $shouldClearHistory(): IsActive { return $shouldClearHistory; },
+		get $jsErrorsCount(): Count { return $jsErrorsCount; },
+		get $jsWarningsCount(): Count { return $jsWarningsCount; },
 		...coreContextSetters,
 		...coreContextFunctions,
 		updateService,

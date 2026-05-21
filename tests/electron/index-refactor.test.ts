@@ -437,3 +437,32 @@ describe(`Browser Copy URL IPC`, () => {
 		expect(clipboard.writeText).toHaveBeenCalledWith(`https://example.com/test-url`);
 	});
 });
+
+describe(`Open DevTools Console IPC`, () => {
+	test(`open-devtools-console IPC handler should call openDevTools on the active layer`, () => {
+		const mockWebContents = {
+			openDevTools: vi.fn(),
+			isDestroyed: vi.fn().mockReturnValue(false),
+			devToolsWebContents: null
+		};
+		const ctx = {
+			$testLayer: {
+				webContents: mockWebContents
+			}
+		} as unknown as CoreContext;
+
+		let consoleHandler: any = null; // eslint-disable-line @typescript-eslint/no-explicit-any
+		vi.spyOn(ipcMain, `on`).mockImplementation((channel, cb) => {
+			if (channel === `open-devtools-console`) { consoleHandler = cb; }
+			return ipcMain;
+		});
+
+		initIpcHandlers(ctx);
+
+		if (typeof consoleHandler !== `function`) { throw new Error(`open-devtools-console handler not registered`); }
+
+		consoleHandler({} as IpcMainEvent);
+
+		expect(mockWebContents.openDevTools).toHaveBeenCalledWith({ mode: `detach` });
+	});
+});

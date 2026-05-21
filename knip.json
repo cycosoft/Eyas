@@ -5,6 +5,7 @@
     "src/preload/index.ts",
     "src/eyas-interface/app/src/main.ts",
     "src/eyas-interface/app/src/env.d.ts",
+    "src/types/electron.d.ts",
     "src/scripts/get-config.ts",
     "src/scripts/event-bridge.ts",
     "tests/e2e/**/*.spec.mjs",

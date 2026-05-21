@@ -116,8 +116,84 @@ describe(`window.service.ts unit tests`, () => {
 			manageAppClose: vi.fn(),
 			onTitleUpdate: vi.fn(),
 			updateNavigationState: vi.fn(),
-			$isInitializing: false
+			$isInitializing: false,
+			$jsErrorsCount: 0,
+			$jsWarningsCount: 0,
+			setJSErrorsCount: vi.fn(),
+			setJSWarningsCount: vi.fn()
 		} as unknown as CoreContext;
+	});
+
+	describe(`initWindowListeners console-message handling`, () => {
+		type EventListenerCallback = (...args: unknown[]) => void;
+		let registeredListeners: Record<PropertyKey, EventListenerCallback>;
+
+		beforeEach(() => {
+			registeredListeners = {} as Record<PropertyKey, EventListenerCallback>;
+			const testLayer = mockCtx.$testLayer as NonNullable<CoreContext[`$testLayer`]>;
+			testLayer.webContents.on = vi.fn((event, callback) => {
+				registeredListeners[event] = callback;
+				return testLayer.webContents;
+			}) as unknown as typeof testLayer.webContents.on;
+		});
+
+		test(`should increment errors on non-fallback URLs when level is error`, () => {
+			windowService.initWindowListeners(mockCtx);
+			const callback = registeredListeners[`console-message`];
+			expect(callback).toBeDefined();
+
+			const testLayer = mockCtx.$testLayer as NonNullable<CoreContext[`$testLayer`]>;
+			vi.mocked(testLayer.webContents.getURL).mockReturnValue(`https://test-site.com/home`);
+			mockCtx.$jsErrorsCount = 5;
+
+			callback({ level: `error`, message: `Error message` });
+
+			expect(mockCtx.setJSErrorsCount).toHaveBeenCalledWith(6);
+			expect(mockCtx.updateNavigationState).toHaveBeenCalled();
+		});
+
+		test(`should increment warnings on non-fallback URLs when level is warning`, () => {
+			windowService.initWindowListeners(mockCtx);
+			const callback = registeredListeners[`console-message`];
+			expect(callback).toBeDefined();
+
+			const testLayer = mockCtx.$testLayer as NonNullable<CoreContext[`$testLayer`]>;
+			vi.mocked(testLayer.webContents.getURL).mockReturnValue(`https://test-site.com/home`);
+			mockCtx.$jsWarningsCount = 12;
+
+			callback({ level: `warning`, message: `Warning message` });
+
+			expect(mockCtx.setJSWarningsCount).toHaveBeenCalledWith(13);
+			expect(mockCtx.updateNavigationState).toHaveBeenCalled();
+		});
+
+		test(`should ignore warnings on about:blank fallback URL`, () => {
+			windowService.initWindowListeners(mockCtx);
+			const callback = registeredListeners[`console-message`];
+			expect(callback).toBeDefined();
+
+			const testLayer = mockCtx.$testLayer as NonNullable<CoreContext[`$testLayer`]>;
+			vi.mocked(testLayer.webContents.getURL).mockReturnValue(`about:blank`);
+
+			callback({ level: `warning`, message: `Warning message` });
+
+			expect(mockCtx.setJSWarningsCount).not.toHaveBeenCalled();
+			expect(mockCtx.updateNavigationState).not.toHaveBeenCalled();
+		});
+
+		test(`should ignore errors on data:text/html fallback URL`, () => {
+			windowService.initWindowListeners(mockCtx);
+			const callback = registeredListeners[`console-message`];
+			expect(callback).toBeDefined();
+
+			const testLayer = mockCtx.$testLayer as NonNullable<CoreContext[`$testLayer`]>;
+			vi.mocked(testLayer.webContents.getURL).mockReturnValue(`data:text/html,<html></html>`);
+
+			callback({ level: `error`, message: `Error message` });
+
+			expect(mockCtx.setJSErrorsCount).not.toHaveBeenCalled();
+			expect(mockCtx.updateNavigationState).not.toHaveBeenCalled();
+		});
 	});
 
 	describe(`handleResize`, () => {

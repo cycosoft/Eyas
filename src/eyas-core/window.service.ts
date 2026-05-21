@@ -1,3 +1,4 @@
+import type { WebContents } from 'electron';
 import { BrowserWindow, WebContentsView } from 'electron';
 import type { CoreContext, WindowService } from '@registry/eyas-core.js';
 import { MP_EVENTS } from './metrics-events.js';
@@ -5,6 +6,70 @@ import type { TimestampMS, GenericRecord } from '@registry/primitives.js';
 import { EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
 import { registerShortcutListeners } from './window.shortcuts.js';
 import { handleResize } from './window.resize.js';
+
+function setupConsoleMessageListener(
+	ctx: CoreContext,
+	testWebContents: WebContents,
+	$appWindow: BrowserWindow
+): void {
+	testWebContents.on(`console-message`, event => {
+		if (testWebContents.isDestroyed() || $appWindow.isDestroyed()) { return; }
+		const url = testWebContents.getURL();
+		if (url.startsWith(`data:text/html`) || url === `about:blank`) { return; }
+
+		const level = event?.level;
+		if (level === `error`) {
+			ctx.setJSErrorsCount(ctx.$jsErrorsCount + 1);
+			ctx.updateNavigationState();
+		} else if (level === `warning`) {
+			ctx.setJSWarningsCount(ctx.$jsWarningsCount + 1);
+			ctx.updateNavigationState();
+		}
+	});
+}
+
+function initTestWebContentsListeners(
+	ctx: CoreContext,
+	testWebContents: WebContents,
+	$appWindow: BrowserWindow
+): void {
+	testWebContents.on(`did-finish-load`, () => {
+		if (testWebContents.isDestroyed() || $appWindow.isDestroyed()) { return; }
+		$appWindow.setTitle(ctx.getAppTitle(testWebContents.getTitle()));
+		ctx.setMenu();
+
+		// clear history if requested (e.g. on fresh test start)
+		if (ctx.$shouldClearHistory) {
+			testWebContents.navigationHistory.clear();
+			ctx.setShouldClearHistory(false);
+		}
+
+		ctx.updateNavigationState();
+	});
+
+	testWebContents.on(`did-navigate-in-page`, () => {
+		if (testWebContents.isDestroyed() || $appWindow.isDestroyed()) { return; }
+		ctx.updateNavigationState();
+	});
+
+	testWebContents.on(`did-start-navigation`, (_event, url) => {
+		ctx.setJSErrorsCount(0);
+		ctx.setJSWarningsCount(0);
+		if (!url.startsWith(`data:text/html`) && url !== `about:blank`) {
+			if (ctx.$isInitializing) {
+				ctx.setIsInitializing(false);
+				ctx.setMenu();
+			}
+			ctx.updateNavigationState();
+		}
+	});
+
+	setupConsoleMessageListener(ctx, testWebContents, $appWindow);
+
+	testWebContents.on(`did-fail-load`, (_event, errorCode, errorDescription) => {
+		console.error(`Navigation failed: ${errorCode} - ${errorDescription}`);
+	});
+}
 
 // Service for managing application windows and layers.
 export const windowService: WindowService = {
@@ -145,11 +210,7 @@ export const windowService: WindowService = {
 			}, splashTimeout);
 		});
 	},
-
-	/**
-	 * Initializes window-level event listeners.
-	 * @param ctx The core context.
-	 */
+	// Initializes window-level event listeners.
 	initWindowListeners(ctx: CoreContext): void {
 		const { $appWindow } = ctx;
 		if (!$appWindow) { return; }
@@ -159,42 +220,10 @@ export const windowService: WindowService = {
 
 		$appWindow.on(`page-title-updated`, (evt, title) => ctx.onTitleUpdate(evt, title));
 
-		// Route content-load lifecycle events through the test layer (the child view)
-		// so that title updates and navigation state track the *test* content, not the host window.
+		// Route content-load lifecycle events through the test layer
 		const testWebContents = ctx.$testLayer?.webContents || $appWindow.webContents;
 
-		testWebContents.on(`did-finish-load`, () => {
-			if (testWebContents.isDestroyed() || $appWindow.isDestroyed()) { return; }
-			$appWindow.setTitle(ctx.getAppTitle(testWebContents.getTitle()));
-			ctx.setMenu();
-
-			// clear history if requested (e.g. on fresh test start)
-			if (ctx.$shouldClearHistory) {
-				testWebContents.navigationHistory.clear();
-				ctx.setShouldClearHistory(false);
-			}
-
-			ctx.updateNavigationState();
-		});
-
-		testWebContents.on(`did-navigate-in-page`, () => {
-			if (testWebContents.isDestroyed() || $appWindow.isDestroyed()) { return; }
-			ctx.updateNavigationState();
-		});
-
-		testWebContents.on(`did-start-navigation`, (_event, url) => {
-			if (!url.startsWith(`data:text/html`) && url !== `about:blank`) {
-				if (ctx.$isInitializing) {
-					ctx.setIsInitializing(false);
-					ctx.setMenu();
-				}
-				ctx.updateNavigationState();
-			}
-		});
-
-		testWebContents.on(`did-fail-load`, (_event, errorCode, errorDescription) => {
-			console.error(`Navigation failed: ${errorCode} - ${errorDescription}`);
-		});
+		initTestWebContentsListeners(ctx, testWebContents, $appWindow);
 
 		$appWindow.webContents.on(`did-create-window`, win => {
 			win.on(`page-title-updated`, (evt, title) => {
@@ -210,18 +239,12 @@ export const windowService: WindowService = {
 		});
 	},
 
-	/**
-	 * Handles window resize events.
-	 * @param ctx The core context.
-	 */
+	// Handles window resize events.
 	handleResize(ctx: CoreContext): void {
 		handleResize(ctx);
 	},
 
-	/**
-	 * Initiates the core electron UI layer.
-	 * @param ctx The core context.
-	 */
+	// Initiates the core electron UI layer.
 	async initElectronUi(ctx: CoreContext): Promise<void> {
 		const { $defaultViewports, $currentViewport } = ctx;
 
@@ -248,9 +271,7 @@ export const windowService: WindowService = {
 		const blankPage = `data:text/html,` + encodeURIComponent(`<html><body></body></html>`);
 		ctx.$testLayer?.webContents.loadURL(blankPage);
 
-		// Playwright's `electron.launch()` waits for the primary host BrowserWindow to finish its
-		// initial navigation. Since our host window is just a bare container and we moved navigation
-		// to the $testLayer, Playwright hangs forever. Navigating the window satisfies Playwright.
+		// Satisfy Playwright's electron.launch() which waits for host window initial navigation
 		ctx.$appWindow?.loadURL(blankPage);
 
 		// track the app launch event

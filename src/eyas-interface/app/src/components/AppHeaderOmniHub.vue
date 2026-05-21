@@ -60,6 +60,46 @@
 			</v-tooltip>
 		</span>
 
+		<!-- JS Errors & Warnings Indicators -->
+		<div
+			v-if="jsErrorsCount > 0 || jsWarningsCount > 0"
+			class="d-flex align-center ml-2 pl-2 border-s mr-3 omni-hub-indicators"
+			@click.stop="openDevToolsConsole"
+			@mousedown.stop
+		>
+			<!-- Error Count -->
+			<div
+				v-if="jsErrorsCount > 0"
+				class="d-flex align-center mr-2 text-error cursor-pointer font-weight-bold"
+				data-qa="omni-hub-errors"
+			>
+				<v-icon
+					icon="mdi-alert-circle"
+					size="x-small"
+					class="mr-1"
+				/>
+				<span class="indicator-count">{{ jsErrorsCount }}</span>
+			</div>
+
+			<!-- Warning Count -->
+			<div
+				v-if="jsWarningsCount > 0"
+				class="d-flex align-center text-warning cursor-pointer font-weight-bold"
+				data-qa="omni-hub-warnings"
+			>
+				<v-icon
+					icon="mdi-alert"
+					size="x-small"
+					class="mr-1"
+				/>
+				<span class="indicator-count">{{ jsWarningsCount }}</span>
+			</div>
+
+			<v-tooltip activator="parent" location="bottom">
+				View in DevTools
+			</v-tooltip>
+		</div>
+
 		<!-- 4. Dropdown Button Placeholder -->
 		<v-btn
 			v-if="environments.length > 0 && isViewingTestContent"
@@ -112,7 +152,7 @@ import {
 	toggleNetwork, isViewingTestContent
 } from './AppHeader.logic.js';
 
-const { environments, currentEnvironment, envMenu, tooltipVisible, tooltipText, cursorPos, testNetworkEnabled } = toRefs(state);
+const { environments, currentEnvironment, envMenu, tooltipVisible, tooltipText, cursorPos, testNetworkEnabled, jsErrorsCount, jsWarningsCount } = toRefs(state);
 
 watch(envMenu, isOpen => {
 	if (isOpen) {
@@ -127,6 +167,10 @@ watch(tooltipVisible, isOpen => {
 		resetTooltipText();
 	}
 });
+
+function openDevToolsConsole(): void {
+	window.eyas?.send(`open-devtools-console` as ChannelName);
+}
 </script>
 
 <style scoped>
@@ -169,5 +213,16 @@ watch(tooltipVisible, isOpen => {
 
 .env-item {
 	font-size: 10px;
+}
+
+.indicator-count {
+	font-size: 10px !important;
+	line-height: 1;
+}
+
+.omni-hub-indicators {
+	height: 16px;
+	border-color: rgba(var(--v-border-color), 0.15) !important;
+	cursor: pointer;
 }
 </style>
