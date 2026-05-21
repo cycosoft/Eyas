@@ -79,9 +79,6 @@
 					class="mr-1"
 				/>
 				<span class="indicator-count">{{ jsErrorsCount }}</span>
-				<v-tooltip activator="parent" location="bottom">
-					{{ jsErrorsCount }} JS Error{{ jsErrorsCount > 1 ? 's' : '' }}
-				</v-tooltip>
 			</div>
 
 			<!-- Warning Count -->
@@ -96,10 +93,11 @@
 					class="mr-1"
 				/>
 				<span class="indicator-count">{{ jsWarningsCount }}</span>
-				<v-tooltip activator="parent" location="bottom">
-					{{ jsWarningsCount }} JS Warning{{ jsWarningsCount > 1 ? 's' : '' }}
-				</v-tooltip>
 			</div>
+
+			<v-tooltip activator="parent" location="bottom">
+				View in DevTools
+			</v-tooltip>
 		</div>
 
 		<!-- 4. Dropdown Button Placeholder -->

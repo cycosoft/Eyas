@@ -381,6 +381,12 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 			expect(warningIndicator.exists()).toBe(true);
 			expect(warningIndicator.text()).toContain(`12`);
 			expect(warningIndicator.find(`[data-icon="mdi-alert"]`).exists()).toBe(true);
+
+			const indicators = wrapper.find(`.omni-hub-indicators`);
+			expect(indicators.exists()).toBe(true);
+			const tooltip = indicators.find(`.v-tooltip`);
+			expect(tooltip.exists()).toBe(true);
+			expect(tooltip.text()).toContain(`View in DevTools`);
 		});
 
 		test(`sends open-devtools-console IPC when indicators are clicked`, async () => {
