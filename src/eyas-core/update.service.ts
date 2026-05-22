@@ -17,6 +17,7 @@ export const updateService: UpdateService = {
 	 */
 	init: (ctx: CoreContext): void => {
 		autoUpdater.forceDevUpdateConfig = true;
+		autoUpdater.autoInstallOnAppQuit = false;
 
 		// Spoof the current version for update testing (currentVersion is read-only)
 		Object.defineProperty(autoUpdater, `currentVersion`, {

@@ -24,6 +24,7 @@ vi.mock(`electron-updater`, () => {
 		default: {
 			autoUpdater: {
 				forceDevUpdateConfig: false,
+				autoInstallOnAppQuit: true,
 				logger: {},
 				setFeedURL: vi.fn(),
 				checkForUpdates: vi.fn().mockResolvedValue({}),
@@ -81,6 +82,7 @@ describe(`Update Service`, () => {
 		updateService.init(mockCtx);
 
 		expect(autoUpdater.forceDevUpdateConfig).toBe(true);
+		expect(autoUpdater.autoInstallOnAppQuit).toBe(false);
 		expect(autoUpdater.logger).toBeNull();
 		expect(autoUpdater.setFeedURL).toHaveBeenCalledWith(expect.objectContaining({
 			owner: `cycosoft`,
