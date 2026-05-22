@@ -125,7 +125,14 @@ describe(`app.service.ts unit tests`, () => {
 			setConfig: vi.fn(),
 			setConfigToLoad: vi.fn(),
 			startAFreshTest: vi.fn(),
-			$configToLoad: { method: `AUTO`, path: `` }
+			$configToLoad: { method: `AUTO`, path: `` },
+			updateService: {
+				getStatus: vi.fn().mockReturnValue(`idle`),
+				init: vi.fn(),
+				checkForUpdates: vi.fn(),
+				installUpdate: vi.fn(),
+				reset: vi.fn()
+			}
 		} as unknown as CoreContext;
 	});
 
@@ -153,12 +160,23 @@ describe(`app.service.ts unit tests`, () => {
 		expect(fs.existsSync).toHaveBeenCalledWith(`/mock/storage/Session Storage`);
 	});
 
-	test(`manageAppClose should prevent default and trigger exit modal`, () => {
+	test(`manageAppClose should prevent default and trigger exit modal when no update is downloaded`, () => {
 		const evt = { preventDefault: vi.fn() } as unknown as PreventableEvent;
+		vi.mocked(mockCtx.updateService.getStatus).mockReturnValue(`idle`);
 		appService.manageAppClose(mockCtx, evt);
 
 		expect(evt.preventDefault).toHaveBeenCalled();
 		expect(mockCtx.uiEvent).toHaveBeenCalledWith(`modal-exit-visible`, true);
+		expect(mockCtx.trackEvent).toHaveBeenCalled();
+	});
+
+	test(`manageAppClose should prevent default and trigger update ready modal when update is downloaded`, () => {
+		const evt = { preventDefault: vi.fn() } as unknown as PreventableEvent;
+		vi.mocked(mockCtx.updateService.getStatus).mockReturnValue(`downloaded`);
+		appService.manageAppClose(mockCtx, evt);
+
+		expect(evt.preventDefault).toHaveBeenCalled();
+		expect(mockCtx.uiEvent).toHaveBeenCalledWith(`show-update-ready-modal`, true, true);
 		expect(mockCtx.trackEvent).toHaveBeenCalled();
 	});
 
