@@ -3,7 +3,7 @@
 		"version": "26.6.0",
 		"items": [
 			{
-				"text": "🟢 Updates to update process"
+				"text": "🟢 Refactor the update workflow"
 			}
 		]
 	},
