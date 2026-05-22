@@ -108,7 +108,7 @@ describe(`AppHeader Update Button`, () => {
 
 		const btn = wrapper.find(`[data-qa="btn-broadcast"]`);
 		expect(btn.find(`v-icon-stub`).attributes(`icon`)).toBe(`mdi-progress-alert`);
-		expect(btn.attributes(`color`)).toBe(`success`);
+		expect(btn.attributes(`color`)).toBe(`error`);
 		expect(btn.attributes(`variant`)).toBe(`text`);
 		expect(btn.attributes(`ripple`)).toBe(`true`);
 
