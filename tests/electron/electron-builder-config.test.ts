@@ -124,7 +124,7 @@ describe(`getElectronBuilderConfig`, () => {
 		expect(config.nsis.allowToChangeInstallationDirectory).toBe(true);
 		expect(config.nsis.createDesktopShortcut).toBe(`always`);
 		expect(config.nsis.createStartMenuShortcut).toBe(true);
-		expect(config.nsis.runAfterFinish).toBe(false);
+		expect(config.nsis.runAfterFinish).toBe(true);
 	});
 });
 
