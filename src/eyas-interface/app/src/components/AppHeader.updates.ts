@@ -140,6 +140,12 @@ export function updateTools(isDev: IsActive): void {
 	if (!toolsGroup) { return; }
 
 	const devToolsUiIndex = toolsGroup.submenu.findIndex(i => i.value === `devtools-ui`);
+	const devToolsTestItem = toolsGroup.submenu.find(i => i.value === `devtools-test`);
+
+	if (devToolsTestItem) {
+		devToolsTestItem.title = isDev ? `Developer Tools (Test)` : `Developer Tools`;
+		devToolsTestItem.mnemonicParts = getMnemonicParts(devToolsTestItem);
+	}
 
 	if (isDev) {
 		if (devToolsUiIndex === -1) {
