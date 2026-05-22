@@ -66,7 +66,8 @@ export const VALID_RECEIVE_CHANNELS = [
 	`ui-shown`,
 	`navigation-state-updated`,
 	`update-status-updated`,
-	`show-update-ready-modal`
+	`show-update-ready-modal`,
+	`show-no-update-modal`
 ] as const;
 
 /** Payload for the 'navigation-state-updated' IPC event */

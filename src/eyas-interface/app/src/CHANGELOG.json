@@ -1,5 +1,13 @@
 [
 	{
+		"version": "26.6.0",
+		"items": [
+			{
+				"text": "🟢 Refactor the update workflow"
+			}
+		]
+	},
+	{
 		"version": "26.5.32524",
 		"items": [
 			{

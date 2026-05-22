@@ -130,7 +130,7 @@ function getNsisConfig(): Configuration[`nsis`] {
 		allowToChangeInstallationDirectory: true,
 		createDesktopShortcut: `always`,
 		createStartMenuShortcut: true,
-		runAfterFinish: false
+		runAfterFinish: true
 	};
 }
 

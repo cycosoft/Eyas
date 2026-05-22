@@ -4,12 +4,12 @@ import type { VueWrapper } from '@vue/test-utils';
 import UpdateReadyModal from '@/components/UpdateReadyModal.vue';
 import { createPinia, setActivePinia } from 'pinia';
 import type { WindowWithEyas, ChannelName } from '@registry/ipc.js';
-import type { IsVisible } from '@registry/primitives.js';
+import type { IsVisible, IsExitFlow } from '@registry/primitives.js';
 
 describe(`UpdateReadyModal`, () => {
 	let wrapper: VueWrapper;
 	let mockSend: ReturnType<typeof vi.fn>;
-	let receiveCallback: ((value: IsVisible) => void) | null = null;
+	let receiveCallback: ((value: IsVisible, isExitFlow?: IsExitFlow) => void) | null = null;
 
 	beforeEach(async () => {
 		setActivePinia(createPinia());
@@ -21,7 +21,7 @@ describe(`UpdateReadyModal`, () => {
 			send: mockSend as unknown as (channel: ChannelName, ...args: unknown[]) => void,
 			receive: vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
 				if (channel === `show-update-ready-modal`) {
-					receiveCallback = cb as (value: IsVisible) => void;
+					receiveCallback = cb as (value: IsVisible, isExitFlow?: IsExitFlow) => void;
 				}
 			})
 		};
@@ -60,14 +60,25 @@ describe(`UpdateReadyModal`, () => {
 		expect(wrapper.find(`[data-qa="update-ready-modal-text"]`).text()).toContain(`ready to install`);
 	});
 
-	test(`hides when "Later" is clicked`, async () => {
-		if (receiveCallback) receiveCallback(true);
+	test(`hides and does not exit when "Later" is clicked in normal flow`, async () => {
+		if (receiveCallback) receiveCallback(true, false);
 		await wrapper.vm.$nextTick();
 
 		const laterBtn = wrapper.find(`[data-qa="btn-update-later"]`);
 		await laterBtn.trigger(`click`);
 
 		expect(wrapper.find(`[data-qa="update-ready-modal-text"]`).exists()).toBe(false);
+		expect(mockSend).not.toHaveBeenCalledWith(`app-exit`);
+	});
+
+	test(`exits app when "Later" is clicked in exit flow`, async () => {
+		if (receiveCallback) receiveCallback(true, true);
+		await wrapper.vm.$nextTick();
+
+		const laterBtn = wrapper.find(`[data-qa="btn-update-later"]`);
+		await laterBtn.trigger(`click`);
+
+		expect(mockSend).toHaveBeenCalledWith(`app-exit`);
 	});
 
 	test(`sends install-update when "Update Eyas Now" is clicked`, async () => {

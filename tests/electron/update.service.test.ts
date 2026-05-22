@@ -2,43 +2,44 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { updateService } from '@core/update.service.js';
 import electronUpdater from 'electron-updater';
 const { autoUpdater } = electronUpdater;
-import { dialog } from 'electron';
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { GenericKey, AppVersion, Count } from '@registry/primitives.js';
 
 /** Any function type for mocking */
 type AnyFunction = (...args: unknown[]) => unknown;
 
-/** Map of event listeners for the mock auto-updater */
-type EventListenerMap = Record<GenericKey, AnyFunction[]>;
+
 
 /** Type for triggering events on the mock auto-updater */
 type AutoUpdaterMock = {
 	emit: (event: GenericKey, ...args: unknown[]) => void;
+	_listeners: Record<GenericKey, AnyFunction[]>;
 };
 
 // Mock electron-updater
 vi.mock(`electron-updater`, () => {
-	const listeners: EventListenerMap = {};
+	const autoUpdaterMock = {
+		_listeners: {} as Record<GenericKey, AnyFunction[]>,
+		forceDevUpdateConfig: false,
+		autoInstallOnAppQuit: true,
+		logger: {},
+		setFeedURL: vi.fn(),
+		checkForUpdates: vi.fn().mockResolvedValue({}),
+		quitAndInstall: vi.fn(),
+		on: vi.fn((event, cb) => {
+			if (!autoUpdaterMock._listeners[event]) { autoUpdaterMock._listeners[event] = []; }
+			autoUpdaterMock._listeners[event].push(cb);
+		}),
+		// Helper to trigger events in tests
+		emit: (event: GenericKey, ...args: unknown[]): void => {
+			if (autoUpdaterMock._listeners[event]) {
+				autoUpdaterMock._listeners[event].forEach(cb => cb(...args));
+			}
+		}
+	};
 	return {
 		default: {
-			autoUpdater: {
-				forceDevUpdateConfig: false,
-				logger: {},
-				setFeedURL: vi.fn(),
-				checkForUpdates: vi.fn().mockResolvedValue({}),
-				quitAndInstall: vi.fn(),
-				on: vi.fn((event, cb) => {
-					if (!listeners[event]) { listeners[event] = []; }
-					listeners[event].push(cb);
-				}),
-				// Helper to trigger events in tests
-				emit: (event: GenericKey, ...args: unknown[]): void => {
-					if (listeners[event]) {
-						listeners[event].forEach(cb => cb(...args));
-					}
-				}
-			}
+			autoUpdater: autoUpdaterMock
 		}
 	};
 });
@@ -50,23 +51,14 @@ vi.mock(`semver`, () => ({
 	}
 }));
 
-// Mock electron dialog
-vi.mock(`electron`, () => ({
-	dialog: {
-		showMessageBox: vi.fn()
-	}
-}));
 
-// Mock update-dialog.js
-vi.mock(`./update-dialog.js`, () => ({
-	getNoUpdateAvailableDialogOptions: vi.fn(() => ({ message: `No update` }))
-}));
 
 describe(`Update Service`, () => {
 	let mockCtx: CoreContext;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		(autoUpdater as unknown as AutoUpdaterMock)._listeners = {};
 		updateService.reset();
 
 		mockCtx = {
@@ -81,6 +73,7 @@ describe(`Update Service`, () => {
 		updateService.init(mockCtx);
 
 		expect(autoUpdater.forceDevUpdateConfig).toBe(true);
+		expect(autoUpdater.autoInstallOnAppQuit).toBe(false);
 		expect(autoUpdater.logger).toBeNull();
 		expect(autoUpdater.setFeedURL).toHaveBeenCalledWith(expect.objectContaining({
 			owner: `cycosoft`,
@@ -116,7 +109,7 @@ describe(`Update Service`, () => {
 		// Trigger update-not-available
 		(autoUpdater as unknown as AutoUpdaterMock).emit(`update-not-available`);
 
-		expect(dialog.showMessageBox).toHaveBeenCalled();
+		expect(mockCtx.uiEvent).toHaveBeenCalledWith(`show-no-update-modal`);
 	});
 
 	it(`should NOT show dialog if auto-check find no update`, () => {
@@ -125,7 +118,7 @@ describe(`Update Service`, () => {
 		// Trigger update-not-available WITHOUT calling checkForUpdates() first
 		(autoUpdater as unknown as AutoUpdaterMock).emit(`update-not-available`);
 
-		expect(dialog.showMessageBox).not.toHaveBeenCalled();
+		expect(mockCtx.uiEvent).not.toHaveBeenCalledWith(`show-no-update-modal`);
 	});
 
 	it(`should quit and install when installUpdate is called`, () => {

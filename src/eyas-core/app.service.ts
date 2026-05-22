@@ -115,8 +115,13 @@ Runner: v${ctx._appVersion}
 		// stop the window from closing
 		evt.preventDefault();
 
-		// send a message to the UI to show the exit modal
-		ctx.uiEvent(`modal-exit-visible`, true);
+		if (ctx.updateService.getStatus() === `downloaded`) {
+			// send a message to the UI to show the update ready modal (and indicate it's exit flow)
+			ctx.uiEvent(`show-update-ready-modal`, true, true);
+		} else {
+			// send a message to the UI to show the exit modal
+			ctx.uiEvent(`modal-exit-visible`, true);
+		}
 
 		// track that the modal background content was viewed
 		ctx.trackEvent(MP_EVENTS.ui.modalBackgroundContentViewed);

@@ -39,10 +39,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import ModalWrapper from '@/components/ModalWrapper.vue';
-import type { ChannelName, IsVisible, IsPending } from '@/../../../types/primitives.js';
+import type { ChannelName, IsVisible, IsPending, IsExitFlow } from '@/../../../types/primitives.js';
 
 const visible = ref<IsVisible>(false);
 const updating = ref<IsPending>(false);
+const exitFlow = ref<IsExitFlow>(false);
 
 const update = (): void => {
 	updating.value = true;
@@ -50,13 +51,18 @@ const update = (): void => {
 };
 
 const cancel = (): void => {
-	visible.value = false;
+	if (exitFlow.value) {
+		window.eyas?.send(`app-exit` as ChannelName);
+	} else {
+		visible.value = false;
+	}
 };
 
 onMounted(() => {
 	// Listen for messages from the main process
-	window.eyas?.receive(`show-update-ready-modal` as ChannelName, (value: IsVisible) => {
+	window.eyas?.receive(`show-update-ready-modal` as ChannelName, (value: IsVisible, isExitFlow?: IsExitFlow) => {
 		visible.value = value;
+		exitFlow.value = !!isExitFlow;
 	});
 });
 </script>

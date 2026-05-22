@@ -75,7 +75,7 @@ export const updateInfo = computed(() => {
 	if (state.updateStatus === `downloaded`) {
 		return {
 			icon: `mdi-progress-alert`,
-			color: `success`,
+			color: `error`,
 			title: `Update available - Click to restart`,
 			disabled: false,
 			variant: `text` as const,
