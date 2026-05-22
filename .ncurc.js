@@ -104,7 +104,7 @@ const filterResults = (name, { currentVersion: _currentVersion, upgradedVersion 
 // Default export ONLY contains valid NCU options
 /** @public */
 export default {
-	format: [`group`, `time`],
+	format: [`group`, `time`, `cooldown`],
 	cooldown: 3,
 	filterResults: (name, semverInfo) => filterResults(name, semverInfo)
 };
