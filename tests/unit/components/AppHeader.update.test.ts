@@ -54,6 +54,10 @@ describe(`AppHeader Update Button`, () => {
 		expect(btn.find(`v-icon-stub`).attributes(`icon`)).toBe(`mdi-progress-check`);
 		expect(btn.attributes(`variant`)).toBe(`plain`);
 		expect(btn.attributes(`ripple`)).toBe(`false`);
+
+		const tooltip = btn.find(`.v-tooltip`);
+		expect(tooltip.exists()).toBe(true);
+		expect(tooltip.text()).toBe(`Check for Updates`);
 	});
 
 	test(`calls check-for-updates when clicked in idle state`, async () => {
@@ -74,6 +78,7 @@ describe(`AppHeader Update Button`, () => {
 		expect(btn.attributes(`variant`)).toBe(`text`);
 		expect(btn.attributes(`ripple`)).toBe(`true`);
 		expect(btn.classes()).toContain(`blink-animation`);
+		expect(btn.find(`.v-tooltip`).exists()).toBe(false);
 	});
 
 	test(`enforces a minimum duration for the checking state`, async () => {
@@ -101,6 +106,7 @@ describe(`AppHeader Update Button`, () => {
 		expect(btn.attributes(`variant`)).toBe(`text`);
 		expect(btn.attributes(`ripple`)).toBe(`true`);
 		expect(btn.classes()).toContain(`blink-animation`);
+		expect(btn.find(`.v-tooltip`).exists()).toBe(false);
 	});
 
 	test(`shows downloaded state and installs on click`, async () => {
@@ -130,6 +136,7 @@ describe(`AppHeader Update Button`, () => {
 		expect(btn.attributes(`color`)).toBe(`error`);
 		expect(btn.attributes(`variant`)).toBe(`plain`);
 		expect(btn.attributes(`ripple`)).toBe(`false`);
+		expect(btn.find(`.v-tooltip`).exists()).toBe(false);
 	});
 
 	test(`calls check-for-updates when clicked in error state`, async () => {

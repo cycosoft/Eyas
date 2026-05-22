@@ -113,6 +113,13 @@
 			>
 				Update Available
 			</v-tooltip>
+			<v-tooltip
+				v-else-if="updateStatus === 'idle'"
+				activator="parent"
+				location="bottom"
+			>
+				Check for Updates
+			</v-tooltip>
 		</v-btn>
 
 		<!-- 4. Tools Group -->
@@ -233,14 +240,11 @@ import {
 	handleHeaderMouseLeave, handleUrlClick, resetTooltipText, displayAppTitle,
 	isViewingTestContent
 } from './AppHeader.logic.js';
-
 import AppHeaderOmniHub from './AppHeaderOmniHub.vue';
 import useModalsStore from '@/stores/modals.js';
-
 const { menu, activator, canGoBack, canGoForward, updateStatus, environments, currentEnvironment, tooltipVisible, tooltipText, cursorPos, appTitle } = toRefs(state);
 const modalsStore = useModalsStore();
 const theme = useTheme();
-
 const overlayColors = computed(() => {
 	const isDark = theme.global.current.value.dark;
 	if (modalsStore.hasVisibleModals) {
@@ -251,24 +255,20 @@ const overlayColors = computed(() => {
 	}
 	return { color: `#f7f9fb`, symbolColor: `#191c1e` };
 });
-
 watch(menu, isOpen => {
 	if (!isOpen) {
 		delayedClose();
 		state.activeGroup = null;
 	}
 });
-
 watch(overlayColors, colors => {
 	window.eyas?.send(`update-titlebar-overlay` as ChannelName, colors);
 }, { immediate: true });
-
 onMounted(() => {
 	window.eyas?.receive(`ui-shown` as ChannelName, triggerOpen);
 	window.eyas?.receive(`navigation-state-updated` as ChannelName, handleNavigationUpdate);
 	window.eyas?.receive(`update-status-updated` as ChannelName, handleUpdateStatusUpdate);
 });
-
 // expose for testing
 defineExpose({
 	menu, tooltipVisible, tooltipText, cursorPos, canGoBack, canGoForward,
