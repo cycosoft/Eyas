@@ -32,7 +32,8 @@ describe(`App`, () => {
 					TestServerSetupModal: true,
 					TestServerActiveModal: true,
 					TestServerResumeModal: true,
-					SettingsModal: true
+					SettingsModal: true,
+					NoUpdateModal: true
 				}
 			}
 		});

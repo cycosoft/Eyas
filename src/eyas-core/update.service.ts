@@ -1,8 +1,6 @@
 import electronUpdater from 'electron-updater';
 const { autoUpdater } = electronUpdater;
 import semver from 'semver';
-import { dialog } from 'electron';
-import { getNoUpdateAvailableDialogOptions } from './update-dialog.js';
 import type { UpdateService, CoreContext } from '@registry/eyas-core.js';
 import type { UpdateStatus, IsActive, ChannelName } from '@registry/primitives.js';
 
@@ -50,9 +48,7 @@ export const updateService: UpdateService = {
 			broadcastStatus(`idle`);
 			if ($updateCheckUserTriggered) {
 				$updateCheckUserTriggered = false;
-				if (ctx.$appWindow) {
-					dialog.showMessageBox(ctx.$appWindow, getNoUpdateAvailableDialogOptions());
-				}
+				ctx.uiEvent(`show-no-update-modal` as ChannelName);
 			}
 		});
 

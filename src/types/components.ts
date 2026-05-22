@@ -153,6 +153,16 @@ export type VersionMismatchModalVM = {
 };
 
 /**
+ * Type helper for the NoUpdateModal Vue component's ViewModel in tests.
+ */
+export type NoUpdateModalVM = {
+	visible: IsVisible;
+	progress: number;
+	close: () => void;
+	$nextTick: () => Promise<void>;
+};
+
+/**
  * Data passed to the VersionMismatchModal via IPC.
  */
 export type VersionMismatchData = {
