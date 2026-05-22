@@ -33,7 +33,7 @@ export const groups = reactive<NavGroup[]>([
 			{ title: `Cache`, value: `cache`, icon: `mdi-flash`, appendIcon: `mdi-chevron-right`, mnemonic: `C`, submenu: [] },
 			{ title: `divider`, value: `divider-3`, divider: true },
 			{ title: `Developer Tools (Eyas)`, value: `devtools-ui`, icon: `mdi-view-grid`, mnemonic: `U` },
-			{ title: `Developer Tools (Test)`, value: `devtools-test`, icon: `mdi-flask`, shortcut: `F12`, mnemonic: `D` }
+			{ title: `Developer Tools`, value: `devtools-test`, icon: `mdi-flask`, shortcut: `F12`, mnemonic: `D` }
 		]
 	}
 ]);

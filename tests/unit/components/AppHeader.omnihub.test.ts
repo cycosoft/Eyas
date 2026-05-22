@@ -66,7 +66,7 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 			expect(mockSend).toHaveBeenCalledWith(`open-devtools-test`);
 		});
 
-		test(`'Developer Tools (Eyas)' is hidden when isDev is false`, async () => {
+		test(`'Developer Tools (Eyas)' is hidden and 'Developer Tools' is without suffix when isDev is false`, async () => {
 			let navCallback: ((payload: NavigationStatePayload) => void) | null = null;
 			(window as unknown as WindowWithEyas).eyas.receive = vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
 				if (channel === `navigation-state-updated`) {
@@ -85,9 +85,13 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 			const toolsMenu = vm.groups.find((g: NavGroup) => g.name === `Tools`);
 			const eyasDevTools = toolsMenu?.submenu?.find((i: NavItem) => i.value === `devtools-ui`);
 			expect(eyasDevTools).toBeUndefined();
+
+			const testDevTools = toolsMenu?.submenu?.find((i: NavItem) => i.value === `devtools-test`);
+			expect(testDevTools).toBeDefined();
+			expect(testDevTools?.title).toBe(`Developer Tools`);
 		});
 
-		test(`'Developer Tools (Eyas)' is shown when isDev is true`, async () => {
+		test(`'Developer Tools (Eyas)' is shown and 'Developer Tools (Test)' has suffix when isDev is true`, async () => {
 			let navCallback: ((payload: NavigationStatePayload) => void) | null = null;
 			(window as unknown as WindowWithEyas).eyas.receive = vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
 				if (channel === `navigation-state-updated`) {
@@ -107,6 +111,10 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 			const eyasDevTools = toolsMenu?.submenu?.find((i: NavItem) => i.value === `devtools-ui`);
 			expect(eyasDevTools).toBeDefined();
 			expect(eyasDevTools?.title).toBe(`Developer Tools (Eyas)`);
+
+			const testDevTools = toolsMenu?.submenu?.find((i: NavItem) => i.value === `devtools-test`);
+			expect(testDevTools).toBeDefined();
+			expect(testDevTools?.title).toBe(`Developer Tools (Test)`);
 		});
 	});
 

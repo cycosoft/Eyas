@@ -1,21 +1,17 @@
 {
-  "name": "",
-  "description": "",
-  "version": "",
-  "author": "",
-  "main": "./index.js",
-  "scripts": {
-    "start": "npm i --no-audit && electron ."
-  },
-  "dependencies": {
-    "mixpanel": "",
-    "node-machine-id": "",
-    "validator": "",
-    "date-fns": "",
-    "semver": "",
-    "electron-updater": ""
-  },
-  "devDependencies": {
-    "electron": ""
-  }
+	"name": "",
+	"description": "",
+	"version": "",
+	"author": "",
+	"main": "./index.js",
+	"scripts": { "start": "npm i --no-audit && electron ." },
+	"dependencies": {
+		"mixpanel": "",
+		"node-machine-id": "",
+		"validator": "",
+		"date-fns": "",
+		"semver": "",
+		"electron-updater": ""
+	},
+	"devDependencies": { "electron": "" }
 }
