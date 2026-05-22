@@ -4,6 +4,7 @@ import tseslint from 'typescript-eslint';
 import pluginVue from 'eslint-plugin-vue';
 import vueEslintParser from 'vue-eslint-parser';
 import pluginImport from 'eslint-plugin-import';
+import eslintPluginJsonc from 'eslint-plugin-jsonc';
 
 export default tseslint.config(
 	{
@@ -16,7 +17,9 @@ export default tseslint.config(
 			`.pre-build/**`,
 			`.test-data/**`,
 			`playwright-report/**`,
-			`tests/tmp/**`
+			`tests/tmp/**`,
+			`package-lock.json`,
+			`coverage/**`
 		]
 	},
 
@@ -72,6 +75,7 @@ export default tseslint.config(
 
 	{
 		// Global Plugins and Rules
+		files: [`**/*.js`, `**/*.mjs`, `**/*.ts`, `**/*.vue`, `**/*.cjs`],
 		plugins: {
 			vue: pluginVue,
 			'@typescript-eslint': tseslint.plugin,
@@ -247,6 +251,22 @@ export default tseslint.config(
 					message: `Conversion in progress: please rename this file to .ts.`
 				}
 			]
+		}
+	},
+
+	...eslintPluginJsonc.configs[`flat/recommended-with-json`],
+	{
+		files: [`**/*.json`],
+		rules: {
+			'jsonc/indent': [`error`, `tab`],
+			'jsonc/object-curly-newline': [`error`, {
+				multiline: true,
+				minProperties: 2
+			}],
+			'jsonc/object-property-newline': [`error`, {
+				allowAllPropertiesOnSameLine: true
+			}],
+			'jsonc/object-curly-spacing': [`error`, `always`]
 		}
 	}
 );
