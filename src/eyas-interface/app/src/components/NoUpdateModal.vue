@@ -6,12 +6,16 @@
 		@keyup.enter="close"
 		@click:outside="close"
 	>
-		<v-card max-width="400">
+		<v-card
+			max-width="400"
+			@mouseenter="pauseTimer"
+			@mouseleave="resumeTimer"
+		>
 			<v-card-title class="text-h6">
-				Eyas is Up to Date
+				Update Check
 			</v-card-title>
 			<v-card-text data-qa="no-update-modal-text">
-				You are running the latest version of Eyas.
+				You are running the latest version of Eyas (v{{ currentVersion }}).
 			</v-card-text>
 
 			<v-card-actions class="mt-5">
@@ -39,12 +43,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import ModalWrapper from '@/components/ModalWrapper.vue';
+import useSettingsStore from '@/stores/settings.js';
 import type { ChannelName, IsVisible } from '@/../../../types/primitives.js';
+
+const settingsStore = useSettingsStore();
+const currentVersion = computed(() => settingsStore.version);
 
 const visible = ref<IsVisible>(false);
 const progress = ref(100);
+const isPaused = ref(false);
 
 let timer: NodeJS.Timeout | null = null;
 const AUTO_CLOSE_MS = 4000;
@@ -55,6 +64,7 @@ const startTimer = (): void => {
 	stopTimer();
 	elapsed = 0;
 	progress.value = 100;
+	isPaused.value = false;
 	timer = setInterval(() => {
 		elapsed += INTERVAL_MS;
 		progress.value = Math.max(0, 100 - (elapsed / AUTO_CLOSE_MS) * 100);
@@ -71,9 +81,27 @@ const stopTimer = (): void => {
 	}
 };
 
+const pauseTimer = (): void => {
+	isPaused.value = true;
+	stopTimer();
+};
+
+const resumeTimer = (): void => {
+	if (!visible.value || !isPaused.value) { return; }
+	isPaused.value = false;
+	timer = setInterval(() => {
+		elapsed += INTERVAL_MS;
+		progress.value = Math.max(0, 100 - (elapsed / AUTO_CLOSE_MS) * 100);
+		if (elapsed >= AUTO_CLOSE_MS) {
+			close();
+		}
+	}, INTERVAL_MS);
+};
+
 const close = (): void => {
 	stopTimer();
 	visible.value = false;
+	isPaused.value = false;
 };
 
 watch(visible, isShown => {
@@ -81,6 +109,7 @@ watch(visible, isShown => {
 		startTimer();
 	} else {
 		stopTimer();
+		isPaused.value = false;
 	}
 });
 
@@ -97,6 +126,8 @@ onUnmounted(() => {
 defineExpose({
 	visible,
 	progress,
-	close
+	close,
+	pauseTimer,
+	resumeTimer
 });
 </script>
