@@ -5,6 +5,7 @@ import NoUpdateModal from '@/components/NoUpdateModal.vue';
 import { createPinia, setActivePinia } from 'pinia';
 import type { WindowWithEyas, ChannelName } from '@registry/ipc.js';
 import type { GenericRecord } from '@registry/primitives.js';
+import type { NoUpdateModalVM } from '@registry/components.js';
 
 // Mock the settings store
 vi.mock(`@/stores/settings`, () => ({
@@ -64,7 +65,7 @@ describe(`NoUpdateModal`, () => {
 
 	test(`shows when show-no-update-modal is received`, async () => {
 		if (receiveCallback) receiveCallback();
-		await wrapper.vm.$nextTick();
+		await (wrapper.vm as unknown as NoUpdateModalVM).$nextTick();
 
 		expect(wrapper.find(`[data-qa="no-update-modal-text"]`).exists()).toBe(true);
 		expect(wrapper.find(`.text-h6`).text()).toContain(`Update Check`);
