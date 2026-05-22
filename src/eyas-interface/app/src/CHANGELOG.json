@@ -1,5 +1,13 @@
 [
 	{
+		"version": "26.6.0",
+		"items": [
+			{
+				"text": "🟢 Updates to update process"
+			}
+		]
+	},
+	{
 		"version": "26.5.32524",
 		"items": [
 			{
