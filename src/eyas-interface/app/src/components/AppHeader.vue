@@ -106,6 +106,13 @@
 				:icon="updateInfo.icon"
 				size="small"
 			/>
+			<v-tooltip
+				v-if="updateStatus === 'downloaded'"
+				activator="parent"
+				location="bottom"
+			>
+				Update Available
+			</v-tooltip>
 		</v-btn>
 
 		<!-- 4. Tools Group -->

@@ -35,7 +35,8 @@ describe(`AppHeader Update Button`, () => {
 					VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
 					VIcon: true,
 					VImg: true,
-					VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` }
+					VSystemBar: { template: `<div class="v-system-bar"><slot /></div>` },
+					VTooltip: { template: `<div class="v-tooltip"><slot /></div>` }
 				}
 			}
 		});
@@ -111,6 +112,10 @@ describe(`AppHeader Update Button`, () => {
 		expect(btn.attributes(`color`)).toBe(`error`);
 		expect(btn.attributes(`variant`)).toBe(`text`);
 		expect(btn.attributes(`ripple`)).toBe(`true`);
+
+		const tooltip = btn.find(`.v-tooltip`);
+		expect(tooltip.exists()).toBe(true);
+		expect(tooltip.text()).toBe(`Update Available`);
 
 		await btn.trigger(`click`);
 		expect(mockSend).toHaveBeenCalledWith(`request-update-ready-modal`);
