@@ -82,6 +82,9 @@ export type PixelDimension = number;
 export type HashString = string;
 export type TestId = string;
 export type DeviceId = string;
+export type Username = string;
+export type PasswordPlain = string;
+export type PasswordHex = string;
 
 // Certificates
 export type CertKey = string;

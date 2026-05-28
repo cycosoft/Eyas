@@ -2,6 +2,7 @@
 	{
 		"version": "26.6.0",
 		"items": [
+			{ "text": "🟢 Can now remember login credentials on a per-project basis, and managed via project settings." },
 			{ "text": "🟢 Refactor the update workflow" },
 			{ "text": "🟢 Removed ' (Test)' from the 'Developer Tools' menu item" }
 		]
