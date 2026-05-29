@@ -6,7 +6,7 @@
 			</v-card-title>
 			<v-card-text data-qa="save-credential-modal-text">
 				<div>Do you want Eyas to remember this login for this project?</div>
-				<v-sheet class="mt-3 pa-3 bg-grey-lighten-4 rounded" border>
+				<v-sheet class="mt-3 pa-3 rounded" border>
 					<div><strong>Origin:</strong> {{ credential?.origin }}</div>
 					<div><strong>Username:</strong> {{ credential?.username }}</div>
 				</v-sheet>
