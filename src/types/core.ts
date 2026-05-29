@@ -81,6 +81,12 @@ export type DecryptedCredential = {
 	passwordPlain: PasswordPlain;
 };
 
+/** A record representing original credentials input before hover preview */
+export type CredentialBackup = {
+	username: Username;
+	password: PasswordPlain;
+};
+
 /** Data structure containing all stored credentials, indexed by projectId and then origin */
 export type CredentialStoreData = Record<ProjectId, Record<DomainUrl, CredentialRecord[]>>;
 

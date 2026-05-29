@@ -457,6 +457,95 @@ describe(`test-preload`, () => {
 			const logoDiv = createdElements.find(e => e.tag === `div` && e.innerHTML && e.innerHTML.includes(`<svg`));
 			expect(logoDiv).toBeDefined();
 		});
+
+		it(`should temporarily fill form on hover and restore on mouseleave`, async () => {
+			const ipc = ipcRenderer;
+			type ReturnCred = { username: Username; passwordPlain: PasswordPlain };
+			ipc.invoke = vi.fn().mockResolvedValue([
+				{ username: `user1` as Username, passwordPlain: `pass1` as PasswordPlain } as ReturnCred
+			]);
+
+			const listeners: Record<EventType, ((e: Event) => void)[]> = {};
+			const mockWindow = {
+				location: { origin: `https://test.eyas` as DomainUrl },
+				addEventListener: vi.fn((event: EventType, cb: (e: Event) => void) => {
+					if (!listeners[event]) { listeners[event] = []; }
+					listeners[event].push(cb);
+				})
+			};
+			vi.stubGlobal(`window`, mockWindow);
+
+			const createdElements: MockElement[] = [];
+			const mockDoc = {
+				createElement: vi.fn((tag: ElementTag) => {
+					const el: MockElement = {
+						tag,
+						style: {},
+						setAttribute: vi.fn(),
+						appendChild: vi.fn(),
+						addEventListener: vi.fn((event: EventType, cb: (e: Event) => void) => {
+							const extra = el as any;
+							if (!extra.listeners) extra.listeners = {};
+							if (!extra.listeners[event]) extra.listeners[event] = [];
+							extra.listeners[event].push(cb);
+						}),
+						remove: vi.fn(),
+						contains: vi.fn(() => false)
+					};
+					createdElements.push(el);
+					return el;
+				}),
+				documentElement: { appendChild: vi.fn() },
+				body: { appendChild: vi.fn() },
+				addEventListener: vi.fn((event: EventType, cb: (e: Event) => void) => {
+					if (!listeners[event]) listeners[event] = [];
+					listeners[event].push(cb);
+				})
+			};
+			vi.stubGlobal(`document`, mockDoc);
+
+			setupAutofill();
+
+			const focusHandler = listeners[`focusin`][0];
+
+			const usernameInput: MockInput = {
+				value: `originalUser`,
+				type: `text`,
+				tagName: `INPUT`,
+				dispatchEvent: vi.fn(),
+				offsetWidth: 100,
+				getBoundingClientRect: vi.fn(() => ({ top: 0, bottom: 0, left: 0, right: 0, width: 100, height: 20 })),
+				addEventListener: vi.fn()
+			};
+			const passwordInput: MockInput = { value: `originalPass`, type: `password`, tagName: `INPUT`, dispatchEvent: vi.fn() };
+			const mockForm = {
+				querySelectorAll: vi.fn((selector: DomSelector) => {
+					if (selector.includes(`type="password"`)) return [passwordInput];
+					return [usernameInput];
+				})
+			};
+			usernameInput.form = mockForm;
+
+			const mockEvent = { target: usernameInput };
+			await focusHandler(mockEvent as unknown as Event);
+
+			// Find the item div element
+			const itemDiv = createdElements.find(e => e.tag === `div` && e.innerHTML && e.innerHTML.includes(`user1`)) as any;
+			expect(itemDiv).toBeDefined();
+			expect(itemDiv.listeners).toBeDefined();
+			expect(itemDiv.listeners.mouseenter).toBeDefined();
+			expect(itemDiv.listeners.mouseleave).toBeDefined();
+
+			// Trigger mouseenter
+			itemDiv.listeners.mouseenter[0]();
+			expect(usernameInput.value).toBe(`user1`);
+			expect(passwordInput.value).toBe(`pass1`);
+
+			// Trigger mouseleave
+			itemDiv.listeners.mouseleave[0]();
+			expect(usernameInput.value).toBe(`originalUser`);
+			expect(passwordInput.value).toBe(`originalPass`);
+		});
 	});
 });
 
