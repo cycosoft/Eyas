@@ -222,6 +222,12 @@ export function setupAutofill(): void {
 		await handleAutofillTrigger(input);
 	}, true);
 
+	document.addEventListener(`focusout`, (event: Event) => {
+		if (event.target === activeInput) {
+			removeDropdown();
+		}
+	}, true);
+
 	document.addEventListener(`click`, async (e: Event) => {
 		// If a dropdown is open and the click is outside of it (and not the focused element), close it.
 		if (activeDropdown && !activeDropdown.contains(e.target as Node) && e.target !== document.activeElement) {
