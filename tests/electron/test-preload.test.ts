@@ -782,6 +782,97 @@ describe(`test-preload`, () => {
 			await focusoutHandler(mockEvent as unknown as Event);
 			expect(removeMock).toHaveBeenCalled();
 		});
+
+		it(`should close dropdown when window scrolls but NOT when scrolling inside dropdown`, async () => {
+			const ipc = ipcRenderer;
+			type ReturnCred = { username: Username; passwordPlain: PasswordPlain };
+			ipc.invoke = vi.fn().mockImplementation(channel => {
+				if (channel === `get-credentials`) {
+					return Promise.resolve([
+						{ username: `user1` as Username, passwordPlain: `pass1` as PasswordPlain } as ReturnCred
+					]);
+				}
+				if (channel === `is-dark-theme`) return Promise.resolve(false);
+				return Promise.resolve();
+			});
+
+			const listeners: Record<EventType, ((e: Event) => void)[]> = {};
+			const mockWindow = {
+				location: { origin: `https://test.eyas` as DomainUrl },
+				addEventListener: vi.fn((event: EventType, cb: (e: Event) => void) => {
+					if (!listeners[event]) { listeners[event] = []; }
+					listeners[event].push(cb);
+				})
+			};
+			vi.stubGlobal(`window`, mockWindow);
+
+			// Setup document stub
+			const removeMock = vi.fn();
+			const containsMock = vi.fn();
+			const mockDropdownEl = {
+				style: {},
+				appendChild: vi.fn(),
+				setAttribute: vi.fn(),
+				addEventListener: vi.fn(),
+				remove: removeMock,
+				contains: containsMock
+			};
+			const mockDoc = {
+				createElement: vi.fn(() => mockDropdownEl),
+				documentElement: { appendChild: vi.fn() },
+				body: { appendChild: vi.fn() },
+				addEventListener: vi.fn((event: EventType, cb: (e: Event) => void) => {
+					if (!listeners[event]) { listeners[event] = []; }
+					listeners[event].push(cb);
+				})
+			};
+			vi.stubGlobal(`document`, mockDoc);
+
+			setupAutofill();
+
+			const focusHandler = listeners[`focusin`][0];
+			const scrollHandler = listeners[`scroll`][0];
+			expect(scrollHandler).toBeDefined();
+
+			const usernameInput: MockInput = {
+				value: ``,
+				type: `text`,
+				tagName: `INPUT`,
+				dispatchEvent: vi.fn(),
+				offsetWidth: 100,
+				getBoundingClientRect: vi.fn(() => ({ top: 0, bottom: 0, left: 0, right: 0, width: 100, height: 20 })),
+				addEventListener: vi.fn()
+			};
+			const passwordInput: MockInput = { value: ``, type: `password`, tagName: `INPUT`, dispatchEvent: vi.fn() };
+
+			const mockForm = {
+				querySelectorAll: vi.fn((selector: DomSelector) => {
+					if (selector.includes(`type="password"`)) {
+						return [passwordInput];
+					}
+					return [usernameInput];
+				})
+			};
+			usernameInput.form = mockForm;
+
+			const mockEvent = {
+				target: usernameInput
+			};
+
+			// Show dropdown first
+			await focusHandler(mockEvent as unknown as Event);
+			expect(mockDoc.createElement).toHaveBeenCalledWith(`div`);
+
+			// 1. Simulate scroll inside the dropdown
+			containsMock.mockReturnValue(true);
+			await scrollHandler({ target: {} } as unknown as Event);
+			expect(removeMock).not.toHaveBeenCalled();
+
+			// 2. Simulate scroll outside the dropdown
+			containsMock.mockReturnValue(false);
+			await scrollHandler({ target: {} } as unknown as Event);
+			expect(removeMock).toHaveBeenCalled();
+		});
 	});
 });
 

@@ -240,6 +240,11 @@ export function setupAutofill(): void {
 		await handleAutofillTrigger(input);
 	}, true);
 
-	window.addEventListener(`scroll`, removeDropdown, true);
+	window.addEventListener(`scroll`, (event: Event) => {
+		if (activeDropdown && activeDropdown.contains(event.target as Node)) {
+			return;
+		}
+		removeDropdown();
+	}, true);
 	window.addEventListener(`resize`, removeDropdown, true);
 }
