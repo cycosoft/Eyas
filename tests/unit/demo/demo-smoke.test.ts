@@ -115,7 +115,7 @@ describe(`Demo Site Smoke Tests`, () => {
 		// Verify simple login form elements
 		const simpleForm = document.getElementById(`simple-login-form`);
 		expect(simpleForm, `Missing simple login form`).not.toBeNull();
-		expect(simpleForm?.querySelector(`input[type="text"], input[type="email"]`), `Simple form username input missing`).not.toBeNull();
+		expect(simpleForm?.querySelector(`input[type="text"]`), `Simple form username input missing or not type="text"`).not.toBeNull();
 		expect(simpleForm?.querySelector(`input[type="password"]`), `Simple form password input missing`).not.toBeNull();
 
 		// Verify non-login form has no password field
