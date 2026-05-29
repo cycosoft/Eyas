@@ -48,7 +48,7 @@ const credential = ref<CredentialPayload | null>(null);
 
 const save = (): void => {
 	if (credential.value) {
-		window.eyas?.send(`save-credential-confirm` as ChannelName, credential.value);
+		window.eyas?.send(`save-credential-confirm` as ChannelName, JSON.parse(JSON.stringify(credential.value)));
 	}
 	visible.value = false;
 };

@@ -12,7 +12,7 @@ export default {
 	// version: ``,
 
 	viewports: [
-		{ label: `Custom Size`, width: 1024, height: 768 }
+		{ label: `Custom Size`, width: 1250, height: 768 }
 	],
 
 	links: [

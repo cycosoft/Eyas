@@ -197,9 +197,7 @@ function showAutocompleteDropdown(input: HTMLInputElement, credentialsList: Decr
 	document.body.appendChild(dropdown);
 	activeDropdown = dropdown;
 
-	input.addEventListener(`focusout`, () => {
-		setTimeout(removeDropdown, 150);
-	}, { once: true });
+
 }
 
 export function setupAutofill(): void {
@@ -215,18 +213,34 @@ export function setupAutofill(): void {
 		const creds = await getOriginCredentials();
 		if (!creds || creds.length === 0) { return; }
 
-		if (creds.length === 1) {
-			fillForm(input, creds[0]);
-		} else if (creds.length > 1) {
+		if (creds.length >= 1) {
 			showAutocompleteDropdown(input, creds);
 		}
 	}, true);
 
-	document.addEventListener(`click`, e => {
-		if (activeDropdown && !activeDropdown.contains(e.target as Node)) {
-			removeDropdown();
-		}
-	});
+	document.addEventListener(`click`, async (e: Event) => {
+        // If a dropdown is open and the click is outside of it (and not the focused element), close it.
+        if (activeDropdown && typeof (activeDropdown as any).contains === 'function' && !activeDropdown.contains(e.target as Node) && e.target !== document.activeElement) {
+            removeDropdown();
+            return;
+        }
+
+        const input = e.target as HTMLInputElement;
+        if (!input || input.tagName !== `INPUT`) { return; }
+
+        const type = input.type ? input.type.toLowerCase() : `text`;
+        if (type !== `text` && type !== `email` && type !== `password`) { return; }
+
+        // If dropdown already exists, remove it to refresh.
+        if (activeDropdown) { removeDropdown(); }
+
+        const creds = await getOriginCredentials();
+        if (!creds || creds.length === 0) { return; }
+
+        if (creds.length >= 1) {
+            showAutocompleteDropdown(input, creds);
+        }
+    }, true);
 
 	window.addEventListener(`scroll`, removeDropdown, true);
 	window.addEventListener(`resize`, removeDropdown, true);

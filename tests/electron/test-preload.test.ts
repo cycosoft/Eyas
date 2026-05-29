@@ -205,7 +205,7 @@ describe(`test-preload`, () => {
 
 			// Setup document stub
 			const mockDoc = {
-				createElement: vi.fn(() => ({ style: {}, appendChild: vi.fn() })),
+				createElement: vi.fn(() => ({ style: {}, appendChild: vi.fn(), setAttribute: vi.fn(), addEventListener: vi.fn() })),
 				documentElement: { appendChild: vi.fn() },
 				body: { appendChild: vi.fn() },
 				addEventListener: vi.fn((event: EventType, cb: (e: Event) => void) => {
@@ -221,7 +221,15 @@ describe(`test-preload`, () => {
 			const focusHandler = listeners[`focusin`][0];
 
 			// Mock target input
-			const usernameInput = { value: ``, type: `text`, tagName: `INPUT`, dispatchEvent: vi.fn() };
+			const usernameInput = {
+				value: ``,
+				type: `text`,
+				tagName: `INPUT`,
+				dispatchEvent: vi.fn(),
+				offsetWidth: 100,
+				getBoundingClientRect: vi.fn(() => ({ top: 0, bottom: 0, left: 0, right: 0, width: 100, height: 20 })),
+				addEventListener: vi.fn()
+			};
 			const passwordInput = { value: ``, type: `password`, tagName: `INPUT`, dispatchEvent: vi.fn() };
 
 			type DocQuery = string;
@@ -242,8 +250,60 @@ describe(`test-preload`, () => {
 			await focusHandler(mockEvent as unknown as Event);
 
 			expect(ipc.invoke).toHaveBeenCalledWith(`get-credentials`, { origin: `https://test.eyas` });
-			expect(usernameInput.value).toBe(`user1`);
-			expect(passwordInput.value).toBe(`pass1`);
+			expect(mockDoc.createElement).toHaveBeenCalledWith(`div`);
+			expect(usernameInput.value).toBe(``);
+			expect(passwordInput.value).toBe(``);
+		});
+
+		it(`should show dropdown on click even if input is already focused`, async () => {
+			const ipc = ipcRenderer;
+			ipc.invoke = vi.fn().mockResolvedValue([
+				{ username: `user1`, passwordPlain: `pass1` }
+			]);
+
+			const listeners: Record<EventType, ((e: Event) => void)[]> = {};
+			const mockWindow = {
+				location: { origin: `https://test.eyas` },
+				addEventListener: vi.fn()
+			};
+			vi.stubGlobal(`window`, mockWindow);
+
+			// Setup document stub
+			const mockDoc = {
+				createElement: vi.fn(() => ({ style: {}, appendChild: vi.fn(), setAttribute: vi.fn(), addEventListener: vi.fn(), contains: vi.fn(() => false), remove: vi.fn() })),
+				documentElement: { appendChild: vi.fn() },
+				body: { appendChild: vi.fn() },
+				addEventListener: vi.fn((event: EventType, cb: (e: Event) => void) => {
+					if (!listeners[event]) { listeners[event] = []; }
+					listeners[event].push(cb);
+				})
+			};
+			vi.stubGlobal(`document`, mockDoc);
+
+			setupAutofill();
+
+			// Simulate click event
+			const clickHandler = listeners[`click`].find(cb => cb.toString().includes(`getOriginCredentials`));
+			if (!clickHandler) throw new Error(`click handler not found`);
+
+			const usernameInput = {
+				value: ``,
+				type: `text`,
+				tagName: `INPUT`,
+				dispatchEvent: vi.fn(),
+				offsetWidth: 100,
+				getBoundingClientRect: vi.fn(() => ({ top: 0, bottom: 0, left: 0, right: 0, width: 100, height: 20 })),
+				addEventListener: vi.fn()
+			};
+
+			const mockEvent = {
+				target: usernameInput
+			};
+
+			await clickHandler(mockEvent as unknown as Event);
+
+			expect(ipc.invoke).toHaveBeenCalledWith(`get-credentials`, { origin: `https://test.eyas` });
+			expect(mockDoc.createElement).toHaveBeenCalledWith(`div`);
 		});
 	});
 });
