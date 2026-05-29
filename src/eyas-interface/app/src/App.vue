@@ -20,6 +20,7 @@ import { onMounted, watch, computed } from 'vue';
 import { useTheme } from 'vuetify';
 import { THEME_MODES } from '@scripts/constants.js';
 import useSettingsStore from '@/stores/settings.js';
+import ModalStore from '@/stores/modals.js';
 import AppHeader from '@/components/AppHeader.vue';
 import ExitModal from '@/components/ExitModal.vue';
 import EnvironmentModal from '@/components/EnvironmentModal.vue';
@@ -52,6 +53,12 @@ watch(currentTheme, newVal => {
 }, { immediate: true });
 
 onMounted(() => {
+	// listen for the global close-all broadcast and dispatch it through the store.
+	// A single listener here replaces one-per-instance listeners in ModalWrapper.
+	window.eyas?.receive(`close-modals` as ChannelName, () => {
+		ModalStore().closeAll();
+	});
+
 	// listen for settings to be loaded from the main process
 	window.eyas?.receive(`settings-loaded` as ChannelName, data => {
 		settingsStore.loadFromPayload(data);

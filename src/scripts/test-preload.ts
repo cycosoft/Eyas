@@ -40,7 +40,7 @@ contextBridge.exposeInMainWorld(`eyas`, {
 
 		if (validChannels.includes(channel)) {
 			// Deliberately strip event as it includes `sender`
-			ipcRenderer.on(channel, (_event, ...args: unknown[]) => { func(...args); });
+			ipcRenderer.on(channel, (_event: unknown, ...args: unknown[]): void => { func(...args); });
 		}
 	}
 });

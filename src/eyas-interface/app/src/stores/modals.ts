@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia';
 import type { ModalsState } from '@/types/modals.js';
-import type { ModalId, IsActive } from '@/../../../types/primitives.js';
+import type { ModalId, IsActive, Count } from '@/../../../types/primitives.js';
 
 export default defineStore(`modals`, {
 	state: (): ModalsState => ({
-		visible: []
+		visible: [],
+		closeAllCounter: 0 as Count
 	}),
 
 	actions: {
@@ -21,6 +22,11 @@ export default defineStore(`modals`, {
 				// remove the id from the list
 				this.visible.splice(index, 1);
 			}
+		},
+
+		closeAll(): void {
+			// increment the counter; ModalWrapper instances watch this to know when to close
+			this.closeAllCounter = (this.closeAllCounter + 1) as Count;
 		}
 	},
 
