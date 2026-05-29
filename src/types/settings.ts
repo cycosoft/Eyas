@@ -1,9 +1,19 @@
 import type { THEME_MODES } from '@scripts/constants.js';
 import type { EnvironmentSettings, TestServerSettings } from './core.js';
 export type { EnvironmentSettings };
-import type { AppVersion, ProjectId } from './primitives.js';
+import type { AppVersion, ProjectId, LabelString } from './primitives.js';
 
 export type ThemeMode = typeof THEME_MODES[keyof typeof THEME_MODES];
+
+export type AutofillTheme = {
+	bg: LabelString;
+	border: LabelString;
+	color: LabelString;
+	shadow: LabelString;
+	itemBorder: LabelString;
+	itemHoverBg: LabelString;
+	maskColor: LabelString;
+};
 
 type SettingsBase = {
 	env?: EnvironmentSettings;
@@ -22,4 +32,4 @@ export type ProjectSettings = SettingsBase;
 export type SettingsData = {
 	app: AppSettings;
 	projects: Record<ProjectId, ProjectSettings>;
-}
+};

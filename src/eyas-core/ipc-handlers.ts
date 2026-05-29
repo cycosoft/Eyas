@@ -244,6 +244,11 @@ function initSettingsIpcListeners(ctx: CoreContext): void {
 			version: ctx._appVersion
 		});
 	});
+
+	// query if dark theme is active
+	ipcMain.handle(`is-dark-theme`, () => {
+		return nativeTheme.shouldUseDarkColors;
+	});
 }
 
 // Initializes test server-related IPC listeners.

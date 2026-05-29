@@ -50,7 +50,8 @@ export const VALID_SEND_CHANNELS = [
 	`save-login-attempt`,
 	`save-credential-confirm`,
 	`get-credentials`,
-	`delete-credential`
+	`delete-credential`,
+	`is-dark-theme`
 ] as const;
 
 export const VALID_RECEIVE_CHANNELS = [
