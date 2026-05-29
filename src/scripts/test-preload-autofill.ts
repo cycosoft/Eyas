@@ -123,7 +123,7 @@ function restoreCredential(input: HTMLInputElement): void {
 
 function getAutofillTheme(isDark: IsActive): AutofillTheme {
 	return {
-		bg: isDark ? `rgba(30, 30, 30, 0.95)` : `rgba(255, 255, 255, 0.95)`,
+		bg: isDark ? `rgba(30, 30, 30, 0.85)` : `rgba(255, 255, 255, 0.85)`,
 		border: isDark ? `1px solid rgba(255, 255, 255, 0.15)` : `1px solid rgba(0, 0, 0, 0.1)`,
 		color: isDark ? `#e3e3e3` : `#1c1b1f`,
 		shadow: isDark ? `0 4px 20px rgba(0, 0, 0, 0.4)` : `0 4px 20px rgba(0, 0, 0, 0.15)`,
@@ -173,7 +173,7 @@ function showAutocompleteDropdown(input: HTMLInputElement, credentialsList: Decr
 	const theme = getAutofillTheme(isDark);
 	const dropdown = document.createElement(`div`);
 	dropdown.id = `eyas-autofill-dropdown`;
-	dropdown.setAttribute(`style`, `position:absolute;background:${theme.bg};backdrop-filter:blur(10px);border:${theme.border};border-radius:8px;box-shadow:${theme.shadow};z-index:2147483647;font-family:'Inter','Segoe UI',sans-serif;font-size:14px;width:${input.offsetWidth}px;color:${theme.color};overflow:hidden;`);
+	dropdown.setAttribute(`style`, `position:absolute;background:${theme.bg};backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:${theme.border};border-radius:8px;box-shadow:${theme.shadow};z-index:2147483647;font-family:'Inter','Segoe UI',sans-serif;font-size:14px;width:${input.offsetWidth}px;color:${theme.color};overflow:hidden;`);
 
 	const listContainer = document.createElement(`div`);
 	listContainer.setAttribute(`style`, `max-height:200px;overflow-y:auto;`);

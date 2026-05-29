@@ -698,7 +698,7 @@ describe(`test-preload`, () => {
 			await focusHandler(mockEvent as unknown as Event);
 
 			// Verify the dropdown element styling includes the dark theme values
-			const dropdownDiv = createdElements.find(e => e.tag === `div` && ((e.setAttribute as Mock).mock.calls.some(call => typeof call[1] === `string` && call[1].includes(`background:rgba(30, 30, 30, 0.95)`))));
+			const dropdownDiv = createdElements.find(e => e.tag === `div` && ((e.setAttribute as Mock).mock.calls.some(call => typeof call[1] === `string` && call[1].includes(`background:rgba(30, 30, 30, 0.85)`))));
 			expect(dropdownDiv).toBeDefined();
 
 			// Verify item mask color in innerHTML (dark theme is #aaa)
