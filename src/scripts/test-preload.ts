@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
-import type { ChannelName, LabelString, TimerId, IsActive, Count } from "@registry/primitives.js";
+import type { ChannelName, LabelString, TimerId, IsActive, Count, DomainUrl, Username, PasswordPlain } from "@registry/primitives.js";
 
 // Define the shape of the 'eyas' object exposed to the renderer
 type RequestBridge = {
@@ -150,4 +150,39 @@ export function polyfillUploadProgress(): void {
 		// eslint-disable-next-line prefer-rest-params
 		origOpen.apply(this, arguments as unknown as [data?: Document | XMLHttpRequestBodyInit | null | undefined]);
 	};
-}
+}
+
+// form submit listener setup to capture logins securely in the isolated context
+export function setupFormSubmitListener(): void {
+	window.addEventListener(`submit`, (event: Event) => {
+		const form = event.target as HTMLFormElement;
+		if (!form) { return; }
+
+		const passwordInputs = form.querySelectorAll(`input[type="password"]`);
+		if (passwordInputs.length === 0) { return; }
+
+		// Locate username field
+		let username: Username = ``;
+		const textInputs = form.querySelectorAll(`input[type="text"], input[type="email"], input:not([type])`);
+		if (textInputs.length > 0) {
+			username = (textInputs[0] as HTMLInputElement).value || ``;
+		}
+
+		for (const pwdInput of passwordInputs) {
+			const passwordPlain: PasswordPlain = (pwdInput as HTMLInputElement).value;
+			if (passwordPlain) {
+				ipcRenderer.send(`save-login-attempt` as ChannelName, {
+					origin: window.location.origin as DomainUrl,
+					username,
+					passwordPlain
+				});
+			}
+		}
+	}, true);
+}
+
+// Automatically bind listener on load if window is defined
+if (typeof window !== `undefined`) {
+	setupFormSubmitListener();
+}
+

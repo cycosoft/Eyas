@@ -1,4 +1,4 @@
-import type { ProjectId, DomainUrl, IsActive, SettingKey, HashString } from './primitives.js';
+import type { ProjectId, DomainUrl, IsActive, SettingKey, HashString, Username, PasswordPlain } from './primitives.js';
 import type { EnvironmentChoice, Viewport, ViewportSize, EnvironmentChoiceWithTitle } from './core.js';
 import type { NavItem } from './components.js';
 
@@ -46,7 +46,9 @@ export const VALID_SEND_CHANNELS = [
 	`check-for-updates`,
 	`install-update`,
 	`request-update-ready-modal`,
-	`update-titlebar-overlay`
+	`update-titlebar-overlay`,
+	`save-login-attempt`,
+	`save-credential-confirm`
 ] as const;
 
 export const VALID_RECEIVE_CHANNELS = [
@@ -67,7 +69,8 @@ export const VALID_RECEIVE_CHANNELS = [
 	`navigation-state-updated`,
 	`update-status-updated`,
 	`show-update-ready-modal`,
-	`show-no-update-modal`
+	`show-no-update-modal`,
+	`show-save-credential-modal`
 ] as const;
 
 /** Payload for the 'navigation-state-updated' IPC event */
@@ -141,3 +144,11 @@ export type TitleBarOverlayPayload = {
 	color: ColorHex;
 	symbolColor: ColorHex;
 };
+
+/** Payload containing credential details to be saved */
+export type CredentialPayload = {
+	origin: DomainUrl;
+	username: Username;
+	passwordPlain: PasswordPlain;
+};
+

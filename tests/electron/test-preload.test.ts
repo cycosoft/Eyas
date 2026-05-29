@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import type { ProgressBytes, EventType, IsComputable, TimestampMS } from '@registry/primitives.js';
+import type { ProgressBytes, EventType, IsComputable, TimestampMS, DomainUrl } from '@registry/primitives.js';
 
 type ProgressEventInit = {
 	lengthComputable: IsComputable;
@@ -17,6 +17,9 @@ vi.mock(`electron`, () => ({
 		on: vi.fn()
 	}
 }));
+
+import { ipcRenderer } from 'electron';
+
 
 // Mock browser globals that are used in the file
 const mockDocument = {
@@ -38,7 +41,7 @@ vi.stubGlobal(`process`, mockProcess);
 
 // Import the functions
 // Note: We use .js extension as per project rules
-import { injectWithAnonymousScope, extractFunctionBody, polyfillUploadProgress } from '@scripts/test-preload.js';
+import { injectWithAnonymousScope, extractFunctionBody, polyfillUploadProgress, setupFormSubmitListener } from '@scripts/test-preload.js';
 
 describe(`test-preload`, () => {
 	describe(`utility functions`, () => {
@@ -128,4 +131,57 @@ describe(`test-preload`, () => {
 			expect(originalSend).toHaveBeenCalled();
 		});
 	});
+
+	describe(`setupFormSubmitListener`, () => {
+		it(`should trigger save-login-attempt IPC on submit`, () => {
+			const mockLocation = { origin: `https://test.eyas` };
+			vi.stubGlobal(`location`, mockLocation);
+
+			// Setup document event listener stub
+			const listeners: Record<EventType, ((e: Event) => void)[]> = {};
+			const mockWindow = {
+				location: { origin: `https://test.eyas` as DomainUrl },
+				addEventListener: vi.fn((event: EventType, cb: (e: Event) => void) => {
+					if (!listeners[event]) { listeners[event] = []; }
+					listeners[event].push(cb);
+				})
+			};
+			vi.stubGlobal(`window`, mockWindow);
+
+			setupFormSubmitListener();
+
+			expect(mockWindow.addEventListener).toHaveBeenCalledWith(`submit`, expect.any(Function), true);
+
+			// Simulate submit event
+			const formSubmitHandler = listeners[`submit`][0];
+
+			// Mock DOM inputs
+			const usernameInput = { value: `testUser`, type: `text` };
+			const passwordInput = { value: `testPass`, type: `password` };
+
+			type DomSelector = string;
+			const mockForm = {
+				querySelectorAll: vi.fn((selector: DomSelector) => {
+					if (selector.includes(`type="password"`)) {
+						return [passwordInput];
+					}
+					return [usernameInput];
+				})
+			};
+
+			const mockEvent = {
+				target: mockForm,
+				preventDefault: vi.fn()
+			};
+
+			formSubmitHandler(mockEvent as unknown as Event);
+
+			expect(ipcRenderer.send).toHaveBeenCalledWith(`save-login-attempt`, expect.objectContaining({
+				origin: `https://test.eyas`,
+				username: `testUser`,
+				passwordPlain: `testPass`
+			}));
+		});
+	});
 });
+
