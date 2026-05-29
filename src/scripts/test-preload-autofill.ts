@@ -139,7 +139,7 @@ function createDropdownItem(input: HTMLInputElement, cred: DecryptedCredential, 
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: 10px 14px;
+		padding: 10px 24px 10px 14px;
 		cursor: pointer;
 		border-bottom: ${theme.itemBorder};
 		transition: background 0.15s ease;
@@ -193,6 +193,15 @@ function showAutocompleteDropdown(input: HTMLInputElement, credentialsList: Decr
 	dropdown.style.left = `${rect.left + window.scrollX}px`;
 	document.body.appendChild(dropdown);
 	activeDropdown = dropdown;
+
+	const isOverflowed = listContainer.scrollHeight > listContainer.clientHeight;
+	if (isOverflowed) {
+		const items = listContainer.querySelectorAll(`div`);
+		items.forEach(item => {
+			item.style.paddingRight = `40px`;
+		});
+		logo.style.right = `20px`;
+	}
 }
 
 async function handleAutofillTrigger(input: HTMLInputElement): Promise<void> {
