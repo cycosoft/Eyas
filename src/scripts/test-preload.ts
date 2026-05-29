@@ -143,6 +143,22 @@ function removeDropdown(): void {
 	}
 }
 
+/**
+ * Determines whether the autofill dropdown should be shown for a given input.
+ * Returns true only if the input is part of a form that contains at least one password field.
+ */
+function shouldShowAutofill(input: HTMLInputElement): boolean {
+    if (!input || input.tagName !== `INPUT`) {
+        return false;
+    }
+    const form = input.form;
+    if (!form) {
+        return false;
+    }
+    const hasPassword = (form.querySelectorAll(`input[type="password"]`).length) > 0;
+    return hasPassword;
+}
+
 function showAutocompleteDropdown(input: HTMLInputElement, credentialsList: DecryptedCredential[]): void {
 	removeDropdown();
 
@@ -204,18 +220,18 @@ export function setupAutofill(): void {
 	if (typeof document === `undefined`) { return; }
 
 	document.addEventListener(`focusin`, async (event: Event) => {
-		const input = event.target as HTMLInputElement;
-		if (!input || input.tagName !== `INPUT`) { return; }
+        const input = event.target as HTMLInputElement;
+        if (!shouldShowAutofill(input)) { return; }
 
-		const type = input.type ? input.type.toLowerCase() : `text`;
-		if (type !== `text` && type !== `email` && type !== `password`) { return; }
+        const type = input.type ? input.type.toLowerCase() : `text`;
+        if (type !== `text` && type !== `email` && type !== `password`) { return; }
 
-		const creds = await getOriginCredentials();
-		if (!creds || creds.length === 0) { return; }
+        const creds = await getOriginCredentials();
+        if (!creds || creds.length === 0) { return; }
 
-		if (creds.length >= 1) {
-			showAutocompleteDropdown(input, creds);
-		}
+        if (creds.length >= 1) {
+            showAutocompleteDropdown(input, creds);
+        }
 	}, true);
 
 	document.addEventListener(`click`, async (e: Event) => {
@@ -226,7 +242,7 @@ export function setupAutofill(): void {
         }
 
         const input = e.target as HTMLInputElement;
-        if (!input || input.tagName !== `INPUT`) { return; }
+        if (!shouldShowAutofill(input)) { return; }
 
         const type = input.type ? input.type.toLowerCase() : `text`;
         if (type !== `text` && type !== `email` && type !== `password`) { return; }
