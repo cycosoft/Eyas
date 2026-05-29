@@ -8,7 +8,8 @@ import type { Username, PasswordPlain, DomainUrl } from '@registry/primitives.js
 // Mock electron
 vi.mock(`electron`, () => ({
 	ipcMain: {
-		on: vi.fn()
+		on: vi.fn(),
+		handle: vi.fn()
 	}
 }));
 
@@ -17,6 +18,7 @@ vi.mock(`../../src/eyas-core/credential-store.js`, () => ({
 	default: {
 		saveCredential: vi.fn(),
 		getCredentials: vi.fn(),
+		getAllCredentials: vi.fn(),
 		deleteCredential: vi.fn(),
 		load: vi.fn(),
 		save: vi.fn()
@@ -102,4 +104,92 @@ describe(`Save Login Attempt IPC`, () => {
 
 		expect(ctx.uiEvent).not.toHaveBeenCalled();
 	});
+
+	test(`get-credentials IPC handler should return matching credentials for active project`, async () => {
+		const ctx = {
+			$config: { meta: { projectId: `test-proj` } }
+		} as unknown as CoreContext;
+
+		let handler: any = null; // eslint-disable-line @typescript-eslint/no-explicit-any
+		vi.spyOn(ipcMain, `handle`).mockImplementation((channel, cb) => {
+			if (channel === `get-credentials`) {
+				handler = cb;
+			}
+			return ipcMain;
+		});
+
+		initCredentialIpcListeners(ctx);
+
+		expect(handler).toBeTypeOf(`function`);
+		if (!handler) { return; }
+
+		// Mock the credential store
+		type MockMethod = { mockResolvedValue: (value: unknown) => void };
+		(credentialStore.getCredentials as unknown as MockMethod).mockResolvedValue([
+			{ username: `user1`, passwordPlain: `pass1` }
+		]);
+
+		const result = await handler({} as any, { origin: `https://example.com` as DomainUrl }); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+		expect(credentialStore.getCredentials).toHaveBeenCalledWith(`test-proj`, `https://example.com`);
+		expect(result).toEqual([{ username: `user1`, passwordPlain: `pass1` }]);
+	});
+
+	test(`get-all-credentials IPC handler should return all matching credentials for active project`, async () => {
+		const ctx = {
+			$config: { meta: { projectId: `test-proj` } }
+		} as unknown as CoreContext;
+
+		let handler: any = null; // eslint-disable-line @typescript-eslint/no-explicit-any
+		vi.spyOn(ipcMain, `handle`).mockImplementation((channel, cb) => {
+			if (channel === `get-all-credentials`) {
+				handler = cb;
+			}
+			return ipcMain;
+		});
+
+		initCredentialIpcListeners(ctx);
+
+		expect(handler).toBeTypeOf(`function`);
+		if (!handler) { return; }
+
+		// Mock the credential store
+		type MockMethod = { mockResolvedValue: (value: unknown) => void };
+		(credentialStore.getAllCredentials as unknown as MockMethod).mockResolvedValue([
+			{ origin: `https://example.com`, username: `user1` }
+		]);
+
+		const result = await handler({} as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+		expect(credentialStore.getAllCredentials).toHaveBeenCalledWith(`test-proj`);
+		expect(result).toEqual([{ origin: `https://example.com`, username: `user1` }]);
+	});
+
+	test(`delete-credential IPC handler should call deleteCredential`, async () => {
+		const ctx = {
+			$config: { meta: { projectId: `test-proj` } }
+		} as unknown as CoreContext;
+
+		let handler: any = null; // eslint-disable-line @typescript-eslint/no-explicit-any
+		vi.spyOn(ipcMain, `on`).mockImplementation((channel, cb) => {
+			if (channel === `delete-credential`) {
+				handler = cb;
+			}
+			return ipcMain;
+		});
+
+		initCredentialIpcListeners(ctx);
+
+		expect(handler).toBeTypeOf(`function`);
+		if (!handler) { return; }
+
+		// Mock the credential store
+		type MockMethod = { mockResolvedValue: (value: unknown) => void };
+		(credentialStore.deleteCredential as unknown as MockMethod).mockResolvedValue(undefined);
+
+		await handler({} as any, { origin: `https://example.com`, username: `user1` }); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+		expect(credentialStore.deleteCredential).toHaveBeenCalledWith(`test-proj`, `https://example.com`, `user1`);
+	});
 });
+

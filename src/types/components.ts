@@ -1,4 +1,6 @@
-import type { ModalMode, IsVisible, DomainUrl, IsEnabled, MenuLabel, EventType, ViewportWidth, AppTitle, ResponseBody, PortNumber, Count, IsActive, LabelString, AppVersion, IconName, MenuAccelerator, BrowserAction } from './primitives.js';
+import type { ModalMode, IsVisible, DomainUrl, IsEnabled, MenuLabel, EventType, ViewportWidth, AppTitle, ResponseBody, PortNumber, Count, IsActive, LabelString, AppVersion, IconName, MenuAccelerator, BrowserAction, Username } from './primitives.js';
+import type { CredentialMetadata } from './core.js';
+import type { CredentialPayload } from './ipc.js';
 
 type ModalType = `modal` | `dialog`;
 
@@ -97,6 +99,8 @@ export type SettingsModalVM = {
 	activeTab: MenuLabel;
 	projectAlwaysChoose: IsVisible;
 	appAlwaysChoose: IsVisible;
+	projectCredentials: CredentialMetadata[];
+	deleteCredential: (origin: DomainUrl, username: Username) => void;
 	saveProjectSetting: (key: MenuLabel, value: unknown) => void;
 	saveAppSetting: (key: MenuLabel, value: unknown) => void;
 	$nextTick: () => Promise<void>;
@@ -269,4 +273,15 @@ export type AppHeaderVM = {
 	displayUrlInfo: DisplayUrlInfo;
 	appTitle: string;
 	displayAppTitle: string;
+};
+
+/**
+ * Type helper for the SaveCredentialModal Vue component's ViewModel in tests.
+ */
+export type SaveCredentialModalVM = {
+	visible: IsVisible;
+	credential: CredentialPayload | null;
+	save: () => void;
+	cancel: () => void;
+	$nextTick: () => Promise<void>;
 };

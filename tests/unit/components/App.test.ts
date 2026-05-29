@@ -33,6 +33,7 @@ describe(`App`, () => {
 					TestServerActiveModal: true,
 					TestServerResumeModal: true,
 					SettingsModal: true,
+					SaveCredentialModal: true,
 					NoUpdateModal: true
 				}
 			}

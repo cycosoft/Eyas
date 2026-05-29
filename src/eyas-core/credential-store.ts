@@ -2,7 +2,7 @@ import { app, safeStorage } from 'electron';
 import _path from 'path';
 import fs from 'fs-extra';
 const { readJson, outputJson } = fs;
-import type { CredentialStoreService, CredentialStoreData, DecryptedCredential } from '@registry/core.js';
+import type { CredentialStoreService, CredentialStoreData, DecryptedCredential, CredentialMetadata } from '@registry/core.js';
 import type { FilePath, ProjectId, DomainUrl, Username, PasswordPlain } from '@registry/primitives.js';
 
 let _data: CredentialStoreData | null = null;
@@ -93,6 +93,23 @@ async function getCredentials(projectId: ProjectId, origin: DomainUrl): Promise<
 	return result;
 }
 
+async function getAllCredentials(projectId: ProjectId): Promise<CredentialMetadata[]> {
+	if (!_data) {
+		await load();
+	}
+	if (!_data || !_data[projectId]) {
+		return [];
+	}
+
+	const result: CredentialMetadata[] = [];
+	for (const [origin, list] of Object.entries(_data[projectId])) {
+		for (const cred of list) {
+			result.push({ origin: origin as DomainUrl, username: cred.username });
+		}
+	}
+	return result;
+}
+
 async function deleteCredential(projectId: ProjectId, origin: DomainUrl, username: Username): Promise<void> {
 	if (!_data) {
 		await load();
@@ -113,6 +130,7 @@ async function deleteCredential(projectId: ProjectId, origin: DomainUrl, usernam
 const credentialStore: CredentialStoreService = {
 	saveCredential,
 	getCredentials,
+	getAllCredentials,
 	deleteCredential,
 	load,
 	save,

@@ -70,7 +70,7 @@ export type Rectangle = {
 };
 
 /** A record containing credential details for an origin */
-export type CredentialRecord = {
+type CredentialRecord = {
 	username: Username;
 	passwordHex: PasswordHex; // Encrypted password stored as hex
 };
@@ -84,10 +84,17 @@ export type DecryptedCredential = {
 /** Data structure containing all stored credentials, indexed by projectId and then origin */
 export type CredentialStoreData = Record<ProjectId, Record<DomainUrl, CredentialRecord[]>>;
 
+/** A record representing basic credential metadata (excluding password) */
+export type CredentialMetadata = {
+	origin: DomainUrl;
+	username: Username;
+};
+
 /** Service for securely storing and retrieving credentials asynchronously */
 export type CredentialStoreService = {
 	saveCredential: (projectId: ProjectId, origin: DomainUrl, username: Username, passwordPlain: PasswordPlain) => Promise<void>;
 	getCredentials: (projectId: ProjectId, origin: DomainUrl) => Promise<DecryptedCredential[]>;
+	getAllCredentials: (projectId: ProjectId) => Promise<CredentialMetadata[]>;
 	deleteCredential: (projectId: ProjectId, origin: DomainUrl, username: Username) => Promise<void>;
 	load: () => Promise<void>;
 	save: () => Promise<void>;

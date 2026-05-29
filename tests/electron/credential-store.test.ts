@@ -101,4 +101,18 @@ describe(`Credential Store TDD Tests`, () => {
 		expect(credentials).toHaveLength(1);
 		expect(credentials[0].username).toBe(`user2`);
 	});
+
+	test(`getAllCredentials() returns all credentials for a project across origins`, async () => {
+		await credentialStore.load();
+		await credentialStore.saveCredential(`project-1`, `https://example.com`, `user1`, `pass1`);
+		await credentialStore.saveCredential(`project-1`, `https://another.com`, `user2`, `pass2`);
+		await credentialStore.saveCredential(`project-2`, `https://example.com`, `user3`, `pass3`);
+
+		const allCreds = await credentialStore.getAllCredentials(`project-1`);
+		expect(allCreds).toHaveLength(2);
+		expect(allCreds).toEqual(expect.arrayContaining([
+			{ origin: `https://example.com`, username: `user1` },
+			{ origin: `https://another.com`, username: `user2` }
+		]));
+	});
 });

@@ -48,7 +48,9 @@ export const VALID_SEND_CHANNELS = [
 	`request-update-ready-modal`,
 	`update-titlebar-overlay`,
 	`save-login-attempt`,
-	`save-credential-confirm`
+	`save-credential-confirm`,
+	`get-credentials`,
+	`delete-credential`
 ] as const;
 
 export const VALID_RECEIVE_CHANNELS = [
@@ -150,5 +152,10 @@ export type CredentialPayload = {
 	origin: DomainUrl;
 	username: Username;
 	passwordPlain: PasswordPlain;
+};
+
+/** Payload for fetching credentials of a specific origin */
+export type GetCredentialsPayload = {
+	origin: DomainUrl;
 };
 

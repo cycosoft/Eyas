@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import type { ProgressBytes, EventType, IsComputable, TimestampMS, DomainUrl } from '@registry/primitives.js';
+import type { ProgressBytes, EventType, IsComputable, TimestampMS, DomainUrl, Username, PasswordPlain } from '@registry/primitives.js';
 
 type ProgressEventInit = {
 	lengthComputable: IsComputable;
@@ -41,7 +41,8 @@ vi.stubGlobal(`process`, mockProcess);
 
 // Import the functions
 // Note: We use .js extension as per project rules
-import { injectWithAnonymousScope, extractFunctionBody, polyfillUploadProgress, setupFormSubmitListener } from '@scripts/test-preload.js';
+import { injectWithAnonymousScope, extractFunctionBody, polyfillUploadProgress, setupFormSubmitListener, setupAutofill } from '@scripts/test-preload.js';
+
 
 describe(`test-preload`, () => {
 	describe(`utility functions`, () => {
@@ -181,6 +182,68 @@ describe(`test-preload`, () => {
 				username: `testUser`,
 				passwordPlain: `testPass`
 			}));
+		});
+	});
+
+	describe(`setupAutofill`, () => {
+		it(`should autofill single credential on input focus`, async () => {
+			const ipc = ipcRenderer;
+			type ReturnCred = { username: Username; passwordPlain: PasswordPlain };
+			ipc.invoke = vi.fn().mockResolvedValue([
+				{ username: `user1` as Username, passwordPlain: `pass1` as PasswordPlain } as ReturnCred
+			]);
+
+			const listeners: Record<EventType, ((e: Event) => void)[]> = {};
+			const mockWindow = {
+				location: { origin: `https://test.eyas` as DomainUrl },
+				addEventListener: vi.fn((event: EventType, cb: (e: Event) => void) => {
+					if (!listeners[event]) { listeners[event] = []; }
+					listeners[event].push(cb);
+				})
+			};
+			vi.stubGlobal(`window`, mockWindow);
+
+			// Setup document stub
+			const mockDoc = {
+				createElement: vi.fn(() => ({ style: {}, appendChild: vi.fn() })),
+				documentElement: { appendChild: vi.fn() },
+				body: { appendChild: vi.fn() },
+				addEventListener: vi.fn((event: EventType, cb: (e: Event) => void) => {
+					if (!listeners[event]) { listeners[event] = []; }
+					listeners[event].push(cb);
+				})
+			};
+			vi.stubGlobal(`document`, mockDoc);
+
+			setupAutofill();
+
+			// Simulate focusin event
+			const focusHandler = listeners[`focusin`][0];
+
+			// Mock target input
+			const usernameInput = { value: ``, type: `text`, tagName: `INPUT`, dispatchEvent: vi.fn() };
+			const passwordInput = { value: ``, type: `password`, tagName: `INPUT`, dispatchEvent: vi.fn() };
+
+			type DocQuery = string;
+			const mockForm = {
+				querySelectorAll: vi.fn((selector: DocQuery) => {
+					if (selector.includes(`type="password"`)) {
+						return [passwordInput];
+					}
+					return [usernameInput];
+				})
+			};
+			(usernameInput as any).form = mockForm; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+			const mockEvent = {
+				target: usernameInput
+			};
+
+			await focusHandler(mockEvent as unknown as Event);
+
+			expect(ipc.invoke).toHaveBeenCalledWith(`get-credentials`, { origin: `https://test.eyas` });
+			expect(usernameInput.value).toBe(`user1`);
+			expect(passwordInput.value).toBe(`pass1`);
 		});
 	});
 });

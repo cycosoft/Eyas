@@ -1,5 +1,9 @@
 import { contextBridge, ipcRenderer } from "electron";
-import type { ChannelName, LabelString, TimerId, IsActive, Count, DomainUrl, Username, PasswordPlain } from "@registry/primitives.js";
+import type { ChannelName, DomainUrl, Username, PasswordPlain } from "@registry/primitives.js";
+import type { DecryptedCredential } from "@registry/core.js";
+import { injectWithAnonymousScope, extractFunctionBody, reportNetworkStatus, polyfillUploadProgress } from "./test-preload-polyfills.js";
+
+export { injectWithAnonymousScope, extractFunctionBody, polyfillUploadProgress };
 
 // Define the shape of the 'eyas' object exposed to the renderer
 type RequestBridge = {
@@ -54,104 +58,6 @@ process.once(`document-start`, () => {
 	document.documentElement.appendChild(script);
 });
 
-// grab the given function as a string, wrap it in an anonymous function, and return it
-export function injectWithAnonymousScope(fn: (...args: unknown[]) => unknown): LabelString {
-	// newline required for the function to be properly parsed
-	return `(() => {
-		${extractFunctionBody(fn)}
-	})();`;
-}
-
-// Extract the body of the function
-export function extractFunctionBody(fn: (...args: unknown[]) => unknown): LabelString {
-	// convert the given function to a string
-	const content = fn.toString();
-
-	// strip the function definition
-	return content
-		.toString()
-		.substring(
-			content.indexOf(`{`) + 1,
-			content.lastIndexOf(`}`)
-		)
-		.trim();
-}
-
-// allow network detection status within Eyas
-function reportNetworkStatus(): void {
-	window.addEventListener(`online`, () => window.eyas?.send(`network-status` as ChannelName, true as IsActive));
-	window.addEventListener(`offline`, () => window.eyas?.send(`network-status` as ChannelName, false as IsActive));
-}
-
-// polyfill for upload progress within Eyas
-export function polyfillUploadProgress(): void {
-	const origOpen = XMLHttpRequest.prototype.send;
-	const minUploadSpeed = 50 * 1024;
-	let uploadSpeed = 150 * 1024; // default to 150KB/s
-
-	// Can be: Document, Blob, ArrayBuffer, Int8Array, DataView, FormData, URLSearchParams, string, object, null.
-	XMLHttpRequest.prototype.send = function (this: XMLHttpRequest, data?: Document | XMLHttpRequestBodyInit | null): void {
-		// setup
-		const intervalTiming = 100;
-		let totalUpdates = 0;
-		let intervalId: TimerId | null = null;
-		let fileBytes = 1; // default to 1 byte to avoid division by 0
-
-		// track the time this request started
-		const requestStart = performance.now();
-
-		if (data instanceof ArrayBuffer || data instanceof DataView || (typeof Int8Array !== `undefined` && data instanceof Int8Array)) {
-			fileBytes = data.byteLength;
-		} else if (data instanceof Blob) {
-			fileBytes = data.size;
-		} else if (data instanceof FormData) {
-			for (const [, v] of data.entries()) {
-				if (v instanceof File) { fileBytes += v.size; }
-			}
-		} else if (typeof data === `string`) {
-			fileBytes = data.length;
-		}
-
-		// when the request has finished loading
-		this.addEventListener(`loadend`, () => {
-			// calculate the actual upload speed
-			const timeTaken = performance.now() - requestStart;
-			const calculatedSpeed = fileBytes * (1000 / timeTaken);
-			uploadSpeed = calculatedSpeed > minUploadSpeed ? calculatedSpeed : uploadSpeed;
-
-			if (intervalId !== null) {
-				clearInterval(intervalId);
-			}
-
-			// dispatch a final progress event with the total bytes
-			emitProgress(fileBytes, fileBytes);
-		});
-
-		// the event to dispatch the progress event
-		const emitProgress = (loaded: Count, total: Count): void => {
-			this.upload.dispatchEvent(new ProgressEvent(`progress`,
-				{ lengthComputable: true, loaded, total }
-			));
-		};
-
-		// dispatch an initial progress event with 0 loaded bytes
-		emitProgress(0, fileBytes);
-
-		const updateProgress = (): void => {
-			totalUpdates++;
-			const loaded = Math.min(totalUpdates * uploadSpeed * (intervalTiming / 1000), fileBytes);
-			emitProgress(loaded, fileBytes);
-		};
-
-		// update the new progress event now and then every following interval
-		updateProgress();
-		intervalId = setInterval(updateProgress, intervalTiming);
-
-		// eslint-disable-next-line prefer-rest-params
-		origOpen.apply(this, arguments as unknown as [data?: Document | XMLHttpRequestBodyInit | null | undefined]);
-	};
-}
-
 // form submit listener setup to capture logins securely in the isolated context
 export function setupFormSubmitListener(): void {
 	window.addEventListener(`submit`, (event: Event) => {
@@ -184,5 +90,144 @@ export function setupFormSubmitListener(): void {
 // Automatically bind listener on load if window is defined
 if (typeof window !== `undefined`) {
 	setupFormSubmitListener();
+	setupAutofill();
 }
-
+
+let cachedCredentials: DecryptedCredential[] | null = null;
+let isFetchingCredentials = false;
+let activeDropdown: HTMLDivElement | null = null;
+
+async function getOriginCredentials(): Promise<DecryptedCredential[]> {
+	if (cachedCredentials) { return cachedCredentials; }
+	if (isFetchingCredentials) { return []; }
+
+	isFetchingCredentials = true;
+	try {
+		const res = await ipcRenderer.invoke(`get-credentials`, { origin: window.location.origin });
+		const list = res || [];
+		cachedCredentials = list;
+		return list;
+	} catch (err) {
+		console.error(`Failed to fetch credentials via IPC:`, err);
+		return [];
+	} finally {
+		isFetchingCredentials = false;
+	}
+}
+
+function fillForm(input: HTMLInputElement, cred: DecryptedCredential): void {
+	const form = input.form;
+	if (!form) { return; }
+
+	const usernameInputs = form.querySelectorAll(`input[type="text"], input[type="email"], input:not([type])`);
+	const passwordInputs = form.querySelectorAll(`input[type="password"]`);
+
+	if (usernameInputs.length > 0) {
+		const userInp = usernameInputs[0] as HTMLInputElement;
+		userInp.value = cred.username;
+		userInp.dispatchEvent(new Event(`input`, { bubbles: true }));
+		userInp.dispatchEvent(new Event(`change`, { bubbles: true }));
+	}
+	if (passwordInputs.length > 0) {
+		const passInp = passwordInputs[0] as HTMLInputElement;
+		passInp.value = cred.passwordPlain;
+		passInp.dispatchEvent(new Event(`input`, { bubbles: true }));
+		passInp.dispatchEvent(new Event(`change`, { bubbles: true }));
+	}
+}
+
+function removeDropdown(): void {
+	if (activeDropdown) {
+		activeDropdown.remove();
+		activeDropdown = null;
+	}
+}
+
+function showAutocompleteDropdown(input: HTMLInputElement, credentialsList: DecryptedCredential[]): void {
+	removeDropdown();
+
+	const dropdown = document.createElement(`div`);
+	dropdown.id = `eyas-autofill-dropdown`;
+	dropdown.setAttribute(`style`, `
+		position: absolute;
+		background: rgba(255, 255, 255, 0.95);
+		backdrop-filter: blur(10px);
+		border: 1px solid rgba(0, 0, 0, 0.1);
+		border-radius: 8px;
+		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+		z-index: 2147483647;
+		font-family: 'Inter', 'Segoe UI', sans-serif;
+		font-size: 14px;
+		width: ${input.offsetWidth}px;
+		max-height: 200px;
+		overflow-y: auto;
+		color: #1c1b1f;
+	`);
+
+	credentialsList.forEach(cred => {
+		const item = document.createElement(`div`);
+		item.textContent = cred.username;
+		item.setAttribute(`style`, `
+			padding: 10px 14px;
+			cursor: pointer;
+			border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+			transition: background 0.15s ease;
+		`);
+
+		item.addEventListener(`mouseenter`, () => {
+			item.style.backgroundColor = `rgba(0, 102, 204, 0.08)`;
+		});
+		item.addEventListener(`mouseleave`, () => {
+			item.style.backgroundColor = `transparent`;
+		});
+
+		item.addEventListener(`mousedown`, e => {
+			e.preventDefault();
+			fillForm(input, cred);
+			removeDropdown();
+		});
+
+		dropdown.appendChild(item);
+	});
+
+	const rect = input.getBoundingClientRect();
+	dropdown.style.top = `${rect.bottom + window.scrollY}px`;
+	dropdown.style.left = `${rect.left + window.scrollX}px`;
+
+	document.body.appendChild(dropdown);
+	activeDropdown = dropdown;
+
+	input.addEventListener(`focusout`, () => {
+		setTimeout(removeDropdown, 150);
+	}, { once: true });
+}
+
+export function setupAutofill(): void {
+	if (typeof document === `undefined`) { return; }
+
+	document.addEventListener(`focusin`, async (event: Event) => {
+		const input = event.target as HTMLInputElement;
+		if (!input || input.tagName !== `INPUT`) { return; }
+
+		const type = input.type ? input.type.toLowerCase() : `text`;
+		if (type !== `text` && type !== `email` && type !== `password`) { return; }
+
+		const creds = await getOriginCredentials();
+		if (!creds || creds.length === 0) { return; }
+
+		if (creds.length === 1) {
+			fillForm(input, creds[0]);
+		} else if (creds.length > 1) {
+			showAutocompleteDropdown(input, creds);
+		}
+	}, true);
+
+	document.addEventListener(`click`, e => {
+		if (activeDropdown && !activeDropdown.contains(e.target as Node)) {
+			removeDropdown();
+		}
+	});
+
+	window.addEventListener(`scroll`, removeDropdown, true);
+	window.addEventListener(`resize`, removeDropdown, true);
+}

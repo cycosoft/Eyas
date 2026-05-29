@@ -8,6 +8,7 @@ import type { TitleBarOverlayPayload } from '@registry/ipc.js';
 vi.mock(`electron`, () => ({
 	ipcMain: {
 		on: vi.fn(),
+		handle: vi.fn(),
 		removeListener: vi.fn()
 	},
 	nativeTheme: {

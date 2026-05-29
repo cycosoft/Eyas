@@ -8,6 +8,7 @@
 		<TestServerSetupModal />
 		<TestServerActiveModal />
 		<SettingsModal />
+		<SaveCredentialModal />
 		<WhatsNewModal />
 		<UpdateReadyModal />
 		<NoUpdateModal />
@@ -27,6 +28,7 @@ import VersionMismatchModal from '@/components/VersionMismatchModal.vue';
 import TestServerSetupModal from '@/components/TestServerSetupModal.vue';
 import TestServerActiveModal from '@/components/TestServerActiveModal.vue';
 import SettingsModal from '@/components/SettingsModal.vue';
+import SaveCredentialModal from '@/components/SaveCredentialModal.vue';
 import WhatsNewModal from '@/components/WhatsNewModal.vue';
 import UpdateReadyModal from '@/components/UpdateReadyModal.vue';
 import NoUpdateModal from '@/components/NoUpdateModal.vue';
