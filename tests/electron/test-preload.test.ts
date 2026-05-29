@@ -275,6 +275,56 @@ describe(`test-preload`, () => {
 			expect(mockDoc.createElement).not.toHaveBeenCalled();
 		});
 
+		it(`should NOT show dropdown when focusing a password field`, async () => {
+			const ipc = ipcRenderer;
+			ipc.invoke = vi.fn().mockImplementation(channel => {
+				if (channel === `get-credentials`) return Promise.resolve([]);
+				if (channel === `is-dark-theme`) return Promise.resolve(false);
+				return Promise.resolve();
+			});
+
+			const listeners: Record<EventType, ((e: Event) => void)[]> = {};
+			const mockWindow = {
+				location: { origin: `https://test.eyas` },
+				addEventListener: vi.fn((event: EventType, cb: (e: Event) => void) => {
+					if (!listeners[event]) { listeners[event] = []; }
+					listeners[event].push(cb);
+				})
+			};
+			vi.stubGlobal(`window`, mockWindow);
+
+			const mockDoc = {
+				createElement: vi.fn(() => ({ style: {}, appendChild: vi.fn(), setAttribute: vi.fn(), addEventListener: vi.fn(), contains: vi.fn(() => false), remove: vi.fn() })),
+				documentElement: { appendChild: vi.fn() },
+				body: { appendChild: vi.fn() },
+				addEventListener: vi.fn((event: EventType, cb: (e: Event) => void) => {
+					if (!listeners[event]) { listeners[event] = []; }
+					listeners[event].push(cb);
+				})
+			};
+			vi.stubGlobal(`document`, mockDoc);
+
+			setupAutofill();
+
+			const focusHandler = listeners[`focusin`][0];
+
+			const passwordInput: MockInput = { value: ``, type: `password`, tagName: `INPUT`, dispatchEvent: vi.fn(), offsetWidth: 100, getBoundingClientRect: vi.fn(() => ({ top:0,bottom:0,left:0,right:0,width:100,height:20 })), addEventListener: vi.fn() };
+			const mockForm = { querySelectorAll: vi.fn((selector: DomSelector) => {
+				if (selector.includes(`type="password"`)) {
+					return [passwordInput];
+				}
+				return [];
+			}) };
+			passwordInput.form = mockForm;
+
+			const mockEvent = { target: passwordInput };
+
+			await focusHandler(mockEvent as unknown as Event);
+
+			expect(ipc.invoke).not.toHaveBeenCalled();
+			expect(mockDoc.createElement).not.toHaveBeenCalled();
+		});
+
 		it(`should autofill single credential on input focus`, async () => {
 			const ipc = ipcRenderer;
 			type ReturnCred = { username: Username; passwordPlain: PasswordPlain };

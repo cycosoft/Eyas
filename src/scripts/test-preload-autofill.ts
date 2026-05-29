@@ -76,6 +76,9 @@ function shouldShowAutofill(input: HTMLInputElement): ShouldShow {
 	if (!input || input.tagName !== `INPUT`) {
 		return false;
 	}
+	if (input.type === `password`) {
+		return false;
+	}
 	const form = input.form;
 	if (!form) {
 		return false;
