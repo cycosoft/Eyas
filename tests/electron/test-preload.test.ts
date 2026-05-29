@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { ProgressBytes, EventType, IsComputable, TimestampMS, DomainUrl, Username, PasswordPlain } from '@registry/primitives.js';
 
 type ProgressEventInit = {
@@ -39,9 +39,42 @@ const mockProcess = {
 vi.stubGlobal(`document`, mockDocument);
 vi.stubGlobal(`process`, mockProcess);
 
-// Import the functions
-// Note: We use .js extension as per project rules
-import { injectWithAnonymousScope, extractFunctionBody, polyfillUploadProgress, setupFormSubmitListener, setupAutofill } from '@scripts/test-preload.js';
+type DomSelector = string;
+type ElementTag = string;
+
+type MockDOMRect = {
+	top: number;
+	bottom: number;
+	left: number;
+	right: number;
+	width: number;
+	height: number;
+};
+
+type MockInput = {
+	value: string;
+	type: string;
+	tagName: string;
+	dispatchEvent: ReturnType<typeof vi.fn>;
+	offsetWidth?: number;
+	getBoundingClientRect?: () => MockDOMRect;
+	addEventListener?: ReturnType<typeof vi.fn>;
+	form?: unknown;
+};
+
+type MockElement = {
+	tag: string;
+	style: Record<string, string>;
+	setAttribute: ReturnType<typeof vi.fn>;
+	appendChild: ReturnType<typeof vi.fn>;
+	addEventListener: ReturnType<typeof vi.fn>;
+	remove: ReturnType<typeof vi.fn>;
+	contains: ReturnType<typeof vi.fn>;
+	src?: string;
+	innerHTML?: string;
+};
+
+import { injectWithAnonymousScope, extractFunctionBody, polyfillUploadProgress, setupFormSubmitListener, setupAutofill, __resetAutofillCache } from '@scripts/test-preload.js';
 
 
 describe(`test-preload`, () => {
@@ -160,7 +193,6 @@ describe(`test-preload`, () => {
 			const usernameInput = { value: `testUser`, type: `text` };
 			const passwordInput = { value: `testPass`, type: `password` };
 
-			type DomSelector = string;
 			const mockForm = {
 				querySelectorAll: vi.fn((selector: DomSelector) => {
 					if (selector.includes(`type="password"`)) {
@@ -186,6 +218,10 @@ describe(`test-preload`, () => {
 	});
 
 	describe(`setupAutofill`, () => {
+		beforeEach(() => {
+			__resetAutofillCache();
+			vi.restoreAllMocks();
+		});
 		it(`should NOT show dropdown for non-login input`, async () => {
 			const ipc = ipcRenderer;
 			ipc.invoke = vi.fn().mockResolvedValue([]);
@@ -217,9 +253,9 @@ describe(`test-preload`, () => {
 			// Simulate focusin event on input without password field
 			const focusHandler = listeners[`focusin`][0];
 
-			const nonLoginInput = { value: ``, type: `text`, tagName: `INPUT`, dispatchEvent: vi.fn(), offsetWidth: 100, getBoundingClientRect: vi.fn(() => ({ top:0,bottom:0,left:0,right:0,width:100,height:20 })), addEventListener: vi.fn() };
+			const nonLoginInput: MockInput = { value: ``, type: `text`, tagName: `INPUT`, dispatchEvent: vi.fn(), offsetWidth: 100, getBoundingClientRect: vi.fn(() => ({ top:0,bottom:0,left:0,right:0,width:100,height:20 })), addEventListener: vi.fn() };
 			const mockForm = { querySelectorAll: vi.fn(() => []) };
-			(nonLoginInput as any).form = mockForm; // assign form without password field
+			nonLoginInput.form = mockForm; // assign form without password field
 
 			const mockEvent = { target: nonLoginInput };
 
@@ -248,7 +284,7 @@ describe(`test-preload`, () => {
 
 			// Setup document stub
 			const mockDoc = {
-				createElement: vi.fn(() => ({ style: {}, appendChild: vi.fn(), setAttribute: vi.fn(), addEventListener: vi.fn() })),
+				createElement: vi.fn(() => ({ style: {}, appendChild: vi.fn(), setAttribute: vi.fn(), addEventListener: vi.fn(), remove: vi.fn(), contains: vi.fn(() => false) })),
 				documentElement: { appendChild: vi.fn() },
 				body: { appendChild: vi.fn() },
 				addEventListener: vi.fn((event: EventType, cb: (e: Event) => void) => {
@@ -264,7 +300,7 @@ describe(`test-preload`, () => {
 			const focusHandler = listeners[`focusin`][0];
 
 			// Mock target input
-			const usernameInput = {
+			const usernameInput: MockInput = {
 				value: ``,
 				type: `text`,
 				tagName: `INPUT`,
@@ -273,18 +309,17 @@ describe(`test-preload`, () => {
 				getBoundingClientRect: vi.fn(() => ({ top: 0, bottom: 0, left: 0, right: 0, width: 100, height: 20 })),
 				addEventListener: vi.fn()
 			};
-			const passwordInput = { value: ``, type: `password`, tagName: `INPUT`, dispatchEvent: vi.fn() };
+			const passwordInput: MockInput = { value: ``, type: `password`, tagName: `INPUT`, dispatchEvent: vi.fn() };
 
-			type DocQuery = string;
 			const mockForm = {
-				querySelectorAll: vi.fn((selector: DocQuery) => {
+				querySelectorAll: vi.fn((selector: DomSelector) => {
 					if (selector.includes(`type="password"`)) {
 						return [passwordInput];
 					}
 					return [usernameInput];
 				})
 			};
-			(usernameInput as any).form = mockForm; // eslint-disable-line @typescript-eslint/no-explicit-any
+			usernameInput.form = mockForm;
 
 			const mockEvent = {
 				target: usernameInput
@@ -329,7 +364,7 @@ describe(`test-preload`, () => {
 			const clickHandler = listeners[`click`].find(cb => cb.toString().includes(`getOriginCredentials`));
 			if (!clickHandler) throw new Error(`click handler not found`);
 
-			const usernameInput = {
+			const usernameInput: MockInput = {
 				value: ``,
 				type: `text`,
 				tagName: `INPUT`,
@@ -339,14 +374,88 @@ describe(`test-preload`, () => {
 				addEventListener: vi.fn()
 			};
 
+			const passwordInput: MockInput = { value: ``, type: `password`, tagName: `INPUT`, dispatchEvent: vi.fn() };
+			const mockForm = { querySelectorAll: vi.fn((selector: DomSelector) => {
+				if (selector.includes(`type="password"`)) return [passwordInput];
+				return [usernameInput];
+			}) };
+			usernameInput.form = mockForm;
 			const mockEvent = {
 				target: usernameInput
 			};
-
 			await clickHandler(mockEvent as unknown as Event);
 
 			expect(ipc.invoke).toHaveBeenCalledWith(`get-credentials`, { origin: `https://test.eyas` });
 			expect(mockDoc.createElement).toHaveBeenCalledWith(`div`);
+		});
+		it(`should render password mask with lighter grey and include logo`, async () => {
+			const ipc = ipcRenderer;
+			ipc.invoke = vi.fn().mockResolvedValue([
+				{ username: `user1` as Username, passwordPlain: `pass1` as PasswordPlain }
+			]);
+
+			const listeners: Record<EventType, ((e: Event) => void)[]> = {};
+			const mockWindow = {
+				location: { origin: `https://test.eyas` as DomainUrl },
+				addEventListener: vi.fn((event: EventType, cb: (e: Event) => void) => {
+					if (!listeners[event]) listeners[event] = [];
+					listeners[event].push(cb);
+				})
+			};
+			vi.stubGlobal(`window`, mockWindow);
+
+			const createdElements: MockElement[] = [];
+			const mockDoc = {
+				createElement: vi.fn((tag: ElementTag) => {
+					const el: MockElement = { tag, style: {}, setAttribute: vi.fn(), appendChild: vi.fn(), addEventListener: vi.fn(), remove: vi.fn(), contains: vi.fn(() => false) };
+					if (tag === `img`) {
+						el.src = ``;
+					}
+					createdElements.push(el);
+					return el;
+				}),
+				documentElement: { appendChild: vi.fn() },
+				body: { appendChild: vi.fn() },
+				addEventListener: vi.fn((event: EventType, cb: (e: Event) => void) => {
+					if (!listeners[event]) listeners[event] = [];
+					listeners[event].push(cb);
+				})
+			};
+			vi.stubGlobal(`document`, mockDoc);
+
+			setupAutofill();
+
+			const focusHandler = listeners[`focusin`][0];
+
+			const usernameInput: MockInput = {
+				value: ``,
+				type: `text`,
+				tagName: `INPUT`,
+				dispatchEvent: vi.fn(),
+				offsetWidth: 100,
+				getBoundingClientRect: vi.fn(() => ({ top: 0, bottom: 0, left: 0, right: 0, width: 100, height: 20 })),
+				addEventListener: vi.fn()
+			};
+			const passwordInput: MockInput = { value: ``, type: `password`, tagName: `INPUT`, dispatchEvent: vi.fn() };
+			const mockForm = {
+				querySelectorAll: vi.fn((selector: DomSelector) => {
+					if (selector.includes(`type="password"`)) return [passwordInput];
+					return [usernameInput];
+				})
+			};
+			usernameInput.form = mockForm;
+
+			const mockEvent = { target: usernameInput };
+			await focusHandler(mockEvent as unknown as Event);
+
+			// Verify password mask color in innerHTML
+			const itemDiv = createdElements.find(e => e.tag === `div` && e.innerHTML);
+			expect(itemDiv).toBeDefined();
+			expect(itemDiv?.innerHTML).toContain(`color:#888`);
+
+			// Verify logo element containing inline SVG
+			const logoDiv = createdElements.find(e => e.tag === `div` && e.innerHTML && e.innerHTML.includes(`<svg`));
+			expect(logoDiv).toBeDefined();
 		});
 	});
 });

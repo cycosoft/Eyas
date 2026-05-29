@@ -20,6 +20,7 @@ export type IsEnabled = boolean;
 export type IsDefault = boolean;
 export type IsWindows = boolean;
 export type IsExitFlow = boolean;
+export type ShouldShow = boolean;
 
 // Events / Progress
 export type ProgressBytes = number;
