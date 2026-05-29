@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login &amp; Autofill — Eyas Demo</title>
+  <link rel="stylesheet" href="../../assets/demo.css">
+  <style>
+    .login-grid {
+      display: flex;
+      justify-content: center;
+      margin-top: var(--space-8);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      margin-bottom: var(--space-5);
+      text-align: left;
+    }
+
+    .form-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .form-input {
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      font-family: inherit;
+      width: 100%;
+      box-sizing: border-box;
+      transition: border-color var(--transition-fast);
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--eyas-orange);
+    }
+
+    .form-action {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: var(--space-4);
+    }
+
+    .form-container {
+      padding: var(--space-6);
+      background: var(--bg-surface);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      position: relative;
+      width: 100%;
+      max-width: 460px;
+    }
+
+    .feedback-message {
+      margin-top: var(--space-4);
+      padding: var(--space-3);
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+      text-align: center;
+      display: none;
+    }
+
+    .feedback-success {
+      background: rgba(40, 167, 69, 0.1);
+      border: 1px solid rgba(40, 167, 69, 0.3);
+      color: #28a745;
+    }
+  </style>
+</head>
+<body>
+  <eyas-nav></eyas-nav>
+
+  <header class="page-hero container animate-fade-in-up">
+    <span class="page-hero-icon">🔐</span>
+    <h1 class="gradient-text">Credential Autofill</h1>
+    <p>Test secure credential storing, autofilling, and multi-account dropdown overlays inside Eyas.</p>
+  </header>
+
+  <main class="container">
+    <div class="login-grid animate-fade-in-up" style="display: flex; flex-direction: column; align-items: center; gap: var(--space-8);">
+      <!-- Simple Login Form -->
+      <div class="form-container">
+        <h3 class="card-title">Secure Login Form</h3>
+        <p class="card-desc" style="margin-bottom: var(--space-5);">
+          Submit credentials to test standard form submission interception. Submit multiple different credentials to test the multi-account dropdown autocomplete selector.
+        </p>
+        <form id="simple-login-form">
+          <div class="form-group">
+            <label for="simple-email" class="form-label">Email or Username</label>
+            <input type="email" id="simple-email" name="username" class="form-input" placeholder="user@example.com" required autocomplete="username">
+          </div>
+          <div class="form-group">
+            <label for="simple-password" class="form-label">Password</label>
+            <input type="password" id="simple-password" name="password" class="form-input" placeholder="••••••••" autocomplete="current-password">
+          </div>
+          <div class="form-action">
+            <button type="submit" class="btn btn-primary">Log In</button>
+          </div>
+        </form>
+        <div id="simple-feedback" class="feedback-message feedback-success">
+          Form submitted successfully! (No real server request made)
+        </div>
+      </div>
+
+      <!-- Non-login Form (Newsletter signup / Feedback form with no password) -->
+      <div class="form-container">
+        <h3 class="card-title">Newsletter Sign Up</h3>
+        <p class="card-desc" style="margin-bottom: var(--space-5);">
+          This form does not collect password information. Submitting it will not trigger the Eyas save credentials modal.
+        </p>
+        <form id="non-login-form">
+          <div class="form-group">
+            <label for="newsletter-name" class="form-label">Full Name</label>
+            <input type="text" id="newsletter-name" name="fullname" class="form-input" placeholder="Your Name" required>
+          </div>
+          <div class="form-group">
+            <label for="newsletter-email" class="form-label">Email Address</label>
+            <input type="email" id="newsletter-email" name="email" class="form-input" placeholder="reader@example.com" required>
+          </div>
+          <div class="form-action">
+            <button type="submit" class="btn btn-secondary">Subscribe</button>
+          </div>
+        </form>
+        <div id="newsletter-feedback" class="feedback-message feedback-success">
+          Subscribed successfully! Eyas did not intercept credentials.
+        </div>
+      </div>
+    </div>
+
+    <section class="section animate-fade-in-up" style="text-align: center;">
+      <h3 style="margin-bottom: var(--space-4);">Want to reset credentials?</h3>
+      <p style="margin-bottom: var(--space-6); max-width: 600px; margin-inline: auto;">
+        You can view, manage, and delete saved credentials for this project directly inside the Eyas runner's settings panel.
+      </p>
+      <div class="btn-group" style="display: flex; gap: var(--space-4); justify-content: center;">
+        <a href="/" class="btn btn-secondary">Back to Features</a>
+      </div>
+    </section>
+  </main>
+
+  <eyas-footer></eyas-footer>
+
+  <script src="../../assets/components.js"></script>
+  <script src="../../assets/demo.js"></script>
+  <script>
+    // Form submission handlers to simulate successful submissions
+    document.getElementById('simple-login-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const feedback = document.getElementById('simple-feedback');
+      feedback.style.display = 'block';
+      setTimeout(() => {
+        feedback.style.display = 'none';
+      }, 5000);
+    });
+
+    document.getElementById('non-login-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const feedback = document.getElementById('newsletter-feedback');
+      feedback.style.display = 'block';
+      setTimeout(() => {
+        feedback.style.display = 'none';
+      }, 5000);
+    });
+  </script>
+</body>
+</html>

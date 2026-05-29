@@ -105,4 +105,22 @@ describe(`Demo Site Smoke Tests`, () => {
 		expect(document.getElementById(`viewport-category`)).not.toBeNull();
 		expect(document.getElementById(`viewport-state`)).not.toBeNull();
 	});
+
+	it(`should have standard login form on the login page`, () => {
+		const loginPage = join(DEMO_ROOT, `demo/login/index.html`) as FilePath;
+		const html = readFileSync(loginPage, `utf-8`) as LabelString;
+		const dom = new JSDOM(html);
+		const { document } = dom.window;
+
+		// Verify simple login form elements
+		const simpleForm = document.getElementById(`simple-login-form`);
+		expect(simpleForm, `Missing simple login form`).not.toBeNull();
+		expect(simpleForm?.querySelector(`input[type="text"], input[type="email"]`), `Simple form username input missing`).not.toBeNull();
+		expect(simpleForm?.querySelector(`input[type="password"]`), `Simple form password input missing`).not.toBeNull();
+
+		// Verify non-login form has no password field
+		const nonLoginForm = document.getElementById(`non-login-form`);
+		expect(nonLoginForm, `Missing non-login test form`).not.toBeNull();
+		expect(nonLoginForm?.querySelector(`input[type="password"]`), `Non-login form should not contain a password field`).toBeNull();
+	});
 });
