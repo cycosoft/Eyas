@@ -539,7 +539,7 @@ describe(`test-preload`, () => {
 			expect(logoDiv).toBeDefined();
 		});
 
-		it(`should temporarily fill form on hover and restore on mouseleave`, async () => {
+		it(`should temporarily fill form on hover with a dummy password and restore on mouseleave`, async () => {
 			const ipc = ipcRenderer;
 			type ReturnCred = { username: Username; passwordPlain: PasswordPlain };
 			ipc.invoke = vi.fn().mockImplementation(channel => {
@@ -619,19 +619,140 @@ describe(`test-preload`, () => {
 			// Find the item div element
 			const itemDiv = createdElements.find(e => e.tag === `div` && e.innerHTML && e.innerHTML.includes(`user1`));
 			expect(itemDiv).toBeDefined();
-			expect(itemDiv?.listeners).toBeDefined();
-			expect(itemDiv?.listeners?.mouseenter).toBeDefined();
-			expect(itemDiv?.listeners?.mouseleave).toBeDefined();
+
+			const itemListeners = itemDiv?.listeners;
+			expect(itemListeners).toBeDefined();
 
 			// Trigger mouseenter
-			itemDiv?.listeners?.mouseenter?.[0]?.(new Event(`mouseenter`));
+			const mouseenter = itemListeners?.mouseenter?.[0];
+			expect(mouseenter).toBeDefined();
+			if (mouseenter) {
+				mouseenter(new Event(`mouseenter`));
+			}
 			expect(usernameInput.value).toBe(`user1`);
-			expect(passwordInput.value).toBe(`pass1`);
+
+			// Get the dummy password from the dropdown item HTML
+			const innerHTML = itemDiv?.innerHTML;
+			expect(innerHTML).toBeDefined();
+			if (innerHTML) {
+				const match = innerHTML.match(/class="password-mask"[^>]*>([^<]+)/);
+				expect(match).toBeDefined();
+				if (match) {
+					const dummyPasswordInDropdown = match[1];
+					expect(dummyPasswordInDropdown).toBeDefined();
+					expect(dummyPasswordInDropdown).not.toBe(`pass1`);
+					expect(passwordInput.value).toBe(dummyPasswordInDropdown);
+				}
+			}
 
 			// Trigger mouseleave
-			itemDiv?.listeners?.mouseleave?.[0]?.(new Event(`mouseleave`));
+			const mouseleave = itemListeners?.mouseleave?.[0];
+			expect(mouseleave).toBeDefined();
+			if (mouseleave) {
+				mouseleave(new Event(`mouseleave`));
+			}
 			expect(usernameInput.value).toBe(`originalUser`);
 			expect(passwordInput.value).toBe(`originalPass`);
+		});
+
+		it(`should populate the real password upon mousedown (click) selection`, async () => {
+			const ipc = ipcRenderer;
+			type ReturnCred = { username: Username; passwordPlain: PasswordPlain };
+			ipc.invoke = vi.fn().mockImplementation(channel => {
+				if (channel === `get-credentials`) {
+					return Promise.resolve([
+						{ username: `user1` as Username, passwordPlain: `pass1` as PasswordPlain } as ReturnCred
+					]);
+				}
+				if (channel === `is-dark-theme`) return Promise.resolve(false);
+				return Promise.resolve();
+			});
+
+			const listeners: Record<EventType, ((e: Event) => void)[]> = {};
+			const mockWindow = {
+				location: { origin: `https://test.eyas` as DomainUrl },
+				addEventListener: vi.fn((event: EventType, cb: (e: Event) => void) => {
+					if (!listeners[event]) { listeners[event] = []; }
+					listeners[event].push(cb);
+				})
+			};
+			vi.stubGlobal(`window`, mockWindow);
+
+			const createdElements: MockElementWithListeners[] = [];
+			const mockDoc = {
+				createElement: vi.fn((tag: ElementTag) => {
+					const el: MockElementWithListeners = {
+						tag,
+						style: {},
+						setAttribute: vi.fn(),
+						appendChild: vi.fn(),
+						addEventListener: vi.fn((event: EventType, cb: (e: Event) => void) => {
+							const extra = el;
+							if (!extra.listeners) extra.listeners = {};
+							if (!extra.listeners[event]) extra.listeners[event] = [];
+							extra.listeners[event].push(cb);
+						}),
+						remove: vi.fn(),
+						contains: vi.fn(() => false)
+					};
+					createdElements.push(el);
+					return el;
+				}),
+				documentElement: { appendChild: vi.fn() },
+				body: { appendChild: vi.fn() },
+				addEventListener: vi.fn((event: EventType, cb: (e: Event) => void) => {
+					if (!listeners[event]) listeners[event] = [];
+					listeners[event].push(cb);
+				})
+			};
+			vi.stubGlobal(`document`, mockDoc);
+
+			setupAutofill();
+
+			const focusHandler = listeners[`focusin`][0];
+
+			const usernameInput: MockInput = {
+				value: `originalUser`,
+				type: `text`,
+				tagName: `INPUT`,
+				dispatchEvent: vi.fn(),
+				offsetWidth: 100,
+				getBoundingClientRect: vi.fn(() => ({ top: 0, bottom: 0, left: 0, right: 0, width: 100, height: 20 })),
+				addEventListener: vi.fn()
+			};
+			const passwordInput: MockInput = { value: `originalPass`, type: `password`, tagName: `INPUT`, dispatchEvent: vi.fn() };
+			const mockForm = {
+				querySelectorAll: vi.fn((selector: DomSelector) => {
+					if (selector.includes(`type="password"`)) return [passwordInput];
+					return [usernameInput];
+				})
+			};
+			usernameInput.form = mockForm;
+
+			const mockEvent = { target: usernameInput };
+			await focusHandler(mockEvent as unknown as Event);
+
+			// Find the item div element
+			const itemDiv = createdElements.find(e => e.tag === `div` && e.innerHTML && e.innerHTML.includes(`user1`));
+			expect(itemDiv).toBeDefined();
+
+			// Trigger mousedown (click selection)
+			const mockMouseDownEvent = {
+				preventDefault: vi.fn()
+			};
+			const itemListeners = itemDiv?.listeners;
+			expect(itemListeners).toBeDefined();
+			const mousedown = itemListeners?.mousedown?.[0];
+			expect(mousedown).toBeDefined();
+			if (mousedown) {
+				mousedown(mockMouseDownEvent as unknown as Event);
+			}
+
+			// Should populate real values
+			expect(usernameInput.value).toBe(`user1`);
+			expect(passwordInput.value).toBe(`pass1`);
+			expect(usernameInput.dispatchEvent).toHaveBeenCalledWith(expect.any(Event));
+			expect(passwordInput.dispatchEvent).toHaveBeenCalledWith(expect.any(Event));
 		});
 
 		it(`should apply dark theme styles when is-dark-theme returns true`, async () => {

@@ -1,5 +1,5 @@
 import { ipcRenderer } from "electron";
-import type { ShouldShow, IsActive } from "@registry/primitives.js";
+import type { ShouldShow, IsActive, PasswordPlain } from "@registry/primitives.js";
 import type { DecryptedCredential, CredentialBackup } from "@registry/core.js";
 import type { AutofillTheme } from "@registry/settings.js";
 
@@ -87,7 +87,7 @@ function shouldShowAutofill(input: HTMLInputElement): ShouldShow {
 	return hasPassword;
 }
 
-function previewCredential(input: HTMLInputElement, cred: DecryptedCredential): void {
+function previewCredential(input: HTMLInputElement, cred: DecryptedCredential, dummyPassword?: PasswordPlain): void {
 	const form = input.form;
 	if (!form) { return; }
 
@@ -102,7 +102,7 @@ function previewCredential(input: HTMLInputElement, cred: DecryptedCredential): 
 		(usernameInputs[0] as HTMLInputElement).value = cred.username;
 	}
 	if (passwordInputs.length > 0) {
-		(passwordInputs[0] as HTMLInputElement).value = cred.passwordPlain;
+		(passwordInputs[0] as HTMLInputElement).value = dummyPassword || `•••••••`;
 	}
 }
 
@@ -144,12 +144,12 @@ function createDropdownItem(input: HTMLInputElement, cred: DecryptedCredential, 
 		border-bottom: ${theme.itemBorder};
 		transition: background 0.15s ease;
 	`);
-	const masked = `•••••••`;
-	item.innerHTML = `<span class="username">${cred.username}</span><span class="password-mask" style="color:${theme.maskColor};">${masked}</span>`;
+	const dummyPassword = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
+	item.innerHTML = `<span class="username">${cred.username}</span><span class="password-mask" style="color:${theme.maskColor}; -webkit-text-security: disc;">${dummyPassword}</span>`;
 
 	item.addEventListener(`mouseenter`, () => {
 		item.style.backgroundColor = theme.itemHoverBg;
-		previewCredential(input, cred);
+		previewCredential(input, cred, dummyPassword);
 	});
 	item.addEventListener(`mouseleave`, () => {
 		item.style.backgroundColor = `transparent`;
