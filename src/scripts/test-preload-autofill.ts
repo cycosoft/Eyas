@@ -226,6 +226,10 @@ async function handleAutofillTrigger(input: HTMLInputElement): Promise<void> {
 export function setupAutofill(): void {
 	if (typeof document === `undefined`) { return; }
 
+	ipcRenderer.on(`credentials-updated`, () => {
+		cachedCredentials = null;
+	});
+
 	document.addEventListener(`focusin`, async (event: Event) => {
 		const input = event.target as HTMLInputElement;
 		await handleAutofillTrigger(input);

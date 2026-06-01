@@ -51,6 +51,7 @@ function setupSaveConfirmListener(ctx: CoreContext): void {
 
 		try {
 			await credentialStore.saveCredential(activeProjectId, origin, username, passwordPlain);
+			ctx.$testLayer?.webContents.send(`credentials-updated`);
 		} catch (err) {
 			console.error(`Error saving credential:`, err);
 		}
@@ -92,6 +93,7 @@ function setupDeleteCredentialListener(ctx: CoreContext): void {
 
 		try {
 			await credentialStore.deleteCredential(activeProjectId, payload.origin, payload.username);
+			ctx.$testLayer?.webContents.send(`credentials-updated`);
 		} catch (err) {
 			console.error(`Error deleting credential:`, err);
 		}

@@ -165,9 +165,15 @@ describe(`Save Login Attempt IPC`, () => {
 		expect(result).toEqual([{ origin: `https://example.com`, username: `user1` }]);
 	});
 
-	test(`delete-credential IPC handler should call deleteCredential`, async () => {
+	test(`delete-credential IPC handler should call deleteCredential and notify test layer`, async () => {
+		const sendMock = vi.fn();
 		const ctx = {
-			$config: { meta: { projectId: `test-proj` } }
+			$config: { meta: { projectId: `test-proj` } },
+			$testLayer: {
+				webContents: {
+					send: sendMock
+				}
+			}
 		} as unknown as CoreContext;
 
 		let handler: any = null; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -190,6 +196,45 @@ describe(`Save Login Attempt IPC`, () => {
 		await handler({} as any, { origin: `https://example.com`, username: `user1` }); // eslint-disable-line @typescript-eslint/no-explicit-any
 
 		expect(credentialStore.deleteCredential).toHaveBeenCalledWith(`test-proj`, `https://example.com`, `user1`);
+		expect(sendMock).toHaveBeenCalledWith(`credentials-updated`);
+	});
+
+	test(`save-credential-confirm IPC handler should save credential and notify test layer`, async () => {
+		const sendMock = vi.fn();
+		const ctx = {
+			$config: { meta: { projectId: `test-proj` } },
+			$testLayer: {
+				webContents: {
+					send: sendMock
+				}
+			}
+		} as unknown as CoreContext;
+
+		let handler: any = null; // eslint-disable-line @typescript-eslint/no-explicit-any
+		vi.spyOn(ipcMain, `on`).mockImplementation((channel, cb) => {
+			if (channel === `save-credential-confirm`) {
+				handler = cb;
+			}
+			return ipcMain;
+		});
+
+		initCredentialIpcListeners(ctx);
+
+		expect(handler).toBeTypeOf(`function`);
+		if (!handler) { return; }
+
+		// Mock the credential store
+		type MockMethod = { mockResolvedValue: (value: unknown) => void };
+		(credentialStore.saveCredential as unknown as MockMethod).mockResolvedValue(undefined);
+
+		await handler({} as IpcMainEvent, {
+			origin: `https://example.com`,
+			username: `user1`,
+			passwordPlain: `pass1`
+		});
+
+		expect(credentialStore.saveCredential).toHaveBeenCalledWith(`test-proj`, `https://example.com`, `user1`, `pass1`);
+		expect(sendMock).toHaveBeenCalledWith(`credentials-updated`);
 	});
 });
 

@@ -873,6 +873,97 @@ describe(`test-preload`, () => {
 			await scrollHandler({ target: {} } as unknown as Event);
 			expect(removeMock).toHaveBeenCalled();
 		});
+
+		it(`should clear cached credentials when credentials-updated IPC is received`, async () => {
+			const ipc = ipcRenderer;
+			let credentialsUpdatedHandler: (() => void) | null = null;
+			ipc.on = vi.fn().mockImplementation((channel, cb) => {
+				if (channel === `credentials-updated`) {
+					credentialsUpdatedHandler = cb;
+				}
+				return ipc;
+			});
+
+			type ReturnCred = { username: Username; passwordPlain: PasswordPlain };
+			let invokeCount = 0;
+			ipc.invoke = vi.fn().mockImplementation(channel => {
+				if (channel === `get-credentials`) {
+					invokeCount++;
+					return Promise.resolve([
+						{ username: `user1` as Username, passwordPlain: `pass1` as PasswordPlain } as ReturnCred
+					]);
+				}
+				if (channel === `is-dark-theme`) return Promise.resolve(false);
+				return Promise.resolve();
+			});
+
+			const listeners: Record<EventType, ((e: Event) => void)[]> = {};
+			const mockWindow = {
+				location: { origin: `https://test.eyas` as DomainUrl },
+				addEventListener: vi.fn()
+			};
+			vi.stubGlobal(`window`, mockWindow);
+
+			// Setup document stub
+			const mockDoc = {
+				createElement: vi.fn(() => ({ style: {}, appendChild: vi.fn(), setAttribute: vi.fn(), addEventListener: vi.fn(), contains: vi.fn(() => false), remove: vi.fn() })),
+				documentElement: { appendChild: vi.fn() },
+				body: { appendChild: vi.fn() },
+				addEventListener: vi.fn((event: EventType, cb: (e: Event) => void) => {
+					if (!listeners[event]) { listeners[event] = []; }
+					listeners[event].push(cb);
+				})
+			};
+			vi.stubGlobal(`document`, mockDoc);
+
+			setupAutofill();
+
+			// Ensure credentials-updated IPC listener was registered
+			expect(ipc.on).toHaveBeenCalledWith(`credentials-updated`, expect.any(Function));
+			expect(credentialsUpdatedHandler).toBeTypeOf(`function`);
+
+			const focusHandler = listeners[`focusin`][0];
+
+			const usernameInput: MockInput = {
+				value: ``,
+				type: `text`,
+				tagName: `INPUT`,
+				dispatchEvent: vi.fn(),
+				offsetWidth: 100,
+				getBoundingClientRect: vi.fn(() => ({ top: 0, bottom: 0, left: 0, right: 0, width: 100, height: 20 })),
+				addEventListener: vi.fn()
+			};
+			const passwordInput: MockInput = { value: ``, type: `password`, tagName: `INPUT`, dispatchEvent: vi.fn() };
+			const mockForm = {
+				querySelectorAll: vi.fn((selector: DomSelector) => {
+					if (selector.includes(`type="password"`)) {
+						return [passwordInput];
+					}
+					return [usernameInput];
+				})
+			};
+			usernameInput.form = mockForm;
+
+			const mockEvent = { target: usernameInput };
+
+			// 1. First trigger should call invoke (invokeCount = 1)
+			await focusHandler(mockEvent as unknown as Event);
+			expect(invokeCount).toBe(1);
+
+			// Reset mocks to clear call counts/calls on createElement etc.
+			mockDoc.createElement.mockClear();
+
+			// 2. Second trigger should use cache, so invokeCount remains 1
+			await focusHandler(mockEvent as unknown as Event);
+			expect(invokeCount).toBe(1);
+
+			// 3. Trigger the credentials-updated IPC callback
+			(credentialsUpdatedHandler as unknown as () => void)?.();
+
+			// 4. Third trigger should query IPC again (invokeCount = 2)
+			await focusHandler(mockEvent as unknown as Event);
+			expect(invokeCount).toBe(2);
+		});
 	});
 });
 
