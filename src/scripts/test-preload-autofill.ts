@@ -180,10 +180,8 @@ function showAutocompleteDropdown(input: HTMLInputElement, credentialsList: Decr
 	const dropdown = document.createElement(`div`);
 	dropdown.id = `eyas-autofill-dropdown`;
 
-	const controlContainer = input.closest ? input.closest(`.q-field, .q-field__control, .form-group, .input-group, .mat-form-field, .v-input, .v-field`) : null;
-	const targetElement = controlContainer || input;
-	const rect = targetElement.getBoundingClientRect();
-	dropdown.setAttribute(`style`, `position:absolute !important;z-index:2147483647 !important;width:${rect.width}px !important;min-width:${rect.width}px !important;max-width:${rect.width}px !important;box-sizing:border-box !important;`);
+	const rect = input.getBoundingClientRect();
+	dropdown.setAttribute(`style`, `position:absolute !important;z-index:2147483647 !important;width:${rect.width}px !important;min-width:280px !important;max-width:450px !important;box-sizing:border-box !important;`);
 
 	let container: ShadowRoot | HTMLDivElement = dropdown;
 	if (dropdown.attachShadow) {
@@ -247,12 +245,12 @@ async function handleAutofillTrigger(input: HTMLInputElement): Promise<void> {
 
 function repositionDropdown(): void {
 	if (!activeDropdown || !activeInput) { return; }
-	const controlContainer = activeInput.closest ? activeInput.closest(`.q-field, .q-field__control, .form-group, .input-group, .mat-form-field, .v-input, .v-field`) : null;
-	const targetElement = controlContainer || activeInput;
-	const rect = targetElement.getBoundingClientRect();
+	const rect = activeInput.getBoundingClientRect();
 	activeDropdown.style.top = `${rect.bottom + window.scrollY}px`;
 	activeDropdown.style.left = `${rect.left + window.scrollX}px`;
 	activeDropdown.style.width = `${rect.width}px`;
+	activeDropdown.style.minWidth = `280px`;
+	activeDropdown.style.maxWidth = `450px`;
 }
 
 export function setupAutofill(): void {
