@@ -20,6 +20,7 @@ describe(`Demo Site Components`, () => {
 		expect(nav.innerHTML).toContain(`site-nav`);
 		expect(nav.querySelector(`.nav-logo`)).not.toBeNull();
 		expect(nav.querySelector(`.nav-logo`)?.textContent).toContain(`Eyas`);
+		expect(nav.innerHTML).toContain(`demo/login/index.html`);
 	});
 
 	it(`should register eyas-footer component`, () => {

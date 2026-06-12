@@ -35,7 +35,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import ModalWrapper from '@/components/ModalWrapper.vue';
-import type { ChannelName, IsVisible, IsPending } from '@/../../../types/primitives.js';
+import type { ChannelName, IsVisible, IsPending } from '@registry/primitives.js';
 
 const visible = ref<IsVisible>(false);
 const exiting = ref<IsPending>(false);

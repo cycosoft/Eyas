@@ -50,8 +50,8 @@ describe(`ModalWrapper`, () => {
 			slots: { default: `<div class="v-card eyas-modal-content">Test</div>` }
 		});
 
-		// Verify initial width is default auto
-		expect((wrapper.vm as unknown as ModalWrapperVM).dialogWidth).toBe(`auto`);
+		// Verify initial width is default fit-content
+		expect((wrapper.vm as unknown as ModalWrapperVM).dialogWidth).toBe(`fit-content`);
 
 		// Find the element in the document since v-dialog renders in a portal
 		const card = document.querySelector(`.v-card`);

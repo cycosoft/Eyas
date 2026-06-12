@@ -46,7 +46,7 @@
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import ModalWrapper from '@/components/ModalWrapper.vue';
 import useSettingsStore from '@/stores/settings.js';
-import type { ChannelName, IsVisible } from '@/../../../types/primitives.js';
+import type { ChannelName, IsVisible } from '@registry/primitives.js';
 
 const settingsStore = useSettingsStore();
 const currentVersion = computed(() => settingsStore.version);

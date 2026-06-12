@@ -8,7 +8,6 @@
 			:model-value="modelValue"
 			:width="dialogWidth"
 			:min-width="calculatedMinWidth"
-			max-height="90vh"
 			scrollable
 			persistent
 			v-bind="$attrs"
@@ -23,11 +22,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import ModalStore from '@/stores/modals.js';
 import ModalBackground from '@/components/ModalBackground.vue';
-import type { ModalWrapperProps, ModalWrapperEmits } from '@/../../../types/components.js';
-import type { ModalId, ChannelName, IsVisible, ViewportWidth } from '@/../../../types/primitives.js';
+import type { ModalWrapperProps, ModalWrapperEmits } from '@registry/components.js';
+import type { ModalId, IsVisible, ViewportWidth, ChannelName } from '@registry/primitives.js';
 
 const props = withDefaults(defineProps<ModalWrapperProps>(), {
 	type: `modal`,
@@ -37,7 +36,7 @@ const props = withDefaults(defineProps<ModalWrapperProps>(), {
 const emit = defineEmits<ModalWrapperEmits>();
 
 const id = ref<ModalId>(window.crypto.randomUUID() as ModalId);
-const dialogWidth = ref<ViewportWidth | `auto`>(`auto`);
+const dialogWidth = ref<ViewportWidth | `fit-content` | undefined>(`fit-content`);
 
 const backgroundContentVisible = computed((): IsVisible => {
 	return ModalStore().lastOpenedById === id.value;
@@ -52,8 +51,8 @@ const calculatedMinWidth = computed((): ViewportWidth | undefined => {
 
 const trackModalState = (isTrue: IsVisible): void => {
 	if (isTrue) {
-		// reset width to the initial auto state so it can calculate the new initial width
-		dialogWidth.value = `auto`;
+		// reset width to the initial state so it can calculate the new initial width
+		dialogWidth.value = `fit-content`;
 		// track this modal as the last opened modal
 		ModalStore().track(id.value);
 	} else {
@@ -84,12 +83,9 @@ const pinDialogWidth = (): void => {
 	}
 };
 
-onMounted(() => {
-	// listen for global events to close all the modals
-	window.eyas?.receive(`close-modals` as ChannelName, () => {
-		// tell the parent to update the model value
-		emit(`update:modelValue`, false);
-	});
+watch(() => ModalStore().closeAllCounter, () => {
+	// respond to the global close-all broadcast dispatched once from App.vue
+	emit(`update:modelValue`, false);
 });
 
 defineExpose({
@@ -102,17 +98,14 @@ defineExpose({
 
 <style scoped>
 .modal-wrapper__content {
-	display: flex;
-	flex-direction: column;
-	height: 100%;
-	min-height: 0;
+	display: contents;
 }
 
 /* Enforce consistent modal body scrolling across all Eyas modals */
 .modal-wrapper__content :deep(.v-card) {
 	display: flex !important;
 	flex-direction: column !important;
-	max-height: 100% !important;
+	max-height: 90vh !important;
 	overflow: hidden !important;
 }
 

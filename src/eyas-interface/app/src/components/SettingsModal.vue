@@ -25,6 +25,40 @@
 								hide-details
 								data-qa="settings-project-always-choose"
 							/>
+
+							<v-divider class="my-4" />
+
+							<div class="text-subtitle-1 mb-2">
+								Saved Credentials
+							</div>
+							<div v-if="projectCredentials.length === 0" class="text-body-2 text-medium-emphasis" data-qa="settings-no-credentials">
+								No saved credentials for this project.
+							</div>
+							<v-list v-else class="pa-0 border rounded" density="compact" data-qa="settings-credentials-list">
+								<v-list-item
+									v-for="(cred, index) in projectCredentials"
+									:key="index"
+									:data-qa="`settings-credential-item-${index}`"
+									class="px-3"
+								>
+									<v-list-item-title class="text-body-2">
+										<strong>Username:</strong> {{ cred.username }}
+									</v-list-item-title>
+									<v-list-item-subtitle class="text-caption text-medium-emphasis">
+										<strong>Origin:</strong> {{ cred.origin }}
+									</v-list-item-subtitle>
+									<template #append>
+										<v-btn
+											icon="mdi-delete"
+											variant="text"
+											color="error"
+											size="small"
+											:data-qa="`settings-delete-credential-${index}`"
+											@click="requestDeleteCredential(cred.origin, cred.username)"
+										/>
+									</template>
+								</v-list-item>
+							</v-list>
 						</v-sheet>
 					</v-window-item>
 
@@ -83,16 +117,52 @@
 		>
 			Setting saved
 		</v-snackbar>
+
+		<!-- Confirmation dialog for deleting credentials -->
+		<v-dialog
+			v-model="deleteConfirmVisible"
+			max-width="400px"
+			data-qa="settings-delete-confirm-dialog"
+		>
+			<v-card>
+				<v-card-title class="text-h6 pt-3 px-3" data-qa="settings-delete-confirm-title">
+					Delete Credential?
+				</v-card-title>
+				<v-card-text class="pa-4" data-qa="settings-delete-confirm-text">
+					Are you sure you want to delete the credential for <strong>{{ credentialToDelete?.username }}</strong> at <strong>{{ credentialToDelete?.origin }}</strong>? This action cannot be undone.
+				</v-card-text>
+				<v-card-actions class="px-3 pb-3">
+					<v-spacer />
+					<v-btn
+						color="secondary"
+						variant="text"
+						data-qa="settings-delete-confirm-cancel"
+						@click="cancelDelete"
+					>
+						Cancel
+					</v-btn>
+					<v-btn
+						color="error"
+						variant="elevated"
+						data-qa="settings-delete-confirm-button"
+						@click="confirmDelete"
+					>
+						Delete
+					</v-btn>
+				</v-card-actions>
+			</v-card>
+		</v-dialog>
 	</ModalWrapper>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { THEME_MODES } from '@/../../../scripts/constants.js';
+import { THEME_MODES } from '@scripts/constants.js';
 import useSettingsStore from '@/stores/settings.js';
 import ModalWrapper from '@/components/ModalWrapper.vue';
-import type { ChannelName, IsVisible, SettingKey, ProjectId, IsActive } from '@/../../../types/primitives.js';
-import type { ThemeMode } from '@/../../../types/settings.js';
+import type { ChannelName, IsVisible, SettingKey, ProjectId, IsActive, DomainUrl, Username } from '@registry/primitives.js';
+import type { ThemeMode } from '@registry/settings.js';
+import type { CredentialMetadata } from '@registry/core.js';
 
 type TabName = `project` | `app`;
 
@@ -102,6 +172,34 @@ const visible = ref<IsVisible>(false);
 const activeTab = ref<TabName>(`project`);
 const projectId = ref<ProjectId | null>(null);
 const toastVisible = ref<IsVisible>(false);
+const projectCredentials = ref<CredentialMetadata[]>([]);
+const deleteConfirmVisible = ref<IsVisible>(false);
+const credentialToDelete = ref<CredentialMetadata | null>(null);
+
+const requestDeleteCredential = (origin: DomainUrl, username: Username): void => {
+	credentialToDelete.value = { origin, username };
+	deleteConfirmVisible.value = true;
+};
+
+const confirmDelete = (): void => {
+	if (credentialToDelete.value) {
+		deleteCredential(credentialToDelete.value.origin, credentialToDelete.value.username);
+	}
+	deleteConfirmVisible.value = false;
+	credentialToDelete.value = null;
+};
+
+const cancelDelete = (): void => {
+	deleteConfirmVisible.value = false;
+	credentialToDelete.value = null;
+};
+
+const deleteCredential = (origin: DomainUrl, username: Username): void => {
+	window.eyas?.send(`delete-credential` as ChannelName, { origin, username });
+	projectCredentials.value = projectCredentials.value.filter(
+		c => !(c.origin === origin && c.username === username)
+	);
+};
 
 const saveProjectSetting = (key: SettingKey, value: unknown): void => {
 	window.eyas?.send(`save-setting` as ChannelName, { key, value, projectId: projectId.value });
@@ -146,8 +244,9 @@ const projectAlwaysChoose = computed({
 onMounted(() => {
 	// Show this modal when requested by the main process
 	window.eyas?.receive(`show-settings-modal` as ChannelName, (data = {}) => {
-		const { project, app, projectId: newProjectId, systemTheme } = data;
+		const { project, app, projectId: newProjectId, systemTheme, credentials } = data;
 		projectId.value = newProjectId ?? null;
+		projectCredentials.value = credentials || [];
 		settingsStore.loadFromPayload({ project, app, projectId: newProjectId, systemTheme });
 		activeTab.value = `project`;
 		toastVisible.value = false;
@@ -169,6 +268,13 @@ defineExpose({
 	activeTab,
 	projectAlwaysChoose,
 	appAlwaysChoose,
+	projectCredentials,
+	deleteConfirmVisible,
+	credentialToDelete,
+	requestDeleteCredential,
+	confirmDelete,
+	cancelDelete,
+	deleteCredential,
 	saveProjectSetting,
 	saveAppSetting
 });

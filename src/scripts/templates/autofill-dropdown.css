@@ -1,0 +1,56 @@
+.eyas-autofill-wrapper {
+	box-sizing: border-box !important;
+	background: __BG__ !important;
+	backdrop-filter: blur(10px) !important;
+	-webkit-backdrop-filter: blur(10px) !important;
+	border: __BORDER__ !important;
+	border-radius: 8px !important;
+	box-shadow: __SHADOW__ !important;
+	font-family: 'Inter', 'Segoe UI', sans-serif !important;
+	font-size: 14px !important;
+	width: 100% !important;
+	min-width: 280px !important;
+	max-width: 450px !important;
+	color: __COLOR__ !important;
+	overflow: hidden !important;
+	position: relative !important;
+}
+
+.list-container {
+	max-height: 200px;
+	overflow-y: auto;
+	box-sizing: border-box;
+}
+
+.logo {
+	position: absolute;
+	bottom: 4px;
+	right: 4px;
+	width: 16px;
+	height: 16px;
+	opacity: 0.4;
+	pointer-events: none;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.dropdown-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 10px 24px 10px 14px;
+	cursor: pointer;
+	border-bottom: __ITEM_BORDER__;
+	transition: background 0.15s ease;
+	box-sizing: border-box;
+}
+
+.dropdown-item:hover {
+	background-color: __ITEM_HOVER_BG__ !important;
+}
+
+.dropdown-item .password-mask {
+	color: __MASK_COLOR__;
+	-webkit-text-security: disc;
+}

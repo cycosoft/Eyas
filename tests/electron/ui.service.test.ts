@@ -143,7 +143,8 @@ describe(`ui.service.ts unit tests`, () => {
 		expect(mockCtx.$eyasLayer?.webContents.send).toHaveBeenCalledWith(`show-settings-modal`, {
 			project: { testId: `test-proj` } as unknown as ProjectSettings,
 			app: { lastSeenVersion: `1.1.0` } as unknown as AppSettings,
-			projectId: undefined
+			projectId: undefined,
+			credentials: []
 		});
 	});
 });

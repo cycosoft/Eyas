@@ -1,8 +1,9 @@
 import type { CoreContext, UIService } from '@registry/eyas-core.js';
 import type { IsActive, ChannelName } from '@registry/primitives.js';
-import type { AppSettings } from '@registry/core.js';
+import type { AppSettings, CredentialMetadata } from '@registry/core.js';
 import * as settingsService from './settings-service.js';
 import { EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
+import credentialStore from './credential-store.js';
 
 /**
  * Service for managing the Eyas UI layer (overlay) and modal flows.
@@ -154,11 +155,26 @@ export const uiService: UIService = {
 	 * @param ctx The core context.
 	 */
 	showSettings(ctx: CoreContext): void {
-		this.uiEvent(ctx, `show-settings-modal`, {
-			project: settingsService.getProjectSettings(ctx.$config?.meta?.projectId ?? undefined),
-			app: settingsService.getAppSettings(),
-			projectId: ctx.$config?.meta?.projectId || undefined
-		});
+		const projectId = ctx.$config?.meta?.projectId;
+		const triggerSettings = (credentials: CredentialMetadata[] = []): void => {
+			this.uiEvent(ctx, `show-settings-modal`, {
+				project: settingsService.getProjectSettings(projectId ?? undefined),
+				app: settingsService.getAppSettings(),
+				projectId: projectId || undefined,
+				credentials
+			});
+		};
+
+		if (projectId) {
+			credentialStore.getAllCredentials(projectId)
+				.then(credentials => triggerSettings(credentials))
+				.catch(err => {
+					console.error(`Failed to load credentials for settings:`, err);
+					triggerSettings();
+				});
+		} else {
+			triggerSettings();
+		}
 	},
 
 	/**

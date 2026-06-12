@@ -29,6 +29,7 @@ class EyasNav extends HTMLElement {
 						<li><a href="${prefix}demo/network/index.html">Security</a></li>
 						<li><a href="${prefix}demo/external/index.html">External</a></li>
 						<li><a href="${prefix}demo/window/index.html">Window</a></li>
+						<li><a href="${prefix}demo/login/index.html">Login</a></li>
 					</ul>
 					${!isRoot ? `<a href="${home}" class="nav-home-btn">← Home</a>` : ``}
 				</div>

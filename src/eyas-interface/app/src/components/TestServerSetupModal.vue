@@ -117,7 +117,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import ModalWrapper from '@/components/ModalWrapper.vue';
-import type { IsVisible, DomainUrl, PortNumber, IconName, IsActive, ProjectId, ChannelName, PortString, LabelString, SettingKey, SettingValue, IsWindows, StepId } from '@/../../../types/primitives.js';
+import type { IsVisible, DomainUrl, PortNumber, IconName, IsActive, ProjectId, ChannelName, PortString, LabelString, SettingKey, SettingValue, IsWindows, StepId } from '@registry/primitives.js';
 
 const visible = ref<IsVisible>(false);
 const domain = ref<DomainUrl>(``);

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, join, relative } from 'node:path';
-import { JSDOM } from 'jsdom';
+import { Window } from 'happy-dom';
 import type { FilePath, LabelString } from '@registry/primitives.js';
 
 /**
@@ -37,8 +37,9 @@ describe(`Demo Site Smoke Tests`, () => {
 	it.each(htmlFiles)(`should have required components and assets: %s`, (filePath: FilePath) => {
 		const relativePath = relative(DEMO_ROOT, filePath) as FilePath;
 		const html = readFileSync(filePath, `utf-8`) as LabelString;
-		const dom = new JSDOM(html);
-		const { document } = dom.window;
+		const window = new Window();
+		window.document.write(html);
+		const { document } = window;
 
 		// 1. Basic Structure
 		expect(document.title, `Missing <title> in ${relativePath}`).toBeTruthy();
@@ -52,7 +53,7 @@ describe(`Demo Site Smoke Tests`, () => {
 
 		// 3. Asset Loading
 		const scripts = Array.from(document.querySelectorAll(`script`));
-		const scriptSrcs = scripts.map((s: HTMLScriptElement) => s.getAttribute(`src`)).filter(Boolean) as LabelString[];
+		const scriptSrcs = scripts.map(s => s.getAttribute(`src`)).filter(Boolean) as LabelString[];
 
 		const hasComponents = scriptSrcs.some(src => src.endsWith(`components.js`));
 		const hasDemo = scriptSrcs.some(src => src.endsWith(`demo.js`));
@@ -62,7 +63,7 @@ describe(`Demo Site Smoke Tests`, () => {
 
 		// 4. Internal Link Resolution
 		const links = Array.from(document.querySelectorAll(`a`));
-		links.forEach((link: HTMLAnchorElement) => {
+		links.forEach(link => {
 			const href = link.getAttribute(`href`) as LabelString | null;
 
 			// Only check relative internal links
@@ -98,11 +99,31 @@ describe(`Demo Site Smoke Tests`, () => {
 	it(`should have functional viewport elements on the viewport page`, () => {
 		const viewportPage = join(DEMO_ROOT, `demo/viewport/index.html`) as FilePath;
 		const html = readFileSync(viewportPage, `utf-8`) as LabelString;
-		const dom = new JSDOM(html);
-		const { document } = dom.window;
+		const window = new Window();
+		window.document.write(html);
+		const { document } = window;
 
 		expect(document.getElementById(`viewport-readout`)).not.toBeNull();
 		expect(document.getElementById(`viewport-category`)).not.toBeNull();
 		expect(document.getElementById(`viewport-state`)).not.toBeNull();
+	});
+
+	it(`should have standard login form on the login page`, () => {
+		const loginPage = join(DEMO_ROOT, `demo/login/index.html`) as FilePath;
+		const html = readFileSync(loginPage, `utf-8`) as LabelString;
+		const window = new Window();
+		window.document.write(html);
+		const { document } = window;
+
+		// Verify simple login form elements
+		const simpleForm = document.getElementById(`simple-login-form`);
+		expect(simpleForm, `Missing simple login form`).not.toBeNull();
+		expect(simpleForm?.querySelector(`input[type="text"]`), `Simple form username input missing or not type="text"`).not.toBeNull();
+		expect(simpleForm?.querySelector(`input[type="password"]`), `Simple form password input missing`).not.toBeNull();
+
+		// Verify non-login form has no password field
+		const nonLoginForm = document.getElementById(`non-login-form`);
+		expect(nonLoginForm, `Missing non-login test form`).not.toBeNull();
+		expect(nonLoginForm?.querySelector(`input[type="password"]`), `Non-login form should not contain a password field`).toBeNull();
 	});
 });

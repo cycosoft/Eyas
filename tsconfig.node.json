@@ -30,7 +30,7 @@
 			"@test-registry/*": ["./tests/types/*"],
 			"@root/*": ["./*"]
 		},
-		"types": ["node"],
+		"types": ["node", "vite/client"],
 		"allowJs": false,
 		"verbatimModuleSyntax": true,
 		"strictNullChecks": true

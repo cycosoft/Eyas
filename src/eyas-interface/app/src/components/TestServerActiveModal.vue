@@ -133,8 +133,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
 import ModalWrapper from '@/components/ModalWrapper.vue';
-import type { IsVisible, DomainUrl, Timestamp, IconName, DurationString, TimerId, ChannelName, LabelString, TimeString, IsActive } from '@/../../../types/primitives.js';
-import type { ModalWrapperVM } from '@/../../../types/components.js';
+import type { IsVisible, DomainUrl, Timestamp, IconName, DurationString, TimerId, ChannelName, LabelString, TimeString, IsActive } from '@registry/primitives.js';
+import type { ModalWrapperVM } from '@registry/components.js';
 import { formatDisplayUrl, formatTimestamp, calculateCountdownText, getExtensionLabel, checkCanExtend } from './TestServerActiveModal.utils.js';
 
 // State

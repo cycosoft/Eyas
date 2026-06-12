@@ -7,20 +7,31 @@ import {
 	getTestLayerBounds,
 	getAppWindowContentSize,
 	ensureEnvironmentSelected,
+	setupTestProject,
 	EYAS_HEADER_HEIGHT
 } from './eyas-utils.mjs';
 
 test.describe(`UI Layer Expansion`, () => {
 	let electronApp;
 	let uiPage;
+	let projectCleanup;
 
 	test.beforeEach(async () => {
-		electronApp = await launchEyas();
+		const { projectDir, cleanup } = await setupTestProject({
+			title: `Test UI Expansion Project`,
+			projectId: `ui-expansion-test`
+		});
+		projectCleanup = cleanup;
+
+		electronApp = await launchEyas([], null, projectDir);
 		uiPage = await getUiView(electronApp);
 	});
 
 	test.afterEach(async () => {
 		await exitEyas(electronApp);
+		if (projectCleanup) {
+			await projectCleanup();
+		}
 	});
 
 	test(`UI layer and Test layer dimensions must strictly adhere to decoupling rules`, async () => {

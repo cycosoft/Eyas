@@ -130,6 +130,8 @@ vi.mock(`../../src/eyas-core/settings-service.js`, () => ({
 	save: vi.fn().mockResolvedValue(undefined)
 }));
 
+
+
 vi.mock(`../../src/eyas-core/deep-link-handler.js`, () => ({
 	handleEyasProtocolUrl: vi.fn(),
 	getEyasUrlFromCommandLine: vi.fn()
@@ -169,6 +171,8 @@ import {
 	initIpcHandlers
 } from '@core/ipc-handlers.js';
 import type { CoreContext } from '@registry/eyas-core.js';
+
+
 
 describe(`index.ts refactoring unit tests`, () => {
 	beforeEach(() => {
@@ -466,3 +470,4 @@ describe(`Open DevTools Console IPC`, () => {
 		expect(mockWebContents.openDevTools).toHaveBeenCalledWith({ mode: `detach` });
 	});
 });
+

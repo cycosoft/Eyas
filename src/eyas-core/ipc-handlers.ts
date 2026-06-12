@@ -7,6 +7,9 @@ import * as testServerTimeout from './test-server/test-server-timeout.js';
 import { TEST_SERVER_SESSION_DURATION_MS, EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
 import { MP_EVENTS } from './metrics-events.js';
 import { isMac } from '@scripts/platform-utils.js';
+import { initCredentialIpcListeners } from './ipc-handlers.credentials.js';
+
+
 
 import type {
 	LaunchLinkPayload,
@@ -17,18 +20,21 @@ import type {
 } from '@registry/ipc.js';
 import type { IsActive, AppVersion, ViewportWidth, ViewportHeight, ChannelName, DomainUrl } from '@registry/primitives.js';
 
+
 // Initializes all IPC handlers for the application.
 export function initIpcHandlers(ctx: CoreContext): void {
 	initAppIpcListeners(ctx);
 	initEnvironmentIpcListeners(ctx);
 	initSettingsIpcListeners(ctx);
 	initTestServerIpcListeners(ctx);
+	initCredentialIpcListeners(ctx);
 
 	// once the "What's New" modal is closed, trigger the next modal in the sequence
 	ipcMain.on(`whats-new-closed`, () => {
 		ctx.triggerBufferedModal();
 	});
 }
+
 
 // Initializes application-level IPC listeners.
 function initAppIpcListeners(ctx: CoreContext): void {
@@ -238,6 +244,11 @@ function initSettingsIpcListeners(ctx: CoreContext): void {
 			version: ctx._appVersion
 		});
 	});
+
+	// query if dark theme is active
+	ipcMain.handle(`is-dark-theme`, () => {
+		return nativeTheme.shouldUseDarkColors;
+	});
 }
 
 // Initializes test server-related IPC listeners.
@@ -284,3 +295,4 @@ function initTestServerIpcListeners(ctx: CoreContext): void {
 		}
 	});
 }
+

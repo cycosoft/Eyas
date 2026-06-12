@@ -20,6 +20,7 @@ export type IsEnabled = boolean;
 export type IsDefault = boolean;
 export type IsWindows = boolean;
 export type IsExitFlow = boolean;
+export type ShouldShow = boolean;
 
 // Events / Progress
 export type ProgressBytes = number;
@@ -82,6 +83,9 @@ export type PixelDimension = number;
 export type HashString = string;
 export type TestId = string;
 export type DeviceId = string;
+export type Username = string;
+export type PasswordPlain = string;
+export type PasswordHex = string;
 
 // Certificates
 export type CertKey = string;

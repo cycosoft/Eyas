@@ -15,7 +15,7 @@ contextBridge.exposeInMainWorld(`eyas`, {
 	receive: (channel: ChannelName, func: (...args: unknown[]) => void): void => {
 		if (VALID_RECEIVE_CHANNELS.includes(channel as never)) {
 			// Deliberately strip event as it includes `sender`
-			ipcRenderer.on(channel, (_event: unknown, ...args: unknown[]) => { func(...args); });
+			ipcRenderer.on(channel, (_event: unknown, ...args: unknown[]): void => { func(...args); });
 		}
 	}
 });
