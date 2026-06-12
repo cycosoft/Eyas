@@ -7,9 +7,7 @@
 	"packageName": "Eyas Desktop",
 	"author": "Cycosoft, LLC (https://cycosoft.com)",
 	"homepage": "https://github.com/cycosoft/Eyas/releases",
-	"publishConfig": {
-		"access": "public"
-	},
+	"publishConfig": { "access": "public" },
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/cycosoft/Eyas.git"
@@ -131,11 +129,7 @@
 		"vuetify": "^4.1.1"
 	},
 	"overrides": {
-		"package-json": ">6.5.0 <8.0.0",
-		"ws": "^7.0.0",
-		"eslint-plugin-import": {
-			"eslint": "$eslint"
-		},
+		"eslint-plugin-import": { "eslint": "$eslint" },
 		"semver": "$semver"
 	}
 }
