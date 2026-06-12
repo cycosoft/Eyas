@@ -3,18 +3,28 @@ import {
 	launchEyas,
 	exitEyas,
 	getTestLayerBounds,
+	setupTestProject,
 	EYAS_HEADER_HEIGHT
 } from './eyas-utils.mjs';
 
 test.describe(`Test Layer Dimensions`, () => {
 	let electronApp;
+	let projectCleanup;
 
 	test.beforeEach(async () => {
-		electronApp = await launchEyas();
+		const { projectDir, cleanup } = await setupTestProject({
+			title: `Test Dimensions Project`,
+			projectId: `dimensions-test`
+		});
+		projectCleanup = cleanup;
+		electronApp = await launchEyas([], null, projectDir);
 	});
 
 	test.afterEach(async () => {
 		await exitEyas(electronApp);
+		if (projectCleanup) {
+			await projectCleanup();
+		}
 	});
 
 	test(`initial dimensions should be correct on launch`, async () => {

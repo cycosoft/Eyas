@@ -4,7 +4,8 @@ import fs from 'fs-extra';
 import {
 	launchEyas,
 	exitEyas,
-	getUiView
+	getUiView,
+	setupTestProject
 } from './eyas-utils.mjs';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -20,30 +21,16 @@ import {
  * @returns {Promise<string>} Absolute path to the created temp directory
  */
 async function createTempProject(projectId) {
-	const dir = path.join(import.meta.dirname, `../../.test-data`, `project-${projectId}-${Date.now()}`);
-	await fs.ensureDir(dir);
+	const { projectDir } = await setupTestProject({
+		projectId,
+		title: `Test Project ${projectId}`,
+		domains: [
+			{ url: `https://staging.example.com`, title: `Staging` },
+			{ url: `https://example.com`, title: `Production` }
+		]
+	});
 
-	// Minimal config that provides a distinguishable projectId in meta.
-	// Using an inline object so we don't need to build or compile anything.
-	const configContent = `
-export default {
-	title: \`Test Project ${projectId}\`,
-	domains: [
-		{ url: \`https://staging.example.com\`, title: \`Staging\` },
-		{ url: \`https://example.com\`, title: \`Production\` }
-	],
-	meta: {
-		projectId: \`${projectId}\`,
-		testId: '${crypto.randomUUID()}'
-	}
-};
-`;
-	await fs.writeFile(path.join(dir, `.eyas.config.js`), configContent, `utf8`);
-	// Add dummy package.json to prevent ENOENT in getCliVersion
-	const packageContent = `{"version": "1.0.0"}`;
-	await fs.writeFile(path.join(dir, `package.json`), packageContent, `utf8`);
-
-	return dir;
+	return projectDir;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

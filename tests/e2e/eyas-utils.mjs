@@ -2,6 +2,7 @@ import { _electron as electron, expect } from '@playwright/test';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
+import crypto from 'crypto';
 
 const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
@@ -373,3 +374,47 @@ export async function getAppWindowContentSize(electronApp) {
 		return [0, 0];
 	});
 }
+
+/**
+ * Creates a temporary project directory with a custom configuration.
+ *
+ * @param {object} [options] - Configuration overrides for .eyas.config.js
+ * @returns {Promise<{projectDir: string, cleanup: function}>}
+ */
+export async function setupTestProject(options = {}) {
+	const projectId = options.projectId || `test-${crypto.randomUUID()}`;
+	const dir = path.join(__dirname, `../../.test-data`, `project-${projectId}-${Date.now()}-${Math.floor(Math.random() * 1000)}`);
+	await fs.ensureDir(dir);
+
+	const config = {
+		title: options.title || `Test Project ${projectId}`,
+		domains: options.domains || [
+			{ url: `https://example.com`, title: `Production` }
+		],
+		viewports: options.viewports || [
+			{ label: `Default Size`, width: 1024, height: 768 }
+		],
+		meta: {
+			projectId,
+			testId: crypto.randomUUID(),
+			...options.meta
+		},
+		...options
+	};
+
+	// Remove extra properties that were only passed as helper options
+	delete config.projectId;
+
+	const configContent = `export default ${JSON.stringify(config, null, 2)};`;
+
+	await fs.writeFile(path.join(dir, `.eyas.config.js`), configContent, `utf8`);
+	await fs.writeFile(path.join(dir, `package.json`), `{"version": "1.0.0"}`, `utf8`);
+
+	return {
+		projectDir: dir,
+		cleanup: async () => {
+			await fs.remove(dir).catch(() => {});
+		}
+	};
+}
+
