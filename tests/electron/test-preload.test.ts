@@ -4,7 +4,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { Mock } from 'vitest';
 import type { ProgressBytes, EventType, IsComputable, TimestampMS, DomainUrl, Username, PasswordPlain } from '@registry/primitives.js';
-import type { MockElementWithListeners } from '@test-registry/test-preload.mocks.js';
+import type { MockElementWithListeners, MockStyleElement } from '@test-registry/test-preload.mocks.js';
 
 type ProgressEventInit = {
 	lengthComputable: IsComputable;
@@ -529,10 +529,10 @@ describe(`test-preload`, () => {
 			const mockEvent = { target: usernameInput };
 			await focusHandler(mockEvent as unknown as Event);
 
-			// Verify password mask color in innerHTML (default light theme is #888)
-			const itemDiv = createdElements.find(e => e.tag === `div` && e.innerHTML);
-			expect(itemDiv).toBeDefined();
-			expect(itemDiv?.innerHTML).toContain(`color:#888`);
+			// Verify password mask color in style tag (default light theme is #888)
+			const styleTag = createdElements.find(e => e.tag === `style` && (e as MockStyleElement).textContent) as MockStyleElement | undefined;
+			expect(styleTag).toBeDefined();
+			expect(styleTag?.textContent).toContain(`color: #888`);
 
 			// Verify logo element containing inline SVG
 			const logoDiv = createdElements.find(e => e.tag === `div` && e.innerHTML && e.innerHTML.includes(`<svg`));
@@ -617,7 +617,7 @@ describe(`test-preload`, () => {
 			await focusHandler(mockEvent as unknown as Event);
 
 			// Find the item div element
-			const itemDiv = createdElements.find(e => e.tag === `div` && e.innerHTML && e.innerHTML.includes(`user1`));
+			const itemDiv = createdElements.find(e => e.tag === `div` && (e.appendChild as Mock).mock.calls.some((call: unknown[]) => call[0] && (call[0] as MockStyleElement).textContent === `user1`));
 			expect(itemDiv).toBeDefined();
 
 			const itemListeners = itemDiv?.listeners;
@@ -631,19 +631,13 @@ describe(`test-preload`, () => {
 			}
 			expect(usernameInput.value).toBe(`user1`);
 
-			// Get the dummy password from the dropdown item HTML
-			const innerHTML = itemDiv?.innerHTML;
-			expect(innerHTML).toBeDefined();
-			if (innerHTML) {
-				const match = innerHTML.match(/class="password-mask"[^>]*>([^<]+)/);
-				expect(match).toBeDefined();
-				if (match) {
-					const dummyPasswordInDropdown = match[1];
-					expect(dummyPasswordInDropdown).toBeDefined();
-					expect(dummyPasswordInDropdown).not.toBe(`pass1`);
-					expect(passwordInput.value).toBe(dummyPasswordInDropdown);
-				}
-			}
+			// Get the dummy password from the appended mask child
+			const maskSpan = (itemDiv?.appendChild as Mock).mock.calls[1]?.[0] as MockStyleElement | undefined;
+			expect(maskSpan).toBeDefined();
+			const dummyPasswordInDropdown = maskSpan?.textContent;
+			expect(dummyPasswordInDropdown).toBeDefined();
+			expect(dummyPasswordInDropdown).not.toBe(`pass1`);
+			expect(passwordInput.value).toBe(dummyPasswordInDropdown);
 
 			// Trigger mouseleave
 			const mouseleave = itemListeners?.mouseleave?.[0];
@@ -733,7 +727,7 @@ describe(`test-preload`, () => {
 			await focusHandler(mockEvent as unknown as Event);
 
 			// Find the item div element
-			const itemDiv = createdElements.find(e => e.tag === `div` && e.innerHTML && e.innerHTML.includes(`user1`));
+			const itemDiv = createdElements.find(e => e.tag === `div` && (e.appendChild as Mock).mock.calls.some((call: unknown[]) => call[0] && (call[0] as MockStyleElement).textContent === `user1`));
 			expect(itemDiv).toBeDefined();
 
 			// Trigger mousedown (click selection)
@@ -819,13 +813,11 @@ describe(`test-preload`, () => {
 			await focusHandler(mockEvent as unknown as Event);
 
 			// Verify the dropdown element styling includes the dark theme values
-			const dropdownDiv = createdElements.find(e => e.tag === `div` && ((e.setAttribute as Mock).mock.calls.some(call => typeof call[1] === `string` && call[1].includes(`background:rgba(30, 30, 30, 0.85)`))));
-			expect(dropdownDiv).toBeDefined();
+			const styleTag = createdElements.find(e => e.tag === `style` && (e as MockStyleElement).textContent && (e as MockStyleElement).textContent.includes(`rgba(30, 30, 30, 0.85)`)) as MockStyleElement | undefined;
+			expect(styleTag).toBeDefined();
 
-			// Verify item mask color in innerHTML (dark theme is #aaa)
-			const itemDiv = createdElements.find(e => e.tag === `div` && e.innerHTML && e.innerHTML.includes(`user1`));
-			expect(itemDiv).toBeDefined();
-			expect(itemDiv?.innerHTML).toContain(`color:#aaa`);
+			// Verify item mask color in style tag (dark theme is #aaa)
+			expect(styleTag?.textContent).toContain(`color: #aaa`);
 		});
 
 		it(`should hide dropdown when active input fires focusout`, async () => {

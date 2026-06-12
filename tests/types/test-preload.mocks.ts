@@ -27,3 +27,9 @@ type AutofillListenersHolder = {
 };
 
 export type MockElementWithListeners = MockElement & AutofillListenersHolder;
+
+type MockStyleElementFields = {
+	textContent: string;
+};
+
+export type MockStyleElement = MockElement & MockStyleElementFields;
