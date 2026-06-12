@@ -184,4 +184,56 @@ describe(`SettingsModal`, () => {
 			{ origin: `https://another.eyas`, username: `user2` }
 		]);
 	});
+
+	test(`requestDeleteCredential opens confirmation dialog and sets target credential`, () => {
+		const vm = wrapper.vm as unknown as SettingsModalVM;
+		expect(vm.deleteConfirmVisible).toBe(false);
+		expect(vm.credentialToDelete).toBeNull();
+
+		vm.requestDeleteCredential(`https://test.eyas`, `user1`);
+
+		expect(vm.deleteConfirmVisible).toBe(true);
+		expect(vm.credentialToDelete).toEqual({ origin: `https://test.eyas`, username: `user1` });
+		expect(mockSend).not.toHaveBeenCalled();
+	});
+
+	test(`confirmDelete executes deleteCredential, clears target and closes dialog`, () => {
+		const vm = wrapper.vm as unknown as SettingsModalVM;
+		vm.projectCredentials = [
+			{ origin: `https://test.eyas`, username: `user1` },
+			{ origin: `https://another.eyas`, username: `user2` }
+		];
+		vm.deleteConfirmVisible = true;
+		vm.credentialToDelete = { origin: `https://test.eyas`, username: `user1` };
+
+		vm.confirmDelete();
+
+		expect(mockSend).toHaveBeenCalledWith(`delete-credential`, {
+			origin: `https://test.eyas`,
+			username: `user1`
+		});
+		expect(vm.projectCredentials).toEqual([
+			{ origin: `https://another.eyas`, username: `user2` }
+		]);
+		expect(vm.deleteConfirmVisible).toBe(false);
+		expect(vm.credentialToDelete).toBeNull();
+	});
+
+	test(`cancelDelete closes dialog and clears target without deleting`, () => {
+		const vm = wrapper.vm as unknown as SettingsModalVM;
+		vm.projectCredentials = [
+			{ origin: `https://test.eyas`, username: `user1` }
+		];
+		vm.deleteConfirmVisible = true;
+		vm.credentialToDelete = { origin: `https://test.eyas`, username: `user1` };
+
+		vm.cancelDelete();
+
+		expect(mockSend).not.toHaveBeenCalled();
+		expect(vm.projectCredentials).toEqual([
+			{ origin: `https://test.eyas`, username: `user1` }
+		]);
+		expect(vm.deleteConfirmVisible).toBe(false);
+		expect(vm.credentialToDelete).toBeNull();
+	});
 });

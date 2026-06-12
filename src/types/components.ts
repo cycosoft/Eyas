@@ -100,6 +100,11 @@ export type SettingsModalVM = {
 	projectAlwaysChoose: IsVisible;
 	appAlwaysChoose: IsVisible;
 	projectCredentials: CredentialMetadata[];
+	deleteConfirmVisible: IsVisible;
+	credentialToDelete: CredentialMetadata | null;
+	requestDeleteCredential: (origin: DomainUrl, username: Username) => void;
+	confirmDelete: () => void;
+	cancelDelete: () => void;
 	deleteCredential: (origin: DomainUrl, username: Username) => void;
 	saveProjectSetting: (key: MenuLabel, value: unknown) => void;
 	saveAppSetting: (key: MenuLabel, value: unknown) => void;

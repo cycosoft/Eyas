@@ -54,7 +54,7 @@
 											color="error"
 											size="small"
 											:data-qa="`settings-delete-credential-${index}`"
-											@click="deleteCredential(cred.origin, cred.username)"
+											@click="requestDeleteCredential(cred.origin, cred.username)"
 										/>
 									</template>
 								</v-list-item>
@@ -117,6 +117,41 @@
 		>
 			Setting saved
 		</v-snackbar>
+
+		<!-- Confirmation dialog for deleting credentials -->
+		<v-dialog
+			v-model="deleteConfirmVisible"
+			max-width="400px"
+			data-qa="settings-delete-confirm-dialog"
+		>
+			<v-card>
+				<v-card-title class="text-h6 pt-3 px-3" data-qa="settings-delete-confirm-title">
+					Delete Credential?
+				</v-card-title>
+				<v-card-text class="pa-4" data-qa="settings-delete-confirm-text">
+					Are you sure you want to delete the credential for <strong>{{ credentialToDelete?.username }}</strong> at <strong>{{ credentialToDelete?.origin }}</strong>? This action cannot be undone.
+				</v-card-text>
+				<v-card-actions class="px-3 pb-3">
+					<v-spacer />
+					<v-btn
+						color="secondary"
+						variant="text"
+						data-qa="settings-delete-confirm-cancel"
+						@click="cancelDelete"
+					>
+						Cancel
+					</v-btn>
+					<v-btn
+						color="error"
+						variant="elevated"
+						data-qa="settings-delete-confirm-button"
+						@click="confirmDelete"
+					>
+						Delete
+					</v-btn>
+				</v-card-actions>
+			</v-card>
+		</v-dialog>
 	</ModalWrapper>
 </template>
 
@@ -138,6 +173,26 @@ const activeTab = ref<TabName>(`project`);
 const projectId = ref<ProjectId | null>(null);
 const toastVisible = ref<IsVisible>(false);
 const projectCredentials = ref<CredentialMetadata[]>([]);
+const deleteConfirmVisible = ref<IsVisible>(false);
+const credentialToDelete = ref<CredentialMetadata | null>(null);
+
+const requestDeleteCredential = (origin: DomainUrl, username: Username): void => {
+	credentialToDelete.value = { origin, username };
+	deleteConfirmVisible.value = true;
+};
+
+const confirmDelete = (): void => {
+	if (credentialToDelete.value) {
+		deleteCredential(credentialToDelete.value.origin, credentialToDelete.value.username);
+	}
+	deleteConfirmVisible.value = false;
+	credentialToDelete.value = null;
+};
+
+const cancelDelete = (): void => {
+	deleteConfirmVisible.value = false;
+	credentialToDelete.value = null;
+};
 
 const deleteCredential = (origin: DomainUrl, username: Username): void => {
 	window.eyas?.send(`delete-credential` as ChannelName, { origin, username });
@@ -214,6 +269,11 @@ defineExpose({
 	projectAlwaysChoose,
 	appAlwaysChoose,
 	projectCredentials,
+	deleteConfirmVisible,
+	credentialToDelete,
+	requestDeleteCredential,
+	confirmDelete,
+	cancelDelete,
 	deleteCredential,
 	saveProjectSetting,
 	saveAppSetting
