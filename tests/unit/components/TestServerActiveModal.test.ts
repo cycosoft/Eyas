@@ -154,7 +154,10 @@ describe(`TestServerActiveModal`, () => {
 	test(`Copy to clipboard functionality`, async () => {
 		await setup({ domain: `http://custom.local` });
 		const mockClipboard = { writeText: vi.fn() };
-		Object.assign(navigator, { clipboard: mockClipboard });
+		Object.defineProperty(navigator, `clipboard`, {
+			value: mockClipboard,
+			configurable: true
+		});
 
 		await (wrapper.vm as unknown as TestServerActiveModalVM).copyDomain();
 		expect(navigator.clipboard.writeText).toHaveBeenCalledWith(`http://custom.local`);

@@ -15,7 +15,7 @@ export default defineConfig({
 
 	test: {
 		globals: true,
-		environment: `jsdom`,
+		environment: `happy-dom`,
 		pool: `vmThreads`,
 		setupFiles: [`./tests/setup/vue-test-setup.ts`],
 		include: [`tests/unit/**/*.test.{js,ts}`],

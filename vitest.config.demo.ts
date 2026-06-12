@@ -7,7 +7,7 @@ export default defineConfig({
 	},
 	test: {
 		globals: true,
-		environment: `jsdom`,
+		environment: `happy-dom`,
 		include: [`tests/unit/demo/**/*.test.{js,ts}`],
 		exclude: [`tests/e2e/**`, `tests/electron/**`]
 	}

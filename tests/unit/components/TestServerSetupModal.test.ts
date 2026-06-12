@@ -132,7 +132,10 @@ describe(`TestServerSetupModal`, () => {
 		await (wrapper.vm as unknown as TestServerSetupModalVM).$nextTick();
 
 		const mockClipboard = { writeText: vi.fn() };
-		Object.assign(navigator, { clipboard: mockClipboard });
+		Object.defineProperty(navigator, `clipboard`, {
+			value: mockClipboard,
+			configurable: true
+		});
 
 		const sheet = document.querySelector(`.hosts-copy-block`);
 		expect((wrapper.vm as unknown as TestServerSetupModalVM).copyIcon).toBe(`mdi-content-copy`);
