@@ -1,5 +1,5 @@
 import { ipcRenderer } from "electron";
-import type { ShouldShow, IsActive, PasswordPlain } from "@registry/primitives.js";
+import type { ShouldShow, IsActive, PasswordPlain, Username } from "@registry/primitives.js";
 import type { DecryptedCredential, CredentialBackup } from "@registry/core.js";
 import type { AutofillTheme } from "@registry/settings.js";
 import htmlTemplate from "./templates/autofill-dropdown.html?raw";
@@ -44,17 +44,26 @@ function fillForm(input: HTMLInputElement, cred: DecryptedCredential): void {
 	const usernameInputs = form.querySelectorAll(`input[type="text"], input[type="email"], input:not([type])`);
 	const passwordInputs = form.querySelectorAll(`input[type="password"]`);
 
+	const setVal = (inp: HTMLInputElement, val: Username | PasswordPlain): void => {
+		const setter = typeof HTMLInputElement !== `undefined`
+			? Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, `value`)?.set
+			: null;
+		if (setter) { setter.call(inp, val); } else { inp.value = val; }
+		if (typeof KeyboardEvent !== `undefined`) {
+			inp.dispatchEvent(new KeyboardEvent(`keydown`, { bubbles: true }));
+		}
+		inp.dispatchEvent(new Event(`input`, { bubbles: true }));
+		inp.dispatchEvent(new Event(`change`, { bubbles: true }));
+		if (typeof KeyboardEvent !== `undefined`) {
+			inp.dispatchEvent(new KeyboardEvent(`keyup`, { bubbles: true }));
+		}
+	};
+
 	if (usernameInputs.length > 0) {
-		const userInp = usernameInputs[0] as HTMLInputElement;
-		userInp.value = cred.username;
-		userInp.dispatchEvent(new Event(`input`, { bubbles: true }));
-		userInp.dispatchEvent(new Event(`change`, { bubbles: true }));
+		setVal(usernameInputs[0] as HTMLInputElement, cred.username);
 	}
 	if (passwordInputs.length > 0) {
-		const passInp = passwordInputs[0] as HTMLInputElement;
-		passInp.value = cred.passwordPlain;
-		passInp.dispatchEvent(new Event(`input`, { bubbles: true }));
-		passInp.dispatchEvent(new Event(`change`, { bubbles: true }));
+		setVal(passwordInputs[0] as HTMLInputElement, cred.passwordPlain);
 	}
 }
 
@@ -193,15 +202,11 @@ function showAutocompleteDropdown(input: HTMLInputElement, credentialsList: Decr
 	const tempDiv = document.createElement(`div`);
 	tempDiv.innerHTML = htmlTemplate;
 	const wrapper = (tempDiv.querySelector ? tempDiv.querySelector(`.eyas-autofill-wrapper`) : tempDiv) as HTMLDivElement;
-	if (!wrapper) {
-		throw new Error(`Failed to parse autofill dropdown HTML template`);
-	}
+	if (!wrapper) throw new Error(`Failed to parse autofill dropdown HTML template`);
 	container.appendChild(wrapper);
 
 	const listContainer = (wrapper.querySelector ? wrapper.querySelector(`.list-container`) : wrapper) as HTMLDivElement;
-	if (!listContainer) {
-		throw new Error(`Failed to find list-container in autofill HTML template`);
-	}
+	if (!listContainer) throw new Error(`Failed to find list-container in autofill HTML template`);
 
 	credentialsList.forEach(cred => {
 		listContainer.appendChild(createDropdownItem(input, cred));
@@ -256,9 +261,7 @@ function repositionDropdown(): void {
 export function setupAutofill(): void {
 	if (typeof document === `undefined`) { return; }
 
-	ipcRenderer.on(`credentials-updated`, () => {
-		cachedCredentials = null;
-	});
+	ipcRenderer.on(`credentials-updated`, () => { cachedCredentials = null; });
 
 	document.addEventListener(`focusin`, async (event: Event) => {
 		const input = event.target as HTMLInputElement;
@@ -266,9 +269,7 @@ export function setupAutofill(): void {
 	}, true);
 
 	document.addEventListener(`focusout`, (event: Event) => {
-		if (event.target === activeInput) {
-			removeDropdown();
-		}
+		if (event.target === activeInput) removeDropdown();
 	}, true);
 
 	document.addEventListener(`click`, async (e: Event) => {
@@ -286,10 +287,7 @@ export function setupAutofill(): void {
 	}, true);
 
 	window.addEventListener(`scroll`, (event: Event) => {
-		if (activeDropdown && activeDropdown.contains(event.target as Node)) {
-			return;
-		}
-		repositionDropdown();
+		if (activeDropdown && !activeDropdown.contains(event.target as Node)) repositionDropdown();
 	}, true);
 	window.addEventListener(`resize`, removeDropdown, true);
 }
