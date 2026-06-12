@@ -8,7 +8,6 @@
 			:model-value="modelValue"
 			:width="dialogWidth"
 			:min-width="calculatedMinWidth"
-			max-height="90vh"
 			scrollable
 			persistent
 			v-bind="$attrs"
@@ -37,7 +36,7 @@ const props = withDefaults(defineProps<ModalWrapperProps>(), {
 const emit = defineEmits<ModalWrapperEmits>();
 
 const id = ref<ModalId>(window.crypto.randomUUID() as ModalId);
-const dialogWidth = ref<ViewportWidth | `auto`>(`auto`);
+const dialogWidth = ref<ViewportWidth | `fit-content` | undefined>(`fit-content`);
 
 const backgroundContentVisible = computed((): IsVisible => {
 	return ModalStore().lastOpenedById === id.value;
@@ -52,8 +51,8 @@ const calculatedMinWidth = computed((): ViewportWidth | undefined => {
 
 const trackModalState = (isTrue: IsVisible): void => {
 	if (isTrue) {
-		// reset width to the initial auto state so it can calculate the new initial width
-		dialogWidth.value = `auto`;
+		// reset width to the initial state so it can calculate the new initial width
+		dialogWidth.value = `fit-content`;
 		// track this modal as the last opened modal
 		ModalStore().track(id.value);
 	} else {
@@ -99,17 +98,14 @@ defineExpose({
 
 <style scoped>
 .modal-wrapper__content {
-	display: flex;
-	flex-direction: column;
-	height: 100%;
-	min-height: 0;
+	display: contents;
 }
 
 /* Enforce consistent modal body scrolling across all Eyas modals */
 .modal-wrapper__content :deep(.v-card) {
 	display: flex !important;
 	flex-direction: column !important;
-	max-height: 100% !important;
+	max-height: 90vh !important;
 	overflow: hidden !important;
 }
 
