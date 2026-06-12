@@ -223,6 +223,13 @@ async function handleAutofillTrigger(input: HTMLInputElement): Promise<void> {
 	showAutocompleteDropdown(input, creds, isDark);
 }
 
+function repositionDropdown(): void {
+	if (!activeDropdown || !activeInput) { return; }
+	const rect = activeInput.getBoundingClientRect();
+	activeDropdown.style.top = `${rect.bottom + window.scrollY}px`;
+	activeDropdown.style.left = `${rect.left + window.scrollX}px`;
+}
+
 export function setupAutofill(): void {
 	if (typeof document === `undefined`) { return; }
 
@@ -257,7 +264,7 @@ export function setupAutofill(): void {
 		if (activeDropdown && activeDropdown.contains(event.target as Node)) {
 			return;
 		}
-		removeDropdown();
+		repositionDropdown();
 	}, true);
 	window.addEventListener(`resize`, removeDropdown, true);
 }

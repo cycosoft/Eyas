@@ -904,7 +904,7 @@ describe(`test-preload`, () => {
 			expect(removeMock).toHaveBeenCalled();
 		});
 
-		it(`should close dropdown when window scrolls but NOT when scrolling inside dropdown`, async () => {
+		it(`should reposition dropdown when window scrolls but NOT when scrolling inside dropdown`, async () => {
 			const ipc = ipcRenderer;
 			type ReturnCred = { username: Username; passwordPlain: PasswordPlain };
 			ipc.invoke = vi.fn().mockImplementation(channel => {
@@ -920,6 +920,8 @@ describe(`test-preload`, () => {
 			const listeners: Record<EventType, ((e: Event) => void)[]> = {};
 			const mockWindow = {
 				location: { origin: `https://test.eyas` as DomainUrl },
+				scrollY: 10,
+				scrollX: 5,
 				addEventListener: vi.fn((event: EventType, cb: (e: Event) => void) => {
 					if (!listeners[event]) { listeners[event] = []; }
 					listeners[event].push(cb);
@@ -931,7 +933,7 @@ describe(`test-preload`, () => {
 			const removeMock = vi.fn();
 			const containsMock = vi.fn();
 			const mockDropdownEl = {
-				style: {},
+				style: { top: ``, left: `` },
 				appendChild: vi.fn(),
 				setAttribute: vi.fn(),
 				addEventListener: vi.fn(),
@@ -961,7 +963,7 @@ describe(`test-preload`, () => {
 				tagName: `INPUT`,
 				dispatchEvent: vi.fn(),
 				offsetWidth: 100,
-				getBoundingClientRect: vi.fn(() => ({ top: 0, bottom: 0, left: 0, right: 0, width: 100, height: 20 })),
+				getBoundingClientRect: vi.fn(() => ({ top: 0, bottom: 50, left: 100, right: 200, width: 100, height: 20 })),
 				addEventListener: vi.fn()
 			};
 			const passwordInput: MockInput = { value: ``, type: `password`, tagName: `INPUT`, dispatchEvent: vi.fn() };
@@ -984,15 +986,23 @@ describe(`test-preload`, () => {
 			await focusHandler(mockEvent as unknown as Event);
 			expect(mockDoc.createElement).toHaveBeenCalledWith(`div`);
 
+			// Reset mock calls or styles to see change
+			mockDropdownEl.style.top = ``;
+			mockDropdownEl.style.left = ``;
+
 			// 1. Simulate scroll inside the dropdown
 			containsMock.mockReturnValue(true);
 			await scrollHandler({ target: {} } as unknown as Event);
 			expect(removeMock).not.toHaveBeenCalled();
+			expect(mockDropdownEl.style.top).toBe(``);
+			expect(mockDropdownEl.style.left).toBe(``);
 
-			// 2. Simulate scroll outside the dropdown
+			// 2. Simulate scroll outside the dropdown -> should reposition
 			containsMock.mockReturnValue(false);
 			await scrollHandler({ target: {} } as unknown as Event);
-			expect(removeMock).toHaveBeenCalled();
+			expect(removeMock).not.toHaveBeenCalled();
+			expect(mockDropdownEl.style.top).toBe(`60px`);
+			expect(mockDropdownEl.style.left).toBe(`105px`);
 		});
 
 		it(`should clear cached credentials when credentials-updated IPC is received`, async () => {
