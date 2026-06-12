@@ -26,8 +26,8 @@
 import { ref, computed, watch } from 'vue';
 import ModalStore from '@/stores/modals.js';
 import ModalBackground from '@/components/ModalBackground.vue';
-import type { ModalWrapperProps, ModalWrapperEmits } from '@/../../../types/components.js';
-import type { ModalId, IsVisible, ViewportWidth } from '@/../../../types/primitives.js';
+import type { ModalWrapperProps, ModalWrapperEmits } from '@registry/components.js';
+import type { ModalId, IsVisible, ViewportWidth, ChannelName } from '@registry/primitives.js';
 
 const props = withDefaults(defineProps<ModalWrapperProps>(), {
 	type: `modal`,

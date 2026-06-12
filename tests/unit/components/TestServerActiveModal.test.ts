@@ -6,7 +6,7 @@ import type { WindowWithEyas } from '@registry/ipc.js';
 import type { TestServerActiveModalVM } from '@registry/components.js';
 import type { ChannelName, MetadataRecord } from '@registry/primitives.js';
 import { nextTick } from 'vue';
-import { TEST_SERVER_SESSION_DURATION_MS } from '@/../../../scripts/constants.js';
+import { TEST_SERVER_SESSION_DURATION_MS } from '@scripts/constants.js';
 
 
 describe(`TestServerActiveModal`, () => {

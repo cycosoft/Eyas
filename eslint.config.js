@@ -94,7 +94,7 @@ export default tseslint.config(
 			'import/max-dependencies': [`warn`, { max: 25 }],
 			'no-restricted-imports': [`error`, {
 				patterns: [{
-					group: [`../**`],
+					group: [`**/../**`, `../**`],
 					message: `Use path aliases (@core, @scripts, @registry, @assets, @interface, @setup, @root) instead of relative parent imports.`
 				}]
 			}],

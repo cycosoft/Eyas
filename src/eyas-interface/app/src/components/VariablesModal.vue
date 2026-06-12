@@ -101,7 +101,7 @@
 import { ref, computed, onMounted } from 'vue';
 import ModalWrapper from '@/components/ModalWrapper.vue';
 import isURL from 'validator/lib/isURL';
-import type { IsVisible, DomainUrl, LabelString, ChannelName, VariableValue, VariableType, FieldName, IsActive } from '@/../../../types/primitives.js';
+import type { IsVisible, DomainUrl, LabelString, ChannelName, VariableValue, VariableType, FieldName, IsActive } from '@registry/primitives.js';
 
 const REGEX_VARIABLES_AND_FIELDS = /([?|&](\w*)=)?{([^{}]+)}/g;
 const REGEX_VARIABLES_ONLY = /{([^{}]+)}/g;

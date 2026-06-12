@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import type { ModalsState } from '@/types/modals.js';
-import type { ModalId, IsActive, Count } from '@/../../../types/primitives.js';
+import type { ModalId, IsActive, Count } from '@registry/primitives.js';
 
 export default defineStore(`modals`, {
 	state: (): ModalsState => ({

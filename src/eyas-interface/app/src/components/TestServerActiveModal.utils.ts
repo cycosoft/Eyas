@@ -1,5 +1,5 @@
-import { TEST_SERVER_SESSION_DURATION_MS } from '@/../../../scripts/constants.js';
-import type { DomainUrl, TimeString, Timestamp, LabelString, IsActive } from '@/../../../types/primitives.js';
+import { TEST_SERVER_SESSION_DURATION_MS } from '@scripts/constants.js';
+import type { DomainUrl, TimeString, Timestamp, LabelString, IsActive } from '@registry/primitives.js';
 
 /**
  * Formats the domain URL for display, hiding common ports.

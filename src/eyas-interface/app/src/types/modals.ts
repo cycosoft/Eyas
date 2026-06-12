@@ -1,4 +1,4 @@
-import type { Count } from '@/../../../types/primitives.js';
+import type { Count } from '@registry/primitives.js';
 
 export type ModalsState = {
 	visible: string[];

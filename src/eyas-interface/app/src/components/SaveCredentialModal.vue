@@ -35,7 +35,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import ModalWrapper from '@/components/ModalWrapper.vue';
-import type { ChannelName, IsVisible } from '@/../../../types/primitives.js';
+import type { ChannelName, IsVisible } from '@registry/primitives.js';
 
 type CredentialPayload = {
 	origin: string;

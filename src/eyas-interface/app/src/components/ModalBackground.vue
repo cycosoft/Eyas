@@ -22,8 +22,8 @@
 </template>
 
 <script setup lang="ts">
-import type { ModalBackgroundProps, ModalBackgroundEmits } from '@/../../../types/components.js';
-import type { DomainUrl, ChannelName } from '@/../../../types/primitives.js';
+import type { ModalBackgroundProps, ModalBackgroundEmits } from '@registry/components.js';
+import type { DomainUrl, ChannelName } from '@registry/primitives.js';
 
 defineProps<ModalBackgroundProps>();
 defineEmits<ModalBackgroundEmits>();

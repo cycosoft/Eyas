@@ -122,12 +122,12 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { THEME_MODES } from '@/../../../scripts/constants.js';
+import { THEME_MODES } from '@scripts/constants.js';
 import useSettingsStore from '@/stores/settings.js';
 import ModalWrapper from '@/components/ModalWrapper.vue';
-import type { ChannelName, IsVisible, SettingKey, ProjectId, IsActive, DomainUrl, Username } from '@/../../../types/primitives.js';
-import type { ThemeMode } from '@/../../../types/settings.js';
-import type { CredentialMetadata } from '@/../../../types/core.js';
+import type { ChannelName, IsVisible, SettingKey, ProjectId, IsActive, DomainUrl, Username } from '@registry/primitives.js';
+import type { ThemeMode } from '@registry/settings.js';
+import type { CredentialMetadata } from '@registry/core.js';
 
 type TabName = `project` | `app`;
 

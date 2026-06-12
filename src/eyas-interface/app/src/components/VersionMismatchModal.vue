@@ -43,8 +43,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import ModalWrapper from '@/components/ModalWrapper.vue';
-import type { IsVisible, AppVersion, ChannelName, DomainUrl } from '@/../../../types/primitives.js';
-import type { VersionMismatchData } from '@/../../../types/components.js';
+import type { IsVisible, AppVersion, ChannelName, DomainUrl } from '@registry/primitives.js';
+import type { VersionMismatchData } from '@registry/components.js';
 
 const visible = ref<IsVisible>(false);
 const runnerVersion = ref<AppVersion | null>(null);

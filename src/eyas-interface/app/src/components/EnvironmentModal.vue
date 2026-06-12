@@ -65,8 +65,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import ModalWrapper from '@/components/ModalWrapper.vue';
-import type { EnvironmentChoiceWithTitle } from '@/../../../types/core.js';
-import type { IsVisible, ListIndex, IsActive, ProjectId, ChannelName, LabelString, HashString } from '@/../../../types/primitives.js';
+import type { EnvironmentChoiceWithTitle } from '@registry/core.js';
+import type { IsVisible, ListIndex, IsActive, ProjectId, ChannelName, LabelString, HashString } from '@registry/primitives.js';
 
 const visible = ref<IsVisible>(false);
 const domains = ref<EnvironmentChoiceWithTitle[]>([]);
