@@ -75,18 +75,10 @@ function removeDropdown(): void {
  * Returns true only if the input is part of a form that contains at least one password field.
  */
 function shouldShowAutofill(input: HTMLInputElement): ShouldShow {
-	if (!input || input.tagName !== `INPUT`) {
+	if (!input || input.tagName !== `INPUT` || input.type === `password` || !input.form) {
 		return false;
 	}
-	if (input.type === `password`) {
-		return false;
-	}
-	const form = input.form;
-	if (!form) {
-		return false;
-	}
-	const hasPassword = (form.querySelectorAll(`input[type="password"]`).length) > 0;
-	return hasPassword;
+	return (input.form.querySelectorAll(`input[type="password"]`).length) > 0;
 }
 
 function previewCredential(input: HTMLInputElement, cred: DecryptedCredential, dummyPassword?: PasswordPlain): void {
@@ -188,7 +180,9 @@ function showAutocompleteDropdown(input: HTMLInputElement, credentialsList: Decr
 	const dropdown = document.createElement(`div`);
 	dropdown.id = `eyas-autofill-dropdown`;
 
-	const rect = input.getBoundingClientRect();
+	const controlContainer = input.closest ? input.closest(`.q-field, .q-field__control, .form-group, .input-group, .mat-form-field, .v-input, .v-field`) : null;
+	const targetElement = controlContainer || input;
+	const rect = targetElement.getBoundingClientRect();
 	dropdown.setAttribute(`style`, `position:absolute !important;z-index:2147483647 !important;width:${rect.width}px !important;min-width:${rect.width}px !important;max-width:${rect.width}px !important;box-sizing:border-box !important;`);
 
 	let container: ShadowRoot | HTMLDivElement = dropdown;
@@ -253,9 +247,12 @@ async function handleAutofillTrigger(input: HTMLInputElement): Promise<void> {
 
 function repositionDropdown(): void {
 	if (!activeDropdown || !activeInput) { return; }
-	const rect = activeInput.getBoundingClientRect();
+	const controlContainer = activeInput.closest ? activeInput.closest(`.q-field, .q-field__control, .form-group, .input-group, .mat-form-field, .v-input, .v-field`) : null;
+	const targetElement = controlContainer || activeInput;
+	const rect = targetElement.getBoundingClientRect();
 	activeDropdown.style.top = `${rect.bottom + window.scrollY}px`;
 	activeDropdown.style.left = `${rect.left + window.scrollX}px`;
+	activeDropdown.style.width = `${rect.width}px`;
 }
 
 export function setupAutofill(): void {
