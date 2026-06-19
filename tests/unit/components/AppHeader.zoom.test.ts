@@ -3,17 +3,17 @@ import { mount, type VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import AppHeader from '@/components/AppHeader.vue';
 import { state } from '@/components/AppHeader.logic.js';
-import type { WindowWithEyas, ChannelName } from '@registry/ipc.js';
-import type { AppHeaderVM } from '@registry/components.js';
+import type { WindowWithEyas } from '@registry/ipc.js';
+import type { GenericRecord, IsActive } from '@registry/primitives.js';
 import { ref } from 'vue';
 
 const mockIsDark = ref(false);
 vi.mock(`vuetify`, async importOriginal => {
-	const original = await importOriginal() as Record<string, unknown>;
+	const original = await importOriginal() as GenericRecord;
 	return {
 		...original,
-		useTheme: (): Record<string, unknown> => ({
-			global: { current: { value: { get dark(): boolean { return mockIsDark.value; } } } }
+		useTheme: (): GenericRecord => ({
+			global: { current: { value: { get dark(): IsActive { return mockIsDark.value; } } } }
 		})
 	};
 });

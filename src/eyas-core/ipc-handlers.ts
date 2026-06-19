@@ -172,10 +172,7 @@ function initViewportIpcListeners(ctx: CoreContext): void {
 }
 // Initializes cache management IPC listeners.
 function initCacheIpcListeners(ctx: CoreContext): void {
-	ipcMain.on(`clear-cache`, async () => {
-		ctx.clearCache();
-		await ctx.updateNavigationState();
-	});
+	ipcMain.on(`clear-cache`, async () => { ctx.clearCache(); await ctx.updateNavigationState(); });
 
 	ipcMain.on(`open-cache-folder`, () => {
 		if (!ctx.$appWindow || ctx.$appWindow.isDestroyed()) { return; }
@@ -251,9 +248,7 @@ function initSettingsIpcListeners(ctx: CoreContext): void {
 	});
 
 	// query if dark theme is active
-	ipcMain.handle(`is-dark-theme`, () => {
-		return nativeTheme.shouldUseDarkColors;
-	});
+	ipcMain.handle(`is-dark-theme`, () => nativeTheme.shouldUseDarkColors);
 }
 
 // Initializes test server-related IPC listeners.
@@ -267,9 +262,7 @@ function initTestServerIpcListeners(ctx: CoreContext): void {
 	});
 
 	// test server resume modal: user clicked Resume
-	ipcMain.on(`test-server-resume-confirm`, () => {
-		ctx.doStartTestServer();
-	});
+	ipcMain.on(`test-server-resume-confirm`, () => ctx.doStartTestServer());
 
 	// test server active modal: user clicked End Session
 	ipcMain.on(`test-server-stop`, () => ctx.stopTestServer());
