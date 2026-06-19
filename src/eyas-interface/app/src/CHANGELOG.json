@@ -1,6 +1,6 @@
 [
 	{
-		"version": "26.6.19",
+		"version": "26.6.28684",
 		"items": [
 			{ "text": "🟢 Added the ability to zoom the test layer" },
 			{ "text": "🟢 Links form now auto-focuses the first field" },
