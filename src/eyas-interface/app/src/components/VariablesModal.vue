@@ -46,6 +46,7 @@
 							type="number"
 							hide-spin-buttons
 							:label="getFieldLabel(`Enter number`, variable.field)"
+							@keyup.enter="launch"
 						/>
 
 						<!-- detect strings -->
@@ -53,6 +54,7 @@
 							v-if="variable.type === `str`"
 							v-model="form[index]"
 							:label="getFieldLabel(`Enter text`, variable.field)"
+							@keyup.enter="launch"
 						/>
 					</v-row>
 
@@ -215,6 +217,7 @@ const reset = (): void => {
 };
 
 const launch = (): void => {
+	if (!linkIsValid.value) { return; }
 	window.eyas?.send(`launch-link` as ChannelName, { url: parsedLink.value });
 	close();
 };
