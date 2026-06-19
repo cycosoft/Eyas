@@ -19,6 +19,7 @@ export type IsPending = boolean;
 export type IsEnabled = boolean;
 export type IsDefault = boolean;
 export type IsWindows = boolean;
+export type IsMac = boolean;
 export type IsExitFlow = boolean;
 export type ShouldShow = boolean;
 
@@ -114,3 +115,6 @@ export type SystemTheme = string;
 
 // Environments
 export type EnvironmentKey = string;
+
+// Zoom
+export type ZoomFactor = number;

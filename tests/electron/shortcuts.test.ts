@@ -1,4 +1,16 @@
 import { vi, type Mock } from 'vitest';
+import type { IsMac } from '@registry/primitives.js';
+
+let mockIsMac = false;
+vi.mock(`@scripts/platform-utils.js`, () => {
+	return {
+		get isMac(): IsMac {
+			return mockIsMac;
+		}
+	};
+});
+
+let mockZoomFactor = 1.0;
 
 // Simplest possible mock
 vi.mock(`electron`, () => {
@@ -8,7 +20,9 @@ vi.mock(`electron`, () => {
 		getTitle: vi.fn().mockReturnValue(`Test Title`),
 		toggleDevTools: vi.fn(),
 		loadURL: vi.fn(),
-		navigationHistory: { clear: vi.fn() }
+		navigationHistory: { clear: vi.fn() },
+		getZoomFactor: vi.fn().mockImplementation(() => mockZoomFactor),
+		setZoomFactor: vi.fn().mockImplementation((factor: ZoomFactor) => { mockZoomFactor = factor; })
 	};
 
 	function MockBrowserWindow(): GenericRecord {
@@ -41,16 +55,19 @@ vi.mock(`electron`, () => {
 	};
 });
 
+
 import { describe, test, expect, beforeEach } from 'vitest';
 import { windowService } from '@core/window.service.js';
 import type { CoreContext } from '@registry/eyas-core.js';
-import type { GenericRecord } from '@registry/primitives.js';
+import type { GenericRecord, ZoomFactor } from '@registry/primitives.js';
 
 describe(`window.service.ts shortcut tests`, () => {
 	let mockCtx: CoreContext;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mockIsMac = false;
+		mockZoomFactor = 1.0;
 
 		mockCtx = {
 			$appWindow: null,
@@ -136,5 +153,125 @@ describe(`window.service.ts shortcut tests`, () => {
 
 		expect(mockCtx.$testLayer?.webContents.toggleDevTools).not.toHaveBeenCalled();
 		expect(preventDefault).not.toHaveBeenCalled();
+	});
+
+	describe(`zoom shortcuts`, () => {
+		test(`zooms in on Ctrl + = on Windows`, async () => {
+			mockIsMac = false;
+			await windowService.initElectronUi(mockCtx);
+
+			const testOnCall = (mockCtx.$testLayer?.webContents.on as Mock).mock.calls.find(
+				call => call[0] === `before-input-event`
+			);
+			if (!testOnCall) { throw new Error(`testOnCall is undefined`); }
+			const handler = testOnCall[1];
+
+			const preventDefault = vi.fn();
+			mockZoomFactor = 1.0;
+
+			handler({ preventDefault }, { type: `keyDown`, key: `=`, control: true });
+
+			expect(mockZoomFactor).toBe(1.1);
+			expect(preventDefault).toHaveBeenCalled();
+		});
+
+		test(`zooms in on Ctrl + + on Windows`, async () => {
+			mockIsMac = false;
+			await windowService.initElectronUi(mockCtx);
+
+			const testOnCall = (mockCtx.$testLayer?.webContents.on as Mock).mock.calls.find(
+				call => call[0] === `before-input-event`
+			);
+			if (!testOnCall) { throw new Error(`testOnCall is undefined`); }
+			const handler = testOnCall[1];
+
+			const preventDefault = vi.fn();
+			mockZoomFactor = 1.0;
+
+			handler({ preventDefault }, { type: `keyDown`, key: `+`, control: true });
+
+			expect(mockZoomFactor).toBe(1.1);
+			expect(preventDefault).toHaveBeenCalled();
+		});
+
+		test(`zooms in on Cmd + = on macOS`, async () => {
+			mockIsMac = true;
+			await windowService.initElectronUi(mockCtx);
+
+			const testOnCall = (mockCtx.$testLayer?.webContents.on as Mock).mock.calls.find(
+				call => call[0] === `before-input-event`
+			);
+			if (!testOnCall) { throw new Error(`testOnCall is undefined`); }
+			const handler = testOnCall[1];
+
+			const preventDefault = vi.fn();
+			mockZoomFactor = 1.0;
+
+			handler({ preventDefault }, { type: `keyDown`, key: `=`, meta: true });
+
+			expect(mockZoomFactor).toBe(1.1);
+			expect(preventDefault).toHaveBeenCalled();
+		});
+
+		test(`zooms out on Ctrl + - on Windows`, async () => {
+			mockIsMac = false;
+			await windowService.initElectronUi(mockCtx);
+
+			const testOnCall = (mockCtx.$testLayer?.webContents.on as Mock).mock.calls.find(
+				call => call[0] === `before-input-event`
+			);
+			if (!testOnCall) { throw new Error(`testOnCall is undefined`); }
+			const handler = testOnCall[1];
+
+			const preventDefault = vi.fn();
+			mockZoomFactor = 1.0;
+
+			handler({ preventDefault }, { type: `keyDown`, key: `-`, control: true });
+
+			expect(mockZoomFactor).toBe(0.9);
+			expect(preventDefault).toHaveBeenCalled();
+		});
+
+		test(`resets zoom on Ctrl + 0 on Windows`, async () => {
+			mockIsMac = false;
+			await windowService.initElectronUi(mockCtx);
+
+			const testOnCall = (mockCtx.$testLayer?.webContents.on as Mock).mock.calls.find(
+				call => call[0] === `before-input-event`
+			);
+			if (!testOnCall) { throw new Error(`testOnCall is undefined`); }
+			const handler = testOnCall[1];
+
+			const preventDefault = vi.fn();
+			mockZoomFactor = 1.5;
+
+			handler({ preventDefault }, { type: `keyDown`, key: `0`, control: true });
+
+			expect(mockZoomFactor).toBe(1.0);
+			expect(preventDefault).toHaveBeenCalled();
+		});
+
+		test(`does not zoom past boundary limits`, async () => {
+			mockIsMac = false;
+			await windowService.initElectronUi(mockCtx);
+
+			const testOnCall = (mockCtx.$testLayer?.webContents.on as Mock).mock.calls.find(
+				call => call[0] === `before-input-event`
+			);
+			if (!testOnCall) { throw new Error(`testOnCall is undefined`); }
+			const handler = testOnCall[1];
+
+			const preventDefault = vi.fn();
+
+			// Max boundary check
+			mockZoomFactor = 5.0;
+			handler({ preventDefault }, { type: `keyDown`, key: `+`, control: true });
+			expect(mockZoomFactor).toBe(5.0);
+
+			// Min boundary check
+			mockZoomFactor = 0.25;
+			handler({ preventDefault }, { type: `keyDown`, key: `-`, control: true });
+			expect(mockZoomFactor).toBe(0.25);
+		});
 	});
 });
