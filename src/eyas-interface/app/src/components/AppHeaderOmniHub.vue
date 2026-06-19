@@ -67,8 +67,8 @@
 			data-qa="omni-hub-zoom"
 		>
 			<v-icon
-				icon="mdi-magnify"
-				size="default"
+				:icon="zoomFactor < 1.0 ? 'mdi-magnify-minus-outline' : 'mdi-magnify-plus-outline'"
+				size="x-large"
 				class="mr-1 text-medium-emphasis"
 			/>
 			<span class="zoom-text font-weight-bold text-medium-emphasis">{{ Math.round(zoomFactor * 100) }}%</span>

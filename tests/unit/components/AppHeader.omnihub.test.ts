@@ -454,7 +454,22 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 			const zoomBadge = wrapper.find(`[data-qa="omni-hub-zoom"]`);
 			expect(zoomBadge.exists()).toBe(true);
 			expect(zoomBadge.text()).toContain(`125%`);
-			expect(zoomBadge.find(`[data-icon="mdi-magnify"]`).exists()).toBe(true);
+			expect(zoomBadge.find(`[data-icon="mdi-magnify-plus-outline"]`).exists()).toBe(true);
+
+			// Receive update with zoomFactor 0.75 (75%)
+			if (navCallback) {
+				(navCallback as (payload: Partial<NavigationStatePayload>) => void)({
+					canGoBack: false,
+					canGoForward: false,
+					zoomFactor: 0.75
+				});
+			}
+			await wrapper.vm.$nextTick();
+
+			const zoomBadgeMinus = wrapper.find(`[data-qa="omni-hub-zoom"]`);
+			expect(zoomBadgeMinus.exists()).toBe(true);
+			expect(zoomBadgeMinus.text()).toContain(`75%`);
+			expect(zoomBadgeMinus.find(`[data-icon="mdi-magnify-minus-outline"]`).exists()).toBe(true);
 
 			// Receive update with zoomFactor 1.0 again (100%), badge should disappear
 			if (navCallback) {
