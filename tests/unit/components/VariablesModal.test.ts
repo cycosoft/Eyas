@@ -1,6 +1,6 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { VueWrapper } from '@vue/test-utils';
-import { mount } from '@vue/test-utils';
+import { mount, DOMWrapper } from '@vue/test-utils';
 import VariablesModal from '@/components/VariablesModal.vue';
 import type { Mock } from 'vitest';
 import type { WindowWithEyas } from '@registry/ipc.js';
@@ -366,6 +366,93 @@ describe(`VariablesModal`, () => {
 			(wrapper.vm as unknown as VariablesModalVM).form = [`true`];
 			await (wrapper.vm as unknown as VariablesModalVM).$nextTick();
 			expect((wrapper.vm as unknown as VariablesModalVM).linkIsValid).toBe(true);
+		});
+	});
+
+	describe(`autofocus behavior`, () => {
+		test(`focuses the first input element when variables are present and modal is opened`, async () => {
+			const div = document.createElement(`div`);
+			document.body.appendChild(div);
+			const localWrapper = mount(VariablesModal, {
+				attachTo: div
+			});
+			const testLink = `https://example.com?id={int}&name={str}`;
+
+			const receiveCallback = mockReceive.mock.calls.find(
+				call => call[0] === `show-variables-modal`
+			)?.[1];
+
+			if (receiveCallback) {
+				receiveCallback(testLink);
+				await (localWrapper.vm as unknown as VariablesModalVM).$nextTick();
+
+				// Wait for DOM and nextTick to apply the focus
+				await new Promise(resolve => setTimeout(resolve, 50));
+
+				const activeElement = document.activeElement;
+				expect(activeElement).not.toBeNull();
+				expect([`input`, `select`, `textarea`].includes(activeElement?.tagName.toLowerCase() || ``)).toBe(true);
+			}
+
+			localWrapper.unmount();
+			div.remove();
+		});
+	});
+
+	describe(`Enter key submission behavior`, () => {
+		test(`submits the modal on Enter key when form is valid`, async () => {
+			const div = document.createElement(`div`);
+			document.body.appendChild(div);
+			const localWrapper = mount(VariablesModal, {
+				attachTo: div
+			});
+
+			(localWrapper.vm as unknown as VariablesModalVM).link = `https://example.com?id={int}`;
+			(localWrapper.vm as unknown as VariablesModalVM).visible = true;
+			await (localWrapper.vm as unknown as VariablesModalVM).$nextTick();
+
+			(localWrapper.vm as unknown as VariablesModalVM).form = [`123`];
+			await (localWrapper.vm as unknown as VariablesModalVM).$nextTick();
+
+			expect((localWrapper.vm as unknown as VariablesModalVM).linkIsValid).toBe(true);
+
+			const input = document.querySelector(`input[type="number"]`) as HTMLInputElement;
+			expect(input).not.toBeNull();
+
+			const inputWrapper = new DOMWrapper(input);
+			await inputWrapper.trigger(`keyup.enter`);
+			await (localWrapper.vm as unknown as VariablesModalVM).$nextTick();
+
+			expect(mockSend).toHaveBeenCalledWith(`launch-link`, { url: `https://example.com?id=123` });
+
+			localWrapper.unmount();
+			div.remove();
+		});
+
+		test(`does NOT submit the modal on Enter key when form is invalid`, async () => {
+			const div = document.createElement(`div`);
+			document.body.appendChild(div);
+			const localWrapper = mount(VariablesModal, {
+				attachTo: div
+			});
+
+			(localWrapper.vm as unknown as VariablesModalVM).link = `https://example.com?id={int}`;
+			(localWrapper.vm as unknown as VariablesModalVM).visible = true;
+			await (localWrapper.vm as unknown as VariablesModalVM).$nextTick();
+
+			expect((localWrapper.vm as unknown as VariablesModalVM).linkIsValid).toBe(false);
+
+			const input = document.querySelector(`input[type="number"]`) as HTMLInputElement;
+			expect(input).not.toBeNull();
+
+			const inputWrapper = new DOMWrapper(input);
+			await inputWrapper.trigger(`keyup.enter`);
+			await (localWrapper.vm as unknown as VariablesModalVM).$nextTick();
+
+			expect(mockSend).not.toHaveBeenCalled();
+
+			localWrapper.unmount();
+			div.remove();
 		});
 	});
 });

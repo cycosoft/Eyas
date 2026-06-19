@@ -142,6 +142,9 @@ const showFromMain = async (): Promise<void> => {
 		expandedPanels.value = unseen.map(u => u.version);
 		isVisible.value = true;
 	} else {
+		if (currentVersion.value !== lastSeenVersion.value) {
+			window.eyas?.send(`save-setting` as ChannelName, { key: `lastSeenVersion` as SettingKey, value: currentVersion.value });
+		}
 		window.eyas?.send(`whats-new-closed` as ChannelName);
 	}
 };

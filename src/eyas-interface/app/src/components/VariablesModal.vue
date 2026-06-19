@@ -46,6 +46,7 @@
 							type="number"
 							hide-spin-buttons
 							:label="getFieldLabel(`Enter number`, variable.field)"
+							@keyup.enter="launch"
 						/>
 
 						<!-- detect strings -->
@@ -53,6 +54,7 @@
 							v-if="variable.type === `str`"
 							v-model="form[index]"
 							:label="getFieldLabel(`Enter text`, variable.field)"
+							@keyup.enter="launch"
 						/>
 					</v-row>
 
@@ -98,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 import ModalWrapper from '@/components/ModalWrapper.vue';
 import isURL from 'validator/lib/isURL';
 import type { IsVisible, DomainUrl, LabelString, ChannelName, VariableValue, VariableType, FieldName, IsActive } from '@registry/primitives.js';
@@ -202,6 +204,10 @@ const close = (): void => {
 
 const open = (): void => {
 	visible.value = true;
+	nextTick(() => {
+		const firstInput = document.querySelector(`.variables-modal-content input, .variables-modal-content select, .variables-modal-content textarea`) as HTMLElement;
+		firstInput?.focus();
+	});
 };
 
 const reset = (): void => {
@@ -211,6 +217,7 @@ const reset = (): void => {
 };
 
 const launch = (): void => {
+	if (!linkIsValid.value) { return; }
 	window.eyas?.send(`launch-link` as ChannelName, { url: parsedLink.value });
 	close();
 };

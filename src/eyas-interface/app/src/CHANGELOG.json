@@ -2,9 +2,12 @@
 	{
 		"version": "26.6.19",
 		"items": [
-			{ "text": "🟢 Added the ability to zoom the test layer" }
+			{ "text": "🟢 Added the ability to zoom the test layer" },
+			{ "text": "🟢 Links form now auto-focuses the first field" },
+			{ "text": "🟢 Pressing enter in the links form now submits it when valid" }
 		]
-	},{
+	},
+	{
 		"version": "26.6.18541",
 		"items": [
 			{ "text": "🟢 Can now remember login credentials on a per-project basis, and managed via project settings." },
