@@ -371,22 +371,27 @@ describe(`AppHeader`, () => {
 
 			// Default / idle state
 			expect(updatesItem?.actionable).not.toBe(false);
+			expect(updatesItem?.title).toBe(`Check for Updates`);
 
 			// Simulate checking state
 			if (updateCallback) { updateCallback(`checking`); }
 			await wrapper.vm.$nextTick();
 			expect(updatesItem?.actionable).toBe(false);
+			expect(updatesItem?.title).toBe(`Checking for Updates...`);
 
 			// Simulate downloading state
 			if (updateCallback) { updateCallback(`downloading`); }
+			vi.advanceTimersByTime(500);
 			await wrapper.vm.$nextTick();
 			expect(updatesItem?.actionable).toBe(false);
+			expect(updatesItem?.title).toBe(`Downloading Update...`);
 
 			// Simulate error state
 			if (updateCallback) { updateCallback(`error`); }
 			vi.advanceTimersByTime(500);
 			await wrapper.vm.$nextTick();
 			expect(updatesItem?.actionable).not.toBe(false);
+			expect(updatesItem?.title).toBe(`Check for Updates`);
 		});
 
 		test(`'File' menu has 'Changelog' item with correct icon`, () => {

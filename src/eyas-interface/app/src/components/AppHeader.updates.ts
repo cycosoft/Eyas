@@ -202,4 +202,13 @@ export function updateUpdatesMenuItem(status: UpdateStatus): void {
 	if (!updatesItem) { return; }
 
 	updatesItem.actionable = status !== `checking` && status !== `downloading`;
+
+	if (status === `checking`) {
+		updatesItem.title = `Checking for Updates...`;
+	} else if (status === `downloading`) {
+		updatesItem.title = `Downloading Update...`;
+	} else {
+		updatesItem.title = `Check for Updates`;
+	}
+	updatesItem.mnemonicParts = getMnemonicParts(updatesItem);
 }
