@@ -17,7 +17,8 @@ describe(`event-bridge channel whitelists`, () => {
 			`test-server-open-browser`,
 			`test-server-extend`,
 			`save-setting`,
-			`get-settings`
+			`get-settings`,
+			`adjust-zoom`
 		];
 
 		test.each(required)(`includes channel: %s`, channel => {

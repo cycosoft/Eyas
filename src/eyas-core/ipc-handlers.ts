@@ -8,6 +8,7 @@ import { TEST_SERVER_SESSION_DURATION_MS, EYAS_HEADER_HEIGHT } from '@scripts/co
 import { MP_EVENTS } from './metrics-events.js';
 import { isMac } from '@scripts/platform-utils.js';
 import { initCredentialIpcListeners } from './ipc-handlers.credentials.js';
+import { adjustZoom } from './window.shortcuts.js';
 
 
 
@@ -163,6 +164,10 @@ function initViewportIpcListeners(ctx: CoreContext): void {
 		ctx.$currentViewport[1] = height;
 		ctx.$appWindow?.setContentSize(width, height + EYAS_HEADER_HEIGHT);
 		ctx.$testLayer?.setBounds({ x: 0, y: EYAS_HEADER_HEIGHT, width, height });
+	});
+
+	ipcMain.on(`adjust-zoom`, (_event, direction: `in` | `out` | `reset`) => {
+		adjustZoom(ctx, direction);
 	});
 }
 // Initializes cache management IPC listeners.
