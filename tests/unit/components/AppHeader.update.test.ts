@@ -48,23 +48,9 @@ describe(`AppHeader Update Button`, () => {
 		vi.useRealTimers();
 	});
 
-	test(`renders the check for updates button by default`, () => {
+	test(`does not render the check for updates button when idle`, () => {
 		const btn = wrapper.find(`[data-qa="btn-broadcast"]`);
-		expect(btn.exists()).toBe(true);
-		expect(btn.find(`v-icon-stub`).attributes(`icon`)).toBe(`mdi-progress-check`);
-		expect(btn.attributes(`variant`)).toBe(`plain`);
-		expect(btn.attributes(`ripple`)).toBe(`false`);
-
-		const tooltip = btn.find(`.v-tooltip`);
-		expect(tooltip.exists()).toBe(true);
-		expect(tooltip.text()).toBe(`Check for Updates`);
-	});
-
-	test(`calls check-for-updates when clicked in idle state`, async () => {
-		const btn = wrapper.find(`[data-qa="btn-broadcast"]`);
-		await btn.trigger(`click`);
-
-		expect(mockSend).toHaveBeenCalledWith(`check-for-updates`);
+		expect(btn.exists()).toBe(false);
 	});
 
 	test(`shows checking state`, async () => {
