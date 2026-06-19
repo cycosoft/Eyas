@@ -13,6 +13,7 @@ export const groups = reactive<NavGroup[]>([
 		submenu: [
 			{ title: `About Eyas`, value: `about`, icon: `mdi-information-outline`, mnemonic: `A` },
 			{ title: `App/Project Settings`, value: `settings`, icon: `mdi-cog`, mnemonic: `S` },
+			{ title: `Check for Updates`, value: `check-updates`, icon: `mdi-update`, mnemonic: `U` },
 			{ title: `Changelog`, value: `changelog`, icon: `mdi-history`, mnemonic: `C` },
 			{ title: `Exit`, value: `exit`, icon: `mdi-power`, color: `error`, mnemonic: `x` }
 		]

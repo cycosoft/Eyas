@@ -4,7 +4,8 @@
 		"items": [
 			{ "text": "🟢 Added the ability to zoom the test layer" },
 			{ "text": "🟢 Links form now auto-focuses the first field" },
-			{ "text": "🟢 Pressing enter in the links form now submits it when valid" }
+			{ "text": "🟢 Pressing enter in the links form now submits it when valid" },
+			{ "text": "🟢 Added 'Update Check' controls to the Eyas menu. Now hides the update icon when no update is available." }
 		]
 	},
 	{

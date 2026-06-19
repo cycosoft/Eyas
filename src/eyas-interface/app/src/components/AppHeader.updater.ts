@@ -95,7 +95,7 @@ export const updateInfo = computed(() => {
 	}
 
 	return {
-		icon: `mdi-progress-check`,
+		icon: undefined,
 		color: undefined,
 		disabled: false,
 		variant: `plain` as const,

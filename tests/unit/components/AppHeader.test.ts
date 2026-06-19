@@ -4,7 +4,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import AppHeader from '@/components/AppHeader.vue';
 import useModalsStore from '@/stores/modals.js';
 import { state } from '@/components/AppHeader.logic.js';
-import type { WindowWithEyas, ChannelName, NavigationStatePayload } from '@registry/ipc.js';
+import type { WindowWithEyas, ChannelName, NavigationStatePayload, UpdateStatus } from '@registry/ipc.js';
 import type { AppHeaderVM, NavGroup, NavItem, NavActivateEvent } from '@registry/components.js';
 import type { GenericRecord, IsActive } from '@registry/primitives.js';
 
@@ -25,11 +25,12 @@ vi.mock(`vuetify`, async importOriginal => {
 describe(`AppHeader`, () => {
 	let wrapper: VueWrapper;
 	let uiShownCallback: ((...args: unknown[]) => void) | null = null;
+	let updateCallback: ((status: UpdateStatus) => void) | null = null;
 	let mockSend: Mock;
 
 	beforeEach(() => {
 		vi.useFakeTimers(); setActivePinia(createPinia());
-		mockSend = vi.fn(); uiShownCallback = null;
+		mockSend = vi.fn(); uiShownCallback = null; updateCallback = null;
 
 		// Reset module-level reactive state to prevent leaks
 		Object.assign(state, { isHeaderHovered: false, menu: false, envMenu: false, tooltipVisible: false, tooltipText: `Click to Copy` });
@@ -38,6 +39,9 @@ describe(`AppHeader`, () => {
 			receive: vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
 				if (channel === `ui-shown`) {
 					uiShownCallback = cb;
+				}
+				if (channel === `update-status-updated`) {
+					updateCallback = cb as (status: UpdateStatus) => void;
 				}
 			})
 		};
@@ -312,6 +316,12 @@ describe(`AppHeader`, () => {
 			expect(mockSend).toHaveBeenCalledWith(`show-settings`);
 		});
 
+		test(`onItemClick() triggers update check logic for 'check-updates' item`, () => {
+			const vm = wrapper.vm as unknown as AppHeaderVM;
+			vm.onItemClick({ title: `Check for Updates`, value: `check-updates` });
+			expect(mockSend).toHaveBeenCalledWith(`check-for-updates`);
+		});
+
 		test(`onItemClick() sends show-whats-new IPC with true for 'changelog' item`, () => {
 			const vm = wrapper.vm as unknown as AppHeaderVM;
 			vm.onItemClick({ title: `Changelog`, value: `changelog` });
@@ -342,6 +352,58 @@ describe(`AppHeader`, () => {
 			expect(settingsItem?.value).toBe(`settings`);
 			expect(settingsItem?.icon).toBe(`mdi-cog`);
 			expect(settingsItem?.mnemonic).toBe(`S`);
+		});
+
+		test(`'File' menu has 'Check for Updates' item with correct icon`, () => {
+			const vm = wrapper.vm as unknown as AppHeaderVM;
+			const fileMenu = vm.groups.find((g: NavGroup) => g.name === `File`);
+			const updatesItem = fileMenu?.submenu?.find((i: NavItem) => i.value === `check-updates`);
+			expect(updatesItem).toBeDefined();
+			expect(updatesItem?.title).toBe(`Check for Updates`);
+			expect(updatesItem?.icon).toBe(`mdi-update`);
+			expect(updatesItem?.mnemonic).toBe(`U`);
+		});
+
+		test(`disables 'Check for Updates' menu item when update state is checking or downloading`, async () => {
+			const vm = wrapper.vm as unknown as AppHeaderVM;
+			const fileMenu = vm.groups.find((g: NavGroup) => g.name === `File`);
+			if (!fileMenu) { throw new Error(`fileMenu not found`); }
+			const updatesItem = fileMenu.submenu.find((i: NavItem) => i.value === `check-updates`);
+			if (!updatesItem) { throw new Error(`updatesItem not found`); }
+			const item = updatesItem;
+			if (!updateCallback) { throw new Error(`updateCallback not found`); }
+			const cb = updateCallback;
+
+			// Default / idle state
+			expect(item.actionable).not.toBe(false);
+			expect(item.title).toBe(`Check for Updates`);
+
+			// Simulate checking state
+			cb(`checking`);
+			await wrapper.vm.$nextTick();
+			expect(item.actionable).toBe(false);
+			expect(item.title).toBe(`Checking for Updates...`);
+
+			// Simulate downloading state
+			cb(`downloading`);
+			vi.advanceTimersByTime(500);
+			await wrapper.vm.$nextTick();
+			expect(item.actionable).toBe(false);
+			expect(item.title).toBe(`Downloading Update...`);
+
+			// Simulate downloaded state
+			cb(`downloaded`);
+			vi.advanceTimersByTime(500);
+			await wrapper.vm.$nextTick();
+			expect(item.actionable).not.toBe(false);
+			expect(item.title).toBe(`Restart Eyas to Update`);
+
+			// Simulate error state
+			cb(`error`);
+			vi.advanceTimersByTime(500);
+			await wrapper.vm.$nextTick();
+			expect(item.actionable).not.toBe(false);
+			expect(item.title).toBe(`Check for Updates`);
 		});
 
 		test(`'File' menu has 'Changelog' item with correct icon`, () => {

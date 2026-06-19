@@ -3,6 +3,8 @@ import type { NavItem, NavItemValue, ActionHandler } from '@registry/components.
 import { formatBytes } from '@/utils/format.utils.js';
 import type { ChannelName, ViewportWidth, ViewportHeight, ByteCount, DurationString, IsActive } from '@registry/primitives.js';
 import type { Viewport } from '@registry/core.js';
+import { handleBroadcastClick } from './AppHeader.updater.js';
+import type { UpdateStatus } from '@registry/ipc.js';
 
 /**
  * Handles a click event on a navigation menu item.
@@ -37,7 +39,8 @@ export function handleNavItemClick(value: NavItemValue): void {
 		'devtools-ui': () => { window.eyas?.send(`open-devtools-ui` as ChannelName); },
 		'devtools-test': () => { window.eyas?.send(`open-devtools-test` as ChannelName); },
 		'clear-cache': () => { window.eyas?.send(`clear-cache` as ChannelName); },
-		'open-cache-folder': () => { window.eyas?.send(`open-cache-folder` as ChannelName); }
+		'open-cache-folder': () => { window.eyas?.send(`open-cache-folder` as ChannelName); },
+		'check-updates': () => { handleBroadcastClick(); }
 	};
 
 	actions[value]?.();
@@ -185,4 +188,29 @@ export function updateLinks(links: NavItem[]): void {
 	for (const item of linksGroup.submenu) {
 		item.mnemonicParts = getMnemonicParts(item);
 	}
+}
+
+/**
+ * Updates the 'Check for Updates' menu item state based on the update status.
+ * @param status The current update status.
+ */
+export function updateUpdatesMenuItem(status: UpdateStatus): void {
+	const fileGroup = groups.find(g => g.name === `File`);
+	if (!fileGroup) { return; }
+
+	const updatesItem = fileGroup.submenu.find(i => i.value === `check-updates`);
+	if (!updatesItem) { return; }
+
+	updatesItem.actionable = status !== `checking` && status !== `downloading`;
+
+	if (status === `checking`) {
+		updatesItem.title = `Checking for Updates...`;
+	} else if (status === `downloading`) {
+		updatesItem.title = `Downloading Update...`;
+	} else if (status === `downloaded`) {
+		updatesItem.title = `Restart Eyas to Update`;
+	} else {
+		updatesItem.title = `Check for Updates`;
+	}
+	updatesItem.mnemonicParts = getMnemonicParts(updatesItem);
 }
