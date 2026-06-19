@@ -63,12 +63,12 @@
 		<!-- Zoom Level Badge -->
 		<div
 			v-if="zoomFactor && zoomFactor !== 1.0"
-			class="zoom-badge d-flex align-center border rounded-lg px-2 ml-2"
+			class="zoom-badge d-flex align-center border rounded px-2 ml-2 mr-2"
 			data-qa="omni-hub-zoom"
 		>
 			<v-icon
 				icon="mdi-magnify"
-				size="x-small"
+				size="default"
 				class="mr-1 text-medium-emphasis"
 			/>
 			<span class="zoom-text font-weight-bold text-medium-emphasis">{{ Math.round(zoomFactor * 100) }}%</span>
@@ -245,6 +245,7 @@ function openDevToolsConsole(): void {
 	height: 18px;
 	flex-shrink: 0;
 	border-color: rgba(var(--v-border-color), 0.15) !important;
+	background-color: rgba(var(--v-theme-on-surface), 0.05) !important;
 }
 
 .zoom-text {
