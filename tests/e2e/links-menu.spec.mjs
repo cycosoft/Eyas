@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+import path from 'path';
+import { pathToFileURL } from 'url';
 import {
 	launchEyas,
 	exitEyas,
@@ -8,6 +10,13 @@ import {
 
 test.describe(`Links Menu`, () => {
 	let electronApp;
+	let config;
+
+	test.beforeAll(async () => {
+		const configPath = pathToFileURL(path.resolve(process.cwd(), `.eyas.config.js`)).href;
+		// eslint-disable-next-line no-restricted-syntax -- E2E test runs in Node where @root alias is not resolved; dynamic import is required to load configuration
+		config = (await import(configPath)).default;
+	});
 
 	test.beforeEach(async () => {
 		electronApp = await launchEyas();
@@ -31,10 +40,14 @@ test.describe(`Links Menu`, () => {
 		// Click the Links button to open the menu
 		await linksBtn.click();
 
-		// Check if menu items are visible and match the real config links
+		// Check if menu items are visible and match the real config links dynamically
 		const menuItems = uiPage.locator(`[data-qa="btn-nav-item"]`);
-		await expect(menuItems).toHaveCount(6);
-		await expect(menuItems.nth(0)).toContainText(`Eyas Home`);
-		await expect(menuItems.nth(1)).toContainText(`Environments Demo`);
+		const expectedLinks = config.links || [];
+
+		await expect(menuItems).toHaveCount(expectedLinks.length);
+
+		for (let i = 0; i < expectedLinks.length; i++) {
+			await expect(menuItems.nth(i)).toContainText(expectedLinks[i].label);
+		}
 	});
 });
