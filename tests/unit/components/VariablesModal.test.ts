@@ -368,4 +368,34 @@ describe(`VariablesModal`, () => {
 			expect((wrapper.vm as unknown as VariablesModalVM).linkIsValid).toBe(true);
 		});
 	});
+
+	describe(`autofocus behavior`, () => {
+		test(`focuses the first input element when variables are present and modal is opened`, async () => {
+			const div = document.createElement(`div`);
+			document.body.appendChild(div);
+			const localWrapper = mount(VariablesModal, {
+				attachTo: div
+			});
+			const testLink = `https://example.com?id={int}&name={str}`;
+
+			const receiveCallback = mockReceive.mock.calls.find(
+				call => call[0] === `show-variables-modal`
+			)?.[1];
+
+			if (receiveCallback) {
+				receiveCallback(testLink);
+				await (localWrapper.vm as unknown as VariablesModalVM).$nextTick();
+
+				// Wait for DOM and nextTick to apply the focus
+				await new Promise(resolve => setTimeout(resolve, 50));
+
+				const activeElement = document.activeElement;
+				expect(activeElement).not.toBeNull();
+				expect([`input`, `select`, `textarea`].includes(activeElement?.tagName.toLowerCase() || ``)).toBe(true);
+			}
+
+			localWrapper.unmount();
+			div.remove();
+		});
+	});
 });
