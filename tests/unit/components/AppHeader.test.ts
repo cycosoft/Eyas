@@ -367,31 +367,43 @@ describe(`AppHeader`, () => {
 		test(`disables 'Check for Updates' menu item when update state is checking or downloading`, async () => {
 			const vm = wrapper.vm as unknown as AppHeaderVM;
 			const fileMenu = vm.groups.find((g: NavGroup) => g.name === `File`);
-			const updatesItem = fileMenu?.submenu?.find((i: NavItem) => i.value === `check-updates`);
+			if (!fileMenu) { throw new Error(`fileMenu not found`); }
+			const updatesItem = fileMenu.submenu.find((i: NavItem) => i.value === `check-updates`);
+			if (!updatesItem) { throw new Error(`updatesItem not found`); }
+			const item = updatesItem;
+			if (!updateCallback) { throw new Error(`updateCallback not found`); }
+			const cb = updateCallback;
 
 			// Default / idle state
-			expect(updatesItem?.actionable).not.toBe(false);
-			expect(updatesItem?.title).toBe(`Check for Updates`);
+			expect(item.actionable).not.toBe(false);
+			expect(item.title).toBe(`Check for Updates`);
 
 			// Simulate checking state
-			if (updateCallback) { updateCallback(`checking`); }
+			cb(`checking`);
 			await wrapper.vm.$nextTick();
-			expect(updatesItem?.actionable).toBe(false);
-			expect(updatesItem?.title).toBe(`Checking for Updates...`);
+			expect(item.actionable).toBe(false);
+			expect(item.title).toBe(`Checking for Updates...`);
 
 			// Simulate downloading state
-			if (updateCallback) { updateCallback(`downloading`); }
+			cb(`downloading`);
 			vi.advanceTimersByTime(500);
 			await wrapper.vm.$nextTick();
-			expect(updatesItem?.actionable).toBe(false);
-			expect(updatesItem?.title).toBe(`Downloading Update...`);
+			expect(item.actionable).toBe(false);
+			expect(item.title).toBe(`Downloading Update...`);
+
+			// Simulate downloaded state
+			cb(`downloaded`);
+			vi.advanceTimersByTime(500);
+			await wrapper.vm.$nextTick();
+			expect(item.actionable).not.toBe(false);
+			expect(item.title).toBe(`Restart Eyas to Update`);
 
 			// Simulate error state
-			if (updateCallback) { updateCallback(`error`); }
+			cb(`error`);
 			vi.advanceTimersByTime(500);
 			await wrapper.vm.$nextTick();
-			expect(updatesItem?.actionable).not.toBe(false);
-			expect(updatesItem?.title).toBe(`Check for Updates`);
+			expect(item.actionable).not.toBe(false);
+			expect(item.title).toBe(`Check for Updates`);
 		});
 
 		test(`'File' menu has 'Changelog' item with correct icon`, () => {

@@ -207,6 +207,8 @@ export function updateUpdatesMenuItem(status: UpdateStatus): void {
 		updatesItem.title = `Checking for Updates...`;
 	} else if (status === `downloading`) {
 		updatesItem.title = `Downloading Update...`;
+	} else if (status === `downloaded`) {
+		updatesItem.title = `Restart Eyas to Update`;
 	} else {
 		updatesItem.title = `Check for Updates`;
 	}
