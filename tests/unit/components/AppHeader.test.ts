@@ -312,6 +312,12 @@ describe(`AppHeader`, () => {
 			expect(mockSend).toHaveBeenCalledWith(`show-settings`);
 		});
 
+		test(`onItemClick() triggers update check logic for 'check-updates' item`, () => {
+			const vm = wrapper.vm as unknown as AppHeaderVM;
+			vm.onItemClick({ title: `Check for Updates`, value: `check-updates` });
+			expect(mockSend).toHaveBeenCalledWith(`check-for-updates`);
+		});
+
 		test(`onItemClick() sends show-whats-new IPC with true for 'changelog' item`, () => {
 			const vm = wrapper.vm as unknown as AppHeaderVM;
 			vm.onItemClick({ title: `Changelog`, value: `changelog` });
@@ -342,6 +348,16 @@ describe(`AppHeader`, () => {
 			expect(settingsItem?.value).toBe(`settings`);
 			expect(settingsItem?.icon).toBe(`mdi-cog`);
 			expect(settingsItem?.mnemonic).toBe(`S`);
+		});
+
+		test(`'File' menu has 'Check for Updates' item with correct icon`, () => {
+			const vm = wrapper.vm as unknown as AppHeaderVM;
+			const fileMenu = vm.groups.find((g: NavGroup) => g.name === `File`);
+			const updatesItem = fileMenu?.submenu?.find((i: NavItem) => i.value === `check-updates`);
+			expect(updatesItem).toBeDefined();
+			expect(updatesItem?.title).toBe(`Check for Updates`);
+			expect(updatesItem?.icon).toBe(`mdi-update`);
+			expect(updatesItem?.mnemonic).toBe(`U`);
 		});
 
 		test(`'File' menu has 'Changelog' item with correct icon`, () => {

@@ -3,6 +3,7 @@ import type { NavItem, NavItemValue, ActionHandler } from '@registry/components.
 import { formatBytes } from '@/utils/format.utils.js';
 import type { ChannelName, ViewportWidth, ViewportHeight, ByteCount, DurationString, IsActive } from '@registry/primitives.js';
 import type { Viewport } from '@registry/core.js';
+import { handleBroadcastClick } from './AppHeader.updater.js';
 
 /**
  * Handles a click event on a navigation menu item.
@@ -37,7 +38,8 @@ export function handleNavItemClick(value: NavItemValue): void {
 		'devtools-ui': () => { window.eyas?.send(`open-devtools-ui` as ChannelName); },
 		'devtools-test': () => { window.eyas?.send(`open-devtools-test` as ChannelName); },
 		'clear-cache': () => { window.eyas?.send(`clear-cache` as ChannelName); },
-		'open-cache-folder': () => { window.eyas?.send(`open-cache-folder` as ChannelName); }
+		'open-cache-folder': () => { window.eyas?.send(`open-cache-folder` as ChannelName); },
+		'check-updates': () => { handleBroadcastClick(); }
 	};
 
 	actions[value]?.();
