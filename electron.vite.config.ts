@@ -67,11 +67,11 @@ export default defineConfig({
 					'variable-utils': resolve(import.meta.dirname, `src/scripts/variable-utils.js`)
 				},
 				output: {
-					// IMPORTANT: Electron's preload sandbox REQUIRES CommonJS (.js) scripts.
+					// IMPORTANT: Electron's preload sandbox REQUIRES CommonJS (.cjs) scripts.
 					// Do NOT change this to 'es' format. Even though the project uses
 					// "type": "module", Electron enforces CJS for preload scripts as a
 					// hard security constraint. Changing this will break the app at runtime.
-					entryFileNames: `[name].js`,
+					entryFileNames: `[name].cjs`,
 					format: `cjs`
 				}
 			},
