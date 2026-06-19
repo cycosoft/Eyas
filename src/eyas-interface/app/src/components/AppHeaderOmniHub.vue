@@ -60,6 +60,24 @@
 			</v-tooltip>
 		</span>
 
+		<!-- Zoom Level Badge -->
+		<div
+			v-if="zoomFactor && zoomFactor !== 1.0"
+			class="zoom-badge d-flex align-center border rounded px-2 ml-2 mr-2"
+			data-qa="omni-hub-zoom"
+			@click.stop="resetZoom"
+		>
+			<v-icon
+				:icon="zoomFactor < 1.0 ? 'mdi-magnify-minus-outline' : 'mdi-magnify-plus-outline'"
+				size="x-large"
+				class="mr-1 text-medium-emphasis"
+			/>
+			<span class="zoom-text font-weight-bold text-medium-emphasis">{{ Math.round(zoomFactor * 100) }}%</span>
+			<v-tooltip activator="parent" location="bottom">
+				Reset Zoom
+			</v-tooltip>
+		</div>
+
 		<!-- JS Errors & Warnings Indicators -->
 		<div
 			v-if="jsErrorsCount > 0 || jsWarningsCount > 0"
@@ -152,7 +170,7 @@ import {
 	toggleNetwork, isViewingTestContent
 } from './AppHeader.logic.js';
 
-const { environments, currentEnvironment, envMenu, tooltipVisible, tooltipText, cursorPos, testNetworkEnabled, jsErrorsCount, jsWarningsCount } = toRefs(state);
+const { environments, currentEnvironment, envMenu, tooltipVisible, tooltipText, cursorPos, testNetworkEnabled, jsErrorsCount, jsWarningsCount, zoomFactor } = toRefs(state);
 
 watch(envMenu, isOpen => {
 	if (isOpen) {
@@ -170,6 +188,10 @@ watch(tooltipVisible, isOpen => {
 
 function openDevToolsConsole(): void {
 	window.eyas?.send(`open-devtools-console` as ChannelName);
+}
+
+function resetZoom(): void {
+	window.eyas?.send(`adjust-zoom` as ChannelName, `reset`);
 }
 </script>
 
@@ -224,5 +246,19 @@ function openDevToolsConsole(): void {
 	height: 16px;
 	border-color: rgba(var(--v-border-color), 0.15) !important;
 	cursor: pointer;
+}
+
+.zoom-badge {
+	font-size: 8px !important;
+	height: 18px;
+	flex-shrink: 0;
+	border-color: rgba(var(--v-theme-color), 0.15) !important;
+	background-color: rgba(var(--v-theme-on-surface), 0.05) !important;
+	cursor: pointer;
+}
+
+.zoom-text {
+	font-size: 10px !important;
+	line-height: 1;
 }
 </style>

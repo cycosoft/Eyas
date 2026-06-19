@@ -40,7 +40,8 @@ export const state = reactive({
 	pageTitle: ``,
 	platform: ``,
 	jsErrorsCount: 0,
-	jsWarningsCount: 0
+	jsWarningsCount: 0,
+	zoomFactor: 1.0
 });
 
 /** The fallback delay (ms) to open the menu if the IPC event never fires. */
@@ -50,6 +51,7 @@ let closeTimeout = -1;
 let resizeFallback = -1;
 let pendingOpen: PendingNavOpen | null = null;
 let copyTimeout = -1;
+
 
 
 /** Opens the navigation menu for a specific group. */
@@ -199,7 +201,7 @@ export function handleNavigationUpdate(data: unknown): void {
 	const keys: Array<keyof NavigationStatePayload & keyof typeof state> = [
 		`currentUrl`, `environments`, `currentEnvironment`, `projectId`,
 		`domainsHash`, `testNetworkEnabled`, `appTitle`, `configTitle`, `appVersion`, `pageTitle`, `platform`,
-		`jsErrorsCount`, `jsWarningsCount`
+		`jsErrorsCount`, `jsWarningsCount`, `zoomFactor`
 	];
 	for (const key of keys) {
 		if (payload[key] !== undefined) {

@@ -262,6 +262,8 @@ async function updateNavigationState(ctx: CoreContext): Promise<void> {
 		cacheSize = await webContents.session.getCacheSize();
 	} catch { /* ignore */ }
 
+	const zoomFactor = webContents.getZoomFactor();
+
 	const titleParts = getAppTitlePartsWithContext(ctx);
 
 	ctx.$eyasLayer?.webContents.send(`navigation-state-updated`, {
@@ -285,7 +287,8 @@ async function updateNavigationState(ctx: CoreContext): Promise<void> {
 		pageTitle: titleParts.pageTitle,
 		platform: process.platform,
 		jsErrorsCount: ctx.$jsErrorsCount,
-		jsWarningsCount: ctx.$jsWarningsCount
+		jsWarningsCount: ctx.$jsWarningsCount,
+		zoomFactor
 	});
 }
 

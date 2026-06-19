@@ -19,59 +19,20 @@
 	>
 		<!-- 1. File Group & Browser Controls -->
 		<template v-for="group in groups.filter(g => g.name === 'File')" :key="group.name">
-			<v-btn
-				class="px-3"
-				rounded="xs"
-				append-icon="mdi-chevron-down"
-				:data-qa="`btn-nav-group-${group.name.toLowerCase()}`"
-				:active="state.activeGroup === group.name"
-				@click="activate($event, group)"
-				@mouseenter="onMouseEnter($event, group)"
-			>
-				<v-img
-					v-if="group.logo"
-					:src="group.logo"
-					class="menu-logo mr-n1"
-				/>
-				<span v-else>
-					<template v-for="(part, i) in group.mnemonicParts" :key="i"><u v-if="part.isMnemonic">{{ part.text }}</u><template v-else>{{ part.text }}</template></template>
-				</span>
+			<v-btn class="px-3" rounded="xs" append-icon="mdi-chevron-down" :data-qa="`btn-nav-group-${group.name.toLowerCase()}`" :active="state.activeGroup === group.name" @click="activate($event, group)" @mouseenter="onMouseEnter($event, group)">
+				<v-img v-if="group.logo" :src="group.logo" class="menu-logo mr-n1" />
+				<span v-else><template v-for="(part, i) in group.mnemonicParts" :key="i"><u v-if="part.isMnemonic">{{ part.text }}</u><template v-else>{{ part.text }}</template></template></span>
 			</v-btn>
 
 			<div class="d-flex align-center ml-2 pa-1 rounded-lg border">
-				<v-btn
-					v-for="control in browserControls"
-					:key="control.action"
-					icon
-					variant="plain"
-					:ripple="false"
-					density="compact"
-					class="mx-0"
-					rounded="lg"
-					:data-qa="`btn-browser-${control.action}`"
-					:disabled="isControlDisabled(control.action, canGoBack, canGoForward)"
-					@click="handleBrowserControlClick(control.action)"
-				>
-					<v-icon
-						:icon="control.icon"
-						size="small"
-					/>
+				<v-btn v-for="control in browserControls" :key="control.action" icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" :data-qa="`btn-browser-${control.action}`" :disabled="isControlDisabled(control.action, canGoBack, canGoForward)" @click="handleBrowserControlClick(control.action)">
+					<v-icon :icon="control.icon" size="small" />
 				</v-btn>
 			</div>
 		</template>
 
-		<!-- 2. Links Group -->
 		<template v-for="group in groups.filter(g => g.name === 'Links')" :key="group.name">
-			<v-btn
-				v-if="group.submenu.length"
-				class="px-3 ml-2"
-				rounded="xs"
-				append-icon="mdi-chevron-down"
-				:data-qa="`btn-nav-group-${group.name.toLowerCase()}`"
-				:active="state.activeGroup === group.name"
-				@click="activate($event, group)"
-				@mouseenter="onMouseEnter($event, group)"
-			>
+			<v-btn v-if="group.submenu.length" class="px-3 ml-2" rounded="xs" append-icon="mdi-chevron-down" :data-qa="`btn-nav-group-${group.name.toLowerCase()}`" :active="state.activeGroup === group.name" @click="activate($event, group)" @mouseenter="onMouseEnter($event, group)">
 				<template v-for="(part, i) in group.mnemonicParts" :key="i">
 					<u v-if="part.isMnemonic">{{ part.text }}</u><template v-else>
 						{{ part.text }}
@@ -194,6 +155,48 @@
 							<template v-for="sub in item.submenu" :key="sub.value">
 								<v-divider v-if="sub.divider" class="my-1 mx-2" />
 								<v-list-item
+									v-else-if="sub.value === 'zoom'"
+									slim
+									class="px-4 py-1 zoom-item"
+									data-qa="btn-nav-item-zoom"
+								>
+									<div class="d-flex align-center justify-space-between w-100">
+										<div class="d-flex align-center">
+											<v-icon :icon="sub.icon" size="small" class="mr-2 text-medium-emphasis" />
+											<span>{{ sub.title }}</span>
+										</div>
+										<div class="d-flex align-center zoom-controls">
+											<button
+												type="button"
+												class="zoom-btn-native"
+												data-qa="btn-zoom-out"
+												@click.stop="adjustZoomLevel('out')"
+												@mousedown.stop
+											>
+												<v-icon icon="mdi-minus" size="x-small" />
+											</button>
+											<span
+												class="mx-2 text-caption font-weight-bold text-medium-emphasis zoom-val"
+												data-qa="btn-zoom-reset"
+												@click.stop="adjustZoomLevel('reset')"
+												@mousedown.stop
+											>
+												{{ Math.round(zoomFactor * 100) }}%
+												<v-tooltip activator="parent" location="bottom">Reset</v-tooltip>
+											</span>
+											<button
+												type="button"
+												class="zoom-btn-native"
+												data-qa="btn-zoom-in"
+												@click.stop="adjustZoomLevel('in')"
+												@mousedown.stop
+											>
+												<v-icon icon="mdi-plus" size="x-small" />
+											</button>
+										</div>
+									</div>
+								</v-list-item>
+								<v-list-item
 									v-else
 									slim
 									:value="sub.value"
@@ -242,28 +245,21 @@ import {
 } from './AppHeader.logic.js';
 import AppHeaderOmniHub from './AppHeaderOmniHub.vue';
 import useModalsStore from '@/stores/modals.js';
-const { menu, activator, canGoBack, canGoForward, updateStatus, environments, currentEnvironment, tooltipVisible, tooltipText, cursorPos, appTitle } = toRefs(state);
+const { menu, activator, canGoBack, canGoForward, updateStatus, environments, currentEnvironment, tooltipVisible, tooltipText, cursorPos, appTitle, zoomFactor } = toRefs(state);
 const modalsStore = useModalsStore();
+
+function adjustZoomLevel(direction: `in` | `out` | `reset`): void {
+	console.log(`[Eyas UI] adjustZoomLevel clicked:`, direction);
+	window.eyas?.send(`adjust-zoom` as ChannelName, direction);
+}
 const theme = useTheme();
 const overlayColors = computed(() => {
 	const isDark = theme.global.current.value.dark;
-	if (modalsStore.hasVisibleModals) {
-		return { color: isDark ? `#141414` : `#949597`, symbolColor: `#ffffff` };
-	}
-	if (isDark) {
-		return { color: `#212121`, symbolColor: `#ffffff` };
-	}
-	return { color: `#f7f9fb`, symbolColor: `#191c1e` };
+	return modalsStore.hasVisibleModals ? { color: isDark ? `#141414` : `#949597`, symbolColor: `#ffffff` }
+		: isDark ? { color: `#212121`, symbolColor: `#ffffff` } : { color: `#f7f9fb`, symbolColor: `#191c1e` };
 });
-watch(menu, isOpen => {
-	if (!isOpen) {
-		delayedClose();
-		state.activeGroup = null;
-	}
-});
-watch(overlayColors, colors => {
-	window.eyas?.send(`update-titlebar-overlay` as ChannelName, colors);
-}, { immediate: true });
+watch(menu, isOpen => { if (!isOpen) { delayedClose(); state.activeGroup = null; } });
+watch(overlayColors, colors => { window.eyas?.send(`update-titlebar-overlay` as ChannelName, colors); }, { immediate: true });
 onMounted(() => {
 	window.eyas?.receive(`ui-shown` as ChannelName, triggerOpen);
 	window.eyas?.receive(`navigation-state-updated` as ChannelName, handleNavigationUpdate);
@@ -277,7 +273,7 @@ defineExpose({
 	environments, currentEnvironment, activeEnvironmentTitle, selectEnvironment,
 	handleHeaderMouseEnter, handleHeaderMouseLeave, handleUrlClick, resetTooltipText,
 	appTitle, displayAppTitle, isViewingTestContent, envMenu: toRefs(state).envMenu,
-	menuItems: toRefs(state).menuItems, activator: toRefs(state).activator
+	menuItems: toRefs(state).menuItems, activator: toRefs(state).activator, adjustZoomLevel, zoomFactor
 });
 </script>
 
@@ -285,6 +281,12 @@ defineExpose({
 .menu-logo { height: 1.5em; width: 1.5em; }
 .menu-shortcut { font-size: 0.65rem !important; opacity: 0.6 !important; }
 .non-actionable { cursor: default !important; pointer-events: none; opacity: 0.5; }
+.zoom-val { display: inline-block; min-width: 44px; text-align: center; cursor: pointer; }
+.zoom-item { cursor: default !important; }
+.zoom-controls { pointer-events: auto !important; display: flex; align-items: center; }
+.zoom-btn-native { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; background-color: rgba(var(--v-theme-on-surface), 0.08); border: none; cursor: pointer; color: inherit; transition: background-color 0.2s ease; outline: none; }
+.zoom-btn-native:hover { background-color: rgba(var(--v-theme-on-surface), 0.16); }
+.zoom-btn-native:active { background-color: rgba(var(--v-theme-on-surface), 0.24); }
 .v-btn--active, .v-list-item--active { background-color: rgba(var(--v-theme-primary), 0.1) !important; color: rgb(var(--v-theme-primary)) !important; }
 .blink-animation { animation: blink 1s infinite; }
 @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }

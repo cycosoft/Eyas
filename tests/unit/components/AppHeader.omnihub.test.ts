@@ -55,14 +55,12 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 
 	describe(`developer tools`, () => {
 		test(`onItemClick() sends open-devtools-ui IPC for 'devtools-ui' item`, () => {
-			const vm = wrapper.vm as unknown as AppHeaderVM;
-			vm.onItemClick({ title: `Developer Tools (Eyas)`, value: `devtools-ui` });
+			(wrapper.vm as unknown as AppHeaderVM).onItemClick({ title: `Developer Tools (Eyas)`, value: `devtools-ui` });
 			expect(mockSend).toHaveBeenCalledWith(`open-devtools-ui`);
 		});
 
 		test(`onItemClick() sends open-devtools-test IPC for 'devtools-test' item`, () => {
-			const vm = wrapper.vm as unknown as AppHeaderVM;
-			vm.onItemClick({ title: `Developer Tools (Test)`, value: `devtools-test` });
+			(wrapper.vm as unknown as AppHeaderVM).onItemClick({ title: `Developer Tools (Test)`, value: `devtools-test` });
 			expect(mockSend).toHaveBeenCalledWith(`open-devtools-test`);
 		});
 
@@ -145,16 +143,14 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 		});
 
 		test(`onItemClick() sends launch-link IPC for link items`, () => {
-			const vm = wrapper.vm as unknown as AppHeaderVM;
 			const payload = { url: `https://google.com`, openInBrowser: true };
-			vm.onItemClick({ title: `Google`, value: `launch-link:${JSON.stringify(payload)}` });
+			(wrapper.vm as unknown as AppHeaderVM).onItemClick({ title: `Google`, value: `launch-link:${JSON.stringify(payload)}` });
 			expect(mockSend).toHaveBeenCalledWith(`launch-link`, payload);
 		});
 
 		test(`onItemClick() sends launch-link-variable IPC for variable link items`, () => {
-			const vm = wrapper.vm as unknown as AppHeaderVM;
 			const url = `https://example.com/{myvar}`;
-			vm.onItemClick({ title: `Variable`, value: `launch-link-var:${url}` });
+			(wrapper.vm as unknown as AppHeaderVM).onItemClick({ title: `Variable`, value: `launch-link-var:${url}` });
 			expect(mockSend).toHaveBeenCalledWith(`launch-link-variable`, url);
 		});
 	});
@@ -368,27 +364,22 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 			expect(wrapper.find(`[data-qa="omni-hub-warnings"]`).exists()).toBe(false);
 
 			// Receive update with errors and warnings
-			if (navCallbackContainer.current) {
-				navCallbackContainer.current({
-					canGoBack: false,
-					canGoForward: false,
-					jsErrorsCount: 3,
-					jsWarningsCount: 12
-				});
-			}
+			navCallbackContainer.current?.({
+				canGoBack: false,
+				canGoForward: false,
+				jsErrorsCount: 3,
+				jsWarningsCount: 12
+			});
 			await wrapper.vm.$nextTick();
 
 			// Indicators should exist and display correct values
-			const errorIndicator = wrapper.find(`[data-qa="omni-hub-errors"]`);
-			const warningIndicator = wrapper.find(`[data-qa="omni-hub-warnings"]`);
+			expect(wrapper.find(`[data-qa="omni-hub-errors"]`).exists()).toBe(true);
+			expect(wrapper.find(`[data-qa="omni-hub-errors"]`).text()).toContain(`3`);
+			expect(wrapper.find(`[data-qa="omni-hub-errors"]`).find(`[data-icon="mdi-alert-circle"]`).exists()).toBe(true);
 
-			expect(errorIndicator.exists()).toBe(true);
-			expect(errorIndicator.text()).toContain(`3`);
-			expect(errorIndicator.find(`[data-icon="mdi-alert-circle"]`).exists()).toBe(true);
-
-			expect(warningIndicator.exists()).toBe(true);
-			expect(warningIndicator.text()).toContain(`12`);
-			expect(warningIndicator.find(`[data-icon="mdi-alert"]`).exists()).toBe(true);
+			expect(wrapper.find(`[data-qa="omni-hub-warnings"]`).exists()).toBe(true);
+			expect(wrapper.find(`[data-qa="omni-hub-warnings"]`).text()).toContain(`12`);
+			expect(wrapper.find(`[data-qa="omni-hub-warnings"]`).find(`[data-icon="mdi-alert"]`).exists()).toBe(true);
 
 			const indicators = wrapper.find(`.omni-hub-indicators`);
 			expect(indicators.exists()).toBe(true);
@@ -398,10 +389,10 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 		});
 
 		test(`sends open-devtools-console IPC when indicators are clicked`, async () => {
-			let navCallback: ((payload: NavigationStatePayload) => void) | null = null;
+			const navCallbackContainer = { current: null as ((payload: NavigationStatePayload) => void) | null };
 			(window as unknown as WindowWithEyas).eyas.receive = vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
 				if (channel === `navigation-state-updated`) {
-					navCallback = cb as (payload: NavigationStatePayload) => void;
+					navCallbackContainer.current = cb as (payload: NavigationStatePayload) => void;
 				}
 			});
 
@@ -410,13 +401,11 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 			});
 
 			// Setup errors to make indicators visible
-			if (navCallback) {
-				(navCallback as any)({ // eslint-disable-line @typescript-eslint/no-explicit-any
-					canGoBack: false,
-					canGoForward: false,
-					jsErrorsCount: 1
-				});
-			}
+			navCallbackContainer.current?.({
+				canGoBack: false,
+				canGoForward: false,
+				jsErrorsCount: 1
+			});
 			await wrapper.vm.$nextTick();
 
 			const indicators = wrapper.find(`.omni-hub-indicators`);
@@ -424,6 +413,83 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 
 			await indicators.trigger(`click`);
 			expect(mockSend).toHaveBeenCalledWith(`open-devtools-console`);
+		});
+
+		test(`displays zoom level badge in header when zoomFactor is not 1.0`, async () => {
+			const navCallbackContainer = { current: null as ((payload: NavigationStatePayload) => void) | null };
+			(window as unknown as WindowWithEyas).eyas.receive = vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
+				if (channel === `navigation-state-updated`) {
+					navCallbackContainer.current = cb as (payload: NavigationStatePayload) => void;
+				}
+			});
+
+			wrapper = mountAppHeader({
+				VIcon: { template: `<div class="v-icon" :data-icon="$attrs.icon"><slot /></div>` }
+			});
+
+			// Initially zoom is 1.0/default, badge should not exist
+			expect(wrapper.find(`[data-qa="omni-hub-zoom"]`).exists()).toBe(false);
+
+			// Receive update with zoomFactor 1.25 (125%)
+			navCallbackContainer.current?.({
+				canGoBack: false,
+				canGoForward: false,
+				zoomFactor: 1.25
+			});
+			await wrapper.vm.$nextTick();
+
+			const zoomBadge = wrapper.find(`[data-qa="omni-hub-zoom"]`);
+			expect(zoomBadge.exists()).toBe(true);
+			expect(zoomBadge.text()).toContain(`125%`);
+			expect(zoomBadge.find(`[data-icon="mdi-magnify-plus-outline"]`).exists()).toBe(true);
+
+			// Receive update with zoomFactor 0.75 (75%)
+			navCallbackContainer.current?.({
+				canGoBack: false,
+				canGoForward: false,
+				zoomFactor: 0.75
+			});
+			await wrapper.vm.$nextTick();
+
+			const zoomBadgeMinus = wrapper.find(`[data-qa="omni-hub-zoom"]`);
+			expect(zoomBadgeMinus.exists()).toBe(true);
+			expect(zoomBadgeMinus.text()).toContain(`75%`);
+			expect(zoomBadgeMinus.find(`[data-icon="mdi-magnify-minus-outline"]`).exists()).toBe(true);
+
+			// Receive update with zoomFactor 1.0 again (100%), badge should disappear
+			navCallbackContainer.current?.({
+				canGoBack: false,
+				canGoForward: false,
+				zoomFactor: 1.0
+			});
+			await wrapper.vm.$nextTick();
+			expect(wrapper.find(`[data-qa="omni-hub-zoom"]`).exists()).toBe(false);
+		});
+
+		test(`sends adjust-zoom reset IPC event when zoom level badge is clicked`, async () => {
+			const navCallbackContainer = { current: null as ((payload: NavigationStatePayload) => void) | null };
+			(window as unknown as WindowWithEyas).eyas.receive = vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
+				if (channel === `navigation-state-updated`) {
+					navCallbackContainer.current = cb as (payload: NavigationStatePayload) => void;
+				}
+			});
+
+			wrapper = mountAppHeader({
+				VTooltip: { template: `<div class="v-tooltip"><slot /></div>` }
+			});
+
+			navCallbackContainer.current?.({
+				canGoBack: false,
+				canGoForward: false,
+				zoomFactor: 1.25
+			});
+			await wrapper.vm.$nextTick();
+
+			const zoomBadge = wrapper.find(`[data-qa="omni-hub-zoom"]`);
+			expect(zoomBadge.exists()).toBe(true);
+
+			await zoomBadge.trigger(`click`);
+			expect(mockSend).toHaveBeenCalledWith(`adjust-zoom`, `reset`);
 		});
 	});
 });

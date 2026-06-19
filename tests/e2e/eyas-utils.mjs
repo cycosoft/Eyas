@@ -11,7 +11,7 @@ import fs from 'fs-extra';
 
 /* eslint-disable import/no-commonjs */
 export const electronPath = require(`electron`);
-const constants = require(`../../out/scripts/constants.js`);
+const constants = require(`../../out/scripts/constants.cjs`);
 export const EYAS_HEADER_HEIGHT = constants.EYAS_HEADER_HEIGHT;
 /* eslint-enable import/no-commonjs */
 

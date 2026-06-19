@@ -81,7 +81,7 @@ function getExcludedFiles(): SourcePath[] {
 		`!eyas-dist/*`,
 		`!_design/*`,
 		`!electron.vite.config.{js,ts,mjs,cjs}`,
-		`!{.eslintignore,.eslintrc.cjs,eslint.config.mjs,babel.config.js}`,
+		`!{.eslintignore,.eslintrc.cjs,eslint.config.mjs}`,
 		`!{.env,.env.*,.npmrc,package-lock.json}`,
 		`!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}`,
 		`!{playwright.config.js,vitest.config.*.js,dev-app-update.yml}`,

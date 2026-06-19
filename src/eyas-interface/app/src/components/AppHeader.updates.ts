@@ -56,7 +56,10 @@ export function updateViewports(viewports: Viewport[], currentWidth: ViewportWid
 	const viewportItem = toolsGroup.submenu.find(i => i.value === `viewport`);
 	if (!viewportItem) { return; }
 
-	const submenu: NavItem[] = [];
+	const submenu: NavItem[] = [
+		{ title: `Zoom`, value: `zoom`, icon: `mdi-magnify`, actionable: false },
+		{ title: `divider`, value: `viewport-divider-zoom`, divider: true }
+	];
 
 	const tolerance = 5;
 	const isMatched = viewports.some(v => Math.abs(v.width - currentWidth) <= tolerance && Math.abs(v.height - currentHeight) <= tolerance);

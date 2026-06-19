@@ -8,6 +8,7 @@ import { TEST_SERVER_SESSION_DURATION_MS, EYAS_HEADER_HEIGHT } from '@scripts/co
 import { MP_EVENTS } from './metrics-events.js';
 import { isMac } from '@scripts/platform-utils.js';
 import { initCredentialIpcListeners } from './ipc-handlers.credentials.js';
+import { adjustZoom } from './window.shortcuts.js';
 
 
 
@@ -164,13 +165,14 @@ function initViewportIpcListeners(ctx: CoreContext): void {
 		ctx.$appWindow?.setContentSize(width, height + EYAS_HEADER_HEIGHT);
 		ctx.$testLayer?.setBounds({ x: 0, y: EYAS_HEADER_HEIGHT, width, height });
 	});
+
+	ipcMain.on(`adjust-zoom`, (_event, direction: `in` | `out` | `reset`) => {
+		adjustZoom(ctx, direction);
+	});
 }
 // Initializes cache management IPC listeners.
 function initCacheIpcListeners(ctx: CoreContext): void {
-	ipcMain.on(`clear-cache`, async () => {
-		ctx.clearCache();
-		await ctx.updateNavigationState();
-	});
+	ipcMain.on(`clear-cache`, async () => { ctx.clearCache(); await ctx.updateNavigationState(); });
 
 	ipcMain.on(`open-cache-folder`, () => {
 		if (!ctx.$appWindow || ctx.$appWindow.isDestroyed()) { return; }
@@ -246,9 +248,7 @@ function initSettingsIpcListeners(ctx: CoreContext): void {
 	});
 
 	// query if dark theme is active
-	ipcMain.handle(`is-dark-theme`, () => {
-		return nativeTheme.shouldUseDarkColors;
-	});
+	ipcMain.handle(`is-dark-theme`, () => nativeTheme.shouldUseDarkColors);
 }
 
 // Initializes test server-related IPC listeners.
@@ -262,9 +262,7 @@ function initTestServerIpcListeners(ctx: CoreContext): void {
 	});
 
 	// test server resume modal: user clicked Resume
-	ipcMain.on(`test-server-resume-confirm`, () => {
-		ctx.doStartTestServer();
-	});
+	ipcMain.on(`test-server-resume-confirm`, () => ctx.doStartTestServer());
 
 	// test server active modal: user clicked End Session
 	ipcMain.on(`test-server-stop`, () => ctx.stopTestServer());
