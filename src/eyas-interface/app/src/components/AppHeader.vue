@@ -288,7 +288,7 @@ import useModalsStore from '@/stores/modals.js';
 const { menu, activator, canGoBack, canGoForward, updateStatus, environments, currentEnvironment, tooltipVisible, tooltipText, cursorPos, appTitle, zoomFactor } = toRefs(state);
 const modalsStore = useModalsStore();
 
-function adjustZoomLevel(direction: 'in' | 'out' | 'reset'): void {
+function adjustZoomLevel(direction: `in` | `out` | `reset`): void {
 	console.log(`[Eyas UI] adjustZoomLevel clicked:`, direction);
 	window.eyas?.send(`adjust-zoom` as ChannelName, direction);
 }
