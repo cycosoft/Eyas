@@ -482,5 +482,33 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 			await wrapper.vm.$nextTick();
 			expect(wrapper.find(`[data-qa="omni-hub-zoom"]`).exists()).toBe(false);
 		});
+
+		test(`sends adjust-zoom reset IPC event when zoom level badge is clicked`, async () => {
+			let navCallback: ((payload: NavigationStatePayload) => void) | null = null;
+			(window as unknown as WindowWithEyas).eyas.receive = vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
+				if (channel === `navigation-state-updated`) {
+					navCallback = cb as (payload: NavigationStatePayload) => void;
+				}
+			});
+
+			wrapper = mountAppHeader({
+				VTooltip: { template: `<div class="v-tooltip"><slot /></div>` }
+			});
+
+			if (navCallback) {
+				(navCallback as (payload: Partial<NavigationStatePayload>) => void)({
+					canGoBack: false,
+					canGoForward: false,
+					zoomFactor: 1.25
+				});
+			}
+			await wrapper.vm.$nextTick();
+
+			const zoomBadge = wrapper.find(`[data-qa="omni-hub-zoom"]`);
+			expect(zoomBadge.exists()).toBe(true);
+
+			await zoomBadge.trigger(`click`);
+			expect(mockSend).toHaveBeenCalledWith(`adjust-zoom`, `reset`);
+		});
 	});
 });
