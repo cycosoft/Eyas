@@ -46,7 +46,6 @@ export type ByteCount = number;
 export type DecimalCount = number;
 export type FormattedByteString = string;
 export type UpdateStatus = string;
-export type ModalMode = string;
 export type ModalId = string;
 export type ThemeSource = string;
 export type MenuAccelerator = string;
