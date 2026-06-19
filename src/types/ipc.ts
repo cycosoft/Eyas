@@ -1,4 +1,4 @@
-import type { ProjectId, DomainUrl, IsActive, SettingKey, HashString, Username, PasswordPlain } from './primitives.js';
+import type { ProjectId, DomainUrl, IsActive, SettingKey, HashString, Username, PasswordPlain, ZoomFactor } from './primitives.js';
 import type { EnvironmentChoice, Viewport, ViewportSize, EnvironmentChoiceWithTitle } from './core.js';
 import type { NavItem } from './components.js';
 
@@ -99,6 +99,7 @@ export type NavigationStatePayload = {
 	platform?: string;
 	jsErrorsCount?: number;
 	jsWarningsCount?: number;
+	zoomFactor?: ZoomFactor;
 };
 
 type SendChannel = typeof VALID_SEND_CHANNELS[number];

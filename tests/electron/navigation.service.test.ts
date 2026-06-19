@@ -67,7 +67,8 @@ describe(`navigation.service.ts unit tests`, () => {
 					},
 					isDestroyed: vi.fn().mockReturnValue(false),
 					reloadIgnoringCache: vi.fn(),
-					loadURL: vi.fn()
+					loadURL: vi.fn(),
+					getZoomFactor: vi.fn().mockReturnValue(1.5)
 				}
 			},
 			$testLayer: {
@@ -83,7 +84,8 @@ describe(`navigation.service.ts unit tests`, () => {
 					},
 					isDestroyed: vi.fn().mockReturnValue(false),
 					reloadIgnoringCache: vi.fn(),
-					loadURL: vi.fn()
+					loadURL: vi.fn(),
+					getZoomFactor: vi.fn().mockReturnValue(1.5)
 				}
 			},
 			$testDomain: `https://default.com` as DomainUrl,
@@ -205,7 +207,7 @@ describe(`navigation.service.ts unit tests`, () => {
 		expect(mockReload).toHaveBeenCalled();
 	});
 
-	test(`updateNavigationState should send navigation-state-updated with jsErrorsCount and jsWarningsCount`, async () => {
+	test(`updateNavigationState should send navigation-state-updated with jsErrorsCount, jsWarningsCount, and zoomFactor`, async () => {
 		mockCtx.$jsErrorsCount = 3;
 		mockCtx.$jsWarningsCount = 7;
 		const mockSend = vi.fn();
@@ -219,7 +221,8 @@ describe(`navigation.service.ts unit tests`, () => {
 
 		expect(mockSend).toHaveBeenCalledWith(`navigation-state-updated`, expect.objectContaining({
 			jsErrorsCount: 3,
-			jsWarningsCount: 7
+			jsWarningsCount: 7,
+			zoomFactor: 1.5
 		}));
 	});
 });

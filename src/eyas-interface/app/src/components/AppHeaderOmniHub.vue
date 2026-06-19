@@ -60,6 +60,20 @@
 			</v-tooltip>
 		</span>
 
+		<!-- Zoom Level Badge -->
+		<div
+			v-if="zoomFactor && zoomFactor !== 1.0"
+			class="zoom-badge d-flex align-center border rounded-lg px-2 ml-2"
+			data-qa="omni-hub-zoom"
+		>
+			<v-icon
+				icon="mdi-magnify"
+				size="x-small"
+				class="mr-1 text-medium-emphasis"
+			/>
+			<span class="zoom-text font-weight-bold text-medium-emphasis">{{ Math.round(zoomFactor * 100) }}%</span>
+		</div>
+
 		<!-- JS Errors & Warnings Indicators -->
 		<div
 			v-if="jsErrorsCount > 0 || jsWarningsCount > 0"
@@ -152,7 +166,7 @@ import {
 	toggleNetwork, isViewingTestContent
 } from './AppHeader.logic.js';
 
-const { environments, currentEnvironment, envMenu, tooltipVisible, tooltipText, cursorPos, testNetworkEnabled, jsErrorsCount, jsWarningsCount } = toRefs(state);
+const { environments, currentEnvironment, envMenu, tooltipVisible, tooltipText, cursorPos, testNetworkEnabled, jsErrorsCount, jsWarningsCount, zoomFactor } = toRefs(state);
 
 watch(envMenu, isOpen => {
 	if (isOpen) {
@@ -224,5 +238,17 @@ function openDevToolsConsole(): void {
 	height: 16px;
 	border-color: rgba(var(--v-border-color), 0.15) !important;
 	cursor: pointer;
+}
+
+.zoom-badge {
+	font-size: 8px !important;
+	height: 18px;
+	flex-shrink: 0;
+	border-color: rgba(var(--v-border-color), 0.15) !important;
+}
+
+.zoom-text {
+	font-size: 10px !important;
+	line-height: 1;
 }
 </style>

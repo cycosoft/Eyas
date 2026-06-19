@@ -13,6 +13,7 @@ function adjustZoom(ctx: CoreContext, direction: `in` | `out` | `reset`): void {
 
 	if (direction === `reset`) {
 		testWebContents.setZoomFactor(1.0);
+		ctx.updateNavigationState();
 		return;
 	}
 
@@ -36,6 +37,8 @@ function adjustZoom(ctx: CoreContext, direction: `in` | `out` | `reset`): void {
 		const nextIndex = Math.max(closestIndex - 1, 0);
 		testWebContents.setZoomFactor(ZOOM_FACTORS[nextIndex]);
 	}
+
+	ctx.updateNavigationState();
 }
 
 /**

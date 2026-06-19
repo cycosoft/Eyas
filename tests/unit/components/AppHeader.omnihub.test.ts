@@ -425,5 +425,47 @@ describe(`AppHeader OmniHub & Advanced Controls`, () => {
 			await indicators.trigger(`click`);
 			expect(mockSend).toHaveBeenCalledWith(`open-devtools-console`);
 		});
+
+		test(`displays zoom level badge in header when zoomFactor is not 1.0`, async () => {
+			let navCallback: ((payload: NavigationStatePayload) => void) | null = null;
+			(window as unknown as WindowWithEyas).eyas.receive = vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
+				if (channel === `navigation-state-updated`) {
+					navCallback = cb as (payload: NavigationStatePayload) => void;
+				}
+			});
+
+			wrapper = mountAppHeader({
+				VIcon: { template: `<div class="v-icon" :data-icon="$attrs.icon"><slot /></div>` }
+			});
+
+			// Initially zoom is 1.0/default, badge should not exist
+			expect(wrapper.find(`[data-qa="omni-hub-zoom"]`).exists()).toBe(false);
+
+			// Receive update with zoomFactor 1.25 (125%)
+			if (navCallback) {
+				(navCallback as (payload: Partial<NavigationStatePayload>) => void)({
+					canGoBack: false,
+					canGoForward: false,
+					zoomFactor: 1.25
+				});
+			}
+			await wrapper.vm.$nextTick();
+
+			const zoomBadge = wrapper.find(`[data-qa="omni-hub-zoom"]`);
+			expect(zoomBadge.exists()).toBe(true);
+			expect(zoomBadge.text()).toContain(`125%`);
+			expect(zoomBadge.find(`[data-icon="mdi-magnify"]`).exists()).toBe(true);
+
+			// Receive update with zoomFactor 1.0 again (100%), badge should disappear
+			if (navCallback) {
+				(navCallback as (payload: Partial<NavigationStatePayload>) => void)({
+					canGoBack: false,
+					canGoForward: false,
+					zoomFactor: 1.0
+				});
+			}
+			await wrapper.vm.$nextTick();
+			expect(wrapper.find(`[data-qa="omni-hub-zoom"]`).exists()).toBe(false);
+		});
 	});
 });
