@@ -4,6 +4,7 @@ import { formatBytes } from '@/utils/format.utils.js';
 import type { ChannelName, ViewportWidth, ViewportHeight, ByteCount, DurationString, IsActive } from '@registry/primitives.js';
 import type { Viewport } from '@registry/core.js';
 import { handleBroadcastClick } from './AppHeader.updater.js';
+import type { UpdateStatus } from '@registry/ipc.js';
 
 /**
  * Handles a click event on a navigation menu item.
@@ -187,4 +188,18 @@ export function updateLinks(links: NavItem[]): void {
 	for (const item of linksGroup.submenu) {
 		item.mnemonicParts = getMnemonicParts(item);
 	}
+}
+
+/**
+ * Updates the 'Check for Updates' menu item state based on the update status.
+ * @param status The current update status.
+ */
+export function updateUpdatesMenuItem(status: UpdateStatus): void {
+	const fileGroup = groups.find(g => g.name === `File`);
+	if (!fileGroup) { return; }
+
+	const updatesItem = fileGroup.submenu.find(i => i.value === `check-updates`);
+	if (!updatesItem) { return; }
+
+	updatesItem.actionable = status !== `checking` && status !== `downloading`;
 }

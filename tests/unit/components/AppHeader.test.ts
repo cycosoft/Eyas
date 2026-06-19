@@ -4,7 +4,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import AppHeader from '@/components/AppHeader.vue';
 import useModalsStore from '@/stores/modals.js';
 import { state } from '@/components/AppHeader.logic.js';
-import type { WindowWithEyas, ChannelName, NavigationStatePayload } from '@registry/ipc.js';
+import type { WindowWithEyas, ChannelName, NavigationStatePayload, UpdateStatus } from '@registry/ipc.js';
 import type { AppHeaderVM, NavGroup, NavItem, NavActivateEvent } from '@registry/components.js';
 import type { GenericRecord, IsActive } from '@registry/primitives.js';
 
@@ -25,11 +25,12 @@ vi.mock(`vuetify`, async importOriginal => {
 describe(`AppHeader`, () => {
 	let wrapper: VueWrapper;
 	let uiShownCallback: ((...args: unknown[]) => void) | null = null;
+	let updateCallback: ((status: UpdateStatus) => void) | null = null;
 	let mockSend: Mock;
 
 	beforeEach(() => {
 		vi.useFakeTimers(); setActivePinia(createPinia());
-		mockSend = vi.fn(); uiShownCallback = null;
+		mockSend = vi.fn(); uiShownCallback = null; updateCallback = null;
 
 		// Reset module-level reactive state to prevent leaks
 		Object.assign(state, { isHeaderHovered: false, menu: false, envMenu: false, tooltipVisible: false, tooltipText: `Click to Copy` });
@@ -38,6 +39,9 @@ describe(`AppHeader`, () => {
 			receive: vi.fn((channel: ChannelName, cb: (...args: unknown[]) => void) => {
 				if (channel === `ui-shown`) {
 					uiShownCallback = cb;
+				}
+				if (channel === `update-status-updated`) {
+					updateCallback = cb as (status: UpdateStatus) => void;
 				}
 			})
 		};
@@ -358,6 +362,31 @@ describe(`AppHeader`, () => {
 			expect(updatesItem?.title).toBe(`Check for Updates`);
 			expect(updatesItem?.icon).toBe(`mdi-update`);
 			expect(updatesItem?.mnemonic).toBe(`U`);
+		});
+
+		test(`disables 'Check for Updates' menu item when update state is checking or downloading`, async () => {
+			const vm = wrapper.vm as unknown as AppHeaderVM;
+			const fileMenu = vm.groups.find((g: NavGroup) => g.name === `File`);
+			const updatesItem = fileMenu?.submenu?.find((i: NavItem) => i.value === `check-updates`);
+
+			// Default / idle state
+			expect(updatesItem?.actionable).not.toBe(false);
+
+			// Simulate checking state
+			if (updateCallback) { updateCallback(`checking`); }
+			await wrapper.vm.$nextTick();
+			expect(updatesItem?.actionable).toBe(false);
+
+			// Simulate downloading state
+			if (updateCallback) { updateCallback(`downloading`); }
+			await wrapper.vm.$nextTick();
+			expect(updatesItem?.actionable).toBe(false);
+
+			// Simulate error state
+			if (updateCallback) { updateCallback(`error`); }
+			vi.advanceTimersByTime(500);
+			await wrapper.vm.$nextTick();
+			expect(updatesItem?.actionable).not.toBe(false);
 		});
 
 		test(`'File' menu has 'Changelog' item with correct icon`, () => {

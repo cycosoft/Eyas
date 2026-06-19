@@ -241,7 +241,7 @@ import {
 	handleNavigationUpdate, handleUpdateStatusUpdate, displayUrlInfo,
 	activeEnvironmentTitle, selectEnvironment, handleHeaderMouseEnter,
 	handleHeaderMouseLeave, handleUrlClick, resetTooltipText, displayAppTitle,
-	isViewingTestContent
+	isViewingTestContent, updateUpdatesMenuItem
 } from './AppHeader.logic.js';
 import AppHeaderOmniHub from './AppHeaderOmniHub.vue';
 import useModalsStore from '@/stores/modals.js';
@@ -260,6 +260,7 @@ const overlayColors = computed(() => {
 });
 watch(menu, isOpen => { if (!isOpen) { delayedClose(); state.activeGroup = null; } });
 watch(overlayColors, colors => { window.eyas?.send(`update-titlebar-overlay` as ChannelName, colors); }, { immediate: true });
+watch(updateStatus, status => { updateUpdatesMenuItem(status); }, { immediate: true });
 onMounted(() => {
 	window.eyas?.receive(`ui-shown` as ChannelName, triggerOpen);
 	window.eyas?.receive(`navigation-state-updated` as ChannelName, handleNavigationUpdate);
