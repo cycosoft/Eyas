@@ -1,7 +1,8 @@
 [
 	{
-		"version": "26.6.28686",
+		"version": "26.6.28687",
 		"items": [
+			{ "text": "🟢 Redesigned the environment selection modal" },
 			{ "text": "🟢 Reset URL history when choosing a new environment" },
 			{ "text": "🟢 Update flow improvements" },
 			{ "text": "🟣 Update dependencies" }
