@@ -2,63 +2,97 @@
 	<ModalWrapper
 		v-model="visible"
 		type="dialog"
-		@keyup="hotkeyEnvSelector"
 	>
-		<v-card class="pa-3">
-			<v-card-text>
-				<p class="font-weight-black text-center text-title-large mb-10" data-qa="environment-modal-title">
-					Select Test Environment
+		<v-card class="glass-panel overflow-hidden pa-0" width="520">
+			<div class="px-8 pt-8 pb-6 text-center shrink-0">
+				<h2 class="font-headline text-h5 font-weight-bold text-on-surface tracking-tight mb-2" data-qa="environment-modal-title">
+					Simulate Environment
+				</h2>
+				<p class="font-body text-body-1 text-on-surface-variant mb-4">
+					Choose where to launch your first session.
 				</p>
+				<p class="font-body text-body-2 text-grey-darken-1 leading-relaxed max-w-[90%] mx-auto">
+					Eyas simulates these domains locally to handle environment-specific requirements like authentication and cookies. Your application is always served from your local files.
+				</p>
+			</div>
 
-				<v-sheet>
-					<v-row>
-						<v-col
-							v-for="(domain, index) in domains"
-							:key="index"
-						>
-							<v-badge
-								:color="loadingIndex === index ? `` : `red-lighten-2`"
-								:content="index + 1"
-								location="bottom-end"
-							>
-								<v-btn
-									v-tooltip:bottom="tooltip(domain)"
-									class="-py-5"
-									block
-									size="large"
-									:stacked="$vuetify.display.smAndUp"
-									:loading="loadingIndex === index"
-									data-qa="btn-env"
-									@click="choose(domain, index)"
-								>
-									<template #prepend>
-										<v-icon size="40">
-											mdi-database
-										</v-icon>
-									</template>
+			<div class="px-8 mb-6 overflow-y-auto custom-scrollbar pr-6 mx-2 domains-list">
+				<v-btn
+					v-for="(domain, index) in domains"
+					:key="index"
+					class="w-full text-left justify-start py-8 px-4 mb-3 border-thin rounded-xl tonal-transition env-btn"
+					:class="{ 'active-env': isActive(domain) || loadingIndex === index }"
+					variant="flat"
+					:loading="loadingIndex === index"
+					block
+					data-qa="btn-env"
+					@click="onSelectEnvironment(domain, index)"
+				>
+					<template #prepend>
+						<div class="icon-box mr-4" :class="{ 'active-icon-box': isActive(domain) || loadingIndex === index }">
+							<v-icon size="22">
+								{{ getIcon(domain) }}
+							</v-icon>
+						</div>
+					</template>
 
-									<p>{{ domain.title }}</p>
-								</v-btn>
-							</v-badge>
-						</v-col>
-					</v-row>
-				</v-sheet>
+					<div class="d-flex flex-column align-start">
+						<span class="font-headline font-weight-bold text-body-1 text-high-emphasis">
+							{{ domain.title }}
+						</span>
+						<span class="font-body text-caption text-grey">
+							{{ domain.url }}
+						</span>
+					</div>
+				</v-btn>
+			</div>
 
-				<!-- always-choose setting -->
-				<v-row class="mt-4 justify-end">
-					<v-col cols="auto">
-						<v-checkbox
-							v-model="alwaysChoose"
-							label="Remember this choice"
-							density="compact"
-							hide-details
-							data-qa="checkbox-always-choose"
-							@update:model-value="onAlwaysChooseChange"
-						/>
-					</v-col>
-				</v-row>
-			</v-card-text>
+			<div class="px-8 mb-6 shrink-0">
+				<v-alert
+					type="info"
+					color="amber-lighten-5"
+					icon="mdi-information-outline"
+					variant="flat"
+					border="start"
+					class="rounded-xl border-amber-lighten-2 text-amber-darken-4 font-body text-body-2 py-3 px-4"
+				>
+					Your choice will be remembered for this project. You can quickly switch between environments anytime using the menu in the URL bar.
+				</v-alert>
+			</div>
+
+			<v-card-actions class="px-8 pb-6 justify-end">
+				<v-checkbox
+					v-model="alwaysChoose"
+					label="Remember this choice"
+					density="compact"
+					hide-details
+					data-qa="checkbox-always-choose"
+					@update:model-value="onAlwaysChooseChange"
+				/>
+			</v-card-actions>
 		</v-card>
+
+		<v-dialog v-model="warningVisible" max-width="400" persistent>
+			<v-card class="pa-4">
+				<v-card-title class="text-h6 font-weight-bold text-center" data-qa="warning-dialog-title">
+					Always load this environment?
+				</v-card-title>
+				<v-card-text class="text-body-2 text-center mt-2">
+					Eyas will automatically bypass this screen and load <strong>{{ pendingDomain?.title }}</strong> next time.
+					<div class="mt-4 text-grey-darken-1">
+						You can quickly switch between environments anytime using the menu in the URL bar.
+					</div>
+				</v-card-text>
+				<v-card-actions class="justify-space-between mt-4">
+					<v-btn variant="text" data-qa="btn-warning-cancel" @click="cancelWarning">
+						Cancel
+					</v-btn>
+					<v-btn color="primary" variant="elevated" data-qa="btn-warning-confirm" @click="confirmWarning">
+						Confirm & Proceed
+					</v-btn>
+				</v-card-actions>
+			</v-card>
+		</v-dialog>
 	</ModalWrapper>
 </template>
 
@@ -66,7 +100,7 @@
 import { ref, onMounted } from 'vue';
 import ModalWrapper from '@/components/ModalWrapper.vue';
 import type { EnvironmentChoiceWithTitle } from '@registry/core.js';
-import type { IsVisible, ListIndex, IsActive, ProjectId, ChannelName, LabelString, HashString } from '@registry/primitives.js';
+import type { IsVisible, ListIndex, IsActive, ProjectId, ChannelName, HashString, LabelString } from '@registry/primitives.js';
 
 const visible = ref<IsVisible>(false);
 const domains = ref<EnvironmentChoiceWithTitle[]>([]);
@@ -74,6 +108,11 @@ const loadingIndex = ref<ListIndex>(-1);
 const alwaysChoose = ref<IsActive>(false);
 const projectId = ref<ProjectId | null>(null);
 const domainsHash = ref<HashString | null>(null);
+const lastChoice = ref<EnvironmentChoiceWithTitle | null>(null);
+
+const warningVisible = ref<IsVisible>(false);
+const pendingDomain = ref<EnvironmentChoiceWithTitle | null>(null);
+const pendingIndex = ref<ListIndex>(-1);
 
 const reset = (): void => {
 	visible.value = false;
@@ -82,13 +121,27 @@ const reset = (): void => {
 	alwaysChoose.value = false;
 	projectId.value = null;
 	domainsHash.value = null;
+	lastChoice.value = null;
+	warningVisible.value = false;
+	pendingDomain.value = null;
+	pendingIndex.value = -1;
+};
+
+const getIcon = (domain: EnvironmentChoiceWithTitle): LabelString => {
+	const url = domain.url.toLowerCase();
+	if (url.startsWith(`eyas://`) || url.includes(`local`) || url.includes(`internal`)) {
+		return `mdi-console`;
+	}
+	return `mdi-earth`;
+};
+
+const isActive = (domain: EnvironmentChoiceWithTitle): IsActive => {
+	if (!lastChoice.value) { return false; }
+	return lastChoice.value.url === domain.url;
 };
 
 const choose = (domain: EnvironmentChoiceWithTitle, domainIndex: ListIndex): void => {
-	// show a loader on the chosen domain
 	loadingIndex.value = domainIndex;
-
-	// save the user's choice and hash so we can skip the modal next time
 	window.eyas?.send(`save-setting` as ChannelName, {
 		key: `env.lastChoice`,
 		value: JSON.parse(JSON.stringify(domain)),
@@ -99,43 +152,37 @@ const choose = (domain: EnvironmentChoiceWithTitle, domainIndex: ListIndex): voi
 		value: domainsHash.value,
 		projectId: projectId.value
 	});
-
-	// timeout for user feedback + time to load test environment
 	setTimeout(() => {
-		// send the chosen domain to the main process
 		window.eyas?.send(`environment-selected` as ChannelName, JSON.parse(JSON.stringify(domain)));
-
-		// close the modal
 		visible.value = false;
-
-		// reset the modal state
 		setTimeout(reset, 200);
 	}, 200);
 };
 
-const tooltip = (domain: EnvironmentChoiceWithTitle): LabelString => {
-	const message = `Set environment title in Eyas config`;
-	return domain.url === domain.title ? message : domain.url;
-};
-
-const hotkeyEnvSelector = (event: KeyboardEvent): void => {
-	// setup
-	const keyAsNumber = Number(event.key);
-
-	// if the key pressed isn't a number, exit
-	if (isNaN(keyAsNumber)) { return; }
-
-	// check that the key pressed is within the range of the domains
-	if (keyAsNumber > 0 && keyAsNumber <= domains.value.length) {
-		const chosenIndex = keyAsNumber - 1;
-
-		// choose the domain at the index of the key pressed
-		choose(domains.value[chosenIndex], chosenIndex);
+const onSelectEnvironment = (domain: EnvironmentChoiceWithTitle, index: ListIndex): void => {
+	if (alwaysChoose.value) {
+		pendingDomain.value = domain;
+		pendingIndex.value = index;
+		warningVisible.value = true;
+	} else {
+		choose(domain, index);
 	}
 };
 
+const confirmWarning = (): void => {
+	warningVisible.value = false;
+	if (pendingDomain.value !== null && pendingIndex.value !== -1) {
+		choose(pendingDomain.value, pendingIndex.value);
+	}
+};
+
+const cancelWarning = (): void => {
+	warningVisible.value = false;
+	pendingDomain.value = null;
+	pendingIndex.value = -1;
+};
+
 const onAlwaysChooseChange = (value: IsActive): void => {
-	// immediately save the setting when the checkbox is toggled
 	window.eyas?.send(`save-setting` as ChannelName, {
 		key: `env.alwaysChoose`,
 		value: !!value,
@@ -144,12 +191,12 @@ const onAlwaysChooseChange = (value: IsActive): void => {
 };
 
 onMounted(() => {
-	// Listen for messages from the main process
 	window.eyas?.receive(`show-environment-modal` as ChannelName, (newDomains, options = {}) => {
 		domains.value = JSON.parse(JSON.stringify(newDomains));
 		projectId.value = options.projectId ?? null;
 		alwaysChoose.value = !!options.alwaysChoose;
 		domainsHash.value = options.domainsHash ?? null;
+		lastChoice.value = options.lastChoice ?? null;
 		visible.value = true;
 	});
 });
@@ -161,7 +208,75 @@ defineExpose({
 	alwaysChoose,
 	projectId,
 	domainsHash,
+	lastChoice,
+	warningVisible,
+	pendingDomain,
+	pendingIndex,
 	choose,
-	onAlwaysChooseChange
+	onAlwaysChooseChange,
+	onSelectEnvironment,
+	confirmWarning,
+	cancelWarning,
+	getIcon,
+	isActive
 });
 </script>
+
+<style scoped>
+.glass-panel {
+	background: #f8f9fa !important;
+	border: 1px solid rgba(255, 255, 255, 0.8) !important;
+	box-shadow: 0 24px 60px rgba(25, 28, 29, 0.12) !important;
+	border-radius: 16px !important;
+}
+.domains-list {
+	max-height: 380px !important;
+}
+.env-btn {
+	text-transform: none !important;
+	letter-spacing: normal !important;
+	height: auto !important;
+	background-color: rgba(255, 255, 255, 0.6) !important;
+	border: 1px solid rgba(226, 232, 240, 0.5) !important;
+	transition: all 0.2s ease-in-out;
+}
+.env-btn:hover {
+	background-color: #ffffff !important;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+	transform: translateY(-1px);
+}
+.active-env {
+	background-color: #ffffff !important;
+	border: 2px solid rgba(88, 161, 214, 0.3) !important;
+	border-left: 4px solid #58A1D6 !important;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+}
+.icon-box {
+	width: 40px;
+	height: 40px;
+	border-radius: 8px;
+	background-color: #f1f5f9;
+	color: #64748b;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s ease-in-out;
+}
+.active-icon-box {
+	background-color: #eff6ff !important;
+	color: #58A1D6 !important;
+}
+.custom-scrollbar::-webkit-scrollbar {
+	width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+	background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+	background: #e2e8f0;
+	border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+	background: #cbd5e1;
+}
+</style>

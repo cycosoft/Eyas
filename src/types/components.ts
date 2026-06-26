@@ -1,5 +1,5 @@
-import type { IsVisible, DomainUrl, IsEnabled, MenuLabel, EventType, ViewportWidth, AppTitle, ResponseBody, PortNumber, Count, IsActive, LabelString, AppVersion, Username } from './primitives.js';
-import type { CredentialMetadata } from './core.js';
+import type { IsVisible, DomainUrl, IsEnabled, MenuLabel, EventType, ViewportWidth, AppTitle, ResponseBody, PortNumber, Count, IsActive, LabelString, AppVersion, Username, ListIndex } from './primitives.js';
+import type { CredentialMetadata, EnvironmentChoiceWithTitle } from './core.js';
 import type { CredentialPayload } from './ipc.js';
 
 type ModalType = `modal` | `dialog`;
@@ -67,12 +67,21 @@ export type VariablesModalVM = {
  * Type helper for the EnvironmentModal Vue component's ViewModel in tests.
  */
 export type EnvironmentModalVM = {
-	domains: unknown[];
+	domains: EnvironmentChoiceWithTitle[];
 	visible: IsVisible;
-	choose: (domain: unknown, index: Count) => void;
+	choose: (domain: EnvironmentChoiceWithTitle, index: ListIndex) => void;
 	alwaysChoose: IsVisible;
-	projectId: AppTitle;
-	domainsHash: ResponseBody;
+	projectId: AppTitle | null;
+	domainsHash: ResponseBody | null;
+	lastChoice: EnvironmentChoiceWithTitle | null;
+	warningVisible: IsVisible;
+	pendingDomain: EnvironmentChoiceWithTitle | null;
+	pendingIndex: ListIndex;
+	onSelectEnvironment: (domain: EnvironmentChoiceWithTitle, index: ListIndex) => void;
+	confirmWarning: () => void;
+	cancelWarning: () => void;
+	isActive: (domain: EnvironmentChoiceWithTitle) => boolean;
+	getIcon: (domain: EnvironmentChoiceWithTitle) => string;
 	onAlwaysChooseChange: (value: IsActive) => void;
 	$nextTick: () => Promise<void>;
 	$options: ComponentOptions;
