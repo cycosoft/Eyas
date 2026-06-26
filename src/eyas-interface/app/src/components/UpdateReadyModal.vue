@@ -16,20 +16,45 @@
 			</v-card-text>
 
 			<v-card-actions class="mt-5">
-				<v-btn v-if="showLaterButton" data-qa="btn-update-later" @click="cancel">
-					Later
+				<v-btn data-qa="btn-update-cancel" @click="cancel">
+					Cancel
 				</v-btn>
 
 				<div class="flex-grow-1" />
 
+				<v-btn-group v-if="showLaterDropdown" color="primary" variant="elevated">
+					<v-btn
+						:loading="updating"
+						data-qa="btn-update-now"
+						@click="update"
+					>
+						Close & <u>U</u>pdate
+					</v-btn>
+					<v-menu>
+						<template #activator="{ props }">
+							<v-btn
+								v-bind="props"
+								icon="mdi-menu-down"
+								data-qa="btn-update-menu"
+							/>
+						</template>
+						<v-list density="compact">
+							<v-list-item data-qa="btn-update-later" @click="later">
+								<v-list-item-title>Later</v-list-item-title>
+							</v-list-item>
+						</v-list>
+					</v-menu>
+				</v-btn-group>
+
 				<v-btn
+					v-else
 					color="primary"
 					variant="elevated"
 					:loading="updating"
 					data-qa="btn-update-now"
 					@click="update"
 				>
-					<u>U</u>pdate Eyas Now
+					Close & <u>U</u>pdate
 				</v-btn>
 			</v-card-actions>
 		</v-card>
@@ -47,7 +72,7 @@ const updating = ref<IsPending>(false);
 const exitFlow = ref<IsExitFlow>(false);
 const settingsStore = useSettingsStore();
 
-const showLaterButton = computed(() => !exitFlow.value || !!(settingsStore.appSettings.allowBypassUpdates));
+const showLaterDropdown = computed(() => exitFlow.value && !!(settingsStore.appSettings.allowBypassUpdates));
 
 const update = (): void => {
 	updating.value = true;
@@ -55,6 +80,10 @@ const update = (): void => {
 };
 
 const cancel = (): void => {
+	visible.value = false;
+};
+
+const later = (): void => {
 	if (exitFlow.value) {
 		window.eyas?.send(`app-exit` as ChannelName);
 	} else {
