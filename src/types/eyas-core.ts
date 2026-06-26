@@ -130,6 +130,7 @@ export type UpdateService = {
 	installUpdate: () => void;
 	getStatus: () => UpdateStatus;
 	reset: () => void;
+	setAutoInstallOnAppQuit: (enabled: IsActive) => void;
 };
 
 /** Menu Service interface */

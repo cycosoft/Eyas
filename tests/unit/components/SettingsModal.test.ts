@@ -71,6 +71,19 @@ describe(`SettingsModal`, () => {
 		expect((wrapper.vm as unknown as SettingsModalVM).appAlwaysChoose).toBe(true);
 	});
 
+	test(`populates appAllowBypassUpdates from payload`, () => {
+		const call = mockReceive.mock.calls.find(c => c[0] === `show-settings-modal`);
+		if (!call) throw new Error(`call not found`);
+		call[1]({ project: {}, app: { allowBypassUpdates: true } });
+		expect((wrapper.vm as unknown as SettingsModalVM).appAllowBypassUpdates).toBe(true);
+
+		call[1]({ project: {}, app: {} });
+		expect((wrapper.vm as unknown as SettingsModalVM).appAllowBypassUpdates).toBe(false);
+
+		call[1]({ project: {}, app: { allowBypassUpdates: false } });
+		expect((wrapper.vm as unknown as SettingsModalVM).appAllowBypassUpdates).toBe(false);
+	});
+
 	test(`saveProjectSetting sends save-setting with projectId`, () => {
 		(wrapper.vm as unknown as SettingsModalVM).projectId = `proj-abc`;
 		(wrapper.vm as unknown as SettingsModalVM).saveProjectSetting(`env.alwaysChoose`, true);

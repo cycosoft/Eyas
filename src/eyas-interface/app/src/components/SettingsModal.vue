@@ -89,6 +89,16 @@
 								hide-details
 								data-qa="settings-app-always-choose"
 							/>
+
+							<v-divider class="my-4" />
+
+							<v-checkbox
+								v-model="appAllowBypassUpdates"
+								label="Allow bypassing Eyas updates"
+								density="compact"
+								hide-details
+								data-qa="settings-app-allow-bypass-updates"
+							/>
 						</v-sheet>
 					</v-window-item>
 				</v-window>
@@ -117,7 +127,6 @@
 		>
 			Setting saved
 		</v-snackbar>
-
 		<!-- Confirmation dialog for deleting credentials -->
 		<v-dialog
 			v-model="deleteConfirmVisible"
@@ -231,6 +240,16 @@ const appAlwaysChoose = computed({
 	}
 });
 
+const appAllowBypassUpdates = computed({
+	get(): IsActive {
+		return !!(settingsStore.appSettings.allowBypassUpdates);
+	},
+	set(val: IsActive): void {
+		settingsStore.setSetting(`allowBypassUpdates` as SettingKey, !!val);
+		saveAppSetting(`allowBypassUpdates` as SettingKey, !!val);
+	}
+});
+
 const projectAlwaysChoose = computed({
 	get(): IsActive {
 		return !!(settingsStore.projectSettings.env?.alwaysChoose);
@@ -260,7 +279,6 @@ onMounted(() => {
 		}
 	});
 });
-
 defineExpose({
 	visible,
 	toastVisible,
@@ -268,6 +286,7 @@ defineExpose({
 	activeTab,
 	projectAlwaysChoose,
 	appAlwaysChoose,
+	appAllowBypassUpdates,
 	projectCredentials,
 	deleteConfirmVisible,
 	credentialToDelete,

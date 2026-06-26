@@ -105,6 +105,7 @@ export type SettingsModalVM = {
 	activeTab: MenuLabel;
 	projectAlwaysChoose: IsVisible;
 	appAlwaysChoose: IsVisible;
+	appAllowBypassUpdates: boolean;
 	projectCredentials: CredentialMetadata[];
 	deleteConfirmVisible: IsVisible;
 	credentialToDelete: CredentialMetadata | null;
