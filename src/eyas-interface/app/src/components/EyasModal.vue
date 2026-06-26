@@ -6,7 +6,9 @@
 	>
 		<v-dialog
 			:model-value="modelValue"
-			:max-width="resolvedMaxWidth"
+			max-width="950"
+			width="80vw"
+			min-width="320"
 			persistent
 			:scrim="false"
 			@update:model-value="emit(`update:modelValue`, $event)"
@@ -33,19 +35,13 @@ import { ref, computed, watch } from 'vue';
 import ModalStore from '@/stores/modals.js';
 import ModalBackground from '@/components/ModalBackground.vue';
 import type { EyasModalProps, EyasModalEmits } from '@registry/components.js';
-import type { ModalId, IsVisible, ChannelName, LabelString } from '@registry/primitives.js';
+import type { ModalId, IsVisible, ChannelName } from '@registry/primitives.js';
 
-const props = withDefaults(defineProps<EyasModalProps>(), {
-	maxWidth: `60vw`
-});
+const props = defineProps<EyasModalProps>();
 
 const emit = defineEmits<EyasModalEmits>();
 
 const id = ref<ModalId>(window.crypto.randomUUID() as ModalId);
-
-const resolvedMaxWidth = computed((): LabelString => {
-	return String(props.maxWidth) as LabelString;
-});
 
 const backgroundContentVisible = computed((): IsVisible => {
 	return ModalStore().lastOpenedById === id.value;

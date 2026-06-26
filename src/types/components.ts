@@ -21,8 +21,6 @@ export type ModalWrapperEmits = {
 
 export type EyasModalProps = {
 	modelValue: IsVisible;
-	/** Default: '60vw' */
-	maxWidth?: LabelString | ViewportWidth;
 }
 
 export type EyasModalEmits = {
