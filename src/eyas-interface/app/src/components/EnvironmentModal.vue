@@ -214,9 +214,15 @@ defineExpose({
 
 <style scoped>
 .glass-panel {
-	background: #f8f9fa !important;
+	--env-primary: #58A1D6;
+	--env-primary-rgb: 88, 161, 214;
+	--env-background: #f8f9fa;
+	--env-surface: #ffffff;
+	--env-on-surface-rgb: 25, 28, 30;
+
+	background: var(--env-background) !important;
 	border: 1px solid rgba(255, 255, 255, 0.8) !important;
-	box-shadow: 0 24px 60px rgba(25, 28, 29, 0.12) !important;
+	box-shadow: 0 24px 60px rgba(var(--env-on-surface-rgb), 0.12) !important;
 	border-radius: 16px !important;
 }
 .domains-list {
@@ -232,25 +238,25 @@ defineExpose({
 	transition: all 0.2s ease-in-out;
 }
 .env-btn:hover, .active-env {
-	background-color: #ffffff !important;
-	border-color: rgba(88, 161, 214, 0.3) !important;
-	border-left-color: #58A1D6 !important;
-	box-shadow: 0 8px 24px rgba(88, 161, 214, 0.15) !important;
+	background-color: var(--env-surface) !important;
+	border-color: rgba(var(--env-primary-rgb), 0.3) !important;
+	border-left-color: var(--env-primary) !important;
+	box-shadow: 0 8px 24px rgba(var(--env-primary-rgb), 0.15) !important;
 	transform: translateY(-1px);
 }
 .env-btn:hover .icon-box, .active-env .icon-box {
-	background-color: #eff6ff !important;
-	color: #58A1D6 !important;
+	background-color: rgba(var(--env-primary-rgb), 0.1) !important;
+	color: var(--env-primary) !important;
 }
 .env-btn:hover .env-url, .active-env .env-url {
-	color: #58A1D6 !important;
+	color: var(--env-primary) !important;
 }
 .icon-box {
 	width: 40px;
 	height: 40px;
 	border-radius: 8px;
-	background-color: #f1f5f9;
-	color: #64748b;
+	background-color: rgba(var(--env-on-surface-rgb), 0.05);
+	color: rgba(var(--env-on-surface-rgb), 0.6);
 	display: flex;
 	align-items: center;
 	justify-content: center;
