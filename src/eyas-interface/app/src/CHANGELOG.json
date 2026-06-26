@@ -1,8 +1,10 @@
 [
 	{
-		"version": "26.6.28685",
+		"version": "26.6.28686",
 		"items": [
-			{ "text": "🟢 Update flow improvements" }
+			{ "text": "🟢 Reset URL history when choosing a new environment" },
+			{ "text": "🟢 Update flow improvements" },
+			{ "text": "🟣 Update dependencies" }
 		]
 	},
 	{

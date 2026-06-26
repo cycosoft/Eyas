@@ -186,7 +186,6 @@ function initEnvironmentIpcListeners(ctx: CoreContext): void {
 		ctx.setTestNetworkEnabled(status);
 		ctx.setMenu();
 	});
-
 	// listen for the user to select an environment
 	ipcMain.on(`environment-selected`, (_event, domain: EnvironmentSelectedPayload) => {
 		// support both legacy string (url only) and new object {url, key} formats
@@ -198,6 +197,8 @@ function initEnvironmentIpcListeners(ctx: CoreContext): void {
 		const parsed = parseURL(domainUrl);
 		ctx.setTestDomain(parsed ? parsed.toString() : domainUrl);
 		ctx.setEnvKey(domainKey);
+		// signal that navigation history should be cleared once the new page loads
+		ctx.setShouldClearHistory(true);
 
 		// load the test
 		ctx.setIsEnvironmentPending(false);

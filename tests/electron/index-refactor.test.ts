@@ -389,54 +389,31 @@ describe(`index.ts refactoring unit tests`, () => {
 
 describe(`UI Expansion IPC`, () => {
 	test(`show-ui IPC handler should call toggleEyasUI(true)`, () => {
-		const ctx = {
-			toggleEyasUI: vi.fn(),
-			$eyasLayer: { webContents: { send: vi.fn() } }
-		} as unknown as CoreContext;
-
-		// get the handler registered by initIpcHandlers
+		const ctx = { toggleEyasUI: vi.fn(), $eyasLayer: { webContents: { send: vi.fn() } } } as unknown as CoreContext;
 		let showUiHandler: unknown = null;
 		vi.spyOn(ipcMain, `on`).mockImplementation((channel, cb) => {
 			if (channel === `show-ui`) { showUiHandler = cb; }
 			return ipcMain;
 		});
-
 		initIpcHandlers(ctx);
-
 		if (typeof showUiHandler !== `function`) { throw new Error(`show-ui handler not registered`); }
-
-		// trigger the handler
 		showUiHandler({} as IpcMainEvent);
-
 		expect(ctx.toggleEyasUI).toHaveBeenCalledWith(true);
 	});
 });
 
 describe(`Browser Copy URL IPC`, () => {
 	test(`browser-copy-url IPC handler should write active URL to system clipboard`, () => {
-		const mockWebContents = {
-			getURL: vi.fn().mockReturnValue(`https://example.com/test-url`),
-			isDestroyed: vi.fn().mockReturnValue(false)
-		};
-		const ctx = {
-			$isInitializing: false,
-			$testLayer: {
-				webContents: mockWebContents
-			}
-		} as unknown as CoreContext;
-
+		const mockWebContents = { getURL: vi.fn().mockReturnValue(`https://example.com/test-url`), isDestroyed: vi.fn().mockReturnValue(false) };
+		const ctx = { $isInitializing: false, $testLayer: { webContents: mockWebContents } } as unknown as CoreContext;
 		let copyUrlHandler: unknown = null;
 		vi.spyOn(ipcMain, `on`).mockImplementation((channel, cb) => {
 			if (channel === `browser-copy-url`) { copyUrlHandler = cb; }
 			return ipcMain;
 		});
-
 		initIpcHandlers(ctx);
-
 		if (typeof copyUrlHandler !== `function`) { throw new Error(`browser-copy-url handler not registered`); }
-
 		copyUrlHandler({} as IpcMainEvent);
-
 		expect(mockWebContents.getURL).toHaveBeenCalled();
 		expect(clipboard.writeText).toHaveBeenCalledWith(`https://example.com/test-url`);
 	});
@@ -444,30 +421,47 @@ describe(`Browser Copy URL IPC`, () => {
 
 describe(`Open DevTools Console IPC`, () => {
 	test(`open-devtools-console IPC handler should call openDevTools on the active layer`, () => {
-		const mockWebContents = {
-			openDevTools: vi.fn(),
-			isDestroyed: vi.fn().mockReturnValue(false),
-			devToolsWebContents: null
-		};
-		const ctx = {
-			$testLayer: {
-				webContents: mockWebContents
-			}
-		} as unknown as CoreContext;
-
+		const mockWebContents = { openDevTools: vi.fn(), isDestroyed: vi.fn().mockReturnValue(false), devToolsWebContents: null };
+		const ctx = { $testLayer: { webContents: mockWebContents } } as unknown as CoreContext;
 		let consoleHandler: any = null; // eslint-disable-line @typescript-eslint/no-explicit-any
 		vi.spyOn(ipcMain, `on`).mockImplementation((channel, cb) => {
 			if (channel === `open-devtools-console`) { consoleHandler = cb; }
 			return ipcMain;
 		});
-
 		initIpcHandlers(ctx);
-
 		if (typeof consoleHandler !== `function`) { throw new Error(`open-devtools-console handler not registered`); }
-
 		consoleHandler({} as IpcMainEvent);
-
 		expect(mockWebContents.openDevTools).toHaveBeenCalledWith({ mode: `detach` });
 	});
 });
+
+describe(`Environment Selected IPC`, () => {
+	test(`environment-selected IPC handler should clear navigation history and navigate`, () => {
+		const ctx = {
+			setTestDomainRaw: vi.fn(),
+			setTestDomain: vi.fn(),
+			setEnvKey: vi.fn(),
+			setIsEnvironmentPending: vi.fn(),
+			setShouldClearHistory: vi.fn(),
+			navigate: vi.fn()
+		} as unknown as CoreContext;
+
+		let envSelectedHandler: any = null; // eslint-disable-line @typescript-eslint/no-explicit-any
+		vi.spyOn(ipcMain, `on`).mockImplementation((channel, cb) => {
+			if (channel === `environment-selected`) { envSelectedHandler = cb; }
+			return ipcMain;
+		});
+
+		initIpcHandlers(ctx);
+
+		if (typeof envSelectedHandler !== `function`) { throw new Error(`environment-selected handler not registered`); }
+
+		envSelectedHandler({} as IpcMainEvent, { url: `https://example.com`, key: `staging` });
+
+		expect(ctx.setTestDomainRaw).toHaveBeenCalledWith(`https://example.com`);
+		expect(ctx.setShouldClearHistory).toHaveBeenCalledWith(true);
+		expect(ctx.navigate).toHaveBeenCalled();
+	});
+});
+
 
