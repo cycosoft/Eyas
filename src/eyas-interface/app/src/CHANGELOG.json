@@ -3,6 +3,7 @@
 		"version": "26.6.28687",
 		"items": [
 			{ "text": "🟢 Redesigned the environment selection modal" },
+			{ "text": "🟢 The last used environment is now always remembered" },
 			{ "text": "🟢 Reset URL history when choosing a new environment" },
 			{ "text": "🟢 Update flow improvements" },
 			{ "text": "🟣 Update dependencies" }
