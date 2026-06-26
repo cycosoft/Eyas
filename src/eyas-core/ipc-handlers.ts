@@ -10,8 +10,6 @@ import { isMac } from '@scripts/platform-utils.js';
 import { initCredentialIpcListeners } from './ipc-handlers.credentials.js';
 import { adjustZoom } from './window.shortcuts.js';
 
-
-
 import type {
 	LaunchLinkPayload,
 	EnvironmentSelectedPayload,
@@ -20,7 +18,6 @@ import type {
 	TitleBarOverlayPayload
 } from '@registry/ipc.js';
 import type { IsActive, AppVersion, ViewportWidth, ViewportHeight, ChannelName, DomainUrl } from '@registry/primitives.js';
-
 
 // Initializes all IPC handlers for the application.
 export function initIpcHandlers(ctx: CoreContext): void {
@@ -35,7 +32,6 @@ export function initIpcHandlers(ctx: CoreContext): void {
 		ctx.triggerBufferedModal();
 	});
 }
-
 
 // Initializes application-level IPC listeners.
 function initAppIpcListeners(ctx: CoreContext): void {
@@ -228,6 +224,11 @@ function initSettingsIpcListeners(ctx: CoreContext): void {
 			// but we can trigger it via context if needed.
 			// Actually, index.ts's updateNativeTheme just sets nativeTheme.themeSource.
 			nativeTheme.themeSource = (value as `light` | `dark` | `system`) || `system`;
+		}
+
+		// update auto-install setting dynamically
+		if (key === `allowBypassUpdates`) {
+			ctx.updateService.setAutoInstallOnAppQuit(!value as IsActive);
 		}
 
 		// notify the UI that a setting has changed

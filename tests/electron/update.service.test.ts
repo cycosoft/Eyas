@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { updateService } from '@core/update.service.js';
 import electronUpdater from 'electron-updater';
 const { autoUpdater } = electronUpdater;
+import * as settingsService from '@core/settings-service.js';
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { GenericKey, AppVersion, Count } from '@registry/primitives.js';
 
@@ -44,6 +45,13 @@ vi.mock(`electron-updater`, () => {
 	};
 });
 
+// Mock settings-service
+vi.mock(`@core/settings-service.js`, () => ({
+	get: vi.fn(),
+	set: vi.fn(),
+	save: vi.fn()
+}));
+
 // Mock semver
 vi.mock(`semver`, () => ({
 	default: {
@@ -69,17 +77,34 @@ describe(`Update Service`, () => {
 		} as unknown as CoreContext;
 	});
 
-	it(`should initialize with correct settings`, () => {
+	it(`should initialize with correct settings (allowBypassUpdates = false)`, () => {
+		vi.mocked(settingsService.get).mockReturnValue(false);
 		updateService.init(mockCtx);
 
 		expect(autoUpdater.forceDevUpdateConfig).toBe(true);
-		expect(autoUpdater.autoInstallOnAppQuit).toBe(false);
+		expect(autoUpdater.autoInstallOnAppQuit).toBe(true);
 		expect(autoUpdater.logger).toBeNull();
 		expect(autoUpdater.setFeedURL).toHaveBeenCalledWith(expect.objectContaining({
 			owner: `cycosoft`,
 			repo: `Eyas`
 		}));
 		expect(autoUpdater.checkForUpdates).toHaveBeenCalled();
+	});
+
+	it(`should initialize with allowBypassUpdates enabled`, () => {
+		vi.mocked(settingsService.get).mockReturnValue(true);
+		updateService.init(mockCtx);
+
+		expect(autoUpdater.autoInstallOnAppQuit).toBe(false);
+	});
+
+	it(`should allow setting autoInstallOnAppQuit dynamically`, () => {
+		updateService.init(mockCtx);
+		updateService.setAutoInstallOnAppQuit(false);
+		expect(autoUpdater.autoInstallOnAppQuit).toBe(false);
+
+		updateService.setAutoInstallOnAppQuit(true);
+		expect(autoUpdater.autoInstallOnAppQuit).toBe(true);
 	});
 
 	it(`should update status and refresh menu on update-available`, () => {

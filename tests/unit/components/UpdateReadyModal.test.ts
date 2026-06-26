@@ -5,6 +5,7 @@ import UpdateReadyModal from '@/components/UpdateReadyModal.vue';
 import { createPinia, setActivePinia } from 'pinia';
 import type { WindowWithEyas, ChannelName } from '@registry/ipc.js';
 import type { IsVisible, IsExitFlow } from '@registry/primitives.js';
+import useSettingsStore from '@/stores/settings.js';
 
 describe(`UpdateReadyModal`, () => {
 	let wrapper: VueWrapper;
@@ -72,6 +73,9 @@ describe(`UpdateReadyModal`, () => {
 	});
 
 	test(`exits app when "Later" is clicked in exit flow`, async () => {
+		const settingsStore = useSettingsStore();
+		settingsStore.appSettings.allowBypassUpdates = true;
+
 		if (receiveCallback) receiveCallback(true, true);
 		await wrapper.vm.$nextTick();
 
@@ -89,5 +93,35 @@ describe(`UpdateReadyModal`, () => {
 		await updateBtn.trigger(`click`);
 
 		expect(mockSend).toHaveBeenCalledWith(`install-update`);
+	});
+
+	test(`shows "Later" button in normal flow even if bypass is disabled`, async () => {
+		const settingsStore = useSettingsStore();
+		settingsStore.appSettings.allowBypassUpdates = false;
+
+		if (receiveCallback) receiveCallback(true, false);
+		await wrapper.vm.$nextTick();
+
+		expect(wrapper.find(`[data-qa="btn-update-later"]`).exists()).toBe(true);
+	});
+
+	test(`hides "Later" button in exit flow if bypass is disabled`, async () => {
+		const settingsStore = useSettingsStore();
+		settingsStore.appSettings.allowBypassUpdates = false;
+
+		if (receiveCallback) receiveCallback(true, true);
+		await wrapper.vm.$nextTick();
+
+		expect(wrapper.find(`[data-qa="btn-update-later"]`).exists()).toBe(false);
+	});
+
+	test(`shows "Later" button in exit flow if bypass is enabled`, async () => {
+		const settingsStore = useSettingsStore();
+		settingsStore.appSettings.allowBypassUpdates = true;
+
+		if (receiveCallback) receiveCallback(true, true);
+		await wrapper.vm.$nextTick();
+
+		expect(wrapper.find(`[data-qa="btn-update-later"]`).exists()).toBe(true);
 	});
 });

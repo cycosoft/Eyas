@@ -3,6 +3,7 @@ const { autoUpdater } = electronUpdater;
 import semver from 'semver';
 import type { UpdateService, CoreContext } from '@registry/eyas-core.js';
 import type { UpdateStatus, IsActive, ChannelName } from '@registry/primitives.js';
+import * as settingsService from './settings-service.js';
 
 let $updateStatus = `idle` as UpdateStatus;
 let $updateCheckUserTriggered: IsActive = false;
@@ -15,7 +16,8 @@ export const updateService: UpdateService = {
 	 */
 	init: (ctx: CoreContext): void => {
 		autoUpdater.forceDevUpdateConfig = true;
-		autoUpdater.autoInstallOnAppQuit = false;
+		const allowBypassSetting = settingsService.get(`allowBypassUpdates`) as IsActive;
+		autoUpdater.autoInstallOnAppQuit = !allowBypassSetting;
 
 		// Spoof the current version for update testing (currentVersion is read-only)
 		Object.defineProperty(autoUpdater, `currentVersion`, {
@@ -79,5 +81,10 @@ export const updateService: UpdateService = {
 	reset: (): void => {
 		$updateStatus = `idle`;
 		$updateCheckUserTriggered = false;
+	},
+
+	/** Updates the autoInstallOnAppQuit setting dynamically */
+	setAutoInstallOnAppQuit: (enabled: IsActive): void => {
+		autoUpdater.autoInstallOnAppQuit = enabled;
 	}
 };

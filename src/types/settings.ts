@@ -20,6 +20,7 @@ type SettingsBase = {
 	theme?: ThemeMode;
 	lastSeenVersion?: AppVersion;
 	testServer?: TestServerSettings;
+	allowBypassUpdates?: boolean;
 }
 
 /** Settings stored at the application level */
