@@ -25,6 +25,20 @@ vi.mock(`@/utils/changelog-utils`, () => ({
 	tokenizeMarkdownSubset: vi.fn(text => [{ type: `text`, content: text }])
 }));
 
+// Mock the changelog data
+vi.mock(`@/CHANGELOG.json`, () => ({
+	default: [
+		{
+			version: `26.6.19`,
+			items: [
+				{
+					text: `test`
+				}
+			]
+		}
+	]
+}));
+
 describe(`WhatsNewModal`, () => {
 	let wrapper: VueWrapper;
 	beforeEach(async () => {
