@@ -28,7 +28,7 @@
 						data-qa="btn-update-now"
 						@click="update"
 					>
-						Close & <u>U</u>pdate
+						Close & <u class="update-underline">U</u>pdate
 					</v-btn>
 					<v-menu>
 						<template #activator="{ props }">
@@ -54,7 +54,7 @@
 					data-qa="btn-update-now"
 					@click="update"
 				>
-					Close & <u>U</u>pdate
+					Close & <u class="update-underline">U</u>pdate
 				</v-btn>
 			</v-card-actions>
 		</v-card>
@@ -99,3 +99,9 @@ onMounted(() => {
 	});
 });
 </script>
+
+<style scoped>
+.update-underline {
+	margin-left: 0.3rem;
+}
+</style>
