@@ -1,77 +1,71 @@
 <template>
-	<ModalWrapper
-		v-model="visible"
-		type="dialog"
-	>
-		<v-card class="glass-panel overflow-hidden pa-0" width="520">
-			<div class="px-8 pt-8 pb-6 text-center shrink-0">
-				<h2 class="font-headline text-h5 font-weight-bold text-on-surface tracking-tight mb-2" data-qa="environment-modal-title">
-					Simulate Environment
-				</h2>
-				<p class="font-body text-body-1 text-on-surface-variant mb-4">
-					Choose where to launch your first session.
-				</p>
-				<p class="font-body text-body-2 text-grey-darken-1 leading-relaxed max-w-[90%] mx-auto">
-					Eyas simulates these domains locally to handle environment-specific requirements like authentication and cookies. Your application is always served from your local files.
-				</p>
-			</div>
+	<EyasModal v-model="visible">
+		<template #title>
+			<h2 class="font-headline text-h5 font-weight-bold text-on-surface tracking-tight mb-2" data-qa="environment-modal-title">
+				Simulate Environment
+			</h2>
+			<p class="font-body text-body-1 text-on-surface-variant mb-4">
+				Choose where to launch your first session.
+			</p>
+			<p class="font-body text-body-2 text-grey-darken-1 leading-relaxed max-w-[90%] mx-auto">
+				Eyas simulates these domains locally to handle environment-specific requirements like authentication and cookies. Your application is always served from your local files.
+			</p>
+		</template>
 
-			<div class="px-8 mb-6 overflow-y-auto custom-scrollbar pr-6 mx-2 domains-list">
-				<v-btn
-					v-for="(domain, index) in domains"
-					:key="index"
-					class="w-full text-left justify-start py-8 px-4 mb-3 rounded-xl env-btn"
-					:class="{ 'active-env': loadingIndex === index }"
-					variant="flat"
-					:loading="loadingIndex === index"
-					block
-					data-qa="btn-env"
-					@click="onSelectEnvironment(domain, index)"
-				>
-					<template #prepend>
-						<div class="icon-box mr-4" :class="{ 'active-icon-box': loadingIndex === index }">
-							<v-icon size="22">
-								{{ getIcon(domain) }}
-							</v-icon>
-						</div>
-					</template>
-
-					<div class="d-flex flex-column align-start">
-						<span class="font-headline font-weight-bold text-body-1 text-high-emphasis">
-							{{ domain.title }}
-						</span>
-						<span class="font-body text-caption text-grey env-url">
-							{{ domain.url }}
-						</span>
+		<div class="domains-list custom-scrollbar">
+			<v-btn
+				v-for="(domain, index) in domains"
+				:key="index"
+				class="w-full text-left justify-start py-8 px-4 mb-3 rounded-xl env-btn"
+				:class="{ 'active-env': loadingIndex === index }"
+				variant="flat"
+				:loading="loadingIndex === index"
+				block
+				data-qa="btn-env"
+				@click="onSelectEnvironment(domain, index)"
+			>
+				<template #prepend>
+					<div class="icon-box mr-4" :class="{ 'active-icon-box': loadingIndex === index }">
+						<v-icon size="22">
+							{{ getIcon(domain) }}
+						</v-icon>
 					</div>
-				</v-btn>
-			</div>
+				</template>
 
-			<div class="px-8 mb-6 shrink-0">
-				<v-alert
-					type="info"
-					color="amber-lighten-5"
-					icon="mdi-information-outline"
-					variant="flat"
-					border="start"
-					class="rounded-xl border-amber-lighten-2 text-amber-darken-4 font-body text-body-2 py-3 px-4"
-				>
-					Your choice will be remembered for this project. You can quickly switch between environments anytime using the menu in the URL bar.
-				</v-alert>
-			</div>
+				<div class="d-flex flex-column align-start">
+					<span class="font-headline font-weight-bold text-body-1 text-high-emphasis">
+						{{ domain.title }}
+					</span>
+					<span class="font-body text-caption text-grey env-url">
+						{{ domain.url }}
+					</span>
+				</div>
+			</v-btn>
+		</div>
 
-			<v-card-actions class="px-8 pb-6 justify-end">
-				<v-checkbox
-					v-model="alwaysChoose"
-					label="Remember this choice"
-					density="compact"
-					hide-details
-					data-qa="checkbox-always-choose"
-					@update:model-value="onAlwaysChooseChange"
-				/>
-			</v-card-actions>
-		</v-card>
+		<v-alert
+			type="info"
+			color="amber-lighten-5"
+			icon="mdi-information-outline"
+			variant="flat"
+			border="start"
+			class="rounded-xl border-amber-lighten-2 text-amber-darken-4 font-body text-body-2 py-3 px-4 mt-2"
+		>
+			Your choice will be remembered for this project. You can quickly switch between environments anytime using the menu in the URL bar.
+		</v-alert>
 
+		<template #actions>
+			<v-checkbox
+				v-model="alwaysChoose"
+				label="Remember this choice"
+				density="compact"
+				hide-details
+				data-qa="checkbox-always-choose"
+				@update:model-value="onAlwaysChooseChange"
+			/>
+		</template>
+
+		<!-- Inner confirmation dialog — not part of EyasModal, standalone v-dialog -->
 		<v-dialog v-model="warningVisible" max-width="400" persistent>
 			<v-card class="pa-4">
 				<v-card-title class="text-h6 font-weight-bold text-center" data-qa="warning-dialog-title">
@@ -93,12 +87,12 @@
 				</v-card-actions>
 			</v-card>
 		</v-dialog>
-	</ModalWrapper>
+	</EyasModal>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import ModalWrapper from '@/components/ModalWrapper.vue';
+import EyasModal from '@/components/EyasModal.vue';
 import type { EnvironmentChoiceWithTitle } from '@registry/core.js';
 import type { IsVisible, ListIndex, IsActive, ProjectId, ChannelName, HashString, LabelString } from '@registry/primitives.js';
 
@@ -213,21 +207,11 @@ defineExpose({
 </script>
 
 <style scoped>
-.glass-panel {
-	--env-primary: #58A1D6;
-	--env-primary-rgb: 88, 161, 214;
-	--env-background: #f8f9fa;
-	--env-surface: #ffffff;
-	--env-on-surface-rgb: 25, 28, 30;
-
-	background: var(--env-background) !important;
-	border: 1px solid rgba(255, 255, 255, 0.8) !important;
-	box-shadow: 0 24px 60px rgba(var(--env-on-surface-rgb), 0.12) !important;
-	border-radius: 16px !important;
-}
 .domains-list {
-	max-height: 380px !important;
+	max-height: 380px;
+	overflow-y: auto;
 }
+
 .env-btn {
 	text-transform: none !important;
 	letter-spacing: normal !important;
@@ -237,41 +221,49 @@ defineExpose({
 	border-left: 4px solid transparent !important;
 	transition: all 0.2s ease-in-out;
 }
+
 .env-btn:hover, .active-env {
-	background-color: var(--env-surface) !important;
-	border-color: rgba(var(--env-primary-rgb), 0.3) !important;
-	border-left-color: var(--env-primary) !important;
-	box-shadow: 0 8px 24px rgba(var(--env-primary-rgb), 0.15) !important;
+	background-color: #ffffff !important;
+	border-color: rgba(88, 161, 214, 0.3) !important;
+	border-left-color: #58A1D6 !important;
+	box-shadow: 0 8px 24px rgba(88, 161, 214, 0.15) !important;
 	transform: translateY(-1px);
 }
+
 .env-btn:hover .icon-box, .active-env .icon-box {
-	background-color: rgba(var(--env-primary-rgb), 0.1) !important;
-	color: var(--env-primary) !important;
+	background-color: rgba(88, 161, 214, 0.1) !important;
+	color: #58A1D6 !important;
 }
+
 .env-btn:hover .env-url, .active-env .env-url {
-	color: var(--env-primary) !important;
+	color: #58A1D6 !important;
 }
+
 .icon-box {
 	width: 40px;
 	height: 40px;
 	border-radius: 8px;
-	background-color: rgba(var(--env-on-surface-rgb), 0.05);
-	color: rgba(var(--env-on-surface-rgb), 0.6);
+	background-color: rgba(25, 28, 30, 0.05);
+	color: rgba(25, 28, 30, 0.6);
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	transition: all 0.2s ease-in-out;
 }
+
 .custom-scrollbar::-webkit-scrollbar {
 	width: 4px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-track {
 	background: transparent;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
 	background: #e2e8f0;
 	border-radius: 10px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
 	background: #cbd5e1;
 }

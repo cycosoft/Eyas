@@ -19,6 +19,16 @@ export type ModalWrapperEmits = {
 	(e: `update:modelValue`, value: IsVisible): void;
 }
 
+export type EyasModalProps = {
+	modelValue: IsVisible;
+	/** Default: '60vw' */
+	maxWidth?: LabelString | ViewportWidth;
+}
+
+export type EyasModalEmits = {
+	(e: `update:modelValue`, value: IsVisible): void;
+}
+
 export type ModalBackgroundEmits = {
 	(e: `after-leave`): void;
 }
