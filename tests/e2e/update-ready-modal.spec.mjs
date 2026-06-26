@@ -37,9 +37,9 @@ test.describe(`Update Ready Modal`, () => {
 		await expect(modalText).toBeVisible({ timeout: 5000 });
 		await expect(modalText).toContainText(`ready to install`);
 
-		// click "Later"
-		const laterBtn = uiPage.locator(`[data-qa="btn-update-later"]`);
-		await laterBtn.click();
+		// click "Cancel"
+		const cancelBtn = uiPage.locator(`[data-qa="btn-update-cancel"]`);
+		await cancelBtn.click();
 
 		// verify modal is hidden
 		await expect(modalText).not.toBeVisible();
