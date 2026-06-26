@@ -20,8 +20,8 @@
 				<v-btn
 					v-for="(domain, index) in domains"
 					:key="index"
-					class="w-full text-left justify-start py-8 px-4 mb-3 border-thin rounded-xl tonal-transition env-btn"
-					:class="{ 'active-env': isActive(domain) || loadingIndex === index }"
+					class="w-full text-left justify-start py-8 px-4 mb-3 rounded-xl env-btn"
+					:class="{ 'active-env': loadingIndex === index }"
 					variant="flat"
 					:loading="loadingIndex === index"
 					block
@@ -29,7 +29,7 @@
 					@click="onSelectEnvironment(domain, index)"
 				>
 					<template #prepend>
-						<div class="icon-box mr-4" :class="{ 'active-icon-box': isActive(domain) || loadingIndex === index }">
+						<div class="icon-box mr-4" :class="{ 'active-icon-box': loadingIndex === index }">
 							<v-icon size="22">
 								{{ getIcon(domain) }}
 							</v-icon>
@@ -40,7 +40,7 @@
 						<span class="font-headline font-weight-bold text-body-1 text-high-emphasis">
 							{{ domain.title }}
 						</span>
-						<span class="font-body text-caption text-grey">
+						<span class="font-body text-caption text-grey env-url">
 							{{ domain.url }}
 						</span>
 					</div>
@@ -108,7 +108,6 @@ const loadingIndex = ref<ListIndex>(-1);
 const alwaysChoose = ref<IsActive>(false);
 const projectId = ref<ProjectId | null>(null);
 const domainsHash = ref<HashString | null>(null);
-const lastChoice = ref<EnvironmentChoiceWithTitle | null>(null);
 
 const warningVisible = ref<IsVisible>(false);
 const pendingDomain = ref<EnvironmentChoiceWithTitle | null>(null);
@@ -121,7 +120,6 @@ const reset = (): void => {
 	alwaysChoose.value = false;
 	projectId.value = null;
 	domainsHash.value = null;
-	lastChoice.value = null;
 	warningVisible.value = false;
 	pendingDomain.value = null;
 	pendingIndex.value = -1;
@@ -133,11 +131,6 @@ const getIcon = (domain: EnvironmentChoiceWithTitle): LabelString => {
 		return `mdi-console`;
 	}
 	return `mdi-earth`;
-};
-
-const isActive = (domain: EnvironmentChoiceWithTitle): IsActive => {
-	if (!lastChoice.value) { return false; }
-	return lastChoice.value.url === domain.url;
 };
 
 const choose = (domain: EnvironmentChoiceWithTitle, domainIndex: ListIndex): void => {
@@ -196,7 +189,6 @@ onMounted(() => {
 		projectId.value = options.projectId ?? null;
 		alwaysChoose.value = !!options.alwaysChoose;
 		domainsHash.value = options.domainsHash ?? null;
-		lastChoice.value = options.lastChoice ?? null;
 		visible.value = true;
 	});
 });
@@ -208,7 +200,6 @@ defineExpose({
 	alwaysChoose,
 	projectId,
 	domainsHash,
-	lastChoice,
 	warningVisible,
 	pendingDomain,
 	pendingIndex,
@@ -217,8 +208,7 @@ defineExpose({
 	onSelectEnvironment,
 	confirmWarning,
 	cancelWarning,
-	getIcon,
-	isActive
+	getIcon
 });
 </script>
 
@@ -237,19 +227,23 @@ defineExpose({
 	letter-spacing: normal !important;
 	height: auto !important;
 	background-color: rgba(255, 255, 255, 0.6) !important;
-	border: 1px solid rgba(226, 232, 240, 0.5) !important;
+	border: 2px solid transparent !important;
+	border-left: 4px solid transparent !important;
 	transition: all 0.2s ease-in-out;
 }
-.env-btn:hover {
+.env-btn:hover, .active-env {
 	background-color: #ffffff !important;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+	border-color: rgba(88, 161, 214, 0.3) !important;
+	border-left-color: #58A1D6 !important;
+	box-shadow: 0 8px 24px rgba(88, 161, 214, 0.15) !important;
 	transform: translateY(-1px);
 }
-.active-env {
-	background-color: #ffffff !important;
-	border: 2px solid rgba(88, 161, 214, 0.3) !important;
-	border-left: 4px solid #58A1D6 !important;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+.env-btn:hover .icon-box, .active-env .icon-box {
+	background-color: #eff6ff !important;
+	color: #58A1D6 !important;
+}
+.env-btn:hover .env-url, .active-env .env-url {
+	color: #58A1D6 !important;
 }
 .icon-box {
 	width: 40px;
@@ -261,10 +255,6 @@ defineExpose({
 	align-items: center;
 	justify-content: center;
 	transition: all 0.2s ease-in-out;
-}
-.active-icon-box {
-	background-color: #eff6ff !important;
-	color: #58A1D6 !important;
 }
 .custom-scrollbar::-webkit-scrollbar {
 	width: 4px;

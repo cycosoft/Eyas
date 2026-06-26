@@ -174,18 +174,14 @@ describe(`EnvironmentModal`, () => {
 			expect((wrapper.vm as unknown as EnvironmentModalVM).alwaysChoose).toBe(false);
 		});
 
-		test(`show-environment-modal payload sets alwaysChoose and lastChoice`, () => {
+		test(`show-environment-modal payload sets alwaysChoose`, () => {
 			// Simulate the IPC receive callback
 			const call = mockReceive.mock.calls.find(c => c[0] === `show-environment-modal`);
 			if (!call) throw new Error(`call not found`);
-			const chosenEnv = { url: `https://staging.eyas.cycosoft.com`, title: `Staging` };
-			call[1]([], { alwaysChoose: true, projectId: `proj-x`, domainsHash: `abc`, lastChoice: chosenEnv });
+			call[1]([], { alwaysChoose: true, projectId: `proj-x`, domainsHash: `abc` });
 			expect((wrapper.vm as unknown as EnvironmentModalVM).alwaysChoose).toBe(true);
 			expect((wrapper.vm as unknown as EnvironmentModalVM).projectId).toBe(`proj-x`);
 			expect((wrapper.vm as unknown as EnvironmentModalVM).domainsHash).toBe(`abc`);
-			expect((wrapper.vm as unknown as EnvironmentModalVM).lastChoice).toEqual(chosenEnv);
-			expect((wrapper.vm as unknown as EnvironmentModalVM).isActive(chosenEnv)).toBe(true);
-			expect((wrapper.vm as unknown as EnvironmentModalVM).isActive({ url: `https://prod.com`, title: `Production` })).toBe(false);
 		});
 
 		test(`onAlwaysChooseChange sends save-setting with correct projectId`, () => {

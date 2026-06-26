@@ -73,15 +73,13 @@ export type EnvironmentModalVM = {
 	alwaysChoose: IsVisible;
 	projectId: AppTitle | null;
 	domainsHash: ResponseBody | null;
-	lastChoice: EnvironmentChoiceWithTitle | null;
 	warningVisible: IsVisible;
 	pendingDomain: EnvironmentChoiceWithTitle | null;
 	pendingIndex: ListIndex;
 	onSelectEnvironment: (domain: EnvironmentChoiceWithTitle, index: ListIndex) => void;
 	confirmWarning: () => void;
 	cancelWarning: () => void;
-	isActive: (domain: EnvironmentChoiceWithTitle) => boolean;
-	getIcon: (domain: EnvironmentChoiceWithTitle) => string;
+	getIcon: (domain: EnvironmentChoiceWithTitle) => LabelString;
 	onAlwaysChooseChange: (value: IsActive) => void;
 	$nextTick: () => Promise<void>;
 	$options: ComponentOptions;

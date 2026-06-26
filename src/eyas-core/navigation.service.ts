@@ -138,8 +138,7 @@ function handleMultiDomainNavigation(ctx: CoreContext, forceShow: IsActive): voi
 			projectId: ctx.$config.meta.projectId ?? undefined,
 			alwaysChoose: !!alwaysChoose,
 			domainsHash: currentHash,
-			forceShow,
-			lastChoice: lastChoice ?? undefined
+			forceShow
 		});
 		ctx.setMenu();
 	}
