@@ -45,7 +45,7 @@
 			color="amber-darken-4"
 			icon="mdi-information-outline"
 			variant="outlined"
-			class="rounded-lg py-3 mt-2 bg-amber-lighten-5 text-body-small"
+			class="rounded-lg py-3 mt-2 mx-16 bg-amber-lighten-5 text-body-small"
 		>
 			Your choice will be remembered for this project. You can quickly switch between environments anytime using the menu in the URL bar.
 		</v-alert>
