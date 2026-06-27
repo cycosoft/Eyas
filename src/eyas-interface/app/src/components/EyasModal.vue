@@ -73,7 +73,7 @@ watch(() => ModalStore().closeAllCounter, () => {
 	/* Design system tokens */
 	--modal-primary: #58A1D6;
 	--modal-primary-rgb: 88, 161, 214;
-	--modal-background: #f8f9fa;
+	--modal-background: #f8f8f8;
 	--modal-surface: #ffffff;
 	--modal-on-surface-rgb: 25, 28, 30;
 
