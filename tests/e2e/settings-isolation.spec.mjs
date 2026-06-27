@@ -79,6 +79,7 @@ test.describe(`Project Settings Isolation`, () => {
 
 		// Select an environment to dismiss the modal and trigger the save
 		await uiPage.locator(`[data-qa="btn-env"]`).first().click();
+
 		await expect(envModal).not.toBeVisible({ timeout: 5_000 });
 
 		await exitEyas(electronApp);

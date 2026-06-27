@@ -5,7 +5,7 @@
 				Settings
 			</v-card-title>
 			<v-card-text class="px-0 pt-0">
-				<v-tabs v-model="activeTab" color="primary">
+				<v-tabs v-if="projectId" v-model="activeTab" color="primary">
 					<v-tab value="project" data-qa="settings-tab-project">
 						Project
 					</v-tab>
@@ -16,7 +16,7 @@
 
 				<v-window v-model="activeTab">
 					<!-- Project-level settings -->
-					<v-window-item value="project">
+					<v-window-item v-if="projectId" value="project">
 						<v-sheet class="pa-4">
 							<v-checkbox
 								v-model="projectAlwaysChoose"
@@ -84,7 +84,7 @@
 
 							<v-checkbox
 								v-model="appAlwaysChoose"
-								label="Remember Selected Environment"
+								label="Automatically load the last chosen environment for all projects"
 								density="compact"
 								hide-details
 								data-qa="settings-app-always-choose"
@@ -267,7 +267,7 @@ onMounted(() => {
 		projectId.value = newProjectId ?? null;
 		projectCredentials.value = credentials || [];
 		settingsStore.loadFromPayload({ project, app, projectId: newProjectId, systemTheme });
-		activeTab.value = `project`;
+		activeTab.value = newProjectId ? `project` : `app`;
 		toastVisible.value = false;
 		visible.value = true;
 	});

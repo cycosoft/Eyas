@@ -79,13 +79,13 @@ describe(`EnvironmentModal`, () => {
 		await (wrapper.vm as unknown as EnvironmentModalVM).$nextTick();
 
 		// Call choose method directly to test IPC sending
-		(wrapper.vm as unknown as EnvironmentModalVM).choose(domains[0].url, 0);
+		(wrapper.vm as unknown as EnvironmentModalVM).choose(domains[0], 0);
 
 		// Wait for setTimeout in choose method
 		vi.advanceTimersByTime(250);
 
 		// Verify IPC was called with the URL
-		expect(mockSend).toHaveBeenCalledWith(`environment-selected`, `https://example.com`);
+		expect(mockSend).toHaveBeenCalledWith(`environment-selected`, domains[0]);
 	});
 
 	test(`sends URL without protocol correctly`, async () => {
@@ -98,12 +98,12 @@ describe(`EnvironmentModal`, () => {
 		await (wrapper.vm as unknown as EnvironmentModalVM).$nextTick();
 
 		// Call choose method directly to test IPC sending
-		(wrapper.vm as unknown as EnvironmentModalVM).choose(domains[0].url, 0);
+		(wrapper.vm as unknown as EnvironmentModalVM).choose(domains[0], 0);
 
 		vi.advanceTimersByTime(250);
 
 		// URL without protocol should be sent as-is (parseURL will handle it in main process)
-		expect(mockSend).toHaveBeenCalledWith(`environment-selected`, `example.com`);
+		expect(mockSend).toHaveBeenCalledWith(`environment-selected`, domains[0]);
 	});
 
 	test(`modal shows and hides correctly`, async () => {
@@ -225,6 +225,22 @@ describe(`EnvironmentModal`, () => {
 				value: `deadbeef`,
 				projectId: `proj-z`
 			});
+		});
+	});
+
+	// -------------------------------------------------------------------------
+	// onSelectEnvironment
+	// -------------------------------------------------------------------------
+	describe(`onSelectEnvironment`, () => {
+		test(`selecting environment immediately calls choose()`, async () => {
+			const domain = { url: `https://example.com`, title: `Example` };
+			(wrapper.vm as unknown as EnvironmentModalVM).domains = [domain];
+			(wrapper.vm as unknown as EnvironmentModalVM).visible = true;
+			await (wrapper.vm as unknown as EnvironmentModalVM).$nextTick();
+
+			(wrapper.vm as unknown as EnvironmentModalVM).onSelectEnvironment(domain, 0);
+
+			expect((wrapper.vm as unknown as EnvironmentModalVM).loadingIndex).toBe(0);
 		});
 	});
 });

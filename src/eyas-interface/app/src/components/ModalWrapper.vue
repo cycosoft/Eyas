@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import ModalStore from '@/stores/modals.js';
 import ModalBackground from '@/components/ModalBackground.vue';
 import type { ModalWrapperProps, ModalWrapperEmits } from '@registry/components.js';
@@ -86,6 +86,10 @@ const pinDialogWidth = (): void => {
 watch(() => ModalStore().closeAllCounter, () => {
 	// respond to the global close-all broadcast dispatched once from App.vue
 	emit(`update:modelValue`, false);
+});
+
+onMounted(() => {
+	console.warn(`[ModalWrapper] This component is deprecated. Use EyasModal instead.`);
 });
 
 defineExpose({

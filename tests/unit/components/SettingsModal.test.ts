@@ -49,12 +49,20 @@ describe(`SettingsModal`, () => {
 		expect((wrapper.vm as unknown as SettingsModalVM).activeTab).toBe(`project`);
 	});
 
-	test(`show-settings-modal resets to Project tab`, () => {
+	test(`show-settings-modal resets to Project tab when projectId is present`, () => {
 		(wrapper.vm as unknown as SettingsModalVM).activeTab = `app`;
 		const call = mockReceive.mock.calls.find(c => c[0] === `show-settings-modal`);
 		if (!call) throw new Error(`call not found`);
-		call[1]({ project: {}, app: {} });
+		call[1]({ project: {}, app: {}, projectId: `proj-123` });
 		expect((wrapper.vm as unknown as SettingsModalVM).activeTab).toBe(`project`);
+	});
+
+	test(`show-settings-modal resets to App tab when projectId is absent`, () => {
+		(wrapper.vm as unknown as SettingsModalVM).activeTab = `project`;
+		const call = mockReceive.mock.calls.find(c => c[0] === `show-settings-modal`);
+		if (!call) throw new Error(`call not found`);
+		call[1]({ project: {}, app: {}, projectId: undefined });
+		expect((wrapper.vm as unknown as SettingsModalVM).activeTab).toBe(`app`);
 	});
 
 	test(`populates projectAlwaysChoose from payload`, () => {
