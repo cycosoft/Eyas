@@ -27,9 +27,6 @@ export type EyasModalEmits = {
 	(e: `update:modelValue`, value: IsVisible): void;
 }
 
-export type ModalBackgroundEmits = {
-	[`after-leave`]: [];
-}
 
 /**
  * Type helper for the Vue component's ViewModel in tests.
