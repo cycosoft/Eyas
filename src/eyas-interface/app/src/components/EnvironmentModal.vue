@@ -13,7 +13,7 @@
 			<v-btn
 				v-for="(domain, index) in domains"
 				:key="index"
-				class="w-full text-left justify-start py-8 px-4 mb-3 rounded-xl env-btn"
+				class="w-full text-left justify-start py-4 px-4 mb-3 rounded-lg env-btn"
 				:class="{ 'active-env': loadingIndex === index }"
 				variant="flat"
 				:loading="loadingIndex === index"
@@ -42,11 +42,10 @@
 
 		<v-alert
 			type="info"
-			color="amber-lighten-5"
+			color="amber-darken-4"
 			icon="mdi-information-outline"
-			variant="flat"
-			border="start"
-			class="rounded-xl border-amber-lighten-2 text-amber-darken-4 font-body text-body-2 py-3 px-4 mt-2"
+			variant="outlined"
+			class="rounded-lg py-3 mt-2 bg-amber-lighten-5"
 		>
 			Your choice will be remembered for this project. You can quickly switch between environments anytime using the menu in the URL bar.
 		</v-alert>
@@ -223,7 +222,7 @@ defineExpose({
 	background-color: #ffffff !important;
 	border-color: rgba(88, 161, 214, 0.3) !important;
 	border-left-color: #58A1D6 !important;
-	box-shadow: 0 8px 24px rgba(88, 161, 214, 0.15) !important;
+	box-shadow: 0px 3px 3px rgba(88, 161, 214, 0.15) !important;
 	transform: translateY(-1px);
 }
 
