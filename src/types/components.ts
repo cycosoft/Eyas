@@ -1,4 +1,4 @@
-import type { IsVisible, DomainUrl, IsEnabled, MenuLabel, EventType, ViewportWidth, AppTitle, ResponseBody, PortNumber, Count, IsActive, LabelString, AppVersion, Username, ListIndex } from './primitives.js';
+import type { IsVisible, DomainUrl, IsEnabled, MenuLabel, EventType, ViewportWidth, AppTitle, ResponseBody, PortNumber, IsActive, LabelString, AppVersion, Username, ListIndex } from './primitives.js';
 import type { CredentialMetadata, EnvironmentChoiceWithTitle } from './core.js';
 import type { CredentialPayload } from './ipc.js';
 
@@ -77,6 +77,7 @@ export type VariablesModalVM = {
 export type EnvironmentModalVM = {
 	domains: EnvironmentChoiceWithTitle[];
 	visible: IsVisible;
+	loadingIndex: ListIndex;
 	choose: (domain: EnvironmentChoiceWithTitle, index: ListIndex) => void;
 	alwaysChoose: IsVisible;
 	projectId: AppTitle | null;

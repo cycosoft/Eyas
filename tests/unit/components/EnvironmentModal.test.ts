@@ -79,13 +79,13 @@ describe(`EnvironmentModal`, () => {
 		await (wrapper.vm as unknown as EnvironmentModalVM).$nextTick();
 
 		// Call choose method directly to test IPC sending
-		(wrapper.vm as unknown as EnvironmentModalVM).choose(domains[0].url, 0);
+		(wrapper.vm as unknown as EnvironmentModalVM).choose(domains[0], 0);
 
 		// Wait for setTimeout in choose method
 		vi.advanceTimersByTime(250);
 
 		// Verify IPC was called with the URL
-		expect(mockSend).toHaveBeenCalledWith(`environment-selected`, `https://example.com`);
+		expect(mockSend).toHaveBeenCalledWith(`environment-selected`, domains[0]);
 	});
 
 	test(`sends URL without protocol correctly`, async () => {
@@ -98,12 +98,12 @@ describe(`EnvironmentModal`, () => {
 		await (wrapper.vm as unknown as EnvironmentModalVM).$nextTick();
 
 		// Call choose method directly to test IPC sending
-		(wrapper.vm as unknown as EnvironmentModalVM).choose(domains[0].url, 0);
+		(wrapper.vm as unknown as EnvironmentModalVM).choose(domains[0], 0);
 
 		vi.advanceTimersByTime(250);
 
 		// URL without protocol should be sent as-is (parseURL will handle it in main process)
-		expect(mockSend).toHaveBeenCalledWith(`environment-selected`, `example.com`);
+		expect(mockSend).toHaveBeenCalledWith(`environment-selected`, domains[0]);
 	});
 
 	test(`modal shows and hides correctly`, async () => {

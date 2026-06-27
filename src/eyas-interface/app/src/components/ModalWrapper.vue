@@ -26,7 +26,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 import ModalStore from '@/stores/modals.js';
 import ModalBackground from '@/components/ModalBackground.vue';
 import type { ModalWrapperProps, ModalWrapperEmits } from '@registry/components.js';
-import type { ModalId, IsVisible, ViewportWidth, ChannelName, LabelString } from '@registry/primitives.js';
+import type { ModalId, IsVisible, ViewportWidth, ChannelName } from '@registry/primitives.js';
 
 const props = withDefaults(defineProps<ModalWrapperProps>(), {
 	type: `modal`,
@@ -36,30 +36,23 @@ const props = withDefaults(defineProps<ModalWrapperProps>(), {
 const emit = defineEmits<ModalWrapperEmits>();
 
 const id = ref<ModalId>(window.crypto.randomUUID() as ModalId);
-const dialogWidthState = ref<ViewportWidth | `fit-content` | undefined>(`fit-content`);
-
-const dialogWidth = computed((): ViewportWidth | `60vw` | `fit-content` | undefined => {
-	if (props.type === `modal`) {
-		return `60vw`;
-	}
-	return dialogWidthState.value;
-});
+const dialogWidth = ref<ViewportWidth | `fit-content` | undefined>(`fit-content`);
 
 const backgroundContentVisible = computed((): IsVisible => {
 	return ModalStore().lastOpenedById === id.value;
 });
 
-const calculatedMinWidth = computed((): ViewportWidth | LabelString | undefined => {
+const calculatedMinWidth = computed((): ViewportWidth | undefined => {
 	if (props.minWidth !== undefined) {
 		return Number(props.minWidth) as ViewportWidth;
 	}
-	return props.type === `modal` ? `60vw` as LabelString : undefined;
+	return props.type === `modal` ? 500 as ViewportWidth : undefined;
 });
 
 const trackModalState = (isTrue: IsVisible): void => {
 	if (isTrue) {
 		// reset width to the initial state so it can calculate the new initial width
-		dialogWidthState.value = `fit-content`;
+		dialogWidth.value = `fit-content`;
 		// track this modal as the last opened modal
 		ModalStore().track(id.value);
 	} else {
@@ -81,14 +74,12 @@ const hideUi = (): void => {
 };
 
 const pinDialogWidth = (): void => {
-	if (props.type === `modal`) { return; }
-
 	// Find the currently active modal's card natively
 	const activeModalContent = document.querySelector(`[data-modal-id="${id.value}"] .v-card`) as HTMLElement;
 
 	if (activeModalContent) {
 		// set the width of the dialog + 1 to round up and prevent content jumping
-		dialogWidthState.value = activeModalContent.offsetWidth + 1;
+		dialogWidth.value = activeModalContent.offsetWidth + 1;
 	}
 };
 
