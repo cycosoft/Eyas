@@ -61,29 +61,6 @@
 				@update:model-value="onAlwaysChooseChange"
 			/>
 		</template>
-
-		<!-- Inner confirmation dialog — not part of EyasModal, standalone v-dialog -->
-		<v-dialog v-model="warningVisible" max-width="400" persistent>
-			<v-card class="pa-4">
-				<v-card-title class="text-h6 font-weight-bold text-center" data-qa="warning-dialog-title">
-					Always load this environment?
-				</v-card-title>
-				<v-card-text class="text-body-2 text-center mt-2">
-					Eyas will automatically bypass this screen and load <strong>{{ pendingDomain?.title }}</strong> next time.
-					<div class="mt-4 text-grey-darken-1">
-						You can quickly switch between environments anytime using the menu in the URL bar.
-					</div>
-				</v-card-text>
-				<v-card-actions class="justify-space-between mt-4">
-					<v-btn variant="text" data-qa="btn-warning-cancel" @click="cancelWarning">
-						Cancel
-					</v-btn>
-					<v-btn color="primary" variant="elevated" data-qa="btn-warning-confirm" @click="confirmWarning">
-						Confirm & Proceed
-					</v-btn>
-				</v-card-actions>
-			</v-card>
-		</v-dialog>
 	</EyasModal>
 </template>
 
@@ -100,10 +77,6 @@ const alwaysChoose = ref<IsActive>(false);
 const projectId = ref<ProjectId | null>(null);
 const domainsHash = ref<HashString | null>(null);
 
-const warningVisible = ref<IsVisible>(false);
-const pendingDomain = ref<EnvironmentChoiceWithTitle | null>(null);
-const pendingIndex = ref<ListIndex>(-1);
-
 const reset = (): void => {
 	visible.value = false;
 	domains.value = [];
@@ -111,9 +84,6 @@ const reset = (): void => {
 	alwaysChoose.value = false;
 	projectId.value = null;
 	domainsHash.value = null;
-	warningVisible.value = false;
-	pendingDomain.value = null;
-	pendingIndex.value = -1;
 };
 
 const getIcon = (domain: EnvironmentChoiceWithTitle): LabelString => {
@@ -144,26 +114,7 @@ const choose = (domain: EnvironmentChoiceWithTitle, domainIndex: ListIndex): voi
 };
 
 const onSelectEnvironment = (domain: EnvironmentChoiceWithTitle, index: ListIndex): void => {
-	if (alwaysChoose.value) {
-		pendingDomain.value = domain;
-		pendingIndex.value = index;
-		warningVisible.value = true;
-	} else {
-		choose(domain, index);
-	}
-};
-
-const confirmWarning = (): void => {
-	warningVisible.value = false;
-	if (pendingDomain.value !== null && pendingIndex.value !== -1) {
-		choose(pendingDomain.value, pendingIndex.value);
-	}
-};
-
-const cancelWarning = (): void => {
-	warningVisible.value = false;
-	pendingDomain.value = null;
-	pendingIndex.value = -1;
+	choose(domain, index);
 };
 
 const onAlwaysChooseChange = (value: IsActive): void => {
@@ -191,14 +142,9 @@ defineExpose({
 	alwaysChoose,
 	projectId,
 	domainsHash,
-	warningVisible,
-	pendingDomain,
-	pendingIndex,
 	choose,
 	onAlwaysChooseChange,
 	onSelectEnvironment,
-	confirmWarning,
-	cancelWarning,
 	getIcon
 });
 </script>

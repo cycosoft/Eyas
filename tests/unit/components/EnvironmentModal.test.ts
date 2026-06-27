@@ -229,69 +229,18 @@ describe(`EnvironmentModal`, () => {
 	});
 
 	// -------------------------------------------------------------------------
-	// Warning Dialog when alwaysChoose is true
+	// onSelectEnvironment
 	// -------------------------------------------------------------------------
-	describe(`warning dialog for alwaysChoose`, () => {
-		test(`selecting environment with alwaysChoose=false immediately calls choose()`, async () => {
+	describe(`onSelectEnvironment`, () => {
+		test(`selecting environment immediately calls choose()`, async () => {
 			const domain = { url: `https://example.com`, title: `Example` };
 			(wrapper.vm as unknown as EnvironmentModalVM).domains = [domain];
-			(wrapper.vm as unknown as EnvironmentModalVM).alwaysChoose = false;
 			(wrapper.vm as unknown as EnvironmentModalVM).visible = true;
 			await (wrapper.vm as unknown as EnvironmentModalVM).$nextTick();
 
 			(wrapper.vm as unknown as EnvironmentModalVM).onSelectEnvironment(domain, 0);
 
-			expect((wrapper.vm as unknown as EnvironmentModalVM).warningVisible).toBe(false);
 			expect((wrapper.vm as unknown as EnvironmentModalVM).loadingIndex).toBe(0);
-		});
-
-		test(`selecting environment with alwaysChoose=true opens warning dialog and does not immediately call choose()`, async () => {
-			const domain = { url: `https://example.com`, title: `Example` };
-			(wrapper.vm as unknown as EnvironmentModalVM).domains = [domain];
-			(wrapper.vm as unknown as EnvironmentModalVM).alwaysChoose = true;
-			(wrapper.vm as unknown as EnvironmentModalVM).visible = true;
-			await (wrapper.vm as unknown as EnvironmentModalVM).$nextTick();
-
-			(wrapper.vm as unknown as EnvironmentModalVM).onSelectEnvironment(domain, 0);
-
-			expect((wrapper.vm as unknown as EnvironmentModalVM).warningVisible).toBe(true);
-			expect((wrapper.vm as unknown as EnvironmentModalVM).pendingDomain).toEqual(domain);
-			expect((wrapper.vm as unknown as EnvironmentModalVM).pendingIndex).toBe(0);
-			expect((wrapper.vm as unknown as EnvironmentModalVM).loadingIndex).toBe(-1); // choose not called yet
-		});
-
-		test(`confirming warning dialog triggers choose() and closes dialog`, async () => {
-			const domain = { url: `https://example.com`, title: `Example` };
-			(wrapper.vm as unknown as EnvironmentModalVM).domains = [domain];
-			(wrapper.vm as unknown as EnvironmentModalVM).alwaysChoose = true;
-			(wrapper.vm as unknown as EnvironmentModalVM).visible = true;
-			await (wrapper.vm as unknown as EnvironmentModalVM).$nextTick();
-
-			(wrapper.vm as unknown as EnvironmentModalVM).onSelectEnvironment(domain, 0);
-			expect((wrapper.vm as unknown as EnvironmentModalVM).warningVisible).toBe(true);
-
-			(wrapper.vm as unknown as EnvironmentModalVM).confirmWarning();
-
-			expect((wrapper.vm as unknown as EnvironmentModalVM).warningVisible).toBe(false);
-			expect((wrapper.vm as unknown as EnvironmentModalVM).loadingIndex).toBe(0); // choose is now called
-		});
-
-		test(`cancelling warning dialog resets pending state and closes dialog without triggering choose()`, async () => {
-			const domain = { url: `https://example.com`, title: `Example` };
-			(wrapper.vm as unknown as EnvironmentModalVM).domains = [domain];
-			(wrapper.vm as unknown as EnvironmentModalVM).alwaysChoose = true;
-			(wrapper.vm as unknown as EnvironmentModalVM).visible = true;
-			await (wrapper.vm as unknown as EnvironmentModalVM).$nextTick();
-
-			(wrapper.vm as unknown as EnvironmentModalVM).onSelectEnvironment(domain, 0);
-			expect((wrapper.vm as unknown as EnvironmentModalVM).warningVisible).toBe(true);
-
-			(wrapper.vm as unknown as EnvironmentModalVM).cancelWarning();
-
-			expect((wrapper.vm as unknown as EnvironmentModalVM).warningVisible).toBe(false);
-			expect((wrapper.vm as unknown as EnvironmentModalVM).pendingDomain).toBeNull();
-			expect((wrapper.vm as unknown as EnvironmentModalVM).pendingIndex).toBe(-1);
-			expect((wrapper.vm as unknown as EnvironmentModalVM).loadingIndex).toBe(-1); // choose never called
 		});
 	});
 });
