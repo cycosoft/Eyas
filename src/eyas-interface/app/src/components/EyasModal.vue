@@ -6,7 +6,7 @@
 	>
 		<v-dialog
 			:model-value="modelValue"
-			max-width="950"
+			max-width="850"
 			width="65vw"
 			min-width="320"
 			persistent
