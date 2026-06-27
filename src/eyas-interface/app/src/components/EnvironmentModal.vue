@@ -57,6 +57,7 @@
 				density="compact"
 				hide-details
 				data-qa="checkbox-always-choose"
+				class="text-body-small"
 				@update:model-value="onAlwaysChooseChange"
 			/>
 		</template>
