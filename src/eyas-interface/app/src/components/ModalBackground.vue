@@ -3,7 +3,7 @@
 		class="custom-background"
 		:model-value="modelValue"
 		:scrim="true"
-		@after-leave="$emit(`after-leave`)"
+		@after-leave="emit(`after-leave`)"
 	>
 		<template v-if="contentVisible">
 			<div class="bottom-right">
@@ -22,11 +22,15 @@
 </template>
 
 <script setup lang="ts">
-import type { ModalBackgroundProps, ModalBackgroundEmits } from '@registry/components.js';
+import type { ModalBackgroundProps } from '@registry/components.js';
 import type { DomainUrl, ChannelName } from '@registry/primitives.js';
 
+type Emits = {
+	[`after-leave`]: [];
+};
+
 defineProps<ModalBackgroundProps>();
-defineEmits<ModalBackgroundEmits>();
+const emit = defineEmits<Emits>();
 
 const openInBrowser = (url: DomainUrl): void => {
 	window.eyas?.send(`launch-link` as ChannelName, { url, openInBrowser: true });

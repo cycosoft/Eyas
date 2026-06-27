@@ -28,7 +28,7 @@ export type EyasModalEmits = {
 }
 
 export type ModalBackgroundEmits = {
-	(e: `after-leave`): void;
+	[`after-leave`]: [];
 }
 
 /**
