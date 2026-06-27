@@ -2,11 +2,8 @@
 	<EyasModal v-model="visible">
 		<template #title>
 			<h2 class="font-headline text-h5 font-weight-bold text-on-surface tracking-tight mb-2" data-qa="environment-modal-title">
-				Simulate Environment
+				Choose Test Environment
 			</h2>
-			<p class="font-body text-body-1 text-on-surface-variant mb-4">
-				Choose where to launch your first session.
-			</p>
 			<p class="font-body text-body-2 text-grey-darken-1 leading-relaxed max-w-[90%] mx-auto">
 				Eyas simulates these domains locally to handle environment-specific requirements like authentication and cookies. Your application is always served from your local files.
 			</p>
