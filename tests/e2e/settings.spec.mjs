@@ -52,10 +52,6 @@ test.describe(`User Settings`, () => {
 		const firstEnvBtn = uiPage.locator(`[data-qa="btn-env"]`).first();
 		await firstEnvBtn.click();
 
-		// Click the confirmation warning dialog button
-		const confirmBtn = uiPage.locator(`[data-qa="btn-warning-confirm"]`);
-		await confirmBtn.click();
-
 		// Wait for both visibility to go away and navigation to finish
 		await expect(envModalTitle).not.toBeVisible();
 		await new Promise(resolve => setTimeout(resolve, 2000));
