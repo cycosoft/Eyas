@@ -33,7 +33,7 @@
 					<span class="font-headline font-weight-bold text-body-1 text-high-emphasis">
 						{{ domain.title }}
 					</span>
-					<span class="font-body text-caption text-grey env-url">
+					<span class="font-body text-caption text-grey env-url text-body-small">
 						{{ domain.url }}
 					</span>
 				</div>
