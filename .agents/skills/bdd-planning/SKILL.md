@@ -25,12 +25,15 @@ Using executable placeholders ensures that:
 
 ### 1. Extract Requirements
 Read the approved `implementation_plan.md` (specifically the proposed changes and verification sections) and identify each discrete behavior or constraint the system must satisfy.
+Be sure to capture:
+- **Positive Behaviors**: What the system *should* do under normal or successful operations.
+- **Negative/Inverse/Unhappy Path Behaviors**: What the system *must not* do under specific conditions (e.g., unauthorized actions, side effects that shouldn't happen, resource leaks, or how the system gracefully handles failure).
 
 ### 2. Scaffold Empty BDD Test Suites
 Create a new test file (or modify an existing test suite) and represent each behavior as a `describe` block containing one or more `it.todo()` (or `test.todo()`) statements.
 
 #### Example Plan Requirement:
-> The active test server component must display a loading spinner while fetching active tests, and show a helpful error message if the IPC channel fails.
+> The active test server component must display a loading spinner while fetching active tests, show a helpful error message if the IPC channel fails, and must NOT make any API calls if the user is unauthenticated.
 
 #### Corresponding BDD Scaffold:
 ```ts
@@ -41,6 +44,10 @@ describe('TestServerActiveModal (UI Behavior)', () => {
 
   describe('Error Handling', () => {
     it.todo('should display a helpful error message when the IPC channel fails');
+  });
+
+  describe('Inverse / Unhappy Path Constraints', () => {
+    it.todo('should NOT make any API calls if the user is unauthenticated');
   });
 });
 ```

@@ -44,6 +44,7 @@ Run only the relevant test file to save time and reduce token output overhead.
   - Use `vi.mock()` for external dependencies (e.g., `electron`, `fs`).
   - Never mock the logic you are testing.
 - **Behavioral Parity**: When refactoring code to satisfy linter rules (like `max-lines`), verify that existing tests pass BEFORE and AFTER the change.
+- **Negative & Inverse Assertions**: Always explicitly test what the system *should not* do (e.g., it must not leak resources, trigger unnecessary side effects, or execute unauthorized operations) to thoroughly define unhappy path boundaries.
 
 ### 4. Electron WebContents Mocks (REQUIRED)
 Any Vitest mock that stubs an Electron `webContents` object **MUST** include `isDestroyed`. Production guards in `src/eyas-core/` call `webContents.isDestroyed()` before every send/focus operation. Omitting it causes:
