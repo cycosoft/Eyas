@@ -1,3 +1,5 @@
+import type { TestId, SessionPartition } from '@registry/primitives.js';
+
 // different methods for loading a test
 export const LOAD_TYPES = {
 	AUTO: `auto`, // directs config to make best guess
@@ -38,3 +40,18 @@ export const SETTINGS_DEFAULTS = {
 // Using 79 prevents the bottom border from being cut off in the UI layer.
 // NOTE: Odd heights can cause 1px rounding discrepancies on high-DPI (Retina) displays.
 export const EYAS_HEADER_HEIGHT = 79;
+
+// Session partition for all Eyas-owned windows/views (app window, splash, UI layer).
+// App-wide by design: the UI is identical for every test and stores no test-scoped data.
+// The test layer gets its own per-test-id partition (`persist:<testId>-test`) instead.
+export const EYAS_UI_PARTITION = `persist:eyas-ui`;
+
+/**
+ * Builds the session partition string for the test layer.
+ * Per-test-id so each test's cookies/storage/cache stay isolated from other tests.
+ * Must be used everywhere the test session is referenced (view creation, protocol
+ * handlers, webRequest interception) so they all resolve to the same session.
+ */
+export function getTestPartition(testId?: TestId): SessionPartition {
+	return `persist:${testId || `default`}-test`;
+}

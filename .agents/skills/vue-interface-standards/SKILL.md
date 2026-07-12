@@ -35,5 +35,5 @@ This skill defines the technology stack, component patterns, and targeted verifi
 
 ### 3. Testing Mandates
 - **Selectors**: Always use `data-qa` selectors for component and E2E tests.
-- **TDD**: Write/update tests in `tests/unit/components/*.test.ts` before making changes.
+- **BDD**: Write/update behavior tests in `tests/unit/components/*.test.ts` before making changes.
 - **VM Types**: Update `src/types/components.ts` with VM types to support type-safe testing.

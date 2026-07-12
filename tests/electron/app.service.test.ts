@@ -5,6 +5,7 @@ import _path from 'node:path';
 import { appService } from '@core/app.service.js';
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { PreventableEvent } from '@registry/core.js';
+import type { CoreMockMutableContext } from '@test-registry/eyas-core.mocks.js';
 import { app } from 'electron';
 import { isPast } from 'date-fns/isPast';
 import { analyticsService } from '@core/analytics.service.js';
@@ -149,6 +150,21 @@ describe(`app.service.ts unit tests`, () => {
 		expect(mockCtx.$appWindow?.webContents.session.clearCache).toHaveBeenCalled();
 		expect(mockCtx.$appWindow?.webContents.session.clearStorageData).toHaveBeenCalled();
 		expect(mockCtx.setMenu).toHaveBeenCalled();
+	});
+
+	test(`clearCache should NOT clear the UI session when the test layer exists`, () => {
+		const testSession = { clearCache: vi.fn(), clearStorageData: vi.fn() };
+		(mockCtx as unknown as CoreMockMutableContext).$testLayer = {
+			webContents: { session: testSession }
+		};
+
+		appService.clearCache(mockCtx);
+
+		// clearing must target the test session; the UI session holds Eyas's own state
+		expect(testSession.clearCache).toHaveBeenCalled();
+		expect(testSession.clearStorageData).toHaveBeenCalled();
+		expect(mockCtx.$appWindow?.webContents.session.clearCache).not.toHaveBeenCalled();
+		expect(mockCtx.$appWindow?.webContents.session.clearStorageData).not.toHaveBeenCalled();
 	});
 
 	test(`getSessionAge should return formatted duration`, () => {

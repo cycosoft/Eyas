@@ -98,13 +98,19 @@ vi.mock(`electron`, () => ({
 	clipboard: {
 		writeText: vi.fn()
 	},
-	session: {
-		fromPartition: vi.fn(() => ({
+	session: (function(): unknown {
+		const mockSessionObj = {
 			protocol: {
 				handle: vi.fn()
+			},
+			webRequest: {
+				onBeforeRequest: vi.fn()
 			}
-		}))
-	},
+		};
+		return {
+			fromPartition: vi.fn(() => mockSessionObj)
+		};
+	})(),
 	protocol: {
 		registerSchemesAsPrivileged: vi.fn()
 	},
@@ -294,7 +300,8 @@ describe(`index.ts refactoring unit tests`, () => {
 			$appWindow: new (BrowserWindow as unknown as BrowserWindowConstructor)()
 		} as unknown as CoreContext;
 		setupWebRequestInterception(ctx);
-		expect(ctx.$appWindow?.webContents.session.webRequest.onBeforeRequest).toHaveBeenCalled();
+		const testSession = session.fromPartition(`persist:default-test`);
+		expect(testSession.webRequest.onBeforeRequest).toHaveBeenCalled();
 	});
 
 	test(`initIpcHandlers should register all IPC listeners`, () => {

@@ -1,16 +1,16 @@
 ---
 name: testing-standards
-description: TDD philosophy, test categorization, and execution standards across unit, integration, and E2E suites in Eyas.
+description: BDD philosophy, test categorization, and execution standards across unit, integration, and E2E suites in Eyas.
 tags:
   - testing
-  - tdd
+  - bdd
   - vitest
 ---
 
 # Reusable Skill: Testing Standards
 
 ## Overview
-We follow a strict TDD-First approach. Tests are not just verification; they are the living documentation of intended behavior and architectural contracts.
+We follow a strict BDD-First approach. Tests are not just verification; they are the living documentation of system behavior and architectural contracts, describing how the application should behave under specific conditions.
 
 ## When to Use
 - Trigger when initiating any feature development or bug fix across the repository.

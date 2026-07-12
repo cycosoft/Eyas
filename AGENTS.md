@@ -25,9 +25,9 @@
 - **Critical Thinking**: Avoid sycophantic behavior. Prioritize technical correctness and performance over blind agreement. If a proposal is suboptimal, provide a professional critique and better alternative.
 - **Interaction Gating**: Do not automatically implement changes when the user asks a question or expresses a thought. Differentiate between exploration and execution. Wait for explicit confirmation before modifying code unless the request is a direct command.
 
-## 3. Engineering Standards (TDD & DRY)
-- **TDD First**: Every code change MUST be accompanied by a test (`*.test.ts`). Update or add tests *before* modifying code.
-- **Debugging**: When asked to debug, use TDD. Review code, identify potential failure points, write tests for those points, use extensive logging to follow the logic, and then fix the code.
+## 3. Engineering Standards (BDD & DRY)
+- **BDD First**: Every code change MUST be accompanied by a behavior specification/test (`*.test.ts`). Update or add behavior tests defining the expected behavior *before* modifying code.
+- **Debugging**: When asked to debug, use BDD. Review code, describe the expected vs actual behavior in test specifications, write tests verifying those specific behaviors, use extensive logging to follow the logic, and then fix the code.
 - **Verification Locality**: Run targeted tests and linting on modified files/directories instead of project-wide runs to save time and reduce output noise. Avoid project-wide checks like `npm run check` until the implementation is fully verified by targeted tests.
   - **Direct Verification**: Prioritize checking specific files or subdirectories over project-wide scans. If dealing with large-scale changes, process reports locally to avoid redundant executions.
 - **ESM Standard**: Follow NodeNext resolution. Imports MUST include the `.js` extension, even when the source file is `.ts`.
@@ -58,7 +58,7 @@
 
 ## 6. Core Directives (CRITICAL REPETITION)
 > [!IMPORTANT]
-> - **Always use a TDD approach.** Write/update tests before code changes.
+> - **Always use a BDD approach.** Write/update behavior tests before code changes.
 > - **Always verify functionality.** Run targeted tests and linting after every task.
 > - **Always get explicit approval** before starting ambiguous work.
 > - **Always keep it DRY.**

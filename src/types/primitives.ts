@@ -82,6 +82,7 @@ export type PixelDimension = number;
 // Identity / Identification
 export type HashString = string;
 export type TestId = string;
+export type SessionPartition = string;
 export type DeviceId = string;
 export type Username = string;
 export type PasswordPlain = string;

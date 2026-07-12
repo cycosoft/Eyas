@@ -171,8 +171,9 @@ function initCacheIpcListeners(ctx: CoreContext): void {
 	ipcMain.on(`clear-cache`, async () => { ctx.clearCache(); await ctx.updateNavigationState(); });
 
 	ipcMain.on(`open-cache-folder`, () => {
-		if (!ctx.$appWindow || ctx.$appWindow.isDestroyed()) { return; }
-		const storagePath = ctx.$appWindow.webContents.session.getStoragePath();
+		const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
+		if (!webContents || webContents.isDestroyed()) { return; }
+		const storagePath = webContents.session.getStoragePath();
 		if (storagePath) {
 			shell.openPath(storagePath);
 		}

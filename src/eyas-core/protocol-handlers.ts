@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url';
 import type { CoreContext } from '@registry/eyas-core.js';
 import { parseURL } from '@scripts/parse-url.js';
 import { safeJoin } from '@scripts/path-utils.js';
+import { EYAS_UI_PARTITION, getTestPartition } from '@scripts/constants.js';
 import type { DomainUrl, IsActive } from '@registry/primitives.js';
 
 
@@ -58,11 +59,12 @@ function disableNetworkRequest(ctx: CoreContext, url: DomainUrl): IsActive {
 export function setupEyasNetworkHandlers(ctx: CoreContext): void {
 	if (!ctx.$config) { return; }
 
-	const ses = session.fromPartition(`persist:${ctx.$config.meta.testId}`);
+	const uiSession = session.fromPartition(EYAS_UI_PARTITION);
+	const testSession = session.fromPartition(getTestPartition(ctx.$config.meta.testId));
 
-	registerUiProtocolHandler(ctx, ses);
-	registerEyasProtocolHandler(ctx, ses);
-	registerHttpsProtocolHandler(ctx, ses);
+	registerUiProtocolHandler(ctx, uiSession);
+	registerEyasProtocolHandler(ctx, testSession);
+	registerHttpsProtocolHandler(ctx, testSession);
 }
 
 /**
@@ -193,9 +195,9 @@ export function registerHttpsProtocolHandler(ctx: CoreContext, ses: Electron.Ses
  * @param ctx The core context.
  */
 export function setupWebRequestInterception(ctx: CoreContext): void {
-	if (!ctx.$appWindow) { return; }
+	const testSession = session.fromPartition(getTestPartition(ctx.$config?.meta.testId));
 
-	ctx.$appWindow.webContents.session.webRequest.onBeforeRequest({ urls: [`<all_urls>`] }, (request, callback) => {
+	testSession.webRequest.onBeforeRequest({ urls: [`<all_urls>`] }, (request, callback) => {
 		// validate this request
 		if (disableNetworkRequest(ctx, request.url)) {
 			return callback({ cancel: true });

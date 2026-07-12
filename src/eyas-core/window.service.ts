@@ -3,7 +3,7 @@ import { BrowserWindow, WebContentsView } from 'electron';
 import type { CoreContext, WindowService } from '@registry/eyas-core.js';
 import { MP_EVENTS } from './metrics-events.js';
 import type { TimestampMS, GenericRecord } from '@registry/primitives.js';
-import { EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
+import { EYAS_HEADER_HEIGHT, EYAS_UI_PARTITION, getTestPartition } from '@scripts/constants.js';
 import { registerShortcutListeners } from './window.shortcuts.js';
 import { handleResize } from './window.resize.js';
 
@@ -93,7 +93,7 @@ export const windowService: WindowService = {
 			titleBarStyle: `hidden`,
 			titleBarOverlay: overlayConfig,
 			webPreferences: {
-				partition: `persist:${$config?.meta.testId}`
+				partition: EYAS_UI_PARTITION
 			}
 		});
 
@@ -106,7 +106,7 @@ export const windowService: WindowService = {
 		const testLayer = new WebContentsView({
 			webPreferences: {
 				preload: $paths.testPreload,
-				partition: `persist:${$config?.meta.testId}`
+				partition: getTestPartition($config?.meta.testId)
 			}
 		});
 
@@ -122,8 +122,7 @@ export const windowService: WindowService = {
 	},
 
 	// Creates a splash screen window.
-	createSplashScreen(ctx: CoreContext): BrowserWindow {
-		const { $config } = ctx;
+	createSplashScreen(_ctx: CoreContext): BrowserWindow {
 		const isDev = process.argv.includes(`--dev`);
 		const uiDomain = `ui://eyas.interface`;
 
@@ -135,7 +134,7 @@ export const windowService: WindowService = {
 			alwaysOnTop: true,
 			show: false,
 			webPreferences: {
-				partition: `persist:${$config?.meta.testId}`
+				partition: EYAS_UI_PARTITION
 			}
 		});
 
@@ -156,7 +155,7 @@ export const windowService: WindowService = {
 
 	// Initializes the Eyas UI layer as a WebContentsView.
 	initEyasLayer(ctx: CoreContext, splashScreen: BrowserWindow, splashVisible: TimestampMS): void {
-		const { $appWindow, $paths, $config } = ctx;
+		const { $appWindow, $paths } = ctx;
 		if (!$appWindow) { return; }
 
 		const isDev = process.argv.includes(`--dev`);
@@ -165,7 +164,7 @@ export const windowService: WindowService = {
 		const layer = new WebContentsView({
 			webPreferences: {
 				preload: $paths.eventBridge,
-				partition: `persist:${$config?.meta.testId}`,
+				partition: EYAS_UI_PARTITION,
 				backgroundThrottling: false
 			}
 		});

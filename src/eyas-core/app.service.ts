@@ -65,11 +65,12 @@ Runner: v${ctx._appVersion}
 	 * @param ctx The core context.
 	 */
 	clearCache(ctx: CoreContext): void {
-		if (!ctx.$appWindow) { return; }
+		const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
+		if (!webContents) { return; }
 
-		// clear all caches for the session
-		ctx.$appWindow.webContents.session.clearCache();
-		ctx.$appWindow.webContents.session.clearStorageData();
+		// clear all caches for the test session
+		webContents.session.clearCache();
+		webContents.session.clearStorageData();
 
 		// update the menu to reflect the cache changes
 		ctx.setMenu();
