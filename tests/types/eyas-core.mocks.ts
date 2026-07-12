@@ -1,3 +1,4 @@
+import type { Mock } from 'vitest';
 import type { Rectangle, ViewportSize } from '@registry/core.js';
 import type { DomainUrl, ChannelName } from '@registry/primitives.js';
 
@@ -77,4 +78,26 @@ export type CoreMockWindow = {
 type CoreMockWindowWebContents = {
 	on: (event: string, cb: (...args: unknown[]) => void) => void;
 	session: CoreMockSession;
+};
+
+/** Mock of Protocol with a spied handle for session-isolation inverse tests */
+type CoreMockSpiedProtocol = {
+	handle: Mock;
+};
+
+/** Mock of WebRequest with a spied onBeforeRequest for session-isolation inverse tests */
+type CoreMockSpiedWebRequest = {
+	onBeforeRequest: Mock;
+};
+
+/** Mock of a partition-scoped Session, distinct per partition, for inverse assertions */
+export type CoreMockPartitionSession = {
+	protocol: CoreMockSpiedProtocol;
+	webRequest: CoreMockSpiedWebRequest;
+};
+
+/** Escape hatch for reassigning readonly-ish CoreContext members inside tests */
+export type CoreMockMutableContext = {
+	$appWindow: unknown;
+	$testLayer: unknown;
 };
