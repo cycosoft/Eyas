@@ -22,7 +22,8 @@ vi.mock(`electron`, () => {
 			webRequest: {
 				onBeforeRequest: vi.fn()
 			},
-			fetch: vi.fn()
+			fetch: vi.fn(),
+			registerPreloadScript: vi.fn()
 		};
 	}
 
@@ -50,7 +51,8 @@ vi.mock(`electron`, () => {
 			webContents: {
 				loadURL: vi.fn(),
 				on: vi.fn(),
-				isDestroyed: vi.fn().mockReturnValue(false)
+				isDestroyed: vi.fn().mockReturnValue(false),
+				session: { registerPreloadScript: vi.fn() }
 			}
 		};
 	}

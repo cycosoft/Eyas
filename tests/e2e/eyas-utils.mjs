@@ -78,6 +78,23 @@ export async function getUiView(electronApp) {
 }
 
 /**
+ * Finds the test-layer Page object (the WebContentsView hosting the test app),
+ * matching against the given URL pattern.
+ * @param {import('@playwright/test').ElectronApplication} electronApp
+ * @param {RegExp} urlPattern
+ * @returns {Promise<import('@playwright/test').Page>}
+ */
+export async function getTestView(electronApp, urlPattern) {
+	let testPage;
+	for (let i = 0; i < 20; i++) {
+		testPage = electronApp.windows().find(p => urlPattern.test(p.url()));
+		if (testPage) break;
+		await new Promise(resolve => setTimeout(resolve, 500));
+	}
+	return testPage;
+}
+
+/**
  * Ensures an environment is selected, clearing the modal if it's visible.
  * @param {import('@playwright/test').Page} uiPage
  */

@@ -8,6 +8,7 @@ import { TEST_SERVER_SESSION_DURATION_MS, EYAS_HEADER_HEIGHT } from '@scripts/co
 import { MP_EVENTS } from './metrics-events.js';
 import { isMac } from '@scripts/platform-utils.js';
 import { initCredentialIpcListeners } from './ipc-handlers.credentials.js';
+import { initRecorderIpcListeners } from './ipc-handlers.recorder.js';
 import { adjustZoom } from './window.shortcuts.js';
 
 import type {
@@ -26,6 +27,7 @@ export function initIpcHandlers(ctx: CoreContext): void {
 	initSettingsIpcListeners(ctx);
 	initTestServerIpcListeners(ctx);
 	initCredentialIpcListeners(ctx);
+	initRecorderIpcListeners(ctx);
 
 	// once the "What's New" modal is closed, trigger the next modal in the sequence
 	ipcMain.on(`whats-new-closed`, () => {
@@ -296,4 +298,3 @@ function initTestServerIpcListeners(ctx: CoreContext): void {
 		}
 	});
 }
-

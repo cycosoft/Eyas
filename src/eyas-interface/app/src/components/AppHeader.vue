@@ -23,14 +23,12 @@
 				<v-img v-if="group.logo" :src="group.logo" class="menu-logo mr-n1" />
 				<span v-else><template v-for="(part, i) in group.mnemonicParts" :key="i"><u v-if="part.isMnemonic">{{ part.text }}</u><template v-else>{{ part.text }}</template></template></span>
 			</v-btn>
-
 			<div class="d-flex align-center ml-2 pa-1 rounded-lg border">
 				<v-btn v-for="control in browserControls" :key="control.action" icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" :data-qa="`btn-browser-${control.action}`" :disabled="isControlDisabled(control.action, canGoBack, canGoForward)" @click="handleBrowserControlClick(control.action)">
 					<v-icon :icon="control.icon" size="small" />
 				</v-btn>
 			</div>
 		</template>
-
 		<template v-for="group in groups.filter(g => g.name === 'Links')" :key="group.name">
 			<v-btn v-if="group.submenu.length" class="px-3 ml-2" rounded="xs" append-icon="mdi-chevron-down" :data-qa="`btn-nav-group-${group.name.toLowerCase()}`" :active="state.activeGroup === group.name" @click="activate($event, group)" @mouseenter="onMouseEnter($event, group)">
 				<template v-for="(part, i) in group.mnemonicParts" :key="i">
@@ -40,13 +38,10 @@
 				</template>
 			</v-btn>
 		</template>
-
 		<v-spacer />
-
 		<AppHeaderOmniHub />
-
 		<v-spacer />
-
+		<AppHeaderRecordingControls />
 		<!-- 3. Update Status -->
 		<v-btn
 			v-if="updateInfo.icon"
@@ -234,6 +229,7 @@
 import { onMounted, watch, toRefs, computed } from 'vue';
 import { useTheme } from 'vuetify';
 import type { ChannelName } from '@registry/primitives.js';
+import type { RecorderStatusPayload } from '@registry/recording.js';
 import {
 	groups, state, browserControls, isControlDisabled, handleBrowserControlClick,
 	goBack, goForward, reload, goHome, handleBroadcastClick, activate,
@@ -244,9 +240,12 @@ import {
 	isViewingTestContent, updateUpdatesMenuItem
 } from './AppHeader.logic.js';
 import AppHeaderOmniHub from './AppHeaderOmniHub.vue';
+import AppHeaderRecordingControls from './AppHeaderRecordingControls.vue';
 import useModalsStore from '@/stores/modals.js';
+import useRecordingStore from '@/stores/recording.js';
 const { menu, activator, canGoBack, canGoForward, updateStatus, environments, currentEnvironment, tooltipVisible, tooltipText, cursorPos, appTitle, zoomFactor } = toRefs(state);
 const modalsStore = useModalsStore();
+const recordingStore = useRecordingStore();
 
 function adjustZoomLevel(direction: `in` | `out` | `reset`): void {
 	console.log(`[Eyas UI] adjustZoomLevel clicked:`, direction);
@@ -265,6 +264,9 @@ onMounted(() => {
 	window.eyas?.receive(`ui-shown` as ChannelName, triggerOpen);
 	window.eyas?.receive(`navigation-state-updated` as ChannelName, handleNavigationUpdate);
 	window.eyas?.receive(`update-status-updated` as ChannelName, handleUpdateStatusUpdate);
+	window.eyas?.receive(`recorder-status-updated` as ChannelName, (...args: unknown[]) => {
+		recordingStore.setFromIpc(args[0] as RecorderStatusPayload);
+	});
 });
 // expose for testing
 defineExpose({

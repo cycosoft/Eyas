@@ -1,5 +1,24 @@
 # Claude Code Instructions for Eyas
 
+## Active TODOs
+See `TODO.md` for the current punch list of outstanding work. When working in an area
+touched by an open item there, surface it and offer to address it — don't silently
+ignore it. Once you're confident an item is fully resolved, delete its line rather than
+marking it done. Whenever you touch `TODO.md`, also normalize its formatting: under each
+of the two headers, plain `- ` bullet syntax, one item per line, no stray blank lines.
+`TODO.md` always has this baseline present, even when both sections are empty:
+
+```
+# TODO
+
+-
+
+
+# Future
+
+-
+```
+
 ## Project Overview
 
 Eyas — a QA/testing desktop application built with Electron, Vue 3, and TypeScript. Eyas simplifies hands-on testing for web applications, allowing teams to quickly bundle and test changes in any state before release. Built with electron-vite for fast development iteration.

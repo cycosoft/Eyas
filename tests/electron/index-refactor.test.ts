@@ -55,7 +55,8 @@ vi.mock(`electron`, () => ({
 				send: vi.fn(),
 				focus: vi.fn(),
 				isDestroyed: vi.fn().mockReturnValue(false),
-				isFocused: vi.fn().mockReturnValue(true)
+				isFocused: vi.fn().mockReturnValue(true),
+				session: { registerPreloadScript: vi.fn() }
 			},
 			setBounds: vi.fn(),
 			isDestroyed: vi.fn().mockReturnValue(false),
@@ -70,7 +71,8 @@ vi.mock(`electron`, () => ({
 				send: vi.fn(),
 				focus: vi.fn(),
 				isDestroyed: vi.fn().mockReturnValue(false),
-				isFocused: vi.fn().mockReturnValue(true)
+				isFocused: vi.fn().mockReturnValue(true),
+				session: { registerPreloadScript: vi.fn() }
 			},
 			setBounds: vi.fn(),
 			isDestroyed: vi.fn().mockReturnValue(false),

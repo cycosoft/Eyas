@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; frame-src https:;">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session Recording — Eyas Demo</title>
+  <link rel="stylesheet" href="../../assets/demo.css">
+</head>
+<body>
+  <eyas-nav></eyas-nav>
+
+  <header class="page-hero container animate-fade-in-up">
+    <span class="page-hero-icon">🎥</span>
+    <h1>Session Recording Fixture</h1>
+    <p>Used by the E2E suite to verify click capture inside same-origin and cross-origin iframes.</p>
+  </header>
+
+  <section class="container" style="padding-bottom: var(--space-16);">
+    <button id="top-click" data-testid="top-click" class="btn btn-secondary">Top-level button</button>
+
+    <div style="margin-top: var(--space-8);">
+      <p>Same-origin frame:</p>
+      <iframe id="same-frame" data-testid="same-frame" src="/demo/recording/frame.html" width="400" height="150" style="border:1px solid var(--border);"></iframe>
+    </div>
+
+    <div style="margin-top: var(--space-8);">
+      <p>Cross-origin frame:</p>
+      <iframe id="cross-frame" data-testid="cross-frame" src="https://staging.eyas.cycosoft.com/demo/recording/frame.html" width="400" height="150" style="border:1px solid var(--border);"></iframe>
+    </div>
+  </section>
+
+  <eyas-footer></eyas-footer>
+
+  <script src="../../assets/components.js"></script>
+  <script src="../../assets/demo.js"></script>
+</body>
+</html>

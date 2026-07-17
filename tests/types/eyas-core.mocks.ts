@@ -32,6 +32,7 @@ export type CoreMockTestLayer = {
 /** Mock of session for test layer */
 type CoreMockTestLayerSession = {
 	getCacheSize: () => Promise<number>;
+	registerPreloadScript: (...args: unknown[]) => void;
 };
 
 /** Mock of WebContents for the test layer (broader API surface) */

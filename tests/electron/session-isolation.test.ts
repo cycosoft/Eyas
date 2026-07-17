@@ -12,6 +12,7 @@ vi.mock(`electron`, () => {
 			onBeforeRequest: vi.fn()
 		},
 		setPreloads: vi.fn(),
+		registerPreloadScript: vi.fn(),
 		cookies: {
 			get: vi.fn(),
 			set: vi.fn()
@@ -99,7 +100,7 @@ describe(`Session Isolation (UI & Test Layers)`, () => {
 				goForward: vi.fn(),
 				toggleDevTools: vi.fn(),
 				isDestroyed: vi.fn().mockReturnValue(false),
-				session: { getCacheSize: vi.fn(async () => 0) }
+				session: { getCacheSize: vi.fn(async () => 0), registerPreloadScript: vi.fn() }
 			}
 		};
 

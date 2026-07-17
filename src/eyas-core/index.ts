@@ -78,6 +78,7 @@ const $paths = {
 	configLoader: _path.join($roots.eyas, `scripts`, `get-config.cjs`),
 	packageJson: _path.join($roots.eyas, `..`, `package.json`),
 	testPreload: _path.join($roots.eyas, `scripts`, `test-preload.cjs`),
+	recorderPreload: _path.join($roots.eyas, `scripts`, `recorder.cjs`),
 	eventBridge: _path.join($roots.eyas, `scripts`, `event-bridge.cjs`),
 	constants: _path.join($roots.eyas, `scripts`, `constants.cjs`),
 	pathUtils: _path.join($roots.eyas, `scripts`, `path-utils.cjs`),

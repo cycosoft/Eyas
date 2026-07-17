@@ -12,6 +12,7 @@ export type EyasPaths = {
 	configLoader: FilePath;
 	packageJson: FilePath;
 	testPreload: FilePath;
+	recorderPreload: FilePath;
 	eventBridge: FilePath;
 	constants: FilePath;
 	pathUtils: FilePath;

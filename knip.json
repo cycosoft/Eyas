@@ -8,6 +8,8 @@
 		"src/types/electron.d.ts",
 		"src/scripts/get-config.ts",
 		"src/scripts/event-bridge.ts",
+		"src/scripts/recorder.ts",
+		"src/types/@cypress/unique-selector.d.ts",
 		"tests/e2e/**/*.spec.mjs",
 		"tests/e2e/eyas-utils.mjs",
 		"tests/unit/**/*.test.ts",

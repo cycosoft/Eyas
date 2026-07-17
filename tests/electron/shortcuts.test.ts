@@ -22,7 +22,8 @@ vi.mock(`electron`, () => {
 		loadURL: vi.fn(),
 		navigationHistory: { clear: vi.fn() },
 		getZoomFactor: vi.fn().mockImplementation(() => mockZoomFactor),
-		setZoomFactor: vi.fn().mockImplementation((factor: ZoomFactor) => { mockZoomFactor = factor; })
+		setZoomFactor: vi.fn().mockImplementation((factor: ZoomFactor) => { mockZoomFactor = factor; }),
+		session: { registerPreloadScript: vi.fn() }
 	};
 
 	function MockBrowserWindow(): GenericRecord {

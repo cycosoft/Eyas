@@ -73,7 +73,7 @@ describe(`window.service.ts unit tests`, () => {
 				goForward: vi.fn(),
 				toggleDevTools: vi.fn(),
 				isDestroyed: vi.fn().mockReturnValue(false),
-				session: { getCacheSize: vi.fn(async () => 0) }
+				session: { getCacheSize: vi.fn(async () => 0), registerPreloadScript: vi.fn() }
 			}
 		};
 

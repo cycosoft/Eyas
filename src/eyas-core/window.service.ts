@@ -6,6 +6,7 @@ import type { TimestampMS, GenericRecord } from '@registry/primitives.js';
 import { EYAS_HEADER_HEIGHT, EYAS_UI_PARTITION, getTestPartition } from '@scripts/constants.js';
 import { registerShortcutListeners } from './window.shortcuts.js';
 import { handleResize } from './window.resize.js';
+import * as sessionRecorderService from './session-recorder.service.js';
 
 function setupConsoleMessageListener(
 	ctx: CoreContext,
@@ -39,11 +40,17 @@ function initTestWebContentsListeners(
 		ctx.setMenu();
 
 		// clear history if requested (e.g. on fresh test start)
-		if (ctx.$shouldClearHistory) {
+		const isFreshTestStart = ctx.$shouldClearHistory;
+		if (isFreshTestStart) {
 			testWebContents.navigationHistory.clear();
 			ctx.setShouldClearHistory(false);
 		}
 
+		// only (re)start recording on the initial test load, not on every subsequent
+		// in-app navigation's did-finish-load
+		if (isFreshTestStart) {
+			sessionRecorderService.startSession(ctx).catch(() => {});
+		}
 		ctx.updateNavigationState();
 	});
 
@@ -52,7 +59,9 @@ function initTestWebContentsListeners(
 		ctx.updateNavigationState();
 	});
 
-	testWebContents.on(`did-start-navigation`, (_event, url) => {
+	testWebContents.on(`did-start-navigation`, (_event, url, _isInPlace, isMainFrame) => {
+		if (!isMainFrame) { return; }
+
 		ctx.setJSErrorsCount(0);
 		ctx.setJSWarningsCount(0);
 		if (!url.startsWith(`data:text/html`) && url !== `about:blank`) {
@@ -60,6 +69,7 @@ function initTestWebContentsListeners(
 				ctx.setIsInitializing(false);
 				ctx.setMenu();
 			}
+			sessionRecorderService.appendNavigateStep(url);
 			ctx.updateNavigationState();
 		}
 	});
@@ -105,12 +115,15 @@ export const windowService: WindowService = {
 		// Create a dedicated child view for the test content, positioned below the header
 		const testLayer = new WebContentsView({
 			webPreferences: {
-				preload: $paths.testPreload,
-				partition: getTestPartition($config?.meta.testId)
+				partition: getTestPartition($config?.meta.testId),
+				// required for the recorder preload to load into iframes (session-recording capture)
+				nodeIntegrationInSubFrames: true
 			}
 		});
 
 		ctx.setTestLayer(testLayer);
+		testLayer.webContents.session.registerPreloadScript({ type: `frame`, filePath: $paths.testPreload });
+		testLayer.webContents.session.registerPreloadScript({ type: `frame`, filePath: $paths.recorderPreload });
 		registerShortcutListeners(ctx, testLayer.webContents);
 		window.contentView.addChildView(testLayer);
 		testLayer.setBounds({

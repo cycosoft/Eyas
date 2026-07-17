@@ -22,6 +22,8 @@ export type IsWindows = boolean;
 export type IsMac = boolean;
 export type IsExitFlow = boolean;
 export type ShouldShow = boolean;
+export type IsExcluded = boolean;
+export type IsPasswordInput = boolean;
 
 // Events / Progress
 export type ProgressBytes = number;
@@ -40,6 +42,7 @@ export type GenericRecord = Record<GenericKey, unknown>;
 export type MenuLabel = string;
 export type AppTitle = string;
 export type ProjectId = string;
+export type SelectorString = string;
 export type SettingKey = string;
 export type AppVersion = string;
 export type ByteCount = number;
@@ -78,6 +81,14 @@ export type ViewportHeight = number;
 export type ViewportLabel = string;
 export type ScreenCoordinate = number;
 export type PixelDimension = number;
+export type FramePath = number[];
+export type ElementClassList = string[];
+
+// DOM Elements
+/** Represents a DOM element for recording or manipulation operations */
+export type DomElement = Element;
+/** Represents an event source node for event handling operations */
+export type EventSourceNode = EventTarget;
 
 // Identity / Identification
 export type HashString = string;
@@ -87,6 +98,7 @@ export type DeviceId = string;
 export type Username = string;
 export type PasswordPlain = string;
 export type PasswordHex = string;
+export type SessionId = string;
 
 // Certificates
 export type CertKey = string;
