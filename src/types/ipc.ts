@@ -176,3 +176,9 @@ export type RecorderReplayRequestPayload = {
 /** Payload for the 'recorder-flush-steps' IPC event */
 export type RecorderFlushStepsPayload = RecordingStep[];
 
+/** Payload for the 'recorder-playback-status' IPC event */
+export type RecorderPlaybackStatusPayload = {
+	status: `playing` | `stopped` | `failed`;
+	error?: string;
+};
+

@@ -127,6 +127,47 @@ describe(`sessionRecorderService.appendNavigateStep`, () => {
 		expect(steps?.[0]).toMatchObject({ type: `navigate`, url: `https://example.com` });
 		expect(steps?.[0].timestamp).toBeTypeOf(`number`);
 	});
+
+	test(`is a no-op while a replay is in progress, so the replayed navigation isn't re-recorded into the session it's replaying`, async () => {
+		const ctx = makeCtx();
+		await service.startSession(ctx);
+
+		service.setReplaying(true);
+		service.appendNavigateStep(`https://example.com` as never);
+		service.setReplaying(false);
+
+		expect(service.getActiveSession()?.recording.steps).toHaveLength(0);
+	});
+});
+
+// ─── getSession ─────────────────────────────────────────────────────────────
+
+describe(`sessionRecorderService.getSession`, () => {
+	test(`returns the in-memory active session when its sessionId matches`, async () => {
+		const ctx = makeCtx();
+		await service.startSession(ctx);
+		const session = service.getActiveSession();
+
+		const loaded = await service.getSession(ctx, session?.sessionId as never);
+		expect(loaded).toBe(session);
+	});
+
+	test(`reads the session from disk by projectId when it isn't the active in-memory session`, async () => {
+		const ctx = makeCtx();
+		await service.startSession(ctx);
+		const session = service.getActiveSession();
+		const sessionId = session?.sessionId ?? ``;
+		service._setSessionsDir(tmpDir);
+
+		const loaded = await service.getSession(ctx, sessionId as never);
+		expect(loaded?.sessionId).toBe(sessionId);
+	});
+
+	test(`returns null when no session exists on disk for the given sessionId`, async () => {
+		const ctx = makeCtx();
+		const loaded = await service.getSession(ctx, `does-not-exist` as never);
+		expect(loaded).toBeNull();
+	});
 });
 
 // ─── stopRecording ──────────────────────────────────────────────────────────

@@ -1,7 +1,9 @@
 import { ipcMain } from 'electron';
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { RecorderFlushStepsPayload, RecorderReplayRequestPayload } from '@registry/ipc.js';
+import type { SessionId } from '@registry/primitives.js';
 import * as sessionRecorderService from './session-recorder.service.js';
+import sessionPlaybackService from './session-playback.service.js';
 
 // Initializes recorder-related IPC listeners.
 export function initRecorderIpcListeners(ctx: CoreContext): void {
@@ -13,7 +15,9 @@ export function initRecorderIpcListeners(ctx: CoreContext): void {
 		sessionRecorderService.stopRecording(ctx);
 	});
 
-	ipcMain.on(`recorder-replay-request`, (_event, _payload: RecorderReplayRequestPayload) => {
-		// Playback dispatch is scoped to a subsequent iteration of this deliverable.
+	ipcMain.on(`recorder-replay-request`, (_event, payload: RecorderReplayRequestPayload) => {
+		sessionPlaybackService.playSession(ctx, payload.sessionId as SessionId).catch(err => {
+			console.error(`[IPC-HANDLERS-RECORDER] playback failed:`, err);
+		});
 	});
 }

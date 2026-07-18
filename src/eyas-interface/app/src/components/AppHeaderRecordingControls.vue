@@ -7,6 +7,10 @@
 		<v-btn v-else-if="isStopped" icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" data-qa="btn-recording-replay" @click="replayRecording">
 			<v-icon icon="mdi-play" size="small" />
 		</v-btn>
+		<span v-if="playbackError" class="playback-error mx-1" data-qa="recording-playback-error">
+			Replay failed
+			<v-tooltip activator="parent" location="bottom">{{ playbackError }}</v-tooltip>
+		</span>
 	</div>
 </template>
 
@@ -16,7 +20,7 @@ import type { ChannelName } from '@registry/primitives.js';
 import useRecordingStore from '@/stores/recording.js';
 
 const recordingStore = useRecordingStore();
-const { isRecording, isStopped } = storeToRefs(recordingStore);
+const { isRecording, isStopped, playbackError } = storeToRefs(recordingStore);
 
 function stopRecording(): void {
 	window.eyas?.send(`recorder-stop` as ChannelName);
@@ -30,4 +34,5 @@ function replayRecording(): void {
 <style scoped>
 .recording-dot { width: 8px; height: 8px; border-radius: 50%; background-color: #e53935; animation: recording-pulse 1.5s infinite; }
 @keyframes recording-pulse { 0% { opacity: 1; } 50% { opacity: 0.35; } 100% { opacity: 1; } }
+.playback-error { font-size: 12px; color: #e53935; }
 </style>

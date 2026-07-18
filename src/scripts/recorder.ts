@@ -81,8 +81,9 @@ function _onClick(event: MouseEvent): void {
 	_push({
 		type: `click`,
 		selectors: _computeSelectorGroup(target),
-		offsetX: event.offsetX as ScreenCoordinate,
-		offsetY: event.offsetY as ScreenCoordinate,
+		// viewport-relative (not element-relative) so CDP's Input.dispatchMouseEvent can replay it directly
+		offsetX: event.clientX as ScreenCoordinate,
+		offsetY: event.clientY as ScreenCoordinate,
 		frame: _computeFramePath(),
 		timestamp: Date.now()
 	});

@@ -5,11 +5,12 @@ import fs from 'fs-extra';
 const { outputJson } = fs;
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { EyasRecordingEnvelope, RecordingStep } from '@registry/recording.js';
-import type { ProjectId, FilePath, DomainUrl, SessionId } from '@registry/primitives.js';
+import type { ProjectId, FilePath, DomainUrl, SessionId, IsActive } from '@registry/primitives.js';
 
 let _session: EyasRecordingEnvelope | null = null;
 let _sessionFilePath: FilePath | null = null;
 let _sessionsDirOverride: FilePath | null = null;
+let _isReplaying = false;
 
 function _sessionsDir(): FilePath {
 	return _sessionsDirOverride ?? _path.join(app.getPath(`userData`), `sessions`);
@@ -66,16 +67,21 @@ async function startSession(ctx: CoreContext): Promise<void> {
 
 /** Appends flushed steps from the recorder preload to the active session and persists. */
 function appendSteps(steps: RecordingStep[]): void {
-	if (!_session || steps.length === 0) { return; }
+	if (!_session || _isReplaying || steps.length === 0) { return; }
 	_session.recording.steps.push(...steps);
 	_persist();
 }
 
 /** Appends a NavigateStep captured from the main-process webContents navigation events. */
 function appendNavigateStep(url: DomainUrl): void {
-	if (!_session) { return; }
+	if (!_session || _isReplaying) { return; }
 	_session.recording.steps.push({ type: `navigate`, url, timestamp: Date.now() });
 	_persist();
+}
+
+/** Marks whether a replay is currently dispatching, so its own navigation isn't re-recorded. */
+function setReplaying(isReplaying: IsActive): void {
+	_isReplaying = isReplaying;
 }
 
 /** Stops the active recording session, finalizing status and persisting to disk. */
@@ -92,11 +98,24 @@ function getActiveSession(): EyasRecordingEnvelope | null {
 	return _session;
 }
 
+/** Loads a recording session by id: the in-memory session if it matches, otherwise reads it from disk. */
+async function getSession(ctx: CoreContext, sessionId: SessionId): Promise<EyasRecordingEnvelope | null> {
+	if (_session?.sessionId === sessionId) { return _session; }
+
+	const projectId = (ctx.$config?.meta.projectId || `default`) as ProjectId;
+	const filePath = _path.join(_sessionsDir(), projectId, `${sessionId}.json`);
+	if (!(await fs.pathExists(filePath))) { return null; }
+
+	return fs.readJson(filePath);
+}
+
 export {
 	startSession,
 	appendSteps,
 	appendNavigateStep,
-	stopRecording
+	stopRecording,
+	getSession,
+	setReplaying
 };
 
 export default {
@@ -104,6 +123,8 @@ export default {
 	appendSteps,
 	appendNavigateStep,
 	stopRecording,
+	setReplaying,
 	getActiveSession,
+	getSession,
 	_setSessionsDir
 };

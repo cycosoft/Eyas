@@ -113,3 +113,65 @@ test.describe(`Session Recording — iframe capture`, () => {
 		expect(consoleErrors).toEqual([]);
 	});
 });
+
+test.describe(`Session Recording — Replay`, () => {
+	let electronApp;
+
+	test.beforeEach(async () => {
+		electronApp = await launchEyas();
+	});
+
+	test.afterEach(async () => {
+		await exitEyas(electronApp);
+	});
+
+	test(`replays a stopped session by re-dispatching its captured click via CDP`, async () => {
+		test.setTimeout(30000);
+		const uiPage = await getUiView(electronApp);
+		await ensureEnvironmentSelected(uiPage);
+
+		await uiPage.locator(`[data-qa="btn-nav-group-links"]`).click();
+		await uiPage.locator(`[data-qa="btn-nav-item"]`, { hasText: `Recording Demo` }).click();
+
+		const testPage = await getTestView(electronApp, /demo\/recording/);
+		expect(testPage).toBeTruthy();
+
+		// Replay first re-dispatches the recorded navigation to this page, reloading it, before
+		// re-dispatching the click — so the click counter must survive a same-origin reload.
+		// sessionStorage does; a plain `window` variable would not. addInitScript re-attaches
+		// the listener on that reload since the page's own scripts don't know about our counter.
+		const attachClickCounter = () => {
+			const attach = () => {
+				const btn = document.querySelector(`[data-testid="top-click"]`);
+				if (btn) {
+					btn.addEventListener(`click`, () => {
+						sessionStorage.setItem(`__clickCount`, String((Number(sessionStorage.getItem(`__clickCount`)) || 0) + 1));
+					});
+				}
+			};
+			// addInitScript runs at document-start, before the DOM is built — wait for it
+			if (document.readyState === `loading`) { document.addEventListener(`DOMContentLoaded`, attach); }
+			else { attach(); }
+		};
+		await testPage.evaluate(attachClickCounter);
+		await testPage.addInitScript(attachClickCounter);
+
+		await testPage.locator(`[data-testid="top-click"]`).click();
+		await testPage.waitForTimeout(2500);
+
+		await uiPage.locator(`[data-qa="btn-recording-stop"]`).click();
+		await expect(uiPage.locator(`[data-qa="btn-recording-replay"]`)).toBeVisible();
+
+		expect(await testPage.evaluate(() => sessionStorage.getItem(`__clickCount`))).toBe(`1`);
+
+		await uiPage.locator(`[data-qa="btn-recording-replay"]`).click();
+
+		// navigation replay reloads the page mid-poll, transiently destroying the JS execution
+		// context Playwright is evaluating in — swallow that and let the poll retry
+		await expect.poll(async () => {
+			try { return await testPage.evaluate(() => sessionStorage.getItem(`__clickCount`)); }
+			catch { return null; }
+		}, { timeout: 10000 }).toBe(`2`);
+		await expect(uiPage.locator(`[data-qa="recording-playback-error"]`)).not.toBeVisible();
+	});
+});
