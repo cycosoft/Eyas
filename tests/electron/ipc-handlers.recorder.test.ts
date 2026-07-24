@@ -22,6 +22,14 @@ vi.mock(`../../src/eyas-core/session-recorder.service.js`, () => ({
 	stopRecording: vi.fn()
 }));
 
+const { stopPlayback } = vi.hoisted(() => ({
+	stopPlayback: vi.fn()
+}));
+
+vi.mock(`../../src/eyas-core/session-playback.service.js`, () => ({
+	default: { playSession: vi.fn(), stopPlayback }
+}));
+
 import { initRecorderIpcListeners } from '@core/ipc-handlers.recorder.js';
 
 function getFlushHandler(): (event: unknown, steps: unknown) => void {
@@ -66,5 +74,23 @@ describe(`recorder-flush-steps IPC handler`, () => {
 		handler({ sender: { id: 5 } }, [step]);
 
 		expect(appendSteps).toHaveBeenCalledWith([{ ...step, popupId: `popup-a` }]);
+	});
+});
+
+describe(`recorder-replay-stop IPC handler`, () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	test(`calls sessionPlaybackService.stopPlayback`, () => {
+		initRecorderIpcListeners({} as CoreContext);
+
+		const registeredCall = vi.mocked(ipcMain.on).mock.calls.find(call => call[0] === `recorder-replay-stop`);
+		if (!registeredCall) { throw new Error(`recorder-replay-stop handler was not registered`); }
+		const handler = registeredCall[1] as (...args: unknown[]) => void;
+
+		handler();
+
+		expect(stopPlayback).toHaveBeenCalled();
 	});
 });

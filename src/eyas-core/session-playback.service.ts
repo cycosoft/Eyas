@@ -9,6 +9,13 @@ import { getPopupWebContents, closePopup, setReplayPopupIdQueue, clearReplayPopu
 
 const CDP_DEBUGGER_VERSION = `1.3`;
 
+let _abortRequested = false;
+
+/** Requests that the in-progress replay (if any) stop before dispatching its next step. */
+function stopPlayback(): void {
+	_abortRequested = true;
+}
+
 const REPLAY_STEP_DELAY_MS: Record<ReplaySpeedMode, DurationMS> = {
 	'no-delay': 0 as DurationMS,
 	natural: 500 as DurationMS
@@ -136,6 +143,8 @@ function _sendPlaybackStatus(ctx: CoreContext, payload: RecorderPlaybackStatusPa
 }
 
 async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebContents, steps: RecordingStep[], startUrl: DomainUrl | null): Promise<void> {
+	// a stopPlayback() call with no replay in progress must not bleed into this new one
+	_abortRequested = false;
 	try { webContents.debugger.attach(CDP_DEBUGGER_VERSION); } catch { /* already attached */ }
 
 	// replayed input/navigation is real DOM/webContents activity, indistinguishable from the
@@ -156,6 +165,7 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 		const stepDelayMs = REPLAY_STEP_DELAY_MS[replaySpeed] ?? 0;
 
 		for (let i = 0; i < steps.length; i++) {
+			if (_abortRequested) { break; }
 			if (i > 0 && stepDelayMs > 0) { await _delay(stepDelayMs); }
 			await _dispatchStep(webContents, steps[i]);
 			_sendPlaybackStatus(ctx, { status: `playing`, completedSteps: (i + 1) as StepCount, totalSteps: steps.length as StepCount });
@@ -165,6 +175,7 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 		const error = err instanceof Error ? err.message : String(err);
 		_sendPlaybackStatus(ctx, { status: `failed`, error });
 	} finally {
+		_abortRequested = false;
 		sessionRecorderService.setReplaying(false);
 		clearReplayPopupIdQueue();
 		try { webContents.debugger.detach(); } catch { /* not attached */ }
@@ -185,4 +196,4 @@ async function playSession(ctx: CoreContext, sessionId: SessionId): Promise<void
 	await _dispatchAllSteps(ctx, webContents, session.recording.steps, session.startUrl);
 }
 
-export default { playSession };
+export default { playSession, stopPlayback };

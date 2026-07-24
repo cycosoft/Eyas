@@ -7,6 +7,9 @@
 		<v-btn v-if="isRecording" icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" data-qa="btn-recording-stop" @click="stopRecording">
 			<v-icon icon="mdi-stop" size="small" />
 		</v-btn>
+		<v-btn v-else-if="isPlaying" icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" data-qa="btn-recording-playback-stop" @click="stopPlayback">
+			<v-icon icon="mdi-stop" size="small" />
+		</v-btn>
 		<v-btn v-else-if="isStopped" icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" data-qa="btn-recording-replay" @click="replayRecording">
 			<v-icon icon="mdi-play" size="small" />
 		</v-btn>
@@ -31,6 +34,10 @@ function stopRecording(): void {
 
 function replayRecording(): void {
 	window.eyas?.send(`recorder-replay-request` as ChannelName, { sessionId: recordingStore.sessionId });
+}
+
+function stopPlayback(): void {
+	window.eyas?.send(`recorder-replay-stop` as ChannelName);
 }
 </script>
 

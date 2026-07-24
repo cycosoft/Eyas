@@ -26,4 +26,8 @@ export function initRecorderIpcListeners(ctx: CoreContext): void {
 			console.error(`[IPC-HANDLERS-RECORDER] playback failed:`, err);
 		});
 	});
+
+	ipcMain.on(`recorder-replay-stop`, () => {
+		sessionPlaybackService.stopPlayback();
+	});
 }

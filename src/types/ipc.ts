@@ -56,7 +56,8 @@ export const VALID_SEND_CHANNELS = [
 	`adjust-zoom`,
 	`recorder-flush-steps`,
 	`recorder-stop`,
-	`recorder-replay-request`
+	`recorder-replay-request`,
+	`recorder-replay-stop`
 ] as const;
 
 export const VALID_RECEIVE_CHANNELS = [
