@@ -1,10 +1,21 @@
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { RecordingStep } from '@registry/recording.js';
 import type { RecorderPlaybackStatusPayload } from '@registry/ipc.js';
-import type { SessionId } from '@registry/primitives.js';
+import type { ProjectId, SessionId, DurationMS } from '@registry/primitives.js';
+import type { ReplaySpeedMode } from '@registry/settings.js';
 import sessionRecorderService from './session-recorder.service.js';
+import settingsService from './settings-service.js';
 
 const CDP_DEBUGGER_VERSION = `1.3`;
+
+const REPLAY_STEP_DELAY_MS: Record<ReplaySpeedMode, DurationMS> = {
+	'no-delay': 0 as DurationMS,
+	natural: 500 as DurationMS
+};
+
+function _delay(ms: DurationMS): Promise<void> {
+	return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 async function _dispatchStep(webContents: Electron.WebContents, step: RecordingStep): Promise<void> {
 	switch (step.type) {
@@ -45,8 +56,13 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 	// user's own — suppress the recorder so a replay doesn't record itself into its own session
 	sessionRecorderService.setReplaying(true);
 	try {
-		for (const step of steps) {
-			await _dispatchStep(webContents, step);
+		const projectId = ctx.$config?.meta.projectId as ProjectId | undefined;
+		const replaySpeed = settingsService.get(`recording.replaySpeed`, projectId) as ReplaySpeedMode;
+		const stepDelayMs = REPLAY_STEP_DELAY_MS[replaySpeed] ?? 0;
+
+		for (let i = 0; i < steps.length; i++) {
+			if (i > 0 && stepDelayMs > 0) { await _delay(stepDelayMs); }
+			await _dispatchStep(webContents, steps[i]);
 		}
 		_sendPlaybackStatus(ctx, { status: `stopped` });
 	} catch (err) {

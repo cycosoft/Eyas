@@ -17,7 +17,12 @@ vi.mock(`@core/session-recorder.service.js`, () => ({
 	default: { getSession: vi.fn(), setReplaying: vi.fn() }
 }));
 
+vi.mock(`@core/settings-service.js`, () => ({
+	default: { get: vi.fn().mockReturnValue(`no-delay`) }
+}));
+
 import sessionRecorderService from '@core/session-recorder.service.js';
+import settingsService from '@core/settings-service.js';
 import playbackService from '@core/session-playback.service.js';
 
 function makeSession(steps: EyasRecordingEnvelope[`recording`][`steps`]): EyasRecordingEnvelope {
@@ -52,6 +57,7 @@ function makeCtx(): CoreContext {
 beforeEach(() => {
 	vi.mocked(sessionRecorderService.getSession).mockReset();
 	vi.mocked(sessionRecorderService.setReplaying).mockClear();
+	vi.mocked(settingsService.get).mockReset().mockReturnValue(`no-delay`);
 	sendCommand.mockClear();
 	attach.mockClear();
 	detach.mockClear();
@@ -183,5 +189,44 @@ describe(`sessionPlaybackService.playSession`, () => {
 		await playbackService.playSession(ctx, `missing-session`);
 
 		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, expect.objectContaining({ status: `failed` }));
+	});
+
+	test(`does not wait between steps when replaySpeed is 'no-delay' (the default)`, async () => {
+		vi.mocked(settingsService.get).mockReturnValue(`no-delay`);
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `navigate`, url: `https://example.com/a`, timestamp: 1 },
+			{ type: `navigate`, url: `https://example.com/b`, timestamp: 2 }
+		]));
+		const ctx = makeCtx();
+		const setTimeoutSpy = vi.spyOn(global, `setTimeout`);
+
+		await playbackService.playSession(ctx, `sess-1`);
+
+		expect(setTimeoutSpy).not.toHaveBeenCalled();
+		setTimeoutSpy.mockRestore();
+	});
+
+	test(`waits between steps when replaySpeed is 'natural'`, async () => {
+		vi.useFakeTimers();
+		vi.mocked(settingsService.get).mockReturnValue(`natural`);
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `navigate`, url: `https://example.com/a`, timestamp: 1 },
+			{ type: `navigate`, url: `https://example.com/b`, timestamp: 2 },
+			{ type: `navigate`, url: `https://example.com/c`, timestamp: 3 }
+		]));
+		const ctx = makeCtx();
+		const setTimeoutSpy = vi.spyOn(global, `setTimeout`);
+
+		const playPromise = playbackService.playSession(ctx, `sess-1`);
+		await vi.advanceTimersByTimeAsync(1000);
+		await playPromise;
+
+		// one delay between each pair of steps: 3 steps → 2 waits, not a wait before the first step
+		expect(setTimeoutSpy).toHaveBeenCalledTimes(2);
+		expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 500);
+		expect(loadURL).toHaveBeenNthCalledWith(1, `https://example.com/a`);
+		expect(loadURL).toHaveBeenNthCalledWith(3, `https://example.com/c`);
+		setTimeoutSpy.mockRestore();
+		vi.useRealTimers();
 	});
 });

@@ -99,6 +99,17 @@
 								hide-details
 								data-qa="settings-app-allow-bypass-updates"
 							/>
+
+							<v-divider class="my-4" />
+
+							<v-select
+								v-model="appReplaySpeed"
+								label="Replay Speed"
+								:items="REPLAY_SPEED_OPTIONS"
+								density="compact"
+								hide-details
+								data-qa="settings-app-replay-speed"
+							/>
 						</v-sheet>
 					</v-window-item>
 				</v-window>
@@ -166,11 +177,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { THEME_MODES } from '@scripts/constants.js';
+import { THEME_MODES, REPLAY_SPEED_OPTIONS } from '@scripts/constants.js';
 import useSettingsStore from '@/stores/settings.js';
 import ModalWrapper from '@/components/ModalWrapper.vue';
 import type { ChannelName, IsVisible, SettingKey, ProjectId, IsActive, DomainUrl, Username } from '@registry/primitives.js';
-import type { ThemeMode } from '@registry/settings.js';
+import type { ThemeMode, ReplaySpeedMode } from '@registry/settings.js';
 import type { CredentialMetadata } from '@registry/core.js';
 
 type TabName = `project` | `app`;
@@ -185,10 +196,7 @@ const projectCredentials = ref<CredentialMetadata[]>([]);
 const deleteConfirmVisible = ref<IsVisible>(false);
 const credentialToDelete = ref<CredentialMetadata | null>(null);
 
-const requestDeleteCredential = (origin: DomainUrl, username: Username): void => {
-	credentialToDelete.value = { origin, username };
-	deleteConfirmVisible.value = true;
-};
+const requestDeleteCredential = (origin: DomainUrl, username: Username): void => { credentialToDelete.value = { origin, username }; deleteConfirmVisible.value = true; };
 
 const confirmDelete = (): void => {
 	if (credentialToDelete.value) {
@@ -198,10 +206,7 @@ const confirmDelete = (): void => {
 	credentialToDelete.value = null;
 };
 
-const cancelDelete = (): void => {
-	deleteConfirmVisible.value = false;
-	credentialToDelete.value = null;
-};
+const cancelDelete = (): void => { deleteConfirmVisible.value = false; credentialToDelete.value = null; };
 
 const deleteCredential = (origin: DomainUrl, username: Username): void => {
 	window.eyas?.send(`delete-credential` as ChannelName, { origin, username });
@@ -231,33 +236,23 @@ const appTheme = computed({
 });
 
 const appAlwaysChoose = computed({
-	get(): IsActive {
-		return !!(settingsStore.appSettings.env?.alwaysChoose);
-	},
-	set(val: IsActive): void {
-		settingsStore.setSetting(`env.alwaysChoose` as SettingKey, !!val);
-		saveAppSetting(`env.alwaysChoose` as SettingKey, !!val);
-	}
+	get: (): IsActive => !!(settingsStore.appSettings.env?.alwaysChoose),
+	set: (val: IsActive): void => { settingsStore.setSetting(`env.alwaysChoose` as SettingKey, !!val); saveAppSetting(`env.alwaysChoose` as SettingKey, !!val); }
 });
 
 const appAllowBypassUpdates = computed({
-	get(): IsActive {
-		return !!(settingsStore.appSettings.allowBypassUpdates);
-	},
-	set(val: IsActive): void {
-		settingsStore.setSetting(`allowBypassUpdates` as SettingKey, !!val);
-		saveAppSetting(`allowBypassUpdates` as SettingKey, !!val);
-	}
+	get: (): IsActive => !!(settingsStore.appSettings.allowBypassUpdates),
+	set: (val: IsActive): void => { settingsStore.setSetting(`allowBypassUpdates` as SettingKey, !!val); saveAppSetting(`allowBypassUpdates` as SettingKey, !!val); }
+});
+
+const appReplaySpeed = computed({
+	get: (): ReplaySpeedMode => settingsStore.appSettings.recording?.replaySpeed || `no-delay`,
+	set: (val: ReplaySpeedMode): void => { settingsStore.setSetting(`recording.replaySpeed` as SettingKey, val); saveAppSetting(`recording.replaySpeed` as SettingKey, val); }
 });
 
 const projectAlwaysChoose = computed({
-	get(): IsActive {
-		return !!(settingsStore.projectSettings.env?.alwaysChoose);
-	},
-	set(val: IsActive): void {
-		settingsStore.setSetting(`env.alwaysChoose` as SettingKey, !!val, projectId.value);
-		saveProjectSetting(`env.alwaysChoose` as SettingKey, !!val);
-	}
+	get: (): IsActive => !!(settingsStore.projectSettings.env?.alwaysChoose),
+	set: (val: IsActive): void => { settingsStore.setSetting(`env.alwaysChoose` as SettingKey, !!val, projectId.value); saveProjectSetting(`env.alwaysChoose` as SettingKey, !!val); }
 });
 
 onMounted(() => {
@@ -287,6 +282,7 @@ defineExpose({
 	projectAlwaysChoose,
 	appAlwaysChoose,
 	appAllowBypassUpdates,
+	appReplaySpeed,
 	projectCredentials,
 	deleteConfirmVisible,
 	credentialToDelete,

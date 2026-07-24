@@ -34,8 +34,17 @@ export const SETTINGS_DEFAULTS = {
 		autoOpenBrowser: true,
 		useCustomDomain: false
 	},
-	allowBypassUpdates: false
+	allowBypassUpdates: false,
+	recording: {
+		replaySpeed: `no-delay`
+	}
 } as const;
+
+// Options for the Replay Speed settings select
+export const REPLAY_SPEED_OPTIONS = [
+	{ title: `No Delay`, value: `no-delay` },
+	{ title: `Natural`, value: `natural` }
+] as const;
 // Matches the height of a Vuetify v-app-bar with density="compact" (48) + v-system-bar (30) + 1px border.
 // Using 79 prevents the bottom border from being cut off in the UI layer.
 // NOTE: Odd heights can cause 1px rounding discrepancies on high-DPI (Retina) displays.

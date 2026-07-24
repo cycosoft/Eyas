@@ -15,12 +15,19 @@ export type AutofillTheme = {
 	maskColor: LabelString;
 };
 
+export type ReplaySpeedMode = `no-delay` | `natural`;
+
+type RecordingSettings = {
+	replaySpeed?: ReplaySpeedMode;
+};
+
 type SettingsBase = {
 	env?: EnvironmentSettings;
 	theme?: ThemeMode;
 	lastSeenVersion?: AppVersion;
 	testServer?: TestServerSettings;
 	allowBypassUpdates?: boolean;
+	recording?: RecordingSettings;
 }
 
 /** Settings stored at the application level */
