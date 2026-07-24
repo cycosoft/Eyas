@@ -12,7 +12,7 @@ vi.mock(`@core/session-recorder.service.js`, () => ({
 	default: { appendCloseWindowStep }
 }));
 
-import { registerPopupTracking, getPopupWebContents, closePopup } from '@core/window.popups.js';
+import { registerPopupTracking, getPopupWebContents, closePopup, setReplayPopupIdQueue, clearReplayPopupIdQueue } from '@core/window.popups.js';
 
 type MockFn = ReturnType<typeof vi.fn>;
 type MockEventName = string;
@@ -142,5 +142,34 @@ describe(`window.popups.ts`, () => {
 
 	test(`closePopup resolves immediately when the given id isn't open`, async () => {
 		await expect(closePopup(`missing` as PopupId)).resolves.toBeUndefined();
+	});
+
+	test(`assigns queued replay ids, in order, to newly created popups instead of a fresh randomUUID, so a popup re-opened during replay keeps the id it was recorded with`, () => {
+		randomUUID.mockReturnValue(`should-not-be-used`);
+		setReplayPopupIdQueue([`popup-a` as PopupId, `popup-b` as PopupId]);
+		const testWebContents = makeTestWebContents();
+		registerPopupTracking(testWebContents as never);
+		const popupOne = makeFakePopup();
+		const popupTwo = makeFakePopup();
+
+		testWebContents._emitCreateWindow(popupOne);
+		testWebContents._emitCreateWindow(popupTwo);
+
+		expect(getPopupWebContents(`popup-a` as PopupId)).toBe(popupOne.webContents);
+		expect(getPopupWebContents(`popup-b` as PopupId)).toBe(popupTwo.webContents);
+		clearReplayPopupIdQueue();
+	});
+
+	test(`falls back to a fresh randomUUID once the replay id queue is exhausted or cleared`, () => {
+		setReplayPopupIdQueue([`popup-a` as PopupId]);
+		clearReplayPopupIdQueue();
+		randomUUID.mockReturnValueOnce(`popup-fresh`);
+		const testWebContents = makeTestWebContents();
+		registerPopupTracking(testWebContents as never);
+		const popup = makeFakePopup();
+
+		testWebContents._emitCreateWindow(popup);
+
+		expect(getPopupWebContents(`popup-fresh` as PopupId)).toBe(popup.webContents);
 	});
 });

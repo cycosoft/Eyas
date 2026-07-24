@@ -23,14 +23,18 @@ vi.mock(`@core/settings-service.js`, () => ({
 	default: { get: vi.fn().mockReturnValue(`no-delay`) }
 }));
 
-const { getPopupWebContents, closePopup } = vi.hoisted(() => ({
+const { getPopupWebContents, closePopup, setReplayPopupIdQueue, clearReplayPopupIdQueue } = vi.hoisted(() => ({
 	getPopupWebContents: vi.fn(),
-	closePopup: vi.fn().mockResolvedValue(undefined)
+	closePopup: vi.fn().mockResolvedValue(undefined),
+	setReplayPopupIdQueue: vi.fn(),
+	clearReplayPopupIdQueue: vi.fn()
 }));
 
 vi.mock(`@core/window.popups.js`, () => ({
 	getPopupWebContents,
-	closePopup
+	closePopup,
+	setReplayPopupIdQueue,
+	clearReplayPopupIdQueue
 }));
 
 const popupSendCommand = vi.fn().mockResolvedValue(undefined);
@@ -97,6 +101,8 @@ beforeEach(() => {
 	popupLoadURL.mockClear();
 	getPopupWebContents.mockReset().mockReturnValue(null);
 	closePopup.mockClear().mockResolvedValue(undefined);
+	setReplayPopupIdQueue.mockClear();
+	clearReplayPopupIdQueue.mockClear();
 });
 
 describe(`sessionPlaybackService.playSession`, () => {
@@ -364,5 +370,19 @@ describe(`sessionPlaybackService.playSession`, () => {
 		expect(warnSpy).toHaveBeenCalled();
 		expect(sendCommand).not.toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.objectContaining({ x: 1, y: 1 }));
 		warnSpy.mockRestore();
+	});
+
+	test(`primes the replay popup id queue with each step's popupId in first-appearance order before dispatch, and clears it after, so a popup re-opened during replay is assigned the same id it was recorded with`, async () => {
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `click`, selectors: { primary: `#open`, fallbacks: [] }, offsetX: 1, offsetY: 1, popupId: `popup-1`, timestamp: 1 } as never,
+			{ type: `click`, selectors: { primary: `#in-popup`, fallbacks: [] }, offsetX: 2, offsetY: 2, popupId: `popup-1`, timestamp: 2 } as never,
+			{ type: `closeWindow`, popupId: `popup-2`, timestamp: 3 } as never
+		]));
+		const ctx = makeCtx();
+
+		await playbackService.playSession(ctx, `sess-1`);
+
+		expect(setReplayPopupIdQueue).toHaveBeenCalledWith([`popup-1`, `popup-2`]);
+		expect(clearReplayPopupIdQueue).toHaveBeenCalled();
 	});
 });

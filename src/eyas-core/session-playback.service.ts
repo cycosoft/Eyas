@@ -1,11 +1,11 @@
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { RecordingStep } from '@registry/recording.js';
 import type { RecorderPlaybackStatusPayload } from '@registry/ipc.js';
-import type { ProjectId, SessionId, DurationMS, DomainUrl } from '@registry/primitives.js';
+import type { ProjectId, SessionId, DurationMS, DomainUrl, PopupId } from '@registry/primitives.js';
 import type { ReplaySpeedMode } from '@registry/settings.js';
 import sessionRecorderService from './session-recorder.service.js';
 import settingsService from './settings-service.js';
-import { getPopupWebContents, closePopup } from './window.popups.js';
+import { getPopupWebContents, closePopup, setReplayPopupIdQueue, clearReplayPopupIdQueue } from './window.popups.js';
 
 const CDP_DEBUGGER_VERSION = `1.3`;
 
@@ -64,6 +64,20 @@ async function _dispatchStep(webContents: Electron.WebContents, step: RecordingS
 	}
 }
 
+/** Returns each step's popupId in first-appearance order, deduped — the order popups must be re-assigned ids in during replay. */
+function _orderedPopupIds(steps: RecordingStep[]): PopupId[] {
+	const seen = new Set<PopupId>();
+	const ordered: PopupId[] = [];
+	for (const step of steps) {
+		const popupId = `popupId` in step ? step.popupId : undefined;
+		if (popupId !== undefined && !seen.has(popupId)) {
+			seen.add(popupId);
+			ordered.push(popupId);
+		}
+	}
+	return ordered;
+}
+
 function _sendPlaybackStatus(ctx: CoreContext, payload: RecorderPlaybackStatusPayload): void {
 	ctx.$eyasLayer?.webContents?.send(`recorder-playback-status`, payload);
 }
@@ -75,6 +89,7 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 	// replayed input/navigation is real DOM/webContents activity, indistinguishable from the
 	// user's own — suppress the recorder so a replay doesn't record itself into its own session
 	sessionRecorderService.setReplaying(true);
+	setReplayPopupIdQueue(_orderedPopupIds(steps));
 	try {
 		// the session's steps only capture navigations that occurred *during* recording — if
 		// playback starts from a different view than recording did, replay the starting view first
@@ -97,6 +112,7 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 		_sendPlaybackStatus(ctx, { status: `failed`, error });
 	} finally {
 		sessionRecorderService.setReplaying(false);
+		clearReplayPopupIdQueue();
 		try { webContents.debugger.detach(); } catch { /* not attached */ }
 	}
 }

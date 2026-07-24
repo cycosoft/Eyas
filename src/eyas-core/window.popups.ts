@@ -6,14 +6,29 @@ const CDP_DEBUGGER_VERSION = `1.3`;
 
 const _openPopups = new Map<PopupId, Electron.BrowserWindow>();
 
+// during replay, popups must be re-assigned the exact ids they were recorded with (not fresh
+// randomUUIDs) so that later steps — especially closeWindow — resolve against the right popup;
+// this queue holds the recording's popupIds in first-appearance order, consumed one per popup
+let _replayIdQueue: PopupId[] | null = null;
+
 function _waitForClosed(win: Electron.BrowserWindow): Promise<void> {
 	return new Promise(resolve => win.once(`closed`, () => resolve()));
+}
+
+/** Switches popup id assignment into replay mode: the next N popups created will be assigned these ids, in order, instead of fresh randomUUIDs. */
+export function setReplayPopupIdQueue(orderedPopupIds: PopupId[]): void {
+	_replayIdQueue = [...orderedPopupIds];
+}
+
+/** Restores normal (randomUUID-based) popup id assignment after replay finishes. */
+export function clearReplayPopupIdQueue(): void {
+	_replayIdQueue = null;
 }
 
 /** Hooks the test layer's webContents so popups it opens are tracked, tagged with a unique id, and their closure is captured as a recording step. */
 export function registerPopupTracking(testWebContents: Electron.WebContents): void {
 	testWebContents.on(`did-create-window`, win => {
-		const popupId = randomUUID() as PopupId;
+		const popupId = (_replayIdQueue?.length ? _replayIdQueue.shift() : undefined) ?? randomUUID() as PopupId;
 		_openPopups.set(popupId, win);
 
 		// stamp the id before the user (or replay) can interact with the popup, so every
