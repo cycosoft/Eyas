@@ -122,7 +122,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 		await playbackService.playSession(ctx, `sess-1`);
 
 		expect(attach).toHaveBeenCalled();
-		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `playing` });
+		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `playing`, completedSteps: 0, totalSteps: 0 });
 	});
 
 	test(`dispatches a ClickStep as Input.dispatchMouseEvent mousePressed then mouseReleased at the captured offset`, async () => {

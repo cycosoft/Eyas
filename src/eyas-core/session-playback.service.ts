@@ -1,7 +1,7 @@
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { RecordingStep, ClickStep, ClickPoint } from '@registry/recording.js';
 import type { RecorderPlaybackStatusPayload } from '@registry/ipc.js';
-import type { ProjectId, SessionId, DurationMS, DomainUrl, PopupId } from '@registry/primitives.js';
+import type { ProjectId, SessionId, DurationMS, DomainUrl, PopupId, StepCount } from '@registry/primitives.js';
 import type { ReplaySpeedMode } from '@registry/settings.js';
 import sessionRecorderService from './session-recorder.service.js';
 import settingsService from './settings-service.js';
@@ -137,12 +137,12 @@ function _sendPlaybackStatus(ctx: CoreContext, payload: RecorderPlaybackStatusPa
 
 async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebContents, steps: RecordingStep[], startUrl: DomainUrl | null): Promise<void> {
 	try { webContents.debugger.attach(CDP_DEBUGGER_VERSION); } catch { /* already attached */ }
-	_sendPlaybackStatus(ctx, { status: `playing` });
 
 	// replayed input/navigation is real DOM/webContents activity, indistinguishable from the
 	// user's own — suppress the recorder so a replay doesn't record itself into its own session
 	sessionRecorderService.setReplaying(true);
 	setReplayPopupIdQueue(_orderedPopupIds(steps));
+	_sendPlaybackStatus(ctx, { status: `playing`, completedSteps: 0 as StepCount, totalSteps: steps.length as StepCount });
 	try {
 		// the session's steps only capture navigations that occurred *during* recording — if
 		// playback starts from a different view than recording did, replay the starting view first
@@ -158,6 +158,7 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 		for (let i = 0; i < steps.length; i++) {
 			if (i > 0 && stepDelayMs > 0) { await _delay(stepDelayMs); }
 			await _dispatchStep(webContents, steps[i]);
+			_sendPlaybackStatus(ctx, { status: `playing`, completedSteps: (i + 1) as StepCount, totalSteps: steps.length as StepCount });
 		}
 		_sendPlaybackStatus(ctx, { status: `stopped` });
 	} catch (err) {

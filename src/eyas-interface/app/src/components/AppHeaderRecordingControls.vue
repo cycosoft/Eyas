@@ -1,5 +1,8 @@
 <template>
-	<div v-if="isRecording || isStopped" class="d-flex align-center mr-2 pa-1 rounded-lg border">
+	<div v-if="isRecording || isStopped" class="recording-controls d-flex align-center mr-2 pa-1 rounded-lg border">
+		<svg v-if="isPlaying" class="playback-progress" data-qa="recording-playback-progress">
+			<rect pathLength="100" :style="{ strokeDashoffset: 100 - playbackProgress * 100 }" />
+		</svg>
 		<span v-if="isRecording" class="recording-dot mx-1" data-qa="recording-indicator" />
 		<v-btn v-if="isRecording" icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" data-qa="btn-recording-stop" @click="stopRecording">
 			<v-icon icon="mdi-stop" size="small" />
@@ -20,7 +23,7 @@ import type { ChannelName } from '@registry/primitives.js';
 import useRecordingStore from '@/stores/recording.js';
 
 const recordingStore = useRecordingStore();
-const { isRecording, isStopped, playbackError } = storeToRefs(recordingStore);
+const { isRecording, isStopped, isPlaying, playbackProgress, playbackError } = storeToRefs(recordingStore);
 
 function stopRecording(): void {
 	window.eyas?.send(`recorder-stop` as ChannelName);
@@ -32,7 +35,14 @@ function replayRecording(): void {
 </script>
 
 <style scoped>
+.recording-controls { position: relative; }
 .recording-dot { width: 8px; height: 8px; border-radius: 50%; background-color: #e53935; animation: recording-pulse 1.5s infinite; }
 @keyframes recording-pulse { 0% { opacity: 1; } 50% { opacity: 0.35; } 100% { opacity: 1; } }
 .playback-error { font-size: 12px; color: #e53935; }
+.playback-progress { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.playback-progress rect {
+	x: 1px; y: 1px; width: calc(100% - 2px); height: calc(100% - 2px); rx: 8px;
+	fill: none; stroke: rgb(var(--v-theme-primary)); stroke-width: 2px;
+	stroke-dasharray: 100; transition: stroke-dashoffset 200ms linear;
+}
 </style>

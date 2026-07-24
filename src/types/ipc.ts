@@ -1,4 +1,4 @@
-import type { ProjectId, DomainUrl, IsActive, SettingKey, HashString, Username, PasswordPlain, ZoomFactor } from './primitives.js';
+import type { ProjectId, DomainUrl, IsActive, SettingKey, HashString, Username, PasswordPlain, ZoomFactor, StepCount } from './primitives.js';
 import type { EnvironmentChoice, Viewport, ViewportSize, EnvironmentChoiceWithTitle } from './core.js';
 import type { NavItem } from './components.js';
 import type { RecordingStep } from './recording.js';
@@ -178,7 +178,9 @@ export type RecorderFlushStepsPayload = RecordingStep[];
 
 /** Payload for the 'recorder-playback-status' IPC event */
 export type RecorderPlaybackStatusPayload = {
-	status: `playing` | `stopped` | `failed`;
+	completedSteps?: StepCount;
 	error?: string;
+	status: `playing` | `stopped` | `failed`;
+	totalSteps?: StepCount;
 };
 

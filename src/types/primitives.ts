@@ -27,10 +27,12 @@ export type IsPasswordInput = boolean;
 
 // Events / Progress
 export type ProgressBytes = number;
+export type ProgressRatio = number;
 export type MPEventName = string;
 export type EventType = string;
 export type IsComputable = boolean;
 export type Count = number;
+export type StepCount = number;
 export type TimerId = ReturnType<typeof setTimeout>;
 type MetadataKey = string;
 export type CacheKey = string;
