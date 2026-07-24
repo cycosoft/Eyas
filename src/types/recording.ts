@@ -12,6 +12,12 @@ export type SelectorGroup = {
 	fallbacks: string[];
 }
 
+/** Resolved viewport coordinates of an element to click during replay. */
+export type ClickPoint = {
+	x: number;
+	y: number;
+}
+
 export type ClickStep = {
 	type: `click`;
 	selectors: SelectorGroup;

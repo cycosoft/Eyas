@@ -3,10 +3,9 @@
 - Update Dependencies
 - fix demo "window" page
 - Update changelog
-- do we capture scrolling behaviors? In what circumstances would that be helpful?
-- can we capture clicks inside the new windows on different domains?
 - the user needs a way to know the test is still running
 - the user should be able to stop running the test
+- not able to save changes to changelog.json, because the formatting is different on save than eslint it requesting.
 
 # Future
 

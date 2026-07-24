@@ -14,6 +14,7 @@ const executeJavaScript = vi.fn().mockResolvedValue(undefined);
 const send = vi.fn();
 const once = vi.fn();
 const removeListener = vi.fn();
+const isLoading = vi.fn().mockReturnValue(false);
 
 vi.mock(`@core/session-recorder.service.js`, () => ({
 	default: { getSession: vi.fn(), setReplaying: vi.fn() }
@@ -43,7 +44,10 @@ const popupDetach = vi.fn();
 const popupLoadURL = vi.fn().mockResolvedValue(undefined);
 const popupWebContents = {
 	debugger: { attach: popupAttach, detach: popupDetach, isAttached: vi.fn().mockReturnValue(false), sendCommand: popupSendCommand },
-	loadURL: popupLoadURL
+	loadURL: popupLoadURL,
+	isLoading: vi.fn().mockReturnValue(false),
+	executeJavaScript: vi.fn().mockResolvedValue(undefined),
+	once: vi.fn()
 };
 
 import sessionRecorderService from '@core/session-recorder.service.js';
@@ -78,7 +82,8 @@ function makeCtx(): CoreContext {
 				executeJavaScript,
 				getURL,
 				once,
-				removeListener
+				removeListener,
+				isLoading
 			}
 		}
 	} as unknown as CoreContext;
@@ -93,12 +98,16 @@ beforeEach(() => {
 	detach.mockClear();
 	loadURL.mockClear();
 	executeJavaScript.mockClear().mockResolvedValue(undefined);
+	isLoading.mockClear().mockReturnValue(false);
 	send.mockClear();
 	getURL.mockClear().mockReturnValue(`https://example.com/`);
 	popupSendCommand.mockClear();
 	popupAttach.mockClear();
 	popupDetach.mockClear();
 	popupLoadURL.mockClear();
+	popupWebContents.isLoading.mockReset().mockReturnValue(false);
+	popupWebContents.once.mockReset();
+	popupWebContents.executeJavaScript.mockReset().mockResolvedValue(undefined);
 	getPopupWebContents.mockReset().mockReturnValue(null);
 	closePopup.mockClear().mockResolvedValue(undefined);
 	setReplayPopupIdQueue.mockClear();
@@ -125,6 +134,53 @@ describe(`sessionPlaybackService.playSession`, () => {
 
 		expect(sendCommand).toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.objectContaining({ type: `mousePressed`, x: 12, y: 34 }));
 		expect(sendCommand).toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.objectContaining({ type: `mouseReleased`, x: 12, y: 34 }));
+	});
+
+	test(`dispatches a ClickStep at the selector-resolved coordinates instead of the raw recorded offset, when the selector resolves to an element`, async () => {
+		executeJavaScript.mockResolvedValueOnce({ x: 99, y: 88 });
+		const step: ClickStep = { type: `click`, selectors: { primary: `#save`, fallbacks: [] }, offsetX: 12, offsetY: 34, timestamp: 1 };
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([step]));
+		const ctx = makeCtx();
+
+		await playbackService.playSession(ctx, `sess-1`);
+
+		expect(executeJavaScript).toHaveBeenCalledWith(expect.stringContaining(`#save`));
+		expect(sendCommand).toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.objectContaining({ type: `mousePressed`, x: 99, y: 88 }));
+		expect(sendCommand).not.toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.objectContaining({ x: 12, y: 34 }));
+	});
+
+	test(`falls back to the raw recorded offset when none of the step's selectors resolve to an element`, async () => {
+		executeJavaScript.mockResolvedValueOnce(null);
+		const step: ClickStep = { type: `click`, selectors: { primary: `#gone`, fallbacks: [] }, offsetX: 12, offsetY: 34, timestamp: 1 };
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([step]));
+		const ctx = makeCtx();
+
+		await playbackService.playSession(ctx, `sess-1`);
+
+		expect(sendCommand).toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.objectContaining({ type: `mousePressed`, x: 12, y: 34 }));
+	});
+
+	test(`waits for the target to finish loading before dispatching a click against it, e.g. a popup still loading its first page`, async () => {
+		getPopupWebContents.mockReturnValue(popupWebContents);
+		popupWebContents.isLoading.mockReturnValue(true);
+		let stopLoadingCb: (() => void) | undefined;
+		popupWebContents.once.mockImplementation((event, cb) => { if (event === `did-stop-loading`) { stopLoadingCb = cb; } });
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `click`, selectors: { primary: `#in-popup`, fallbacks: [] }, offsetX: 1, offsetY: 1, popupId: `popup-1`, timestamp: 1 } as never
+		]));
+		const ctx = makeCtx();
+
+		const playPromise = playbackService.playSession(ctx, `sess-1`);
+		await Promise.resolve();
+		await Promise.resolve();
+		expect(popupSendCommand).not.toHaveBeenCalled();
+
+		popupWebContents.isLoading.mockReturnValue(false);
+		stopLoadingCb?.();
+		await playPromise;
+
+		expect(popupSendCommand).toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.objectContaining({ type: `mousePressed`, x: 1, y: 1 }));
+		popupWebContents.isLoading.mockReturnValue(false);
 	});
 
 	test(`dispatches a change step as Input.insertText with the captured value`, async () => {

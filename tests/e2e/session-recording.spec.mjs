@@ -6,7 +6,8 @@ import {
 	exitEyas,
 	getUiView,
 	getTestView,
-	ensureEnvironmentSelected
+	ensureEnvironmentSelected,
+	emitIpcMessage
 } from './eyas-utils.mjs';
 
 /**
@@ -172,6 +173,82 @@ test.describe(`Session Recording — Replay`, () => {
 			try { return await testPage.evaluate(() => sessionStorage.getItem(`__clickCount`)); }
 			catch { return null; }
 		}, { timeout: 10000 }).toBe(`2`);
+		await expect(uiPage.locator(`[data-qa="recording-playback-error"]`)).not.toBeVisible();
+	});
+
+	test(`captures and replays scroll + click actions inside a popup window, then auto-closes it, hitting the exact button the user clicked`, async () => {
+		test.setTimeout(30000);
+		const uiPage = await getUiView(electronApp);
+		await ensureEnvironmentSelected(uiPage);
+
+		await uiPage.locator(`[data-qa="btn-nav-group-links"]`).click();
+		await uiPage.locator(`[data-qa="btn-nav-item"]`, { hasText: `Recording Demo` }).click();
+
+		const testPage = await getTestView(electronApp, /demo\/recording/);
+		expect(testPage).toBeTruthy();
+
+		await testPage.locator(`[data-testid="popup-link"]`).click();
+
+		const popupPage = await getTestView(electronApp, /demo\/recording\/popup/);
+		expect(popupPage).toBeTruthy();
+
+		// clear any stale localStorage from a prior run in this same partition
+		await popupPage.evaluate(() => localStorage.clear());
+
+		// scroll to, then click, the button 2000px down — reproduces the scenario where a naive
+		// (no-op) scroll replay would leave the page unscrolled and a coordinate-based click would
+		// land on the wrong (top) button instead
+		await popupPage.evaluate(() => window.scrollTo(0, 2000));
+		await popupPage.locator(`[data-testid="popup-click-bottom"]`).click();
+		await popupPage.waitForTimeout(2500);
+
+		expect(await popupPage.evaluate(() => localStorage.getItem(`__lastClick`))).toBe(`popup-click-bottom`);
+
+		await popupPage.close();
+
+		// give the main process's `closed` handler time to append the closeWindow step
+		await testPage.waitForTimeout(500);
+		await uiPage.locator(`[data-qa="btn-recording-stop"]`).click();
+
+		const session = await readLatestSession(electronApp);
+		expect(session.status).toBe(`stopped`);
+
+		const popupClickStep = session.recording.steps.find(
+			s => s.type === `click` && s.selectors?.primary === `[data-testid="popup-click-bottom"]`
+		);
+		expect(popupClickStep).toBeTruthy();
+		expect(popupClickStep.popupId).toBeTruthy();
+
+		const closeWindowStep = session.recording.steps.find(s => s.type === `closeWindow`);
+		expect(closeWindowStep).toBeTruthy();
+		expect(closeWindowStep.popupId).toBe(popupClickStep.popupId);
+
+		await popupPage.evaluate(() => localStorage.clear()).catch(() => {});
+
+		// with the default no-delay replay speed, the popup can open, get clicked, and auto-close
+		// again before a polling-based lookup would ever observe it — listen for the 'window' event
+		// directly instead of polling electronApp.windows() after the fact
+		// the default no-delay replay speed opens, clicks, and auto-closes the popup faster than
+		// this test's IPC/evaluate round-trips can observe it — switch to natural pacing (500ms
+		// between steps) just for this replay so there's time to assert against the popup mid-flight
+		await emitIpcMessage(electronApp, `save-setting`, { key: `recording.replaySpeed`, value: `natural`, projectId: null });
+
+		const seenWindows = [];
+		electronApp.on(`window`, page => seenWindows.push(page));
+
+		await uiPage.locator(`[data-qa="btn-recording-replay"]`).click();
+
+		await expect.poll(() => seenWindows.some(p => { try { return p.url().includes(`/demo/recording/popup`); } catch { return false; } }), { timeout: 10000 }).toBe(true);
+		const replayedPopupPage = seenWindows.find(p => { try { return p.url().includes(`/demo/recording/popup`); } catch { return false; } });
+		expect(replayedPopupPage).toBeTruthy();
+
+		await expect.poll(async () => {
+			try { return await replayedPopupPage.evaluate(() => localStorage.getItem(`__lastClick`)); }
+			catch { return null; }
+		}, { timeout: 10000 }).toBe(`popup-click-bottom`);
+
+		// replay's recorded closeWindow step should close the popup automatically
+		await expect.poll(() => replayedPopupPage.isClosed(), { timeout: 10000 }).toBe(true);
 		await expect(uiPage.locator(`[data-qa="recording-playback-error"]`)).not.toBeVisible();
 	});
 });

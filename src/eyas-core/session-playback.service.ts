@@ -1,5 +1,5 @@
 import type { CoreContext } from '@registry/eyas-core.js';
-import type { RecordingStep } from '@registry/recording.js';
+import type { RecordingStep, ClickStep, ClickPoint } from '@registry/recording.js';
 import type { RecorderPlaybackStatusPayload } from '@registry/ipc.js';
 import type { ProjectId, SessionId, DurationMS, DomainUrl, PopupId } from '@registry/primitives.js';
 import type { ReplaySpeedMode } from '@registry/settings.js';
@@ -25,6 +25,55 @@ function _waitForPaint(webContents: Electron.WebContents): Promise<void> {
 	return webContents.executeJavaScript(`new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))`);
 }
 
+// step.offsetX/offsetY are viewport-relative at record time — nothing guarantees the page is
+// scrolled to that same position at replay time (e.g. a `navigate` step reloads at scrollY 0),
+// so a raw coordinate replay can click whatever now happens to sit at that pixel. Resolving the
+// captured SelectorGroup instead — scrolling the real target into view and clicking its actual
+// center — makes replay robust to any scroll/layout drift between recording and playback.
+async function _resolveClickPoint(target: Electron.WebContents, step: ClickStep): Promise<ClickPoint | null> {
+	const selectors = [step.selectors.primary, ...step.selectors.fallbacks];
+	const script = `(function(selectors){
+		for (const sel of selectors) {
+			let el;
+			try { el = document.querySelector(sel); } catch { el = null; }
+			if (el) {
+				// pages may set CSS scroll-behavior: smooth — force an instant jump so the
+				// bounding rect read immediately after reflects the post-scroll position
+				el.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' });
+				const rect = el.getBoundingClientRect();
+				return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+			}
+		}
+		return null;
+	})(${JSON.stringify(selectors)})`;
+
+	try {
+		return await target.executeJavaScript(script);
+	} catch {
+		return null;
+	}
+}
+
+// a freshly-opened popup (or a page mid-navigation) may still be loading when its first step
+// arrives — DOM queries/scroll against a not-yet-loaded document would silently no-op
+async function _ensureTargetReady(target: Electron.WebContents, stepType: RecordingStep[`type`]): Promise<void> {
+	const needsReadyDom = stepType === `click` || stepType === `scroll` || stepType === `change`;
+	if (needsReadyDom && target.isLoading()) {
+		await new Promise<void>(resolve => target.once(`did-stop-loading`, () => resolve()));
+		await _waitForPaint(target);
+	}
+}
+
+async function _dispatchClick(target: Electron.WebContents, step: ClickStep): Promise<void> {
+	// prefer the captured selector (robust to scroll/layout drift); fall back to the raw
+	// recorded coordinates only if none of the selectors resolve to an element
+	const resolved = await _resolveClickPoint(target, step);
+	const x = resolved?.x ?? step.offsetX;
+	const y = resolved?.y ?? step.offsetY;
+	await target.debugger.sendCommand(`Input.dispatchMouseEvent`, { type: `mousePressed`, x, y, button: `left`, clickCount: 1 });
+	await target.debugger.sendCommand(`Input.dispatchMouseEvent`, { type: `mouseReleased`, x, y, button: `left`, clickCount: 1 });
+}
+
 async function _dispatchStep(webContents: Electron.WebContents, step: RecordingStep): Promise<void> {
 	if (step.type === `closeWindow`) {
 		await closePopup(step.popupId);
@@ -38,10 +87,11 @@ async function _dispatchStep(webContents: Electron.WebContents, step: RecordingS
 		return;
 	}
 
+	await _ensureTargetReady(target, step.type);
+
 	switch (step.type) {
 	case `click`:
-		await target.debugger.sendCommand(`Input.dispatchMouseEvent`, { type: `mousePressed`, x: step.offsetX, y: step.offsetY, button: `left`, clickCount: 1 });
-		await target.debugger.sendCommand(`Input.dispatchMouseEvent`, { type: `mouseReleased`, x: step.offsetX, y: step.offsetY, button: `left`, clickCount: 1 });
+		await _dispatchClick(target, step);
 		return;
 	case `change`:
 		await target.debugger.sendCommand(`Input.insertText`, { text: step.value });
