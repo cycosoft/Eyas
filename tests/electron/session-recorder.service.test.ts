@@ -74,6 +74,16 @@ describe(`sessionRecorderService.startSession`, () => {
 // ─── appendSteps ────────────────────────────────────────────────────────────
 
 describe(`sessionRecorderService.appendSteps`, () => {
+	test(`is a no-op after stopRecording, so steps flushed post-stop aren't appended to the already-stopped session`, async () => {
+		const ctx = makeCtx();
+		await service.startSession(ctx);
+		service.stopRecording(ctx);
+
+		service.appendSteps([{ type: `click`, selectors: { primary: `#foo`, fallbacks: [] }, offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
+
+		expect(service.getActiveSession()?.recording.steps).toHaveLength(0);
+	});
+
 	test(`appends flushed steps to the in-memory steps[] array of the current envelope`, async () => {
 		const ctx = makeCtx();
 		await service.startSession(ctx);
@@ -135,6 +145,16 @@ describe(`sessionRecorderService.appendNavigateStep`, () => {
 		service.setReplaying(true);
 		service.appendNavigateStep(`https://example.com` as never);
 		service.setReplaying(false);
+
+		expect(service.getActiveSession()?.recording.steps).toHaveLength(0);
+	});
+
+	test(`is a no-op after stopRecording, so navigation to a new view after stopping isn't appended to the already-stopped session`, async () => {
+		const ctx = makeCtx();
+		await service.startSession(ctx);
+		service.stopRecording(ctx);
+
+		service.appendNavigateStep(`https://example.com` as never);
 
 		expect(service.getActiveSession()?.recording.steps).toHaveLength(0);
 	});

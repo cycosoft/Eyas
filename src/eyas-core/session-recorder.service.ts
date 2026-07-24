@@ -67,14 +67,14 @@ async function startSession(ctx: CoreContext): Promise<void> {
 
 /** Appends flushed steps from the recorder preload to the active session and persists. */
 function appendSteps(steps: RecordingStep[]): void {
-	if (!_session || _isReplaying || steps.length === 0) { return; }
+	if (!_session || _session.status !== `recording` || _isReplaying || steps.length === 0) { return; }
 	_session.recording.steps.push(...steps);
 	_persist();
 }
 
 /** Appends a NavigateStep captured from the main-process webContents navigation events. */
 function appendNavigateStep(url: DomainUrl): void {
-	if (!_session || _isReplaying) { return; }
+	if (!_session || _session.status !== `recording` || _isReplaying) { return; }
 	_session.recording.steps.push({ type: `navigate`, url, timestamp: Date.now() });
 	_persist();
 }
