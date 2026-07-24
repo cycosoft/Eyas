@@ -10,6 +10,7 @@ const attach = vi.fn();
 const detach = vi.fn();
 const isAttached = vi.fn().mockReturnValue(false);
 const loadURL = vi.fn().mockResolvedValue(undefined);
+const executeJavaScript = vi.fn().mockResolvedValue(undefined);
 const send = vi.fn();
 const once = vi.fn();
 const removeListener = vi.fn();
@@ -51,6 +52,7 @@ function makeCtx(): CoreContext {
 			webContents: {
 				debugger: { attach, detach, isAttached, sendCommand },
 				loadURL,
+				executeJavaScript,
 				getURL,
 				once,
 				removeListener
@@ -67,6 +69,7 @@ beforeEach(() => {
 	attach.mockClear();
 	detach.mockClear();
 	loadURL.mockClear();
+	executeJavaScript.mockClear().mockResolvedValue(undefined);
 	send.mockClear();
 	getURL.mockClear().mockReturnValue(`https://example.com/`);
 });
@@ -148,6 +151,27 @@ describe(`sessionPlaybackService.playSession`, () => {
 		await playbackService.playSession(ctx, `sess-1`);
 
 		expect(loadURL).toHaveBeenNthCalledWith(1, `https://example.com/`);
+	});
+
+	test(`waits for two real paint frames after navigating to startUrl before dispatching the first step, so the page is actually interactive before receiving input`, async () => {
+		getURL.mockReturnValue(`https://example.com/other-view`);
+		let resolvePaint: () => void = () => {};
+		executeJavaScript.mockReturnValue(new Promise<void>(resolve => { resolvePaint = resolve; }));
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `click`, selectors: { primary: `#open-window`, fallbacks: [] }, offsetX: 1, offsetY: 1, timestamp: 1 }
+		], `https://example.com/`));
+		const ctx = makeCtx();
+
+		const playPromise = playbackService.playSession(ctx, `sess-1`);
+		await Promise.resolve();
+		await Promise.resolve();
+		expect(loadURL).toHaveBeenCalledWith(`https://example.com/`);
+		expect(sendCommand).not.toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.objectContaining({ type: `mousePressed`, x: 1, y: 1 }));
+
+		resolvePaint();
+		await playPromise;
+
+		expect(sendCommand).toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.objectContaining({ type: `mousePressed`, x: 1, y: 1 }));
 	});
 
 	test(`does not navigate to startUrl when playback is already on that page`, async () => {

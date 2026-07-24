@@ -17,6 +17,13 @@ function _delay(ms: DurationMS): Promise<void> {
 	return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// after forcing a navigation back to startUrl, wait for two real paint cycles before dispatching
+// input — an arbitrary timer either races a slow page or wastes time on a fast one, whereas a
+// double rAF is a genuine "the page has actually painted" signal from the renderer itself
+function _waitForPaint(webContents: Electron.WebContents): Promise<void> {
+	return webContents.executeJavaScript(`new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))`);
+}
+
 async function _dispatchStep(webContents: Electron.WebContents, step: RecordingStep): Promise<void> {
 	switch (step.type) {
 	case `click`:
@@ -60,6 +67,7 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 		// playback starts from a different view than recording did, replay the starting view first
 		if (startUrl && webContents.getURL() !== startUrl) {
 			await webContents.loadURL(startUrl);
+			await _waitForPaint(webContents);
 		}
 
 		const projectId = ctx.$config?.meta.projectId as ProjectId | undefined;
