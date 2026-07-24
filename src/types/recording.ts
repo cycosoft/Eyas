@@ -6,11 +6,6 @@ type Viewport = {
 	height: ViewportHeight;
 }
 
-/** The subset of `window` the recorder preload reads to identify which popup (if any) it's running in — stamped by window.popups.ts via executeJavaScript. */
-export type EyasPopupWindow = {
-	__eyasPopupId?: PopupId;
-}
-
 /** A captured selector with priority fallbacks. Primary is tried first during replay. */
 export type SelectorGroup = {
 	primary: string;

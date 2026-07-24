@@ -151,14 +151,14 @@ describe(`sessionPlaybackService.playSession`, () => {
 		expect(sendCommand).toHaveBeenCalledWith(`Input.dispatchKeyEvent`, expect.objectContaining({ type: `keyUp`, key: `a` }));
 	});
 
-	test(`dispatches a ScrollStep as Input.dispatchMouseEvent with mouseWheel type at the captured position`, async () => {
+	test(`dispatches a ScrollStep by setting window.scrollTo to the captured absolute scroll position`, async () => {
 		const step: ScrollStep = { type: `scroll`, x: 42, y: 84, timestamp: 1 };
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([step]));
 		const ctx = makeCtx();
 
 		await playbackService.playSession(ctx, `sess-1`);
 
-		expect(sendCommand).toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.objectContaining({ type: `mouseWheel`, x: 42, y: 84 }));
+		expect(executeJavaScript).toHaveBeenCalledWith(expect.stringContaining(`window.scrollTo(42, 84)`));
 	});
 
 	test(`dispatches a NavigateStep by calling webContents.loadURL`, async () => {

@@ -100,6 +100,7 @@ export type PasswordPlain = string;
 export type PasswordHex = string;
 export type SessionId = string;
 export type PopupId = string;
+export type WebContentsId = number;
 
 // Certificates
 export type CertKey = string;

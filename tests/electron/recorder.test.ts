@@ -1,7 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, test, expect, vi, beforeAll, beforeEach, afterEach, afterAll } from 'vitest';
-import type { RecordingStep, ClickStep, ScrollStep, EyasPopupWindow } from '@registry/recording.js';
-import type { PopupId } from '@registry/primitives.js';
+import type { RecordingStep, ClickStep, ScrollStep } from '@registry/recording.js';
 
 const send = vi.fn();
 const addEventListenerCalls: unknown[][] = [];
@@ -254,13 +253,12 @@ describe(`buffer flush`, () => {
 });
 
 // ─── popup id tagging ───────────────────────────────────────────────────────────
-// window.popups.ts stamps window.__eyasPopupId via executeJavaScript before the recorder preload's
-// module-scope code runs, so a fresh import with the property already set simulates the popup case.
-// This describe re-imports the module and MUST stay last in the file — reimporting stacks a second
-// set of document listeners that would double-count steps in any test that runs after it.
+// popupId is no longer stamped by this preload — a popup's injected window global doesn't
+// reliably survive its first navigation, so the main process tags popupId on arrival instead,
+// keyed off which webContents the flush IPC came from (see ipc-handlers.recorder.test.ts).
 
 describe(`popup id tagging`, () => {
-	test(`does not set popupId on steps captured in the main test layer, where window.__eyasPopupId is never set`, () => {
+	test(`never sets popupId on steps at capture time, regardless of window context — tagging happens in the main process on flush arrival`, () => {
 		const btn = document.createElement(`button`);
 		document.body.appendChild(btn);
 
@@ -269,24 +267,5 @@ describe(`popup id tagging`, () => {
 
 		const steps = flush() as ClickStep[];
 		expect(steps[0].popupId).toBeUndefined();
-	});
-
-	test(`stamps every step with window.__eyasPopupId when it's set, tagging steps as belonging to that popup`, async () => {
-		(window as unknown as EyasPopupWindow).__eyasPopupId = `popup-123` as PopupId;
-		vi.resetModules();
-		const modulePath = `../../src/scripts/recorder.js?popup-id-tagging-reimport`;
-		const modulePromise = import(modulePath);
-		await modulePromise;
-
-		const btn = document.createElement(`button`);
-		document.body.appendChild(btn);
-		btn.dispatchEvent(new MouseEvent(`click`, { bubbles: true }));
-		vi.advanceTimersByTime(2000);
-
-		// the original module's listener (from the file's shared beforeAll import) is still attached to
-		// document too, so this click is captured by both — assert the new listener's step is present
-		// rather than indexing into steps[0], which may belong to the stale listener
-		const steps = flush() as ClickStep[];
-		expect(steps.some(step => step.popupId === `popup-123`)).toBe(true);
 	});
 });

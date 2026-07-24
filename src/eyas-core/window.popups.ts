@@ -1,10 +1,16 @@
 import { randomUUID } from 'crypto';
-import type { PopupId } from '@registry/primitives.js';
+import type { PopupId, WebContentsId } from '@registry/primitives.js';
 import sessionRecorderService from './session-recorder.service.js';
 
 const CDP_DEBUGGER_VERSION = `1.3`;
 
 const _openPopups = new Map<PopupId, Electron.BrowserWindow>();
+
+// reverse index keyed by webContents.id — lets the flush IPC handler tag each incoming step with
+// its popupId based on which webContents actually sent it, rather than relying on a renderer-side
+// injected global (window.__eyasPopupId), which proved unreliable: a popup's initial JS context
+// (and the executeJavaScript stamp targeting it) doesn't reliably survive its first navigation
+const _popupIdByWebContentsId = new Map<WebContentsId, PopupId>();
 
 // during replay, popups must be re-assigned the exact ids they were recorded with (not fresh
 // randomUUIDs) so that later steps — especially closeWindow — resolve against the right popup;
@@ -25,20 +31,26 @@ export function clearReplayPopupIdQueue(): void {
 	_replayIdQueue = null;
 }
 
-/** Hooks the test layer's webContents so popups it opens are tracked, tagged with a unique id, and their closure is captured as a recording step. */
+/** Resolves the popupId of the popup that owns the given webContents, or undefined if it's not a tracked popup (e.g. the main test layer). */
+export function getPopupIdForWebContents(webContents: Electron.WebContents): PopupId | undefined {
+	return _popupIdByWebContentsId.get(webContents.id);
+}
+
 export function registerPopupTracking(testWebContents: Electron.WebContents): void {
 	testWebContents.on(`did-create-window`, win => {
 		const popupId = (_replayIdQueue?.length ? _replayIdQueue.shift() : undefined) ?? randomUUID() as PopupId;
+		const webContentsId = win.webContents.id;
 		_openPopups.set(popupId, win);
-
-		// stamp the id before the user (or replay) can interact with the popup, so every
-		// recorder-captured step inside it already knows which popup it belongs to
-		win.webContents.executeJavaScript(`window.__eyasPopupId = ${JSON.stringify(popupId)}`).catch(() => {});
+		_popupIdByWebContentsId.set(webContentsId, popupId);
 
 		try { win.webContents.debugger.attach(CDP_DEBUGGER_VERSION); } catch { /* already attached */ }
 
+		// `closed` fires after the window (and its webContents) is already destroyed, so
+		// win.webContents must never be touched here — use the id captured above instead, and
+		// keep debugger.detach() guarded since it also touches the destroyed webContents
 		win.on(`closed`, () => {
 			_openPopups.delete(popupId);
+			_popupIdByWebContentsId.delete(webContentsId);
 			try { win.webContents.debugger.detach(); } catch { /* already detached / destroyed */ }
 			sessionRecorderService.appendCloseWindowStep(popupId);
 		});

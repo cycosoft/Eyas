@@ -12,7 +12,7 @@ vi.mock(`@core/session-recorder.service.js`, () => ({
 	default: { appendCloseWindowStep }
 }));
 
-import { registerPopupTracking, getPopupWebContents, closePopup, setReplayPopupIdQueue, clearReplayPopupIdQueue } from '@core/window.popups.js';
+import { registerPopupTracking, getPopupWebContents, getPopupIdForWebContents, closePopup, setReplayPopupIdQueue, clearReplayPopupIdQueue } from '@core/window.popups.js';
 
 type MockFn = ReturnType<typeof vi.fn>;
 type MockEventName = string;
@@ -23,9 +23,12 @@ type FakePopupDebugger = {
 	detach: MockFn;
 }
 
+let _nextWebContentsId = 1;
+
 type FakePopupWebContents = {
+	id: number;
 	debugger: FakePopupDebugger;
-	executeJavaScript: MockFn;
+	on: MockFn;
 }
 
 type FakePopup = {
@@ -50,8 +53,9 @@ function makeFakePopup(): FakePopup {
 
 	const popup: FakePopup = {
 		webContents: {
+			id: _nextWebContentsId++,
 			debugger: { attach: vi.fn(), detach: vi.fn() },
-			executeJavaScript: vi.fn().mockResolvedValue(undefined)
+			on: vi.fn()
 		},
 		isDestroyed: vi.fn().mockReturnValue(false),
 		close: vi.fn(() => popup._emitClosed()),
@@ -80,7 +84,7 @@ beforeEach(() => {
 });
 
 describe(`window.popups.ts`, () => {
-	test(`assigns each newly created popup a unique id, injects it via executeJavaScript, and attaches its CDP debugger`, () => {
+	test(`assigns each newly created popup a unique id, resolvable via getPopupIdForWebContents, and attaches its CDP debugger`, () => {
 		randomUUID.mockReturnValueOnce(`popup-a`);
 		const testWebContents = makeTestWebContents();
 		registerPopupTracking(testWebContents as never);
@@ -88,7 +92,7 @@ describe(`window.popups.ts`, () => {
 
 		testWebContents._emitCreateWindow(popup);
 
-		expect(popup.webContents.executeJavaScript).toHaveBeenCalledWith(expect.stringContaining(`popup-a`));
+		expect(getPopupIdForWebContents(popup.webContents as never)).toBe(`popup-a`);
 		expect(popup.webContents.debugger.attach).toHaveBeenCalled();
 	});
 
@@ -118,6 +122,37 @@ describe(`window.popups.ts`, () => {
 		expect(popup.webContents.debugger.detach).toHaveBeenCalled();
 		expect(getPopupWebContents(`popup-a` as PopupId)).toBeNull();
 		expect(appendCloseWindowStep).toHaveBeenCalledWith(`popup-a`);
+	});
+
+	test(`still appends the closeWindow step when the popup's webContents.id getter throws, as it does on a real destroyed BrowserWindow`, () => {
+		randomUUID.mockReturnValueOnce(`popup-a`);
+		const testWebContents = makeTestWebContents();
+		registerPopupTracking(testWebContents as never);
+		const popup = makeFakePopup();
+		testWebContents._emitCreateWindow(popup);
+		Object.defineProperty(popup.webContents, `id`, {
+			get(): never { throw new Error(`Object has been destroyed`); }
+		});
+
+		popup._emitClosed();
+
+		expect(appendCloseWindowStep).toHaveBeenCalledWith(`popup-a`);
+	});
+
+	test(`getPopupIdForWebContents returns undefined for a webContents that isn't a tracked popup (e.g. the main test layer)`, () => {
+		expect(getPopupIdForWebContents({ id: 9999 } as never)).toBeUndefined();
+	});
+
+	test(`stops resolving a popup's webContents to its id once the popup has closed`, () => {
+		randomUUID.mockReturnValueOnce(`popup-a`);
+		const testWebContents = makeTestWebContents();
+		registerPopupTracking(testWebContents as never);
+		const popup = makeFakePopup();
+		testWebContents._emitCreateWindow(popup);
+
+		popup._emitClosed();
+
+		expect(getPopupIdForWebContents(popup.webContents as never)).toBeUndefined();
 	});
 
 	test(`getPopupWebContents returns null for an id that was never tracked or has already closed`, () => {

@@ -4,11 +4,17 @@ import type { RecorderFlushStepsPayload, RecorderReplayRequestPayload } from '@r
 import type { SessionId } from '@registry/primitives.js';
 import * as sessionRecorderService from './session-recorder.service.js';
 import sessionPlaybackService from './session-playback.service.js';
+import { getPopupIdForWebContents } from './window.popups.js';
 
 // Initializes recorder-related IPC listeners.
 export function initRecorderIpcListeners(ctx: CoreContext): void {
-	ipcMain.on(`recorder-flush-steps`, (_event, steps: RecorderFlushStepsPayload) => {
-		sessionRecorderService.appendSteps(steps);
+	ipcMain.on(`recorder-flush-steps`, (event, steps: RecorderFlushStepsPayload) => {
+		// the renderer can't reliably self-report which popup it belongs to (a popup's injected
+		// window.__eyasPopupId doesn't survive its first navigation), so tag steps here instead,
+		// keyed off which webContents actually sent them — undefined for the main test layer
+		const popupId = getPopupIdForWebContents(event.sender);
+		const taggedSteps = popupId === undefined ? steps : steps.map(step => ({ ...step, popupId }));
+		sessionRecorderService.appendSteps(taggedSteps);
 	});
 
 	ipcMain.on(`recorder-stop`, () => {

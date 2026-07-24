@@ -53,7 +53,10 @@ async function _dispatchStep(webContents: Electron.WebContents, step: RecordingS
 		await target.debugger.sendCommand(`Input.dispatchKeyEvent`, { type: `keyUp`, key: step.key });
 		return;
 	case `scroll`:
-		await target.debugger.sendCommand(`Input.dispatchMouseEvent`, { type: `mouseWheel`, x: step.x, y: step.y, deltaX: 0, deltaY: 0 });
+		// step.x/y is the absolute window.scrollX/scrollY captured at record time, not a viewport
+		// pointer position — dispatching it as a zero-delta CDP mouseWheel event never actually
+		// scrolls the page, so set the scroll position directly instead
+		await target.executeJavaScript(`window.scrollTo(${step.x}, ${step.y})`);
 		return;
 	case `navigate`:
 		await target.loadURL(step.url);
