@@ -1,4 +1,4 @@
-import type { ProjectId, TimestampMS, ViewportWidth, ViewportHeight, ScreenCoordinate, FramePath } from './primitives.js';
+import type { ProjectId, TimestampMS, ViewportWidth, ViewportHeight, ScreenCoordinate, FramePath, DomainUrl } from './primitives.js';
 
 /** Viewport dimensions for the recording session */
 type Viewport = {
@@ -83,6 +83,7 @@ export type EyasRecordingEnvelope = {
 	status: `recording` | `stopped`;
 	startedAt: TimestampMS;
 	stoppedAt: TimestampMS | null;
+	startUrl: DomainUrl | null;
 	viewport: Viewport;
 	components: Record<string, EyasComponent>;
 	recording: ChromeRecorderSession;

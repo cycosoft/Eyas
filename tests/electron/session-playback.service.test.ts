@@ -1,6 +1,7 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { EyasRecordingEnvelope, ClickStep, ScrollStep } from '@registry/recording.js';
+import type { DomainUrl } from '@registry/primitives.js';
 
 vi.mock(`electron`, () => ({}));
 
@@ -25,7 +26,9 @@ import sessionRecorderService from '@core/session-recorder.service.js';
 import settingsService from '@core/settings-service.js';
 import playbackService from '@core/session-playback.service.js';
 
-function makeSession(steps: EyasRecordingEnvelope[`recording`][`steps`]): EyasRecordingEnvelope {
+const getURL = vi.fn().mockReturnValue(`https://example.com/`);
+
+function makeSession(steps: EyasRecordingEnvelope[`recording`][`steps`], startUrl: DomainUrl | null = null): EyasRecordingEnvelope {
 	return {
 		eyasSchemaVersion: `1.0.0`,
 		projectId: `test-proj`,
@@ -34,6 +37,7 @@ function makeSession(steps: EyasRecordingEnvelope[`recording`][`steps`]): EyasRe
 		status: `stopped`,
 		startedAt: 0,
 		stoppedAt: 1,
+		startUrl,
 		viewport: { width: 1024, height: 768 },
 		components: {},
 		recording: { title: `2026-01-01T00:00:00.000Z`, steps }
@@ -47,6 +51,7 @@ function makeCtx(): CoreContext {
 			webContents: {
 				debugger: { attach, detach, isAttached, sendCommand },
 				loadURL,
+				getURL,
 				once,
 				removeListener
 			}
@@ -63,6 +68,7 @@ beforeEach(() => {
 	detach.mockClear();
 	loadURL.mockClear();
 	send.mockClear();
+	getURL.mockClear().mockReturnValue(`https://example.com/`);
 });
 
 describe(`sessionPlaybackService.playSession`, () => {
@@ -130,6 +136,30 @@ describe(`sessionPlaybackService.playSession`, () => {
 		await playbackService.playSession(ctx, `sess-1`);
 
 		expect(loadURL).toHaveBeenCalledWith(`https://example.com`);
+	});
+
+	test(`navigates to the session's startUrl first when replaying from a different view than recording started on, so playback isn't stranded on the current page`, async () => {
+		getURL.mockReturnValue(`https://example.com/other-view`);
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `click`, selectors: { primary: `#open-window`, fallbacks: [] }, offsetX: 1, offsetY: 1, timestamp: 1 }
+		], `https://example.com/`));
+		const ctx = makeCtx();
+
+		await playbackService.playSession(ctx, `sess-1`);
+
+		expect(loadURL).toHaveBeenNthCalledWith(1, `https://example.com/`);
+	});
+
+	test(`does not navigate to startUrl when playback is already on that page`, async () => {
+		getURL.mockReturnValue(`https://example.com/`);
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `click`, selectors: { primary: `#open-window`, fallbacks: [] }, offsetX: 1, offsetY: 1, timestamp: 1 }
+		], `https://example.com/`));
+		const ctx = makeCtx();
+
+		await playbackService.playSession(ctx, `sess-1`);
+
+		expect(loadURL).not.toHaveBeenCalled();
 	});
 
 	test(`gracefully skips an unrecognized step type and continues to the next step`, async () => {

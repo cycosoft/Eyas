@@ -1,7 +1,7 @@
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { RecordingStep } from '@registry/recording.js';
 import type { RecorderPlaybackStatusPayload } from '@registry/ipc.js';
-import type { ProjectId, SessionId, DurationMS } from '@registry/primitives.js';
+import type { ProjectId, SessionId, DurationMS, DomainUrl } from '@registry/primitives.js';
 import type { ReplaySpeedMode } from '@registry/settings.js';
 import sessionRecorderService from './session-recorder.service.js';
 import settingsService from './settings-service.js';
@@ -48,7 +48,7 @@ function _sendPlaybackStatus(ctx: CoreContext, payload: RecorderPlaybackStatusPa
 	ctx.$eyasLayer?.webContents?.send(`recorder-playback-status`, payload);
 }
 
-async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebContents, steps: RecordingStep[]): Promise<void> {
+async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebContents, steps: RecordingStep[], startUrl: DomainUrl | null): Promise<void> {
 	try { webContents.debugger.attach(CDP_DEBUGGER_VERSION); } catch { /* already attached */ }
 	_sendPlaybackStatus(ctx, { status: `playing` });
 
@@ -56,6 +56,12 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 	// user's own — suppress the recorder so a replay doesn't record itself into its own session
 	sessionRecorderService.setReplaying(true);
 	try {
+		// the session's steps only capture navigations that occurred *during* recording — if
+		// playback starts from a different view than recording did, replay the starting view first
+		if (startUrl && webContents.getURL() !== startUrl) {
+			await webContents.loadURL(startUrl);
+		}
+
 		const projectId = ctx.$config?.meta.projectId as ProjectId | undefined;
 		const replaySpeed = settingsService.get(`recording.replaySpeed`, projectId) as ReplaySpeedMode;
 		const stepDelayMs = REPLAY_STEP_DELAY_MS[replaySpeed] ?? 0;
@@ -85,7 +91,7 @@ async function playSession(ctx: CoreContext, sessionId: SessionId): Promise<void
 		return;
 	}
 
-	await _dispatchAllSteps(ctx, webContents, session.recording.steps);
+	await _dispatchAllSteps(ctx, webContents, session.recording.steps, session.startUrl);
 }
 
 export default { playSession };

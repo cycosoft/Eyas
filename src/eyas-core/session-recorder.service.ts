@@ -54,6 +54,7 @@ async function startSession(ctx: CoreContext): Promise<void> {
 		status: `recording`,
 		startedAt,
 		stoppedAt: null,
+		startUrl: (ctx.$testLayer?.webContents?.getURL() || null) as DomainUrl | null,
 		viewport: { width: ctx.$currentViewport[0], height: ctx.$currentViewport[1] },
 		components: {},
 		recording: { title: new Date(startedAt).toISOString(), steps: [] }
