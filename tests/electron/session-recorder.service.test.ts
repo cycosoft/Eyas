@@ -160,6 +160,43 @@ describe(`sessionRecorderService.appendNavigateStep`, () => {
 	});
 });
 
+// ─── appendCloseWindowStep ──────────────────────────────────────────────────
+
+describe(`sessionRecorderService.appendCloseWindowStep`, () => {
+	test(`appends a CloseWindowStep with the given popupId and current timestamp to the in-memory session`, async () => {
+		const ctx = makeCtx();
+		await service.startSession(ctx);
+
+		service.appendCloseWindowStep(`popup-1` as never);
+
+		const steps = service.getActiveSession()?.recording.steps;
+		expect(steps).toHaveLength(1);
+		expect(steps?.[0]).toMatchObject({ type: `closeWindow`, popupId: `popup-1` });
+		expect(steps?.[0].timestamp).toBeTypeOf(`number`);
+	});
+
+	test(`is a no-op while a replay is in progress, so the replayed popup close isn't re-recorded into the session it's replaying`, async () => {
+		const ctx = makeCtx();
+		await service.startSession(ctx);
+
+		service.setReplaying(true);
+		service.appendCloseWindowStep(`popup-1` as never);
+		service.setReplaying(false);
+
+		expect(service.getActiveSession()?.recording.steps).toHaveLength(0);
+	});
+
+	test(`is a no-op after stopRecording, so a popup closing after stopping isn't appended to the already-stopped session`, async () => {
+		const ctx = makeCtx();
+		await service.startSession(ctx);
+		service.stopRecording(ctx);
+
+		service.appendCloseWindowStep(`popup-1` as never);
+
+		expect(service.getActiveSession()?.recording.steps).toHaveLength(0);
+	});
+});
+
 // ─── getSession ─────────────────────────────────────────────────────────────
 
 describe(`sessionRecorderService.getSession`, () => {

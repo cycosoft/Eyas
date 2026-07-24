@@ -1,7 +1,7 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { EyasRecordingEnvelope, ClickStep, ScrollStep } from '@registry/recording.js';
-import type { DomainUrl } from '@registry/primitives.js';
+import type { DomainUrl, PopupId } from '@registry/primitives.js';
 
 vi.mock(`electron`, () => ({}));
 
@@ -22,6 +22,25 @@ vi.mock(`@core/session-recorder.service.js`, () => ({
 vi.mock(`@core/settings-service.js`, () => ({
 	default: { get: vi.fn().mockReturnValue(`no-delay`) }
 }));
+
+const { getPopupWebContents, closePopup } = vi.hoisted(() => ({
+	getPopupWebContents: vi.fn(),
+	closePopup: vi.fn().mockResolvedValue(undefined)
+}));
+
+vi.mock(`@core/window.popups.js`, () => ({
+	getPopupWebContents,
+	closePopup
+}));
+
+const popupSendCommand = vi.fn().mockResolvedValue(undefined);
+const popupAttach = vi.fn();
+const popupDetach = vi.fn();
+const popupLoadURL = vi.fn().mockResolvedValue(undefined);
+const popupWebContents = {
+	debugger: { attach: popupAttach, detach: popupDetach, isAttached: vi.fn().mockReturnValue(false), sendCommand: popupSendCommand },
+	loadURL: popupLoadURL
+};
 
 import sessionRecorderService from '@core/session-recorder.service.js';
 import settingsService from '@core/settings-service.js';
@@ -72,6 +91,12 @@ beforeEach(() => {
 	executeJavaScript.mockClear().mockResolvedValue(undefined);
 	send.mockClear();
 	getURL.mockClear().mockReturnValue(`https://example.com/`);
+	popupSendCommand.mockClear();
+	popupAttach.mockClear();
+	popupDetach.mockClear();
+	popupLoadURL.mockClear();
+	getPopupWebContents.mockReset().mockReturnValue(null);
+	closePopup.mockClear().mockResolvedValue(undefined);
 });
 
 describe(`sessionPlaybackService.playSession`, () => {
@@ -282,5 +307,62 @@ describe(`sessionPlaybackService.playSession`, () => {
 		expect(loadURL).toHaveBeenNthCalledWith(3, `https://example.com/c`);
 		setTimeoutSpy.mockRestore();
 		vi.useRealTimers();
+	});
+
+	test(`dispatches a step carrying a popupId against that exact popup's webContents/debugger instead of the test layer's`, async () => {
+		getPopupWebContents.mockReturnValue(popupWebContents);
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `click`, selectors: { primary: `#in-popup`, fallbacks: [] }, offsetX: 5, offsetY: 6, popupId: `popup-1`, timestamp: 1 } as never
+		]));
+		const ctx = makeCtx();
+
+		await playbackService.playSession(ctx, `sess-1`);
+
+		expect(getPopupWebContents).toHaveBeenCalledWith(`popup-1`);
+		expect(popupSendCommand).toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.objectContaining({ type: `mousePressed`, x: 5, y: 6 }));
+		expect(sendCommand).not.toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.objectContaining({ type: `mousePressed`, x: 5, y: 6 }));
+	});
+
+	test(`routes steps from two different popups to their respective webContents without cross-talk`, async () => {
+		const popupOneWebContents = { ...popupWebContents, debugger: { ...popupWebContents.debugger, sendCommand: vi.fn().mockResolvedValue(undefined) } };
+		const popupTwoWebContents = { ...popupWebContents, debugger: { ...popupWebContents.debugger, sendCommand: vi.fn().mockResolvedValue(undefined) } };
+		getPopupWebContents.mockImplementation((id: PopupId) => (id === `popup-1` ? popupOneWebContents : popupTwoWebContents));
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `click`, selectors: { primary: `#a`, fallbacks: [] }, offsetX: 1, offsetY: 1, popupId: `popup-1`, timestamp: 1 } as never,
+			{ type: `click`, selectors: { primary: `#b`, fallbacks: [] }, offsetX: 2, offsetY: 2, popupId: `popup-2`, timestamp: 2 } as never
+		]));
+		const ctx = makeCtx();
+
+		await playbackService.playSession(ctx, `sess-1`);
+
+		expect(popupOneWebContents.debugger.sendCommand).toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.objectContaining({ x: 1, y: 1 }));
+		expect(popupTwoWebContents.debugger.sendCommand).toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.objectContaining({ x: 2, y: 2 }));
+		expect(popupOneWebContents.debugger.sendCommand).not.toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.objectContaining({ x: 2, y: 2 }));
+	});
+
+	test(`dispatching a closeWindow step closes the popup matching its popupId`, async () => {
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `closeWindow`, popupId: `popup-1`, timestamp: 1 } as never
+		]));
+		const ctx = makeCtx();
+
+		await playbackService.playSession(ctx, `sess-1`);
+
+		expect(closePopup).toHaveBeenCalledWith(`popup-1`);
+	});
+
+	test(`skips a step with a popupId that isn't currently tracked, logging a warning, instead of throwing`, async () => {
+		getPopupWebContents.mockReturnValue(null);
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `click`, selectors: { primary: `#gone`, fallbacks: [] }, offsetX: 1, offsetY: 1, popupId: `popup-1`, timestamp: 1 } as never
+		]));
+		const ctx = makeCtx();
+		const warnSpy = vi.spyOn(console, `warn`).mockImplementation(() => {});
+
+		await expect(playbackService.playSession(ctx, `sess-1`)).resolves.not.toThrow();
+
+		expect(warnSpy).toHaveBeenCalled();
+		expect(sendCommand).not.toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.objectContaining({ x: 1, y: 1 }));
+		warnSpy.mockRestore();
 	});
 });

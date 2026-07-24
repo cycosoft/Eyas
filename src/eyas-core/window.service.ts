@@ -7,6 +7,8 @@ import { EYAS_HEADER_HEIGHT, EYAS_UI_PARTITION, getTestPartition } from '@script
 import { registerShortcutListeners } from './window.shortcuts.js';
 import { handleResize } from './window.resize.js';
 import * as sessionRecorderService from './session-recorder.service.js';
+import { registerPopupTracking } from './window.popups.js';
+import { registerAppShellPopupTitleSync } from './window.popup-titles.js';
 
 function setupConsoleMessageListener(
 	ctx: CoreContext,
@@ -124,6 +126,7 @@ export const windowService: WindowService = {
 		ctx.setTestLayer(testLayer);
 		testLayer.webContents.session.registerPreloadScript({ type: `frame`, filePath: $paths.testPreload });
 		testLayer.webContents.session.registerPreloadScript({ type: `frame`, filePath: $paths.recorderPreload });
+		registerPopupTracking(testLayer.webContents);
 		registerShortcutListeners(ctx, testLayer.webContents);
 		window.contentView.addChildView(testLayer);
 		testLayer.setBounds({
@@ -236,19 +239,7 @@ export const windowService: WindowService = {
 		const testWebContents = ctx.$testLayer?.webContents || $appWindow.webContents;
 
 		initTestWebContentsListeners(ctx, testWebContents, $appWindow);
-
-		$appWindow.webContents.on(`did-create-window`, win => {
-			win.on(`page-title-updated`, (evt, title) => {
-				if (win.isDestroyed()) { return; }
-				evt.preventDefault();
-				win.setTitle(ctx.getAppTitle(title));
-			});
-
-			win.webContents.on(`did-finish-load`, () => {
-				if (win.isDestroyed() || win.webContents.isDestroyed()) { return; }
-				win.setTitle(ctx.getAppTitle(win.webContents.getTitle()));
-			});
-		});
+		registerAppShellPopupTitleSync(ctx, $appWindow.webContents);
 	},
 
 	// Handles window resize events.

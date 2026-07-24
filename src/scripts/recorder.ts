@@ -1,11 +1,15 @@
 import { ipcRenderer } from 'electron';
 import getUniqueSelector from '@cypress/unique-selector/lib/index.js';
-import type { RecordingStep, SelectorGroup } from '@registry/recording.js';
+import type { RecordingStep, SelectorGroup, EyasPopupWindow } from '@registry/recording.js';
 import type { FramePath, ScreenCoordinate, ElementClassList, SelectorString, DomElement, EventSourceNode, IsExcluded, IsPasswordInput } from '@registry/primitives.js';
 
 const FLUSH_INTERVAL_MS = 2000;
 const FLUSH_AT_STEP_COUNT = 50;
 const SCROLL_THROTTLE_MS = 200;
+
+// set by window.popups.ts via executeJavaScript before a popup can be interacted with;
+// undefined in the main test layer, where nothing ever sets it
+const _popupId = (window as unknown as EyasPopupWindow).__eyasPopupId;
 
 let _buffer: RecordingStep[] = [];
 let _scrollThrottleTimer: ReturnType<typeof setTimeout> | null = null;
@@ -85,6 +89,7 @@ function _onClick(event: MouseEvent): void {
 		offsetX: event.clientX as ScreenCoordinate,
 		offsetY: event.clientY as ScreenCoordinate,
 		frame: _computeFramePath(),
+		popupId: _popupId,
 		timestamp: Date.now()
 	});
 }
@@ -100,6 +105,7 @@ function _onChange(event: Event): void {
 		selectors: _computeSelectorGroup(target),
 		value: target.value,
 		frame: _computeFramePath(),
+		popupId: _popupId,
 		timestamp: Date.now()
 	});
 }
@@ -110,7 +116,7 @@ function _onKeyDown(event: KeyboardEvent): void {
 	if (_isExcluded(target)) { return; }
 	if (_isPasswordField(target)) { return; }
 
-	_push({ type: `keyDown`, key: event.key, frame: _computeFramePath(), timestamp: Date.now() });
+	_push({ type: `keyDown`, key: event.key, frame: _computeFramePath(), popupId: _popupId, timestamp: Date.now() });
 }
 
 function _onKeyUp(event: KeyboardEvent): void {
@@ -119,14 +125,14 @@ function _onKeyUp(event: KeyboardEvent): void {
 	if (_isExcluded(target)) { return; }
 	if (_isPasswordField(target)) { return; }
 
-	_push({ type: `keyUp`, key: event.key, frame: _computeFramePath(), timestamp: Date.now() });
+	_push({ type: `keyUp`, key: event.key, frame: _computeFramePath(), popupId: _popupId, timestamp: Date.now() });
 }
 
 function _onScroll(): void {
 	if (_scrollThrottleTimer) { clearTimeout(_scrollThrottleTimer); }
 
 	_scrollThrottleTimer = setTimeout(() => {
-		_push({ type: `scroll`, x: window.scrollX as ScreenCoordinate, y: window.scrollY as ScreenCoordinate, frame: _computeFramePath(), timestamp: Date.now() });
+		_push({ type: `scroll`, x: window.scrollX as ScreenCoordinate, y: window.scrollY as ScreenCoordinate, frame: _computeFramePath(), popupId: _popupId, timestamp: Date.now() });
 	}, SCROLL_THROTTLE_MS);
 }
 

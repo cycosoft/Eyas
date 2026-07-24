@@ -5,6 +5,7 @@ import type { ProjectId, SessionId, DurationMS, DomainUrl } from '@registry/prim
 import type { ReplaySpeedMode } from '@registry/settings.js';
 import sessionRecorderService from './session-recorder.service.js';
 import settingsService from './settings-service.js';
+import { getPopupWebContents, closePopup } from './window.popups.js';
 
 const CDP_DEBUGGER_VERSION = `1.3`;
 
@@ -25,25 +26,37 @@ function _waitForPaint(webContents: Electron.WebContents): Promise<void> {
 }
 
 async function _dispatchStep(webContents: Electron.WebContents, step: RecordingStep): Promise<void> {
+	if (step.type === `closeWindow`) {
+		await closePopup(step.popupId);
+		return;
+	}
+
+	const target = `popupId` in step && step.popupId !== undefined ? getPopupWebContents(step.popupId) : webContents;
+	if (!target) {
+		// the popup this step belongs to isn't tracked (e.g. it was closed manually out of order) — skip rather than throw
+		console.warn(`[SESSION-PLAYBACK-SERVICE] skipping step targeting an untracked popup:`, step);
+		return;
+	}
+
 	switch (step.type) {
 	case `click`:
-		await webContents.debugger.sendCommand(`Input.dispatchMouseEvent`, { type: `mousePressed`, x: step.offsetX, y: step.offsetY, button: `left`, clickCount: 1 });
-		await webContents.debugger.sendCommand(`Input.dispatchMouseEvent`, { type: `mouseReleased`, x: step.offsetX, y: step.offsetY, button: `left`, clickCount: 1 });
+		await target.debugger.sendCommand(`Input.dispatchMouseEvent`, { type: `mousePressed`, x: step.offsetX, y: step.offsetY, button: `left`, clickCount: 1 });
+		await target.debugger.sendCommand(`Input.dispatchMouseEvent`, { type: `mouseReleased`, x: step.offsetX, y: step.offsetY, button: `left`, clickCount: 1 });
 		return;
 	case `change`:
-		await webContents.debugger.sendCommand(`Input.insertText`, { text: step.value });
+		await target.debugger.sendCommand(`Input.insertText`, { text: step.value });
 		return;
 	case `keyDown`:
-		await webContents.debugger.sendCommand(`Input.dispatchKeyEvent`, { type: `keyDown`, key: step.key });
+		await target.debugger.sendCommand(`Input.dispatchKeyEvent`, { type: `keyDown`, key: step.key });
 		return;
 	case `keyUp`:
-		await webContents.debugger.sendCommand(`Input.dispatchKeyEvent`, { type: `keyUp`, key: step.key });
+		await target.debugger.sendCommand(`Input.dispatchKeyEvent`, { type: `keyUp`, key: step.key });
 		return;
 	case `scroll`:
-		await webContents.debugger.sendCommand(`Input.dispatchMouseEvent`, { type: `mouseWheel`, x: step.x, y: step.y, deltaX: 0, deltaY: 0 });
+		await target.debugger.sendCommand(`Input.dispatchMouseEvent`, { type: `mouseWheel`, x: step.x, y: step.y, deltaX: 0, deltaY: 0 });
 		return;
 	case `navigate`:
-		await webContents.loadURL(step.url);
+		await target.loadURL(step.url);
 		return;
 	default:
 		// forward-compatibility contract: unrecognized future step types are skipped, not fatal

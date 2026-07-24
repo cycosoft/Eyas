@@ -1,9 +1,14 @@
-import type { ProjectId, TimestampMS, ViewportWidth, ViewportHeight, ScreenCoordinate, FramePath, DomainUrl } from './primitives.js';
+import type { ProjectId, TimestampMS, ViewportWidth, ViewportHeight, ScreenCoordinate, FramePath, DomainUrl, PopupId } from './primitives.js';
 
 /** Viewport dimensions for the recording session */
 type Viewport = {
 	width: ViewportWidth;
 	height: ViewportHeight;
+}
+
+/** The subset of `window` the recorder preload reads to identify which popup (if any) it's running in — stamped by window.popups.ts via executeJavaScript. */
+export type EyasPopupWindow = {
+	__eyasPopupId?: PopupId;
 }
 
 /** A captured selector with priority fallbacks. Primary is tried first during replay. */
@@ -18,6 +23,7 @@ export type ClickStep = {
 	offsetX: ScreenCoordinate;
 	offsetY: ScreenCoordinate;
 	frame?: FramePath;
+	popupId?: PopupId;
 	timestamp: TimestampMS;
 }
 
@@ -26,6 +32,7 @@ type InputStep = {
 	selectors: SelectorGroup;
 	value: string;
 	frame?: FramePath;
+	popupId?: PopupId;
 	timestamp: TimestampMS;
 }
 
@@ -33,6 +40,7 @@ type KeyDownStep = {
 	type: `keyDown`;
 	key: string;
 	frame?: FramePath;
+	popupId?: PopupId;
 	timestamp: TimestampMS;
 }
 
@@ -40,6 +48,7 @@ type KeyUpStep = {
 	type: `keyUp`;
 	key: string;
 	frame?: FramePath;
+	popupId?: PopupId;
 	timestamp: TimestampMS;
 }
 
@@ -48,6 +57,7 @@ export type ScrollStep = {
 	x: ScreenCoordinate;
 	y: ScreenCoordinate;
 	frame?: FramePath;
+	popupId?: PopupId;
 	timestamp: TimestampMS;
 }
 
@@ -57,13 +67,20 @@ type NavigateStep = {
 	timestamp: TimestampMS;
 }
 
+type CloseWindowStep = {
+	type: `closeWindow`;
+	popupId: PopupId;
+	timestamp: TimestampMS;
+}
+
 export type RecordingStep =
 	| ClickStep
 	| InputStep
 	| KeyDownStep
 	| KeyUpStep
 	| ScrollStep
-	| NavigateStep;
+	| NavigateStep
+	| CloseWindowStep;
 
 /** W3C Chrome DevTools Recorder root object */
 type ChromeRecorderSession = {

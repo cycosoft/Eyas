@@ -5,7 +5,7 @@ import fs from 'fs-extra';
 const { outputJson } = fs;
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { EyasRecordingEnvelope, RecordingStep } from '@registry/recording.js';
-import type { ProjectId, FilePath, DomainUrl, SessionId, IsActive } from '@registry/primitives.js';
+import type { ProjectId, FilePath, DomainUrl, SessionId, IsActive, PopupId } from '@registry/primitives.js';
 
 let _session: EyasRecordingEnvelope | null = null;
 let _sessionFilePath: FilePath | null = null;
@@ -80,6 +80,13 @@ function appendNavigateStep(url: DomainUrl): void {
 	_persist();
 }
 
+/** Appends a CloseWindowStep captured from a tracked popup's 'closed' event. */
+function appendCloseWindowStep(popupId: PopupId): void {
+	if (!_session || _session.status !== `recording` || _isReplaying) { return; }
+	_session.recording.steps.push({ type: `closeWindow`, popupId, timestamp: Date.now() });
+	_persist();
+}
+
 /** Marks whether a replay is currently dispatching, so its own navigation isn't re-recorded. */
 function setReplaying(isReplaying: IsActive): void {
 	_isReplaying = isReplaying;
@@ -114,6 +121,7 @@ export {
 	startSession,
 	appendSteps,
 	appendNavigateStep,
+	appendCloseWindowStep,
 	stopRecording,
 	getSession,
 	setReplaying
@@ -123,6 +131,7 @@ export default {
 	startSession,
 	appendSteps,
 	appendNavigateStep,
+	appendCloseWindowStep,
 	stopRecording,
 	setReplaying,
 	getActiveSession,
