@@ -3,9 +3,8 @@
 		<svg v-if="isPlaying" class="playback-progress" data-qa="recording-playback-progress">
 			<rect pathLength="100" :style="{ strokeDashoffset: 100 - playbackProgress * 100 }" />
 		</svg>
-		<span v-if="isRecording" class="recording-dot mx-1" data-qa="recording-indicator" />
 		<v-btn v-if="isRecording" icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" data-qa="btn-recording-stop" @click="stopRecording">
-			<v-icon icon="mdi-stop" size="small" />
+			<v-icon icon="mdi-stop" size="small" class="recording-stop-icon" data-qa="recording-indicator" />
 		</v-btn>
 		<v-btn v-else-if="isPlaying" icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" data-qa="btn-recording-playback-stop" @click="stopPlayback">
 			<v-icon icon="mdi-stop" size="small" />
@@ -52,7 +51,7 @@ function startNewRecording(): void {
 
 <style scoped>
 .recording-controls { position: relative; }
-.recording-dot { width: 8px; height: 8px; border-radius: 50%; background-color: #e53935; animation: recording-pulse 1.5s infinite; }
+.recording-stop-icon { color: #e53935; animation: recording-pulse 1.5s infinite; }
 @keyframes recording-pulse { 0% { opacity: 1; } 50% { opacity: 0.35; } 100% { opacity: 1; } }
 .playback-error { font-size: 12px; color: #e53935; }
 .playback-progress { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }

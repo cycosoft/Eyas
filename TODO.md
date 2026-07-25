@@ -9,7 +9,6 @@
 - is it important to capture window resizes or does that make tests inflexible?
 - the "natural delay" is not applying to the very first step. i.e. starting on particular page, and then navigating to the next page is instantaneous
 - tooltips for recording controls
-- record and recording buttons should the same size. however, perhaps the actively recording button should be a red blinking stop icon (square) instead of a circle
 
 # Future
 
