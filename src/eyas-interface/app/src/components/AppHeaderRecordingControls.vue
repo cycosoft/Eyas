@@ -23,7 +23,7 @@
 				</v-tooltip>
 			</v-btn>
 			<v-btn icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" data-qa="btn-recording-replay" @click="replayRecording">
-				<v-icon icon="mdi-play" size="small" />
+				<v-icon icon="mdi-refresh" size="small" />
 				<v-tooltip activator="parent" location="bottom">
 					Replay Recording
 				</v-tooltip>
