@@ -98,6 +98,17 @@ const _appVersion = _package.version;
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
+// Global safety net: without these, an unhandled rejection (e.g. a loadURL() call
+// racing a dev server that isn't listening yet) prints as a bare Chromium stack trace
+// with no indication of which subsystem it came from.
+process.on(`uncaughtException`, err => {
+	console.error(`[ELECTRON-CORE] uncaught exception:`, err);
+});
+
+process.on(`unhandledRejection`, reason => {
+	console.error(`[ELECTRON-CORE] unhandled rejection:`, reason);
+});
+
 // OS Listener
 nativeTheme.on(`updated`, () => {
 	const currentSetting = settingsService.get(`theme`) as SystemTheme;
