@@ -13,7 +13,6 @@
 - How are test failures shown to the user?
 - How are different data states handled? What should we do? Can we make a consistent user experience?
 - Can we do an option to override API data?
-- Remove speed setting. Instead, we'll use "natural" whenever a single test is run and "no delay" when tests are run as part of a suite
 - document title demo did not properly capture text input
 
 # Future

@@ -100,16 +100,16 @@
 								data-qa="settings-app-allow-bypass-updates"
 							/>
 
-							<v-divider class="my-4" />
-
-							<v-select
-								v-model="appReplaySpeed"
-								label="Replay Speed"
-								:items="REPLAY_SPEED_OPTIONS"
-								density="compact"
-								hide-details
-								data-qa="settings-app-replay-speed"
-							/>
+							<!--
+								Replay Speed control intentionally hidden: session-playback.service.ts now always
+								uses "natural" delay regardless of this setting, since every replay today is a
+								single-test run. Plan is to re-expose this (or an equivalent) once a suite runner
+								exists and can distinguish single-test vs. suite-run timing. The underlying
+								setSetting/saveAppSetting plumbing (appReplaySpeed computed below) is left in
+								place so this control is easy to bring back later — just re-add a v-select bound
+								to appReplaySpeed with items like [{ title: 'No Delay', value: 'no-delay' },
+								{ title: 'Natural', value: 'natural' }].
+							-->
 						</v-sheet>
 					</v-window-item>
 				</v-window>
@@ -177,7 +177,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { THEME_MODES, REPLAY_SPEED_OPTIONS } from '@scripts/constants.js';
+import { THEME_MODES } from '@scripts/constants.js';
 import useSettingsStore from '@/stores/settings.js';
 import ModalWrapper from '@/components/ModalWrapper.vue';
 import type { ChannelName, IsVisible, SettingKey, ProjectId, IsActive, DomainUrl, Username } from '@registry/primitives.js';

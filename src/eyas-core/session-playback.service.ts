@@ -1,10 +1,9 @@
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { RecordingStep, ClickStep, ClickPoint } from '@registry/recording.js';
 import type { RecorderPlaybackStatusPayload } from '@registry/ipc.js';
-import type { ProjectId, SessionId, DurationMS, DomainUrl, PopupId, StepCount } from '@registry/primitives.js';
+import type { SessionId, DurationMS, DomainUrl, PopupId, StepCount } from '@registry/primitives.js';
 import type { ReplaySpeedMode } from '@registry/settings.js';
 import sessionRecorderService from './session-recorder.service.js';
-import settingsService from './settings-service.js';
 import { getPopupWebContents, closePopup, setReplayPopupIdQueue, clearReplayPopupIdQueue } from './window.popups.js';
 
 const CDP_DEBUGGER_VERSION = `1.3`;
@@ -160,8 +159,12 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 			await _waitForPaint(webContents);
 		}
 
-		const projectId = ctx.$config?.meta.projectId as ProjectId | undefined;
-		const replaySpeed = settingsService.get(`recording.replaySpeed`, projectId) as ReplaySpeedMode;
+		// the `recording.replaySpeed` app setting is intentionally ignored here (and its control is
+		// hidden in SettingsModal.vue) — every replay today is a single-test run, so we always use
+		// the natural-delay timing regardless of what's persisted in settings. The plan is to key
+		// this off single-test vs. suite-run once a suite runner exists (see TODO.md), at which point
+		// this should read `no-delay` for suite runs instead of a hardcoded value.
+		const replaySpeed: ReplaySpeedMode = `natural`;
 		const stepDelayMs = REPLAY_STEP_DELAY_MS[replaySpeed] ?? 0;
 
 		for (let i = 0; i < steps.length; i++) {

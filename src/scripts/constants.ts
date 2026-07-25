@@ -35,16 +35,14 @@ export const SETTINGS_DEFAULTS = {
 		useCustomDomain: false
 	},
 	allowBypassUpdates: false,
+	// this default is currently moot: session-playback.service.ts hardcodes "natural" regardless of
+	// what's stored, and the settings-modal control that would let a user change it is hidden (see
+	// SettingsModal.vue). Set to `natural` so it reflects actual runtime behavior if ever read directly.
 	recording: {
-		replaySpeed: `no-delay`
+		replaySpeed: `natural`
 	}
 } as const;
 
-// Options for the Replay Speed settings select
-export const REPLAY_SPEED_OPTIONS = [
-	{ title: `No Delay`, value: `no-delay` },
-	{ title: `Natural`, value: `natural` }
-] as const;
 // Matches the height of a Vuetify v-app-bar with density="compact" (48) + v-system-bar (30) + 1px border.
 // Using 79 prevents the bottom border from being cut off in the UI layer.
 // NOTE: Odd heights can cause 1px rounding discrepancies on high-DPI (Retina) displays.

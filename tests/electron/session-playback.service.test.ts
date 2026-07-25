@@ -20,10 +20,6 @@ vi.mock(`@core/session-recorder.service.js`, () => ({
 	default: { getSession: vi.fn(), setReplaying: vi.fn() }
 }));
 
-vi.mock(`@core/settings-service.js`, () => ({
-	default: { get: vi.fn().mockReturnValue(`no-delay`) }
-}));
-
 const { getPopupWebContents, closePopup, setReplayPopupIdQueue, clearReplayPopupIdQueue } = vi.hoisted(() => ({
 	getPopupWebContents: vi.fn(),
 	closePopup: vi.fn().mockResolvedValue(undefined),
@@ -51,7 +47,6 @@ const popupWebContents = {
 };
 
 import sessionRecorderService from '@core/session-recorder.service.js';
-import settingsService from '@core/settings-service.js';
 import playbackService from '@core/session-playback.service.js';
 
 const getURL = vi.fn().mockReturnValue(`https://example.com/`);
@@ -92,7 +87,6 @@ function makeCtx(): CoreContext {
 beforeEach(() => {
 	vi.mocked(sessionRecorderService.getSession).mockReset();
 	vi.mocked(sessionRecorderService.setReplaying).mockClear();
-	vi.mocked(settingsService.get).mockReset().mockReturnValue(`no-delay`);
 	sendCommand.mockClear();
 	attach.mockClear();
 	detach.mockClear();
@@ -332,24 +326,8 @@ describe(`sessionPlaybackService.playSession`, () => {
 		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, expect.objectContaining({ status: `failed` }));
 	});
 
-	test(`does not wait between steps when replaySpeed is 'no-delay' (the default)`, async () => {
-		vi.mocked(settingsService.get).mockReturnValue(`no-delay`);
-		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
-			{ type: `navigate`, url: `https://example.com/a`, timestamp: 1 },
-			{ type: `navigate`, url: `https://example.com/b`, timestamp: 2 }
-		]));
-		const ctx = makeCtx();
-		const setTimeoutSpy = vi.spyOn(global, `setTimeout`);
-
-		await playbackService.playSession(ctx, `sess-1`);
-
-		expect(setTimeoutSpy).not.toHaveBeenCalled();
-		setTimeoutSpy.mockRestore();
-	});
-
-	test(`waits between steps when replaySpeed is 'natural'`, async () => {
+	test(`waits between steps using the natural delay, regardless of any persisted replaySpeed setting`, async () => {
 		vi.useFakeTimers();
-		vi.mocked(settingsService.get).mockReturnValue(`natural`);
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
 			{ type: `navigate`, url: `https://example.com/a`, timestamp: 1 },
 			{ type: `navigate`, url: `https://example.com/b`, timestamp: 2 },
@@ -371,9 +349,8 @@ describe(`sessionPlaybackService.playSession`, () => {
 		vi.useRealTimers();
 	});
 
-	test(`waits before dispatching the very first step, not just between later steps, when replaySpeed is 'natural'`, async () => {
+	test(`waits before dispatching the very first step, not just between later steps`, async () => {
 		vi.useFakeTimers();
-		vi.mocked(settingsService.get).mockReturnValue(`natural`);
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
 			{ type: `navigate`, url: `https://example.com/a`, timestamp: 1 }
 		]));
