@@ -468,6 +468,27 @@ describe(`AppHeader`, () => {
 				vm.onBrowserControlClick(`home`);
 				expect(mockSend).toHaveBeenCalledWith(`browser-home`);
 			});
+
+			test(`each browser control button has a tooltip with its label`, () => {
+				const localWrapper = mount(AppHeader, {
+					global: {
+						stubs: {
+							VAppBar: { template: `<div><slot /></div>` }, VMenu: { template: `<div><slot /></div>` }, VList: { template: `<div><slot /></div>` },
+							VListItem: { template: `<div @click="$emit('click')"><slot /></div>` },
+							VBtn: { template: `<button :disabled="$attrs.disabled" @click="$emit('click', $event)" @mouseenter="$emit('mouseenter', $event)"><slot /></button>` },
+							VIcon: true, VImg: true, VSystemBar: { template: `<div class="v-system-bar" v-bind="$attrs"><slot /></div>` },
+							VTooltip: { template: `<div class="v-tooltip"><slot /></div>` }
+						}
+					}
+				});
+
+				expect(localWrapper.find(`[data-qa="btn-browser-back"]`).text()).toContain(`Back`);
+				expect(localWrapper.find(`[data-qa="btn-browser-forward"]`).text()).toContain(`Forward`);
+				expect(localWrapper.find(`[data-qa="btn-browser-reload"]`).text()).toContain(`Reload`);
+				expect(localWrapper.find(`[data-qa="btn-browser-home"]`).text()).toContain(`Home`);
+
+				localWrapper.unmount();
+			});
 		});
 	});
 });

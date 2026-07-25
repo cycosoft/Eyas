@@ -26,6 +26,9 @@
 			<div class="d-flex align-center ml-2 pa-1 rounded-lg border">
 				<v-btn v-for="control in browserControls" :key="control.action" icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" :data-qa="`btn-browser-${control.action}`" :disabled="isControlDisabled(control.action, canGoBack, canGoForward)" @click="handleBrowserControlClick(control.action)">
 					<v-icon :icon="control.icon" size="small" />
+					<v-tooltip activator="parent" location="bottom">
+						{{ control.label }}
+					</v-tooltip>
 				</v-btn>
 			</div>
 		</template>
@@ -43,37 +46,12 @@
 		<v-spacer />
 		<AppHeaderRecordingControls />
 		<!-- 3. Update Status -->
-		<v-btn
-			v-if="updateInfo.icon"
-			icon
-			density="compact"
-			:variant="updateInfo.variant"
-			:ripple="updateInfo.ripple"
-			class="mr-1"
-			data-qa="btn-broadcast"
-			:disabled="updateInfo.disabled"
-			:color="updateInfo.color"
-			:class="{
-				'blink-animation': updateStatus === 'checking' || updateStatus === 'downloading'
-			}"
-			@click="handleBroadcastClick"
-		>
-			<v-icon
-				:icon="updateInfo.icon"
-				size="small"
-			/>
-			<v-tooltip
-				v-if="updateStatus === 'downloaded'"
-				activator="parent"
-				location="bottom"
-			>
+		<v-btn v-if="updateInfo.icon" icon density="compact" :variant="updateInfo.variant" :ripple="updateInfo.ripple" class="mr-1" data-qa="btn-broadcast" :disabled="updateInfo.disabled" :color="updateInfo.color" :class="{ 'blink-animation': updateStatus === 'checking' || updateStatus === 'downloading' }" @click="handleBroadcastClick">
+			<v-icon :icon="updateInfo.icon" size="small" />
+			<v-tooltip v-if="updateStatus === 'downloaded'" activator="parent" location="bottom">
 				Update Available
 			</v-tooltip>
-			<v-tooltip
-				v-else-if="updateStatus === 'idle'"
-				activator="parent"
-				location="bottom"
-			>
+			<v-tooltip v-else-if="updateStatus === 'idle'" activator="parent" location="bottom">
 				Check for Updates
 			</v-tooltip>
 		</v-btn>
