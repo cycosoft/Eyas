@@ -8,7 +8,7 @@
 - In one of the tests I did, the last "open the demo window" failed to close
 - is it important to capture window resizes or does that make tests inflexible?
 - the "natural delay" is not applying to the very first step. i.e. starting on particular page, and then navigating to the next page is instantaneous
-- tooltips for recording controls
+- should we add the tooltips for the browser buttons too?
 
 # Future
 

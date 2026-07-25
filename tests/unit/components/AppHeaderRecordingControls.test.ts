@@ -30,7 +30,7 @@ describe(`AppHeaderRecordingControls`, () => {
 				stubs: {
 					VBtn: { template: `<button v-bind="$attrs" @click="$emit('click', $event)"><slot /></button>` },
 					VIcon: true,
-					VTooltip: true
+					VTooltip: { template: `<div><slot /></div>` }
 				}
 			}
 		});
@@ -85,5 +85,24 @@ describe(`AppHeaderRecordingControls`, () => {
 
 		wrapper = mountWithStatus(`stopped`, `playing`);
 		expect(wrapper.find(`[data-qa="btn-recording-record-again"]`).exists()).toBe(false);
+	});
+
+	test(`the stop-recording button has a tooltip explaining its action`, () => {
+		wrapper = mountWithStatus(`recording`, null);
+
+		expect(wrapper.find(`[data-qa="btn-recording-stop"]`).text()).toContain(`Stop Recording`);
+	});
+
+	test(`the stop-playback button has a tooltip explaining its action`, () => {
+		wrapper = mountWithStatus(`stopped`, `playing`);
+
+		expect(wrapper.find(`[data-qa="btn-recording-playback-stop"]`).text()).toContain(`Stop Playback`);
+	});
+
+	test(`the record-again and replay buttons each have a tooltip explaining their action`, () => {
+		wrapper = mountWithStatus(`stopped`, null);
+
+		expect(wrapper.find(`[data-qa="btn-recording-record-again"]`).text()).toContain(`New Recording`);
+		expect(wrapper.find(`[data-qa="btn-recording-replay"]`).text()).toContain(`Replay Recording`);
 	});
 });

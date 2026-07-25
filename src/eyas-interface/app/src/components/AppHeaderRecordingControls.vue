@@ -5,16 +5,28 @@
 		</svg>
 		<v-btn v-if="isRecording" icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" data-qa="btn-recording-stop" @click="stopRecording">
 			<v-icon icon="mdi-stop" size="small" class="recording-stop-icon" data-qa="recording-indicator" />
+			<v-tooltip activator="parent" location="bottom">
+				Stop Recording
+			</v-tooltip>
 		</v-btn>
 		<v-btn v-else-if="isPlaying" icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" data-qa="btn-recording-playback-stop" @click="stopPlayback">
 			<v-icon icon="mdi-stop" size="small" />
+			<v-tooltip activator="parent" location="bottom">
+				Stop Playback
+			</v-tooltip>
 		</v-btn>
 		<template v-else-if="isStopped">
 			<v-btn icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" data-qa="btn-recording-record-again" @click="startNewRecording">
 				<v-icon icon="mdi-record" size="small" color="error" />
+				<v-tooltip activator="parent" location="bottom">
+					New Recording
+				</v-tooltip>
 			</v-btn>
 			<v-btn icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" data-qa="btn-recording-replay" @click="replayRecording">
 				<v-icon icon="mdi-play" size="small" />
+				<v-tooltip activator="parent" location="bottom">
+					Replay Recording
+				</v-tooltip>
 			</v-btn>
 		</template>
 		<span v-if="playbackError" class="playback-error mx-1" data-qa="recording-playback-error">
