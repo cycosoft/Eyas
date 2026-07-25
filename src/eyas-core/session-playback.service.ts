@@ -166,7 +166,7 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 
 		for (let i = 0; i < steps.length; i++) {
 			if (_abortRequested) { break; }
-			if (i > 0 && stepDelayMs > 0) { await _delay(stepDelayMs); }
+			if (stepDelayMs > 0) { await _delay(stepDelayMs); }
 			await _dispatchStep(webContents, steps[i]);
 			_sendPlaybackStatus(ctx, { status: `playing`, completedSteps: (i + 1) as StepCount, totalSteps: steps.length as StepCount });
 		}

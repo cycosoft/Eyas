@@ -359,15 +359,35 @@ describe(`sessionPlaybackService.playSession`, () => {
 		const setTimeoutSpy = vi.spyOn(global, `setTimeout`);
 
 		const playPromise = playbackService.playSession(ctx, `sess-1`);
-		await vi.advanceTimersByTimeAsync(1000);
+		await vi.advanceTimersByTimeAsync(1500);
 		await playPromise;
 
-		// one delay between each pair of steps: 3 steps → 2 waits, not a wait before the first step
-		expect(setTimeoutSpy).toHaveBeenCalledTimes(2);
+		// a delay applies before every step, including the first: 3 steps -> 3 waits
+		expect(setTimeoutSpy).toHaveBeenCalledTimes(3);
 		expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 500);
 		expect(loadURL).toHaveBeenNthCalledWith(1, `https://example.com/a`);
 		expect(loadURL).toHaveBeenNthCalledWith(3, `https://example.com/c`);
 		setTimeoutSpy.mockRestore();
+		vi.useRealTimers();
+	});
+
+	test(`waits before dispatching the very first step, not just between later steps, when replaySpeed is 'natural'`, async () => {
+		vi.useFakeTimers();
+		vi.mocked(settingsService.get).mockReturnValue(`natural`);
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `navigate`, url: `https://example.com/a`, timestamp: 1 }
+		]));
+		const ctx = makeCtx();
+
+		const playPromise = playbackService.playSession(ctx, `sess-1`);
+		await Promise.resolve();
+		await Promise.resolve();
+		expect(loadURL).not.toHaveBeenCalled();
+
+		await vi.advanceTimersByTimeAsync(500);
+		await playPromise;
+
+		expect(loadURL).toHaveBeenCalledWith(`https://example.com/a`);
 		vi.useRealTimers();
 	});
 
