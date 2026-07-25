@@ -56,6 +56,7 @@ export const VALID_SEND_CHANNELS = [
 	`adjust-zoom`,
 	`recorder-flush-steps`,
 	`recorder-stop`,
+	`recorder-record-start`,
 	`recorder-replay-request`,
 	`recorder-replay-stop`
 ] as const;

@@ -4,9 +4,10 @@ import type { CoreContext } from '@registry/eyas-core.js';
 import type { ClickStep } from '@registry/recording.js';
 import type { PopupId } from '@registry/primitives.js';
 
-const { getPopupIdForWebContents, appendSteps } = vi.hoisted(() => ({
+const { getPopupIdForWebContents, appendSteps, startSession } = vi.hoisted(() => ({
 	getPopupIdForWebContents: vi.fn(),
-	appendSteps: vi.fn()
+	appendSteps: vi.fn(),
+	startSession: vi.fn().mockResolvedValue(undefined)
 }));
 
 vi.mock(`electron`, () => ({
@@ -19,7 +20,8 @@ vi.mock(`../../src/eyas-core/window.popups.js`, () => ({
 
 vi.mock(`../../src/eyas-core/session-recorder.service.js`, () => ({
 	appendSteps,
-	stopRecording: vi.fn()
+	stopRecording: vi.fn(),
+	startSession
 }));
 
 const { stopPlayback } = vi.hoisted(() => ({
@@ -74,6 +76,26 @@ describe(`recorder-flush-steps IPC handler`, () => {
 		handler({ sender: { id: 5 } }, [step]);
 
 		expect(appendSteps).toHaveBeenCalledWith([{ ...step, popupId: `popup-a` }]);
+	});
+});
+
+describe(`recorder-record-start IPC handler`, () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		startSession.mockResolvedValue(undefined);
+	});
+
+	test(`calls sessionRecorderService.startSession with the current context`, () => {
+		const ctx = {} as CoreContext;
+		initRecorderIpcListeners(ctx);
+
+		const registeredCall = vi.mocked(ipcMain.on).mock.calls.find(call => call[0] === `recorder-record-start`);
+		if (!registeredCall) { throw new Error(`recorder-record-start handler was not registered`); }
+		const handler = registeredCall[1] as (...args: unknown[]) => void;
+
+		handler();
+
+		expect(startSession).toHaveBeenCalledWith(ctx);
 	});
 });
 

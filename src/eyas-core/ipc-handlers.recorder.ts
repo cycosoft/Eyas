@@ -21,6 +21,12 @@ export function initRecorderIpcListeners(ctx: CoreContext): void {
 		sessionRecorderService.stopRecording(ctx);
 	});
 
+	ipcMain.on(`recorder-record-start`, () => {
+		sessionRecorderService.startSession(ctx).catch(err => {
+			console.error(`[IPC-HANDLERS-RECORDER] failed to start new recording:`, err);
+		});
+	});
+
 	ipcMain.on(`recorder-replay-request`, (_event, payload: RecorderReplayRequestPayload) => {
 		sessionPlaybackService.playSession(ctx, payload.sessionId as SessionId).catch(err => {
 			console.error(`[IPC-HANDLERS-RECORDER] playback failed:`, err);

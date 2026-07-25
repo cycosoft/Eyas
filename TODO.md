@@ -5,9 +5,12 @@
 - Update changelog
 - not able to save changes to changelog.json, because the formatting is different on save than eslint it requesting.
 - validate that all ticket items have been addressed
-- need to be able to start a new recording in the same test session
 - In one of the tests I did, the last "open the demo window" failed to close
+- is it important to capture window resizes or does that make tests inflexible?
+- the "natural delay" is not applying to the very first step. i.e. starting on particular page, and then navigating to the next page is instantaneous
+- tooltips for recording controls
+- record and recording buttons should the same size. however, perhaps the actively recording button should be a red blinking stop icon (square) instead of a circle
 
 # Future
 
--
+- env chooser modal is not respecting users dark theme choice

@@ -29,6 +29,19 @@ describe(`useRecordingStore`, () => {
 		expect(store.isStopped).toBe(true);
 	});
 
+	test(`setFromIpc clears stale playback status, error, and progress when a new recording starts`, () => {
+		const store = useRecordingStore();
+		store.setPlaybackStatus({ status: `failed`, error: `boom` });
+		store.setPlaybackStatus({ status: `playing`, completedSteps: 2, totalSteps: 5 });
+
+		store.setFromIpc({ isRecording: true, sessionId: `sess-2` });
+
+		expect(store.playbackStatus).toBeNull();
+		expect(store.playbackError).toBeNull();
+		expect(store.completedSteps).toBe(0);
+		expect(store.totalSteps).toBe(0);
+	});
+
 	test(`setPlaybackStatus clears any prior playback error when a new playback starts`, () => {
 		const store = useRecordingStore();
 		store.setPlaybackStatus({ status: `failed`, error: `boom` });

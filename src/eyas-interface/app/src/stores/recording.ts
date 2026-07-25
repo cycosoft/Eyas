@@ -25,6 +25,12 @@ export default defineStore(`recording`, {
 		setFromIpc(payload: RecorderStatusPayload): void {
 			this.status = payload.isRecording ? `recording` : `stopped`;
 			this.sessionId = payload.sessionId;
+			if (payload.isRecording) {
+				this.playbackStatus = null;
+				this.playbackError = null;
+				this.completedSteps = 0;
+				this.totalSteps = 0;
+			}
 		},
 
 		setPlaybackStatus(payload: RecorderPlaybackStatusPayload): void {

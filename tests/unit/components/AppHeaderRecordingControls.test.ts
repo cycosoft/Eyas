@@ -63,4 +63,27 @@ describe(`AppHeaderRecordingControls`, () => {
 
 		expect(wrapper.find(`[data-qa="btn-recording-replay"]`).exists()).toBe(false);
 	});
+
+	test(`shows both the record-again and replay buttons once stopped and not playing`, () => {
+		wrapper = mountWithStatus(`stopped`, null);
+
+		expect(wrapper.find(`[data-qa="btn-recording-record-again"]`).exists()).toBe(true);
+		expect(wrapper.find(`[data-qa="btn-recording-replay"]`).exists()).toBe(true);
+	});
+
+	test(`clicking record-again sends recorder-record-start over IPC`, async () => {
+		wrapper = mountWithStatus(`stopped`, null);
+
+		await wrapper.find(`[data-qa="btn-recording-record-again"]`).trigger(`click`);
+
+		expect(mockSend).toHaveBeenCalledWith(`recorder-record-start`);
+	});
+
+	test(`the record-again button is hidden while recording or playing`, () => {
+		wrapper = mountWithStatus(`recording`, null);
+		expect(wrapper.find(`[data-qa="btn-recording-record-again"]`).exists()).toBe(false);
+
+		wrapper = mountWithStatus(`stopped`, `playing`);
+		expect(wrapper.find(`[data-qa="btn-recording-record-again"]`).exists()).toBe(false);
+	});
 });
