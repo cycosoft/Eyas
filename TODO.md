@@ -1,6 +1,5 @@
 # TODO
 
-- validate that all ticket items have been addressed
 - In one of the tests I did, the last "open the demo window" failed to close
 - is it important to capture window resizes or does that make tests inflexible?
 - what happens when the test enounters an error like "page not found"?
