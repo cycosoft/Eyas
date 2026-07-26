@@ -203,11 +203,22 @@ describe(`window.service.ts unit tests`, () => {
 
 			vi.mocked(mockCtx.getAppTitle).mockReturnValue(`Eyas - My New Title`);
 
-			callback({}, `My New Title`);
+			callback({}, `My New Title`, true);
 
 			expect(mockCtx.getAppTitle).toHaveBeenCalledWith(`My New Title`);
 			expect(mockCtx.$appWindow?.setTitle).toHaveBeenCalledWith(`Eyas - My New Title`);
-			expect(mockCtx.updateNavigationState).toHaveBeenCalled();
+			expect(mockCtx.updateNavigationState).toHaveBeenCalledWith(`My New Title`);
+		});
+
+		test(`should treat a blank document.title as blank, not Chromium's synthesized URL fallback (explicitSet: false)`, () => {
+			windowService.initWindowListeners(mockCtx);
+			const callback = registeredListeners[`page-title-updated`];
+			expect(callback).toBeDefined();
+
+			callback({}, `https://test.com/demo/window`, false);
+
+			expect(mockCtx.getAppTitle).toHaveBeenCalledWith(``);
+			expect(mockCtx.updateNavigationState).toHaveBeenCalledWith(``);
 		});
 	});
 

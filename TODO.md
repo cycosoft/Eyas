@@ -12,8 +12,6 @@
 - How are test failures shown to the user?
 - How are different data states handled? What should we do? Can we make a consistent user experience?
 - Can we do an option to override API data?
-- document title demo did not properly capture text input
-- setting the test page document.title to a blank string displays the page URL - it should just be blank
 
 # Future
 

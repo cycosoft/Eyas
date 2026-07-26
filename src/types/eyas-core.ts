@@ -105,7 +105,7 @@ export type CoreContext = {
 	goBack: () => void;
 	goForward: () => void;
 	reload: () => void;
-	updateNavigationState: () => Promise<void>;
+	updateNavigationState: (rawPageTitle?: AppTitle) => Promise<void>;
 	initIpcHandlers: () => void;
 
 	// Services

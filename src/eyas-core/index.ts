@@ -214,7 +214,7 @@ const coreContextFunctions = {
 	goBack: (): void => navigationService.goBack(getCoreContext()),
 	goForward: (): void => navigationService.goForward(getCoreContext()),
 	reload: (): void => navigationService.reload(getCoreContext()),
-	updateNavigationState: (): Promise<void> => navigationService.updateNavigationState(getCoreContext()),
+	updateNavigationState: (rawPageTitle?: AppTitle): Promise<void> => navigationService.updateNavigationState(getCoreContext(), rawPageTitle),
 	initIpcHandlers: (): void => initIpcHandlers(getCoreContext())
 };
 

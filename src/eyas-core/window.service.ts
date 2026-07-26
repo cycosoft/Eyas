@@ -36,12 +36,13 @@ function initTestWebContentsListeners(
 	testWebContents: WebContents,
 	$appWindow: BrowserWindow
 ): void {
-	// did-finish-load only syncs once per navigation; also re-run updateNavigationState so the
-	// custom in-UI titlebar (driven by pageTitle in the IPC payload, not native OS chrome) updates
-	testWebContents.on(`page-title-updated`, (_evt, title) => {
+	// syncs title changes after load; explicitSet: false means Chromium synthesized `title`
+	// (e.g. the page URL) for a blank document.title, so treat that case as truly blank
+	testWebContents.on(`page-title-updated`, (_evt, title, explicitSet) => {
 		if (testWebContents.isDestroyed() || $appWindow.isDestroyed()) { return; }
-		$appWindow.setTitle(ctx.getAppTitle(title));
-		ctx.updateNavigationState();
+		const pageTitle = explicitSet === false ? `` : title;
+		$appWindow.setTitle(ctx.getAppTitle(pageTitle));
+		ctx.updateNavigationState(pageTitle);
 	});
 
 	testWebContents.on(`did-finish-load`, () => {
