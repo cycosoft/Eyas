@@ -177,7 +177,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 		popupWebContents.isLoading.mockReturnValue(false);
 	});
 
-	test(`dispatches a change step as Input.insertText with the captured value`, async () => {
+	test(`replaces the field's existing value instead of inserting at cursor position when dispatching a change step`, async () => {
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
 			{ type: `change`, selectors: { primary: `#name`, fallbacks: [] }, value: `hello`, timestamp: 1 }
 		]));
@@ -185,10 +185,14 @@ describe(`sessionPlaybackService.playSession`, () => {
 
 		await playbackService.playSession(ctx, `sess-1`);
 
-		expect(sendCommand).toHaveBeenCalledWith(`Input.insertText`, { text: `hello` });
+		// must not use CDP Input.insertText — it inserts at the cursor rather than replacing
+		// the field's existing content, which duplicates pre-existing text on replay
+		expect(sendCommand).not.toHaveBeenCalledWith(`Input.insertText`, expect.anything());
+		expect(executeJavaScript).toHaveBeenCalledWith(expect.stringContaining(`#name`));
+		expect(executeJavaScript).toHaveBeenCalledWith(expect.stringContaining(JSON.stringify(`hello`)));
 	});
 
-	test(`dispatches keyDown/keyUp steps as Input.dispatchKeyEvent with the captured key`, async () => {
+	test(`dispatches keyDown/keyUp steps as Input.dispatchKeyEvent with the captured key when no cursor position was recorded`, async () => {
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
 			{ type: `keyDown`, key: `a`, timestamp: 1 },
 			{ type: `keyUp`, key: `a`, timestamp: 2 }
@@ -199,6 +203,60 @@ describe(`sessionPlaybackService.playSession`, () => {
 
 		expect(sendCommand).toHaveBeenCalledWith(`Input.dispatchKeyEvent`, expect.objectContaining({ type: `keyDown`, key: `a` }));
 		expect(sendCommand).toHaveBeenCalledWith(`Input.dispatchKeyEvent`, expect.objectContaining({ type: `keyUp`, key: `a` }));
+	});
+
+	test.each([[`x`], [`Backspace`]])(`dispatches a %s keyDown step at the recorded cursor position via document.activeElement, not CDP dispatchKeyEvent`, async key => {
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `keyDown`, key, selectionStart: 4, selectionEnd: 4, timestamp: 1 }
+		]));
+		const ctx = makeCtx();
+
+		await playbackService.playSession(ctx, `sess-1`);
+
+		expect(sendCommand).not.toHaveBeenCalledWith(`Input.dispatchKeyEvent`, expect.anything());
+		expect(executeJavaScript).toHaveBeenCalledWith(expect.stringContaining(`document.activeElement`));
+		expect(executeJavaScript).toHaveBeenCalledWith(expect.stringContaining(JSON.stringify(key)));
+	});
+
+	test(`still dispatches functional keys (Enter) via CDP Input.dispatchKeyEvent even when a cursor position was recorded`, async () => {
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `keyDown`, key: `Enter`, selectionStart: 3, selectionEnd: 3, timestamp: 1 }
+		]));
+		const ctx = makeCtx();
+
+		await playbackService.playSession(ctx, `sess-1`);
+
+		expect(sendCommand).toHaveBeenCalledWith(`Input.dispatchKeyEvent`, expect.objectContaining({ type: `keyDown`, key: `Enter` }));
+	});
+
+	test(`change step only re-dispatches change, not input, when the live value would already match the recorded value`, async () => {
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `change`, selectors: { primary: `#name`, fallbacks: [] }, value: `hello`, timestamp: 1 }
+		]));
+		const ctx = makeCtx();
+
+		await playbackService.playSession(ctx, `sess-1`);
+
+		expect(executeJavaScript).toHaveBeenCalledWith(expect.stringContaining(`el.value !== value`));
+	});
+
+	test(`paces keyDown/keyUp steps at the fixed fast-typist delay (100ms) instead of the natural inter-step delay`, async () => {
+		vi.useFakeTimers();
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `keyDown`, key: `a`, timestamp: 1 },
+			{ type: `click`, selectors: { primary: `#btn`, fallbacks: [] }, offsetX: 1, offsetY: 1, timestamp: 2 }
+		]));
+		const ctx = makeCtx();
+		const setTimeoutSpy = vi.spyOn(global, `setTimeout`);
+
+		const playPromise = playbackService.playSession(ctx, `sess-1`);
+		await vi.advanceTimersByTimeAsync(600);
+		await playPromise;
+
+		expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 100);
+		expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 500);
+		setTimeoutSpy.mockRestore();
+		vi.useRealTimers();
 	});
 
 	test(`dispatches a ScrollStep by setting window.scrollTo to the captured absolute scroll position`, async () => {

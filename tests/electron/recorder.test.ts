@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, test, expect, vi, beforeAll, beforeEach, afterEach, afterAll } from 'vitest';
-import type { RecordingStep, ClickStep, ScrollStep } from '@registry/recording.js';
+import type { RecordingStep, ClickStep, ScrollStep, KeyDownStep } from '@registry/recording.js';
 
 const send = vi.fn();
 const addEventListenerCalls: unknown[][] = [];
@@ -131,6 +131,39 @@ describe(`selector priority order`, () => {
 		const steps = flush();
 		const fallbacks = (steps[0] as ClickStep).selectors.fallbacks;
 		expect(fallbacks).toContain(`.btn.btn-primary`);
+	});
+});
+
+// ─── keydown cursor capture ───────────────────────────────────────────────────
+
+describe(`keydown cursor position capture`, () => {
+	test(`captures selectionStart/selectionEnd on keydown for a focused text input`, () => {
+		const input = document.createElement(`input`);
+		input.type = `text`;
+		document.body.appendChild(input);
+		input.value = `hello`;
+		input.setSelectionRange(3, 3);
+
+		input.dispatchEvent(new KeyboardEvent(`keydown`, { key: `x`, bubbles: true }));
+		vi.advanceTimersByTime(2000);
+
+		const steps = flush();
+		expect(steps).toHaveLength(1);
+		expect((steps[0] as KeyDownStep).selectionStart).toBe(3);
+		expect((steps[0] as KeyDownStep).selectionEnd).toBe(3);
+	});
+
+	test(`omits selectionStart/selectionEnd for non-text-editable elements (e.g. buttons)`, () => {
+		const btn = document.createElement(`button`);
+		document.body.appendChild(btn);
+
+		btn.dispatchEvent(new KeyboardEvent(`keydown`, { key: `Enter`, bubbles: true }));
+		vi.advanceTimersByTime(2000);
+
+		const steps = flush();
+		expect(steps).toHaveLength(1);
+		expect((steps[0] as KeyDownStep).selectionStart).toBeUndefined();
+		expect((steps[0] as KeyDownStep).selectionEnd).toBeUndefined();
 	});
 });
 

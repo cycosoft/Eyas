@@ -1,5 +1,5 @@
 import type { CoreContext } from '@registry/eyas-core.js';
-import type { RecordingStep, ClickStep, ClickPoint } from '@registry/recording.js';
+import type { RecordingStep, ClickStep, ClickPoint, InputStep, KeyDownStep } from '@registry/recording.js';
 import type { RecorderPlaybackStatusPayload } from '@registry/ipc.js';
 import type { SessionId, DurationMS, DomainUrl, PopupId, StepCount } from '@registry/primitives.js';
 import type { ReplaySpeedMode } from '@registry/settings.js';
@@ -19,6 +19,11 @@ const REPLAY_STEP_DELAY_MS: Record<ReplaySpeedMode, DurationMS> = {
 	'no-delay': 0 as DurationMS,
 	natural: 500 as DurationMS
 };
+
+// ~120 WPM fast-typist pace (5 chars/word, 10 chars/sec) — fast enough to feel snappy and avoid
+// bursting keystrokes at the page faster than a debounced validator/formatter can keep up, but
+// not gated by the natural inter-action delay meant for pacing distinct user actions
+const KEYSTROKE_DELAY_MS = 100 as DurationMS;
 
 function _delay(ms: DurationMS): Promise<void> {
 	return new Promise(resolve => setTimeout(resolve, ms));
@@ -70,6 +75,69 @@ async function _ensureTargetReady(target: Electron.WebContents, stepType: Record
 	}
 }
 
+// sets the field's value directly and dispatches input/change (rather than CDP Input.insertText,
+// which inserts at the cursor and duplicates any pre-existing text instead of replacing it) —
+// mirrors Playwright's fill()/Selenium's TYPE semantics. Note: bypasses React's patched value
+// setter, so React-controlled inputs on the app under test may not pick this up; not a regression,
+// as Input.insertText had the same limitation plus the duplication bug.
+async function _dispatchChange(target: Electron.WebContents, step: InputStep): Promise<void> {
+	const selectors = [step.selectors.primary, ...step.selectors.fallbacks];
+	// self-healing guard: only overwrite .value if per-keystroke replay didn't already produce the
+	// recorded value (e.g. a masked/formatted field drifted) — otherwise just fire the `change`
+	// event a real blur would have produced, without clobbering a value that's already correct
+	const script = `(function(selectors, value){
+		for (const sel of selectors) {
+			let el;
+			try { el = document.querySelector(sel); } catch { el = null; }
+			if (el) {
+				if (el.value !== value) {
+					el.value = value;
+					el.dispatchEvent(new Event('input', { bubbles: true }));
+				}
+				el.dispatchEvent(new Event('change', { bubbles: true }));
+				return;
+			}
+		}
+	})(${JSON.stringify(selectors)}, ${JSON.stringify(step.value)})`;
+	await target.executeJavaScript(script);
+}
+
+// splices the keystroke into document.activeElement.value at the recorded cursor position rather
+// than dispatching an inert CDP key event — gives replay real per-keystroke fidelity (masking,
+// autocomplete, live validation) instead of only snapping to the final value on the `change` step
+async function _dispatchKeyDown(target: Electron.WebContents, step: KeyDownStep): Promise<void> {
+	const mutatesText = (step.key.length === 1 || step.key === `Backspace` || step.key === `Delete`)
+		&& step.selectionStart !== undefined && step.selectionEnd !== undefined;
+
+	if (mutatesText) {
+		const script = `(function(key, start, end){
+			const el = document.activeElement;
+			if (!el || typeof el.value !== 'string') { return; }
+			const value = el.value;
+			let newValue, newPos;
+			if (key === 'Backspace') {
+				newValue = start === end ? value.slice(0, Math.max(0, start - 1)) + value.slice(end) : value.slice(0, start) + value.slice(end);
+				newPos = start === end ? Math.max(0, start - 1) : start;
+			} else if (key === 'Delete') {
+				newValue = start === end ? value.slice(0, start) + value.slice(end + 1) : value.slice(0, start) + value.slice(end);
+				newPos = start;
+			} else {
+				newValue = value.slice(0, start) + key + value.slice(end);
+				newPos = start + key.length;
+			}
+			el.value = newValue;
+			try { el.setSelectionRange(newPos, newPos); } catch {}
+			el.dispatchEvent(new Event('input', { bubbles: true }));
+		})(${JSON.stringify(step.key)}, ${step.selectionStart}, ${step.selectionEnd})`;
+		await target.executeJavaScript(script);
+		return;
+	}
+
+	// functional keys (Enter, Tab, Escape, arrows, modifier combos, etc.), or keys with no
+	// recorded cursor position — dispatch the real key event; these don't mutate .value directly
+	await target.debugger.sendCommand(`Input.dispatchKeyEvent`, { type: `keyDown`, key: step.key });
+}
+
 async function _dispatchClick(target: Electron.WebContents, step: ClickStep): Promise<void> {
 	// prefer the captured selector (robust to scroll/layout drift); fall back to the raw
 	// recorded coordinates only if none of the selectors resolve to an element
@@ -100,10 +168,10 @@ async function _dispatchStep(webContents: Electron.WebContents, step: RecordingS
 		await _dispatchClick(target, step);
 		return;
 	case `change`:
-		await target.debugger.sendCommand(`Input.insertText`, { text: step.value });
+		await _dispatchChange(target, step);
 		return;
 	case `keyDown`:
-		await target.debugger.sendCommand(`Input.dispatchKeyEvent`, { type: `keyDown`, key: step.key });
+		await _dispatchKeyDown(target, step);
 		return;
 	case `keyUp`:
 		await target.debugger.sendCommand(`Input.dispatchKeyEvent`, { type: `keyUp`, key: step.key });
@@ -169,7 +237,9 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 
 		for (let i = 0; i < steps.length; i++) {
 			if (_abortRequested) { break; }
-			if (stepDelayMs > 0) { await _delay(stepDelayMs); }
+			const isKeystroke = steps[i].type === `keyDown` || steps[i].type === `keyUp`;
+			const delayMs = isKeystroke ? KEYSTROKE_DELAY_MS : stepDelayMs;
+			if (delayMs > 0) { await _delay(delayMs); }
 			await _dispatchStep(webContents, steps[i]);
 			_sendPlaybackStatus(ctx, { status: `playing`, completedSteps: (i + 1) as StepCount, totalSteps: steps.length as StepCount });
 		}

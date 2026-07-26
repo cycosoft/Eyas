@@ -11,8 +11,11 @@
 - what happens when the test generaly can't follow the steps?
 - How are test failures shown to the user?
 - How are different data states handled? What should we do? Can we make a consistent user experience?
-- Can we do an option to override API data?
+- let's try 50ms for typing instead of 100ms
 
 # Future
 
+- Can we do an option to override API data?
 - env chooser modal is not respecting users dark theme choice
+- consider per-keystroke input capture/replay (vs. current final-value clear-and-set) for sites with input masking, live validators, or per-key JS behavior — current approach matches Playwright fill()/Selenium TYPE semantics and is intentionally not full keystroke fidelity
+- can our tests be isolate:false to speed them up?

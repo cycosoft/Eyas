@@ -18,6 +18,12 @@ export type ClickPoint = {
 	y: number;
 }
 
+/** Cursor position within a text field at the moment a keydown was captured. */
+export type CursorSelection = {
+	selectionStart?: number;
+	selectionEnd?: number;
+}
+
 export type ClickStep = {
 	type: `click`;
 	selectors: SelectorGroup;
@@ -28,7 +34,7 @@ export type ClickStep = {
 	timestamp: TimestampMS;
 }
 
-type InputStep = {
+export type InputStep = {
 	type: `change`;
 	selectors: SelectorGroup;
 	value: string;
@@ -37,9 +43,11 @@ type InputStep = {
 	timestamp: TimestampMS;
 }
 
-type KeyDownStep = {
+export type KeyDownStep = {
 	type: `keyDown`;
 	key: string;
+	selectionStart?: CursorSelection[`selectionStart`];
+	selectionEnd?: CursorSelection[`selectionEnd`];
 	frame?: FramePath;
 	popupId?: PopupId;
 	timestamp: TimestampMS;

@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron';
 import getUniqueSelector from '@cypress/unique-selector/lib/index.js';
-import type { RecordingStep, SelectorGroup } from '@registry/recording.js';
+import type { RecordingStep, SelectorGroup, CursorSelection } from '@registry/recording.js';
 import type { FramePath, ScreenCoordinate, ElementClassList, SelectorString, DomElement, EventSourceNode, IsExcluded, IsPasswordInput } from '@registry/primitives.js';
 
 const FLUSH_INTERVAL_MS = 2000;
@@ -108,13 +108,23 @@ function _onChange(event: Event): void {
 	});
 }
 
+function _captureSelection(target: Element): CursorSelection {
+	if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)) { return {}; }
+	try {
+		return { selectionStart: target.selectionStart ?? undefined, selectionEnd: target.selectionEnd ?? undefined };
+	} catch {
+		// some input types (number, email, date, etc.) throw when reading selection — omit rather than fail recording
+		return {};
+	}
+}
+
 function _onKeyDown(event: KeyboardEvent): void {
 	const target = event.target as Element | null;
 	if (!target) { return; }
 	if (_isExcluded(target)) { return; }
 	if (_isPasswordField(target)) { return; }
 
-	_push({ type: `keyDown`, key: event.key, frame: _computeFramePath(), timestamp: Date.now() });
+	_push({ type: `keyDown`, key: event.key, ..._captureSelection(target), frame: _computeFramePath(), timestamp: Date.now() });
 }
 
 function _onKeyUp(event: KeyboardEvent): void {
