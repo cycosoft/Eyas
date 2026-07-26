@@ -20,10 +20,10 @@ const REPLAY_STEP_DELAY_MS: Record<ReplaySpeedMode, DurationMS> = {
 	natural: 500 as DurationMS
 };
 
-// ~120 WPM fast-typist pace (5 chars/word, 10 chars/sec) — fast enough to feel snappy and avoid
+// ~240 WPM fast-typist pace (5 chars/word, 20 chars/sec) — fast enough to feel snappy and avoid
 // bursting keystrokes at the page faster than a debounced validator/formatter can keep up, but
 // not gated by the natural inter-action delay meant for pacing distinct user actions
-const KEYSTROKE_DELAY_MS = 100 as DurationMS;
+const KEYSTROKE_DELAY_MS = 50 as DurationMS;
 
 function _delay(ms: DurationMS): Promise<void> {
 	return new Promise(resolve => setTimeout(resolve, ms));

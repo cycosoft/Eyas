@@ -240,7 +240,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 		expect(executeJavaScript).toHaveBeenCalledWith(expect.stringContaining(`el.value !== value`));
 	});
 
-	test(`paces keyDown/keyUp steps at the fixed fast-typist delay (100ms) instead of the natural inter-step delay`, async () => {
+	test(`paces keyDown/keyUp steps at the fixed fast-typist delay (50ms) instead of the natural inter-step delay`, async () => {
 		vi.useFakeTimers();
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
 			{ type: `keyDown`, key: `a`, timestamp: 1 },
@@ -253,7 +253,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 		await vi.advanceTimersByTimeAsync(600);
 		await playPromise;
 
-		expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 100);
+		expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 50);
 		expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 500);
 		setTimeoutSpy.mockRestore();
 		vi.useRealTimers();
