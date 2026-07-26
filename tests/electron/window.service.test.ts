@@ -80,6 +80,7 @@ describe(`window.service.ts unit tests`, () => {
 		mockWindow = {
 			getContentSize: vi.fn().mockReturnValue([800, 600]),
 			on: vi.fn(),
+			setTitle: vi.fn(),
 			isDestroyed: vi.fn().mockReturnValue(false),
 			webContents: {
 				on: vi.fn(),
@@ -193,6 +194,20 @@ describe(`window.service.ts unit tests`, () => {
 
 			expect(mockCtx.setJSErrorsCount).not.toHaveBeenCalled();
 			expect(mockCtx.updateNavigationState).not.toHaveBeenCalled();
+		});
+
+		test(`should sync the app window's title when the test layer fires page-title-updated (e.g. document.title changed after load)`, () => {
+			windowService.initWindowListeners(mockCtx);
+			const callback = registeredListeners[`page-title-updated`];
+			expect(callback).toBeDefined();
+
+			vi.mocked(mockCtx.getAppTitle).mockReturnValue(`Eyas - My New Title`);
+
+			callback({}, `My New Title`);
+
+			expect(mockCtx.getAppTitle).toHaveBeenCalledWith(`My New Title`);
+			expect(mockCtx.$appWindow?.setTitle).toHaveBeenCalledWith(`Eyas - My New Title`);
+			expect(mockCtx.updateNavigationState).toHaveBeenCalled();
 		});
 	});
 

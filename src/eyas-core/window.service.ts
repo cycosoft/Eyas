@@ -36,6 +36,14 @@ function initTestWebContentsListeners(
 	testWebContents: WebContents,
 	$appWindow: BrowserWindow
 ): void {
+	// did-finish-load only syncs once per navigation; also re-run updateNavigationState so the
+	// custom in-UI titlebar (driven by pageTitle in the IPC payload, not native OS chrome) updates
+	testWebContents.on(`page-title-updated`, (_evt, title) => {
+		if (testWebContents.isDestroyed() || $appWindow.isDestroyed()) { return; }
+		$appWindow.setTitle(ctx.getAppTitle(title));
+		ctx.updateNavigationState();
+	});
+
 	testWebContents.on(`did-finish-load`, () => {
 		if (testWebContents.isDestroyed() || $appWindow.isDestroyed()) { return; }
 		$appWindow.setTitle(ctx.getAppTitle(testWebContents.getTitle()));

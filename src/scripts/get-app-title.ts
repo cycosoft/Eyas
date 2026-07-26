@@ -37,9 +37,14 @@ export function sanitizePageTitle(rawPageTitle: LabelString | null | undefined, 
  * @param {LabelString} [pageTitle] The document.title set by the web page (optional).
  * @returns {LabelString} The formatted application title.
  */
-export function getAppTitle(title: LabelString, version: AppVersion, _url?: DomainUrl, _pageTitle?: LabelString): LabelString {
-	if (!version || !version.trim()) {
-		return title;
+export function getAppTitle(title: LabelString, version: AppVersion, _url?: DomainUrl, pageTitle?: LabelString): LabelString {
+	const base = (!version || !version.trim()) ? title : `${version} | ${title}`;
+
+	// Append the page's document.title — e.g. set dynamically after load — so the window
+	// title reflects the current page just like it does on initial load
+	if (pageTitle?.trim()) {
+		return `${base} — ${pageTitle.trim()}`;
 	}
-	return `${version} | ${title}`;
+
+	return base;
 }

@@ -1,7 +1,6 @@
 # TODO
 
 - Update Dependencies
-- fix demo "window" page
 - Update changelog
 - not able to save changes to changelog.json, because the formatting is different on save than eslint it requesting.
 - validate that all ticket items have been addressed
@@ -14,6 +13,7 @@
 - How are different data states handled? What should we do? Can we make a consistent user experience?
 - Can we do an option to override API data?
 - document title demo did not properly capture text input
+- setting the test page document.title to a blank string displays the page URL - it should just be blank
 
 # Future
 

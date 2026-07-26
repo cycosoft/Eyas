@@ -71,6 +71,7 @@ export type CoreMockWindow = {
 	contentView: CoreMockContentView;
 	getContentSize: () => ViewportSize;
 	on: (event: string, cb: (...args: unknown[]) => void) => void;
+	setTitle: (title: string) => void;
 	isDestroyed: () => boolean;
 	webContents: CoreMockWindowWebContents;
 };

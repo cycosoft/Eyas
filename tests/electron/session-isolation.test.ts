@@ -107,6 +107,7 @@ describe(`Session Isolation (UI & Test Layers)`, () => {
 		mockWindow = {
 			getContentSize: vi.fn().mockReturnValue([800, 600]),
 			on: vi.fn(),
+			setTitle: vi.fn(),
 			isDestroyed: vi.fn().mockReturnValue(false),
 			webContents: {
 				on: vi.fn(),
