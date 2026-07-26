@@ -187,4 +187,4 @@ export default {
 };
 
 // Named exports specifically for unit tests (ignored by NCU)
-export { getMajorVersion as _getMajorVersion, filterResults as _filterResults, shouldBlockTypeScript7 as _shouldBlockTypeScript7 };
+export { getMajorVersion as _getMajorVersion, filterResults as _filterResults };
