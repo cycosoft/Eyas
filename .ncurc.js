@@ -79,6 +79,78 @@ const shouldBlockVite8 = (upgradedVersion, context) => {
 	return true;
 };
 
+// Cached lookup for registry vue-tsc version to avoid repeated child process calls
+let cachedVueTscVersion = null;
+
+const getLatestVueTscVersion = () => {
+	if (cachedVueTscVersion !== null) {
+		return cachedVueTscVersion;
+	}
+	try {
+		// SECURITY: Static command string with NO dynamic interpolation to prevent any command/shell injection risks.
+		const stdout = execSync(`npm view vue-tsc version`, { encoding: `utf8` });
+		cachedVueTscVersion = stdout.trim();
+	} catch {
+		// Robust fallback: if network/registry check is offline, fallback to 3.0.0 (safe default, no bump detected)
+		cachedVueTscVersion = `3.0.0`;
+	}
+	return cachedVueTscVersion;
+};
+
+// Read current vue-tsc version from package.json safely
+const getCurrentVueTsc = context => {
+	try {
+		const pkgPath = context.packageJsonPath || path.join(currentDir, `package.json`);
+		const pkg = JSON.parse(fs.readFileSync(pkgPath, `utf8`));
+		return pkg.devDependencies?.[`vue-tsc`] || pkg.dependencies?.[`vue-tsc`] || ``;
+	} catch {
+		return ``;
+	}
+};
+
+// vue-tsc/Volar is pinned to 3.x, built against the classic TS language-service API. TypeScript 7's
+// native Go port doesn't expose a stable programmatic API yet (per the TS7 announcement), so Vue
+// tooling can't run on it. A vue-tsc major bump is the realistic signal that Vue tooling has caught
+// up — until then, block typescript major-7 upgrades to avoid breaking editor support / vue-tsc.
+const VUE_TSC_MAJOR_AT_TS7_ANNOUNCEMENT = 3;
+
+let hasLoggedTypeScript7Notice = false;
+const logTypeScript7NoticeOnce = () => {
+	if (!hasLoggedTypeScript7Notice) {
+		console.log(
+			`\n\x1b[33m%s\x1b[0m`,
+			` [NCU Notice] vue-tsc has shipped a new major version — it may now support TypeScript 7's native API. Re-check Vue/Volar TS7 compatibility and remove the typescript gating logic in .ncurc.js if confirmed!`
+		);
+		hasLoggedTypeScript7Notice = true;
+	}
+};
+
+// Check if TypeScript upgrade to 7+ should be blocked pending vue-tsc/Volar TS7 support
+const shouldBlockTypeScript7 = (upgradedVersion, context) => {
+	const upgradedTsMajor = getMajorVersion(upgradedVersion);
+	if (upgradedTsMajor < 7) {
+		return false; // TypeScript versions < 7 are fully compatible
+	}
+
+	// Check if vue-tsc has already bumped past its TS7-announcement-era major in package.json
+	const currentVueTsc = getCurrentVueTsc(context);
+	const currentVueTscMajor = getMajorVersion(currentVueTsc);
+	if (currentVueTscMajor > VUE_TSC_MAJOR_AT_TS7_ANNOUNCEMENT) {
+		logTypeScript7NoticeOnce();
+		return false; // Likely compatible — vue-tsc has moved on
+	}
+
+	// Check if a newer vue-tsc major is available in the registry
+	const latestVueTsc = context.mockLatestVueTsc || getLatestVueTscVersion();
+	const latestVueTscMajor = getMajorVersion(latestVueTsc);
+	if (latestVueTscMajor > VUE_TSC_MAJOR_AT_TS7_ANNOUNCEMENT) {
+		logTypeScript7NoticeOnce();
+		return false; // Likely compatible — a newer vue-tsc is out
+	}
+
+	return true;
+};
+
 const filterResults = (name, { currentVersion: _currentVersion, upgradedVersion }, context = {}) => {
 	// 1. Skip electron@42.0.0 specifically
 	if (name === `electron` && upgradedVersion === `42.0.0`) {
@@ -98,6 +170,11 @@ const filterResults = (name, { currentVersion: _currentVersion, upgradedVersion 
 		return false;
 	}
 
+	// 4. Dynamic typescript/vue-tsc gating (TS7 native port lacks a stable API for Vue tooling)
+	if (name === `typescript` && shouldBlockTypeScript7(upgradedVersion, context)) {
+		return false;
+	}
+
 	return true;
 };
 
@@ -110,4 +187,4 @@ export default {
 };
 
 // Named exports specifically for unit tests (ignored by NCU)
-export { getMajorVersion as _getMajorVersion, filterResults as _filterResults };
+export { getMajorVersion as _getMajorVersion, filterResults as _filterResults, shouldBlockTypeScript7 as _shouldBlockTypeScript7 };
