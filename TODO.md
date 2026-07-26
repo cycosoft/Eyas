@@ -1,6 +1,5 @@
 # TODO
 
-- Update Dependencies
 - Update changelog
 - not able to save changes to changelog.json, because the formatting is different on save than eslint it requesting.
 - validate that all ticket items have been addressed
