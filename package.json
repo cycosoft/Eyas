@@ -113,7 +113,7 @@
 		"happy-dom": "^20.11.1",
 		"knip": "^6.29.0",
 		"npm-check-updates": "^22.2.9",
-		"pinia": "^3.0.4",
+		"pinia": "^4.0.2",
 		"sass": "^1.101.7",
 		"tsx": "^4.23.1",
 		"typescript": "^6.0.3",
