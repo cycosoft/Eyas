@@ -3,7 +3,6 @@
 	"entry": [
 		"src/main/index.ts",
 		"src/preload/index.ts",
-		"src/eyas-interface/app/src/main.ts",
 		"src/eyas-interface/app/src/env.d.ts",
 		"src/types/electron.d.ts",
 		"src/scripts/get-config.ts",
@@ -14,19 +13,16 @@
 		"tests/e2e/eyas-utils.mjs",
 		"tests/unit/**/*.test.ts",
 		"tests/electron/**/*.test.ts",
-		"electron.vite.config.ts",
 		".eyas.config.js",
 		"demo/assets/components.js",
 		"demo/assets/demo.js",
 		"demo/demo/recording/popup.js"
 	],
-	"project": ["**/*.{ts,vue,mjs,js}"],
+	"project": ["**/*.{ts,vue,mjs,js,sass,scss}"],
 	"ignoreBinaries": [
 		"ditto",
 		"signtool",
-		"codesign",
 		"pkgutil",
-		"xcrun",
 		"spctl",
 		"productsign"
 	],
