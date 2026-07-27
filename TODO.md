@@ -7,7 +7,7 @@
 - what happens when the test generaly can't follow the steps?
 - How are test failures shown to the user?
 - How are different data states handled? What should we do? Can we make a consistent user experience?
-- what SHOULD happen if the user interacts with the test page while a test is running?
+- what SHOULD happen if the user interacts with the test page while a test is running? should we load the keep the eyas layer active during test runs to prevent user interaction?
 
 # Future
 
