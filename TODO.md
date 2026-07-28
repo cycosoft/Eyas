@@ -5,8 +5,25 @@
 - what happens when the test enounters an error like broken JS?
 - what happens when the test generaly can't follow the steps?
 - How are test failures shown to the user?
-- Make the eyas layer full screen when a test is running. also show an animated inside ring where the test window is displayed.
+- show an animated inside ring where the test window is displayed
+- disable header controls during test run
+-- Eyas > About
+-- Eyas > Settings
+-- Eyas > Check for Updates
+-- Eyas > Changelog
+-- browser back
+-- browser forward
+-- browser reload
+-- browser home
+-- links > *
+-- environment dropdown
+-- Update available button
+-- tools > test server
+-- tools > viewport
+-- tools > cache
+
 
 # Future
 
--
+- need a tooltip for the "online/offline" header button
+- swap cache > clear and open list item positions
