@@ -63,6 +63,7 @@ function makeSession(steps: EyasRecordingEnvelope[`recording`][`steps`], startUr
 function makeCtx(): CoreContext {
 	return {
 		$eyasLayer: { webContents: { send } },
+		toggleEyasUI: vi.fn(),
 		$testLayer: {
 			webContents: {
 				debugger: { attach, detach, isAttached, sendCommand },

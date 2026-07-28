@@ -1,5 +1,6 @@
 import { reactive, computed } from 'vue';
 import useModalsStore from '@/stores/modals.js';
+import useRecordingStore from '@/stores/recording.js';
 import type { NavGroup, NavItem, NavActivateEvent, PendingNavOpen, DisplayUrlInfo, CursorPosition } from '@registry/components.js';
 import type { ChannelName, MenuLabel, ProjectId, DomainUrl, HashString, ListIndex } from '@registry/primitives.js';
 import type { EnvironmentChoiceWithTitle } from '@registry/core.js';
@@ -123,10 +124,11 @@ export function onItemClick(item: NavItem): void {
 /** Closes the UI layer after a delay, if no menus or modals are open. */
 export function delayedClose(): void {
 	const modalsStore = useModalsStore();
+	const recordingStore = useRecordingStore();
 	window.clearTimeout(closeTimeout);
 
 	closeTimeout = window.setTimeout(() => {
-		if (!state.isHeaderHovered && !state.menu && !state.envMenu && !modalsStore.hasVisibleModals) {
+		if (!state.isHeaderHovered && !state.menu && !state.envMenu && !modalsStore.hasVisibleModals && !recordingStore.isPlaying) {
 			window.eyas?.send(`hide-ui` as ChannelName);
 		}
 	}, 300);

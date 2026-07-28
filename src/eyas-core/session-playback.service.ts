@@ -218,6 +218,7 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 	// user's own — suppress the recorder so a replay doesn't record itself into its own session
 	sessionRecorderService.setReplaying(true);
 	setReplayPopupIdQueue(_orderedPopupIds(steps));
+	ctx.toggleEyasUI(true);
 	_sendPlaybackStatus(ctx, { status: `playing`, completedSteps: 0 as StepCount, totalSteps: steps.length as StepCount });
 	try {
 		// the session's steps only capture navigations that occurred *during* recording — if
@@ -251,6 +252,7 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 		_abortRequested = false;
 		sessionRecorderService.setReplaying(false);
 		clearReplayPopupIdQueue();
+		ctx.toggleEyasUI(false, true);
 		try { webContents.debugger.detach(); } catch { /* not attached */ }
 	}
 }

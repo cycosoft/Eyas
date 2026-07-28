@@ -15,6 +15,7 @@ const send = vi.fn();
 const once = vi.fn();
 const removeListener = vi.fn();
 const isLoading = vi.fn().mockReturnValue(false);
+const toggleEyasUI = vi.fn();
 
 vi.mock(`@core/session-recorder.service.js`, () => ({
 	default: { getSession: vi.fn(), setReplaying: vi.fn() }
@@ -70,6 +71,7 @@ function makeSession(steps: EyasRecordingEnvelope[`recording`][`steps`], startUr
 function makeCtx(): CoreContext {
 	return {
 		$eyasLayer: { webContents: { send } },
+		toggleEyasUI,
 		$testLayer: {
 			webContents: {
 				debugger: { attach, detach, isAttached, sendCommand },
@@ -94,6 +96,7 @@ beforeEach(() => {
 	executeJavaScript.mockClear().mockResolvedValue(undefined);
 	isLoading.mockClear().mockReturnValue(false);
 	send.mockClear();
+	toggleEyasUI.mockClear();
 	getURL.mockClear().mockReturnValue(`https://example.com/`);
 	popupSendCommand.mockClear();
 	popupAttach.mockClear();
