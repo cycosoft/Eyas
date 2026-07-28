@@ -6,20 +6,11 @@
 		:style="ringStyle"
 	>
 		<rect
-			class="test-running-ring__track"
-			x="1"
-			y="1"
-			width="99%"
-			height="99%"
-			pathLength="100"
-		/>
-		<rect
-			class="test-running-ring__sweep"
-			x="1"
-			y="1"
-			width="99%"
-			height="99%"
-			pathLength="100"
+			class="test-running-ring__glow"
+			x="0"
+			y="0"
+			width="100%"
+			height="100%"
 		/>
 	</svg>
 </template>
@@ -52,27 +43,21 @@ const ringStyle = computed(() => {
 	position: fixed;
 	pointer-events: none;
 	z-index: 9999;
-	overflow: visible;
+	overflow: hidden;
 }
 
-.test-running-ring__track {
-	fill: none;
-	stroke: rgba(var(--v-theme-primary), 0.2);
-	stroke-width: 2;
-	vector-effect: non-scaling-stroke;
-}
-
-.test-running-ring__sweep {
+/* a soft glow around all four edges at once, breathing in place - no travel/motion */
+.test-running-ring__glow {
 	fill: none;
 	stroke: rgb(var(--v-theme-primary));
-	stroke-width: 2;
-	stroke-dasharray: 20 80;
+	stroke-width: 6;
 	vector-effect: non-scaling-stroke;
-	animation: test-running-ring-travel 2s linear infinite;
+	filter: blur(6px);
+	animation: test-running-ring-breathe 3s ease-in-out infinite;
 }
 
-@keyframes test-running-ring-travel {
-	from { stroke-dashoffset: 0; }
-	to { stroke-dashoffset: -100; }
+@keyframes test-running-ring-breathe {
+	0%, 100% { opacity: 0.55; }
+	50% { opacity: 1; }
 }
 </style>
