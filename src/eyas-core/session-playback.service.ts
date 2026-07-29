@@ -43,14 +43,25 @@ function _waitForPaint(webContents: Electron.WebContents): Promise<void> {
 // center — makes replay robust to any scroll/layout drift between recording and playback.
 async function _resolveClickPoint(target: Electron.WebContents, step: ClickStep): Promise<ClickPoint | null> {
 	const selectors = [step.selectors.primary, ...step.selectors.fallbacks];
+	// some pages (e.g. GitHub's repo file browser) render duplicate elements matching the same
+	// selector for responsive breakpoints — one visible, one hidden. querySelector() would return
+	// whichever comes first in DOM order regardless of visibility, so a hidden match can resolve to
+	// a zero-size rect and click nothing. Walk all matches per selector and take the first one that's
+	// actually visible, falling through to the next selector in the fallback list otherwise.
 	const script = `(function(selectors){
+		function isVisible(el) {
+			if (el.offsetParent === null && getComputedStyle(el).position !== 'fixed') { return false; }
+			const rect = el.getBoundingClientRect();
+			return rect.width > 0 && rect.height > 0;
+		}
 		for (const sel of selectors) {
-			let el;
-			try { el = document.querySelector(sel); } catch { el = null; }
-			if (el) {
+			let els;
+			try { els = document.querySelectorAll(sel); } catch { els = []; }
+			for (const el of els) {
 				// pages may set CSS scroll-behavior: smooth — force an instant jump so the
 				// bounding rect read immediately after reflects the post-scroll position
 				el.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' });
+				if (!isVisible(el)) { continue; }
 				const rect = el.getBoundingClientRect();
 				return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
 			}

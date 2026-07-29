@@ -54,7 +54,7 @@ test.describe(`Session Recording — iframe capture`, () => {
 		await ensureEnvironmentSelected(uiPage);
 
 		// navigate the test layer to the recording fixture via the demo site's own header nav
-		const homePage = await getTestView(electronApp, /.+/);
+		const homePage = await getTestView(electronApp, /eyas\.cycosoft\.com\/?$/);
 		await homePage.locator(`.nav-links a`, { hasText: `Recording` }).click();
 
 		const testPage = await getTestView(electronApp, /demo\/recording/);
@@ -84,7 +84,7 @@ test.describe(`Session Recording — iframe capture`, () => {
 		const uiPage = await getUiView(electronApp);
 		await ensureEnvironmentSelected(uiPage);
 
-		const homePage = await getTestView(electronApp, /.+/);
+		const homePage = await getTestView(electronApp, /eyas\.cycosoft\.com\/?$/);
 		await homePage.locator(`.nav-links a`, { hasText: `Recording` }).click();
 
 		const testPage = await getTestView(electronApp, /demo\/recording/);
@@ -131,7 +131,7 @@ test.describe(`Session Recording — Replay`, () => {
 		const uiPage = await getUiView(electronApp);
 		await ensureEnvironmentSelected(uiPage);
 
-		const homePage = await getTestView(electronApp, /.+/);
+		const homePage = await getTestView(electronApp, /eyas\.cycosoft\.com\/?$/);
 		await homePage.locator(`.nav-links a`, { hasText: `Recording` }).click();
 
 		const testPage = await getTestView(electronApp, /demo\/recording/);
@@ -181,7 +181,7 @@ test.describe(`Session Recording — Replay`, () => {
 		const uiPage = await getUiView(electronApp);
 		await ensureEnvironmentSelected(uiPage);
 
-		const homePage = await getTestView(electronApp, /.+/);
+		const homePage = await getTestView(electronApp, /eyas\.cycosoft\.com\/?$/);
 		await homePage.locator(`.nav-links a`, { hasText: `Recording` }).click();
 
 		const testPage = await getTestView(electronApp, /demo\/recording/);
@@ -249,6 +249,109 @@ test.describe(`Session Recording — Replay`, () => {
 
 		// replay's recorded closeWindow step should close the popup automatically
 		await expect.poll(() => replayedPopupPage.isClosed(), { timeout: 10000 }).toBe(true);
+		await expect(uiPage.locator(`[data-qa="recording-playback-error"]`)).not.toBeVisible();
+	});
+
+	// reproduces a reported bug: clicking through several directory links on a real GitHub repo
+	// page (a client-side/SPA-style navigator that updates the URL without a full page reload)
+	// records fine, but replay only re-opens the popup at its *starting* URL and then closes it —
+	// none of the intermediate directory clicks are followed. Contrast with npmjs.com below, which
+	// is a traditional full-page-reload site and replays correctly.
+	test(`replays chained directory-link clicks on a real GitHub repo page inside a popup, following each navigation`, async () => {
+		test.setTimeout(60000);
+		const uiPage = await getUiView(electronApp);
+		await ensureEnvironmentSelected(uiPage);
+
+		const homePage = await getTestView(electronApp, /eyas\.cycosoft\.com\/?$/);
+		expect(homePage).toBeTruthy();
+
+		// the demo homepage's hero CTA links open real external sites in a new window
+		await homePage.locator(`a[href="https://github.com/cycosoft/Eyas"]`).first().click();
+
+		const githubPage = await getTestView(electronApp, /^https:\/\/github\.com\/cycosoft\/Eyas/);
+		expect(githubPage).toBeTruthy();
+		await githubPage.waitForLoadState(`domcontentloaded`);
+
+		// click into a directory, then a subdirectory, then a file — each of these is a client-side
+		// navigation on github.com that changes the URL without a full page reload
+		await githubPage.locator(`a[href="/cycosoft/Eyas/tree/main/demo"]:visible`).first().click();
+		await githubPage.waitForURL(/\/tree\/main\/demo$/);
+
+		await githubPage.locator(`a[href="/cycosoft/Eyas/tree/main/demo/assets"]:visible`).first().click();
+		await githubPage.waitForURL(/\/tree\/main\/demo\/assets$/);
+
+		const recordedFinalUrl = githubPage.url();
+
+		// recorder buffers steps and only flushes every FLUSH_INTERVAL_MS (2s) — must outlive that
+		// before closing, or the buffered directory-click steps are lost with the destroyed webContents
+		await githubPage.waitForTimeout(2500);
+		await githubPage.close();
+
+		await homePage.waitForTimeout(500);
+		await uiPage.locator(`[data-qa="btn-recording-stop"]`).click();
+		await expect(uiPage.locator(`[data-qa="btn-recording-replay"]`)).toBeVisible();
+
+		const seenWindows = [];
+		electronApp.on(`window`, page => seenWindows.push(page));
+
+		await uiPage.locator(`[data-qa="btn-recording-replay"]`).click();
+
+		await expect.poll(
+			() => seenWindows.some(p => { try { return p.url().includes(`github.com/cycosoft/Eyas`); } catch { return false; } }),
+			{ timeout: 15000 }
+		).toBe(true);
+		const replayedGithubPage = seenWindows.find(p => { try { return p.url().includes(`github.com/cycosoft/Eyas`); } catch { return false; } });
+		expect(replayedGithubPage).toBeTruthy();
+
+		// this is the assertion that captures the bug report: replay should follow the directory
+		// clicks through to the same final URL that was recorded, not just open at the start URL
+		// (or worse, get auto-closed by a stray closeWindow step before the clicks are dispatched)
+		await expect.poll(async () => {
+			try { return replayedGithubPage.url(); } catch { return null; }
+		}, { timeout: 15000 }).toBe(recordedFinalUrl);
+
+		await expect(uiPage.locator(`[data-qa="recording-playback-error"]`)).not.toBeVisible();
+	});
+
+	test(`replays a real npmjs.com navigation inside a popup as a full-page-reload control case`, async () => {
+		test.setTimeout(60000);
+		const uiPage = await getUiView(electronApp);
+		await ensureEnvironmentSelected(uiPage);
+
+		const homePage = await getTestView(electronApp, /eyas\.cycosoft\.com\/?$/);
+		expect(homePage).toBeTruthy();
+
+		await homePage.locator(`a[href="https://www.npmjs.com/package/@cycosoft/eyas"]`).first().click();
+
+		const npmPage = await getTestView(electronApp, /^https:\/\/www\.npmjs\.com\/package\/@cycosoft\/eyas/);
+		expect(npmPage).toBeTruthy();
+		await npmPage.waitForLoadState(`domcontentloaded`);
+
+		const recordedFinalUrl = npmPage.url();
+
+		await npmPage.waitForTimeout(500);
+		await npmPage.close();
+
+		await homePage.waitForTimeout(500);
+		await uiPage.locator(`[data-qa="btn-recording-stop"]`).click();
+		await expect(uiPage.locator(`[data-qa="btn-recording-replay"]`)).toBeVisible();
+
+		const seenWindows = [];
+		electronApp.on(`window`, page => seenWindows.push(page));
+
+		await uiPage.locator(`[data-qa="btn-recording-replay"]`).click();
+
+		await expect.poll(
+			() => seenWindows.some(p => { try { return p.url().includes(`npmjs.com/package/@cycosoft/eyas`); } catch { return false; } }),
+			{ timeout: 15000 }
+		).toBe(true);
+		const replayedNpmPage = seenWindows.find(p => { try { return p.url().includes(`npmjs.com/package/@cycosoft/eyas`); } catch { return false; } });
+		expect(replayedNpmPage).toBeTruthy();
+
+		await expect.poll(async () => {
+			try { return replayedNpmPage.url(); } catch { return null; }
+		}, { timeout: 15000 }).toBe(recordedFinalUrl);
+
 		await expect(uiPage.locator(`[data-qa="recording-playback-error"]`)).not.toBeVisible();
 	});
 });

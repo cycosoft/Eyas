@@ -1,9 +1,7 @@
 {
 	"editor.defaultFormatter": "dbaeumer.vscode-eslint",
 	"editor.formatOnSave": true,
-	"editor.codeActionsOnSave": {
-		"source.fixAll.eslint": "explicit"
-	},
+	"editor.codeActionsOnSave": { "source.fixAll.eslint": "explicit" },
 	"eslint.format.enable": true,
 	"eslint.validate": [
 		"javascript",
@@ -12,10 +10,6 @@
 		"json",
 		"jsonc"
 	],
-	"[json]": {
-		"editor.defaultFormatter": "dbaeumer.vscode-eslint"
-	},
-	"[jsonc]": {
-		"editor.defaultFormatter": "dbaeumer.vscode-eslint"
-	}
+	"[json]": { "editor.defaultFormatter": "dbaeumer.vscode-eslint" },
+	"[jsonc]": { "editor.defaultFormatter": "dbaeumer.vscode-eslint" }
 }
