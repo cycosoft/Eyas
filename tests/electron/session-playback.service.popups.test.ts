@@ -93,7 +93,8 @@ beforeEach(() => {
 	attach.mockClear();
 	detach.mockClear();
 	loadURL.mockClear();
-	executeJavaScript.mockClear().mockResolvedValue(undefined);
+	// default to a resolved click point so click steps don't burn a real 5s poll waiting for one
+	executeJavaScript.mockClear().mockResolvedValue({ x: 1, y: 1 });
 	isLoading.mockClear().mockReturnValue(false);
 	send.mockClear();
 	toggleEyasUI.mockClear();
@@ -104,7 +105,7 @@ beforeEach(() => {
 	popupLoadURL.mockClear();
 	popupWebContents.isLoading.mockReset().mockReturnValue(false);
 	popupWebContents.once.mockReset();
-	popupWebContents.executeJavaScript.mockReset().mockResolvedValue(undefined);
+	popupWebContents.executeJavaScript.mockReset().mockResolvedValue({ x: 1, y: 1 });
 	getPopupWebContents.mockReset().mockReturnValue(null);
 	closePopup.mockClear().mockResolvedValue(undefined);
 	setReplayPopupIdQueue.mockClear();
@@ -114,6 +115,7 @@ beforeEach(() => {
 describe(`sessionPlaybackService.playSession — popup routing`, () => {
 	test(`dispatches a step carrying a popupId against that exact popup's webContents/debugger instead of the test layer's`, async () => {
 		getPopupWebContents.mockReturnValue(popupWebContents);
+		popupWebContents.executeJavaScript.mockReset().mockResolvedValue({ x: 5, y: 6 });
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
 			{ type: `click`, selectors: { primary: `#in-popup`, fallbacks: [] }, offsetX: 5, offsetY: 6, popupId: `popup-1`, timestamp: 1 } as never
 		]));
@@ -130,6 +132,11 @@ describe(`sessionPlaybackService.playSession — popup routing`, () => {
 		const popupOneWebContents = { ...popupWebContents, debugger: { ...popupWebContents.debugger, sendCommand: vi.fn().mockResolvedValue(undefined) } };
 		const popupTwoWebContents = { ...popupWebContents, debugger: { ...popupWebContents.debugger, sendCommand: vi.fn().mockResolvedValue(undefined) } };
 		getPopupWebContents.mockImplementation((id: PopupId) => (id === `popup-1` ? popupOneWebContents : popupTwoWebContents));
+		// both popups share the base popupWebContents.executeJavaScript mock via spread — resolve
+		// each click's target point in dispatch order so the two popups don't get cross-talked
+		popupWebContents.executeJavaScript.mockReset()
+			.mockResolvedValueOnce({ x: 1, y: 1 })
+			.mockResolvedValueOnce({ x: 2, y: 2 });
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
 			{ type: `click`, selectors: { primary: `#a`, fallbacks: [] }, offsetX: 1, offsetY: 1, popupId: `popup-1`, timestamp: 1 } as never,
 			{ type: `click`, selectors: { primary: `#b`, fallbacks: [] }, offsetX: 2, offsetY: 2, popupId: `popup-2`, timestamp: 2 } as never

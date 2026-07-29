@@ -1,7 +1,7 @@
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { RecordingStep, ClickStep, ClickPoint, InputStep, KeyDownStep } from '@registry/recording.js';
 import type { RecorderPlaybackStatusPayload } from '@registry/ipc.js';
-import type { SessionId, DurationMS, DomainUrl, PopupId, StepCount } from '@registry/primitives.js';
+import type { SessionId, DurationMS, DomainUrl, PopupId, StepCount, SelectorString, JsSnippet } from '@registry/primitives.js';
 import type { ReplaySpeedMode } from '@registry/settings.js';
 import sessionRecorderService from './session-recorder.service.js';
 import { getPopupWebContents, closePopup, setReplayPopupIdQueue, clearReplayPopupIdQueue } from './window.popups.js';
@@ -36,43 +36,52 @@ function _waitForPaint(webContents: Electron.WebContents): Promise<void> {
 	return webContents.executeJavaScript(`new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))`);
 }
 
-// step.offsetX/offsetY are viewport-relative at record time — nothing guarantees the page is
-// scrolled to that same position at replay time (e.g. a `navigate` step reloads at scrollY 0),
-// so a raw coordinate replay can click whatever now happens to sit at that pixel. Resolving the
-// captured SelectorGroup instead — scrolling the real target into view and clicking its actual
-// center — makes replay robust to any scroll/layout drift between recording and playback.
-async function _resolveClickPoint(target: Electron.WebContents, step: ClickStep): Promise<ClickPoint | null> {
-	const selectors = [step.selectors.primary, ...step.selectors.fallbacks];
-	// some pages (e.g. GitHub's repo file browser) render duplicate elements matching the same
-	// selector for responsive breakpoints — one visible, one hidden. querySelector() would return
-	// whichever comes first in DOM order regardless of visibility, so a hidden match can resolve to
-	// a zero-size rect and click nothing. Walk all matches per selector and take the first one that's
-	// actually visible, falling through to the next selector in the fallback list otherwise.
-	const script = `(function(selectors){
+const CLICK_TARGET_POLL_TIMEOUT_MS = 5000 as DurationMS;
+const CLICK_TARGET_POLL_INTERVAL_MS = 100 as DurationMS;
+
+// step.offsetX/offsetY are viewport-relative at record time and can drift from replay-time layout,
+// so we resolve the recorded selector to its actual on-page position instead. Some pages (e.g.
+// GitHub's file browser) render duplicate matches for responsive breakpoints — walk all matches
+// and take the first one that's actually visible rather than trusting DOM order.
+function _querySelectorScript(selector: SelectorString): JsSnippet {
+	return `(function(sel){
 		function isVisible(el) {
 			if (el.offsetParent === null && getComputedStyle(el).position !== 'fixed') { return false; }
 			const rect = el.getBoundingClientRect();
 			return rect.width > 0 && rect.height > 0;
 		}
-		for (const sel of selectors) {
-			let els;
-			try { els = document.querySelectorAll(sel); } catch { els = []; }
-			for (const el of els) {
-				// pages may set CSS scroll-behavior: smooth — force an instant jump so the
-				// bounding rect read immediately after reflects the post-scroll position
-				el.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' });
-				if (!isVisible(el)) { continue; }
-				const rect = el.getBoundingClientRect();
-				return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-			}
+		let els;
+		try { els = document.querySelectorAll(sel); } catch { els = []; }
+		for (const el of els) {
+			// pages may set CSS scroll-behavior: smooth — force an instant jump so the
+			// bounding rect read immediately after reflects the post-scroll position
+			el.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' });
+			if (!isVisible(el)) { continue; }
+			const rect = el.getBoundingClientRect();
+			return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
 		}
 		return null;
-	})(${JSON.stringify(selectors)})`;
+	})(${JSON.stringify(selector)})`;
+}
 
-	try {
-		return await target.executeJavaScript(script);
-	} catch {
-		return null;
+// SPA-style navigations (e.g. GitHub's client-side directory browser) never trip
+// isLoading()/did-stop-loading, so poll the primary selector (the strongest identity signal —
+// data-testid/data-qa/aria-label/id) until it appears or the timeout is spent. The class-list/
+// positional fallbacks are deliberately NOT tried on a timeout: they're generic enough to
+// coincidentally match an unrelated element on a still-stale, not-yet-navigated page, turning a
+// real timeout into a confusing wrong click instead of a clear, surfaced failure.
+async function _resolveClickPoint(target: Electron.WebContents, step: ClickStep): Promise<ClickPoint | null> {
+	const primaryScript = _querySelectorScript(step.selectors.primary);
+	const deadline = Date.now() + CLICK_TARGET_POLL_TIMEOUT_MS;
+	for (;;) {
+		try {
+			const point = await target.executeJavaScript(primaryScript);
+			if (point) { return point; }
+		} catch {
+			return null;
+		}
+		if (Date.now() >= deadline) { return null; }
+		await _delay(CLICK_TARGET_POLL_INTERVAL_MS);
 	}
 }
 
@@ -149,12 +158,16 @@ async function _dispatchKeyDown(target: Electron.WebContents, step: KeyDownStep)
 	await target.debugger.sendCommand(`Input.dispatchKeyEvent`, { type: `keyDown`, key: step.key });
 }
 
+// no coordinate fallback: replaying raw recorded offsetX/offsetY against a page that hasn't
+// necessarily scrolled/laid out the same way as it did at record time is a silent-wrong-click risk
+// (see the SelectorGroup poll above) — if the target genuinely never resolves, fail the step loudly
+// rather than click whatever now happens to sit at that pixel
 async function _dispatchClick(target: Electron.WebContents, step: ClickStep): Promise<void> {
-	// prefer the captured selector (robust to scroll/layout drift); fall back to the raw
-	// recorded coordinates only if none of the selectors resolve to an element
 	const resolved = await _resolveClickPoint(target, step);
-	const x = resolved?.x ?? step.offsetX;
-	const y = resolved?.y ?? step.offsetY;
+	if (!resolved) {
+		throw new Error(`Could not locate click target "${step.selectors.primary}" on the page.`);
+	}
+	const { x, y } = resolved;
 	await target.debugger.sendCommand(`Input.dispatchMouseEvent`, { type: `mousePressed`, x, y, button: `left`, clickCount: 1 });
 	await target.debugger.sendCommand(`Input.dispatchMouseEvent`, { type: `mouseReleased`, x, y, button: `left`, clickCount: 1 });
 }

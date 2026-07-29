@@ -45,6 +45,7 @@ export type MenuLabel = string;
 export type AppTitle = string;
 export type ProjectId = string;
 export type SelectorString = string;
+export type JsSnippet = string;
 export type SettingKey = string;
 export type AppVersion = string;
 export type ByteCount = number;

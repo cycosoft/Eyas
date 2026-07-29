@@ -93,7 +93,9 @@ beforeEach(() => {
 	attach.mockClear();
 	detach.mockClear();
 	loadURL.mockClear();
-	executeJavaScript.mockClear().mockResolvedValue(undefined);
+	// default to a resolved click point so tests that dispatch a click step but aren't specifically
+	// testing selector-resolution behavior don't burn a real 5s poll waiting for one to appear
+	executeJavaScript.mockClear().mockResolvedValue({ x: 1, y: 1 });
 	isLoading.mockClear().mockReturnValue(false);
 	send.mockClear();
 	toggleEyasUI.mockClear();
@@ -104,7 +106,7 @@ beforeEach(() => {
 	popupLoadURL.mockClear();
 	popupWebContents.isLoading.mockReset().mockReturnValue(false);
 	popupWebContents.once.mockReset();
-	popupWebContents.executeJavaScript.mockReset().mockResolvedValue(undefined);
+	popupWebContents.executeJavaScript.mockReset().mockResolvedValue({ x: 1, y: 1 });
 	getPopupWebContents.mockReset().mockReturnValue(null);
 	closePopup.mockClear().mockResolvedValue(undefined);
 	setReplayPopupIdQueue.mockClear();
@@ -122,7 +124,8 @@ describe(`sessionPlaybackService.playSession`, () => {
 		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `playing`, completedSteps: 0, totalSteps: 0 });
 	});
 
-	test(`dispatches a ClickStep as Input.dispatchMouseEvent mousePressed then mouseReleased at the captured offset`, async () => {
+	test(`dispatches a ClickStep as Input.dispatchMouseEvent mousePressed then mouseReleased at the selector-resolved position`, async () => {
+		executeJavaScript.mockResolvedValueOnce({ x: 12, y: 34 });
 		const step: ClickStep = { type: `click`, selectors: { primary: `#save`, fallbacks: [] }, offsetX: 12, offsetY: 34, timestamp: 1 };
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([step]));
 		const ctx = makeCtx();
@@ -146,15 +149,25 @@ describe(`sessionPlaybackService.playSession`, () => {
 		expect(sendCommand).not.toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.objectContaining({ x: 12, y: 34 }));
 	});
 
-	test(`falls back to the raw recorded offset when none of the step's selectors resolve to an element`, async () => {
-		executeJavaScript.mockResolvedValueOnce(null);
+	test(`fails the step instead of guessing when none of the step's selectors resolve to an element, rather than clicking a possibly-wrong target`, async () => {
+		vi.useFakeTimers();
+		executeJavaScript.mockResolvedValue(null);
 		const step: ClickStep = { type: `click`, selectors: { primary: `#gone`, fallbacks: [] }, offsetX: 12, offsetY: 34, timestamp: 1 };
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([step]));
 		const ctx = makeCtx();
 
-		await playbackService.playSession(ctx, `sess-1`);
+		try {
+			const playPromise = playbackService.playSession(ctx, `sess-1`);
+			// the natural inter-step delay (500ms) runs before the click even starts polling, on top
+			// of the poll's own 5000ms budget — advance past both or the promise never settles
+			await vi.advanceTimersByTimeAsync(6000);
+			await playPromise;
 
-		expect(sendCommand).toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.objectContaining({ type: `mousePressed`, x: 12, y: 34 }));
+			expect(sendCommand).not.toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.anything());
+			expect(send).toHaveBeenCalledWith(`recorder-playback-status`, expect.objectContaining({ status: `failed` }));
+		} finally {
+			vi.useRealTimers();
+		}
 	});
 
 	test(`waits for the target to finish loading before dispatching a click against it, e.g. a popup still loading its first page`, async () => {
@@ -173,6 +186,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 		expect(popupSendCommand).not.toHaveBeenCalled();
 
 		popupWebContents.isLoading.mockReturnValue(false);
+		popupWebContents.executeJavaScript.mockResolvedValue({ x: 1, y: 1 });
 		stopLoadingCb?.();
 		await playPromise;
 
@@ -298,7 +312,10 @@ describe(`sessionPlaybackService.playSession`, () => {
 	test(`waits for two real paint frames after navigating to startUrl before dispatching the first step, so the page is actually interactive before receiving input`, async () => {
 		getURL.mockReturnValue(`https://example.com/other-view`);
 		let resolvePaint: () => void = () => {};
-		executeJavaScript.mockReturnValue(new Promise<void>(resolve => { resolvePaint = resolve; }));
+		// only the paint-wait call (the first) should be held pending — the click-resolution poll
+		// that follows it needs its own resolved point so it doesn't fall through to a real 5s wait
+		executeJavaScript.mockImplementationOnce(() => new Promise<void>(resolve => { resolvePaint = resolve; }));
+		executeJavaScript.mockResolvedValue({ x: 1, y: 1 });
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
 			{ type: `click`, selectors: { primary: `#open-window`, fallbacks: [] }, offsetX: 1, offsetY: 1, timestamp: 1 }
 		], `https://example.com/`));
