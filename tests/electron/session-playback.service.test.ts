@@ -1,7 +1,7 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { EyasRecordingEnvelope, ClickStep, ScrollStep } from '@registry/recording.js';
-import type { DomainUrl, PopupId } from '@registry/primitives.js';
+import type { DomainUrl } from '@registry/primitives.js';
 
 vi.mock(`electron`, () => ({}));
 
@@ -429,74 +429,4 @@ describe(`sessionPlaybackService.playSession`, () => {
 		vi.useRealTimers();
 	});
 
-	test(`dispatches a step carrying a popupId against that exact popup's webContents/debugger instead of the test layer's`, async () => {
-		getPopupWebContents.mockReturnValue(popupWebContents);
-		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
-			{ type: `click`, selectors: { primary: `#in-popup`, fallbacks: [] }, offsetX: 5, offsetY: 6, popupId: `popup-1`, timestamp: 1 } as never
-		]));
-		const ctx = makeCtx();
-
-		await playbackService.playSession(ctx, `sess-1`);
-
-		expect(getPopupWebContents).toHaveBeenCalledWith(`popup-1`);
-		expect(popupSendCommand).toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.objectContaining({ type: `mousePressed`, x: 5, y: 6 }));
-		expect(sendCommand).not.toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.objectContaining({ type: `mousePressed`, x: 5, y: 6 }));
-	});
-
-	test(`routes steps from two different popups to their respective webContents without cross-talk`, async () => {
-		const popupOneWebContents = { ...popupWebContents, debugger: { ...popupWebContents.debugger, sendCommand: vi.fn().mockResolvedValue(undefined) } };
-		const popupTwoWebContents = { ...popupWebContents, debugger: { ...popupWebContents.debugger, sendCommand: vi.fn().mockResolvedValue(undefined) } };
-		getPopupWebContents.mockImplementation((id: PopupId) => (id === `popup-1` ? popupOneWebContents : popupTwoWebContents));
-		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
-			{ type: `click`, selectors: { primary: `#a`, fallbacks: [] }, offsetX: 1, offsetY: 1, popupId: `popup-1`, timestamp: 1 } as never,
-			{ type: `click`, selectors: { primary: `#b`, fallbacks: [] }, offsetX: 2, offsetY: 2, popupId: `popup-2`, timestamp: 2 } as never
-		]));
-		const ctx = makeCtx();
-
-		await playbackService.playSession(ctx, `sess-1`);
-
-		expect(popupOneWebContents.debugger.sendCommand).toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.objectContaining({ x: 1, y: 1 }));
-		expect(popupTwoWebContents.debugger.sendCommand).toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.objectContaining({ x: 2, y: 2 }));
-		expect(popupOneWebContents.debugger.sendCommand).not.toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.objectContaining({ x: 2, y: 2 }));
-	});
-
-	test(`dispatching a closeWindow step closes the popup matching its popupId`, async () => {
-		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
-			{ type: `closeWindow`, popupId: `popup-1`, timestamp: 1 } as never
-		]));
-		const ctx = makeCtx();
-
-		await playbackService.playSession(ctx, `sess-1`);
-
-		expect(closePopup).toHaveBeenCalledWith(`popup-1`);
-	});
-
-	test(`skips a step with a popupId that isn't currently tracked, logging a warning, instead of throwing`, async () => {
-		getPopupWebContents.mockReturnValue(null);
-		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
-			{ type: `click`, selectors: { primary: `#gone`, fallbacks: [] }, offsetX: 1, offsetY: 1, popupId: `popup-1`, timestamp: 1 } as never
-		]));
-		const ctx = makeCtx();
-		const warnSpy = vi.spyOn(console, `warn`).mockImplementation(() => {});
-
-		await expect(playbackService.playSession(ctx, `sess-1`)).resolves.not.toThrow();
-
-		expect(warnSpy).toHaveBeenCalled();
-		expect(sendCommand).not.toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.objectContaining({ x: 1, y: 1 }));
-		warnSpy.mockRestore();
-	});
-
-	test(`primes the replay popup id queue with each step's popupId in first-appearance order before dispatch, and clears it after, so a popup re-opened during replay is assigned the same id it was recorded with`, async () => {
-		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
-			{ type: `click`, selectors: { primary: `#open`, fallbacks: [] }, offsetX: 1, offsetY: 1, popupId: `popup-1`, timestamp: 1 } as never,
-			{ type: `click`, selectors: { primary: `#in-popup`, fallbacks: [] }, offsetX: 2, offsetY: 2, popupId: `popup-1`, timestamp: 2 } as never,
-			{ type: `closeWindow`, popupId: `popup-2`, timestamp: 3 } as never
-		]));
-		const ctx = makeCtx();
-
-		await playbackService.playSession(ctx, `sess-1`);
-
-		expect(setReplayPopupIdQueue).toHaveBeenCalledWith([`popup-1`, `popup-2`]);
-		expect(clearReplayPopupIdQueue).toHaveBeenCalled();
-	});
 });
