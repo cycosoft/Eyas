@@ -102,6 +102,9 @@ function _onClick(event: MouseEvent): void {
 		frame: _computeFramePath(),
 		timestamp: Date.now()
 	});
+	// flush immediately rather than waiting for the interval — a click can trigger a same-tick
+	// navigation that tears down this context (and the buffer) before the next timer fires
+	_flush();
 }
 
 function _onChange(event: Event): void {
@@ -117,6 +120,9 @@ function _onChange(event: Event): void {
 		frame: _computeFramePath(),
 		timestamp: Date.now()
 	});
+	// flush immediately for the same reason as _onClick — a change (e.g. a <select> whose
+	// onchange redirects) can also trigger a same-tick navigation
+	_flush();
 }
 
 function _captureSelection(target: Element): CursorSelection {
@@ -160,5 +166,8 @@ document.addEventListener(`change`, _onChange, { capture: true });
 document.addEventListener(`keydown`, _onKeyDown, { capture: true });
 document.addEventListener(`keyup`, _onKeyUp, { capture: true });
 document.addEventListener(`scroll`, _onScroll, { capture: true });
+// last-resort flush for anything still buffered (e.g. a pending throttled scroll) right
+// before the document is torn down by navigation or tab close
+window.addEventListener(`beforeunload`, _flush, { capture: true });
 
 setInterval(_flush, FLUSH_INTERVAL_MS);

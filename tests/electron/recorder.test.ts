@@ -181,6 +181,67 @@ describe(`selector priority order`, () => {
 	});
 });
 
+// ─── flush timing ─────────────────────────────────────────────────────────────
+// A click (or change) that triggers an immediate navigation tears down the renderer's JS
+// context — including the buffered-but-unflushed step and the pending interval — before the
+// 2s timer ever fires, silently dropping the step. These tests guard against that regressing.
+
+describe(`flush timing`, () => {
+	test(`flushes a click step immediately, without waiting for the 2s interval or the 50-step threshold`, () => {
+		const btn = document.createElement(`button`);
+		document.body.appendChild(btn);
+
+		btn.dispatchEvent(new MouseEvent(`click`, { bubbles: true }));
+
+		expect(flush()).toHaveLength(1);
+	});
+
+	test(`flushes a change step immediately for the same reason`, () => {
+		const input = document.createElement(`input`);
+		document.body.appendChild(input);
+
+		input.dispatchEvent(new Event(`change`, { bubbles: true }));
+
+		expect(flush()).toHaveLength(1);
+	});
+
+	test(`still batches keyDown/keyUp/scroll on the interval/count path, not immediately`, () => {
+		const input = document.createElement(`input`);
+		document.body.appendChild(input);
+
+		input.dispatchEvent(new KeyboardEvent(`keydown`, { key: `a`, bubbles: true }));
+
+		expect(flush()).toHaveLength(0);
+
+		vi.advanceTimersByTime(2000);
+		expect(flush()).toHaveLength(1);
+	});
+
+	test(`flushes any buffered (not-yet-interval-flushed) steps when beforeunload fires`, () => {
+		const input = document.createElement(`input`);
+		document.body.appendChild(input);
+
+		input.dispatchEvent(new KeyboardEvent(`keydown`, { key: `a`, bubbles: true }));
+		expect(flush()).toHaveLength(0);
+
+		window.dispatchEvent(new Event(`beforeunload`));
+
+		expect(flush()).toHaveLength(1);
+	});
+
+	test(`reproduces the original bug scenario: a click immediately followed by beforeunload does not lose the click step`, () => {
+		const link = document.createElement(`a`);
+		document.body.appendChild(link);
+
+		link.dispatchEvent(new MouseEvent(`click`, { bubbles: true }));
+		window.dispatchEvent(new Event(`beforeunload`));
+
+		const steps = flush();
+		expect(steps).toHaveLength(1);
+		expect(steps[0].type).toBe(`click`);
+	});
+});
+
 // ─── keydown cursor capture ───────────────────────────────────────────────────
 
 describe(`keydown cursor position capture`, () => {
