@@ -1,10 +1,11 @@
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { RecordingStep, ClickStep, ClickPoint, InputStep, KeyDownStep } from '@registry/recording.js';
 import type { RecorderPlaybackStatusPayload } from '@registry/ipc.js';
-import type { SessionId, DurationMS, DomainUrl, PopupId, StepCount, SelectorString, JsSnippet } from '@registry/primitives.js';
+import type { SessionId, DurationMS, DomainUrl, PopupId, StepCount } from '@registry/primitives.js';
 import type { ReplaySpeedMode } from '@registry/settings.js';
 import sessionRecorderService from './session-recorder.service.js';
 import { getPopupWebContents, closePopup, setReplayPopupIdQueue, clearReplayPopupIdQueue } from './window.popups.js';
+import { buildClickPointScript } from './session-playback.selector-resolution.js';
 
 const CDP_DEBUGGER_VERSION = `1.3`;
 
@@ -39,31 +40,6 @@ function _waitForPaint(webContents: Electron.WebContents): Promise<void> {
 const CLICK_TARGET_POLL_TIMEOUT_MS = 5000 as DurationMS;
 const CLICK_TARGET_POLL_INTERVAL_MS = 100 as DurationMS;
 
-// step.offsetX/offsetY are viewport-relative at record time and can drift from replay-time layout,
-// so we resolve the recorded selector to its actual on-page position instead. Some pages (e.g.
-// GitHub's file browser) render duplicate matches for responsive breakpoints — walk all matches
-// and take the first one that's actually visible rather than trusting DOM order.
-function _querySelectorScript(selector: SelectorString): JsSnippet {
-	return `(function(sel){
-		function isVisible(el) {
-			if (el.offsetParent === null && getComputedStyle(el).position !== 'fixed') { return false; }
-			const rect = el.getBoundingClientRect();
-			return rect.width > 0 && rect.height > 0;
-		}
-		let els;
-		try { els = document.querySelectorAll(sel); } catch { els = []; }
-		for (const el of els) {
-			// pages may set CSS scroll-behavior: smooth — force an instant jump so the
-			// bounding rect read immediately after reflects the post-scroll position
-			el.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' });
-			if (!isVisible(el)) { continue; }
-			const rect = el.getBoundingClientRect();
-			return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-		}
-		return null;
-	})(${JSON.stringify(selector)})`;
-}
-
 // SPA-style navigations (e.g. GitHub's client-side directory browser) never trip
 // isLoading()/did-stop-loading, so poll the primary selector (the strongest identity signal —
 // data-testid/data-qa/aria-label/id) until it appears or the timeout is spent. The class-list/
@@ -71,7 +47,7 @@ function _querySelectorScript(selector: SelectorString): JsSnippet {
 // coincidentally match an unrelated element on a still-stale, not-yet-navigated page, turning a
 // real timeout into a confusing wrong click instead of a clear, surfaced failure.
 async function _resolveClickPoint(target: Electron.WebContents, step: ClickStep): Promise<ClickPoint | null> {
-	const primaryScript = _querySelectorScript(step.selectors.primary);
+	const primaryScript = buildClickPointScript(step.selectors.primary);
 	const deadline = Date.now() + CLICK_TARGET_POLL_TIMEOUT_MS;
 	for (;;) {
 		try {

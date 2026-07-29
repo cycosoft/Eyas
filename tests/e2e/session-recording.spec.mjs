@@ -354,4 +354,72 @@ test.describe(`Session Recording — Replay`, () => {
 
 		await expect(uiPage.locator(`[data-qa="recording-playback-error"]`)).not.toBeVisible();
 	});
+
+	// reproduces a reported bug: on npmjs.com's package README, clicking the "Eyas Desktop"
+	// link (a same-tab, full-page-reload navigation to github.com) records fine, but replay
+	// re-dispatches the click against the wrong element because the recorded selector is a
+	// last-resort positional fallback (`#readme > :nth-child(N) > a`) computed against the
+	// README's DOM structure at record time. That structure isn't guaranteed stable between
+	// the recording load and the replay's fresh load of the same live, dynamic npm page — so
+	// the click can land on a different link (or nothing) and replay silently fails to follow
+	// the navigation to GitHub, with no thrown error (a click event still fires on *something*).
+	test(`replays a click on npmjs.com's README link that navigates the popup to GitHub`, async () => {
+		test.setTimeout(60000);
+		const uiPage = await getUiView(electronApp);
+		await ensureEnvironmentSelected(uiPage);
+
+		const homePage = await getTestView(electronApp, /eyas\.cycosoft\.com\/?$/);
+		expect(homePage).toBeTruthy();
+
+		await homePage.locator(`a[href="https://www.npmjs.com/package/@cycosoft/eyas"]`).first().click();
+
+		const npmPage = await getTestView(electronApp, /^https:\/\/www\.npmjs\.com\/package\/@cycosoft\/eyas/);
+		expect(npmPage).toBeTruthy();
+		await npmPage.waitForLoadState(`domcontentloaded`);
+
+		const readmeLink = npmPage.locator(`#readme a`, { hasText: `Eyas Desktop` }).first();
+		await readmeLink.scrollIntoViewIfNeeded();
+		await readmeLink.click();
+
+		// this is a same-tab full-page navigation away from npmjs.com, to github.com
+		await npmPage.waitForURL(/^https:\/\/github\.com/, { timeout: 15000 });
+		const recordedFinalUrl = npmPage.url();
+
+		// outlive the recorder's flush window before closing, though the click/change immediate-flush
+		// fix means this click step should already be flushed by the time the navigation completed
+		await npmPage.waitForTimeout(500);
+		await npmPage.close();
+
+		await homePage.waitForTimeout(500);
+		await uiPage.locator(`[data-qa="btn-recording-stop"]`).click();
+		await expect(uiPage.locator(`[data-qa="btn-recording-replay"]`)).toBeVisible();
+
+		const session = await readLatestSession(electronApp);
+		expect(session.status).toBe(`stopped`);
+
+		// the click on the README link must have been captured at all — guards against the
+		// separate (already-fixed) flush-timing bug regressing
+		const readmeClickStep = session.recording.steps.find(s => s.type === `click` && s.popupId);
+		expect(readmeClickStep).toBeTruthy();
+
+		const seenWindows = [];
+		electronApp.on(`window`, page => seenWindows.push(page));
+
+		await uiPage.locator(`[data-qa="btn-recording-replay"]`).click();
+
+		await expect.poll(
+			() => seenWindows.some(p => { try { return p.url().includes(`npmjs.com/package/@cycosoft/eyas`); } catch { return false; } }),
+			{ timeout: 15000 }
+		).toBe(true);
+		const replayedNpmPage = seenWindows.find(p => { try { return p.url().includes(`npmjs.com/package/@cycosoft/eyas`); } catch { return false; } });
+		expect(replayedNpmPage).toBeTruthy();
+
+		// this is the assertion that captures the bug report: replay should follow the README
+		// link click through to GitHub, not silently fail to navigate at all
+		await expect.poll(async () => {
+			try { return replayedNpmPage.url(); } catch { return null; }
+		}, { timeout: 15000 }).toBe(recordedFinalUrl);
+
+		await expect(uiPage.locator(`[data-qa="recording-playback-error"]`)).not.toBeVisible();
+	});
 });
