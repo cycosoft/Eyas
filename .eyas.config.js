@@ -18,7 +18,6 @@ export default {
 	links: [
 		{ label: `Eyas Home`, url: `/` },
 		{ label: `Environments Demo`, url: `/demo/environments` },
-		{ label: `Recording Demo`, url: `{_env.url}/demo/recording` },
 		{ label: `Single Int Demo`, url: `{_env.url}/demo/links?id={int}` },
 		{ label: `Dynamic Vars Demo`, url: `{_env.url}/demo/links?id={int}&msg={str}&go={bool}&theme={dark|light|}` },
 		{ label: `Demo 404 Page`, url: `https://{_env.key}auth.eyas.cycosoft.com` },

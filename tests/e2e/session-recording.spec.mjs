@@ -53,9 +53,9 @@ test.describe(`Session Recording — iframe capture`, () => {
 		const uiPage = await getUiView(electronApp);
 		await ensureEnvironmentSelected(uiPage);
 
-		// navigate the test layer to the recording fixture via the Links menu
-		await uiPage.locator(`[data-qa="btn-nav-group-links"]`).click();
-		await uiPage.locator(`[data-qa="btn-nav-item"]`, { hasText: `Recording Demo` }).click();
+		// navigate the test layer to the recording fixture via the demo site's own header nav
+		const homePage = await getTestView(electronApp, /.+/);
+		await homePage.locator(`.nav-links a`, { hasText: `Recording` }).click();
 
 		const testPage = await getTestView(electronApp, /demo\/recording/);
 		expect(testPage).toBeTruthy();
@@ -84,8 +84,8 @@ test.describe(`Session Recording — iframe capture`, () => {
 		const uiPage = await getUiView(electronApp);
 		await ensureEnvironmentSelected(uiPage);
 
-		await uiPage.locator(`[data-qa="btn-nav-group-links"]`).click();
-		await uiPage.locator(`[data-qa="btn-nav-item"]`, { hasText: `Recording Demo` }).click();
+		const homePage = await getTestView(electronApp, /.+/);
+		await homePage.locator(`.nav-links a`, { hasText: `Recording` }).click();
 
 		const testPage = await getTestView(electronApp, /demo\/recording/);
 		expect(testPage).toBeTruthy();
@@ -131,8 +131,8 @@ test.describe(`Session Recording — Replay`, () => {
 		const uiPage = await getUiView(electronApp);
 		await ensureEnvironmentSelected(uiPage);
 
-		await uiPage.locator(`[data-qa="btn-nav-group-links"]`).click();
-		await uiPage.locator(`[data-qa="btn-nav-item"]`, { hasText: `Recording Demo` }).click();
+		const homePage = await getTestView(electronApp, /.+/);
+		await homePage.locator(`.nav-links a`, { hasText: `Recording` }).click();
 
 		const testPage = await getTestView(electronApp, /demo\/recording/);
 		expect(testPage).toBeTruthy();
@@ -181,8 +181,8 @@ test.describe(`Session Recording — Replay`, () => {
 		const uiPage = await getUiView(electronApp);
 		await ensureEnvironmentSelected(uiPage);
 
-		await uiPage.locator(`[data-qa="btn-nav-group-links"]`).click();
-		await uiPage.locator(`[data-qa="btn-nav-item"]`, { hasText: `Recording Demo` }).click();
+		const homePage = await getTestView(electronApp, /.+/);
+		await homePage.locator(`.nav-links a`, { hasText: `Recording` }).click();
 
 		const testPage = await getTestView(electronApp, /demo\/recording/);
 		expect(testPage).toBeTruthy();
