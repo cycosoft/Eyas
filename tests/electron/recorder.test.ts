@@ -132,6 +132,53 @@ describe(`selector priority order`, () => {
 		const fallbacks = (steps[0] as ClickStep).selectors.fallbacks;
 		expect(fallbacks).toContain(`.btn.btn-primary`);
 	});
+
+	test.each([
+		[`a UUID`, `3fa85f64-5717-4562-b3fc-2c963f66afa6`],
+		[`a long hex hash`, `a1b2c3d4e5f6a7b8`],
+		[`a useId/Radix-style id`, `r1a`],
+		[`an enumerated list-position id`, `tab-2`]
+	])(`does not use an id containing a digit (%s) as primary or fallback, since it looks auto-generated`, (_label, id) => {
+		const el = document.createElement(`button`);
+		el.id = id;
+		document.body.appendChild(el);
+
+		el.dispatchEvent(new MouseEvent(`click`, { bubbles: true }));
+		vi.advanceTimersByTime(2000);
+
+		const steps = flush();
+		const { primary, fallbacks } = (steps[0] as ClickStep).selectors;
+		expect(primary).not.toBe(`#${id}`);
+		expect(fallbacks).not.toContain(`#${id}`);
+	});
+
+	test(`still uses a letters/hyphens/underscores-only id as primary, since it has no digits and looks human-authored`, () => {
+		const el = document.createElement(`button`);
+		el.id = `login-form_submit`;
+		document.body.appendChild(el);
+
+		el.dispatchEvent(new MouseEvent(`click`, { bubbles: true }));
+		vi.advanceTimersByTime(2000);
+
+		const steps = flush();
+		expect((steps[0] as ClickStep).selectors.primary).toBe(`#login-form_submit`);
+	});
+
+	test(`excludes a digit-bearing ancestor id from the positional selector used as primary`, () => {
+		const ancestor = document.createElement(`div`);
+		ancestor.id = `row-42`;
+		const el = document.createElement(`button`);
+		ancestor.appendChild(el);
+		document.body.appendChild(ancestor);
+
+		el.dispatchEvent(new MouseEvent(`click`, { bubbles: true }));
+		vi.advanceTimersByTime(2000);
+
+		const steps = flush();
+		const { primary, fallbacks } = (steps[0] as ClickStep).selectors;
+		expect(primary).not.toContain(`#row-42`);
+		for (const fallback of fallbacks) { expect(fallback).not.toContain(`#row-42`); }
+	});
 });
 
 // ─── keydown cursor capture ───────────────────────────────────────────────────

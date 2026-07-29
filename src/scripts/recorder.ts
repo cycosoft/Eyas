@@ -1,7 +1,7 @@
 import { ipcRenderer } from 'electron';
 import getUniqueSelector from '@cypress/unique-selector/lib/index.js';
 import type { RecordingStep, SelectorGroup, CursorSelection } from '@registry/recording.js';
-import type { FramePath, ScreenCoordinate, ElementClassList, SelectorString, DomElement, EventSourceNode, IsExcluded, IsPasswordInput } from '@registry/primitives.js';
+import type { FramePath, ScreenCoordinate, ElementClassList, SelectorString, DomElement, EventSourceNode, IsExcluded, IsPasswordInput, IsStableId, DomIdAttribute, SelectorTraitType, SelectorAttributeKey } from '@registry/primitives.js';
 
 const FLUSH_INTERVAL_MS = 2000;
 const FLUSH_AT_STEP_COUNT = 50;
@@ -43,24 +43,35 @@ function _computeFramePath(): FramePath | undefined {
 	return path;
 }
 
+const STABLE_ID_PATTERN = /^[a-zA-Z_-]+$/;
+
+function _isStableId(id: DomIdAttribute): IsStableId {
+	return STABLE_ID_PATTERN.test(id);
+}
+
+function _getPositionalSelector(target: Element): SelectorString | null {
+	return getUniqueSelector(target, { filter: (type: SelectorTraitType, key: SelectorAttributeKey, value: DomIdAttribute) => type !== `attribute` || key !== `id` || _isStableId(value) }) as SelectorString | null;
+}
+
 function _computeSelectorGroup(target: Element): SelectorGroup {
 	const dataTestId = target.getAttribute(`data-testid`);
 	const dataQa = target.getAttribute(`data-qa`);
 	const ariaLabel = target.getAttribute(`aria-label`);
 	const id = target.id;
+	const usableId = id && _isStableId(id) ? id : null;
 
 	let primary: SelectorString;
 	if (dataTestId) { primary = `[data-testid="${dataTestId}"]`; }
 	else if (dataQa) { primary = `[data-qa="${dataQa}"]`; }
 	else if (ariaLabel) { primary = `[aria-label="${ariaLabel}"]`; }
-	else if (id) { primary = `#${id}`; }
-	else { primary = (getUniqueSelector(target) || target.tagName.toLowerCase()) as SelectorString; }
+	else if (usableId) { primary = `#${usableId}`; }
+	else { primary = (_getPositionalSelector(target) || target.tagName.toLowerCase()) as SelectorString; }
 
 	const fallbacks: ElementClassList = [];
 	if (ariaLabel && primary !== `[aria-label="${ariaLabel}"]`) { fallbacks.push(`[aria-label="${ariaLabel}"]`); }
-	if (id && primary !== `#${id}`) { fallbacks.push(`#${id}`); }
+	if (usableId && primary !== `#${usableId}`) { fallbacks.push(`#${usableId}`); }
 	if (target.classList.length > 0) { fallbacks.push(`.${Array.from(target.classList).join(`.`)}`); }
-	const uniqueSelector = getUniqueSelector(target);
+	const uniqueSelector = _getPositionalSelector(target);
 	if (uniqueSelector) { fallbacks.push(uniqueSelector); }
 
 	return { primary, fallbacks };
