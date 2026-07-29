@@ -109,7 +109,7 @@
 		"eslint-plugin-import": "^2.32.0",
 		"eslint-plugin-jsonc": "^3.3.0",
 		"eslint-plugin-vue": "^10.10.0",
-		"globals": "^17.7.0",
+		"globals": "^17.8.0",
 		"happy-dom": "^20.11.1",
 		"knip": "^6.29.0",
 		"npm-check-updates": "^22.2.9",
