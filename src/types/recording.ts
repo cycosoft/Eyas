@@ -1,4 +1,4 @@
-import type { ProjectId, TimestampMS, ViewportWidth, ViewportHeight, ScreenCoordinate, FramePath, DomainUrl, PopupId } from './primitives.js';
+import type { ProjectId, TimestampMS, ViewportWidth, ViewportHeight, ScreenCoordinate, FramePath, DomainUrl, PopupId, CursorOffset } from './primitives.js';
 
 /** Viewport dimensions for the recording session */
 type Viewport = {
@@ -22,6 +22,20 @@ export type ClickPoint = {
 	x: number;
 	y: number;
 }
+
+type ValueBearingElementShape = {
+	value?: string;
+}
+
+/** A DOM element narrowed to just the value-bearing shape our replay scripts read/write (inputs, textareas, selects — checked via `typeof .value === 'string'` at runtime, not `instanceof`, since these run browser-side against an unknown page). */
+export type ValueBearingElement = Element & ValueBearingElementShape;
+
+type SelectableValueElementShape = {
+	setSelectionRange?: (start: CursorOffset, end: CursorOffset) => void;
+}
+
+/** A {@link ValueBearingElement} that also supports cursor-based text selection, for per-keystroke replay. */
+export type SelectableValueElement = ValueBearingElement & SelectableValueElementShape;
 
 /** Cursor position within a text field at the moment a keydown was captured. */
 export type CursorSelection = {

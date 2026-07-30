@@ -5,7 +5,7 @@ import type { SessionId, DurationMS, DomainUrl, PopupId, StepCount } from '@regi
 import type { ReplaySpeedMode } from '@registry/settings.js';
 import sessionRecorderService from './session-recorder.service.js';
 import { getPopupWebContents, closePopup, closeAllPopups, setReplayPopupIdQueue, clearReplayPopupIdQueue } from './window.popups.js';
-import { buildClickPointScript, buildChangeScript } from './session-playback.selector-resolution.js';
+import { buildClickPointScript, buildChangeScript, buildKeyDownMutationScript } from './session-playback.selector-resolution.js';
 
 const CDP_DEBUGGER_VERSION = `1.3`;
 
@@ -86,30 +86,12 @@ async function _dispatchChange(target: Electron.WebContents, step: InputStep): P
 // than dispatching an inert CDP key event — gives replay real per-keystroke fidelity (masking,
 // autocomplete, live validation) instead of only snapping to the final value on the `change` step
 async function _dispatchKeyDown(target: Electron.WebContents, step: KeyDownStep): Promise<void> {
+	const { selectionStart, selectionEnd } = step;
 	const mutatesText = (step.key.length === 1 || step.key === `Backspace` || step.key === `Delete`)
-		&& step.selectionStart !== undefined && step.selectionEnd !== undefined;
+		&& selectionStart !== undefined && selectionEnd !== undefined;
 
 	if (mutatesText) {
-		const script = `(function(key, start, end){
-			const el = document.activeElement;
-			if (!el || typeof el.value !== 'string') { return; }
-			const value = el.value;
-			let newValue, newPos;
-			if (key === 'Backspace') {
-				newValue = start === end ? value.slice(0, Math.max(0, start - 1)) + value.slice(end) : value.slice(0, start) + value.slice(end);
-				newPos = start === end ? Math.max(0, start - 1) : start;
-			} else if (key === 'Delete') {
-				newValue = start === end ? value.slice(0, start) + value.slice(end + 1) : value.slice(0, start) + value.slice(end);
-				newPos = start;
-			} else {
-				newValue = value.slice(0, start) + key + value.slice(end);
-				newPos = start + key.length;
-			}
-			el.value = newValue;
-			try { el.setSelectionRange(newPos, newPos); } catch {}
-			el.dispatchEvent(new Event('input', { bubbles: true }));
-		})(${JSON.stringify(step.key)}, ${step.selectionStart}, ${step.selectionEnd})`;
-		await target.executeJavaScript(script);
+		await target.executeJavaScript(buildKeyDownMutationScript(step.key, selectionStart, selectionEnd));
 		return;
 	}
 

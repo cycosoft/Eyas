@@ -141,3 +141,6 @@ export type EnvironmentKey = string;
 
 // Zoom
 export type ZoomFactor = number;
+
+// Text editing
+export type CursorOffset = number;
