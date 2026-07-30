@@ -10,6 +10,7 @@
 - the last step in playback animation on recording button should go to 100% before disappearing
 - the test layer animation needs to be z-index _under_ the header items like tooltips and menus
 - we do not appear to be cleaning up old recording sessions
+- we should add a "demo mode" speed test replay speed
 - are we still keeping 300ms delay on github replays
 - disable header controls during test run
 -- Eyas > About
@@ -32,3 +33,4 @@
 
 - need a tooltip for the "online/offline" header button
 - swap cache > clear and open list item positions
+- surface a warning when replay's click-point hit-test falls back to the unverified bounding-box center (i.e. no line rect's center hit-tested back to the target element) — no UI currently exists to show per-step replay warnings, so this needs design first
