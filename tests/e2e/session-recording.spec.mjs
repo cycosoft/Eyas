@@ -73,7 +73,7 @@ test.describe(`Session Recording — iframe capture`, () => {
 		expect(session.status).toBe(`stopped`);
 
 		const frameClickStep = session.recording.steps.find(
-			s => s.type === `click` && s.selectors?.primary === `[data-testid="frame-click"]`
+			s => s.type === `click` && s.selectors?.[0] === `aria/Frame button`
 		);
 		expect(frameClickStep).toBeTruthy();
 		expect(Array.isArray(frameClickStep.frame)).toBe(true);
@@ -108,7 +108,7 @@ test.describe(`Session Recording — iframe capture`, () => {
 		expect(session.status).toBe(`stopped`);
 
 		const topClickStep = session.recording.steps.find(
-			s => s.type === `click` && s.selectors?.primary === `[data-testid="top-click"]`
+			s => s.type === `click` && s.selectors?.[0] === `aria/Top-level button`
 		);
 		expect(topClickStep).toBeTruthy();
 		expect(consoleErrors).toEqual([]);
@@ -214,7 +214,7 @@ test.describe(`Session Recording — Replay`, () => {
 		expect(session.status).toBe(`stopped`);
 
 		const popupClickStep = session.recording.steps.find(
-			s => s.type === `click` && s.selectors?.primary === `[data-testid="popup-click-bottom"]`
+			s => s.type === `click` && s.selectors?.[0] === `aria/Bottom popup button`
 		);
 		expect(popupClickStep).toBeTruthy();
 		expect(popupClickStep.popupId).toBeTruthy();

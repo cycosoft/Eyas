@@ -12,7 +12,7 @@ vi.mock(`@core/session-recorder.service.js`, () => ({
 	default: { appendCloseWindowStep }
 }));
 
-import { registerPopupTracking, getPopupWebContents, getPopupIdForWebContents, closePopup, setReplayPopupIdQueue, clearReplayPopupIdQueue } from '@core/window.popups.js';
+import { registerPopupTracking, getPopupWebContents, getPopupIdForWebContents, closePopup, closeAllPopups, setReplayPopupIdQueue, clearReplayPopupIdQueue } from '@core/window.popups.js';
 
 type MockFn = ReturnType<typeof vi.fn>;
 type MockEventName = string;
@@ -177,6 +177,25 @@ describe(`window.popups.ts`, () => {
 
 	test(`closePopup resolves immediately when the given id isn't open`, async () => {
 		await expect(closePopup(`missing` as PopupId)).resolves.toBeUndefined();
+	});
+
+	test(`closeAllPopups closes every currently-tracked popup`, async () => {
+		randomUUID.mockReturnValueOnce(`popup-a`).mockReturnValueOnce(`popup-b`);
+		const testWebContents = makeTestWebContents();
+		registerPopupTracking(testWebContents as never);
+		const popupA = makeFakePopup();
+		const popupB = makeFakePopup();
+		testWebContents._emitCreateWindow(popupA);
+		testWebContents._emitCreateWindow(popupB);
+
+		await closeAllPopups();
+
+		expect(popupA.close).toHaveBeenCalled();
+		expect(popupB.close).toHaveBeenCalled();
+	});
+
+	test(`closeAllPopups resolves immediately when no popups are tracked`, async () => {
+		await expect(closeAllPopups()).resolves.toBeUndefined();
 	});
 
 	test(`assigns queued replay ids, in order, to newly created popups instead of a fresh randomUUID, so a popup re-opened during replay keeps the id it was recorded with`, () => {

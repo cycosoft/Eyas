@@ -25,6 +25,7 @@ export type ShouldShow = boolean;
 export type IsExcluded = boolean;
 export type IsPasswordInput = boolean;
 export type IsStableId = boolean;
+export type IsUnique = boolean;
 
 // Events / Progress
 export type ProgressBytes = number;
@@ -46,6 +47,7 @@ export type MenuLabel = string;
 export type AppTitle = string;
 export type ProjectId = string;
 export type SelectorString = string;
+export type AccessibleName = string;
 export type DomIdAttribute = string;
 export type SelectorTraitType = string;
 export type SelectorAttributeKey = string;

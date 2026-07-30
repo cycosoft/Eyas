@@ -4,7 +4,7 @@ import { randomUUID } from 'crypto';
 import fs from 'fs-extra';
 const { outputJson } = fs;
 import type { CoreContext } from '@registry/eyas-core.js';
-import type { EyasRecordingEnvelope, RecordingStep } from '@registry/recording.js';
+import type { EyasRecordingEnvelope, RecordingStep, LegacySelectorGroup } from '@registry/recording.js';
 import type { ProjectId, FilePath, DomainUrl, SessionId, IsActive, PopupId } from '@registry/primitives.js';
 
 let _session: EyasRecordingEnvelope | null = null;
@@ -27,6 +27,25 @@ function _generateSessionId(): SessionId {
 	return randomUUID() as SessionId;
 }
 
+function _isLegacySelectorGroup(selectors: unknown): selectors is LegacySelectorGroup {
+	return !!selectors && typeof selectors === `object` && !Array.isArray(selectors) && `primary` in selectors;
+}
+
+/** Sessions written by the 1.0.0 recorder store `selectors` as `{ primary, fallbacks }` — upgrade to the ordered candidate array read everywhere else. */
+function _upgradeSession(session: EyasRecordingEnvelope): EyasRecordingEnvelope {
+	if (session.eyasSchemaVersion !== `1.0.0`) { return session; }
+
+	session.recording.steps = session.recording.steps.map(step => {
+		if (step.type !== `click` && step.type !== `change`) { return step; }
+		const selectors = step.selectors as unknown;
+		if (!_isLegacySelectorGroup(selectors)) { return step; }
+		return { ...step, selectors: [selectors.primary, ...selectors.fallbacks] };
+	});
+	session.eyasSchemaVersion = `1.1.0`;
+
+	return session;
+}
+
 // Sequentializes writes to prevent concurrent write issues (mirrors settings-service.ts).
 let _saveQueue = Promise.resolve();
 function _persist(): Promise<void> {
@@ -47,7 +66,7 @@ async function startSession(ctx: CoreContext): Promise<void> {
 	const startedAt = Date.now();
 
 	_session = {
-		eyasSchemaVersion: `1.0.0`,
+		eyasSchemaVersion: `1.1.0`,
 		projectId,
 		sessionId,
 		title: new Date(startedAt).toISOString(),
@@ -114,7 +133,7 @@ async function getSession(ctx: CoreContext, sessionId: SessionId): Promise<EyasR
 	const filePath = _path.join(_sessionsDir(), projectId, `${sessionId}.json`);
 	if (!(await fs.pathExists(filePath))) { return null; }
 
-	return fs.readJson(filePath);
+	return _upgradeSession(await fs.readJson(filePath));
 }
 
 export {

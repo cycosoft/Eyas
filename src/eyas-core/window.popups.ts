@@ -71,3 +71,8 @@ export async function closePopup(popupId: PopupId): Promise<void> {
 	win.close();
 	await closed;
 }
+
+/** Closes every currently-tracked popup — a replay-teardown guarantee so a step throwing mid-replay can't strand an open popup window. */
+export async function closeAllPopups(): Promise<void> {
+	await Promise.all([..._openPopups.keys()].map(popupId => closePopup(popupId)));
+}

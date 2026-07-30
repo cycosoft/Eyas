@@ -21,9 +21,10 @@ vi.mock(`@core/session-recorder.service.js`, () => ({
 	default: { getSession: vi.fn(), setReplaying: vi.fn() }
 }));
 
-const { getPopupWebContents, closePopup, setReplayPopupIdQueue, clearReplayPopupIdQueue } = vi.hoisted(() => ({
+const { getPopupWebContents, closePopup, closeAllPopups, setReplayPopupIdQueue, clearReplayPopupIdQueue } = vi.hoisted(() => ({
 	getPopupWebContents: vi.fn(),
 	closePopup: vi.fn().mockResolvedValue(undefined),
+	closeAllPopups: vi.fn().mockResolvedValue(undefined),
 	setReplayPopupIdQueue: vi.fn(),
 	clearReplayPopupIdQueue: vi.fn()
 }));
@@ -31,6 +32,7 @@ const { getPopupWebContents, closePopup, setReplayPopupIdQueue, clearReplayPopup
 vi.mock(`@core/window.popups.js`, () => ({
 	getPopupWebContents,
 	closePopup,
+	closeAllPopups,
 	setReplayPopupIdQueue,
 	clearReplayPopupIdQueue
 }));
@@ -108,6 +110,7 @@ beforeEach(() => {
 	popupWebContents.executeJavaScript.mockReset().mockResolvedValue({ x: 1, y: 1 });
 	getPopupWebContents.mockReset().mockReturnValue(null);
 	closePopup.mockClear().mockResolvedValue(undefined);
+	closeAllPopups.mockClear().mockResolvedValue(undefined);
 	setReplayPopupIdQueue.mockClear();
 	clearReplayPopupIdQueue.mockClear();
 });
@@ -117,7 +120,7 @@ describe(`sessionPlaybackService.playSession — popup routing`, () => {
 		getPopupWebContents.mockReturnValue(popupWebContents);
 		popupWebContents.executeJavaScript.mockReset().mockResolvedValue({ x: 5, y: 6 });
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
-			{ type: `click`, selectors: { primary: `#in-popup`, fallbacks: [] }, offsetX: 5, offsetY: 6, popupId: `popup-1`, timestamp: 1 } as never
+			{ type: `click`, selectors: [`#in-popup`], offsetX: 5, offsetY: 6, popupId: `popup-1`, timestamp: 1 } as never
 		]));
 		const ctx = makeCtx();
 
@@ -138,8 +141,8 @@ describe(`sessionPlaybackService.playSession — popup routing`, () => {
 			.mockResolvedValueOnce({ x: 1, y: 1 })
 			.mockResolvedValueOnce({ x: 2, y: 2 });
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
-			{ type: `click`, selectors: { primary: `#a`, fallbacks: [] }, offsetX: 1, offsetY: 1, popupId: `popup-1`, timestamp: 1 } as never,
-			{ type: `click`, selectors: { primary: `#b`, fallbacks: [] }, offsetX: 2, offsetY: 2, popupId: `popup-2`, timestamp: 2 } as never
+			{ type: `click`, selectors: [`#a`], offsetX: 1, offsetY: 1, popupId: `popup-1`, timestamp: 1 } as never,
+			{ type: `click`, selectors: [`#b`], offsetX: 2, offsetY: 2, popupId: `popup-2`, timestamp: 2 } as never
 		]));
 		const ctx = makeCtx();
 
@@ -164,7 +167,7 @@ describe(`sessionPlaybackService.playSession — popup routing`, () => {
 	test(`skips a step with a popupId that isn't currently tracked, logging a warning, instead of throwing`, async () => {
 		getPopupWebContents.mockReturnValue(null);
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
-			{ type: `click`, selectors: { primary: `#gone`, fallbacks: [] }, offsetX: 1, offsetY: 1, popupId: `popup-1`, timestamp: 1 } as never
+			{ type: `click`, selectors: [`#gone`], offsetX: 1, offsetY: 1, popupId: `popup-1`, timestamp: 1 } as never
 		]));
 		const ctx = makeCtx();
 		const warnSpy = vi.spyOn(console, `warn`).mockImplementation(() => {});
@@ -178,8 +181,8 @@ describe(`sessionPlaybackService.playSession — popup routing`, () => {
 
 	test(`primes the replay popup id queue with each step's popupId in first-appearance order before dispatch, and clears it after, so a popup re-opened during replay is assigned the same id it was recorded with`, async () => {
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
-			{ type: `click`, selectors: { primary: `#open`, fallbacks: [] }, offsetX: 1, offsetY: 1, popupId: `popup-1`, timestamp: 1 } as never,
-			{ type: `click`, selectors: { primary: `#in-popup`, fallbacks: [] }, offsetX: 2, offsetY: 2, popupId: `popup-1`, timestamp: 2 } as never,
+			{ type: `click`, selectors: [`#open`], offsetX: 1, offsetY: 1, popupId: `popup-1`, timestamp: 1 } as never,
+			{ type: `click`, selectors: [`#in-popup`], offsetX: 2, offsetY: 2, popupId: `popup-1`, timestamp: 2 } as never,
 			{ type: `closeWindow`, popupId: `popup-2`, timestamp: 3 } as never
 		]));
 		const ctx = makeCtx();
@@ -188,5 +191,35 @@ describe(`sessionPlaybackService.playSession — popup routing`, () => {
 
 		expect(setReplayPopupIdQueue).toHaveBeenCalledWith([`popup-1`, `popup-2`]);
 		expect(clearReplayPopupIdQueue).toHaveBeenCalled();
+	});
+
+	// Regression coverage for: a recording's last popup failed to close on replay. Root cause: a
+	// step throwing mid-replay (e.g. a selector that no longer resolves) aborted the dispatch loop
+	// before the recorded closeWindow step ever ran, stranding the popup open.
+	test(`still reports the replay as failed when a step throws`, async () => {
+		sendCommand.mockRejectedValueOnce(new Error(`boom`));
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `click`, selectors: [`#save`], offsetX: 1, offsetY: 1, timestamp: 1 }
+		]));
+		const ctx = makeCtx();
+
+		await playbackService.playSession(ctx, `sess-1`);
+
+		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `failed`, error: `boom` });
+	});
+
+	test(`closes tracked popups even when a step throws before reaching the recorded closeWindow step`, async () => {
+		getPopupWebContents.mockReturnValue(popupWebContents);
+		popupSendCommand.mockRejectedValueOnce(new Error(`boom`));
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `click`, selectors: [`body.logged-out > :nth-child(4)`], offsetX: 0, offsetY: 0, popupId: `popup-1`, timestamp: 1 } as never,
+			{ type: `closeWindow`, popupId: `popup-1`, timestamp: 2 } as never
+		]));
+		const ctx = makeCtx();
+
+		await playbackService.playSession(ctx, `sess-1`);
+
+		expect(closeAllPopups).toHaveBeenCalled();
+		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, expect.objectContaining({ status: `failed` }));
 	});
 });

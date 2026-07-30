@@ -47,7 +47,7 @@ function getFlushHandler(): (event: unknown, steps: unknown) => void {
 
 const makeClickStep = (): ClickStep => ({
 	type: `click`,
-	selectors: { primary: `#save` as never, fallbacks: [] },
+	selectors: [`#save`],
 	offsetX: 0 as never,
 	offsetY: 0 as never,
 	timestamp: Date.now() as never

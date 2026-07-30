@@ -21,9 +21,10 @@ vi.mock(`@core/session-recorder.service.js`, () => ({
 	default: { getSession: vi.fn(), setReplaying: vi.fn() }
 }));
 
-const { getPopupWebContents, closePopup, setReplayPopupIdQueue, clearReplayPopupIdQueue } = vi.hoisted(() => ({
+const { getPopupWebContents, closePopup, closeAllPopups, setReplayPopupIdQueue, clearReplayPopupIdQueue } = vi.hoisted(() => ({
 	getPopupWebContents: vi.fn(),
 	closePopup: vi.fn().mockResolvedValue(undefined),
+	closeAllPopups: vi.fn().mockResolvedValue(undefined),
 	setReplayPopupIdQueue: vi.fn(),
 	clearReplayPopupIdQueue: vi.fn()
 }));
@@ -31,6 +32,7 @@ const { getPopupWebContents, closePopup, setReplayPopupIdQueue, clearReplayPopup
 vi.mock(`@core/window.popups.js`, () => ({
 	getPopupWebContents,
 	closePopup,
+	closeAllPopups,
 	setReplayPopupIdQueue,
 	clearReplayPopupIdQueue
 }));
@@ -126,7 +128,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 
 	test(`dispatches a ClickStep as Input.dispatchMouseEvent mousePressed then mouseReleased at the selector-resolved position`, async () => {
 		executeJavaScript.mockResolvedValueOnce({ x: 12, y: 34 });
-		const step: ClickStep = { type: `click`, selectors: { primary: `#save`, fallbacks: [] }, offsetX: 12, offsetY: 34, timestamp: 1 };
+		const step: ClickStep = { type: `click`, selectors: [`#save`], offsetX: 12, offsetY: 34, timestamp: 1 };
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([step]));
 		const ctx = makeCtx();
 
@@ -138,7 +140,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 
 	test(`dispatches a ClickStep at the selector-resolved coordinates instead of the raw recorded offset, when the selector resolves to an element`, async () => {
 		executeJavaScript.mockResolvedValueOnce({ x: 99, y: 88 });
-		const step: ClickStep = { type: `click`, selectors: { primary: `#save`, fallbacks: [] }, offsetX: 12, offsetY: 34, timestamp: 1 };
+		const step: ClickStep = { type: `click`, selectors: [`#save`], offsetX: 12, offsetY: 34, timestamp: 1 };
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([step]));
 		const ctx = makeCtx();
 
@@ -152,7 +154,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 	test(`fails the step instead of guessing when none of the step's selectors resolve to an element, rather than clicking a possibly-wrong target`, async () => {
 		vi.useFakeTimers();
 		executeJavaScript.mockResolvedValue(null);
-		const step: ClickStep = { type: `click`, selectors: { primary: `#gone`, fallbacks: [] }, offsetX: 12, offsetY: 34, timestamp: 1 };
+		const step: ClickStep = { type: `click`, selectors: [`#gone`], offsetX: 12, offsetY: 34, timestamp: 1 };
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([step]));
 		const ctx = makeCtx();
 
@@ -170,13 +172,43 @@ describe(`sessionPlaybackService.playSession`, () => {
 		}
 	});
 
+	test(`passes the full ordered candidate list (aria/text/testid/CSS) into the resolution script, not just the first candidate`, async () => {
+		executeJavaScript.mockResolvedValueOnce({ x: 5, y: 6 });
+		const step: ClickStep = { type: `click`, selectors: [`aria/Save`, `text/Save`, `testid/save-btn`, `#save`], offsetX: 1, offsetY: 1, timestamp: 1 };
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([step]));
+		const ctx = makeCtx();
+
+		await playbackService.playSession(ctx, `sess-1`);
+
+		expect(executeJavaScript).toHaveBeenCalledWith(expect.stringContaining(JSON.stringify([`aria/Save`, `text/Save`, `testid/save-btn`, `#save`])));
+	});
+
+	test(`retries resolution across poll iterations, succeeding once the candidate appears instead of failing on the first miss`, async () => {
+		vi.useFakeTimers();
+		executeJavaScript.mockResolvedValueOnce(null).mockResolvedValueOnce(null).mockResolvedValue({ x: 7, y: 8 });
+		const step: ClickStep = { type: `click`, selectors: [`#late`], offsetX: 1, offsetY: 1, timestamp: 1 };
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([step]));
+		const ctx = makeCtx();
+
+		try {
+			const playPromise = playbackService.playSession(ctx, `sess-1`);
+			await vi.advanceTimersByTimeAsync(6000);
+			await playPromise;
+
+			expect(sendCommand).toHaveBeenCalledWith(`Input.dispatchMouseEvent`, expect.objectContaining({ type: `mousePressed`, x: 7, y: 8 }));
+			expect(send).toHaveBeenCalledWith(`recorder-playback-status`, expect.objectContaining({ status: `stopped` }));
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
 	test(`waits for the target to finish loading before dispatching a click against it, e.g. a popup still loading its first page`, async () => {
 		getPopupWebContents.mockReturnValue(popupWebContents);
 		popupWebContents.isLoading.mockReturnValue(true);
 		let stopLoadingCb: (() => void) | undefined;
 		popupWebContents.once.mockImplementation((event, cb) => { if (event === `did-stop-loading`) { stopLoadingCb = cb; } });
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
-			{ type: `click`, selectors: { primary: `#in-popup`, fallbacks: [] }, offsetX: 1, offsetY: 1, popupId: `popup-1`, timestamp: 1 } as never
+			{ type: `click`, selectors: [`#in-popup`], offsetX: 1, offsetY: 1, popupId: `popup-1`, timestamp: 1 } as never
 		]));
 		const ctx = makeCtx();
 
@@ -196,7 +228,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 
 	test(`replaces the field's existing value instead of inserting at cursor position when dispatching a change step`, async () => {
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
-			{ type: `change`, selectors: { primary: `#name`, fallbacks: [] }, value: `hello`, timestamp: 1 }
+			{ type: `change`, selectors: [`#name`], value: `hello`, timestamp: 1 }
 		]));
 		const ctx = makeCtx();
 
@@ -248,7 +280,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 
 	test(`change step only re-dispatches change, not input, when the live value would already match the recorded value`, async () => {
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
-			{ type: `change`, selectors: { primary: `#name`, fallbacks: [] }, value: `hello`, timestamp: 1 }
+			{ type: `change`, selectors: [`#name`], value: `hello`, timestamp: 1 }
 		]));
 		const ctx = makeCtx();
 
@@ -261,7 +293,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 		vi.useFakeTimers();
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
 			{ type: `keyDown`, key: `a`, timestamp: 1 },
-			{ type: `click`, selectors: { primary: `#btn`, fallbacks: [] }, offsetX: 1, offsetY: 1, timestamp: 2 }
+			{ type: `click`, selectors: [`#btn`], offsetX: 1, offsetY: 1, timestamp: 2 }
 		]));
 		const ctx = makeCtx();
 		const setTimeoutSpy = vi.spyOn(global, `setTimeout`);
@@ -297,10 +329,22 @@ describe(`sessionPlaybackService.playSession`, () => {
 		expect(loadURL).toHaveBeenCalledWith(`https://example.com`);
 	});
 
+	test(`skips a NavigateStep whose url matches the page's current url, since a preceding click may have already caused that navigation`, async () => {
+		getURL.mockReturnValue(`https://example.com/already-here`);
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `navigate`, url: `https://example.com/already-here`, timestamp: 1 }
+		]));
+		const ctx = makeCtx();
+
+		await playbackService.playSession(ctx, `sess-1`);
+
+		expect(loadURL).not.toHaveBeenCalled();
+	});
+
 	test(`navigates to the session's startUrl first when replaying from a different view than recording started on, so playback isn't stranded on the current page`, async () => {
 		getURL.mockReturnValue(`https://example.com/other-view`);
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
-			{ type: `click`, selectors: { primary: `#open-window`, fallbacks: [] }, offsetX: 1, offsetY: 1, timestamp: 1 }
+			{ type: `click`, selectors: [`#open-window`], offsetX: 1, offsetY: 1, timestamp: 1 }
 		], `https://example.com/`));
 		const ctx = makeCtx();
 
@@ -317,7 +361,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 		executeJavaScript.mockImplementationOnce(() => new Promise<void>(resolve => { resolvePaint = resolve; }));
 		executeJavaScript.mockResolvedValue({ x: 1, y: 1 });
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
-			{ type: `click`, selectors: { primary: `#open-window`, fallbacks: [] }, offsetX: 1, offsetY: 1, timestamp: 1 }
+			{ type: `click`, selectors: [`#open-window`], offsetX: 1, offsetY: 1, timestamp: 1 }
 		], `https://example.com/`));
 		const ctx = makeCtx();
 
@@ -336,7 +380,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 	test(`does not navigate to startUrl when playback is already on that page`, async () => {
 		getURL.mockReturnValue(`https://example.com/`);
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
-			{ type: `click`, selectors: { primary: `#open-window`, fallbacks: [] }, offsetX: 1, offsetY: 1, timestamp: 1 }
+			{ type: `click`, selectors: [`#open-window`], offsetX: 1, offsetY: 1, timestamp: 1 }
 		], `https://example.com/`));
 		const ctx = makeCtx();
 
@@ -385,7 +429,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 	test(`sends 'failed' status with the error message when a step dispatch throws, and detaches the debugger`, async () => {
 		sendCommand.mockRejectedValueOnce(new Error(`boom`));
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
-			{ type: `click`, selectors: { primary: `#save`, fallbacks: [] }, offsetX: 1, offsetY: 1, timestamp: 1 }
+			{ type: `click`, selectors: [`#save`], offsetX: 1, offsetY: 1, timestamp: 1 }
 		]));
 		const ctx = makeCtx();
 

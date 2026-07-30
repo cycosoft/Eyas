@@ -1,6 +1,5 @@
 # TODO
 
-- In one of the tests I did, the last "open the demo window" failed to close
 - what happens when the test enounters an error like "page not found"?
 - what happens when the test enounters an error like broken JS?
 - what happens when the test generaly can't follow the steps?
@@ -33,4 +32,4 @@
 
 - need a tooltip for the "online/offline" header button
 - swap cache > clear and open list item positions
-- surface a warning when replay's click-point hit-test falls back to the unverified bounding-box center (i.e. no line rect's center hit-tested back to the target element) — no UI currently exists to show per-step replay warnings, so this needs design first
+- consumer users custom protocol to launch desktop app, but eyas swallows this and the user doesn't see a prompt.

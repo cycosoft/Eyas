@@ -4,8 +4,8 @@ import type { RecorderPlaybackStatusPayload } from '@registry/ipc.js';
 import type { SessionId, DurationMS, DomainUrl, PopupId, StepCount } from '@registry/primitives.js';
 import type { ReplaySpeedMode } from '@registry/settings.js';
 import sessionRecorderService from './session-recorder.service.js';
-import { getPopupWebContents, closePopup, setReplayPopupIdQueue, clearReplayPopupIdQueue } from './window.popups.js';
-import { buildClickPointScript } from './session-playback.selector-resolution.js';
+import { getPopupWebContents, closePopup, closeAllPopups, setReplayPopupIdQueue, clearReplayPopupIdQueue } from './window.popups.js';
+import { buildClickPointScript, buildChangeScript } from './session-playback.selector-resolution.js';
 
 const CDP_DEBUGGER_VERSION = `1.3`;
 
@@ -41,17 +41,16 @@ const CLICK_TARGET_POLL_TIMEOUT_MS = 5000 as DurationMS;
 const CLICK_TARGET_POLL_INTERVAL_MS = 100 as DurationMS;
 
 // SPA-style navigations (e.g. GitHub's client-side directory browser) never trip
-// isLoading()/did-stop-loading, so poll the primary selector (the strongest identity signal —
-// data-testid/data-qa/aria-label/id) until it appears or the timeout is spent. The class-list/
-// positional fallbacks are deliberately NOT tried on a timeout: they're generic enough to
-// coincidentally match an unrelated element on a still-stale, not-yet-navigated page, turning a
-// real timeout into a confusing wrong click instead of a clear, surfaced failure.
+// isLoading()/did-stop-loading, so poll the full candidate list — aria/text/testid/CSS, in
+// priority order, matching the auto-wait model of real e2e frameworks — until one resolves or the
+// timeout is spent, retrying the whole candidate list on each poll so a page still mid-navigation
+// gets another chance rather than failing on the first miss.
 async function _resolveClickPoint(target: Electron.WebContents, step: ClickStep): Promise<ClickPoint | null> {
-	const primaryScript = buildClickPointScript(step.selectors.primary);
+	const script = buildClickPointScript(step.selectors);
 	const deadline = Date.now() + CLICK_TARGET_POLL_TIMEOUT_MS;
 	for (;;) {
 		try {
-			const point = await target.executeJavaScript(primaryScript);
+			const point = await target.executeJavaScript(script);
 			if (point) { return point; }
 		} catch {
 			return null;
@@ -77,25 +76,10 @@ async function _ensureTargetReady(target: Electron.WebContents, stepType: Record
 // setter, so React-controlled inputs on the app under test may not pick this up; not a regression,
 // as Input.insertText had the same limitation plus the duplication bug.
 async function _dispatchChange(target: Electron.WebContents, step: InputStep): Promise<void> {
-	const selectors = [step.selectors.primary, ...step.selectors.fallbacks];
 	// self-healing guard: only overwrite .value if per-keystroke replay didn't already produce the
 	// recorded value (e.g. a masked/formatted field drifted) — otherwise just fire the `change`
 	// event a real blur would have produced, without clobbering a value that's already correct
-	const script = `(function(selectors, value){
-		for (const sel of selectors) {
-			let el;
-			try { el = document.querySelector(sel); } catch { el = null; }
-			if (el) {
-				if (el.value !== value) {
-					el.value = value;
-					el.dispatchEvent(new Event('input', { bubbles: true }));
-				}
-				el.dispatchEvent(new Event('change', { bubbles: true }));
-				return;
-			}
-		}
-	})(${JSON.stringify(selectors)}, ${JSON.stringify(step.value)})`;
-	await target.executeJavaScript(script);
+	await target.executeJavaScript(buildChangeScript(step.selectors, step.value));
 }
 
 // splices the keystroke into document.activeElement.value at the recorded cursor position rather
@@ -141,7 +125,7 @@ async function _dispatchKeyDown(target: Electron.WebContents, step: KeyDownStep)
 async function _dispatchClick(target: Electron.WebContents, step: ClickStep): Promise<void> {
 	const resolved = await _resolveClickPoint(target, step);
 	if (!resolved) {
-		throw new Error(`Could not locate click target "${step.selectors.primary}" on the page.`);
+		throw new Error(`Could not locate click target "${step.selectors[0]}" on the page.`);
 	}
 	const { x, y } = resolved;
 	await target.debugger.sendCommand(`Input.dispatchMouseEvent`, { type: `mousePressed`, x, y, button: `left`, clickCount: 1 });
@@ -183,6 +167,11 @@ async function _dispatchStep(webContents: Electron.WebContents, step: RecordingS
 		await target.executeJavaScript(`window.scrollTo(${step.x}, ${step.y})`);
 		return;
 	case `navigate`:
+		// a click step immediately before this one may already have caused this exact navigation
+		// (e.g. clicking a plain <a href>) — did-start-navigation records both the click and its own
+		// resulting navigate step, so re-issuing loadURL to a URL we're already on would just be a
+		// redundant reload/jump on replay
+		if (target.getURL() === step.url) { return; }
 		await target.loadURL(step.url);
 		return;
 	default:
@@ -207,6 +196,12 @@ function _orderedPopupIds(steps: RecordingStep[]): PopupId[] {
 
 function _sendPlaybackStatus(ctx: CoreContext, payload: RecorderPlaybackStatusPayload): void {
 	ctx.$eyasLayer?.webContents?.send(`recorder-playback-status`, payload);
+}
+
+// swallow teardown errors so a popup that fails/hangs to close can never suppress the status
+// report it's meant to precede (a stranded popup is recoverable; a swallowed failure isn't)
+async function _teardownPopups(): Promise<void> {
+	try { await closeAllPopups(); } catch { /* best-effort teardown */ }
 }
 
 async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebContents, steps: RecordingStep[], startUrl: DomainUrl | null): Promise<void> {
@@ -236,17 +231,25 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 		const replaySpeed: ReplaySpeedMode = `natural`;
 		const stepDelayMs = REPLAY_STEP_DELAY_MS[replaySpeed] ?? 0;
 
+		let aborted = false;
 		for (let i = 0; i < steps.length; i++) {
-			if (_abortRequested) { break; }
+			if (_abortRequested) { aborted = true; break; }
 			const isKeystroke = steps[i].type === `keyDown` || steps[i].type === `keyUp`;
 			const delayMs = isKeystroke ? KEYSTROKE_DELAY_MS : stepDelayMs;
 			if (delayMs > 0) { await _delay(delayMs); }
 			await _dispatchStep(webContents, steps[i]);
 			_sendPlaybackStatus(ctx, { status: `playing`, completedSteps: (i + 1) as StepCount, totalSteps: steps.length as StepCount });
 		}
+		// a user-initiated stop can land anywhere in the step list, same as a thrown step — tear down
+		// any popups the recording never reached its closeWindow step for before reporting stopped
+		if (aborted) { await _teardownPopups(); }
 		_sendPlaybackStatus(ctx, { status: `stopped` });
 	} catch (err) {
 		const error = err instanceof Error ? err.message : String(err);
+		// a thrown step still fails the replay (no continue-on-error) — but tear down any popups the
+		// aborted recording never reached its closeWindow step for, the same way a failed Playwright/
+		// Cypress test still tears down its browser context, before reporting the failure
+		await _teardownPopups();
 		_sendPlaybackStatus(ctx, { status: `failed`, error });
 	} finally {
 		_abortRequested = false;

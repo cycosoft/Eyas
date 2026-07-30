@@ -24,9 +24,10 @@ vi.mock(`@core/settings-service.js`, () => ({
 	default: { get: vi.fn().mockReturnValue(`no-delay`) }
 }));
 
-const { getPopupWebContents, closePopup, setReplayPopupIdQueue, clearReplayPopupIdQueue } = vi.hoisted(() => ({
+const { getPopupWebContents, closePopup, closeAllPopups, setReplayPopupIdQueue, clearReplayPopupIdQueue } = vi.hoisted(() => ({
 	getPopupWebContents: vi.fn(),
 	closePopup: vi.fn().mockResolvedValue(undefined),
+	closeAllPopups: vi.fn().mockResolvedValue(undefined),
 	setReplayPopupIdQueue: vi.fn(),
 	clearReplayPopupIdQueue: vi.fn()
 }));
@@ -34,6 +35,7 @@ const { getPopupWebContents, closePopup, setReplayPopupIdQueue, clearReplayPopup
 vi.mock(`@core/window.popups.js`, () => ({
 	getPopupWebContents,
 	closePopup,
+	closeAllPopups,
 	setReplayPopupIdQueue,
 	clearReplayPopupIdQueue
 }));
@@ -92,6 +94,7 @@ beforeEach(() => {
 	getURL.mockClear().mockReturnValue(`https://example.com/`);
 	getPopupWebContents.mockReset().mockReturnValue(null);
 	closePopup.mockClear().mockResolvedValue(undefined);
+	closeAllPopups.mockClear().mockResolvedValue(undefined);
 	setReplayPopupIdQueue.mockClear();
 	clearReplayPopupIdQueue.mockClear();
 });
@@ -160,5 +163,18 @@ describe(`sessionPlaybackService.stopPlayback`, () => {
 		await playbackService.playSession(ctx, `sess-1`);
 
 		expect(loadURL).toHaveBeenCalledTimes(2);
+	});
+
+	test(`tears down any tracked popups before reporting 'stopped' when the replay is aborted mid-way, same as a thrown-step failure`, async () => {
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `navigate`, url: `https://example.com/a`, timestamp: 1 },
+			{ type: `navigate`, url: `https://example.com/b`, timestamp: 2 }
+		]));
+		loadURL.mockImplementationOnce(async () => { playbackService.stopPlayback(); });
+		const ctx = makeCtx();
+
+		await playbackService.playSession(ctx, `sess-1`);
+
+		expect(closeAllPopups).toHaveBeenCalled();
 	});
 });

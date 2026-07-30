@@ -1,7 +1,7 @@
 import { ipcRenderer } from 'electron';
 import getUniqueSelector from '@cypress/unique-selector/lib/index.js';
 import type { RecordingStep, SelectorGroup, CursorSelection } from '@registry/recording.js';
-import type { FramePath, ScreenCoordinate, ElementClassList, SelectorString, DomElement, EventSourceNode, IsExcluded, IsPasswordInput, IsStableId, DomIdAttribute, SelectorTraitType, SelectorAttributeKey } from '@registry/primitives.js';
+import type { FramePath, ScreenCoordinate, ElementClassList, SelectorString, DomElement, EventSourceNode, IsExcluded, IsPasswordInput, IsStableId, DomIdAttribute, SelectorTraitType, SelectorAttributeKey, AccessibleName, IsUnique } from '@registry/primitives.js';
 
 const FLUSH_INTERVAL_MS = 2000;
 const FLUSH_AT_STEP_COUNT = 50;
@@ -53,28 +53,113 @@ function _getPositionalSelector(target: Element): SelectorString | null {
 	return getUniqueSelector(target, { filter: (type: SelectorTraitType, key: SelectorAttributeKey, value: DomIdAttribute) => type !== `attribute` || key !== `id` || _isStableId(value) }) as SelectorString | null;
 }
 
+const TEXT_CANDIDATE_MAX_LENGTH = 80;
+
+function _normalizeText(text: AccessibleName): AccessibleName {
+	return text.replace(/\s+/g, ` `).trim();
+}
+
+function _computeLabelledName(target: Element): AccessibleName | null {
+	const labelledBy = target.getAttribute(`aria-labelledby`);
+	if (labelledBy) {
+		const text = labelledBy.split(/\s+/).map(id => document.getElementById(id)?.textContent || ``).join(` `);
+		if (_normalizeText(text)) { return _normalizeText(text); }
+	}
+
+	if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement) {
+		const id = target.id;
+		const forLabel = id ? document.querySelector(`label[for="${id}"]`) : null;
+		const label = forLabel || target.closest(`label`);
+		if (label) {
+			const text = _normalizeText(label.textContent || ``);
+			if (text) { return text; }
+		}
+	}
+
+	return null;
+}
+
+// Documented subset of W3C accname — not full accname computation (e.g. no recursive
+// aria-labelledby chains, no CSS-generated-content text). Covers the common capture cases.
+function _computeAccessibleName(target: Element): AccessibleName | null {
+	const ariaLabel = target.getAttribute(`aria-label`);
+	if (ariaLabel) { return _normalizeText(ariaLabel); }
+
+	const labelledName = _computeLabelledName(target);
+	if (labelledName) { return labelledName; }
+
+	const alt = target.getAttribute(`alt`);
+	if (alt) { return _normalizeText(alt); }
+
+	const title = target.getAttribute(`title`);
+	if (title) { return _normalizeText(title); }
+
+	const placeholder = target.getAttribute(`placeholder`);
+	if (placeholder) { return _normalizeText(placeholder); }
+
+	// only treat textContent as the accessible name for leaf-ish elements — a container's
+	// textContent is the concatenation of all its descendants' text, which would otherwise make
+	// every ancestor (up to <body>) spuriously "share" a descendant's name
+	if (target.children.length === 0) {
+		const text = target.textContent || ``;
+		if (_normalizeText(text)) { return _normalizeText(text); }
+	}
+
+	return null;
+}
+
+function _isUniqueAccessibleName(name: AccessibleName): IsUnique {
+	let matches = 0;
+	// exclude <label> — its own textContent fallback would otherwise collide with the accessible
+	// name it *assigns* to its associated control, making an otherwise-unique name look duplicate
+	for (const el of document.querySelectorAll(`*:not(label)`)) {
+		if (_computeAccessibleName(el) === name) {
+			matches++;
+			if (matches > 1) { return false; }
+		}
+	}
+	return matches === 1;
+}
+
+function _isUniqueByTagAndText(target: Element, text: AccessibleName): IsUnique {
+	let matches = 0;
+	for (const el of document.querySelectorAll(target.tagName)) {
+		if (_normalizeText(el.textContent || ``) === text) {
+			matches++;
+			if (matches > 1) { return false; }
+		}
+	}
+	return matches === 1;
+}
+
+// Priority order for capture: aria name -> visible text -> data-testid/data-qa -> CSS. This
+// matches what Testing Library / Playwright / Cypress converge on (role/text first, test-id as
+// escape hatch, CSS path only when nothing else is available) and is the vocabulary a candidate
+// selector must use to be exportable to real e2e frameworks (see recording.ts SelectorCandidate).
 function _computeSelectorGroup(target: Element): SelectorGroup {
+	const candidates: ElementClassList = [];
+
+	const accessibleName = _computeAccessibleName(target);
+	if (accessibleName && _isUniqueAccessibleName(accessibleName)) { candidates.push(`aria/${accessibleName}`); }
+
+	const text = _normalizeText(target.textContent || ``);
+	if (text && text.length <= TEXT_CANDIDATE_MAX_LENGTH && _isUniqueByTagAndText(target, text)) { candidates.push(`text/${text}`); }
+
 	const dataTestId = target.getAttribute(`data-testid`);
 	const dataQa = target.getAttribute(`data-qa`);
-	const ariaLabel = target.getAttribute(`aria-label`);
+	if (dataTestId) { candidates.push(`testid/${dataTestId}`); }
+	else if (dataQa) { candidates.push(`testid/${dataQa}`); }
+
 	const id = target.id;
 	const usableId = id && _isStableId(id) ? id : null;
+	if (usableId) { candidates.push(`#${usableId}`); }
 
-	let primary: SelectorString;
-	if (dataTestId) { primary = `[data-testid="${dataTestId}"]`; }
-	else if (dataQa) { primary = `[data-qa="${dataQa}"]`; }
-	else if (ariaLabel) { primary = `[aria-label="${ariaLabel}"]`; }
-	else if (usableId) { primary = `#${usableId}`; }
-	else { primary = (_getPositionalSelector(target) || target.tagName.toLowerCase()) as SelectorString; }
-
-	const fallbacks: ElementClassList = [];
-	if (ariaLabel && primary !== `[aria-label="${ariaLabel}"]`) { fallbacks.push(`[aria-label="${ariaLabel}"]`); }
-	if (usableId && primary !== `#${usableId}`) { fallbacks.push(`#${usableId}`); }
-	if (target.classList.length > 0) { fallbacks.push(`.${Array.from(target.classList).join(`.`)}`); }
 	const uniqueSelector = _getPositionalSelector(target);
-	if (uniqueSelector) { fallbacks.push(uniqueSelector); }
+	if (uniqueSelector) { candidates.push(uniqueSelector); }
 
-	return { primary, fallbacks };
+	if (candidates.length === 0) { candidates.push(target.tagName.toLowerCase() as SelectorString); }
+
+	return candidates;
 }
 
 function _push(step: RecordingStep): void {

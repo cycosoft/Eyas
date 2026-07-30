@@ -79,7 +79,7 @@ describe(`sessionRecorderService.appendSteps`, () => {
 		await service.startSession(ctx);
 		service.stopRecording(ctx);
 
-		service.appendSteps([{ type: `click`, selectors: { primary: `#foo`, fallbacks: [] }, offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
+		service.appendSteps([{ type: `click`, selectors: [`#foo`], offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
 
 		expect(service.getActiveSession()?.recording.steps).toHaveLength(0);
 	});
@@ -88,7 +88,7 @@ describe(`sessionRecorderService.appendSteps`, () => {
 		const ctx = makeCtx();
 		await service.startSession(ctx);
 
-		service.appendSteps([{ type: `click`, selectors: { primary: `#foo`, fallbacks: [] }, offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
+		service.appendSteps([{ type: `click`, selectors: [`#foo`], offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
 
 		expect(service.getActiveSession()?.recording.steps).toHaveLength(1);
 	});
@@ -99,7 +99,7 @@ describe(`sessionRecorderService.appendSteps`, () => {
 		const session = service.getActiveSession();
 		const expectedPath = join(tmpDir, `test-proj`, `${session?.sessionId}.json`);
 
-		service.appendSteps([{ type: `click`, selectors: { primary: `#foo`, fallbacks: [] }, offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
+		service.appendSteps([{ type: `click`, selectors: [`#foo`], offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
 		await new Promise(resolve => setTimeout(resolve, 20));
 
 		const written = await readJson(expectedPath);
@@ -113,7 +113,7 @@ describe(`sessionRecorderService.appendSteps`, () => {
 		const expectedPath = join(tmpDir, `test-proj`, `${session?.sessionId}.json`);
 
 		for (let i = 0; i < 10; i++) {
-			service.appendSteps([{ type: `click`, selectors: { primary: `#${i}`, fallbacks: [] }, offsetX: 0, offsetY: 0, timestamp: Date.now() }] as never);
+			service.appendSteps([{ type: `click`, selectors: [`#${i}`], offsetX: 0, offsetY: 0, timestamp: Date.now() }] as never);
 		}
 		await new Promise(resolve => setTimeout(resolve, 50));
 

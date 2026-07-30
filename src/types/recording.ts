@@ -6,11 +6,16 @@ type Viewport = {
 	height: ViewportHeight;
 }
 
-/** A captured selector with priority fallbacks. Primary is tried first during replay. */
-export type SelectorGroup = {
-	primary: string;
-	fallbacks: string[];
-}
+/**
+ * A single candidate locator for an element, modeled on the Chrome DevTools Recorder /
+ * @puppeteer/replay convention: `aria/<accessible name>`, `text/<visible text>`,
+ * `testid/<data-testid or data-qa value>`, or a plain CSS selector string (no prefix) as the
+ * last-resort fallback.
+ */
+type SelectorCandidate = string;
+
+/** Ordered candidate list for an element, most-reliable first. Tried in order during replay. */
+export type SelectorGroup = SelectorCandidate[];
 
 /** Resolved viewport coordinates of an element to click during replay. */
 export type ClickPoint = {
@@ -100,9 +105,15 @@ type ChromeRecorderSession = {
 /** Populated in Deliverable 10; reserved for future component metadata */
 type EyasComponent = Record<string, unknown>;
 
+/** Sessions written by the 1.0.0 recorder store `selectors` as `{ primary, fallbacks }` instead of a candidate array. */
+export type LegacySelectorGroup = {
+	primary: string;
+	fallbacks: string[];
+}
+
 /** Eyas outer envelope — wraps the standard W3C Chrome Recorder JSON */
 export type EyasRecordingEnvelope = {
-	eyasSchemaVersion: `1.0.0`;
+	eyasSchemaVersion: `1.0.0` | `1.1.0`;
 	projectId: ProjectId;
 	sessionId: string;
 	title: string;

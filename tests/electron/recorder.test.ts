@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, test, expect, vi, beforeAll, beforeEach, afterEach, afterAll } from 'vitest';
-import type { RecordingStep, ClickStep, ScrollStep, KeyDownStep } from '@registry/recording.js';
+import type { RecordingStep, ClickStep, InputStep, ScrollStep, KeyDownStep } from '@registry/recording.js';
 
 const send = vi.fn();
 const addEventListenerCalls: unknown[][] = [];
@@ -63,14 +63,17 @@ describe(`click capture`, () => {
 		const steps = flush();
 		expect(steps).toHaveLength(1);
 		expect(steps[0].type).toBe(`click`);
-		expect((steps[0] as ClickStep).selectors.primary).toBe(`#save`);
+		expect((steps[0] as ClickStep).selectors[0]).toBe(`#save`);
 	});
 });
 
 // ─── selector priority ────────────────────────────────────────────────────────
+// Candidate priority: aria accessible name -> visible text -> data-testid/data-qa -> #id -> CSS
+// positional path. These fixtures give the element no accessible name and no text, so testid/id
+// candidates surface at [0]; other describe blocks below exercise aria/text specifically.
 
 describe(`selector priority order`, () => {
-	test(`prefers [data-testid] as SelectorGroup.primary when present`, () => {
+	test(`prefers a testid/ candidate (from data-testid) first when the element has no accessible name or text`, () => {
 		const el = document.createElement(`button`);
 		el.setAttribute(`data-testid`, `submit-btn`);
 		el.id = `should-not-win`;
@@ -80,10 +83,10 @@ describe(`selector priority order`, () => {
 		vi.advanceTimersByTime(2000);
 
 		const steps = flush();
-		expect((steps[0] as ClickStep).selectors.primary).toBe(`[data-testid="submit-btn"]`);
+		expect((steps[0] as ClickStep).selectors[0]).toBe(`testid/submit-btn`);
 	});
 
-	test(`falls back to [data-qa] as primary when data-testid is absent`, () => {
+	test(`falls back to a testid/ candidate from data-qa when data-testid is absent`, () => {
 		const el = document.createElement(`button`);
 		el.setAttribute(`data-qa`, `submit-btn`);
 		document.body.appendChild(el);
@@ -92,22 +95,23 @@ describe(`selector priority order`, () => {
 		vi.advanceTimersByTime(2000);
 
 		const steps = flush();
-		expect((steps[0] as ClickStep).selectors.primary).toBe(`[data-qa="submit-btn"]`);
+		expect((steps[0] as ClickStep).selectors[0]).toBe(`testid/submit-btn`);
 	});
 
-	test(`falls back to [aria-label] as primary for interactive elements when data-testid/data-qa are absent`, () => {
+	test(`prefers an aria/ candidate (from aria-label) over testid/id when present`, () => {
 		const el = document.createElement(`button`);
 		el.setAttribute(`aria-label`, `Submit form`);
+		el.setAttribute(`data-testid`, `should-not-win`);
 		document.body.appendChild(el);
 
 		el.dispatchEvent(new MouseEvent(`click`, { bubbles: true }));
 		vi.advanceTimersByTime(2000);
 
 		const steps = flush();
-		expect((steps[0] as ClickStep).selectors.primary).toBe(`[aria-label="Submit form"]`);
+		expect((steps[0] as ClickStep).selectors[0]).toBe(`aria/Submit form`);
 	});
 
-	test(`falls back to #id as primary last, to avoid dynamic/auto-generated IDs when other priority selectors exist`, () => {
+	test(`falls back to #id when the element has no accessible name, text, or testid`, () => {
 		const el = document.createElement(`button`);
 		el.id = `submit-btn`;
 		document.body.appendChild(el);
@@ -116,10 +120,10 @@ describe(`selector priority order`, () => {
 		vi.advanceTimersByTime(2000);
 
 		const steps = flush();
-		expect((steps[0] as ClickStep).selectors.primary).toBe(`#submit-btn`);
+		expect((steps[0] as ClickStep).selectors[0]).toBe(`#submit-btn`);
 	});
 
-	test(`always populates fallbacks with CSS class path (own classes only) and full nth-child ancestor path, in that order`, () => {
+	test(`always includes a CSS positional selector candidate as the last-resort fallback`, () => {
 		const el = document.createElement(`button`);
 		el.id = `submit-btn`;
 		el.className = `btn btn-primary`;
@@ -129,8 +133,8 @@ describe(`selector priority order`, () => {
 		vi.advanceTimersByTime(2000);
 
 		const steps = flush();
-		const fallbacks = (steps[0] as ClickStep).selectors.fallbacks;
-		expect(fallbacks).toContain(`.btn.btn-primary`);
+		const candidates = (steps[0] as ClickStep).selectors;
+		expect(candidates[candidates.length - 1]).toMatch(/^#submit-btn|button/);
 	});
 
 	test.each([
@@ -138,7 +142,7 @@ describe(`selector priority order`, () => {
 		[`a long hex hash`, `a1b2c3d4e5f6a7b8`],
 		[`a useId/Radix-style id`, `r1a`],
 		[`an enumerated list-position id`, `tab-2`]
-	])(`does not use an id containing a digit (%s) as primary or fallback, since it looks auto-generated`, (_label, id) => {
+	])(`does not use an id containing a digit (%s) in any candidate, since it looks auto-generated`, (_label, id) => {
 		const el = document.createElement(`button`);
 		el.id = id;
 		document.body.appendChild(el);
@@ -147,12 +151,11 @@ describe(`selector priority order`, () => {
 		vi.advanceTimersByTime(2000);
 
 		const steps = flush();
-		const { primary, fallbacks } = (steps[0] as ClickStep).selectors;
-		expect(primary).not.toBe(`#${id}`);
-		expect(fallbacks).not.toContain(`#${id}`);
+		const candidates = (steps[0] as ClickStep).selectors;
+		for (const candidate of candidates) { expect(candidate).not.toBe(`#${id}`); }
 	});
 
-	test(`still uses a letters/hyphens/underscores-only id as primary, since it has no digits and looks human-authored`, () => {
+	test(`still uses a letters/hyphens/underscores-only id as the top candidate, since it has no digits and looks human-authored`, () => {
 		const el = document.createElement(`button`);
 		el.id = `login-form_submit`;
 		document.body.appendChild(el);
@@ -161,10 +164,10 @@ describe(`selector priority order`, () => {
 		vi.advanceTimersByTime(2000);
 
 		const steps = flush();
-		expect((steps[0] as ClickStep).selectors.primary).toBe(`#login-form_submit`);
+		expect((steps[0] as ClickStep).selectors[0]).toBe(`#login-form_submit`);
 	});
 
-	test(`excludes a digit-bearing ancestor id from the positional selector used as primary`, () => {
+	test(`excludes a digit-bearing ancestor id from every candidate, including the positional selector`, () => {
 		const ancestor = document.createElement(`div`);
 		ancestor.id = `row-42`;
 		const el = document.createElement(`button`);
@@ -175,9 +178,70 @@ describe(`selector priority order`, () => {
 		vi.advanceTimersByTime(2000);
 
 		const steps = flush();
-		const { primary, fallbacks } = (steps[0] as ClickStep).selectors;
-		expect(primary).not.toContain(`#row-42`);
-		for (const fallback of fallbacks) { expect(fallback).not.toContain(`#row-42`); }
+		const candidates = (steps[0] as ClickStep).selectors;
+		for (const candidate of candidates) { expect(candidate).not.toContain(`#row-42`); }
+	});
+});
+
+// ─── accessible-name / text candidates ─────────────────────────────────────────
+
+describe(`accessible-name and text candidates`, () => {
+	test(`uses an aria/ candidate from an associated <label> when the element has no aria-label`, () => {
+		const label = document.createElement(`label`);
+		label.textContent = `Email address`;
+		const input = document.createElement(`input`);
+		input.id = `email-field`;
+		label.htmlFor = `email-field`;
+		document.body.appendChild(label);
+		document.body.appendChild(input);
+
+		input.dispatchEvent(new Event(`change`, { bubbles: true }));
+		vi.advanceTimersByTime(2000);
+
+		const steps = flush();
+		expect((steps[0] as InputStep).selectors[0]).toBe(`aria/Email address`);
+	});
+
+	test(`uses a text/ candidate from unique visible text on an element with mixed inline children (no single accessible name computed)`, () => {
+		const el = document.createElement(`a`);
+		el.innerHTML = `Continue to <strong>checkout</strong>`;
+		document.body.appendChild(el);
+
+		el.dispatchEvent(new MouseEvent(`click`, { bubbles: true }));
+		vi.advanceTimersByTime(2000);
+
+		const steps = flush();
+		expect((steps[0] as ClickStep).selectors[0]).toBe(`text/Continue to checkout`);
+	});
+
+	test(`skips a text/ candidate when the same text is shared by more than one element of the same tag`, () => {
+		const first = document.createElement(`a`);
+		first.innerHTML = `Save <strong>now</strong>`;
+		const second = document.createElement(`a`);
+		second.innerHTML = `Save <strong>now</strong>`;
+		document.body.appendChild(first);
+		document.body.appendChild(second);
+
+		first.dispatchEvent(new MouseEvent(`click`, { bubbles: true }));
+		vi.advanceTimersByTime(2000);
+
+		const steps = flush();
+		expect((steps[0] as ClickStep).selectors).not.toContain(`text/Save now`);
+	});
+
+	test(`skips an aria/ candidate when the same accessible name resolves for more than one element`, () => {
+		const first = document.createElement(`button`);
+		first.setAttribute(`aria-label`, `Close`);
+		const second = document.createElement(`button`);
+		second.setAttribute(`aria-label`, `Close`);
+		document.body.appendChild(first);
+		document.body.appendChild(second);
+
+		first.dispatchEvent(new MouseEvent(`click`, { bubbles: true }));
+		vi.advanceTimersByTime(2000);
+
+		const steps = flush();
+		expect((steps[0] as ClickStep).selectors).not.toContain(`aria/Close`);
 	});
 });
 
