@@ -26,7 +26,9 @@ vi.mock(`@core/window.popups.js`, () => ({
 	closePopup: vi.fn().mockResolvedValue(undefined),
 	closeAllPopups: vi.fn().mockResolvedValue(undefined),
 	setReplayPopupIdQueue: vi.fn(),
-	clearReplayPopupIdQueue: vi.fn()
+	clearReplayPopupIdQueue: vi.fn(),
+	hideAllRecordingOverlays: vi.fn(),
+	showAllRecordingOverlays: vi.fn()
 }));
 
 import sessionRecorderService from '@core/session-recorder.service.js';

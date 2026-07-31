@@ -1,18 +1,51 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import type { PopupId } from '@registry/primitives.js';
 
-const { randomUUID, appendCloseWindowStep } = vi.hoisted(() => ({
+const { randomUUID, appendCloseWindowStep, isReplaying } = vi.hoisted(() => ({
 	randomUUID: vi.fn(),
-	appendCloseWindowStep: vi.fn()
+	appendCloseWindowStep: vi.fn(),
+	isReplaying: vi.fn().mockReturnValue(false)
 }));
 
 vi.mock(`crypto`, () => ({ randomUUID }));
 
 vi.mock(`@core/session-recorder.service.js`, () => ({
-	default: { appendCloseWindowStep }
+	default: { appendCloseWindowStep, isReplaying }
 }));
 
-import { registerPopupTracking, getPopupWebContents, getPopupIdForWebContents, closePopup, closeAllPopups, setReplayPopupIdQueue, clearReplayPopupIdQueue } from '@core/window.popups.js';
+type FakeLayerBounds = { x: number; y: number; width: number; height: number };
+type FakeLayerWebContents = { loadURL: MockFn; isDestroyed: MockFn };
+type FakeRecordingLayer = {
+	setBackgroundColor: MockFn;
+	setBounds: MockFn;
+	getBounds: () => FakeLayerBounds;
+	webContents: FakeLayerWebContents;
+}
+
+const { MockWebContentsView, recordingLayerInstances } = vi.hoisted(() => {
+	function makeFakeLayer(): FakeRecordingLayer {
+		let bounds: FakeLayerBounds = { x: 0, y: 0, width: 0, height: 0 };
+		return {
+			setBackgroundColor: vi.fn(),
+			setBounds: vi.fn((next: FakeLayerBounds) => { bounds = next; }),
+			getBounds: vi.fn(() => bounds),
+			webContents: { loadURL: vi.fn(), isDestroyed: vi.fn().mockReturnValue(false) }
+		};
+	}
+
+	const instances: FakeRecordingLayer[] = [];
+	function FakeWebContentsView(): FakeRecordingLayer {
+		const layer = makeFakeLayer();
+		instances.push(layer);
+		return layer;
+	}
+
+	return { MockWebContentsView: FakeWebContentsView, recordingLayerInstances: instances };
+});
+
+vi.mock(`electron`, () => ({ WebContentsView: MockWebContentsView }));
+
+import { registerPopupTracking, getPopupWebContents, getPopupIdForWebContents, closePopup, closeAllPopups, setReplayPopupIdQueue, clearReplayPopupIdQueue, showRecordingOverlay, hideRecordingOverlay, hideAllRecordingOverlays, showAllRecordingOverlays } from '@core/window.popups.js';
 
 type MockFn = ReturnType<typeof vi.fn>;
 type MockEventName = string;
@@ -31,13 +64,20 @@ type FakePopupWebContents = {
 	on: MockFn;
 }
 
+type FakeContentView = {
+	addChildView: MockFn;
+}
+
 type FakePopup = {
 	webContents: FakePopupWebContents;
 	isDestroyed: MockFn;
 	close: MockFn;
 	on: MockFn;
 	once: MockFn;
+	contentView: FakeContentView;
+	getContentSize: MockFn;
 	_emitClosed: ClosedListener;
+	_emitResize: () => void;
 }
 
 type FakeTestWebContents = {
@@ -47,8 +87,10 @@ type FakeTestWebContents = {
 
 function makeFakePopup(): FakePopup {
 	const closedHandlers: ClosedListener[] = [];
-	const registerClosedListener = (event: MockEventName, cb: ClosedListener): void => {
+	const resizeHandlers: ClosedListener[] = [];
+	const registerListener = (event: MockEventName, cb: ClosedListener): void => {
 		if (event === `closed`) { closedHandlers.push(cb); }
+		if (event === `resize`) { resizeHandlers.push(cb); }
 	};
 
 	const popup: FakePopup = {
@@ -59,9 +101,12 @@ function makeFakePopup(): FakePopup {
 		},
 		isDestroyed: vi.fn().mockReturnValue(false),
 		close: vi.fn(() => popup._emitClosed()),
-		on: vi.fn(registerClosedListener),
-		once: vi.fn(registerClosedListener),
-		_emitClosed: () => closedHandlers.forEach(cb => cb())
+		on: vi.fn(registerListener),
+		once: vi.fn(registerListener),
+		contentView: { addChildView: vi.fn() },
+		getContentSize: vi.fn().mockReturnValue([800, 600]),
+		_emitClosed: () => closedHandlers.forEach(cb => cb()),
+		_emitResize: () => resizeHandlers.forEach(cb => cb())
 	};
 	return popup;
 }
@@ -81,6 +126,8 @@ function makeTestWebContents(): FakeTestWebContents {
 beforeEach(() => {
 	randomUUID.mockReset();
 	appendCloseWindowStep.mockClear();
+	isReplaying.mockReset().mockReturnValue(false);
+	recordingLayerInstances.length = 0;
 });
 
 describe(`window.popups.ts`, () => {
@@ -225,5 +272,126 @@ describe(`window.popups.ts`, () => {
 		testWebContents._emitCreateWindow(popup);
 
 		expect(getPopupWebContents(`popup-fresh` as PopupId)).toBe(popup.webContents);
+	});
+
+	test(`creates a recording-layer overlay for every newly created popup, attached to the popup and collapsed by default`, () => {
+		randomUUID.mockReturnValueOnce(`popup-a`);
+		const testWebContents = makeTestWebContents();
+		registerPopupTracking(testWebContents as never);
+		const popup = makeFakePopup();
+
+		testWebContents._emitCreateWindow(popup);
+
+		expect(popup.contentView.addChildView).toHaveBeenCalledWith(recordingLayerInstances[0]);
+		expect(recordingLayerInstances[0].webContents.loadURL).toHaveBeenCalled();
+		expect(recordingLayerInstances[0].getBounds()).toEqual({ x: 0, y: 0, width: 800, height: 0 });
+	});
+
+	test(`shows the recording-layer overlay immediately when a popup is created mid-replay`, () => {
+		isReplaying.mockReturnValue(true);
+		randomUUID.mockReturnValueOnce(`popup-a`);
+		const testWebContents = makeTestWebContents();
+		registerPopupTracking(testWebContents as never);
+		const popup = makeFakePopup();
+
+		testWebContents._emitCreateWindow(popup);
+
+		expect(recordingLayerInstances[0].getBounds()).toEqual({ x: 0, y: 0, width: 800, height: 600 });
+	});
+
+	test(`showRecordingOverlay expands a popup's recording layer to the popup's full content size`, () => {
+		randomUUID.mockReturnValueOnce(`popup-a`);
+		const testWebContents = makeTestWebContents();
+		registerPopupTracking(testWebContents as never);
+		const popup = makeFakePopup();
+		testWebContents._emitCreateWindow(popup);
+
+		showRecordingOverlay(`popup-a` as PopupId);
+
+		expect(recordingLayerInstances[0].getBounds()).toEqual({ x: 0, y: 0, width: 800, height: 600 });
+	});
+
+	test(`hideRecordingOverlay collapses a popup's recording layer back to zero height`, () => {
+		randomUUID.mockReturnValueOnce(`popup-a`);
+		const testWebContents = makeTestWebContents();
+		registerPopupTracking(testWebContents as never);
+		const popup = makeFakePopup();
+		testWebContents._emitCreateWindow(popup);
+		showRecordingOverlay(`popup-a` as PopupId);
+
+		hideRecordingOverlay(`popup-a` as PopupId);
+
+		expect(recordingLayerInstances[0].getBounds()).toEqual({ x: 0, y: 0, width: 800, height: 0 });
+	});
+
+	test(`showAllRecordingOverlays expands every tracked popup's recording layer, e.g. a popup left open from a previous replay`, () => {
+		randomUUID.mockReturnValueOnce(`popup-a`).mockReturnValueOnce(`popup-b`);
+		const testWebContents = makeTestWebContents();
+		registerPopupTracking(testWebContents as never);
+		const popupA = makeFakePopup();
+		const popupB = makeFakePopup();
+		testWebContents._emitCreateWindow(popupA);
+		testWebContents._emitCreateWindow(popupB);
+
+		showAllRecordingOverlays();
+
+		expect(recordingLayerInstances[0].getBounds()).toEqual({ x: 0, y: 0, width: 800, height: 600 });
+		expect(recordingLayerInstances[1].getBounds()).toEqual({ x: 0, y: 0, width: 800, height: 600 });
+	});
+
+	test(`hideAllRecordingOverlays collapses every tracked popup's recording layer`, () => {
+		randomUUID.mockReturnValueOnce(`popup-a`).mockReturnValueOnce(`popup-b`);
+		const testWebContents = makeTestWebContents();
+		registerPopupTracking(testWebContents as never);
+		const popupA = makeFakePopup();
+		const popupB = makeFakePopup();
+		testWebContents._emitCreateWindow(popupA);
+		testWebContents._emitCreateWindow(popupB);
+		showRecordingOverlay(`popup-a` as PopupId);
+		showRecordingOverlay(`popup-b` as PopupId);
+
+		hideAllRecordingOverlays();
+
+		expect(recordingLayerInstances[0].getBounds().height).toBe(0);
+		expect(recordingLayerInstances[1].getBounds().height).toBe(0);
+	});
+
+	test(`keeps a shown recording layer's width in sync when the popup is resized, without collapsing it`, () => {
+		randomUUID.mockReturnValueOnce(`popup-a`);
+		const testWebContents = makeTestWebContents();
+		registerPopupTracking(testWebContents as never);
+		const popup = makeFakePopup();
+		testWebContents._emitCreateWindow(popup);
+		showRecordingOverlay(`popup-a` as PopupId);
+		popup.getContentSize.mockReturnValue([1000, 700]);
+
+		popup._emitResize();
+
+		expect(recordingLayerInstances[0].getBounds()).toEqual({ x: 0, y: 0, width: 1000, height: 700 });
+	});
+
+	test(`a resize on a collapsed (not currently shown) recording layer stays collapsed`, () => {
+		randomUUID.mockReturnValueOnce(`popup-a`);
+		const testWebContents = makeTestWebContents();
+		registerPopupTracking(testWebContents as never);
+		const popup = makeFakePopup();
+		testWebContents._emitCreateWindow(popup);
+		popup.getContentSize.mockReturnValue([1000, 700]);
+
+		popup._emitResize();
+
+		expect(recordingLayerInstances[0].getBounds()).toEqual({ x: 0, y: 0, width: 1000, height: 0 });
+	});
+
+	test(`no longer resizes or shows a popup's recording layer once the popup has closed`, () => {
+		randomUUID.mockReturnValueOnce(`popup-a`);
+		const testWebContents = makeTestWebContents();
+		registerPopupTracking(testWebContents as never);
+		const popup = makeFakePopup();
+		testWebContents._emitCreateWindow(popup);
+		popup._emitClosed();
+
+		expect(() => showRecordingOverlay(`popup-a` as PopupId)).not.toThrow();
+		expect(recordingLayerInstances[0].setBounds).toHaveBeenCalledTimes(1);
 	});
 });

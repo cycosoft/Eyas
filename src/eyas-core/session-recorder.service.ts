@@ -111,6 +111,11 @@ function setReplaying(isReplaying: IsActive): void {
 	_isReplaying = isReplaying;
 }
 
+/** Whether a replay is currently dispatching. */
+function isReplaying(): IsActive {
+	return _isReplaying;
+}
+
 /** Stops the active recording session, finalizing status and persisting to disk. */
 function stopRecording(ctx: CoreContext): void {
 	if (!_session) { return; }
@@ -143,7 +148,8 @@ export {
 	appendCloseWindowStep,
 	stopRecording,
 	getSession,
-	setReplaying
+	setReplaying,
+	isReplaying
 };
 
 export default {
@@ -153,6 +159,7 @@ export default {
 	appendCloseWindowStep,
 	stopRecording,
 	setReplaying,
+	isReplaying,
 	getActiveSession,
 	getSession,
 	_setSessionsDir

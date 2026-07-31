@@ -21,12 +21,14 @@ vi.mock(`@core/session-recorder.service.js`, () => ({
 	default: { getSession: vi.fn(), setReplaying: vi.fn() }
 }));
 
-const { getPopupWebContents, closePopup, closeAllPopups, setReplayPopupIdQueue, clearReplayPopupIdQueue } = vi.hoisted(() => ({
+const { getPopupWebContents, closePopup, closeAllPopups, setReplayPopupIdQueue, clearReplayPopupIdQueue, hideAllRecordingOverlays, showAllRecordingOverlays } = vi.hoisted(() => ({
 	getPopupWebContents: vi.fn(),
 	closePopup: vi.fn().mockResolvedValue(undefined),
 	closeAllPopups: vi.fn().mockResolvedValue(undefined),
 	setReplayPopupIdQueue: vi.fn(),
-	clearReplayPopupIdQueue: vi.fn()
+	clearReplayPopupIdQueue: vi.fn(),
+	hideAllRecordingOverlays: vi.fn(),
+	showAllRecordingOverlays: vi.fn()
 }));
 
 vi.mock(`@core/window.popups.js`, () => ({
@@ -34,7 +36,9 @@ vi.mock(`@core/window.popups.js`, () => ({
 	closePopup,
 	closeAllPopups,
 	setReplayPopupIdQueue,
-	clearReplayPopupIdQueue
+	clearReplayPopupIdQueue,
+	hideAllRecordingOverlays,
+	showAllRecordingOverlays
 }));
 
 const popupSendCommand = vi.fn().mockResolvedValue(undefined);
@@ -113,6 +117,8 @@ beforeEach(() => {
 	closeAllPopups.mockClear().mockResolvedValue(undefined);
 	setReplayPopupIdQueue.mockClear();
 	clearReplayPopupIdQueue.mockClear();
+	hideAllRecordingOverlays.mockClear();
+	showAllRecordingOverlays.mockClear();
 });
 
 describe(`sessionPlaybackService.playSession — popup routing`, () => {
@@ -179,6 +185,19 @@ describe(`sessionPlaybackService.playSession — popup routing`, () => {
 		warnSpy.mockRestore();
 	});
 
+	// regression coverage for: a popup left open from a previous replay (natural-finish replays
+	// don't close every popup, only aborted/failed ones do — see `_teardownPopups`), or opened
+	// manually during recording, must still be covered by its overlay on the *next* replay, not
+	// just popups newly created during that replay's own dispatch
+	test(`shows every already-tracked popup's recording-layer overlay at the start of a replay, not just popups newly created during it`, async () => {
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([]));
+		const ctx = makeCtx();
+
+		await playbackService.playSession(ctx, `sess-1`);
+
+		expect(showAllRecordingOverlays).toHaveBeenCalled();
+	});
+
 	test(`primes the replay popup id queue with each step's popupId in first-appearance order before dispatch, and clears it after, so a popup re-opened during replay is assigned the same id it was recorded with`, async () => {
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
 			{ type: `click`, selectors: [`#open`], offsetX: 1, offsetY: 1, popupId: `popup-1`, timestamp: 1 } as never,
@@ -221,5 +240,40 @@ describe(`sessionPlaybackService.playSession — popup routing`, () => {
 
 		expect(closeAllPopups).toHaveBeenCalled();
 		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, expect.objectContaining({ status: `failed` }));
+	});
+
+	test(`hides every popup's recording-layer overlay once the ring's fade-out finishes, on a natural finish`, async () => {
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `click`, selectors: [`#save`], offsetX: 1, offsetY: 1, timestamp: 1 }
+		]));
+		const ctx = makeCtx();
+		vi.useFakeTimers();
+		try {
+			const playPromise = playbackService.playSession(ctx, `sess-1`);
+			await vi.advanceTimersByTimeAsync(1000);
+			await playPromise;
+
+			expect(hideAllRecordingOverlays).toHaveBeenCalled();
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	test(`hides every popup's recording-layer overlay even when a step throws mid-replay`, async () => {
+		sendCommand.mockRejectedValueOnce(new Error(`boom`));
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `click`, selectors: [`#save`], offsetX: 1, offsetY: 1, timestamp: 1 }
+		]));
+		const ctx = makeCtx();
+		vi.useFakeTimers();
+		try {
+			const playPromise = playbackService.playSession(ctx, `sess-1`);
+			await vi.advanceTimersByTimeAsync(1000);
+			await playPromise;
+
+			expect(hideAllRecordingOverlays).toHaveBeenCalled();
+		} finally {
+			vi.useRealTimers();
+		}
 	});
 });

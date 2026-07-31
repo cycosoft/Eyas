@@ -4,7 +4,7 @@ import type { RecorderPlaybackStatusPayload } from '@registry/ipc.js';
 import type { SessionId, DurationMS, DomainUrl, PopupId, StepCount, StepIndex } from '@registry/primitives.js';
 import type { ReplaySpeedMode } from '@registry/settings.js';
 import sessionRecorderService from './session-recorder.service.js';
-import { getPopupWebContents, closePopup, closeAllPopups, setReplayPopupIdQueue, clearReplayPopupIdQueue } from './window.popups.js';
+import { getPopupWebContents, closePopup, closeAllPopups, setReplayPopupIdQueue, clearReplayPopupIdQueue, hideAllRecordingOverlays, showAllRecordingOverlays } from './window.popups.js';
 import { buildClickPointScript, buildChangeScript, buildKeyDownMutationScript } from './session-playback.selector-resolution.js';
 import { TEST_RUNNING_RING_FADE_MS, PLAYBACK_COMPLETE_HOLD_MS } from '@scripts/constants.js';
 
@@ -227,7 +227,7 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 	// user's own — suppress the recorder so a replay doesn't record itself into its own session
 	sessionRecorderService.setReplaying(true);
 	setReplayPopupIdQueue(_orderedPopupIds(steps));
-	ctx.toggleEyasUI(true);
+	ctx.toggleEyasUI(true); showAllRecordingOverlays();
 	const stepActions = _computeStepActions(steps);
 	_sendPlaybackStatus(ctx, { status: `playing`, completedSteps: 0 as StepCount, totalSteps: stepActions.totalActions });
 	try {
@@ -278,7 +278,7 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 		// under it, or the ring gets clipped mid-fade instead of animating away. Not awaited: playback
 		// has already finished and reported its final status by this point, so the collapse shouldn't
 		// hold up playSession()'s own caller
-		setTimeout(() => ctx.toggleEyasUI(false, true), TEST_RUNNING_RING_FADE_MS);
+		setTimeout(() => { ctx.toggleEyasUI(false, true); hideAllRecordingOverlays(); }, TEST_RUNNING_RING_FADE_MS);
 		try { webContents.debugger.detach(); } catch { /* not attached */ }
 	}
 }
