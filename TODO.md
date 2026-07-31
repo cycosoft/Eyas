@@ -1,6 +1,11 @@
 # TODO
 
 - Update changelog.json
+- enable multiple workers in playwright?
+- does each instance get its own cache?
+- did we validate user settings conflicts?
+- did we validate recording conflicts?
+- are there other caching levels to consider?
 
 
 # Future
