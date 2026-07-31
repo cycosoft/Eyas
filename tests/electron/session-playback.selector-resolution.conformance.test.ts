@@ -18,7 +18,7 @@ describe(`selector-resolution conformance vs. real Playwright`, () => {
 	});
 
 	afterAll(async () => {
-		await browser.close();
+		await browser?.close();
 	});
 
 	async function _resolveViaOurScript(candidates: SelectorGroup): Promise<ClickPoint | null> {
