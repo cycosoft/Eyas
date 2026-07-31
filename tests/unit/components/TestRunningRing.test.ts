@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach } from 'vitest';
+import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { mount, type VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia, type Pinia } from 'pinia';
 import TestRunningRing from '@/components/TestRunningRing.vue';
@@ -54,7 +54,8 @@ describe(`TestRunningRing`, () => {
 		expect(ring.attributes(`style`)).toContain(`height: 768px`);
 	});
 
-	test(`disappears once playback stops`, async () => {
+	test(`stays mounted to fade out, then disappears once playback stops`, async () => {
+		vi.useFakeTimers();
 		const store = useRecordingStore();
 		store.playbackStatus = `playing`;
 		headerState.currentViewport = [1024, 768];
@@ -65,6 +66,12 @@ describe(`TestRunningRing`, () => {
 		store.playbackStatus = `stopped`;
 		await wrapper.vm.$nextTick();
 
+		expect(wrapper.find(`[data-qa="test-running-ring"]`).exists()).toBe(true);
+
+		vi.advanceTimersByTime(250);
+		await wrapper.vm.$nextTick();
+
 		expect(wrapper.find(`[data-qa="test-running-ring"]`).exists()).toBe(false);
+		vi.useRealTimers();
 	});
 });

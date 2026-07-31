@@ -6,6 +6,7 @@ import type { ReplaySpeedMode } from '@registry/settings.js';
 import sessionRecorderService from './session-recorder.service.js';
 import { getPopupWebContents, closePopup, closeAllPopups, setReplayPopupIdQueue, clearReplayPopupIdQueue } from './window.popups.js';
 import { buildClickPointScript, buildChangeScript, buildKeyDownMutationScript } from './session-playback.selector-resolution.js';
+import { TEST_RUNNING_RING_FADE_MS } from '@scripts/constants.js';
 
 const CDP_DEBUGGER_VERSION = `1.3`;
 
@@ -237,7 +238,11 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 		_abortRequested = false;
 		sessionRecorderService.setReplaying(false);
 		clearReplayPopupIdQueue();
-		ctx.toggleEyasUI(false, true);
+		// let TestRunningRing.vue's fade-out transition finish before the UI layer collapses out from
+		// under it, or the ring gets clipped mid-fade instead of animating away. Not awaited: playback
+		// has already finished and reported its final status by this point, so the collapse shouldn't
+		// hold up playSession()'s own caller
+		setTimeout(() => ctx.toggleEyasUI(false, true), TEST_RUNNING_RING_FADE_MS);
 		try { webContents.debugger.detach(); } catch { /* not attached */ }
 	}
 }

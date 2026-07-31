@@ -462,9 +462,10 @@ describe(`sessionPlaybackService.playSession`, () => {
 		await vi.advanceTimersByTimeAsync(1500);
 		await playPromise;
 
-		// a delay applies before every step, including the first: 3 steps -> 3 waits
-		expect(setTimeoutSpy).toHaveBeenCalledTimes(3);
-		expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 500);
+		// a delay applies before every step, including the first: 3 steps -> 3 waits (a 4th
+		// setTimeout call schedules the UI layer's post-playback collapse, unrelated to step pacing)
+		const stepDelayCalls = setTimeoutSpy.mock.calls.filter(call => call[1] === 500);
+		expect(stepDelayCalls).toHaveLength(3);
 		expect(loadURL).toHaveBeenNthCalledWith(1, `https://example.com/a`);
 		expect(loadURL).toHaveBeenNthCalledWith(3, `https://example.com/c`);
 		setTimeoutSpy.mockRestore();
