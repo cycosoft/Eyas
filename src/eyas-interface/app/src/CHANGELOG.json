@@ -2,6 +2,7 @@
 	{
 		"version": "26.7.1",
 		"items": [
+			{ "text": "🟢 Support for launching multiple eyas instances with different test ids" },
 			{ "text": "🟢 Add session recording and playback tool" },
 			{ "text": "🟣 Split UI and Test Layer session caches" }
 		]
