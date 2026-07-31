@@ -84,7 +84,13 @@ export default defineConfig({
 	},
 	renderer: {
 		plugins: [
-			vue(),
+			vue({
+				template: {
+					compilerOptions: {
+						isCustomElement: tag => tag === `recording-ring`
+					}
+				}
+			}),
 			vuetify({ autoImport: true })
 		],
 		root: resolve(import.meta.dirname, `src/eyas-interface/app`),
@@ -97,7 +103,10 @@ export default defineConfig({
 
 		build: {
 			rollupOptions: {
-				input: resolve(import.meta.dirname, `src/eyas-interface/app/index.html`)
+				input: {
+					index: resolve(import.meta.dirname, `src/eyas-interface/app/index.html`),
+					'recording-layer': resolve(import.meta.dirname, `src/eyas-interface/app/recording-layer.html`)
+				}
 			},
 			outDir: resolve(import.meta.dirname, `out/eyas-interface`),
 			emptyOutDir: true

@@ -1,51 +1,36 @@
-<!DOCTYPE html>
-<html>
+export const RECORDING_RING_TAG = `recording-ring`;
 
-<head>
-	<meta charset="utf-8">
+const TEMPLATE = document.createElement(`template`);
+TEMPLATE.innerHTML = `
 	<style>
-		html, body {
-			margin: 0;
-			padding: 0;
-			width: 100%;
-			height: 100%;
-			background: transparent;
+		:host {
+			display: block;
 			overflow: hidden;
 		}
-
-		.recording-layer-ring {
-			position: fixed;
-			top: 0;
-			left: 0;
+		svg {
 			width: 100%;
 			height: 100%;
 		}
-
-		.recording-layer-ring__glow {
+		.glow {
 			fill: none;
-			stroke: url(#recording-layer-ring-gradient);
+			stroke: url(#recording-ring-gradient);
 			vector-effect: non-scaling-stroke;
 		}
-
-		.recording-layer-ring__glow--outer {
+		.glow--outer {
 			stroke-width: 26;
 			opacity: 0.6;
-			filter: url(#recording-layer-ring-turbulence) blur(9px);
+			filter: url(#recording-ring-turbulence) blur(9px);
 		}
-
-		.recording-layer-ring__glow--core {
+		.glow--core {
 			stroke-width: 8;
 			opacity: 1;
-			filter: url(#recording-layer-ring-turbulence) blur(1.5px);
+			filter: url(#recording-ring-turbulence) blur(1.5px);
 		}
 	</style>
-</head>
-
-<body>
-	<svg class="recording-layer-ring">
+	<svg>
 		<defs>
 			<filter
-				id="recording-layer-ring-turbulence"
+				id="recording-ring-turbulence"
 				x="-20%"
 				y="-20%"
 				width="140%"
@@ -75,19 +60,19 @@
 			</filter>
 
 			<linearGradient
-				id="recording-layer-ring-gradient"
+				id="recording-ring-gradient"
 				gradientUnits="objectBoundingBox"
 			>
-				<stop offset="0%" stop-color="#58A1D6">
+				<stop offset="0%" style="stop-color: var(--recording-ring-color-1)">
 					<animate attributeName="stop-opacity" values="0.7;1;0.8;1;0.7" dur="9s" repeatCount="indefinite" />
 				</stop>
-				<stop offset="35%" stop-color="#D05454">
+				<stop offset="35%" style="stop-color: var(--recording-ring-color-2)">
 					<animate attributeName="stop-opacity" values="1;0.7;1;0.8;1" dur="13s" repeatCount="indefinite" />
 				</stop>
-				<stop offset="65%" stop-color="#008562">
+				<stop offset="65%" style="stop-color: var(--recording-ring-color-3)">
 					<animate attributeName="stop-opacity" values="0.8;1;0.7;1;0.8" dur="11s" repeatCount="indefinite" />
 				</stop>
-				<stop offset="100%" stop-color="#58A1D6">
+				<stop offset="100%" style="stop-color: var(--recording-ring-color-1)">
 					<animate attributeName="stop-opacity" values="1;0.8;1;0.7;1" dur="17s" repeatCount="indefinite" />
 				</stop>
 				<animateTransform
@@ -101,21 +86,21 @@
 			</linearGradient>
 		</defs>
 
-		<rect
-			class="recording-layer-ring__glow recording-layer-ring__glow--outer"
-			x="0"
-			y="0"
-			width="100%"
-			height="100%"
-		/>
-		<rect
-			class="recording-layer-ring__glow recording-layer-ring__glow--core"
-			x="0"
-			y="0"
-			width="100%"
-			height="100%"
-		/>
+		<rect class="glow glow--outer" x="0" y="0" width="100%" height="100%" />
+		<rect class="glow glow--core" x="0" y="0" width="100%" height="100%" />
 	</svg>
-</body>
+`;
 
-</html>
+class RecordingRingElement extends HTMLElement {
+	constructor() {
+		super();
+		const shadow = this.attachShadow({ mode: `open` });
+		shadow.appendChild(TEMPLATE.content.cloneNode(true));
+	}
+}
+
+export function defineRecordingRingElement(): void {
+	if (!customElements.get(RECORDING_RING_TAG)) {
+		customElements.define(RECORDING_RING_TAG, RecordingRingElement);
+	}
+}

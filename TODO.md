@@ -1,6 +1,5 @@
 # TODO
 
-- can we put the overlay for popup windows to prevent interactions there?
 - the test layer animation needs to be z-index _under_ the header items like tooltips and menus
 - we do not appear to be cleaning up old recording sessions
 - are the recording sessions saved per test?
