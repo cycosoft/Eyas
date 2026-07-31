@@ -42,6 +42,13 @@ describe(`getElectronBuilderConfig`, () => {
 		expect(configWithoutTeamId.mac.notarize).toBe(false);
 	});
 
+	test(`mac.extendInfo sets LSMultipleInstancesEnabled so macOS Launch Services allows concurrent instances (EYAS-334)`, () => {
+		const config = getElectronBuilderConfig(baseOptions);
+		expect(config.mac).toBeDefined();
+		if (!config.mac) throw new Error(`mac is undefined`);
+		expect(config.mac.extendInfo).toMatchObject({ LSMultipleInstancesEnabled: true });
+	});
+
 	test(`win has no top-level sign property`, () => {
 		const config = getElectronBuilderConfig({
 			...baseOptions,

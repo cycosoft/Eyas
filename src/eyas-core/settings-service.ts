@@ -2,7 +2,7 @@
 import { app } from 'electron';
 import _path from 'path';
 import fs from 'fs-extra';
-const { readJson, outputJson } = fs;
+const { readJson, outputJson, move } = fs;
 import { SETTINGS_DEFAULTS } from '@scripts/constants.js';
 import type { SettingsData, AppSettings, ProjectSettings } from '@registry/settings.js';
 import type { FilePath, ProjectId, SettingKey, GenericRecord } from '@registry/primitives.js';
@@ -87,7 +87,12 @@ async function save(): Promise<void> {
 		}
 
 		if (_storagePath) {
-			await outputJson(_storagePath, _data, { spaces: 2 });
+			// Write to a temp file then rename (atomic on the same filesystem) so a
+			// second Eyas process reading settings.json concurrently never observes
+			// a torn/partially-written file (EYAS-334).
+			const tmpPath = `${_storagePath}.${process.pid}.tmp`;
+			await outputJson(tmpPath, _data, { spaces: 2 });
+			await move(tmpPath, _storagePath, { overwrite: true });
 		}
 	}).catch(err => {
 		console.error(`[SETTINGS-SERVICE] save failed:`, err);

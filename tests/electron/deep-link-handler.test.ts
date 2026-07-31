@@ -1,9 +1,12 @@
-import { describe, test, expect, vi } from 'vitest';
+import { describe, test, expect, vi, afterEach } from 'vitest';
 import {
 	isEyasProtocolUrl,
 	handleEyasProtocolUrl,
-	getEyasUrlFromCommandLine
+	getEyasUrlFromCommandLine,
+	awaitInitialDeepLink
 } from '@core/deep-link-handler.js';
+import type { ConfigToLoad } from '@registry/core.js';
+import type { DurationMS } from '@registry/primitives.js';
 
 const LOAD_TYPES = { WEB: `web` };
 
@@ -110,5 +113,53 @@ describe(`getEyasUrlFromCommandLine`, () => {
 
 	test(`returns undefined for empty array`, () => {
 		expect(getEyasUrlFromCommandLine([])).toBeUndefined();
+	});
+});
+
+describe(`awaitInitialDeepLink`, () => {
+	const originalPlatform = process.platform;
+
+	type PlatformName = string;
+
+	function setPlatform(platform: PlatformName): void {
+		Object.defineProperty(process, `platform`, { value: platform });
+	}
+
+	afterEach(() => {
+		setPlatform(originalPlatform);
+	});
+
+	test(`resolves immediately when configToLoad is already populated (argv-based launch)`, async () => {
+		setPlatform(`darwin`);
+		const start = Date.now();
+		await awaitInitialDeepLink(() => ({ method: LOAD_TYPES.WEB, path: `eyas://a` } as ConfigToLoad), 5000 as DurationMS);
+		expect(Date.now() - start).toBeLessThan(50);
+	});
+
+	test(`resolves immediately on non-macOS platforms even when configToLoad is empty`, async () => {
+		setPlatform(`win32`);
+		const start = Date.now();
+		await awaitInitialDeepLink(() => ({} as ConfigToLoad), 5000 as DurationMS);
+		expect(Date.now() - start).toBeLessThan(50);
+	});
+
+	test(`on macOS, resolves as soon as configToLoad becomes populated, without waiting for the full timeout`, async () => {
+		setPlatform(`darwin`);
+		let configToLoad: ConfigToLoad = {};
+		setTimeout(() => { configToLoad = { method: LOAD_TYPES.WEB, path: `eyas://a` }; }, 30);
+
+		const start = Date.now();
+		await awaitInitialDeepLink(() => configToLoad, 5000 as DurationMS);
+		const elapsed = Date.now() - start;
+
+		expect(elapsed).toBeGreaterThanOrEqual(30);
+		expect(elapsed).toBeLessThan(500);
+	});
+
+	test(`on macOS, gives up after the timeout when no deep link ever arrives`, async () => {
+		setPlatform(`darwin`);
+		const start = Date.now();
+		await awaitInitialDeepLink(() => ({} as ConfigToLoad), 50 as DurationMS);
+		expect(Date.now() - start).toBeGreaterThanOrEqual(50);
 	});
 });

@@ -201,8 +201,7 @@ Runner: v${ctx._appVersion}
 	 */
 	async init(ctx: CoreContext): Promise<void> {
 		const {
-			handleEyasProtocolUrl,
-			getEyasUrlFromCommandLine
+			handleEyasProtocolUrl
 		} = await import(`./deep-link-handler.js`);
 
 		this.setupProtocols(ctx);
@@ -237,17 +236,10 @@ Runner: v${ctx._appVersion}
 			handleEyasProtocolUrl(url as DomainUrl, deepLinkContext);
 		});
 
-		// Windows/Linux: handle second instance with protocol URL
-		app.on(`second-instance`, (_event, commandLine) => {
-			if (ctx.$appWindow) {
-				if (ctx.$appWindow.isMinimized()) { ctx.$appWindow.restore(); }
-				ctx.$appWindow.focus();
-			}
-			const url = getEyasUrlFromCommandLine(commandLine);
-			if (url) {
-				handleEyasProtocolUrl(url, deepLinkContext);
-			}
-		});
+		// Note (EYAS-334): there is intentionally no `second-instance` handler.
+		// Multiple instances are now allowed to run concurrently, so a second
+		// eyas:// launch on Windows/Linux simply becomes its own independent
+		// instance rather than being forwarded into an existing window.
 	},
 
 	/**
@@ -255,8 +247,9 @@ Runner: v${ctx._appVersion}
 	 * @param ctx The core context.
 	 */
 	async handleReady(ctx: CoreContext): Promise<void> {
-		const getConfig = (await import(`../scripts/get-config.js`)).default;
-		ctx.setConfig(await getConfig(ctx.$configToLoad.method || LOAD_TYPES.AUTO, ctx.$configToLoad.path));
+		// ctx.$config is already resolved pre-ready by initElectronCore (EYAS-334) so
+		// sessionData isolation and the per-testId instance lock can run before Chromium
+		// initializes its profile — nothing to load here.
 
 		await settingsService.load();
 

@@ -1,10 +1,13 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { updateService } from '@core/update.service.js';
 import electronUpdater from 'electron-updater';
 const { autoUpdater } = electronUpdater;
 import * as settingsService from '@core/settings-service.js';
 import type { CoreContext } from '@registry/eyas-core.js';
-import type { GenericKey, AppVersion, Count } from '@registry/primitives.js';
+import type { GenericKey, AppVersion, Count, FilePath } from '@registry/primitives.js';
+import { tmpdir } from 'os';
+import { join } from 'path';
+import { remove } from 'fs-extra';
 
 /** Any function type for mocking */
 type AnyFunction = (...args: unknown[]) => unknown;
@@ -63,11 +66,17 @@ vi.mock(`semver`, () => ({
 
 describe(`Update Service`, () => {
 	let mockCtx: CoreContext;
+	let lockPath: FilePath;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
 		(autoUpdater as unknown as AutoUpdaterMock)._listeners = {};
 		updateService.reset();
+
+		// Redirect the update-check lock (EYAS-334) to a temp file so init()'s
+		// gated auto-check doesn't touch the real userData directory.
+		lockPath = join(tmpdir(), `eyas-update-lock-test-${Date.now()}-${Math.random().toString(36).slice(2)}.json`) as FilePath;
+		updateService._setLockPathOverride(lockPath);
 
 		mockCtx = {
 			_appVersion: `1.2.3` as AppVersion,
@@ -77,9 +86,15 @@ describe(`Update Service`, () => {
 		} as unknown as CoreContext;
 	});
 
-	it(`should initialize with correct settings (allowBypassUpdates = false)`, () => {
+	afterEach(async () => {
+		updateService._setLockPathOverride(null);
+		await remove(lockPath).catch(() => { });
+	});
+
+	it(`should initialize with correct settings (allowBypassUpdates = false)`, async () => {
 		vi.mocked(settingsService.get).mockReturnValue(false);
 		updateService.init(mockCtx);
+		await updateService._awaitPendingAutoCheck();
 
 		expect(autoUpdater.forceDevUpdateConfig).toBe(true);
 		expect(autoUpdater.autoInstallOnAppQuit).toBe(true);

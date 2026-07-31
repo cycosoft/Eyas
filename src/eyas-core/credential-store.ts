@@ -1,7 +1,7 @@
 import { app, safeStorage } from 'electron';
 import _path from 'path';
 import fs from 'fs-extra';
-const { readJson, outputJson } = fs;
+const { readJson, outputJson, move } = fs;
 import type { CredentialStoreService, CredentialStoreData, DecryptedCredential, CredentialMetadata } from '@registry/core.js';
 import type { FilePath, ProjectId, DomainUrl, Username, PasswordPlain } from '@registry/primitives.js';
 
@@ -31,7 +31,12 @@ async function save(): Promise<void> {
 		_storagePath = _path.join(app.getPath(`userData`), `credentials.json`);
 	}
 	if (_storagePath) {
-		await outputJson(_storagePath, _data, { spaces: 2 });
+		// Write to a temp file then rename (atomic on the same filesystem) so a
+		// second Eyas process reading credentials.json concurrently never observes
+		// a torn/partially-written file (EYAS-334).
+		const tmpPath = `${_storagePath}.${process.pid}.tmp` as typeof _storagePath;
+		await outputJson(tmpPath, _data, { spaces: 2 });
+		await move(tmpPath, _storagePath, { overwrite: true });
 	}
 }
 

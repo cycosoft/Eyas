@@ -1,9 +1,8 @@
 import type { BrowserWindow, WebContentsView } from 'electron';
 import type { ValidatedConfig } from './config.js';
 import type { TestServerOptions } from './test-server.js';
-import type { IsActive, IsPending, DomainUrl, MPEventName, ChannelName, TimestampMS, AppVersion, EnvironmentKey, AppTitle, FormattedDuration, RetryCount, UpdateStatus, MetadataRecord, Count } from './primitives.js';
+import type { IsActive, IsPending, DomainUrl, MPEventName, ChannelName, TimestampMS, AppVersion, EnvironmentKey, AppTitle, FormattedDuration, RetryCount, UpdateStatus, MetadataRecord, Count, FilePath } from './primitives.js';
 import type { PreventableEvent, Viewport, ViewportSize, StartupModal, ConfigToLoad } from './core.js';
-import type { FilePath } from './primitives.js';
 import type { NavItem } from './components.js';
 
 /** Paths used by the Eyas core orchestrator */
@@ -132,6 +131,8 @@ export type UpdateService = {
 	getStatus: () => UpdateStatus;
 	reset: () => void;
 	setAutoInstallOnAppQuit: (enabled: IsActive) => void;
+	_setLockPathOverride: (path: FilePath | null) => void;
+	_awaitPendingAutoCheck: () => Promise<void>;
 };
 
 /** Menu Service interface */

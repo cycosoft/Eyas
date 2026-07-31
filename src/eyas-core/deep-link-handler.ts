@@ -1,5 +1,6 @@
 import type { DeepLinkContext } from '@registry/deep-link.js';
-import type { EyasProtocolUrl, CommandLineArgs } from '@registry/primitives.js';
+import type { EyasProtocolUrl, CommandLineArgs, DurationMS } from '@registry/primitives.js';
+import type { ConfigToLoad } from '@registry/core.js';
 
 /**
  * Returns true only when url is a non-empty string starting with eyas://.
@@ -44,4 +45,35 @@ export function getEyasUrlFromCommandLine(argv: CommandLineArgs): EyasProtocolUr
 		}
 	}
 	return undefined;
+}
+
+/**
+ * Waits for the launch method to become known before the early config peek
+ * (EYAS-334). A given process launch is started by exactly one of: an
+ * eyas:// URL (argv on Windows/Linux, the async `open-url` event on macOS),
+ * a `.eyas` file association (argv, or `open-file` on macOS), or neither
+ * (a plain launch). If `configToLoad` is already populated — the
+ * synchronous argv-based cases — this returns immediately. The only case
+ * that actually waits is a macOS launch whose `open-url`/`open-file` event
+ * hasn't been delivered yet; `timeoutMs` bounds how long a plain (no
+ * deep-link) macOS launch sits idle before falling through to AUTO/ROOT.
+ * @param {() => ConfigToLoad} getConfigToLoad - Reads the current configToLoad
+ * @param {DurationMS} timeoutMs - Max time to wait on macOS before giving up
+ * @returns {Promise<void>}
+ */
+export async function awaitInitialDeepLink(getConfigToLoad: () => ConfigToLoad, timeoutMs: DurationMS): Promise<void> {
+	if (getConfigToLoad().method) { return; }
+	if (process.platform !== `darwin`) { return; }
+
+	await new Promise<void>(resolve => {
+		const start = Date.now();
+		const poll = (): void => {
+			if (getConfigToLoad().method || Date.now() - start >= timeoutMs) {
+				resolve();
+				return;
+			}
+			setTimeout(poll, 10);
+		};
+		poll();
+	});
 }

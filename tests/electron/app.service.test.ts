@@ -232,10 +232,12 @@ describe(`app.service.ts unit tests`, () => {
 		expect(analyticsService.trackEvent).toHaveBeenCalledWith(`test-event`, mockCtx.$config, mockCtx._appVersion, { some: `data` });
 	});
 
-	test(`handleReady should set config and load settings`, async () => {
+	test(`handleReady should load settings using the already-resolved config`, async () => {
+		// ctx.$config is resolved pre-ready by index.ts's initElectronCore (EYAS-334) —
+		// handleReady no longer calls setConfig itself, it just uses what's already there.
 		await appService.handleReady(mockCtx);
 
-		expect(mockCtx.setConfig).toHaveBeenCalled();
+		expect(mockCtx.setConfig).not.toHaveBeenCalled();
 		expect(settingsService.load).toHaveBeenCalled();
 		expect(setupEyasNetworkHandlers).toHaveBeenCalledWith(mockCtx);
 	});

@@ -33,6 +33,8 @@ export type ProgressRatio = number;
 export type MPEventName = string;
 export type EventType = string;
 export type IsComputable = boolean;
+export type CanProceed = boolean;
+export type IsLocked = boolean;
 export type Count = number;
 export type StepCount = number;
 export type StepIndex = number;
@@ -103,6 +105,7 @@ export type EventSourceNode = EventTarget;
 // Identity / Identification
 export type HashString = string;
 export type TestId = string;
+export type ProcessId = number;
 export type SessionPartition = string;
 export type DeviceId = string;
 export type Username = string;

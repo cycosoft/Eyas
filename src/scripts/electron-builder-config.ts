@@ -103,7 +103,14 @@ function getMacConfig(options: BuildOptions): Configuration[`mac`] {
 		hardenedRuntime: true,
 		gatekeeperAssess: false,
 		...(options.isDev ? { identity: null } : {}),
-		notarize: Boolean(options.appleTeamId)
+		notarize: Boolean(options.appleTeamId),
+		// EYAS-334: without this, macOS Launch Services routes a second eyas://
+		// open (or a second Finder double-click) to the already-running process
+		// instead of spawning a new one — independent of, and prior to, any of
+		// our own app-level instance handling.
+		extendInfo: {
+			LSMultipleInstancesEnabled: true
+		}
 	};
 }
 

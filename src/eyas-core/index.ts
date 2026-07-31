@@ -8,17 +8,6 @@ import {
 } from 'electron';
 import _path from 'node:path';
 
-// only allow a single instance of the app to be at a time
-const _electronCore = app;
-const isPrimaryInstance = _electronCore.requestSingleInstanceLock();
-if (!isPrimaryInstance) {
-	console.log(``);
-	console.log(`Another instance of the app is already running. Exiting.`);
-	console.log(``);
-
-	_electronCore.quit();
-}
-
 // Internal modules
 import $roots from '@scripts/get-roots.js';
 import { testServerService } from './test-server.service.js';
@@ -29,6 +18,9 @@ import * as settingsService from './settings-service.js';
 import { updateService } from './update.service.js';
 import { menuService } from './menu.service.js';
 import { windowService } from './window.service.js';
+import { instanceLockService } from './instance-lock.service.js';
+import { awaitInitialDeepLink } from './deep-link-handler.js';
+import { LOAD_TYPES } from '@scripts/constants.js';
 
 import { initIpcHandlers } from './ipc-handlers.js';
 import {
@@ -41,7 +33,7 @@ import type { CoreContext, EyasPaths } from '@registry/eyas-core.js';
 import type { ValidatedConfig } from '@registry/config.js';
 import type { TestServerOptions } from '@registry/test-server.js';
 import type { Viewport, ConfigToLoad, StartupModal, PreventableEvent, ViewportSize } from '@registry/core.js';
-import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActive, IsPending, DomainUrl, FormattedDuration, MPEventName, TimestampMS, AppTitle, AppVersion, EnvironmentKey, MetadataRecord, SystemTheme, Count } from '@registry/primitives.js';
+import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActive, IsPending, DomainUrl, FormattedDuration, MPEventName, TimestampMS, AppTitle, AppVersion, EnvironmentKey, MetadataRecord, SystemTheme, Count, ProjectId, TestId, DurationMS } from '@registry/primitives.js';
 
 // global variables $
 const $isDev = process.argv.includes(`--dev`) as IsActive;
@@ -123,6 +115,29 @@ async function initElectronCore(): Promise<void> {
 
 	// add support for eyas:// protocol
 	registerInternalProtocols();
+
+	// Resolve config before `ready` (EYAS-334): projectId/testId must be known
+	// pre-ready so sessionData can be isolated per project+build before Chromium
+	// initializes the default profile. This relocates the getConfig() call that
+	// used to live in appService.handleReady — it never touched Electron APIs,
+	// so there's nothing gained by deferring it until after `ready`.
+	const ctx = getCoreContext();
+	await awaitInitialDeepLink(() => ctx.$configToLoad, 100 as DurationMS);
+	const getConfig = (await import(`@scripts/get-config.js`)).default;
+	ctx.setConfig(await getConfig(ctx.$configToLoad.method || LOAD_TYPES.AUTO, ctx.$configToLoad.path));
+
+	const projectId = (ctx.$config?.meta.projectId || `default`) as ProjectId;
+	const testId = (ctx.$config?.meta.testId || `default`) as TestId;
+
+	app.setPath(`sessionData`, _path.join(app.getPath(`sessionData`), projectId, testId));
+
+	// Only one instance may run a given project+build at a time (EYAS-334) —
+	// everything else is allowed to run concurrently as independent processes.
+	const canProceed = await instanceLockService.tryAcquire(projectId, testId);
+	if (!canProceed) {
+		app.quit();
+		return;
+	}
 
 	// start the electron layer
 	app.whenReady().then(handleAppReady);
