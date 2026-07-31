@@ -16,8 +16,10 @@ export const uiService: UIService = {
 	 */
 	toggleEyasUI(ctx: CoreContext, enable: IsActive, forceImmediate: IsActive = false): void {
 		// Guard: skip if $eyasLayer is absent or has already been destroyed by Electron
-		// (e.g. when install-update closes $appWindow before a pending IPC fires).
-		if (!ctx.$eyasLayer || ctx.$eyasLayer.webContents.isDestroyed()) { return; }
+		// (e.g. when install-update closes $appWindow before a pending IPC fires, or when the
+		// deferred post-playback collapse in session-playback.service.ts fires after the app
+		// window itself has already closed).
+		if (!ctx.$eyasLayer?.webContents || ctx.$eyasLayer.webContents.isDestroyed()) { return; }
 
 		if (enable) {
 			// Restore the layer to full size, synced to the actual native window content dimensions.
@@ -80,7 +82,7 @@ export const uiService: UIService = {
 	 */
 	uiEvent(ctx: CoreContext, eventName: ChannelName, ...args: unknown[]): void {
 		// Guard: skip all UI events if $eyasLayer has been destroyed.
-		if (!ctx.$eyasLayer || ctx.$eyasLayer.webContents.isDestroyed()) { return; }
+		if (!ctx.$eyasLayer?.webContents || ctx.$eyasLayer.webContents.isDestroyed()) { return; }
 
 		// List of events that are NOT modals and don't need UI expansion or buffering
 		const nonModalEvents: ChannelName[] = [`update-status-updated` as ChannelName];
