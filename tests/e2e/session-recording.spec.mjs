@@ -21,13 +21,10 @@ async function readLatestSession(electronApp) {
 
 	let sessionFile;
 	for (let i = 0; i < 20; i++) {
-		const projectDirs = (await fs.pathExists(sessionsDir)) ? await fs.readdir(sessionsDir) : [];
-		for (const projectDir of projectDirs) {
-			const files = await fs.readdir(path.join(sessionsDir, projectDir));
-			const jsonFiles = files.filter(f => f.endsWith(`.json`));
-			if (jsonFiles.length > 0) {
-				sessionFile = path.join(sessionsDir, projectDir, jsonFiles[jsonFiles.length - 1]);
-			}
+		const found = (await fs.pathExists(sessionsDir)) ? await fs.readdir(sessionsDir, { recursive: true }) : [];
+		const jsonFiles = found.filter(f => f.endsWith(`.json`));
+		if (jsonFiles.length > 0) {
+			sessionFile = path.join(sessionsDir, jsonFiles[jsonFiles.length - 1]);
 		}
 		if (sessionFile) break;
 		await new Promise(resolve => setTimeout(resolve, 250));

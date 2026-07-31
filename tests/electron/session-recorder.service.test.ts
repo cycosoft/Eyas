@@ -17,7 +17,7 @@ let tmpDir: FilePath;
 
 function makeCtx(overrides: Partial<CoreContext> = {}): CoreContext {
 	return {
-		$config: { meta: { projectId: `test-proj` } },
+		$config: { meta: { projectId: `test-proj`, testId: `test-run` } },
 		$currentViewport: [1024, 768],
 		$eyasLayer: { webContents: { send: vi.fn() } },
 		...overrides
@@ -49,12 +49,12 @@ describe(`sessionRecorderService.startSession`, () => {
 		expect(session?.recording.steps).toEqual([]);
 	});
 
-	test(`writes the session file to disk immediately at {userData}/sessions/{projectId}/active-session.json with status 'recording'`, async () => {
+	test(`writes the session file to disk immediately at {userData}/sessions/{projectId}/{testId}/active-session.json with status 'recording'`, async () => {
 		const ctx = makeCtx();
 		await service.startSession(ctx);
 
 		const session = service.getActiveSession();
-		const expectedPath = join(tmpDir, `test-proj`, `active-session.json`);
+		const expectedPath = join(tmpDir, `test-proj`, `test-run`, `active-session.json`);
 
 		expect(await pathExists(expectedPath)).toBe(true);
 		const written = await readJson(expectedPath);
@@ -70,11 +70,11 @@ describe(`sessionRecorderService.startSession`, () => {
 		await service.startSession(ctx);
 		const secondSessionId = service.getActiveSession()?.sessionId;
 
-		const expectedPath = join(tmpDir, `test-proj`, `active-session.json`);
+		const expectedPath = join(tmpDir, `test-proj`, `test-run`, `active-session.json`);
 		const written = await readJson(expectedPath);
 		expect(written.sessionId).toBe(secondSessionId);
 		expect(written.sessionId).not.toBe(firstSessionId);
-		expect(await pathExists(join(tmpDir, `test-proj`, `${firstSessionId}.json`))).toBe(false);
+		expect(await pathExists(join(tmpDir, `test-proj`, `test-run`, `${firstSessionId}.json`))).toBe(false);
 	});
 
 	test(`sends recorder-status-updated to the eyas layer with { isRecording: true, sessionId }`, async () => {
@@ -111,7 +111,7 @@ describe(`sessionRecorderService.appendSteps`, () => {
 	test(`writes the full envelope to disk using fs-extra outputJson after appending`, async () => {
 		const ctx = makeCtx();
 		await service.startSession(ctx);
-		const expectedPath = join(tmpDir, `test-proj`, `active-session.json`);
+		const expectedPath = join(tmpDir, `test-proj`, `test-run`, `active-session.json`);
 
 		service.appendSteps([{ type: `click`, selectors: [`#foo`], offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
 		await new Promise(resolve => setTimeout(resolve, 20));
@@ -123,7 +123,7 @@ describe(`sessionRecorderService.appendSteps`, () => {
 	test(`sequentializes writes so concurrent flushes do not race (mirrors settings-service.ts save() queue pattern)`, async () => {
 		const ctx = makeCtx();
 		await service.startSession(ctx);
-		const expectedPath = join(tmpDir, `test-proj`, `active-session.json`);
+		const expectedPath = join(tmpDir, `test-proj`, `test-run`, `active-session.json`);
 
 		for (let i = 0; i < 10; i++) {
 			service.appendSteps([{ type: `click`, selectors: [`#${i}`], offsetX: 0, offsetY: 0, timestamp: Date.now() }] as never);
@@ -265,7 +265,7 @@ describe(`sessionRecorderService.stopRecording`, () => {
 	test(`sets status to 'stopped' and stoppedAt to the current timestamp on the session file`, async () => {
 		const ctx = makeCtx();
 		await service.startSession(ctx);
-		const expectedPath = join(tmpDir, `test-proj`, `active-session.json`);
+		const expectedPath = join(tmpDir, `test-proj`, `test-run`, `active-session.json`);
 
 		service.stopRecording(ctx);
 		await new Promise(resolve => setTimeout(resolve, 20));

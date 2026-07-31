@@ -5,7 +5,7 @@ import fs from 'fs-extra';
 const { outputJson } = fs;
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { EyasRecordingEnvelope, RecordingStep, LegacySelectorGroup } from '@registry/recording.js';
-import type { ProjectId, FilePath, DomainUrl, SessionId, IsActive, PopupId } from '@registry/primitives.js';
+import type { ProjectId, TestId, FilePath, DomainUrl, SessionId, IsActive, PopupId } from '@registry/primitives.js';
 
 let _session: EyasRecordingEnvelope | null = null;
 let _sessionFilePath: FilePath | null = null;
@@ -27,12 +27,12 @@ function _generateSessionId(): SessionId {
 	return randomUUID() as SessionId;
 }
 
-/** Only one recording is ever active at a time, so it lives at a fixed path per project instead of one file per UUID — starting a new recording overwrites it, leaving nothing to clean up. */
-function _activeSessionPath(projectId: ProjectId): FilePath {
-	return _path.join(_sessionsDir(), projectId, `active-session.json`) as FilePath;
+/** Only one recording is ever active at a time, so it lives at a fixed path per project+testId instead of one file per UUID — starting a new recording overwrites it, leaving nothing to clean up. Scoped by testId (not just projectId) so concurrent Eyas instances running different test builds against the same project don't overwrite each other's active recording. */
+function _activeSessionPath(projectId: ProjectId, testId: TestId): FilePath {
+	return _path.join(_sessionsDir(), projectId, testId, `active-session.json`) as FilePath;
 }
 
-/** Future "saved recordings" location: not yet written to, but getSession already checks it so that feature won't need to change this function's by-ID contract again. */
+/** Future "saved recordings" location: not yet written to, but getSession already checks it so that feature won't need to change this function's by-ID contract again. Scoped by projectId only (not testId) so a saved recording can be replayed against any build of the project it was made on. */
 function _savedSessionPath(projectId: ProjectId, sessionId: SessionId): FilePath {
 	return _path.join(_sessionsDir(), projectId, `saved`, `${sessionId}.json`) as FilePath;
 }
@@ -72,6 +72,7 @@ function _persist(): Promise<void> {
 /** Starts a new recording session and writes the session file to disk immediately. */
 async function startSession(ctx: CoreContext): Promise<void> {
 	const projectId = (ctx.$config?.meta.projectId || `default`) as ProjectId;
+	const testId = (ctx.$config?.meta.testId || `default`) as TestId;
 	const sessionId = _generateSessionId();
 	const startedAt = Date.now();
 
@@ -89,7 +90,7 @@ async function startSession(ctx: CoreContext): Promise<void> {
 		recording: { title: new Date(startedAt).toISOString(), steps: [] }
 	};
 
-	_sessionFilePath = _activeSessionPath(projectId);
+	_sessionFilePath = _activeSessionPath(projectId, testId);
 	await _persist();
 
 	ctx.$eyasLayer?.webContents?.send(`recorder-status-updated`, { isRecording: true, sessionId });
@@ -145,8 +146,9 @@ async function getSession(ctx: CoreContext, sessionId: SessionId): Promise<EyasR
 	if (_session?.sessionId === sessionId) { return _session; }
 
 	const projectId = (ctx.$config?.meta.projectId || `default`) as ProjectId;
+	const testId = (ctx.$config?.meta.testId || `default`) as TestId;
 
-	const activePath = _activeSessionPath(projectId);
+	const activePath = _activeSessionPath(projectId, testId);
 	if (await fs.pathExists(activePath)) {
 		const active: EyasRecordingEnvelope = await fs.readJson(activePath);
 		if (active.sessionId === sessionId) { return _upgradeSession(active); }
