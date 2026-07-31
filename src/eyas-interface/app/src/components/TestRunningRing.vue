@@ -72,7 +72,9 @@ const ringStyle = computed(() => {
 .test-running-ring {
 	position: fixed;
 	pointer-events: none;
-	z-index: 9999;
+	/* below Vuetify's overlay layer (menus, tooltips, dropdowns ~2400+) so header
+	   navigation/tools remain usable while the ring is visible during replay */
+	z-index: 1000;
 	opacity: 0;
 	transition: opacity 250ms ease;
 }
