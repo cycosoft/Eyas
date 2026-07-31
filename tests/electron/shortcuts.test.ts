@@ -1,11 +1,20 @@
 import { vi, type Mock } from 'vitest';
-import type { IsMac } from '@registry/primitives.js';
+import type { IsMac, IsActive } from '@registry/primitives.js';
 
 let mockIsMac = false;
 vi.mock(`@scripts/platform-utils.js`, () => {
 	return {
 		get isMac(): IsMac {
 			return mockIsMac;
+		}
+	};
+});
+
+let mockIsReplaying: IsActive = false as IsActive;
+vi.mock(`@core/session-recorder.service.js`, () => {
+	return {
+		default: {
+			isReplaying: (): IsActive => mockIsReplaying
 		}
 	};
 });
@@ -18,7 +27,9 @@ vi.mock(`electron`, () => {
 		on: vi.fn(),
 		isDestroyed: vi.fn().mockReturnValue(false),
 		getTitle: vi.fn().mockReturnValue(`Test Title`),
-		toggleDevTools: vi.fn(),
+		isDevToolsOpened: vi.fn().mockReturnValue(false),
+		openDevTools: vi.fn(),
+		closeDevTools: vi.fn(),
 		loadURL: vi.fn(),
 		navigationHistory: { clear: vi.fn() },
 		getZoomFactor: vi.fn().mockImplementation(() => mockZoomFactor),
@@ -115,7 +126,7 @@ describe(`window.service.ts shortcut tests`, () => {
 		handler({ preventDefault }, { type: `keyDown`, key: `F12` });
 
 		// Verify that the test layer's devtools were toggled
-		expect(mockCtx.$testLayer?.webContents.toggleDevTools).toHaveBeenCalled();
+		expect(mockCtx.$testLayer?.webContents.openDevTools).toHaveBeenCalled();
 		expect(preventDefault).toHaveBeenCalled();
 	});
 
@@ -136,7 +147,7 @@ describe(`window.service.ts shortcut tests`, () => {
 		handler({ preventDefault }, { type: `keyDown`, key: `F12` });
 
 		// Verify that the test layer's devtools were toggled
-		expect(mockCtx.$testLayer?.webContents.toggleDevTools).toHaveBeenCalled();
+		expect(mockCtx.$testLayer?.webContents.openDevTools).toHaveBeenCalled();
 		expect(preventDefault).toHaveBeenCalled();
 	});
 
@@ -152,8 +163,54 @@ describe(`window.service.ts shortcut tests`, () => {
 		const preventDefault = vi.fn();
 		handler({ preventDefault }, { type: `keyDown`, key: `F11` });
 
-		expect(mockCtx.$testLayer?.webContents.toggleDevTools).not.toHaveBeenCalled();
+		expect(mockCtx.$testLayer?.webContents.openDevTools).not.toHaveBeenCalled();
 		expect(preventDefault).not.toHaveBeenCalled();
+	});
+
+	describe(`devtools dock mode`, () => {
+		beforeEach(() => { mockIsReplaying = false as IsActive; });
+
+		test(`F12 opens devtools attached (default dock) when no playback is in progress`, async () => {
+			await windowService.initElectronUi(mockCtx);
+			const testOnCall = (mockCtx.$testLayer?.webContents.on as Mock).mock.calls.find(
+				call => call[0] === `before-input-event`
+			);
+			if (!testOnCall) { throw new Error(`testOnCall is undefined`); }
+			const handler = testOnCall[1];
+
+			handler({ preventDefault: vi.fn() }, { type: `keyDown`, key: `F12` });
+
+			expect(mockCtx.$testLayer?.webContents.openDevTools).toHaveBeenCalledWith(undefined);
+		});
+
+		test(`F12 opens devtools detached during playback, so they aren't hidden under the eyas overlay layer`, async () => {
+			mockIsReplaying = true as IsActive;
+			await windowService.initElectronUi(mockCtx);
+			const testOnCall = (mockCtx.$testLayer?.webContents.on as Mock).mock.calls.find(
+				call => call[0] === `before-input-event`
+			);
+			if (!testOnCall) { throw new Error(`testOnCall is undefined`); }
+			const handler = testOnCall[1];
+
+			handler({ preventDefault: vi.fn() }, { type: `keyDown`, key: `F12` });
+
+			expect(mockCtx.$testLayer?.webContents.openDevTools).toHaveBeenCalledWith({ mode: `detach` });
+		});
+
+		test(`F12 closes devtools instead of reopening when they're already open`, async () => {
+			await windowService.initElectronUi(mockCtx);
+			(mockCtx.$testLayer?.webContents.isDevToolsOpened as Mock).mockReturnValue(true);
+			const testOnCall = (mockCtx.$testLayer?.webContents.on as Mock).mock.calls.find(
+				call => call[0] === `before-input-event`
+			);
+			if (!testOnCall) { throw new Error(`testOnCall is undefined`); }
+			const handler = testOnCall[1];
+
+			handler({ preventDefault: vi.fn() }, { type: `keyDown`, key: `F12` });
+
+			expect(mockCtx.$testLayer?.webContents.closeDevTools).toHaveBeenCalled();
+			expect(mockCtx.$testLayer?.webContents.openDevTools).not.toHaveBeenCalled();
+		});
 	});
 
 	describe(`zoom shortcuts`, () => {

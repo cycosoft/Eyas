@@ -1,6 +1,7 @@
 import type { WebContents } from 'electron';
 import type { CoreContext } from '@registry/eyas-core.js';
 import { isMac } from '@scripts/platform-utils.js';
+import sessionRecorderService from './session-recorder.service.js';
 
 const ZOOM_FACTORS = [0.25, 0.33, 0.5, 0.67, 0.75, 0.8, 0.9, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0, 4.0, 5.0];
 
@@ -42,6 +43,20 @@ export function adjustZoom(ctx: CoreContext, direction: `in` | `out` | `reset`):
 }
 
 /**
+ * Opens/toggles devtools for the test layer. During playback, the eyas overlay layer sits on top
+ * of the test layer, so devtools docked in its remembered attached position would render hidden
+ * underneath it — force detached for the duration of playback without touching the dock mode
+ * Electron remembers for the user's own manual toggles outside of playback.
+ */
+export function toggleTestDevTools(webContents: WebContents): void {
+	if (webContents.isDevToolsOpened()) {
+		webContents.closeDevTools();
+		return;
+	}
+	webContents.openDevTools(sessionRecorderService.isReplaying() ? { mode: `detach` } : undefined);
+}
+
+/**
  * Registers keyboard shortcuts for a specific WebContents.
  * @param ctx The core context.
  * @param webContents The WebContents to register shortcuts for.
@@ -54,7 +69,7 @@ export function registerShortcutListeners(ctx: CoreContext, webContents: WebCont
 			const testWebContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
 			if (testWebContents && !testWebContents.isDestroyed()) {
 				event.preventDefault();
-				testWebContents.toggleDevTools();
+				toggleTestDevTools(testWebContents);
 			}
 			return;
 		}

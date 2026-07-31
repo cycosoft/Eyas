@@ -1,6 +1,5 @@
 # TODO
 
-- once we allow multiple eyas instances to run at once, what happens to shared data like "active recordings"?
 - disable header controls during test run
 -- Eyas > About
 -- Eyas > Settings

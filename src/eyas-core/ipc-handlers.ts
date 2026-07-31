@@ -9,7 +9,7 @@ import { MP_EVENTS } from './metrics-events.js';
 import { isMac } from '@scripts/platform-utils.js';
 import { initCredentialIpcListeners } from './ipc-handlers.credentials.js';
 import { initRecorderIpcListeners } from './ipc-handlers.recorder.js';
-import { adjustZoom } from './window.shortcuts.js';
+import { adjustZoom, toggleTestDevTools } from './window.shortcuts.js';
 
 import type {
 	LaunchLinkPayload,
@@ -128,7 +128,7 @@ function initDevToolsIpcListeners(ctx: CoreContext): void {
 	ipcMain.on(`open-devtools-test`, () => {
 		const webContents = (ctx.$testLayer || ctx.$appWindow)?.webContents;
 		if (webContents && !webContents.isDestroyed()) {
-			webContents.toggleDevTools();
+			toggleTestDevTools(webContents);
 		}
 	});
 
