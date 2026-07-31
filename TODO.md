@@ -1,10 +1,8 @@
 # TODO
 
 - can we put the overlay for popup windows to prevent interactions there?
-- the last step in playback animation on recording button should go to 100% before disappearing
 - the test layer animation needs to be z-index _under_ the header items like tooltips and menus
 - we do not appear to be cleaning up old recording sessions
-- we should add a "demo mode" speed test replay speed
 - are we still keeping 300ms delay on github replays
 - disable header controls during test run
 -- Eyas > About
@@ -25,6 +23,7 @@
 
 # Future
 
+- we should add a "demo mode" speed test replay speed that people can use for showing off to a group over video chat (maybe like 500ms)
 - need a tooltip for the "online/offline" header button
 - swap cache > clear and open list item positions
 - consumer users custom protocol to launch desktop app, but eyas swallows this and the user doesn't see a prompt.

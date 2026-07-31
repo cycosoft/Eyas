@@ -53,6 +53,13 @@ export const EYAS_HEADER_HEIGHT = 79;
 // ring's fade-out isn't clipped by the layer shrinking out from under it mid-transition.
 export const TEST_RUNNING_RING_FADE_MS = 250;
 
+// How long the playback-progress ring (AppHeaderRecordingControls.vue) holds at 100% completion
+// before the "stopped" status resets/hides it. Without this hold, the 100%-complete status and
+// the immediately-following "stopped" status (which resets progress to 0) land in the same tick,
+// so the browser never paints the 100% frame — the last visible frame is one step short of full.
+// Matches the ring's own `stroke-dashoffset` transition duration so the fill visibly completes.
+export const PLAYBACK_COMPLETE_HOLD_MS = 200;
+
 // Session partition for all Eyas-owned windows/views (app window, splash, UI layer).
 // App-wide by design: the UI is identical for every test and stores no test-scoped data.
 // The test layer gets its own per-test-id partition (`persist:<testId>-test`) instead.

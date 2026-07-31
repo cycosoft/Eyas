@@ -299,7 +299,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 		const setTimeoutSpy = vi.spyOn(global, `setTimeout`);
 
 		const playPromise = playbackService.playSession(ctx, `sess-1`);
-		await vi.advanceTimersByTimeAsync(600);
+		await vi.advanceTimersByTimeAsync(800);
 		await playPromise;
 
 		expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 50);
@@ -459,7 +459,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 		const setTimeoutSpy = vi.spyOn(global, `setTimeout`);
 
 		const playPromise = playbackService.playSession(ctx, `sess-1`);
-		await vi.advanceTimersByTimeAsync(1500);
+		await vi.advanceTimersByTimeAsync(1700);
 		await playPromise;
 
 		// a delay applies before every step, including the first: 3 steps -> 3 waits (a 4th
@@ -484,7 +484,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 		await Promise.resolve();
 		expect(loadURL).not.toHaveBeenCalled();
 
-		await vi.advanceTimersByTimeAsync(500);
+		await vi.advanceTimersByTimeAsync(700);
 		await playPromise;
 
 		expect(loadURL).toHaveBeenCalledWith(`https://example.com/a`);

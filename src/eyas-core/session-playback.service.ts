@@ -6,7 +6,7 @@ import type { ReplaySpeedMode } from '@registry/settings.js';
 import sessionRecorderService from './session-recorder.service.js';
 import { getPopupWebContents, closePopup, closeAllPopups, setReplayPopupIdQueue, clearReplayPopupIdQueue } from './window.popups.js';
 import { buildClickPointScript, buildChangeScript, buildKeyDownMutationScript } from './session-playback.selector-resolution.js';
-import { TEST_RUNNING_RING_FADE_MS } from '@scripts/constants.js';
+import { TEST_RUNNING_RING_FADE_MS, PLAYBACK_COMPLETE_HOLD_MS } from '@scripts/constants.js';
 
 const CDP_DEBUGGER_VERSION = `1.3`;
 
@@ -226,6 +226,10 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 		// a user-initiated stop can land anywhere in the step list, same as a thrown step — tear down
 		// any popups the recording never reached its closeWindow step for before reporting stopped
 		if (aborted) { await _teardownPopups(); }
+		// on a natural finish, hold briefly so the renderer actually paints the 100%-complete frame
+		// before this "stopped" status resets/hides the progress ring — otherwise both status
+		// updates land in the same tick and the ring's last visible frame is one step short of full
+		if (!aborted) { await _delay(PLAYBACK_COMPLETE_HOLD_MS); }
 		_sendPlaybackStatus(ctx, { status: `stopped` });
 	} catch (err) {
 		const error = err instanceof Error ? err.message : String(err);
