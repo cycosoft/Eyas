@@ -1,8 +1,6 @@
 # TODO
 
 - we do not appear to be cleaning up old recording sessions
-- are the recording sessions saved per test?
-- are we still keeping 300ms delay on github replays
 - disable header controls during test run
 -- Eyas > About
 -- Eyas > Settings
