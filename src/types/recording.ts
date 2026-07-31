@@ -1,4 +1,4 @@
-import type { ProjectId, TimestampMS, ViewportWidth, ViewportHeight, ScreenCoordinate, FramePath, DomainUrl, PopupId, CursorOffset } from './primitives.js';
+import type { ProjectId, TimestampMS, ViewportWidth, ViewportHeight, ScreenCoordinate, FramePath, DomainUrl, PopupId, CursorOffset, StepCount } from './primitives.js';
 
 /** Viewport dimensions for the recording session */
 type Viewport = {
@@ -109,6 +109,20 @@ export type RecordingStep =
 	| ScrollStep
 	| NavigateStep
 	| CloseWindowStep;
+
+/** Zero-based index of the user-facing "action" a step belongs to, or -1 if the step doesn't count as one (see StepActionMap). */
+export type StepActionIndex = number;
+
+/**
+ * Maps each RecordingStep to the progress-ring "action" it belongs to: a click and the
+ * `navigate` step(s) it causes (including redirect chains) share one action index, and `scroll`
+ * steps get -1 since they aren't a user-facing action at all. `totalActions` is the count of
+ * distinct actions, i.e. what the progress ring treats as its 100%.
+ */
+export type StepActionMap = {
+	actionIndexes: StepActionIndex[];
+	totalActions: StepCount;
+}
 
 /** W3C Chrome DevTools Recorder root object */
 type ChromeRecorderSession = {

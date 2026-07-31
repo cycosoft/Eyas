@@ -1,7 +1,7 @@
 import type { CoreContext } from '@registry/eyas-core.js';
-import type { RecordingStep, ClickStep, ClickPoint, InputStep, KeyDownStep } from '@registry/recording.js';
+import type { RecordingStep, ClickStep, ClickPoint, InputStep, KeyDownStep, StepActionMap, StepActionIndex } from '@registry/recording.js';
 import type { RecorderPlaybackStatusPayload } from '@registry/ipc.js';
-import type { SessionId, DurationMS, DomainUrl, PopupId, StepCount } from '@registry/primitives.js';
+import type { SessionId, DurationMS, DomainUrl, PopupId, StepCount, StepIndex } from '@registry/primitives.js';
 import type { ReplaySpeedMode } from '@registry/settings.js';
 import sessionRecorderService from './session-recorder.service.js';
 import { getPopupWebContents, closePopup, closeAllPopups, setReplayPopupIdQueue, clearReplayPopupIdQueue } from './window.popups.js';
@@ -181,6 +181,37 @@ function _sendPlaybackStatus(ctx: CoreContext, payload: RecorderPlaybackStatusPa
 	ctx.$eyasLayer?.webContents?.send(`recorder-playback-status`, payload);
 }
 
+/**
+ * Maps each step to the user-facing "action" it belongs to, for progress-ring purposes: a click
+ * and the `navigate` step(s) it causes (including redirect chains) are one action, and `scroll`
+ * steps aren't actions at all — neither should move or count toward the ring.
+ */
+function _computeStepActions(steps: RecordingStep[]): StepActionMap {
+	const actionIndexes: StepActionIndex[] = [];
+	let actionCount = 0;
+	let lastActionIndex: StepActionIndex = -1;
+	for (const step of steps) {
+		if (step.type === `scroll`) {
+			actionIndexes.push(-1);
+			continue;
+		}
+		if (step.type === `navigate` && lastActionIndex !== -1) {
+			actionIndexes.push(lastActionIndex);
+			continue;
+		}
+		lastActionIndex = actionCount++;
+		actionIndexes.push(lastActionIndex);
+	}
+	return { actionIndexes, totalActions: actionCount as StepCount };
+}
+
+/** Reports progress for a just-dispatched step, unless it doesn't count as its own action (see _computeStepActions). */
+function _reportStepProgress(ctx: CoreContext, actions: StepActionMap, stepIndex: StepIndex): void {
+	const actionIndex: StepActionIndex = actions.actionIndexes[stepIndex];
+	if (actionIndex === -1) { return; }
+	_sendPlaybackStatus(ctx, { status: `playing`, completedSteps: (actionIndex + 1) as StepCount, totalSteps: actions.totalActions });
+}
+
 // swallow teardown errors so a popup that fails/hangs to close can never suppress the status
 // report it's meant to precede (a stranded popup is recoverable; a swallowed failure isn't)
 async function _teardownPopups(): Promise<void> {
@@ -197,7 +228,8 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 	sessionRecorderService.setReplaying(true);
 	setReplayPopupIdQueue(_orderedPopupIds(steps));
 	ctx.toggleEyasUI(true);
-	_sendPlaybackStatus(ctx, { status: `playing`, completedSteps: 0 as StepCount, totalSteps: steps.length as StepCount });
+	const stepActions = _computeStepActions(steps);
+	_sendPlaybackStatus(ctx, { status: `playing`, completedSteps: 0 as StepCount, totalSteps: stepActions.totalActions });
 	try {
 		// the session's steps only capture navigations that occurred *during* recording — if
 		// playback starts from a different view than recording did, replay the starting view first
@@ -221,7 +253,7 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 			const delayMs = isKeystroke ? KEYSTROKE_DELAY_MS : stepDelayMs;
 			if (delayMs > 0) { await _delay(delayMs); }
 			await _dispatchStep(webContents, steps[i]);
-			_sendPlaybackStatus(ctx, { status: `playing`, completedSteps: (i + 1) as StepCount, totalSteps: steps.length as StepCount });
+			_reportStepProgress(ctx, stepActions, i);
 		}
 		// a user-initiated stop can land anywhere in the step list, same as a thrown step — tear down
 		// any popups the recording never reached its closeWindow step for before reporting stopped

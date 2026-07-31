@@ -35,6 +35,7 @@ export type EventType = string;
 export type IsComputable = boolean;
 export type Count = number;
 export type StepCount = number;
+export type StepIndex = number;
 export type TimerId = ReturnType<typeof setTimeout>;
 type MetadataKey = string;
 export type CacheKey = string;
