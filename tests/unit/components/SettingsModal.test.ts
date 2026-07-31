@@ -92,6 +92,26 @@ describe(`SettingsModal`, () => {
 		expect((wrapper.vm as unknown as SettingsModalVM).appAllowBypassUpdates).toBe(false);
 	});
 
+	test(`populates appReplaySpeed from payload, defaulting to 'no-delay'`, () => {
+		const call = mockReceive.mock.calls.find(c => c[0] === `show-settings-modal`);
+		if (!call) throw new Error(`call not found`);
+
+		call[1]({ project: {}, app: { recording: { replaySpeed: `natural` } } });
+		expect((wrapper.vm as unknown as SettingsModalVM).appReplaySpeed).toBe(`natural`);
+
+		call[1]({ project: {}, app: {} });
+		expect((wrapper.vm as unknown as SettingsModalVM).appReplaySpeed).toBe(`no-delay`);
+	});
+
+	test(`setting appReplaySpeed updates the store and sends save-setting`, () => {
+		(wrapper.vm as unknown as SettingsModalVM).appReplaySpeed = `natural`;
+		expect(mockSend).toHaveBeenCalledWith(`save-setting`, {
+			key: `recording.replaySpeed`,
+			value: `natural`,
+			projectId: null
+		});
+	});
+
 	test(`saveProjectSetting sends save-setting with projectId`, () => {
 		(wrapper.vm as unknown as SettingsModalVM).projectId = `proj-abc`;
 		(wrapper.vm as unknown as SettingsModalVM).saveProjectSetting(`env.alwaysChoose`, true);

@@ -1,6 +1,7 @@
 <template>
 	<v-app data-qa="app-container">
 		<AppHeader />
+		<TestRunningRing />
 		<EnvironmentModal />
 		<VariablesModal />
 		<ExitModal />
@@ -22,6 +23,7 @@ import { THEME_MODES } from '@scripts/constants.js';
 import useSettingsStore from '@/stores/settings.js';
 import ModalStore from '@/stores/modals.js';
 import AppHeader from '@/components/AppHeader.vue';
+import TestRunningRing from '@/components/TestRunningRing.vue';
 import ExitModal from '@/components/ExitModal.vue';
 import EnvironmentModal from '@/components/EnvironmentModal.vue';
 import VariablesModal from '@/components/VariablesModal.vue';

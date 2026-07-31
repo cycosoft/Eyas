@@ -23,14 +23,15 @@
 				<v-img v-if="group.logo" :src="group.logo" class="menu-logo mr-n1" />
 				<span v-else><template v-for="(part, i) in group.mnemonicParts" :key="i"><u v-if="part.isMnemonic">{{ part.text }}</u><template v-else>{{ part.text }}</template></template></span>
 			</v-btn>
-
 			<div class="d-flex align-center ml-2 pa-1 rounded-lg border">
-				<v-btn v-for="control in browserControls" :key="control.action" icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" :data-qa="`btn-browser-${control.action}`" :disabled="isControlDisabled(control.action, canGoBack, canGoForward)" @click="handleBrowserControlClick(control.action)">
+				<v-btn v-for="control in browserControls" :key="control.action" icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" :data-qa="`btn-browser-${control.action}`" :disabled="isControlDisabled(control.action, canGoBack, canGoForward) || isPlaybackLocked()" @click="handleBrowserControlClick(control.action)">
 					<v-icon :icon="control.icon" size="small" />
+					<v-tooltip activator="parent" location="bottom">
+						{{ control.label }}
+					</v-tooltip>
 				</v-btn>
 			</div>
 		</template>
-
 		<template v-for="group in groups.filter(g => g.name === 'Links')" :key="group.name">
 			<v-btn v-if="group.submenu.length" class="px-3 ml-2" rounded="xs" append-icon="mdi-chevron-down" :data-qa="`btn-nav-group-${group.name.toLowerCase()}`" :active="state.activeGroup === group.name" @click="activate($event, group)" @mouseenter="onMouseEnter($event, group)">
 				<template v-for="(part, i) in group.mnemonicParts" :key="i">
@@ -40,45 +41,17 @@
 				</template>
 			</v-btn>
 		</template>
-
 		<v-spacer />
-
 		<AppHeaderOmniHub />
-
 		<v-spacer />
-
+		<AppHeaderRecordingControls />
 		<!-- 3. Update Status -->
-		<v-btn
-			v-if="updateInfo.icon"
-			icon
-			density="compact"
-			:variant="updateInfo.variant"
-			:ripple="updateInfo.ripple"
-			class="mr-1"
-			data-qa="btn-broadcast"
-			:disabled="updateInfo.disabled"
-			:color="updateInfo.color"
-			:class="{
-				'blink-animation': updateStatus === 'checking' || updateStatus === 'downloading'
-			}"
-			@click="handleBroadcastClick"
-		>
-			<v-icon
-				:icon="updateInfo.icon"
-				size="small"
-			/>
-			<v-tooltip
-				v-if="updateStatus === 'downloaded'"
-				activator="parent"
-				location="bottom"
-			>
+		<v-btn v-if="updateInfo.icon" icon density="compact" :variant="updateInfo.variant" :ripple="updateInfo.ripple" class="mr-1" data-qa="btn-broadcast" :disabled="updateInfo.disabled || isPlaybackLocked()" :color="updateInfo.color" :class="{ 'blink-animation': updateStatus === 'checking' || updateStatus === 'downloading' }" @click="handleBroadcastClick">
+			<v-icon :icon="updateInfo.icon" size="small" />
+			<v-tooltip v-if="updateStatus === 'downloaded'" activator="parent" location="bottom">
 				Update Available
 			</v-tooltip>
-			<v-tooltip
-				v-else-if="updateStatus === 'idle'"
-				activator="parent"
-				location="bottom"
-			>
+			<v-tooltip v-else-if="updateStatus === 'idle'" activator="parent" location="bottom">
 				Check for Updates
 			</v-tooltip>
 		</v-btn>
@@ -119,12 +92,12 @@
 					:prepend-icon="item.icon"
 					:append-icon="item.appendIcon"
 					:color="item.color"
-					:ripple="item.actionable !== false"
-					:class="{ [`text-${item.color}`]: item.color, 'non-actionable': item.actionable === false }"
-					:disabled="item.actionable === false"
+					:ripple="!isItemLocked(item)"
+					:class="{ [`text-${item.color}`]: item.color, 'non-actionable': isItemLocked(item) }"
+					:disabled="isItemLocked(item)"
 					:active="item.selected"
 					data-qa="btn-nav-item"
-					@click="item.actionable === false ? undefined : onItemClick(item)"
+					@click="isItemLocked(item) ? undefined : onItemClick(item)"
 				>
 					<div class="d-flex align-center w-100">
 						<span class="flex-grow-1">
@@ -202,12 +175,12 @@
 									:value="sub.value"
 									:prepend-icon="sub.icon"
 									:color="sub.color"
-									:ripple="sub.actionable !== false"
-									:class="{ [`text-${sub.color}`]: sub.color, 'non-actionable': sub.actionable === false }"
-									:disabled="sub.actionable === false"
+									:ripple="!isItemLocked(sub)"
+									:class="{ [`text-${sub.color}`]: sub.color, 'non-actionable': isItemLocked(sub) }"
+									:disabled="isItemLocked(sub)"
 									:active="sub.selected"
 									data-qa="btn-nav-item"
-									@click="sub.actionable === false ? undefined : onItemClick(sub)"
+									@click="isItemLocked(sub) ? undefined : onItemClick(sub)"
 								>
 									<div class="d-flex align-center w-100">
 										<span class="flex-grow-1">
@@ -234,6 +207,8 @@
 import { onMounted, watch, toRefs, computed } from 'vue';
 import { useTheme } from 'vuetify';
 import type { ChannelName } from '@registry/primitives.js';
+import type { RecorderStatusPayload } from '@registry/recording.js';
+import type { RecorderPlaybackStatusPayload } from '@registry/ipc.js';
 import {
 	groups, state, browserControls, isControlDisabled, handleBrowserControlClick,
 	goBack, goForward, reload, goHome, handleBroadcastClick, activate,
@@ -241,12 +216,15 @@ import {
 	handleNavigationUpdate, handleUpdateStatusUpdate, displayUrlInfo,
 	activeEnvironmentTitle, selectEnvironment, handleHeaderMouseEnter,
 	handleHeaderMouseLeave, handleUrlClick, resetTooltipText, displayAppTitle,
-	isViewingTestContent, updateUpdatesMenuItem
+	isViewingTestContent, updateUpdatesMenuItem, isPlaybackLocked, isItemLocked
 } from './AppHeader.logic.js';
 import AppHeaderOmniHub from './AppHeaderOmniHub.vue';
+import AppHeaderRecordingControls from './AppHeaderRecordingControls.vue';
 import useModalsStore from '@/stores/modals.js';
+import useRecordingStore from '@/stores/recording.js';
 const { menu, activator, canGoBack, canGoForward, updateStatus, environments, currentEnvironment, tooltipVisible, tooltipText, cursorPos, appTitle, zoomFactor } = toRefs(state);
 const modalsStore = useModalsStore();
+const recordingStore = useRecordingStore();
 
 function adjustZoomLevel(direction: `in` | `out` | `reset`): void {
 	console.log(`[Eyas UI] adjustZoomLevel clicked:`, direction);
@@ -265,6 +243,8 @@ onMounted(() => {
 	window.eyas?.receive(`ui-shown` as ChannelName, triggerOpen);
 	window.eyas?.receive(`navigation-state-updated` as ChannelName, handleNavigationUpdate);
 	window.eyas?.receive(`update-status-updated` as ChannelName, handleUpdateStatusUpdate);
+	window.eyas?.receive(`recorder-status-updated` as ChannelName, (...args: unknown[]) => recordingStore.setFromIpc(args[0] as RecorderStatusPayload));
+	window.eyas?.receive(`recorder-playback-status` as ChannelName, (...args: unknown[]) => recordingStore.setPlaybackStatus(args[0] as RecorderPlaybackStatusPayload));
 });
 // expose for testing
 defineExpose({
@@ -274,7 +254,8 @@ defineExpose({
 	environments, currentEnvironment, activeEnvironmentTitle, selectEnvironment,
 	handleHeaderMouseEnter, handleHeaderMouseLeave, handleUrlClick, resetTooltipText,
 	appTitle, displayAppTitle, isViewingTestContent, envMenu: toRefs(state).envMenu,
-	menuItems: toRefs(state).menuItems, activator: toRefs(state).activator, adjustZoomLevel, zoomFactor
+	menuItems: toRefs(state).menuItems, activator: toRefs(state).activator, adjustZoomLevel, zoomFactor,
+	isPlaybackLocked
 });
 </script>
 

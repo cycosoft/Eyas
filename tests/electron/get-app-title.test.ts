@@ -30,17 +30,17 @@ describe(`getAppTitle`, () => {
 		expect(result).toBe(`1.0.0 | Test App`);
 	});
 
-	test(`should ignore pageTitle and omit URL`, () => {
+	test(`should append pageTitle and still omit the URL`, () => {
 		const result = getAppTitle(`Test App`, `1.0.0`, `https://example.com`, `My Page`);
-		expect(result).toBe(`1.0.0 | Test App`);
+		expect(result).toBe(`1.0.0 | Test App — My Page`);
 	});
 
-	test(`should ignore pageTitle even with no URL`, () => {
+	test(`should append pageTitle even with no URL`, () => {
 		const result = getAppTitle(`Test App`, `1.0.0`, undefined, `My Page`);
-		expect(result).toBe(`1.0.0 | Test App`);
+		expect(result).toBe(`1.0.0 | Test App — My Page`);
 	});
 
-	test(`should omit pageTitle and keep simple format`, () => {
+	test(`should omit empty/whitespace-only pageTitle and keep simple format`, () => {
 		expect(getAppTitle(`Test App`, `1.0.0`, `https://example.com`, ``)).toBe(`1.0.0 | Test App`);
 		expect(getAppTitle(`Test App`, `1.0.0`, `https://example.com`, `   `)).toBe(`1.0.0 | Test App`);
 	});

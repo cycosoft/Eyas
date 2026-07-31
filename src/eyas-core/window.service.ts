@@ -6,6 +6,9 @@ import type { TimestampMS, GenericRecord } from '@registry/primitives.js';
 import { EYAS_HEADER_HEIGHT, EYAS_UI_PARTITION, getTestPartition } from '@scripts/constants.js';
 import { registerShortcutListeners } from './window.shortcuts.js';
 import { handleResize } from './window.resize.js';
+import * as sessionRecorderService from './session-recorder.service.js';
+import { registerPopupTracking } from './window.popups.js';
+import { registerAppShellPopupTitleSync } from './window.popup-titles.js';
 
 function setupConsoleMessageListener(
 	ctx: CoreContext,
@@ -33,17 +36,32 @@ function initTestWebContentsListeners(
 	testWebContents: WebContents,
 	$appWindow: BrowserWindow
 ): void {
+	// syncs title changes after load; explicitSet: false means Chromium synthesized `title`
+	// (e.g. the page URL) for a blank document.title, so treat that case as truly blank
+	testWebContents.on(`page-title-updated`, (_evt, title, explicitSet) => {
+		if (testWebContents.isDestroyed() || $appWindow.isDestroyed()) { return; }
+		const pageTitle = explicitSet === false ? `` : title;
+		$appWindow.setTitle(ctx.getAppTitle(pageTitle));
+		ctx.updateNavigationState(pageTitle);
+	});
+
 	testWebContents.on(`did-finish-load`, () => {
 		if (testWebContents.isDestroyed() || $appWindow.isDestroyed()) { return; }
 		$appWindow.setTitle(ctx.getAppTitle(testWebContents.getTitle()));
 		ctx.setMenu();
 
 		// clear history if requested (e.g. on fresh test start)
-		if (ctx.$shouldClearHistory) {
+		const isFreshTestStart = ctx.$shouldClearHistory;
+		if (isFreshTestStart) {
 			testWebContents.navigationHistory.clear();
 			ctx.setShouldClearHistory(false);
 		}
 
+		// only (re)start recording on the initial test load, not on every subsequent
+		// in-app navigation's did-finish-load
+		if (isFreshTestStart) {
+			sessionRecorderService.startSession(ctx).catch(() => {});
+		}
 		ctx.updateNavigationState();
 	});
 
@@ -52,7 +70,9 @@ function initTestWebContentsListeners(
 		ctx.updateNavigationState();
 	});
 
-	testWebContents.on(`did-start-navigation`, (_event, url) => {
+	testWebContents.on(`did-start-navigation`, (_event, url, _isInPlace, isMainFrame) => {
+		if (!isMainFrame) { return; }
+
 		ctx.setJSErrorsCount(0);
 		ctx.setJSWarningsCount(0);
 		if (!url.startsWith(`data:text/html`) && url !== `about:blank`) {
@@ -60,6 +80,7 @@ function initTestWebContentsListeners(
 				ctx.setIsInitializing(false);
 				ctx.setMenu();
 			}
+			sessionRecorderService.appendNavigateStep(url);
 			ctx.updateNavigationState();
 		}
 	});
@@ -105,12 +126,16 @@ export const windowService: WindowService = {
 		// Create a dedicated child view for the test content, positioned below the header
 		const testLayer = new WebContentsView({
 			webPreferences: {
-				preload: $paths.testPreload,
-				partition: getTestPartition($config?.meta.testId)
+				partition: getTestPartition($config?.meta.testId),
+				// required for the recorder preload to load into iframes (session-recording capture)
+				nodeIntegrationInSubFrames: true
 			}
 		});
 
 		ctx.setTestLayer(testLayer);
+		testLayer.webContents.session.registerPreloadScript({ type: `frame`, filePath: $paths.testPreload });
+		testLayer.webContents.session.registerPreloadScript({ type: `frame`, filePath: $paths.recorderPreload });
+		registerPopupTracking(testLayer.webContents);
 		registerShortcutListeners(ctx, testLayer.webContents);
 		window.contentView.addChildView(testLayer);
 		testLayer.setBounds({
@@ -223,19 +248,7 @@ export const windowService: WindowService = {
 		const testWebContents = ctx.$testLayer?.webContents || $appWindow.webContents;
 
 		initTestWebContentsListeners(ctx, testWebContents, $appWindow);
-
-		$appWindow.webContents.on(`did-create-window`, win => {
-			win.on(`page-title-updated`, (evt, title) => {
-				if (win.isDestroyed()) { return; }
-				evt.preventDefault();
-				win.setTitle(ctx.getAppTitle(title));
-			});
-
-			win.webContents.on(`did-finish-load`, () => {
-				if (win.isDestroyed() || win.webContents.isDestroyed()) { return; }
-				win.setTitle(ctx.getAppTitle(win.webContents.getTitle()));
-			});
-		});
+		registerAppShellPopupTitleSync(ctx, $appWindow.webContents);
 	},
 
 	// Handles window resize events.

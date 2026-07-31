@@ -1,6 +1,7 @@
-import type { ProjectId, DomainUrl, IsActive, SettingKey, HashString, Username, PasswordPlain, ZoomFactor } from './primitives.js';
+import type { ProjectId, DomainUrl, IsActive, SettingKey, HashString, Username, PasswordPlain, ZoomFactor, StepCount } from './primitives.js';
 import type { EnvironmentChoice, Viewport, ViewportSize, EnvironmentChoiceWithTitle } from './core.js';
 import type { NavItem } from './components.js';
+import type { RecordingStep } from './recording.js';
 
 /** Payload for selecting a test environment */
 export type EnvironmentSelectedPayload = DomainUrl | EnvironmentChoice;
@@ -52,7 +53,12 @@ export const VALID_SEND_CHANNELS = [
 	`get-credentials`,
 	`delete-credential`,
 	`is-dark-theme`,
-	`adjust-zoom`
+	`adjust-zoom`,
+	`recorder-flush-steps`,
+	`recorder-stop`,
+	`recorder-record-start`,
+	`recorder-replay-request`,
+	`recorder-replay-stop`
 ] as const;
 
 export const VALID_RECEIVE_CHANNELS = [
@@ -74,7 +80,9 @@ export const VALID_RECEIVE_CHANNELS = [
 	`update-status-updated`,
 	`show-update-ready-modal`,
 	`show-no-update-modal`,
-	`show-save-credential-modal`
+	`show-save-credential-modal`,
+	`recorder-status-updated`,
+	`recorder-playback-status`
 ] as const;
 
 /** Payload for the 'navigation-state-updated' IPC event */
@@ -160,5 +168,21 @@ export type CredentialPayload = {
 /** Payload for fetching credentials of a specific origin */
 export type GetCredentialsPayload = {
 	origin: DomainUrl;
+};
+
+/** Payload for the 'recorder-replay-request' IPC event */
+export type RecorderReplayRequestPayload = {
+	sessionId: string;
+};
+
+/** Payload for the 'recorder-flush-steps' IPC event */
+export type RecorderFlushStepsPayload = RecordingStep[];
+
+/** Payload for the 'recorder-playback-status' IPC event */
+export type RecorderPlaybackStatusPayload = {
+	completedSteps?: StepCount;
+	error?: string;
+	status: `playing` | `stopped` | `failed`;
+	totalSteps?: StepCount;
 };
 

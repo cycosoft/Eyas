@@ -50,7 +50,9 @@ export default defineConfig({
 		}
 	},
 	preload: {
-		plugins: [externalizeDepsPlugin()],
+		// @cypress/unique-selector must be bundled (not externalized): sandboxed preload
+		// scripts can't require() from node_modules at runtime.
+		plugins: [externalizeDepsPlugin({ exclude: [`@cypress/unique-selector`] })],
 		resolve: commonResolve,
 		build: {
 			rollupOptions: {
@@ -61,6 +63,7 @@ export default defineConfig({
 					constants: resolve(import.meta.dirname, `src/scripts/constants.js`),
 					'event-bridge': resolve(import.meta.dirname, `src/scripts/event-bridge.js`),
 					'test-preload': resolve(import.meta.dirname, `src/scripts/test-preload.js`),
+					recorder: resolve(import.meta.dirname, `src/scripts/recorder.js`),
 					'parse-url': resolve(import.meta.dirname, `src/scripts/parse-url.js`),
 					'path-utils': resolve(import.meta.dirname, `src/scripts/path-utils.js`),
 					'time-utils': resolve(import.meta.dirname, `src/scripts/time-utils.js`),
@@ -81,7 +84,13 @@ export default defineConfig({
 	},
 	renderer: {
 		plugins: [
-			vue(),
+			vue({
+				template: {
+					compilerOptions: {
+						isCustomElement: tag => tag === `recording-ring`
+					}
+				}
+			}),
 			vuetify({ autoImport: true })
 		],
 		root: resolve(import.meta.dirname, `src/eyas-interface/app`),
@@ -94,7 +103,10 @@ export default defineConfig({
 
 		build: {
 			rollupOptions: {
-				input: resolve(import.meta.dirname, `src/eyas-interface/app/index.html`)
+				input: {
+					index: resolve(import.meta.dirname, `src/eyas-interface/app/index.html`),
+					'recording-layer': resolve(import.meta.dirname, `src/eyas-interface/app/recording-layer.html`)
+				}
 			},
 			outDir: resolve(import.meta.dirname, `out/eyas-interface`),
 			emptyOutDir: true

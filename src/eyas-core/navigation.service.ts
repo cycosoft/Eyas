@@ -5,7 +5,7 @@ import { substituteEnvVariables, hasRemainingVariables } from '@scripts/variable
 import * as settingsService from './settings-service.js';
 import { EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
 import type { CoreContext } from '@registry/eyas-core.js';
-import type { DomainUrl, IsActive } from '@registry/primitives.js';
+import type { DomainUrl, IsActive, AppTitle } from '@registry/primitives.js';
 import type { EnvironmentSettings } from '@registry/settings.js';
 import {
 	isAppClosed,
@@ -253,7 +253,7 @@ function reload(ctx: CoreContext): void {
 	webContents.reloadIgnoringCache();
 }
 
-async function updateNavigationState(ctx: CoreContext): Promise<void> {
+async function updateNavigationState(ctx: CoreContext, rawPageTitle?: AppTitle): Promise<void> {
 	const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
 	if (!webContents || webContents.isDestroyed()) { return; }
 
@@ -264,7 +264,7 @@ async function updateNavigationState(ctx: CoreContext): Promise<void> {
 
 	const zoomFactor = webContents.getZoomFactor();
 
-	const titleParts = getAppTitlePartsWithContext(ctx);
+	const titleParts = getAppTitlePartsWithContext(ctx, rawPageTitle);
 
 	ctx.$eyasLayer?.webContents.send(`navigation-state-updated`, {
 		canGoBack: webContents.navigationHistory.canGoBack(),
@@ -281,7 +281,7 @@ async function updateNavigationState(ctx: CoreContext): Promise<void> {
 		projectId: ctx.$config?.meta.projectId || undefined,
 		domainsHash: ctx.$config?.domains ? hashDomains(ctx.$config.domains) : null,
 		testNetworkEnabled: ctx.$testNetworkEnabled,
-		appTitle: getAppTitleWithContext(ctx),
+		appTitle: getAppTitleWithContext(ctx, rawPageTitle),
 		configTitle: titleParts.configTitle,
 		appVersion: titleParts.appVersion,
 		pageTitle: titleParts.pageTitle,

@@ -73,13 +73,14 @@ describe(`window.service.ts unit tests`, () => {
 				goForward: vi.fn(),
 				toggleDevTools: vi.fn(),
 				isDestroyed: vi.fn().mockReturnValue(false),
-				session: { getCacheSize: vi.fn(async () => 0) }
+				session: { getCacheSize: vi.fn(async () => 0), registerPreloadScript: vi.fn() }
 			}
 		};
 
 		mockWindow = {
 			getContentSize: vi.fn().mockReturnValue([800, 600]),
 			on: vi.fn(),
+			setTitle: vi.fn(),
 			isDestroyed: vi.fn().mockReturnValue(false),
 			webContents: {
 				on: vi.fn(),
@@ -193,6 +194,31 @@ describe(`window.service.ts unit tests`, () => {
 
 			expect(mockCtx.setJSErrorsCount).not.toHaveBeenCalled();
 			expect(mockCtx.updateNavigationState).not.toHaveBeenCalled();
+		});
+
+		test(`should sync the app window's title when the test layer fires page-title-updated (e.g. document.title changed after load)`, () => {
+			windowService.initWindowListeners(mockCtx);
+			const callback = registeredListeners[`page-title-updated`];
+			expect(callback).toBeDefined();
+
+			vi.mocked(mockCtx.getAppTitle).mockReturnValue(`Eyas - My New Title`);
+
+			callback({}, `My New Title`, true);
+
+			expect(mockCtx.getAppTitle).toHaveBeenCalledWith(`My New Title`);
+			expect(mockCtx.$appWindow?.setTitle).toHaveBeenCalledWith(`Eyas - My New Title`);
+			expect(mockCtx.updateNavigationState).toHaveBeenCalledWith(`My New Title`);
+		});
+
+		test(`should treat a blank document.title as blank, not Chromium's synthesized URL fallback (explicitSet: false)`, () => {
+			windowService.initWindowListeners(mockCtx);
+			const callback = registeredListeners[`page-title-updated`];
+			expect(callback).toBeDefined();
+
+			callback({}, `https://test.com/demo/window`, false);
+
+			expect(mockCtx.getAppTitle).toHaveBeenCalledWith(``);
+			expect(mockCtx.updateNavigationState).toHaveBeenCalledWith(``);
 		});
 	});
 

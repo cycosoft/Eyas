@@ -22,13 +22,20 @@ export type IsWindows = boolean;
 export type IsMac = boolean;
 export type IsExitFlow = boolean;
 export type ShouldShow = boolean;
+export type IsExcluded = boolean;
+export type IsPasswordInput = boolean;
+export type IsStableId = boolean;
+export type IsUnique = boolean;
 
 // Events / Progress
 export type ProgressBytes = number;
+export type ProgressRatio = number;
 export type MPEventName = string;
 export type EventType = string;
 export type IsComputable = boolean;
 export type Count = number;
+export type StepCount = number;
+export type StepIndex = number;
 export type TimerId = ReturnType<typeof setTimeout>;
 type MetadataKey = string;
 export type CacheKey = string;
@@ -40,6 +47,12 @@ export type GenericRecord = Record<GenericKey, unknown>;
 export type MenuLabel = string;
 export type AppTitle = string;
 export type ProjectId = string;
+export type SelectorString = string;
+export type AccessibleName = string;
+export type DomIdAttribute = string;
+export type SelectorTraitType = string;
+export type SelectorAttributeKey = string;
+export type JsSnippet = string;
 export type SettingKey = string;
 export type AppVersion = string;
 export type ByteCount = number;
@@ -78,6 +91,14 @@ export type ViewportHeight = number;
 export type ViewportLabel = string;
 export type ScreenCoordinate = number;
 export type PixelDimension = number;
+export type FramePath = number[];
+export type ElementClassList = string[];
+
+// DOM Elements
+/** Represents a DOM element for recording or manipulation operations */
+export type DomElement = Element;
+/** Represents an event source node for event handling operations */
+export type EventSourceNode = EventTarget;
 
 // Identity / Identification
 export type HashString = string;
@@ -87,6 +108,9 @@ export type DeviceId = string;
 export type Username = string;
 export type PasswordPlain = string;
 export type PasswordHex = string;
+export type SessionId = string;
+export type PopupId = string;
+export type WebContentsId = number;
 
 // Certificates
 export type CertKey = string;
@@ -118,3 +142,6 @@ export type EnvironmentKey = string;
 
 // Zoom
 export type ZoomFactor = number;
+
+// Text editing
+export type CursorOffset = number;

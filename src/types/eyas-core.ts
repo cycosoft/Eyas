@@ -12,6 +12,7 @@ export type EyasPaths = {
 	configLoader: FilePath;
 	packageJson: FilePath;
 	testPreload: FilePath;
+	recorderPreload: FilePath;
 	eventBridge: FilePath;
 	constants: FilePath;
 	pathUtils: FilePath;
@@ -104,7 +105,7 @@ export type CoreContext = {
 	goBack: () => void;
 	goForward: () => void;
 	reload: () => void;
-	updateNavigationState: () => Promise<void>;
+	updateNavigationState: (rawPageTitle?: AppTitle) => Promise<void>;
 	initIpcHandlers: () => void;
 
 	// Services

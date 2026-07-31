@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recording Frame Fixture — Eyas Demo</title>
+  <link rel="stylesheet" href="../../assets/demo.css">
+</head>
+<body>
+  <eyas-nav></eyas-nav>
+
+  <header class="page-hero container animate-fade-in-up">
+    <span class="page-hero-icon">🖼️</span>
+    <h1>Recording Frame Fixture</h1>
+    <p>Loaded inside an iframe by the session-recording E2E suite.</p>
+  </header>
+
+  <section class="container" style="padding-bottom: var(--space-16);">
+    <button id="frame-click" data-testid="frame-click" class="btn btn-secondary">Frame button</button>
+  </section>
+
+  <eyas-footer></eyas-footer>
+
+  <script src="../../assets/components.js"></script>
+  <script src="../../assets/demo.js"></script>
+</body>
+</html>

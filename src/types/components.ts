@@ -119,6 +119,7 @@ export type SettingsModalVM = {
 	projectAlwaysChoose: IsVisible;
 	appAlwaysChoose: IsVisible;
 	appAllowBypassUpdates: boolean;
+	appReplaySpeed: string;
 	projectCredentials: CredentialMetadata[];
 	deleteConfirmVisible: IsVisible;
 	credentialToDelete: CredentialMetadata | null;

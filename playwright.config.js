@@ -13,6 +13,7 @@ export default defineConfig({
 	forbidOnly: !!process.env.CI,
 	retries: 0,
 	workers: 1,
+	maxFailures: 1,
 	reporter: `list`,
 	use: {
 		trace: `on-first-retry`

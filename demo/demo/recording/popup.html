@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recording Popup Fixture — Eyas Demo</title>
+  <link rel="stylesheet" href="../../assets/demo.css">
+</head>
+<body>
+  <eyas-nav></eyas-nav>
+
+  <header class="page-hero container animate-fade-in-up">
+    <span class="page-hero-icon">🪟</span>
+    <h1>Recording Popup Fixture</h1>
+    <p>Opened via target="_blank" by the session-recording E2E suite to verify popup capture/replay.</p>
+  </header>
+
+  <section class="container" style="padding-bottom: var(--space-16);">
+    <button id="popup-click" data-testid="popup-click" class="btn btn-secondary">Popup button</button>
+    <div style="height: 2000px;"></div>
+    <button id="popup-click-bottom" data-testid="popup-click-bottom" class="btn btn-secondary">Bottom popup button</button>
+  </section>
+
+  <eyas-footer></eyas-footer>
+
+  <script src="../../assets/components.js"></script>
+  <script src="../../assets/demo.js"></script>
+  <script src="./popup.js"></script>
+</body>
+</html>

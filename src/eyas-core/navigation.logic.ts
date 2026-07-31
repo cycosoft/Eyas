@@ -73,12 +73,15 @@ export type AppTitleParts = {
  */
 export function getAppTitlePartsWithContext(ctx: CoreContext, rawPageTitle?: AppTitle): AppTitleParts {
 	const webContents = ctx.$testLayer?.webContents || ctx.$appWindow?.webContents;
-	let pageTitle = rawPageTitle || ``;
+	// distinguish "not provided" (undefined, fall back to webContents.getTitle()) from an
+	// explicitly blank title (e.g. document.title cleared) — falsy-checking rawPageTitle would
+	// treat both the same and re-fetch getTitle(), which Chromium falls back to the page URL for
+	let pageTitle = rawPageTitle ?? ``;
 	let rawUrl = ``;
 
 	if (webContents && !webContents.isDestroyed()) {
 		rawUrl = webContents.getURL();
-		if (!pageTitle) {
+		if (rawPageTitle === undefined) {
 			try {
 				pageTitle = webContents.getTitle();
 			} catch { /* ignore */ }

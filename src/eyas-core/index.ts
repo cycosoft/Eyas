@@ -78,6 +78,7 @@ const $paths = {
 	configLoader: _path.join($roots.eyas, `scripts`, `get-config.cjs`),
 	packageJson: _path.join($roots.eyas, `..`, `package.json`),
 	testPreload: _path.join($roots.eyas, `scripts`, `test-preload.cjs`),
+	recorderPreload: _path.join($roots.eyas, `scripts`, `recorder.cjs`),
 	eventBridge: _path.join($roots.eyas, `scripts`, `event-bridge.cjs`),
 	constants: _path.join($roots.eyas, `scripts`, `constants.cjs`),
 	pathUtils: _path.join($roots.eyas, `scripts`, `path-utils.cjs`),
@@ -96,6 +97,17 @@ const _appVersion = _package.version;
 
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
+
+// Global safety net: without these, an unhandled rejection (e.g. a loadURL() call
+// racing a dev server that isn't listening yet) prints as a bare Chromium stack trace
+// with no indication of which subsystem it came from.
+process.on(`uncaughtException`, err => {
+	console.error(`[ELECTRON-CORE] uncaught exception:`, err);
+});
+
+process.on(`unhandledRejection`, reason => {
+	console.error(`[ELECTRON-CORE] unhandled rejection:`, reason);
+});
 
 // OS Listener
 nativeTheme.on(`updated`, () => {
@@ -202,7 +214,7 @@ const coreContextFunctions = {
 	goBack: (): void => navigationService.goBack(getCoreContext()),
 	goForward: (): void => navigationService.goForward(getCoreContext()),
 	reload: (): void => navigationService.reload(getCoreContext()),
-	updateNavigationState: (): Promise<void> => navigationService.updateNavigationState(getCoreContext()),
+	updateNavigationState: (rawPageTitle?: AppTitle): Promise<void> => navigationService.updateNavigationState(getCoreContext(), rawPageTitle),
 	initIpcHandlers: (): void => initIpcHandlers(getCoreContext())
 };
 

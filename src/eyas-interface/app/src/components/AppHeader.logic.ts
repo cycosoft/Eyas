@@ -1,8 +1,9 @@
 import { reactive, computed } from 'vue';
 import useModalsStore from '@/stores/modals.js';
+import useRecordingStore from '@/stores/recording.js';
 import type { NavGroup, NavItem, NavActivateEvent, PendingNavOpen, DisplayUrlInfo, CursorPosition } from '@registry/components.js';
 import type { ChannelName, MenuLabel, ProjectId, DomainUrl, HashString, ListIndex } from '@registry/primitives.js';
-import type { EnvironmentChoiceWithTitle } from '@registry/core.js';
+import type { EnvironmentChoiceWithTitle, ViewportSize } from '@registry/core.js';
 import type { UpdateStatus } from '@registry/ipc.js';
 import { handleNavItemClick, updateCache, updateTools, updateViewports, updateLinks } from './AppHeader.updates.js';
 import type { NavigationStatePayload } from '@registry/ipc.js';
@@ -11,6 +12,7 @@ export * from './AppHeader.data.js';
 export * from './AppHeader.navigation.js';
 export * from './AppHeader.updates.js';
 export * from './AppHeader.updater.js';
+export * from './AppHeader.playback.js';
 
 /**
  * The reactive state of the application header.
@@ -33,6 +35,7 @@ export const state = reactive({
 	projectId: undefined as ProjectId | undefined,
 	domainsHash: null as HashString | null,
 	isHeaderHovered: false,
+	currentViewport: null as ViewportSize | null,
 	testNetworkEnabled: true,
 	appTitle: ``,
 	configTitle: ``,
@@ -123,10 +126,11 @@ export function onItemClick(item: NavItem): void {
 /** Closes the UI layer after a delay, if no menus or modals are open. */
 export function delayedClose(): void {
 	const modalsStore = useModalsStore();
+	const recordingStore = useRecordingStore();
 	window.clearTimeout(closeTimeout);
 
 	closeTimeout = window.setTimeout(() => {
-		if (!state.isHeaderHovered && !state.menu && !state.envMenu && !modalsStore.hasVisibleModals) {
+		if (!state.isHeaderHovered && !state.menu && !state.envMenu && !modalsStore.hasVisibleModals && !recordingStore.isPlaying) {
 			window.eyas?.send(`hide-ui` as ChannelName);
 		}
 	}, 300);
@@ -211,6 +215,10 @@ export function handleNavigationUpdate(data: unknown): void {
 
 	if (payload.viewports && payload.currentViewport) {
 		updateViewports(payload.viewports, payload.currentViewport[0], payload.currentViewport[1]);
+	}
+
+	if (payload.currentViewport) {
+		state.currentViewport = payload.currentViewport;
 	}
 
 	if (payload.cacheSize !== undefined && payload.sessionAge !== undefined) {

@@ -32,6 +32,7 @@ export type CoreMockTestLayer = {
 /** Mock of session for test layer */
 type CoreMockTestLayerSession = {
 	getCacheSize: () => Promise<number>;
+	registerPreloadScript: (...args: unknown[]) => void;
 };
 
 /** Mock of WebContents for the test layer (broader API surface) */
@@ -70,6 +71,7 @@ export type CoreMockWindow = {
 	contentView: CoreMockContentView;
 	getContentSize: () => ViewportSize;
 	on: (event: string, cb: (...args: unknown[]) => void) => void;
+	setTitle: (title: string) => void;
 	isDestroyed: () => boolean;
 	webContents: CoreMockWindowWebContents;
 };
