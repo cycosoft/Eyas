@@ -24,7 +24,7 @@
 				<span v-else><template v-for="(part, i) in group.mnemonicParts" :key="i"><u v-if="part.isMnemonic">{{ part.text }}</u><template v-else>{{ part.text }}</template></template></span>
 			</v-btn>
 			<div class="d-flex align-center ml-2 pa-1 rounded-lg border">
-				<v-btn v-for="control in browserControls" :key="control.action" icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" :data-qa="`btn-browser-${control.action}`" :disabled="isControlDisabled(control.action, canGoBack, canGoForward)" @click="handleBrowserControlClick(control.action)">
+				<v-btn v-for="control in browserControls" :key="control.action" icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" :data-qa="`btn-browser-${control.action}`" :disabled="isControlDisabled(control.action, canGoBack, canGoForward) || isPlaybackLocked()" @click="handleBrowserControlClick(control.action)">
 					<v-icon :icon="control.icon" size="small" />
 					<v-tooltip activator="parent" location="bottom">
 						{{ control.label }}
@@ -46,7 +46,7 @@
 		<v-spacer />
 		<AppHeaderRecordingControls />
 		<!-- 3. Update Status -->
-		<v-btn v-if="updateInfo.icon" icon density="compact" :variant="updateInfo.variant" :ripple="updateInfo.ripple" class="mr-1" data-qa="btn-broadcast" :disabled="updateInfo.disabled" :color="updateInfo.color" :class="{ 'blink-animation': updateStatus === 'checking' || updateStatus === 'downloading' }" @click="handleBroadcastClick">
+		<v-btn v-if="updateInfo.icon" icon density="compact" :variant="updateInfo.variant" :ripple="updateInfo.ripple" class="mr-1" data-qa="btn-broadcast" :disabled="updateInfo.disabled || isPlaybackLocked()" :color="updateInfo.color" :class="{ 'blink-animation': updateStatus === 'checking' || updateStatus === 'downloading' }" @click="handleBroadcastClick">
 			<v-icon :icon="updateInfo.icon" size="small" />
 			<v-tooltip v-if="updateStatus === 'downloaded'" activator="parent" location="bottom">
 				Update Available
@@ -92,12 +92,12 @@
 					:prepend-icon="item.icon"
 					:append-icon="item.appendIcon"
 					:color="item.color"
-					:ripple="item.actionable !== false"
-					:class="{ [`text-${item.color}`]: item.color, 'non-actionable': item.actionable === false }"
-					:disabled="item.actionable === false"
+					:ripple="!isItemLocked(item)"
+					:class="{ [`text-${item.color}`]: item.color, 'non-actionable': isItemLocked(item) }"
+					:disabled="isItemLocked(item)"
 					:active="item.selected"
 					data-qa="btn-nav-item"
-					@click="item.actionable === false ? undefined : onItemClick(item)"
+					@click="isItemLocked(item) ? undefined : onItemClick(item)"
 				>
 					<div class="d-flex align-center w-100">
 						<span class="flex-grow-1">
@@ -175,12 +175,12 @@
 									:value="sub.value"
 									:prepend-icon="sub.icon"
 									:color="sub.color"
-									:ripple="sub.actionable !== false"
-									:class="{ [`text-${sub.color}`]: sub.color, 'non-actionable': sub.actionable === false }"
-									:disabled="sub.actionable === false"
+									:ripple="!isItemLocked(sub)"
+									:class="{ [`text-${sub.color}`]: sub.color, 'non-actionable': isItemLocked(sub) }"
+									:disabled="isItemLocked(sub)"
 									:active="sub.selected"
 									data-qa="btn-nav-item"
-									@click="sub.actionable === false ? undefined : onItemClick(sub)"
+									@click="isItemLocked(sub) ? undefined : onItemClick(sub)"
 								>
 									<div class="d-flex align-center w-100">
 										<span class="flex-grow-1">
@@ -216,7 +216,7 @@ import {
 	handleNavigationUpdate, handleUpdateStatusUpdate, displayUrlInfo,
 	activeEnvironmentTitle, selectEnvironment, handleHeaderMouseEnter,
 	handleHeaderMouseLeave, handleUrlClick, resetTooltipText, displayAppTitle,
-	isViewingTestContent, updateUpdatesMenuItem
+	isViewingTestContent, updateUpdatesMenuItem, isPlaybackLocked, isItemLocked
 } from './AppHeader.logic.js';
 import AppHeaderOmniHub from './AppHeaderOmniHub.vue';
 import AppHeaderRecordingControls from './AppHeaderRecordingControls.vue';
@@ -254,7 +254,8 @@ defineExpose({
 	environments, currentEnvironment, activeEnvironmentTitle, selectEnvironment,
 	handleHeaderMouseEnter, handleHeaderMouseLeave, handleUrlClick, resetTooltipText,
 	appTitle, displayAppTitle, isViewingTestContent, envMenu: toRefs(state).envMenu,
-	menuItems: toRefs(state).menuItems, activator: toRefs(state).activator, adjustZoomLevel, zoomFactor
+	menuItems: toRefs(state).menuItems, activator: toRefs(state).activator, adjustZoomLevel, zoomFactor,
+	isPlaybackLocked
 });
 </script>
 

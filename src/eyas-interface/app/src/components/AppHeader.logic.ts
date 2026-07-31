@@ -12,6 +12,7 @@ export * from './AppHeader.data.js';
 export * from './AppHeader.navigation.js';
 export * from './AppHeader.updates.js';
 export * from './AppHeader.updater.js';
+export * from './AppHeader.playback.js';
 
 /**
  * The reactive state of the application header.

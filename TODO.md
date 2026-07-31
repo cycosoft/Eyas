@@ -1,19 +1,6 @@
 # TODO
 
-- disable header controls during test run
--- Eyas > About
--- Eyas > Settings
--- Eyas > Check for Updates
--- Eyas > Changelog
--- browser back
--- browser forward
--- browser reload
--- browser home
--- links > *
--- environment dropdown
--- Update available button
--- tools > test server
--- tools > cache
+-
 
 
 # Future

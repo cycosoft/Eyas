@@ -128,7 +128,7 @@
 			:append-icon="environments.length > 1 ? 'mdi-chevron-down' : undefined"
 			class="env-btn font-weight-bold text-uppercase"
 			data-qa="omni-hub-env-dropdown"
-			:disabled="environments.length <= 1"
+			:disabled="environments.length <= 1 || isPlaybackLocked()"
 		>
 			{{ activeEnvironmentTitle }}
 
@@ -167,7 +167,7 @@ import type { ChannelName } from '@registry/primitives.js';
 import {
 	state, displayUrlInfo, activeEnvironmentTitle, selectEnvironment,
 	handleUrlClick, handleCursorMove, resetTooltipText, delayedClose,
-	toggleNetwork, isViewingTestContent
+	toggleNetwork, isViewingTestContent, isPlaybackLocked
 } from './AppHeader.logic.js';
 
 const { environments, currentEnvironment, envMenu, tooltipVisible, tooltipText, cursorPos, testNetworkEnabled, jsErrorsCount, jsWarningsCount, zoomFactor } = toRefs(state);
