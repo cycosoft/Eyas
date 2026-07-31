@@ -13,12 +13,12 @@
 -- environment dropdown
 -- Update available button
 -- tools > test server
--- tools > viewport
 -- tools > cache
 
 
 # Future
 
+- is zoom remembered? should we remember it per project?
 - we should add a "demo mode" speed test replay speed that people can use for showing off to a group over video chat (maybe like 500ms)
 - need a tooltip for the "online/offline" header button
 - swap cache > clear and open list item positions
