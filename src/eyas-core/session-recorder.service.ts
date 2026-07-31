@@ -27,6 +27,16 @@ function _generateSessionId(): SessionId {
 	return randomUUID() as SessionId;
 }
 
+/** Only one recording is ever active at a time, so it lives at a fixed path per project instead of one file per UUID — starting a new recording overwrites it, leaving nothing to clean up. */
+function _activeSessionPath(projectId: ProjectId): FilePath {
+	return _path.join(_sessionsDir(), projectId, `active-session.json`) as FilePath;
+}
+
+/** Future "saved recordings" location: not yet written to, but getSession already checks it so that feature won't need to change this function's by-ID contract again. */
+function _savedSessionPath(projectId: ProjectId, sessionId: SessionId): FilePath {
+	return _path.join(_sessionsDir(), projectId, `saved`, `${sessionId}.json`) as FilePath;
+}
+
 function _isLegacySelectorGroup(selectors: unknown): selectors is LegacySelectorGroup {
 	return !!selectors && typeof selectors === `object` && !Array.isArray(selectors) && `primary` in selectors;
 }
@@ -79,7 +89,7 @@ async function startSession(ctx: CoreContext): Promise<void> {
 		recording: { title: new Date(startedAt).toISOString(), steps: [] }
 	};
 
-	_sessionFilePath = _path.join(_sessionsDir(), projectId, `${sessionId}.json`);
+	_sessionFilePath = _activeSessionPath(projectId);
 	await _persist();
 
 	ctx.$eyasLayer?.webContents?.send(`recorder-status-updated`, { isRecording: true, sessionId });
@@ -135,10 +145,17 @@ async function getSession(ctx: CoreContext, sessionId: SessionId): Promise<EyasR
 	if (_session?.sessionId === sessionId) { return _session; }
 
 	const projectId = (ctx.$config?.meta.projectId || `default`) as ProjectId;
-	const filePath = _path.join(_sessionsDir(), projectId, `${sessionId}.json`);
-	if (!(await fs.pathExists(filePath))) { return null; }
 
-	return _upgradeSession(await fs.readJson(filePath));
+	const activePath = _activeSessionPath(projectId);
+	if (await fs.pathExists(activePath)) {
+		const active: EyasRecordingEnvelope = await fs.readJson(activePath);
+		if (active.sessionId === sessionId) { return _upgradeSession(active); }
+	}
+
+	const savedPath = _savedSessionPath(projectId, sessionId);
+	if (!(await fs.pathExists(savedPath))) { return null; }
+
+	return _upgradeSession(await fs.readJson(savedPath));
 }
 
 export {

@@ -1,6 +1,6 @@
 # TODO
 
-- we do not appear to be cleaning up old recording sessions
+- once we allow multiple eyas instances to run at once, what happens to shared data like "active recordings"?
 - disable header controls during test run
 -- Eyas > About
 -- Eyas > Settings
@@ -28,3 +28,4 @@
 - what happens when the test enounters an error like broken JS?
 - what happens when the test generaly can't follow the steps?
 - How are test failures shown to the user?
+- support saving/organizing recordings: rename off `active-session.json` by start timestamp into `sessions/{projectId}/saved/`, which `getSession` already checks
