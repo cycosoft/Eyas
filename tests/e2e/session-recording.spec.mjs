@@ -404,11 +404,14 @@ test.describe(`Session Recording — Replay`, () => {
 
 		await uiPage.locator(`[data-qa="btn-recording-replay"]`).click();
 
-		await expect.poll(
-			() => seenWindows.some(p => { try { return p.url().includes(`npmjs.com/package/@cycosoft/eyas`); } catch { return false; } }),
-			{ timeout: 15000 }
-		).toBe(true);
-		const replayedNpmPage = seenWindows.find(p => { try { return p.url().includes(`npmjs.com/package/@cycosoft/eyas`); } catch { return false; } });
+		// match either npmjs.com or github.com, rather than requiring the popup still be sitting
+		// at the npm URL specifically — on a fast replay the popup can open at npmjs.com and get
+		// clicked through to github.com before this poll ever observes the intermediate npmjs.com
+		// state, which is a race in this assertion, not a replay bug (the actual bug-report
+		// assertion is the final url, below)
+		const isTrackedPopup = p => { try { const url = p.url(); return url.includes(`npmjs.com/package/@cycosoft/eyas`) || url.startsWith(`https://github.com`); } catch { return false; } };
+		await expect.poll(() => seenWindows.some(isTrackedPopup), { timeout: 15000 }).toBe(true);
+		const replayedNpmPage = seenWindows.find(isTrackedPopup);
 		expect(replayedNpmPage).toBeTruthy();
 
 		// this is the assertion that captures the bug report: replay should follow the README
