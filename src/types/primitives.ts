@@ -112,6 +112,7 @@ export type DeviceId = string;
 export type Username = string;
 export type PasswordPlain = string;
 export type PasswordHex = string;
+export type WasSeeded = boolean;
 export type SessionId = string;
 export type PopupId = string;
 export type WebContentsId = number;
