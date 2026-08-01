@@ -82,7 +82,12 @@ Runner: v${ctx._appVersion}
 	 * @returns A formatted duration string.
 	 */
 	getSessionAge(ctx: CoreContext): FormattedDuration {
-		if (!ctx.$appWindow) { return ``; }
+		// `$appWindow` stays a live reference after the window is torn down, and reading
+		// `.webContents` off a destroyed BrowserWindow throws. `updateNavigationState`
+		// calls this once per navigation/title/resize event and clears its own guard via
+		// the test layer, so during shutdown the app window can already be gone —
+		// matching the null + isDestroyed pairing used everywhere else in core.
+		if (!ctx.$appWindow || ctx.$appWindow.isDestroyed()) { return ``; }
 
 		let output: Date | TimeString = new Date();
 

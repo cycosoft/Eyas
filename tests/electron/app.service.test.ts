@@ -97,6 +97,7 @@ describe(`app.service.ts unit tests`, () => {
 
 		mockCtx = {
 			$appWindow: {
+				isDestroyed: vi.fn().mockReturnValue(false),
 				webContents: {
 					session: {
 						clearCache: vi.fn(),
@@ -174,6 +175,26 @@ describe(`app.service.ts unit tests`, () => {
 		const age = appService.getSessionAge(mockCtx);
 		expect(age).toBe(`2 hours`);
 		expect(fs.existsSync).toHaveBeenCalledWith(`/mock/storage/Session Storage`);
+	});
+
+	test(`getSessionAge should return empty when there is no app window`, () => {
+		(mockCtx as unknown as CoreMockMutableContext).$appWindow = null;
+
+		expect(appService.getSessionAge(mockCtx)).toBe(``);
+	});
+
+	test(`getSessionAge should return empty rather than throw once the app window is destroyed`, () => {
+		// Electron keeps the BrowserWindow reference alive after teardown but throws
+		// "Object has been destroyed" on any property access. `updateNavigationState`
+		// still calls this during shutdown — its own guard can be satisfied by a
+		// surviving test layer — which surfaced as an unhandled rejection on exit.
+		(mockCtx as unknown as CoreMockMutableContext).$appWindow = {
+			isDestroyed: vi.fn().mockReturnValue(true),
+			get webContents(): never { throw new TypeError(`Object has been destroyed`); }
+		};
+
+		expect(() => appService.getSessionAge(mockCtx)).not.toThrow();
+		expect(appService.getSessionAge(mockCtx)).toBe(``);
 	});
 
 	test(`manageAppClose should prevent default and trigger exit modal when no update is downloaded`, () => {
