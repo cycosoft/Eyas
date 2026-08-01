@@ -2,6 +2,7 @@ import { ipcRenderer } from 'electron';
 import getUniqueSelector from '@cypress/unique-selector/lib/index.js';
 import type { RecordingStep, SelectorGroup, CursorSelection } from '@registry/recording.js';
 import type { FramePath, ScreenCoordinate, ElementClassList, SelectorString, DomElement, EventSourceNode, IsExcluded, IsPasswordInput, IsStableId, DomIdAttribute, SelectorTraitType, SelectorAttributeKey, AccessibleName, IsUnique } from '@registry/primitives.js';
+import { computeScopedSelector } from './recorder.selector-scoping.js';
 
 const FLUSH_INTERVAL_MS = 2000;
 const FLUSH_AT_STEP_COUNT = 50;
@@ -132,23 +133,55 @@ function _isUniqueByTagAndText(target: Element, text: AccessibleName): IsUnique 
 	return matches === 1;
 }
 
-// Priority order for capture: aria name -> visible text -> data-testid/data-qa -> CSS. This
-// matches what Testing Library / Playwright / Cypress converge on (role/text first, test-id as
-// escape hatch, CSS path only when nothing else is available) and is the vocabulary a candidate
-// selector must use to be exportable to real e2e frameworks (see recording.ts SelectorCandidate).
+// aria/text candidates that aren't globally unique fall back to an ancestor-scoped version (see
+// recorder.selector-scoping.ts) rather than being dropped outright — only if no ancestor ever
+// disambiguates does the caller move on to testid/href/id/positional candidates.
+function _accessibleNameCandidate(target: Element, name: AccessibleName): SelectorString | null {
+	if (_isUniqueAccessibleName(name)) { return `aria/${name}`; }
+	return computeScopedSelector(target, el => _computeAccessibleName(el) === name, `scoped-aria`, name);
+}
+
+function _textCandidate(target: Element, text: AccessibleName): SelectorString | null {
+	if (_isUniqueByTagAndText(target, text)) { return `text/${text}`; }
+	return computeScopedSelector(target, el => _normalizeText(el.textContent || ``) === text, `scoped-text`, text);
+}
+
+function _testIdCandidate(target: Element): SelectorString | null {
+	const dataTestId = target.getAttribute(`data-testid`);
+	if (dataTestId) { return `testid/${dataTestId}`; }
+	const dataQa = target.getAttribute(`data-qa`);
+	return dataQa ? `testid/${dataQa}` : null;
+}
+
+// href identifies an anchor's actual navigation target regardless of ambiguous/duplicated text or
+// aria-label — e.g. a page that renders the same link twice for responsive layouts
+function _hrefCandidate(target: Element): SelectorString | null {
+	if (!(target instanceof HTMLAnchorElement)) { return null; }
+	const href = target.getAttribute(`href`);
+	return href ? `href/${href}` : null;
+}
+
+// Priority order for capture: aria name -> visible text -> ancestor-scoped aria/text -> testid ->
+// href (anchors) -> #id -> CSS. This matches what Testing Library / Playwright / Cypress converge
+// on (role/text first, test-id as escape hatch, CSS path only when nothing else is available) and
+// is the vocabulary a candidate selector must use to be exportable to real e2e frameworks (see
+// recording.ts SelectorCandidate).
 function _computeSelectorGroup(target: Element): SelectorGroup {
 	const candidates: ElementClassList = [];
 
 	const accessibleName = _computeAccessibleName(target);
-	if (accessibleName && _isUniqueAccessibleName(accessibleName)) { candidates.push(`aria/${accessibleName}`); }
+	const accessibleNameCandidate = accessibleName ? _accessibleNameCandidate(target, accessibleName) : null;
+	if (accessibleNameCandidate) { candidates.push(accessibleNameCandidate); }
 
 	const text = _normalizeText(target.textContent || ``);
-	if (text && text.length <= TEXT_CANDIDATE_MAX_LENGTH && _isUniqueByTagAndText(target, text)) { candidates.push(`text/${text}`); }
+	const textCandidate = text && text.length <= TEXT_CANDIDATE_MAX_LENGTH ? _textCandidate(target, text) : null;
+	if (textCandidate) { candidates.push(textCandidate); }
 
-	const dataTestId = target.getAttribute(`data-testid`);
-	const dataQa = target.getAttribute(`data-qa`);
-	if (dataTestId) { candidates.push(`testid/${dataTestId}`); }
-	else if (dataQa) { candidates.push(`testid/${dataQa}`); }
+	const testIdCandidate = _testIdCandidate(target);
+	if (testIdCandidate) { candidates.push(testIdCandidate); }
+
+	const hrefCandidate = _hrefCandidate(target);
+	if (hrefCandidate) { candidates.push(hrefCandidate); }
 
 	const id = target.id;
 	const usableId = id && _isStableId(id) ? id : null;

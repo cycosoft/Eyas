@@ -1,4 +1,4 @@
-import type { ProjectId, TimestampMS, ViewportWidth, ViewportHeight, ScreenCoordinate, FramePath, DomainUrl, PopupId, CursorOffset, StepCount } from './primitives.js';
+import type { ProjectId, TimestampMS, ViewportWidth, ViewportHeight, ScreenCoordinate, FramePath, DomainUrl, PopupId, CursorOffset, StepCount, SelectorString, AccessibleName } from './primitives.js';
 
 /** Viewport dimensions for the recording session */
 type Viewport = {
@@ -9,13 +9,21 @@ type Viewport = {
 /**
  * A single candidate locator for an element, modeled on the Chrome DevTools Recorder /
  * @puppeteer/replay convention: `aria/<accessible name>`, `text/<visible text>`,
- * `testid/<data-testid or data-qa value>`, or a plain CSS selector string (no prefix) as the
- * last-resort fallback.
+ * `scoped-aria/<{scope, name} JSON>` / `scoped-text/<{scope, name} JSON>` (an accessible-name/text
+ * match that's only unique once qualified by a nearby ancestor — see recorder.ts
+ * _computeScopedSelector), `testid/<data-testid or data-qa value>`, `href/<anchor href>`, or a
+ * plain CSS selector string (no prefix) as the last-resort fallback.
  */
 type SelectorCandidate = string;
 
 /** Ordered candidate list for an element, most-reliable first. Tried in order during replay. */
 export type SelectorGroup = SelectorCandidate[];
+
+/** Decoded payload of a `scoped-aria/`/`scoped-text/` candidate — see recorder.ts _computeScopedSelector. */
+export type ScopedSelectorPayload = {
+	scope: SelectorString;
+	name: AccessibleName;
+}
 
 /** Resolved viewport coordinates of an element to click during replay. */
 export type ClickPoint = {

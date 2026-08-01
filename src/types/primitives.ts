@@ -26,6 +26,7 @@ export type IsExcluded = boolean;
 export type IsPasswordInput = boolean;
 export type IsStableId = boolean;
 export type IsUnique = boolean;
+export type IsMatch = boolean;
 
 // Events / Progress
 export type ProgressBytes = number;

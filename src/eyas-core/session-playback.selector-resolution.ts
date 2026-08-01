@@ -1,5 +1,5 @@
 import type { JsSnippet, VariableValue, AccessibleName, SelectorString, IsVisible } from '@registry/primitives.js';
-import type { SelectorGroup, ClickPoint, KeyDownStep, ValueBearingElement, SelectableValueElement } from '@registry/recording.js';
+import type { SelectorGroup, ClickPoint, KeyDownStep, ValueBearingElement, SelectableValueElement, ScopedSelectorPayload } from '@registry/recording.js';
 
 // Every function below runs in the *renderer*, not here — building an executeJavaScript() payload
 // out of real, typed, linted TypeScript functions (via Function.prototype.toString(), the same
@@ -81,19 +81,45 @@ function _findByText(text: AccessibleName): Element[] {
 	return matches.length ? [matches[0]] : [];
 }
 
+// a scoped-aria/scoped-text candidate encodes {scope, name}: scope narrows the search to
+// descendants of whichever elements match it (see recorder.ts _computeScopedSelector for why a
+// plain aria/text match wasn't unique enough on its own), then the first descendant within any
+// matching scope whose computed name equals `name` is taken — mirrors _findByAria/_findByText's
+// "first match" semantics, just pre-narrowed to the scope capture already proved was unique.
+function _findScoped(payload: SelectorString, computeName: (el: Element) => AccessibleName | null): Element[] {
+	let parsed: ScopedSelectorPayload;
+	try { parsed = JSON.parse(payload); } catch { return []; }
+	let roots: Element[];
+	try { roots = Array.prototype.slice.call(document.querySelectorAll(parsed.scope)); } catch { return []; }
+	for (const root of roots) {
+		const descendants = root.querySelectorAll(`*`);
+		for (let i = 0; i < descendants.length; i++) {
+			if (computeName(descendants[i]) === parsed.name) { return [descendants[i]]; }
+		}
+	}
+	return [];
+}
+
+function _findByHref(href: SelectorString): Element[] {
+	try { return Array.prototype.slice.call(document.querySelectorAll(`a[href="${href.replace(/"/g, `\\"`)}"]`)); } catch { return []; }
+}
+
 // aria/text candidates were only captured when they uniquely identified one element, so a single
 // match is expected; the CSS/testid fallback candidates use querySelectorAll so a caller-supplied
 // visibility check can pick among duplicate matches (e.g. responsive-breakpoint duplicates).
 function _candidatesForSelector(candidate: SelectorString): Element[] {
 	if (candidate.indexOf(`aria/`) === 0) { return _findByAria(candidate.slice(5)); }
 	if (candidate.indexOf(`text/`) === 0) { return _findByText(candidate.slice(5)); }
+	if (candidate.indexOf(`scoped-aria/`) === 0) { return _findScoped(candidate.slice(12), _computeAccessibleName); }
+	if (candidate.indexOf(`scoped-text/`) === 0) { return _findScoped(candidate.slice(12), el => _normalizeText(el.textContent)); }
+	if (candidate.indexOf(`href/`) === 0) { return _findByHref(candidate.slice(5)); }
 	const cssSelector: SelectorString = candidate.indexOf(`testid/`) === 0
 		? `[data-testid="${candidate.slice(7)}"], [data-qa="${candidate.slice(7)}"]`
 		: candidate;
 	try { return Array.prototype.slice.call(document.querySelectorAll(cssSelector)); } catch { return []; }
 }
 
-const _RESOLVER_DEPENDENCIES = [_normalizeText, _computeLabelledName, _computeAccessibleName, _findByAria, _findByText, _candidatesForSelector];
+const _RESOLVER_DEPENDENCIES = [_normalizeText, _computeLabelledName, _computeAccessibleName, _findByAria, _findByText, _findScoped, _findByHref, _candidatesForSelector];
 
 function _isVisible(el: Element): IsVisible {
 	if ((el as HTMLElement).offsetParent === null && getComputedStyle(el).position !== `fixed`) { return false; }
