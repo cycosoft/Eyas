@@ -51,8 +51,17 @@ export type CursorSelection = {
 	selectionEnd?: number;
 }
 
+/**
+ * Chrome DevTools Recorder / @puppeteer/replay mouse button names. Absent on a
+ * {@link ClickStep} means `primary`, which is what every session recorded before
+ * right-click capture existed looks like — so old recordings replay unchanged.
+ */
+export type MouseButton = `primary` | `auxiliary` | `secondary` | `back` | `forward`;
+
 export type ClickStep = {
 	type: `click`;
+	/** Omitted for a normal left click; `secondary` is a right click. */
+	button?: MouseButton;
 	selectors: SelectorGroup;
 	offsetX: ScreenCoordinate;
 	offsetY: ScreenCoordinate;

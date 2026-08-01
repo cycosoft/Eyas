@@ -42,7 +42,7 @@ afterEach(() => {
 
 describe(`event listener registration`, () => {
 	test(`registers all DOM event listeners with { capture: true } so stopPropagation() in app code cannot hide events`, () => {
-		const events = [`click`, `change`, `keydown`, `keyup`, `scroll`];
+		const events = [`click`, `contextmenu`, `change`, `keydown`, `keyup`, `scroll`];
 		for (const evt of events) {
 			expect(addEventListenerCalls).toContainEqual([evt, expect.any(Function), { capture: true }]);
 		}
@@ -65,7 +65,19 @@ describe(`click capture`, () => {
 		expect(steps[0].type).toBe(`click`);
 		expect((steps[0] as ClickStep).selectors[0]).toBe(`#save`);
 	});
+
+	test(`omits button entirely for a left click, so sessions match those recorded before right-click capture`, () => {
+		const btn = document.createElement(`button`);
+		btn.id = `save`;
+		document.body.appendChild(btn);
+
+		btn.dispatchEvent(new MouseEvent(`click`, { bubbles: true }));
+		vi.advanceTimersByTime(2000);
+
+		expect(flush()[0] as ClickStep).not.toHaveProperty(`button`);
+	});
 });
+// Right-click capture lives in recorder.right-click.test.ts (max-lines).
 
 // ─── selector priority ────────────────────────────────────────────────────────
 // Candidate priority: aria accessible name -> visible text -> data-testid/data-qa -> #id -> CSS

@@ -120,8 +120,14 @@ async function _dispatchClick(target: Electron.WebContents, step: ClickStep): Pr
 		throw new Error(`Could not locate click target "${step.selectors[0]}" on the page.`);
 	}
 	const { x, y } = resolved;
-	await target.debugger.sendCommand(`Input.dispatchMouseEvent`, { type: `mousePressed`, x, y, button: `left`, clickCount: 1 });
-	await target.debugger.sendCommand(`Input.dispatchMouseEvent`, { type: `mouseReleased`, x, y, button: `left`, clickCount: 1 });
+	// `button` is absent on every step recorded before right-click capture, and on every left
+	// click since — so the default here is what keeps those sessions replaying unchanged.
+	const button = step.button === `secondary` ? `right` : `left`;
+	// both halves are required even though only one produces the contextmenu event: Blink
+	// synthesizes it from the release on Windows/Linux and the press on macOS, so dispatching
+	// a single half replays as nothing on one platform or the other.
+	await target.debugger.sendCommand(`Input.dispatchMouseEvent`, { type: `mousePressed`, x, y, button, clickCount: 1 });
+	await target.debugger.sendCommand(`Input.dispatchMouseEvent`, { type: `mouseReleased`, x, y, button, clickCount: 1 });
 }
 
 async function _dispatchStep(webContents: Electron.WebContents, step: RecordingStep): Promise<void> {

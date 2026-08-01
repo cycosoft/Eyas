@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron';
 import getUniqueSelector from '@cypress/unique-selector/lib/index.js';
-import type { RecordingStep, SelectorGroup, CursorSelection } from '@registry/recording.js';
+import type { RecordingStep, SelectorGroup, CursorSelection, MouseButton } from '@registry/recording.js';
 import type { FramePath, ScreenCoordinate, ElementClassList, SelectorString, DomElement, EventSourceNode, IsExcluded, IsPasswordInput, IsStableId, DomIdAttribute, SelectorTraitType, SelectorAttributeKey, AccessibleName, IsUnique } from '@registry/primitives.js';
 import { computeScopedSelector } from './recorder.selector-scoping.js';
 
@@ -206,13 +206,15 @@ function _flush(): void {
 	_buffer = [];
 }
 
-function _onClick(event: MouseEvent): void {
+function _pushClick(event: MouseEvent, button?: MouseButton): void {
 	const target = event.target as Element | null;
 	if (!target) { return; }
 	if (_isExcluded(target)) { return; }
 
 	_push({
 		type: `click`,
+		// omitted for a left click so sessions stay byte-identical to pre-right-click recordings
+		...(button ? { button } : {}),
 		selectors: _computeSelectorGroup(target),
 		// viewport-relative (not element-relative) so CDP's Input.dispatchMouseEvent can replay it directly
 		offsetX: event.clientX as ScreenCoordinate,
@@ -224,6 +226,12 @@ function _onClick(event: MouseEvent): void {
 	// navigation that tears down this context (and the buffer) before the next timer fires
 	_flush();
 }
+
+function _onClick(event: MouseEvent): void { _pushClick(event); }
+
+// `contextmenu` rather than `mousedown`/`mouseup`: it's the event a page acts on, and it can't
+// double-record (Blink dispatches no `click` for the right button), so no dedup against _onClick.
+function _onContextMenu(event: MouseEvent): void { _pushClick(event, `secondary`); }
 
 function _onChange(event: Event): void {
 	const target = event.target as HTMLInputElement | null;
@@ -280,6 +288,7 @@ function _onScroll(): void {
 }
 
 document.addEventListener(`click`, _onClick, { capture: true });
+document.addEventListener(`contextmenu`, _onContextMenu, { capture: true });
 document.addEventListener(`change`, _onChange, { capture: true });
 document.addEventListener(`keydown`, _onKeyDown, { capture: true });
 document.addEventListener(`keyup`, _onKeyUp, { capture: true });
