@@ -1,7 +1,7 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { app, BrowserWindow, ipcMain, session, protocol, clipboard, type IpcMainEvent } from 'electron';
 import type { EyasPaths } from '@registry/eyas-core.js';
-import { EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
+import { EYAS_HEADER_HEIGHT, getTestPartition } from '@scripts/constants.js';
 
 type BrowserWindowConstructor = { new (): BrowserWindow };
 
@@ -302,7 +302,7 @@ describe(`index.ts refactoring unit tests`, () => {
 			$appWindow: new (BrowserWindow as unknown as BrowserWindowConstructor)()
 		} as unknown as CoreContext;
 		setupWebRequestInterception(ctx);
-		const testSession = session.fromPartition(`persist:default-test`);
+		const testSession = session.fromPartition(getTestPartition());
 		expect(testSession.webRequest.onBeforeRequest).toHaveBeenCalled();
 	});
 

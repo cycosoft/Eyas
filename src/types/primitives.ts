@@ -108,6 +108,12 @@ export type HashString = string;
 export type TestId = string;
 export type ProcessId = number;
 export type SessionPartition = string;
+
+/** A projectId or testId being reduced to an on-disk profile segment. */
+export type ScopeId = string;
+
+/** The fixed-length hashed segment a ScopeId becomes inside a filesystem path. */
+export type ScopeSegment = string;
 export type DeviceId = string;
 export type Username = string;
 export type PasswordPlain = string;

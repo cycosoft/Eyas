@@ -22,6 +22,7 @@ import { instanceLockService } from './instance-lock.service.js';
 import { safeStorageKeyService } from './safe-storage-key.service.js';
 import { awaitInitialDeepLink } from './deep-link-handler.js';
 import { LOAD_TYPES } from '@scripts/constants.js';
+import { sessionPathService } from './session-path.service.js';
 
 import { initIpcHandlers } from './ipc-handlers.js';
 import {
@@ -34,7 +35,7 @@ import type { CoreContext, EyasPaths } from '@registry/eyas-core.js';
 import type { ValidatedConfig } from '@registry/config.js';
 import type { TestServerOptions } from '@registry/test-server.js';
 import type { Viewport, ConfigToLoad, StartupModal, PreventableEvent, ViewportSize } from '@registry/core.js';
-import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActive, IsPending, DomainUrl, FormattedDuration, MPEventName, TimestampMS, AppTitle, AppVersion, EnvironmentKey, MetadataRecord, SystemTheme, Count, ProjectId, TestId, DurationMS, FilePath } from '@registry/primitives.js';
+import type { ViewportWidth, ViewportHeight, ViewportLabel, ChannelName, IsActive, IsPending, DomainUrl, FormattedDuration, MPEventName, TimestampMS, AppTitle, AppVersion, EnvironmentKey, MetadataRecord, SystemTheme, Count, ProjectId, TestId, DurationMS } from '@registry/primitives.js';
 
 // global variables $
 const $isDev = process.argv.includes(`--dev`) as IsActive;
@@ -130,8 +131,7 @@ async function initElectronCore(): Promise<void> {
 	const projectId = (ctx.$config?.meta.projectId || `default`) as ProjectId;
 	const testId = (ctx.$config?.meta.testId || `default`) as TestId;
 
-	const sessionDataDir = _path.join(app.getPath(`sessionData`), projectId, testId) as FilePath;
-
+	const sessionDataDir = sessionPathService.getSessionDataDir(projectId, testId);
 	// Seed the app-wide safeStorage key into this session's profile *before* handing
 	// the directory to Chromium — otherwise each project+build generates its own key
 	// on Windows and credentials.json (which is app-wide) becomes undecryptable.
