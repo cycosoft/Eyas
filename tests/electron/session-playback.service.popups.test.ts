@@ -142,9 +142,13 @@ describe(`sessionPlaybackService.playSession — popup routing`, () => {
 		const popupTwoWebContents = { ...popupWebContents, debugger: { ...popupWebContents.debugger, sendCommand: vi.fn().mockResolvedValue(undefined) } };
 		getPopupWebContents.mockImplementation((id: PopupId) => (id === `popup-1` ? popupOneWebContents : popupTwoWebContents));
 		// both popups share the base popupWebContents.executeJavaScript mock via spread — resolve
-		// each click's target point in dispatch order so the two popups don't get cross-talked
+		// each click's target point in dispatch order so the two popups don't get cross-talked;
+		// each point is returned twice since resolution now requires the same point on two
+		// consecutive polls before accepting it
 		popupWebContents.executeJavaScript.mockReset()
 			.mockResolvedValueOnce({ x: 1, y: 1 })
+			.mockResolvedValueOnce({ x: 1, y: 1 })
+			.mockResolvedValueOnce({ x: 2, y: 2 })
 			.mockResolvedValueOnce({ x: 2, y: 2 });
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
 			{ type: `click`, selectors: [`#a`], offsetX: 1, offsetY: 1, popupId: `popup-1`, timestamp: 1 } as never,
@@ -250,7 +254,8 @@ describe(`sessionPlaybackService.playSession — popup routing`, () => {
 		vi.useFakeTimers();
 		try {
 			const playPromise = playbackService.playSession(ctx, `sess-1`);
-			await vi.advanceTimersByTimeAsync(1000);
+			// click resolution now needs two consecutive matching polls before accepting — budget extra
+			await vi.advanceTimersByTimeAsync(2000);
 			await playPromise;
 
 			expect(hideAllRecordingOverlays).toHaveBeenCalled();
@@ -268,7 +273,7 @@ describe(`sessionPlaybackService.playSession — popup routing`, () => {
 		vi.useFakeTimers();
 		try {
 			const playPromise = playbackService.playSession(ctx, `sess-1`);
-			await vi.advanceTimersByTimeAsync(1000);
+			await vi.advanceTimersByTimeAsync(2000);
 			await playPromise;
 
 			expect(hideAllRecordingOverlays).toHaveBeenCalled();

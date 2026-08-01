@@ -1,11 +1,11 @@
 import type { CoreContext } from '@registry/eyas-core.js';
-import type { RecordingStep, ClickStep, ClickPoint, InputStep, KeyDownStep, StepActionMap, StepActionIndex } from '@registry/recording.js';
-import type { RecorderPlaybackStatusPayload } from '@registry/ipc.js';
-import type { SessionId, DurationMS, DomainUrl, PopupId, StepCount, StepIndex } from '@registry/primitives.js';
+import type { RecordingStep, ClickStep, ClickPoint, InputStep, KeyDownStep } from '@registry/recording.js';
+import type { SessionId, DurationMS, DomainUrl, PopupId, StepCount } from '@registry/primitives.js';
 import type { ReplaySpeedMode } from '@registry/settings.js';
 import sessionRecorderService from './session-recorder.service.js';
 import { getPopupWebContents, closePopup, closeAllPopups, setReplayPopupIdQueue, clearReplayPopupIdQueue, hideAllRecordingOverlays, showAllRecordingOverlays } from './window.popups.js';
 import { buildClickPointScript, buildChangeScript, buildKeyDownMutationScript } from './session-playback.selector-resolution.js';
+import { sendPlaybackStatus, computeStepActions, reportStepProgress } from './session-playback.progress.js';
 import { TEST_RUNNING_RING_FADE_MS, PLAYBACK_COMPLETE_HOLD_MS } from '@scripts/constants.js';
 
 const CDP_DEBUGGER_VERSION = `1.3`;
@@ -45,18 +45,27 @@ const CLICK_TARGET_POLL_INTERVAL_MS = 100 as DurationMS;
 // isLoading()/did-stop-loading, so poll the full candidate list — aria/text/testid/CSS, in
 // priority order, matching the auto-wait model of real e2e frameworks — until one resolves or the
 // timeout is spent, retrying the whole candidate list on each poll so a page still mid-navigation
-// gets another chance rather than failing on the first miss.
+// gets another chance rather than failing on the first miss. A client-side re-render can pass
+// through a transient frame where a stale/duplicate element still matches — require the same point
+// on two consecutive polls before accepting it, so a one-off transient match is discarded.
 async function _resolveClickPoint(target: Electron.WebContents, step: ClickStep): Promise<ClickPoint | null> {
 	const script = buildClickPointScript(step.selectors);
 	const deadline = Date.now() + CLICK_TARGET_POLL_TIMEOUT_MS;
+	let lastPoint: ClickPoint | null = null;
 	for (;;) {
+		let point: ClickPoint | null;
 		try {
-			const point = await target.executeJavaScript(script);
-			if (point) { return point; }
+			point = await target.executeJavaScript(script);
 		} catch {
 			return null;
 		}
-		if (Date.now() >= deadline) { return null; }
+		if (point && lastPoint && point.x === lastPoint.x && point.y === lastPoint.y) { return point; }
+		lastPoint = point;
+		// deadline reached without two consecutive matches: fall back to the last point seen rather
+		// than failing outright — a page whose target keeps drifting (image load reflowing content,
+		// sticky header settling) still gets its most recent resolution, matching the old undebounced
+		// behavior as a floor; genuinely never-resolved (lastPoint still null) still fails the step
+		if (Date.now() >= deadline) { return lastPoint; }
 		await _delay(CLICK_TARGET_POLL_INTERVAL_MS);
 	}
 }
@@ -177,41 +186,6 @@ function _orderedPopupIds(steps: RecordingStep[]): PopupId[] {
 	return ordered;
 }
 
-function _sendPlaybackStatus(ctx: CoreContext, payload: RecorderPlaybackStatusPayload): void {
-	ctx.$eyasLayer?.webContents?.send(`recorder-playback-status`, payload);
-}
-
-/**
- * Maps each step to the user-facing "action" it belongs to, for progress-ring purposes: a click
- * and the `navigate` step(s) it causes (including redirect chains) are one action, and `scroll`
- * steps aren't actions at all — neither should move or count toward the ring.
- */
-function _computeStepActions(steps: RecordingStep[]): StepActionMap {
-	const actionIndexes: StepActionIndex[] = [];
-	let actionCount = 0;
-	let lastActionIndex: StepActionIndex = -1;
-	for (const step of steps) {
-		if (step.type === `scroll`) {
-			actionIndexes.push(-1);
-			continue;
-		}
-		if (step.type === `navigate` && lastActionIndex !== -1) {
-			actionIndexes.push(lastActionIndex);
-			continue;
-		}
-		lastActionIndex = actionCount++;
-		actionIndexes.push(lastActionIndex);
-	}
-	return { actionIndexes, totalActions: actionCount as StepCount };
-}
-
-/** Reports progress for a just-dispatched step, unless it doesn't count as its own action (see _computeStepActions). */
-function _reportStepProgress(ctx: CoreContext, actions: StepActionMap, stepIndex: StepIndex): void {
-	const actionIndex: StepActionIndex = actions.actionIndexes[stepIndex];
-	if (actionIndex === -1) { return; }
-	_sendPlaybackStatus(ctx, { status: `playing`, completedSteps: (actionIndex + 1) as StepCount, totalSteps: actions.totalActions });
-}
-
 // swallow teardown errors so a popup that fails/hangs to close can never suppress the status
 // report it's meant to precede (a stranded popup is recoverable; a swallowed failure isn't)
 async function _teardownPopups(): Promise<void> {
@@ -228,8 +202,8 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 	sessionRecorderService.setReplaying(true);
 	setReplayPopupIdQueue(_orderedPopupIds(steps));
 	ctx.toggleEyasUI(true); showAllRecordingOverlays();
-	const stepActions = _computeStepActions(steps);
-	_sendPlaybackStatus(ctx, { status: `playing`, completedSteps: 0 as StepCount, totalSteps: stepActions.totalActions });
+	const stepActions = computeStepActions(steps);
+	sendPlaybackStatus(ctx, { status: `playing`, completedSteps: 0 as StepCount, totalSteps: stepActions.totalActions });
 	try {
 		// the session's steps only capture navigations that occurred *during* recording — if
 		// playback starts from a different view than recording did, replay the starting view first
@@ -253,7 +227,7 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 			const delayMs = isKeystroke ? KEYSTROKE_DELAY_MS : stepDelayMs;
 			if (delayMs > 0) { await _delay(delayMs); }
 			await _dispatchStep(webContents, steps[i]);
-			_reportStepProgress(ctx, stepActions, i);
+			reportStepProgress(ctx, stepActions, i);
 		}
 		// a user-initiated stop can land anywhere in the step list, same as a thrown step — tear down
 		// any popups the recording never reached its closeWindow step for before reporting stopped
@@ -262,14 +236,14 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 		// before this "stopped" status resets/hides the progress ring — otherwise both status
 		// updates land in the same tick and the ring's last visible frame is one step short of full
 		if (!aborted) { await _delay(PLAYBACK_COMPLETE_HOLD_MS); }
-		_sendPlaybackStatus(ctx, { status: `stopped` });
+		sendPlaybackStatus(ctx, { status: `stopped` });
 	} catch (err) {
 		const error = err instanceof Error ? err.message : String(err);
 		// a thrown step still fails the replay (no continue-on-error) — but tear down any popups the
 		// aborted recording never reached its closeWindow step for, the same way a failed Playwright/
 		// Cypress test still tears down its browser context, before reporting the failure
 		await _teardownPopups();
-		_sendPlaybackStatus(ctx, { status: `failed`, error });
+		sendPlaybackStatus(ctx, { status: `failed`, error });
 	} finally {
 		_abortRequested = false;
 		sessionRecorderService.setReplaying(false);
@@ -290,7 +264,7 @@ async function playSession(ctx: CoreContext, sessionId: SessionId): Promise<void
 
 	const session = await sessionRecorderService.getSession(ctx, sessionId);
 	if (!session) {
-		_sendPlaybackStatus(ctx, { status: `failed`, error: `Session ${sessionId} was not found.` });
+		sendPlaybackStatus(ctx, { status: `failed`, error: `Session ${sessionId} was not found.` });
 		return;
 	}
 

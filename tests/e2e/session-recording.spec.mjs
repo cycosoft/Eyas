@@ -255,7 +255,8 @@ test.describe(`Session Recording — Replay`, () => {
 	// none of the intermediate directory clicks are followed. Contrast with npmjs.com below, which
 	// is a traditional full-page-reload site and replays correctly.
 	test(`replays chained directory-link clicks on a real GitHub repo page inside a popup, following each navigation`, async () => {
-		test.setTimeout(60000);
+		// every phase here waits on live github.com, so the budget has to absorb real network latency
+		test.setTimeout(120000);
 		const uiPage = await getUiView(electronApp);
 		await ensureEnvironmentSelected(uiPage);
 
@@ -269,13 +270,25 @@ test.describe(`Session Recording — Replay`, () => {
 		expect(githubPage).toBeTruthy();
 		await githubPage.waitForLoadState(`domcontentloaded`);
 
-		// click into a directory, then a subdirectory, then a file — each of these is a client-side
-		// navigation on github.com that changes the URL without a full page reload
-		await githubPage.locator(`a[href="/cycosoft/Eyas/tree/main/demo"]:visible`).first().click();
-		await githubPage.waitForURL(/\/tree\/main\/demo$/);
+		// clicks the link and waits for the URL to land, re-clicking if it hasn't moved. github.com is a
+		// client-side router, and under load (full-suite runs on Windows) the first click is regularly
+		// swallowed with no navigation at all — presumably landing before hydration, or on a stalled SPA
+		// fetch. Polling the URL also sidesteps `waitForURL`'s default `waitUntil: 'load'`, which can
+		// hang on a same-document pushState navigation even once the URL has already changed.
+		const clickIntoPath = async (href, expectedUrl) => {
+			await expect.poll(async () => {
+				if (!expectedUrl.test(githubPage.url())) {
+					await githubPage.locator(`a[href="${href}"]:visible`).first().click({ timeout: 10000 }).catch(() => {});
+				}
 
-		await githubPage.locator(`a[href="/cycosoft/Eyas/tree/main/demo/assets"]:visible`).first().click();
-		await githubPage.waitForURL(/\/tree\/main\/demo\/assets$/);
+				return githubPage.url();
+			}, { timeout: 30000, intervals: [500, 1000, 2000, 5000] }).toMatch(expectedUrl);
+		};
+
+		// click into a directory, then a subdirectory — each of these is a client-side
+		// navigation on github.com that changes the URL without a full page reload
+		await clickIntoPath(`/cycosoft/Eyas/tree/main/demo`, /\/tree\/main\/demo$/);
+		await clickIntoPath(`/cycosoft/Eyas/tree/main/demo/assets`, /\/tree\/main\/demo\/assets$/);
 
 		const recordedFinalUrl = githubPage.url();
 
@@ -295,7 +308,7 @@ test.describe(`Session Recording — Replay`, () => {
 
 		await expect.poll(
 			() => seenWindows.some(p => { try { return p.url().includes(`github.com/cycosoft/Eyas`); } catch { return false; } }),
-			{ timeout: 15000 }
+			{ timeout: 30000 }
 		).toBe(true);
 		const replayedGithubPage = seenWindows.find(p => { try { return p.url().includes(`github.com/cycosoft/Eyas`); } catch { return false; } });
 		expect(replayedGithubPage).toBeTruthy();
@@ -305,7 +318,7 @@ test.describe(`Session Recording — Replay`, () => {
 		// (or worse, get auto-closed by a stray closeWindow step before the clicks are dispatched)
 		await expect.poll(async () => {
 			try { return replayedGithubPage.url(); } catch { return null; }
-		}, { timeout: 15000 }).toBe(recordedFinalUrl);
+		}, { timeout: 30000 }).toBe(recordedFinalUrl);
 
 		await expect(uiPage.locator(`[data-qa="recording-playback-error"]`)).not.toBeVisible();
 	});
@@ -404,11 +417,14 @@ test.describe(`Session Recording — Replay`, () => {
 
 		await uiPage.locator(`[data-qa="btn-recording-replay"]`).click();
 
-		await expect.poll(
-			() => seenWindows.some(p => { try { return p.url().includes(`npmjs.com/package/@cycosoft/eyas`); } catch { return false; } }),
-			{ timeout: 15000 }
-		).toBe(true);
-		const replayedNpmPage = seenWindows.find(p => { try { return p.url().includes(`npmjs.com/package/@cycosoft/eyas`); } catch { return false; } });
+		// match either npmjs.com or github.com, rather than requiring the popup still be sitting
+		// at the npm URL specifically — on a fast replay the popup can open at npmjs.com and get
+		// clicked through to github.com before this poll ever observes the intermediate npmjs.com
+		// state, which is a race in this assertion, not a replay bug (the actual bug-report
+		// assertion is the final url, below)
+		const isTrackedPopup = p => { try { const url = p.url(); return url.includes(`npmjs.com/package/@cycosoft/eyas`) || url.startsWith(`https://github.com`); } catch { return false; } };
+		await expect.poll(() => seenWindows.some(isTrackedPopup), { timeout: 15000 }).toBe(true);
+		const replayedNpmPage = seenWindows.find(isTrackedPopup);
 		expect(replayedNpmPage).toBeTruthy();
 
 		// this is the assertion that captures the bug report: replay should follow the README

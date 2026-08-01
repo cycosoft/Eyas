@@ -131,7 +131,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 	});
 
 	test(`dispatches a ClickStep as Input.dispatchMouseEvent mousePressed then mouseReleased at the selector-resolved position`, async () => {
-		executeJavaScript.mockResolvedValueOnce({ x: 12, y: 34 });
+		executeJavaScript.mockResolvedValue({ x: 12, y: 34 });
 		const step: ClickStep = { type: `click`, selectors: [`#save`], offsetX: 12, offsetY: 34, timestamp: 1 };
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([step]));
 		const ctx = makeCtx();
@@ -143,7 +143,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 	});
 
 	test(`dispatches a ClickStep at the selector-resolved coordinates instead of the raw recorded offset, when the selector resolves to an element`, async () => {
-		executeJavaScript.mockResolvedValueOnce({ x: 99, y: 88 });
+		executeJavaScript.mockResolvedValue({ x: 99, y: 88 });
 		const step: ClickStep = { type: `click`, selectors: [`#save`], offsetX: 12, offsetY: 34, timestamp: 1 };
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([step]));
 		const ctx = makeCtx();
@@ -177,7 +177,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 	});
 
 	test(`passes the full ordered candidate list (aria/text/testid/CSS) into the resolution script, not just the first candidate`, async () => {
-		executeJavaScript.mockResolvedValueOnce({ x: 5, y: 6 });
+		executeJavaScript.mockResolvedValue({ x: 5, y: 6 });
 		const step: ClickStep = { type: `click`, selectors: [`aria/Save`, `text/Save`, `testid/save-btn`, `#save`], offsetX: 1, offsetY: 1, timestamp: 1 };
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([step]));
 		const ctx = makeCtx();
@@ -303,7 +303,8 @@ describe(`sessionPlaybackService.playSession`, () => {
 		const setTimeoutSpy = vi.spyOn(global, `setTimeout`);
 
 		const playPromise = playbackService.playSession(ctx, `sess-1`);
-		await vi.advanceTimersByTimeAsync(800);
+		// click resolution now needs two consecutive matching polls before accepting — budget extra
+		await vi.advanceTimersByTimeAsync(2000);
 		await playPromise;
 
 		expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 50);

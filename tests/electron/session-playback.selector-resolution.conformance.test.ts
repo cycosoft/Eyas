@@ -18,7 +18,7 @@ describe(`selector-resolution conformance vs. real Playwright`, () => {
 	});
 
 	afterAll(async () => {
-		await browser.close();
+		await browser?.close();
 	});
 
 	async function _resolveViaOurScript(candidates: SelectorGroup): Promise<ClickPoint | null> {
@@ -73,5 +73,38 @@ describe(`selector-resolution conformance vs. real Playwright`, () => {
 		await page.setContent(`<label for="email">Email address</label><input id="email" type="text" />`);
 
 		await _expectSamePointAsPlaywrightLocator([`aria/Email address`], page.getByLabel(`Email address`));
+	});
+
+	test(`resolves an href/<url> candidate to the same element Playwright's locator(a[href=...]) resolves`, async () => {
+		await page.setContent(`<a href="/cycosoft/Eyas/tree/main/demo">demo</a>`);
+
+		await _expectSamePointAsPlaywrightLocator([`href//cycosoft/Eyas/tree/main/demo`], page.locator(`a[href="/cycosoft/Eyas/tree/main/demo"]`));
+	});
+
+	// reproduces GitHub's file-browser table: the same row is rendered twice (once per responsive
+	// breakpoint), so a plain aria/text candidate is never unique — the recorder instead captures a
+	// scoped-aria/scoped-text candidate qualified by the nearest ancestor that disambiguates it
+	test(`resolves a scoped-aria/<{scope,name}> candidate to the element within the disambiguating ancestor, not a duplicate elsewhere on the page`, async () => {
+		await page.setContent(`
+			<table>
+				<tr><td class="cell-small"><a aria-label="demo">demo</a></td><td class="cell-large"><a aria-label="demo">demo</a></td></tr>
+				<tr><td class="cell-small"><a aria-label="other">other</a></td><td class="cell-large"><a aria-label="other">other</a></td></tr>
+			</table>
+		`);
+
+		const candidate = `scoped-aria/${JSON.stringify({ scope: `td.cell-large`, name: `demo` })}`;
+		await _expectSamePointAsPlaywrightLocator([candidate], page.locator(`tr`).first().locator(`td.cell-large a`));
+	});
+
+	test(`resolves a scoped-text/<{scope,name}> candidate the same way`, async () => {
+		await page.setContent(`
+			<table>
+				<tr><td class="cell-small"><a>demo</a></td><td class="cell-large"><a>demo</a></td></tr>
+				<tr><td class="cell-small"><a>other</a></td><td class="cell-large"><a>other</a></td></tr>
+			</table>
+		`);
+
+		const candidate = `scoped-text/${JSON.stringify({ scope: `td.cell-large`, name: `demo` })}`;
+		await _expectSamePointAsPlaywrightLocator([candidate], page.locator(`tr`).first().locator(`td.cell-large a`));
 	});
 });
