@@ -15,5 +15,5 @@
 - 🍎 Add latest.yml to release draft `.runners/latest-mac.yml`
 - 🍎 Add installer to release draft `.runners/EyasInstaller-mac.pkg`
 - 🪾 Merge `release` branch into `main`
-- 🪾 Tag latest commit with the version -> `git tag -a v26.6.42641 -m "v26.6.42641"`
+- 🪾 Tag latest commit with the version -> `git tag -a v26.8.1702 -m "v26.8.1702"`
 - 🪾 Select latest tag & publish GitHub release
