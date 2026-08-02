@@ -13,7 +13,7 @@
   <header class="page-hero container animate-fade-in-up">
     <span class="page-hero-icon">🎥</span>
     <h1>Session Recording Fixture</h1>
-    <p>Used by the E2E suite to verify click capture inside same-origin and cross-origin iframes.</p>
+    <p>Used by the E2E suite to verify click capture inside same-origin and cross-origin iframes, and keystroke capture across rich-text, textarea, and plain-input targets.</p>
   </header>
 
   <section class="container" style="padding-bottom: var(--space-16);">
@@ -22,6 +22,28 @@
     <div style="margin-top: var(--space-8);">
       <p>Popup window:</p>
       <a id="popup-link" data-testid="popup-link" class="btn btn-secondary" href="/demo/recording/popup.html" target="_blank">Open popup</a>
+    </div>
+
+    <div style="margin-top: var(--space-8);">
+      <p>Rich-text editor (contenteditable root):</p>
+      <!--
+        The shape that broke keystroke replay: a contenteditable root has no `.value` to splice and
+        reports no cursor selection, so its keystrokes take the CDP key-event path instead. Class
+        names mirror the Quasar q-editor content root this was reproduced against; the CSP here is
+        `default-src 'self'`, so the styling is local rather than the real Quasar build.
+      -->
+      <div id="rich-text" data-testid="rich-text" class="q-editor__content" contenteditable="true"
+        style="min-height: 5rem; padding: var(--space-4); border: 1px solid var(--border); color: black; background: #e5e7eb;"></div>
+    </div>
+
+    <div style="margin-top: var(--space-8);">
+      <p>Textarea:</p>
+      <textarea id="notes" data-testid="notes" rows="3" style="width: 400px; padding: var(--space-4); border: 1px solid var(--border);"></textarea>
+    </div>
+
+    <div style="margin-top: var(--space-8);">
+      <p>Text input:</p>
+      <input id="single-line" data-testid="single-line" type="text" style="width: 400px; padding: var(--space-4); border: 1px solid var(--border);">
     </div>
 
     <div style="margin-top: var(--space-8);">
