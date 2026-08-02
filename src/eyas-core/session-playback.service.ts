@@ -4,7 +4,7 @@ import type { SessionId, DurationMS, DomainUrl, PopupId, StepCount } from '@regi
 import type { ReplaySpeedMode } from '@registry/settings.js';
 import sessionRecorderService from './session-recorder.service.js';
 import { getPopupWebContents, closePopup, closeAllPopups, setReplayPopupIdQueue, clearReplayPopupIdQueue, hideAllRecordingOverlays, showAllRecordingOverlays } from './window.popups.js';
-import { buildClickPointScript, buildChangeScript, buildKeyDownMutationScript } from './session-playback.selector-resolution.js';
+import { buildClickPointScript, buildChangeScript, buildKeyDownMutationScript, buildEditableHealScript } from './session-playback.selector-resolution.js';
 import { editingPayload, trackModifier, resetModifiers } from './session-playback.keystrokes.js';
 import { sendPlaybackStatus, computeStepActions, reportStepProgress } from './session-playback.progress.js';
 import { TEST_RUNNING_RING_FADE_MS, PLAYBACK_COMPLETE_HOLD_MS } from '@scripts/constants.js';
@@ -74,7 +74,7 @@ async function _resolveClickPoint(target: Electron.WebContents, step: ClickStep)
 // a freshly-opened popup (or a page mid-navigation) may still be loading when its first step
 // arrives — DOM queries/scroll against a not-yet-loaded document would silently no-op
 async function _ensureTargetReady(target: Electron.WebContents, stepType: RecordingStep[`type`]): Promise<void> {
-	const needsReadyDom = stepType === `click` || stepType === `scroll` || stepType === `change`;
+	const needsReadyDom = stepType === `click` || stepType === `scroll` || stepType === `change` || stepType === `editableChange`;
 	if (needsReadyDom && target.isLoading()) {
 		await new Promise<void>(resolve => target.once(`did-stop-loading`, () => resolve()));
 		await _waitForPaint(target);
@@ -154,6 +154,11 @@ async function _dispatchStep(webContents: Electron.WebContents, step: RecordingS
 		return;
 	case `change`:
 		await _dispatchChange(target, step);
+		return;
+	case `editableChange`:
+		// the contenteditable self-healing corrector — a rich-text editor has no `change` step to
+		// snap to a final value, so keystroke drift in one would otherwise stay silently wrong
+		await target.executeJavaScript(buildEditableHealScript(step.selectors, step.text));
 		return;
 	case `keyDown`:
 		await _dispatchKeyDown(target, step);

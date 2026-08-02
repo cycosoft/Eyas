@@ -15,6 +15,11 @@ import {
 // root has no `.value` to splice and reports no cursor selection, so its keystrokes fall through to a
 // CDP key event — which types nothing unless `text` (or a virtual key code) rides along. The textarea
 // and plain input here are the controls: they take the `.value`-splice path instead and must stay on it.
+//
+// Note which test guards what. The editor now also gets a self-healing corrector (an `editableChange`
+// step captured on blur), so the end-state assertion in the second test would pass on the corrector
+// alone even with keystroke replay entirely broken. The third test is the one that still proves the
+// CDP key-event path works — it never leaves the editor, so no corrector exists to save it.
 
 /**
  * Reads the most recently-written session recording file for this app run.
@@ -145,5 +150,35 @@ test.describe(`Session Recording — keystroke capture and replay`, () => {
 		await expect.poll(() => valueOf(`[data-testid="single-line"]`), { timeout: 20000 }).toBe(`Plain`);
 
 		await expect(uiPage.locator(`[data-qa="recording-playback-error"]`)).not.toBeVisible();
+	});
+
+	test(`replays the editor's text from keystrokes alone, with no blur corrector to fall back on`, async () => {
+		test.setTimeout(45000);
+		const { uiPage, testPage } = await openRecordingFixture(electronApp);
+
+		// deliberately never leaves the editor, so the recording contains no `editableChange` step —
+		// without that, the test above would pass on the corrector alone even with keystroke replay
+		// completely broken (verified: neutering editingPayload no longer fails it). This one is what
+		// still holds the CDP key-event path honest.
+		const editor = testPage.locator(`[data-testid="rich-text"]`);
+		await editor.click();
+		await editor.pressSequentially(`Keys only`);
+
+		await testPage.waitForTimeout(2500);
+		await uiPage.locator(`[data-qa="btn-recording-stop"]`).click();
+
+		// self-verifying: if stopping the recording ever starts blurring the editor, this fails loudly
+		// rather than quietly becoming a duplicate of the test above
+		const session = await readLatestSession(electronApp);
+		expect(session.recording.steps.filter(s => s.type === `editableChange`)).toHaveLength(0);
+
+		await expect(uiPage.locator(`[data-qa="btn-recording-replay"]`)).toBeVisible();
+		await uiPage.locator(`[data-qa="btn-recording-replay"]`).click();
+
+		const textOf = async selector => {
+			try { return await testPage.locator(selector).innerText(); }
+			catch { return null; }
+		};
+		await expect.poll(() => textOf(`[data-testid="rich-text"]`), { timeout: 20000 }).toBe(`Keys only`);
 	});
 });

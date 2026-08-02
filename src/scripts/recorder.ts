@@ -1,8 +1,7 @@
 import { ipcRenderer } from 'electron';
-import getUniqueSelector from '@cypress/unique-selector/lib/index.js';
-import type { RecordingStep, SelectorGroup, CursorSelection, MouseButton } from '@registry/recording.js';
-import type { FramePath, ScreenCoordinate, ElementClassList, SelectorString, DomElement, EventSourceNode, IsExcluded, IsPasswordInput, IsStableId, DomIdAttribute, SelectorTraitType, SelectorAttributeKey, AccessibleName, IsUnique } from '@registry/primitives.js';
-import { computeScopedSelector } from './recorder.selector-scoping.js';
+import type { RecordingStep, CursorSelection, MouseButton } from '@registry/recording.js';
+import type { FramePath, ScreenCoordinate, DomElement, EventSourceNode, IsExcluded, IsPasswordInput } from '@registry/primitives.js';
+import { computeSelectorGroup } from './recorder.selectors.js';
 
 const FLUSH_INTERVAL_MS = 2000;
 const FLUSH_AT_STEP_COUNT = 50;
@@ -44,157 +43,6 @@ function _computeFramePath(): FramePath | undefined {
 	return path;
 }
 
-const STABLE_ID_PATTERN = /^[a-zA-Z_-]+$/;
-
-function _isStableId(id: DomIdAttribute): IsStableId {
-	return STABLE_ID_PATTERN.test(id);
-}
-
-function _getPositionalSelector(target: Element): SelectorString | null {
-	return getUniqueSelector(target, { filter: (type: SelectorTraitType, key: SelectorAttributeKey, value: DomIdAttribute) => type !== `attribute` || key !== `id` || _isStableId(value) }) as SelectorString | null;
-}
-
-const TEXT_CANDIDATE_MAX_LENGTH = 80;
-
-function _normalizeText(text: AccessibleName): AccessibleName {
-	return text.replace(/\s+/g, ` `).trim();
-}
-
-function _computeLabelledName(target: Element): AccessibleName | null {
-	const labelledBy = target.getAttribute(`aria-labelledby`);
-	if (labelledBy) {
-		const text = labelledBy.split(/\s+/).map(id => document.getElementById(id)?.textContent || ``).join(` `);
-		if (_normalizeText(text)) { return _normalizeText(text); }
-	}
-
-	if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement) {
-		const id = target.id;
-		const forLabel = id ? document.querySelector(`label[for="${id}"]`) : null;
-		const label = forLabel || target.closest(`label`);
-		if (label) {
-			const text = _normalizeText(label.textContent || ``);
-			if (text) { return text; }
-		}
-	}
-
-	return null;
-}
-
-// Documented subset of W3C accname — not full accname computation (e.g. no recursive
-// aria-labelledby chains, no CSS-generated-content text). Covers the common capture cases.
-function _computeAccessibleName(target: Element): AccessibleName | null {
-	const ariaLabel = target.getAttribute(`aria-label`);
-	if (ariaLabel) { return _normalizeText(ariaLabel); }
-
-	const labelledName = _computeLabelledName(target);
-	if (labelledName) { return labelledName; }
-
-	const alt = target.getAttribute(`alt`);
-	if (alt) { return _normalizeText(alt); }
-
-	const title = target.getAttribute(`title`);
-	if (title) { return _normalizeText(title); }
-
-	const placeholder = target.getAttribute(`placeholder`);
-	if (placeholder) { return _normalizeText(placeholder); }
-
-	// only treat textContent as the accessible name for leaf-ish elements — a container's
-	// textContent is the concatenation of all its descendants' text, which would otherwise make
-	// every ancestor (up to <body>) spuriously "share" a descendant's name
-	if (target.children.length === 0) {
-		const text = target.textContent || ``;
-		if (_normalizeText(text)) { return _normalizeText(text); }
-	}
-
-	return null;
-}
-
-function _isUniqueAccessibleName(name: AccessibleName): IsUnique {
-	let matches = 0;
-	// exclude <label> — its own textContent fallback would otherwise collide with the accessible
-	// name it *assigns* to its associated control, making an otherwise-unique name look duplicate
-	for (const el of document.querySelectorAll(`*:not(label)`)) {
-		if (_computeAccessibleName(el) === name) {
-			matches++;
-			if (matches > 1) { return false; }
-		}
-	}
-	return matches === 1;
-}
-
-function _isUniqueByTagAndText(target: Element, text: AccessibleName): IsUnique {
-	let matches = 0;
-	for (const el of document.querySelectorAll(target.tagName)) {
-		if (_normalizeText(el.textContent || ``) === text) {
-			matches++;
-			if (matches > 1) { return false; }
-		}
-	}
-	return matches === 1;
-}
-
-// aria/text candidates that aren't globally unique fall back to an ancestor-scoped version (see
-// recorder.selector-scoping.ts) rather than being dropped outright — only if no ancestor ever
-// disambiguates does the caller move on to testid/href/id/positional candidates.
-function _accessibleNameCandidate(target: Element, name: AccessibleName): SelectorString | null {
-	if (_isUniqueAccessibleName(name)) { return `aria/${name}`; }
-	return computeScopedSelector(target, el => _computeAccessibleName(el) === name, `scoped-aria`, name);
-}
-
-function _textCandidate(target: Element, text: AccessibleName): SelectorString | null {
-	if (_isUniqueByTagAndText(target, text)) { return `text/${text}`; }
-	return computeScopedSelector(target, el => _normalizeText(el.textContent || ``) === text, `scoped-text`, text);
-}
-
-function _testIdCandidate(target: Element): SelectorString | null {
-	const dataTestId = target.getAttribute(`data-testid`);
-	if (dataTestId) { return `testid/${dataTestId}`; }
-	const dataQa = target.getAttribute(`data-qa`);
-	return dataQa ? `testid/${dataQa}` : null;
-}
-
-// href identifies an anchor's actual navigation target regardless of ambiguous/duplicated text or
-// aria-label — e.g. a page that renders the same link twice for responsive layouts
-function _hrefCandidate(target: Element): SelectorString | null {
-	if (!(target instanceof HTMLAnchorElement)) { return null; }
-	const href = target.getAttribute(`href`);
-	return href ? `href/${href}` : null;
-}
-
-// Priority order for capture: aria name -> visible text -> ancestor-scoped aria/text -> testid ->
-// href (anchors) -> #id -> CSS. This matches what Testing Library / Playwright / Cypress converge
-// on (role/text first, test-id as escape hatch, CSS path only when nothing else is available) and
-// is the vocabulary a candidate selector must use to be exportable to real e2e frameworks (see
-// recording.ts SelectorCandidate).
-function _computeSelectorGroup(target: Element): SelectorGroup {
-	const candidates: ElementClassList = [];
-
-	const accessibleName = _computeAccessibleName(target);
-	const accessibleNameCandidate = accessibleName ? _accessibleNameCandidate(target, accessibleName) : null;
-	if (accessibleNameCandidate) { candidates.push(accessibleNameCandidate); }
-
-	const text = _normalizeText(target.textContent || ``);
-	const textCandidate = text && text.length <= TEXT_CANDIDATE_MAX_LENGTH ? _textCandidate(target, text) : null;
-	if (textCandidate) { candidates.push(textCandidate); }
-
-	const testIdCandidate = _testIdCandidate(target);
-	if (testIdCandidate) { candidates.push(testIdCandidate); }
-
-	const hrefCandidate = _hrefCandidate(target);
-	if (hrefCandidate) { candidates.push(hrefCandidate); }
-
-	const id = target.id;
-	const usableId = id && _isStableId(id) ? id : null;
-	if (usableId) { candidates.push(`#${usableId}`); }
-
-	const uniqueSelector = _getPositionalSelector(target);
-	if (uniqueSelector) { candidates.push(uniqueSelector); }
-
-	if (candidates.length === 0) { candidates.push(target.tagName.toLowerCase() as SelectorString); }
-
-	return candidates;
-}
-
 function _push(step: RecordingStep): void {
 	_buffer.push(step);
 	if (_buffer.length >= FLUSH_AT_STEP_COUNT) { _flush(); }
@@ -215,7 +63,7 @@ function _pushClick(event: MouseEvent, button?: MouseButton): void {
 		type: `click`,
 		// omitted for a left click so sessions stay byte-identical to pre-right-click recordings
 		...(button ? { button } : {}),
-		selectors: _computeSelectorGroup(target),
+		selectors: computeSelectorGroup(target),
 		// viewport-relative (not element-relative) so CDP's Input.dispatchMouseEvent can replay it directly
 		offsetX: event.clientX as ScreenCoordinate,
 		offsetY: event.clientY as ScreenCoordinate,
@@ -241,13 +89,71 @@ function _onChange(event: Event): void {
 
 	_push({
 		type: `change`,
-		selectors: _computeSelectorGroup(target),
+		selectors: computeSelectorGroup(target),
 		value: target.value,
 		frame: _computeFramePath(),
 		timestamp: Date.now()
 	});
 	// flush immediately for the same reason as _onClick — a change (e.g. a <select> whose
 	// onchange redirects) can also trigger a same-tick navigation
+	_flush();
+}
+
+/**
+ * The editable root a node sits in, or null. `[contenteditable="false"]` is deliberately not
+ * matched: an uneditable island inside an editor must resolve to the editor around it, not itself.
+ */
+function _editableRoot(target: Element | null): HTMLElement | null {
+	if (!target) { return null; }
+	const root = target.closest(`[contenteditable=""], [contenteditable="true"]`) as HTMLElement | null;
+	return root?.isContentEditable ? root : null;
+}
+
+let _editableFocus: HTMLElement | null = null;
+let _editableFocusText = ``;
+
+function _onFocusIn(event: FocusEvent): void {
+	_editableFocus = _editableRoot(event.target as Element | null);
+	_editableFocusText = _editableFocus?.innerText ?? ``;
+}
+
+// A contenteditable root fires no `change` event, so the corrector replay needs is captured here
+// instead — on leaving the editor, and only if its text actually moved while the user was in it.
+function _pushEditableChange(root: HTMLElement): void {
+	const text = root.innerText;
+	_editableFocus = null;
+	if (text === _editableFocusText) { return; }
+	if (_isExcluded(root)) { return; }
+
+	_push({
+		type: `editableChange`,
+		// the editor's own text can't identify it — that's the value this step exists to repair
+		selectors: computeSelectorGroup(root, { ignoreOwnText: true }),
+		text,
+		frame: _computeFramePath(),
+		timestamp: Date.now()
+	});
+	// flush immediately for the same reason as _onChange — leaving a field can trigger a same-tick
+	// navigation that tears the buffer down
+	_flush();
+}
+
+function _onFocusOut(event: FocusEvent): void {
+	// a node detached before focusout reaches it (an editor that re-renders on blur) never bubbles
+	// here at all — that edit is caught by the beforeunload sweep instead, or by the next focusin
+	// replacing it. No fallback is possible from inside this listener.
+	const root = _editableRoot(event.target as Element | null);
+	if (!root || root !== _editableFocus) { return; }
+	// focus moving *within* the same editor (an inner node, a toolbar button that hands focus back)
+	// isn't the end of an edit — correcting mid-edit would fight the keystrokes still to come
+	if (_editableRoot(event.relatedTarget as Element | null) === root) { return; }
+	_pushEditableChange(root);
+}
+
+// navigating away while still inside an editor never fires focusout — capture the pending edit
+// before the buffer goes out with the document
+function _onBeforeUnload(): void {
+	if (_editableFocus) { _pushEditableChange(_editableFocus); }
 	_flush();
 }
 
@@ -293,8 +199,10 @@ document.addEventListener(`change`, _onChange, { capture: true });
 document.addEventListener(`keydown`, _onKeyDown, { capture: true });
 document.addEventListener(`keyup`, _onKeyUp, { capture: true });
 document.addEventListener(`scroll`, _onScroll, { capture: true });
+document.addEventListener(`focusin`, _onFocusIn, { capture: true });
+document.addEventListener(`focusout`, _onFocusOut, { capture: true });
 // last-resort flush for anything still buffered (e.g. a pending throttled scroll) right
 // before the document is torn down by navigation or tab close
-window.addEventListener(`beforeunload`, _flush, { capture: true });
+window.addEventListener(`beforeunload`, _onBeforeUnload, { capture: true });
 
 setInterval(_flush, FLUSH_INTERVAL_MS);

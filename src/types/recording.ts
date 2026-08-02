@@ -93,6 +93,33 @@ export type InputStep = {
 	timestamp: TimestampMS;
 }
 
+/**
+ * The contenteditable analogue of {@link InputStep}. A rich-text editor's root has no `.value` and
+ * never fires `change`, so replay had no final-value corrector for it at all — per-keystroke drift
+ * just stayed wrong. Captured when the user leaves the editor, and only if its text actually
+ * changed while they were in it, mirroring `change` semantics.
+ */
+export type EditableChangeStep = {
+	type: `editableChange`;
+	selectors: SelectorGroup;
+	/** The editor's `innerText` at blur. Plain text, not markup — see the heal in session-playback.selector-resolution.ts for why. */
+	text: string;
+	frame?: FramePath;
+	popupId?: PopupId;
+	timestamp: TimestampMS;
+}
+
+/** Capture-time knobs for `computeSelectorGroup` (src/scripts/recorder.selectors.ts). */
+export type SelectorCaptureOptions = {
+	/**
+	 * Skip the candidates derived from the element's own text — the `textContent` fallback inside the
+	 * accessible-name computation, and the `text/` candidate. Set when capturing a contenteditable
+	 * root: its text is the very thing an {@link EditableChangeStep} exists to repair, so a
+	 * content-derived candidate would fail to resolve in exactly the case the repair is needed.
+	 */
+	ignoreOwnText?: boolean;
+}
+
 export type KeyDownStep = {
 	type: `keyDown`;
 	key: string;
@@ -135,6 +162,7 @@ type CloseWindowStep = {
 export type RecordingStep =
 	| ClickStep
 	| InputStep
+	| EditableChangeStep
 	| KeyDownStep
 	| KeyUpStep
 	| ScrollStep
@@ -170,7 +198,14 @@ export type LegacySelectorGroup = {
 	fallbacks: string[];
 }
 
-/** Eyas outer envelope — wraps the standard W3C Chrome Recorder JSON */
+/**
+ * Eyas outer envelope — wraps the standard W3C Chrome Recorder JSON.
+ *
+ * `eyasSchemaVersion` is not bumped for a purely additive step type (see EditableChangeStep): older
+ * builds skip step types they don't recognize rather than failing (session-playback.service.ts
+ * _dispatchStep), and nothing gates on the version, so a new value would only add a dead branch to
+ * _upgradeSession with nothing to migrate.
+ */
 export type EyasRecordingEnvelope = {
 	eyasSchemaVersion: `1.0.0` | `1.1.0`;
 	projectId: ProjectId;

@@ -97,13 +97,15 @@ describe(`contenteditable capture`, () => {
 		expect(flush().filter(step => step.type === `keyUp`)).toHaveLength(1);
 	});
 
-	test(`fires no change step for a contenteditable root, so replay has no final-value corrector`, () => {
+	test(`fires no change step for a contenteditable root, whatever the user types`, () => {
 		const editor = makeEditor();
 
 		editor.dispatchEvent(new KeyboardEvent(`keydown`, { key: `h`, bubbles: true }));
 		vi.advanceTimersByTime(2000);
 
-		// contenteditable never fires `change` — an <input> would get a value-snapping step here
+		// contenteditable never fires `change` — an <input> would get a value-snapping step here. The
+		// corrector it does get is an `editableChange` emitted on blur instead; see
+		// recorder.editable-change.test.ts.
 		expect(flush().filter(step => step.type === `change`)).toHaveLength(0);
 	});
 

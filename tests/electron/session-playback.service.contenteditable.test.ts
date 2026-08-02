@@ -142,6 +142,19 @@ describe(`contenteditable keystroke replay`, () => {
 		expect(sendCommand).toHaveBeenCalledWith(`Input.dispatchKeyEvent`, expect.objectContaining({ key: `A`, text: `A` }));
 	});
 
+	test(`dispatches an editableChange step as a page-side heal, not as a key event`, async () => {
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `editableChange`, selectors: [`testid/editor`], text: `Rich text`, timestamp: 1 }
+		]));
+
+		await playbackService.playSession(makeCtx(), `sess-1`);
+
+		// the corrector's own behavior is proven against real Chromium in
+		// session-playback.editable-heal.test.ts — this only pins the routing
+		expect(executeJavaScript).toHaveBeenCalledWith(expect.stringContaining(`Rich text`));
+		expect(sendCommand).not.toHaveBeenCalledWith(`Input.dispatchKeyEvent`, expect.anything());
+	});
+
 	test(`leaves input/textarea replay on the value-splice path, dispatching no key event at all`, async () => {
 		await replay({ type: `keyDown`, key: `h`, selectionStart: 0, selectionEnd: 0, timestamp: 1 });
 
