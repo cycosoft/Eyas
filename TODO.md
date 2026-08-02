@@ -1,7 +1,6 @@
 # TODO
 
 - manually test eyas:// links with multiple instances
-- e2e coverage for keystroke replay into the recording fixture's rich-text / textarea / input targets
 - repro command: npm run dev -- "C:\Users\Eric\Desktop\Client Viewer - 62178-redirect-auth.9314fec1d.eyas"
 
 
