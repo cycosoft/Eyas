@@ -51,6 +51,20 @@ export type CursorSelection = {
 	selectionEnd?: number;
 }
 
+/** A Windows virtual key code, as CDP's `Input.dispatchKeyEvent` expects for an editing command. */
+export type VirtualKeyCode = number;
+
+/**
+ * The `Input.dispatchKeyEvent` fields that make Blink actually carry out an edit — `text` for a
+ * printable character, a virtual key code for an editing command such as Backspace/Delete. A key
+ * event carrying only `key` dispatches to the page but inserts and deletes nothing.
+ */
+export type KeyEventEditingPayload = {
+	text?: KeyDownStep[`key`];
+	windowsVirtualKeyCode?: VirtualKeyCode;
+	nativeVirtualKeyCode?: VirtualKeyCode;
+}
+
 /**
  * Chrome DevTools Recorder / @puppeteer/replay mouse button names. Absent on a
  * {@link ClickStep} means `primary`, which is what every session recorded before

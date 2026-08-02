@@ -5,6 +5,7 @@ import type { ReplaySpeedMode } from '@registry/settings.js';
 import sessionRecorderService from './session-recorder.service.js';
 import { getPopupWebContents, closePopup, closeAllPopups, setReplayPopupIdQueue, clearReplayPopupIdQueue, hideAllRecordingOverlays, showAllRecordingOverlays } from './window.popups.js';
 import { buildClickPointScript, buildChangeScript, buildKeyDownMutationScript } from './session-playback.selector-resolution.js';
+import { editingPayload, trackModifier, resetModifiers } from './session-playback.keystrokes.js';
 import { sendPlaybackStatus, computeStepActions, reportStepProgress } from './session-playback.progress.js';
 import { TEST_RUNNING_RING_FADE_MS, PLAYBACK_COMPLETE_HOLD_MS } from '@scripts/constants.js';
 
@@ -107,7 +108,7 @@ async function _dispatchKeyDown(target: Electron.WebContents, step: KeyDownStep)
 
 	// functional keys (Enter, Tab, Escape, arrows, modifier combos, etc.), or keys with no
 	// recorded cursor position — dispatch the real key event; these don't mutate .value directly
-	await target.debugger.sendCommand(`Input.dispatchKeyEvent`, { type: `keyDown`, key: step.key });
+	await target.debugger.sendCommand(`Input.dispatchKeyEvent`, { type: `keyDown`, key: step.key, ...editingPayload(step.key) });
 }
 
 // no coordinate fallback: replaying raw recorded offsetX/offsetY against a page that hasn't
@@ -131,6 +132,8 @@ async function _dispatchClick(target: Electron.WebContents, step: ClickStep): Pr
 }
 
 async function _dispatchStep(webContents: Electron.WebContents, step: RecordingStep): Promise<void> {
+	trackModifier(step);
+
 	if (step.type === `closeWindow`) {
 		await closePopup(step.popupId);
 		return;
@@ -201,6 +204,7 @@ async function _teardownPopups(): Promise<void> {
 async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebContents, steps: RecordingStep[], startUrl: DomainUrl | null): Promise<void> {
 	// a stopPlayback() call with no replay in progress must not bleed into this new one
 	_abortRequested = false;
+	resetModifiers();
 	try { webContents.debugger.attach(CDP_DEBUGGER_VERSION); } catch { /* already attached */ }
 
 	// replayed input/navigation is real DOM/webContents activity, indistinguishable from the
