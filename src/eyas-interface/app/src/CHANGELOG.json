@@ -1,6 +1,6 @@
 [
 	{
-		"version": "26.8.2543",
+		"version": "26.8.5201",
 		"items": [
 			{ "text": "🟢 Support for launching multiple eyas instances with different test ids" },
 			{ "text": "🟢 Add session recording and playback tool" },
