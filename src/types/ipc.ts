@@ -1,7 +1,7 @@
 import type { ProjectId, DomainUrl, IsActive, SettingKey, HashString, Username, PasswordPlain, ZoomFactor, StepCount } from './primitives.js';
 import type { EnvironmentChoice, Viewport, ViewportSize, EnvironmentChoiceWithTitle } from './core.js';
 import type { NavItem } from './components.js';
-import type { RecordingStep } from './recording.js';
+import type { RecordingStep, ReplayMismatch } from './recording.js';
 
 /** Payload for selecting a test environment */
 export type EnvironmentSelectedPayload = DomainUrl | EnvironmentChoice;
@@ -182,6 +182,11 @@ export type RecorderFlushStepsPayload = RecordingStep[];
 export type RecorderPlaybackStatusPayload = {
 	completedSteps?: StepCount;
 	error?: string;
+	/**
+	 * Recorded expectations that didn't hold. Distinct from `error`: a replay can finish cleanly and
+	 * still have findings, and a failed one can have gathered some before it threw.
+	 */
+	mismatches?: ReplayMismatch[];
 	status: `playing` | `stopped` | `failed`;
 	totalSteps?: StepCount;
 };

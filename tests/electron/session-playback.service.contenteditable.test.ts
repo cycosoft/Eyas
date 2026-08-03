@@ -105,8 +105,8 @@ describe(`contenteditable keystroke replay`, () => {
 	});
 
 	test(`sends no text for the character half of a chord, so Ctrl+A selects all instead of typing "a"`, async () => {
-		// KeyDownStep carries no modifier state, and `key` for Ctrl+A is a bare `a` — the held
-		// Control has to be inferred from the preceding step or the chord replays as literal text
+		// a session recorded before modifier capture: `key` for Ctrl+A is a bare `a` and the step
+		// carries no modifiers, so the held Control has to be inferred from the preceding step
 		const steps: KeyDownStep[] = [{ type: `keyDown`, key: `Control`, timestamp: 1 }, { type: `keyDown`, key: `a`, timestamp: 2 }];
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession(steps));
 
@@ -114,6 +114,63 @@ describe(`contenteditable keystroke replay`, () => {
 
 		expect(sendCommand).toHaveBeenCalledWith(`Input.dispatchKeyEvent`, { type: `keyDown`, key: `a` });
 		expect(sendCommand).not.toHaveBeenCalledWith(`Input.dispatchKeyEvent`, expect.objectContaining({ text: `a` }));
+	});
+
+	test(`replays a recorded chord as a real chord, without needing the preceding modifier step`, async () => {
+		// the whole point of recording modifiers: inference breaks when a modifier was already held
+		// before recording started, or released while the window didn't have focus
+		await replay({ type: `keyDown`, key: `a`, modifiers: { ctrl: true }, timestamp: 1 });
+
+		// CDP modifier bitmask: Ctrl is 2
+		expect(sendCommand).toHaveBeenCalledWith(`Input.dispatchKeyEvent`, { type: `keyDown`, key: `a`, modifiers: 2 });
+		expect(sendCommand).not.toHaveBeenCalledWith(`Input.dispatchKeyEvent`, expect.objectContaining({ text: `a` }));
+	});
+
+	test(`combines held modifiers into one bitmask`, async () => {
+		await replay({ type: `keyDown`, key: `a`, modifiers: { ctrl: true, shift: true }, timestamp: 1 });
+
+		// Ctrl (2) | Shift (8)
+		expect(sendCommand).toHaveBeenCalledWith(`Input.dispatchKeyEvent`, expect.objectContaining({ modifiers: 10 }));
+	});
+
+	test(`still inserts text for a Shift-only chord, since the recorded key is already shifted`, async () => {
+		await replay({ type: `keyDown`, key: `A`, modifiers: { shift: true }, timestamp: 1 });
+
+		expect(sendCommand).toHaveBeenCalledWith(`Input.dispatchKeyEvent`, expect.objectContaining({ key: `A`, text: `A`, modifiers: 8 }));
+	});
+
+	test(`believes a step's own modifiers over the inferred state, which can be stale`, async () => {
+		// Control looks held from the preceding step, but the recorded step reports none — e.g. it was
+		// released while the window was unfocused, so no keyUp was ever recorded to clear it
+		const steps: KeyDownStep[] = [
+			{ type: `keyDown`, key: `Control`, timestamp: 1 },
+			{ type: `keyDown`, key: `b`, modifiers: {}, timestamp: 2 }
+		];
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession(steps));
+
+		await playbackService.playSession(makeCtx(), `sess-1`);
+
+		expect(sendCommand).toHaveBeenCalledWith(`Input.dispatchKeyEvent`, expect.objectContaining({ key: `b`, text: `b` }));
+	});
+
+	test(`falls back to inference for a step that carries no modifiers of its own`, async () => {
+		const steps: KeyDownStep[] = [
+			{ type: `keyDown`, key: `Control`, timestamp: 1 },
+			{ type: `keyDown`, key: `b`, timestamp: 2 }
+		];
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession(steps));
+
+		await playbackService.playSession(makeCtx(), `sess-1`);
+
+		// this is what keeps sessions recorded before modifier capture replaying as they always did
+		expect(sendCommand).not.toHaveBeenCalledWith(`Input.dispatchKeyEvent`, expect.objectContaining({ text: `b` }));
+	});
+
+	test(`sends no modifiers field at all for an unmodified key`, async () => {
+		await replay({ type: `keyDown`, key: `Enter`, timestamp: 1 });
+
+		// keeps the wire payload identical to what it was before modifier capture existed
+		expect(sendCommand).toHaveBeenCalledWith(`Input.dispatchKeyEvent`, { type: `keyDown`, key: `Enter` });
 	});
 
 	test(`resumes inserting text once the modifier is released`, async () => {
@@ -142,16 +199,29 @@ describe(`contenteditable keystroke replay`, () => {
 		expect(sendCommand).toHaveBeenCalledWith(`Input.dispatchKeyEvent`, expect.objectContaining({ key: `A`, text: `A` }));
 	});
 
-	test(`dispatches an editableChange step as a page-side heal, not as a key event`, async () => {
+	test(`dispatches an editableChange step as a page-side read, not as a key event`, async () => {
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
 			{ type: `editableChange`, selectors: [`testid/editor`], text: `Rich text`, timestamp: 1 }
 		]));
 
 		await playbackService.playSession(makeCtx(), `sess-1`);
 
-		// the corrector's own behavior is proven against real Chromium in
-		// session-playback.editable-heal.test.ts — this only pins the routing
-		expect(executeJavaScript).toHaveBeenCalledWith(expect.stringContaining(`Rich text`));
+		// the script locates the editor but never carries the recorded text into the page — that
+		// absence is the assertion inversion. Judging is covered in session-playback.assertions.test.ts.
+		expect(executeJavaScript).toHaveBeenCalledWith(expect.stringContaining(`testid/editor`));
+		expect(executeJavaScript).not.toHaveBeenCalledWith(expect.stringContaining(`Rich text`));
+		expect(sendCommand).not.toHaveBeenCalledWith(`Input.dispatchKeyEvent`, expect.anything());
+	});
+
+	test(`inserts an editableInput step's text at the caret rather than replaying it as keystrokes`, async () => {
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `editableInput`, inputType: `insertFromPaste`, data: `PASTED`, timestamp: 1 }
+		]));
+
+		await playbackService.playSession(makeCtx(), `sess-1`);
+
+		// one insertion for the whole edit — a pasted block arrives as a block, not as fake typing
+		expect(sendCommand).toHaveBeenCalledWith(`Input.insertText`, { text: `PASTED` });
 		expect(sendCommand).not.toHaveBeenCalledWith(`Input.dispatchKeyEvent`, expect.anything());
 	});
 

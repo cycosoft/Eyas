@@ -61,4 +61,52 @@ describe(`useRecordingStore`, () => {
 		store.setPlaybackStatus({ status: `stopped` });
 		expect(store.playbackError).toBeNull();
 	});
+
+	// Replay reports recorded expectations that didn't hold rather than silently correcting the page
+	// (see session-playback.assertions.ts) — these are what make that visible to the tester.
+	const MISMATCH = { selector: `testid/editor`, expected: `Rich text`, actual: `Rch txt`, stepIndex: 0 };
+
+	test(`setPlaybackStatus stores mismatches reported on a completed run`, () => {
+		const store = useRecordingStore();
+		store.setPlaybackStatus({ status: `stopped`, mismatches: [MISMATCH] });
+		expect(store.mismatchCount).toBe(1);
+	});
+
+	test(`a run that finished cleanly reports no mismatches`, () => {
+		const store = useRecordingStore();
+		store.setPlaybackStatus({ status: `stopped` });
+		expect(store.mismatchCount).toBe(0);
+	});
+
+	test(`setPlaybackStatus clears a previous run's mismatches when a new playback starts`, () => {
+		const store = useRecordingStore();
+		store.setPlaybackStatus({ status: `stopped`, mismatches: [MISMATCH] });
+
+		store.setPlaybackStatus({ status: `playing` });
+
+		// otherwise last run's findings sit next to a fresh progress ring and read as this run's
+		expect(store.mismatchCount).toBe(0);
+	});
+
+	test(`mismatchSummary describes what was expected against what was found`, () => {
+		const store = useRecordingStore();
+		store.setPlaybackStatus({ status: `stopped`, mismatches: [MISMATCH] });
+		expect(store.mismatchSummary).toBe(`testid/editor: expected "Rich text", found "Rch txt"`);
+	});
+
+	test(`mismatchSummary distinguishes an element that never resolved from wrong text`, () => {
+		const store = useRecordingStore();
+		store.setPlaybackStatus({ status: `stopped`, mismatches: [{ ...MISMATCH, actual: null }] });
+		expect(store.mismatchSummary).toContain(`not found on the page`);
+	});
+
+	test(`mismatchSummary caps its detail so a broadly-broken run can't overflow the tooltip`, () => {
+		const store = useRecordingStore();
+		const many = Array.from({ length: 8 }, (_unused, i) => ({ ...MISMATCH, stepIndex: i }));
+
+		store.setPlaybackStatus({ status: `stopped`, mismatches: many });
+
+		expect(store.mismatchSummary.split(`\n`)).toHaveLength(6);
+		expect(store.mismatchSummary).toContain(`...and 3 more`);
+	});
 });

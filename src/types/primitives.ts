@@ -36,9 +36,17 @@ export type EventType = string;
 export type IsComputable = boolean;
 export type CanProceed = boolean;
 export type IsLocked = boolean;
+/** Whether a recorded key is the character half of a chord (Ctrl+A) rather than text to type. */
+export type IsCommandChord = boolean;
+/** Whether a provisionally-buffered recording step was successfully withdrawn. */
+export type IsRetracted = boolean;
+/** Whether a recorded keystroke is one an `input` event may yet supersede. */
+export type IsRetractable = boolean;
 export type Count = number;
 export type StepCount = number;
 export type StepIndex = number;
+/** CDP's packed representation of the modifier keys held during an input event. */
+export type CdpModifierMask = number;
 export type TimerId = ReturnType<typeof setTimeout>;
 type MetadataKey = string;
 export type CacheKey = string;
@@ -66,6 +74,8 @@ export type ModalId = string;
 export type ThemeSource = string;
 export type MenuAccelerator = string;
 export type LabelString = string;
+/** Human-readable multi-line detail shown in a tooltip or expanded panel. */
+export type DetailText = string;
 export type TimeString = string;
 export type IconName = string;
 export type StepId = string;

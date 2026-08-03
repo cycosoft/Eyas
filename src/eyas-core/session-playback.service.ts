@@ -1,11 +1,13 @@
 import type { CoreContext } from '@registry/eyas-core.js';
-import type { RecordingStep, ClickStep, ClickPoint, InputStep, KeyDownStep } from '@registry/recording.js';
-import type { SessionId, DurationMS, DomainUrl, PopupId, StepCount } from '@registry/primitives.js';
+import type { RecordingStep, InputStep, KeyDownStep } from '@registry/recording.js';
+import type { SessionId, DurationMS, DomainUrl, PopupId, StepCount, StepIndex } from '@registry/primitives.js';
 import type { ReplaySpeedMode } from '@registry/settings.js';
 import sessionRecorderService from './session-recorder.service.js';
 import { getPopupWebContents, closePopup, closeAllPopups, setReplayPopupIdQueue, clearReplayPopupIdQueue, hideAllRecordingOverlays, showAllRecordingOverlays } from './window.popups.js';
-import { buildClickPointScript, buildChangeScript, buildKeyDownMutationScript, buildEditableHealScript } from './session-playback.selector-resolution.js';
-import { editingPayload, trackModifier, resetModifiers } from './session-playback.keystrokes.js';
+import { buildChangeScript, buildKeyDownMutationScript } from './session-playback.selector-resolution.js';
+import { dispatchClick } from './session-playback.clicks.js';
+import { editingPayload, keyEventPayload, trackModifier, resetModifiers } from './session-playback.keystrokes.js';
+import { checkEditableText, resetMismatches, mismatchPayload } from './session-playback.assertions.js';
 import { sendPlaybackStatus, computeStepActions, reportStepProgress } from './session-playback.progress.js';
 import { TEST_RUNNING_RING_FADE_MS, PLAYBACK_COMPLETE_HOLD_MS } from '@scripts/constants.js';
 
@@ -28,6 +30,10 @@ const REPLAY_STEP_DELAY_MS: Record<ReplaySpeedMode, DurationMS> = {
 // not gated by the natural inter-action delay meant for pacing distinct user actions
 const KEYSTROKE_DELAY_MS = 50 as DurationMS;
 
+// paced as typing rather than as distinct user actions. editableInput belongs here because it's what
+// replaces the per-character keyDown inside a rich-text editor.
+const KEYSTROKE_STEP_TYPES = new Set<RecordingStep[`type`]>([`keyDown`, `keyUp`, `editableInput`]);
+
 function _delay(ms: DurationMS): Promise<void> {
 	return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -37,38 +43,6 @@ function _delay(ms: DurationMS): Promise<void> {
 // double rAF is a genuine "the page has actually painted" signal from the renderer itself
 function _waitForPaint(webContents: Electron.WebContents): Promise<void> {
 	return webContents.executeJavaScript(`new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))`);
-}
-
-const CLICK_TARGET_POLL_TIMEOUT_MS = 5000 as DurationMS;
-const CLICK_TARGET_POLL_INTERVAL_MS = 100 as DurationMS;
-
-// SPA-style navigations (e.g. GitHub's client-side directory browser) never trip
-// isLoading()/did-stop-loading, so poll the full candidate list — aria/text/testid/CSS, in
-// priority order, matching the auto-wait model of real e2e frameworks — until one resolves or the
-// timeout is spent, retrying the whole candidate list on each poll so a page still mid-navigation
-// gets another chance rather than failing on the first miss. A client-side re-render can pass
-// through a transient frame where a stale/duplicate element still matches — require the same point
-// on two consecutive polls before accepting it, so a one-off transient match is discarded.
-async function _resolveClickPoint(target: Electron.WebContents, step: ClickStep): Promise<ClickPoint | null> {
-	const script = buildClickPointScript(step.selectors);
-	const deadline = Date.now() + CLICK_TARGET_POLL_TIMEOUT_MS;
-	let lastPoint: ClickPoint | null = null;
-	for (;;) {
-		let point: ClickPoint | null;
-		try {
-			point = await target.executeJavaScript(script);
-		} catch {
-			return null;
-		}
-		if (point && lastPoint && point.x === lastPoint.x && point.y === lastPoint.y) { return point; }
-		lastPoint = point;
-		// deadline reached without two consecutive matches: fall back to the last point seen rather
-		// than failing outright — a page whose target keeps drifting (image load reflowing content,
-		// sticky header settling) still gets its most recent resolution, matching the old undebounced
-		// behavior as a floor; genuinely never-resolved (lastPoint still null) still fails the step
-		if (Date.now() >= deadline) { return lastPoint; }
-		await _delay(CLICK_TARGET_POLL_INTERVAL_MS);
-	}
 }
 
 // a freshly-opened popup (or a page mid-navigation) may still be loading when its first step
@@ -108,30 +82,10 @@ async function _dispatchKeyDown(target: Electron.WebContents, step: KeyDownStep)
 
 	// functional keys (Enter, Tab, Escape, arrows, modifier combos, etc.), or keys with no
 	// recorded cursor position — dispatch the real key event; these don't mutate .value directly
-	await target.debugger.sendCommand(`Input.dispatchKeyEvent`, { type: `keyDown`, key: step.key, ...editingPayload(step.key) });
+	await target.debugger.sendCommand(`Input.dispatchKeyEvent`, { type: `keyDown`, key: step.key, ...keyEventPayload(step), ...editingPayload(step) });
 }
 
-// no coordinate fallback: replaying raw recorded offsetX/offsetY against a page that hasn't
-// necessarily scrolled/laid out the same way as it did at record time is a silent-wrong-click risk
-// (see the SelectorGroup poll above) — if the target genuinely never resolves, fail the step loudly
-// rather than click whatever now happens to sit at that pixel
-async function _dispatchClick(target: Electron.WebContents, step: ClickStep): Promise<void> {
-	const resolved = await _resolveClickPoint(target, step);
-	if (!resolved) {
-		throw new Error(`Could not locate click target "${step.selectors[0]}" on the page.`);
-	}
-	const { x, y } = resolved;
-	// `button` is absent on every step recorded before right-click capture, and on every left
-	// click since — so the default here is what keeps those sessions replaying unchanged.
-	const button = step.button === `secondary` ? `right` : `left`;
-	// both halves are required even though only one produces the contextmenu event: Blink
-	// synthesizes it from the release on Windows/Linux and the press on macOS, so dispatching
-	// a single half replays as nothing on one platform or the other.
-	await target.debugger.sendCommand(`Input.dispatchMouseEvent`, { type: `mousePressed`, x, y, button, clickCount: 1 });
-	await target.debugger.sendCommand(`Input.dispatchMouseEvent`, { type: `mouseReleased`, x, y, button, clickCount: 1 });
-}
-
-async function _dispatchStep(webContents: Electron.WebContents, step: RecordingStep): Promise<void> {
+async function _dispatchStep(webContents: Electron.WebContents, step: RecordingStep, stepIndex: StepIndex): Promise<void> {
 	trackModifier(step);
 
 	if (step.type === `closeWindow`) {
@@ -150,21 +104,27 @@ async function _dispatchStep(webContents: Electron.WebContents, step: RecordingS
 
 	switch (step.type) {
 	case `click`:
-		await _dispatchClick(target, step);
+		await dispatchClick(target, step);
 		return;
 	case `change`:
 		await _dispatchChange(target, step);
 		return;
 	case `editableChange`:
-		// the contenteditable self-healing corrector — a rich-text editor has no `change` step to
-		// snap to a final value, so keystroke drift in one would otherwise stay silently wrong
-		await target.executeJavaScript(buildEditableHealScript(step.selectors, step.text));
+		// checked, not written — see session-playback.assertions.ts for why replay reports a
+		// rich-text editor's drift instead of quietly correcting it
+		await checkEditableText(target, step, stepIndex);
+		return;
+	case `editableInput`:
+		// Input.insertText inserts at the caret in the focused element, which is what a recorded
+		// contenteditable edit means — unlike _dispatchChange, there's no whole value to replace.
+		// One step per edit, so a pasted block arrives as a block rather than as fake keystrokes.
+		await target.debugger.sendCommand(`Input.insertText`, { text: step.data });
 		return;
 	case `keyDown`:
 		await _dispatchKeyDown(target, step);
 		return;
 	case `keyUp`:
-		await target.debugger.sendCommand(`Input.dispatchKeyEvent`, { type: `keyUp`, key: step.key });
+		await target.debugger.sendCommand(`Input.dispatchKeyEvent`, { type: `keyUp`, key: step.key, ...keyEventPayload(step) });
 		return;
 	case `scroll`:
 		// step.x/y is the absolute window.scrollX/scrollY captured at record time, not a viewport
@@ -210,6 +170,7 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 	// a stopPlayback() call with no replay in progress must not bleed into this new one
 	_abortRequested = false;
 	resetModifiers();
+	resetMismatches();
 	try { webContents.debugger.attach(CDP_DEBUGGER_VERSION); } catch { /* already attached */ }
 
 	// replayed input/navigation is real DOM/webContents activity, indistinguishable from the
@@ -238,10 +199,9 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 		let aborted = false;
 		for (let i = 0; i < steps.length; i++) {
 			if (_abortRequested) { aborted = true; break; }
-			const isKeystroke = steps[i].type === `keyDown` || steps[i].type === `keyUp`;
-			const delayMs = isKeystroke ? KEYSTROKE_DELAY_MS : stepDelayMs;
+			const delayMs = KEYSTROKE_STEP_TYPES.has(steps[i].type) ? KEYSTROKE_DELAY_MS : stepDelayMs;
 			if (delayMs > 0) { await _delay(delayMs); }
-			await _dispatchStep(webContents, steps[i]);
+			await _dispatchStep(webContents, steps[i], i);
 			reportStepProgress(ctx, stepActions, i);
 		}
 		// a user-initiated stop can land anywhere in the step list, same as a thrown step — tear down
@@ -251,14 +211,18 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 		// before this "stopped" status resets/hides the progress ring — otherwise both status
 		// updates land in the same tick and the ring's last visible frame is one step short of full
 		if (!aborted) { await _delay(PLAYBACK_COMPLETE_HOLD_MS); }
-		sendPlaybackStatus(ctx, { status: `stopped` });
+		// a replay that finished can still have findings — assertions don't abort the run (see
+		// session-playback.assertions.ts), so the end of it is the first chance to report them
+		sendPlaybackStatus(ctx, { status: `stopped`, ...mismatchPayload() });
 	} catch (err) {
 		const error = err instanceof Error ? err.message : String(err);
 		// a thrown step still fails the replay (no continue-on-error) — but tear down any popups the
 		// aborted recording never reached its closeWindow step for, the same way a failed Playwright/
 		// Cypress test still tears down its browser context, before reporting the failure
 		await _teardownPopups();
-		sendPlaybackStatus(ctx, { status: `failed`, error });
+		// findings gathered before the throw are still worth surfacing — the step that failed doesn't
+		// invalidate the assertions that already ran
+		sendPlaybackStatus(ctx, { status: `failed`, error, ...mismatchPayload() });
 	} finally {
 		_abortRequested = false;
 		sessionRecorderService.setReplaying(false);

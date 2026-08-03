@@ -33,6 +33,13 @@
 			Replay failed
 			<v-tooltip activator="parent" location="bottom">{{ playbackError }}</v-tooltip>
 		</span>
+		<!-- shown alongside a failure, not instead of it: a replay can fail *and* have findings -->
+		<span v-if="mismatchCount > 0" class="playback-mismatch mx-1" data-qa="recording-playback-mismatches">
+			{{ mismatchCount }} mismatch{{ mismatchCount === 1 ? '' : 'es' }}
+			<v-tooltip activator="parent" location="bottom">
+				<pre class="mismatch-detail">{{ mismatchSummary }}</pre>
+			</v-tooltip>
+		</span>
 	</div>
 </template>
 
@@ -42,7 +49,7 @@ import type { ChannelName } from '@registry/primitives.js';
 import useRecordingStore from '@/stores/recording.js';
 
 const recordingStore = useRecordingStore();
-const { isRecording, isStopped, isPlaying, playbackProgress, playbackError } = storeToRefs(recordingStore);
+const { isRecording, isStopped, isPlaying, playbackProgress, playbackError, mismatchCount, mismatchSummary } = storeToRefs(recordingStore);
 
 function stopRecording(): void {
 	window.eyas?.send(`recorder-stop` as ChannelName);
@@ -66,6 +73,9 @@ function startNewRecording(): void {
 .recording-stop-icon { color: #e53935; animation: recording-pulse 1.5s infinite; }
 @keyframes recording-pulse { 0% { opacity: 1; } 50% { opacity: 0.35; } 100% { opacity: 1; } }
 .playback-error { font-size: 12px; color: #e53935; }
+/* amber, not red: a mismatch is a finding to look at, not a broken replay */
+.playback-mismatch { font-size: 12px; color: #fb8c00; cursor: default; }
+.mismatch-detail { font-size: 11px; margin: 0; white-space: pre-wrap; font-family: inherit; }
 .playback-progress { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
 .playback-progress rect {
 	x: 1px; y: 1px; width: calc(100% - 2px); height: calc(100% - 2px); rx: 8px;

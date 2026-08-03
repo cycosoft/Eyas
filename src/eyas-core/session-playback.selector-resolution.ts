@@ -187,41 +187,27 @@ export function buildChangeScript(candidates: SelectorGroup, value: VariableValu
 	return _serialize(_dispatchChange, _RESOLVER_DEPENDENCIES, [candidates, value]);
 }
 
-// The contenteditable counterpart of _dispatchChange: snaps a rich-text editor back to the text it
-// held when the user left it. Plain text, not markup — an `innerHTML` assignment would restore
-// formatting but also execute inline handlers (`<img onerror>`) out of recorded page content, which
-// isn't a trade a QA tool should make silently. The cost is that a heal flattens any rich markup
-// the recorded toolbar clicks legitimately produced; the drift guard is what keeps that rare.
-function _healEditableText(candidates: SelectorGroup, text: VariableValue): void {
+/**
+ * Reads a contenteditable root's current text so replay can *check* it against what was recorded.
+ * Deliberately a pure read: the counterpart to _dispatchChange writes, but an editor is the thing
+ * under test rather than an input being driven, and writing the recorded text back would overwrite
+ * whatever the app actually produced — hiding both replay infidelity and genuine app regressions.
+ * Comparison and normalization live in session-playback.assertions.ts, where they're testable
+ * without a browser.
+ *
+ * `null` means no candidate resolved, which the caller reports distinctly from wrong text.
+ */
+function _readEditableText(candidates: SelectorGroup): VariableValue | null {
 	for (const candidate of candidates) {
 		const matches = _candidatesForSelector(candidate);
 		if (matches.length === 0) { continue; }
-		const el = matches[0] as HTMLElement;
-		// an exact match means per-keystroke replay already produced the right content — leave the
-		// editor (and its markup) completely alone, same guard as _dispatchChange's value check
-		if (_normalizeText(el.innerText) === _normalizeText(text)) { return; }
-
-		el.textContent = text;
-
-		// assigning textContent collapses the caret to the start of the element, and a contenteditable
-		// keystroke carries no recorded cursor position to put it back — without this, every keystroke
-		// after a mid-session heal would insert at the top of the editor instead of the end
-		if (el === document.activeElement || el.contains(document.activeElement)) {
-			const range = document.createRange();
-			range.selectNodeContents(el);
-			range.collapse(false);
-			const selection = window.getSelection();
-			selection?.removeAllRanges();
-			selection?.addRange(range);
-		}
-
-		el.dispatchEvent(new Event(`input`, { bubbles: true }));
-		return;
+		return (matches[0] as HTMLElement).innerText;
 	}
+	return null;
 }
 
-export function buildEditableHealScript(candidates: SelectorGroup, text: VariableValue): JsSnippet {
-	return _serialize(_healEditableText, _RESOLVER_DEPENDENCIES, [candidates, text]);
+export function buildEditableTextProbeScript(candidates: SelectorGroup): JsSnippet {
+	return _serialize(_readEditableText, _RESOLVER_DEPENDENCIES, [candidates]);
 }
 
 // Splices a single keystroke into document.activeElement's value at the recorded cursor position

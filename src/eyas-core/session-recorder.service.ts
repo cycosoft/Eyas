@@ -77,7 +77,7 @@ async function startSession(ctx: CoreContext): Promise<void> {
 	const startedAt = Date.now();
 
 	_session = {
-		eyasSchemaVersion: `1.1.0`,
+		eyasSchemaVersion: `1.2.0`,
 		projectId,
 		sessionId,
 		title: new Date(startedAt).toISOString(),

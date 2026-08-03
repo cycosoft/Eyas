@@ -105,4 +105,57 @@ describe(`AppHeaderRecordingControls`, () => {
 		expect(wrapper.find(`[data-qa="btn-recording-record-again"]`).text()).toContain(`New Recording`);
 		expect(wrapper.find(`[data-qa="btn-recording-replay"]`).text()).toContain(`Replay Recording`);
 	});
+
+	// Replay checks a rich-text editor against what was recorded instead of overwriting it, so the
+	// findings need somewhere to land — without this surface the inversion has no user-facing value.
+	const MISMATCH = { selector: `testid/editor`, expected: `Rich text`, actual: `Rch txt`, stepIndex: 0 };
+
+	function mountWithMismatches(mismatches: typeof MISMATCH[]): VueWrapper {
+		const wrapperWithStatus = mountWithStatus(`stopped`, `stopped`);
+		useRecordingStore().playbackMismatches = mismatches;
+		return wrapperWithStatus;
+	}
+
+	test(`shows nothing when a replay finished with no findings`, () => {
+		wrapper = mountWithMismatches([]);
+
+		expect(wrapper.find(`[data-qa="recording-playback-mismatches"]`).exists()).toBe(false);
+	});
+
+	test(`reports the number of mismatches after a replay`, async () => {
+		wrapper = mountWithMismatches([MISMATCH, { ...MISMATCH, stepIndex: 4 }]);
+		await wrapper.vm.$nextTick();
+
+		expect(wrapper.find(`[data-qa="recording-playback-mismatches"]`).text()).toContain(`2 mismatches`);
+	});
+
+	test(`says "mismatch" rather than "mismatches" for a single finding`, async () => {
+		wrapper = mountWithMismatches([MISMATCH]);
+		await wrapper.vm.$nextTick();
+
+		expect(wrapper.find(`[data-qa="recording-playback-mismatches"]`).text()).toContain(`1 mismatch`);
+		expect(wrapper.find(`[data-qa="recording-playback-mismatches"]`).text()).not.toContain(`mismatches`);
+	});
+
+	test(`spells out the expected and actual text in the tooltip`, async () => {
+		wrapper = mountWithMismatches([MISMATCH]);
+		await wrapper.vm.$nextTick();
+
+		// a bare count would tell the tester something is wrong without telling them what
+		const text = wrapper.find(`[data-qa="recording-playback-mismatches"]`).text();
+		expect(text).toContain(`Rich text`);
+		expect(text).toContain(`Rch txt`);
+	});
+
+	test(`shows findings alongside a failure, not instead of it`, async () => {
+		wrapper = mountWithStatus(`stopped`, `failed`);
+		const store = useRecordingStore();
+		store.playbackError = `boom`;
+		store.playbackMismatches = [MISMATCH];
+		await wrapper.vm.$nextTick();
+
+		// a replay can throw on a later step having already gathered findings from earlier ones
+		expect(wrapper.find(`[data-qa="recording-playback-error"]`).exists()).toBe(true);
+		expect(wrapper.find(`[data-qa="recording-playback-mismatches"]`).exists()).toBe(true);
+	});
 });
