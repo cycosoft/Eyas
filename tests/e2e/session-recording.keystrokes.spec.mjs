@@ -220,7 +220,7 @@ test.describe(`Session Recording — keystroke capture and replay`, () => {
 
 		const editor = testPage.locator(`[data-testid="rich-text"]`);
 		await editor.click();
-		await testPage.keyboard.press(`Control+V`);
+		await testPage.keyboard.press(process.platform === `darwin` ? `Meta+V` : `Control+V`);
 		await expect(editor).toHaveText(`Pasted text`);
 
 		await testPage.waitForTimeout(2500);
