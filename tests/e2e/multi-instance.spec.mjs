@@ -182,9 +182,19 @@ test.describe(`Multi-Instance Support (EYAS-334)`, () => {
 			const sessionPathB = await appB.evaluate(({ app }) => app.getPath(`sessionData`));
 			expect(sessionPathB).not.toBe(sessionPathA2);
 
-			expect(sessionPathA2).toContain(`session-proj`);
-			expect(sessionPathA2).toContain(`session-test-a`);
-			expect(sessionPathB).toContain(`session-test-b`);
+			// The ids are hashed into the path, not embedded raw, to stay clear of
+			// Windows' 260-character cap (see `shortScopeId`). Assert the derived shape:
+			// the two builds share a project segment and differ only in the test segment.
+			const [projectSegA, testSegA] = sessionPathA2.split(/[\\/]/).slice(-2);
+			const [projectSegB, testSegB] = sessionPathB.split(/[\\/]/).slice(-2);
+
+			expect(projectSegA).toMatch(/^[0-9a-f]{8}$/);
+			expect(testSegA).toMatch(/^[0-9a-f]{8}$/);
+			expect(projectSegB).toBe(projectSegA);
+			expect(testSegB).not.toBe(testSegA);
+
+			// The whole point of hashing: raw ids must never reach the path.
+			expect(sessionPathA2).not.toContain(`session-test-a`);
 		} finally {
 			await exitEyas(appA1);
 			await exitEyas(appA2);

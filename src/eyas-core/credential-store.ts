@@ -83,19 +83,47 @@ async function getCredentials(projectId: ProjectId, origin: DomainUrl): Promise<
 	}
 
 	const result: DecryptedCredential[] = [];
+	let needsReEncryption = false;
+
 	for (const cred of _data[projectId][origin]) {
 		try {
 			const buffer = Buffer.from(cred.passwordHex, `hex`);
 			const decryptedObj = await safeStorage.decryptStringAsync(buffer);
 			// Modern electron returns { result: string, shouldReEncrypt: boolean }
 			const passwordPlain = typeof decryptedObj === `string` ? decryptedObj : decryptedObj.result;
+			// `shouldReEncrypt` means this still decrypted, but a better key is now
+			// available. Rewriting under the current key keeps the store self-healing
+			// if Chromium ever rotates — otherwise entries silently stay on the weaker
+			// key and, worse, drift from whatever later sessions encrypt with.
+			if (typeof decryptedObj !== `string` && decryptedObj.shouldReEncrypt) {
+				needsReEncryption = true;
+			}
 			result.push({ username: cred.username, passwordPlain });
 		} catch (err) {
 			console.error(`Failed to decrypt credential for ${cred.username} at ${origin} under project ${projectId}:`, err);
 		}
 	}
 
+	if (needsReEncryption) {
+		await _reEncrypt(projectId, origin, result);
+	}
+
 	return result;
+}
+
+/**
+ * Rewrites already-decrypted credentials under the session's current key. Failures
+ * are non-fatal: the caller still has usable plaintext, and the next read will try
+ * again.
+ */
+async function _reEncrypt(projectId: ProjectId, origin: DomainUrl, credentials: DecryptedCredential[]): Promise<void> {
+	try {
+		for (const cred of credentials) {
+			await saveCredential(projectId, origin, cred.username, cred.passwordPlain);
+		}
+	} catch (err) {
+		console.error(`Failed to re-encrypt credentials at ${origin} under project ${projectId}:`, err);
+	}
 }
 
 async function getAllCredentials(projectId: ProjectId): Promise<CredentialMetadata[]> {

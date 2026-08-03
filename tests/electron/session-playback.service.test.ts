@@ -18,7 +18,7 @@ const isLoading = vi.fn().mockReturnValue(false);
 const toggleEyasUI = vi.fn();
 
 vi.mock(`@core/session-recorder.service.js`, () => ({
-	default: { getSession: vi.fn(), setReplaying: vi.fn() }
+	default: { getSession: vi.fn(), setReplaying: vi.fn(), isUnknownSchema: vi.fn().mockReturnValue(false) }
 }));
 
 const { getPopupWebContents, closePopup, closeAllPopups, setReplayPopupIdQueue, clearReplayPopupIdQueue, hideAllRecordingOverlays, showAllRecordingOverlays } = vi.hoisted(() => ({
@@ -129,6 +129,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 		expect(attach).toHaveBeenCalled();
 		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `playing`, completedSteps: 0, totalSteps: 0 });
 	});
+
 
 	test(`dispatches a ClickStep as Input.dispatchMouseEvent mousePressed then mouseReleased at the selector-resolved position`, async () => {
 		executeJavaScript.mockResolvedValue({ x: 12, y: 34 });

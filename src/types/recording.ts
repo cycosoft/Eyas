@@ -1,4 +1,4 @@
-import type { ProjectId, TimestampMS, ViewportWidth, ViewportHeight, ScreenCoordinate, FramePath, DomainUrl, PopupId, CursorOffset, StepCount, SelectorString, AccessibleName } from './primitives.js';
+import type { ProjectId, TimestampMS, ViewportWidth, ViewportHeight, ScreenCoordinate, FramePath, DomainUrl, PopupId, CursorOffset, StepCount, StepIndex, SelectorString, AccessibleName, CdpModifierMask } from './primitives.js';
 
 /** Viewport dimensions for the recording session */
 type Viewport = {
@@ -51,8 +51,36 @@ export type CursorSelection = {
 	selectionEnd?: number;
 }
 
+/** A Windows virtual key code, as CDP's `Input.dispatchKeyEvent` expects for an editing command. */
+export type VirtualKeyCode = number;
+
+/**
+ * The `Input.dispatchKeyEvent` fields that make Blink actually carry out an edit — `text` for a
+ * printable character, a virtual key code for an editing command such as Backspace/Delete. A key
+ * event carrying only `key` dispatches to the page but inserts and deletes nothing.
+ */
+export type KeyEventEditingPayload = {
+	text?: KeyDownStep[`key`];
+	windowsVirtualKeyCode?: VirtualKeyCode;
+	nativeVirtualKeyCode?: VirtualKeyCode;
+}
+
+/** The held-modifier half of an `Input.dispatchKeyEvent` payload, omitted when nothing was held. */
+export type KeyEventModifierPayload = {
+	modifiers?: CdpModifierMask;
+}
+
+/**
+ * Chrome DevTools Recorder / @puppeteer/replay mouse button names. Absent on a
+ * {@link ClickStep} means `primary`, which is what every session recorded before
+ * right-click capture existed looks like — so old recordings replay unchanged.
+ */
+export type MouseButton = `primary` | `auxiliary` | `secondary` | `back` | `forward`;
+
 export type ClickStep = {
 	type: `click`;
+	/** Omitted for a normal left click; `secondary` is a right click. */
+	button?: MouseButton;
 	selectors: SelectorGroup;
 	offsetX: ScreenCoordinate;
 	offsetY: ScreenCoordinate;
@@ -70,9 +98,91 @@ export type InputStep = {
 	timestamp: TimestampMS;
 }
 
+/**
+ * The contenteditable analogue of {@link InputStep}: what a rich-text editor said when the user
+ * left it. Captured on blur, and only if the text actually changed while they were in it,
+ * mirroring `change` semantics — a root has no `.value` and never fires `change` itself.
+ *
+ * On replay this is an *assertion*, not a repair (see session-playback.assertions.ts). Writing the
+ * recorded text back into the editor would overwrite whatever the app under test actually produced,
+ * destroying the only signal the tester recorded this for.
+ */
+export type EditableChangeStep = {
+	type: `editableChange`;
+	selectors: SelectorGroup;
+	/** The editor's `innerText` at blur — plain text, and the value replay checks the page against. */
+	text: string;
+	frame?: FramePath;
+	popupId?: PopupId;
+	timestamp: TimestampMS;
+}
+
+/**
+ * A recorded expectation that didn't hold on replay. Collected across the whole run and reported at
+ * the end rather than aborting on the first one: a mismatch is a finding, not a crash, and stopping
+ * would discard every finding after it.
+ */
+export type ReplayMismatch = {
+	/** The first candidate from the step's {@link SelectorGroup}, for identifying the element to a human. */
+	selector: SelectorString;
+	expected: string;
+	/** `null` when the element itself never resolved on the page — a distinct failure from wrong text. */
+	actual: string | null;
+	stepIndex: StepIndex;
+}
+
+/**
+ * Text entered into a contenteditable root, taken from the browser's own account of the edit (the
+ * `input` event) rather than reconstructed from keystrokes. Keystroke capture only ever worked for
+ * literal typing — a paste records `Control`+`v` and nothing else, and autocorrect/replacement
+ * records nothing at all — so replay of anything else left the editor empty or wrong.
+ *
+ * Carries no selectors for the same reason {@link KeyDownStep} doesn't: it replays into whatever
+ * the recorded clicks focused, at the caret they left behind.
+ */
+export type EditableInputStep = {
+	type: `editableInput`;
+	/** The browser's own classification: `insertText`, `insertFromPaste`, `insertReplacementText`, … */
+	inputType: string;
+	/** The text this edit introduced — from `data`, or from `dataTransfer` for a paste or drop. */
+	data: string;
+	frame?: FramePath;
+	popupId?: PopupId;
+	timestamp: TimestampMS;
+}
+
+/** Capture-time knobs for `computeSelectorGroup` (src/scripts/recorder.selectors.ts). */
+export type SelectorCaptureOptions = {
+	/**
+	 * Skip the candidates derived from the element's own text — the `textContent` fallback inside the
+	 * accessible-name computation, and the `text/` candidate. Set when capturing a contenteditable
+	 * root: its text is the very thing an {@link EditableChangeStep} exists to repair, so a
+	 * content-derived candidate would fail to resolve in exactly the case the repair is needed.
+	 */
+	ignoreOwnText?: boolean;
+}
+
+/**
+ * Modifier keys held when a key event was captured. Flags are omitted rather than set false, and
+ * the whole object is omitted for an unmodified key, so an ordinary keystroke's step is unchanged
+ * from what earlier recorders wrote.
+ *
+ * Recorded semantically rather than as a CDP modifier bitmask: the session file stays legible and
+ * exportable to frameworks that don't share CDP's encoding. The bitmask is derived at replay
+ * (session-playback.keystrokes.ts modifierBitmask).
+ */
+export type KeyModifiers = {
+	alt?: boolean;
+	ctrl?: boolean;
+	meta?: boolean;
+	shift?: boolean;
+}
+
 export type KeyDownStep = {
 	type: `keyDown`;
 	key: string;
+	/** Absent on sessions recorded before modifier capture — replay infers those from surrounding steps instead. */
+	modifiers?: KeyModifiers;
 	selectionStart?: CursorSelection[`selectionStart`];
 	selectionEnd?: CursorSelection[`selectionEnd`];
 	frame?: FramePath;
@@ -80,9 +190,10 @@ export type KeyDownStep = {
 	timestamp: TimestampMS;
 }
 
-type KeyUpStep = {
+export type KeyUpStep = {
 	type: `keyUp`;
 	key: string;
+	modifiers?: KeyModifiers;
 	frame?: FramePath;
 	popupId?: PopupId;
 	timestamp: TimestampMS;
@@ -112,6 +223,8 @@ type CloseWindowStep = {
 export type RecordingStep =
 	| ClickStep
 	| InputStep
+	| EditableChangeStep
+	| EditableInputStep
 	| KeyDownStep
 	| KeyUpStep
 	| ScrollStep
@@ -147,9 +260,27 @@ export type LegacySelectorGroup = {
 	fallbacks: string[];
 }
 
-/** Eyas outer envelope — wraps the standard W3C Chrome Recorder JSON */
+/**
+ * Eyas outer envelope — wraps the standard W3C Chrome Recorder JSON.
+ *
+ * `eyasSchemaVersion` history:
+ * - `1.0.0` — `selectors` stored as `{ primary, fallbacks }`; upgraded on read (_upgradeSession).
+ * - `1.1.0` — ordered selector-candidate arrays.
+ * - `1.2.0` — text typed into a contenteditable root is recorded as {@link EditableInputStep}
+ *   instead of per-character {@link KeyDownStep}s. Bumped even though the step type is additive,
+ *   because the *suppression* isn't: an older build skips the step type it doesn't recognize
+ *   (session-playback.service.ts _dispatchStep) and finds no keystrokes behind it, so a rich-text
+ *   editor replays empty rather than degrading gracefully.
+ *
+ * A version outside this union was written by a newer build than the one reading it — which is what
+ * makes the field worth having. session-recorder.service.ts (isUnknownSchema) tests membership
+ * rather than ordering, so a corrupt or absent version warns too, and replay says so up front.
+ *
+ * Reading older sessions is unaffected in both directions this build cares about: a 1.1.0 session
+ * still carries its keystrokes and replays exactly as before, so there is nothing to migrate.
+ */
 export type EyasRecordingEnvelope = {
-	eyasSchemaVersion: `1.0.0` | `1.1.0`;
+	eyasSchemaVersion: `1.0.0` | `1.1.0` | `1.2.0`;
 	projectId: ProjectId;
 	sessionId: string;
 	title: string;

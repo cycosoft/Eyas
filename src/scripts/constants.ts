@@ -1,4 +1,4 @@
-import type { TestId, SessionPartition } from '@registry/primitives.js';
+import type { TestId, SessionPartition, ScopeId, ScopeSegment } from '@registry/primitives.js';
 
 // different methods for loading a test
 export const LOAD_TYPES = {
@@ -62,8 +62,37 @@ export const PLAYBACK_COMPLETE_HOLD_MS = 200;
 
 // Session partition for all Eyas-owned windows/views (app window, splash, UI layer).
 // App-wide by design: the UI is identical for every test and stores no test-scoped data.
-// The test layer gets its own per-test-id partition (`persist:<testId>-test`) instead.
+// The test layer gets its own per-test-id partition (`persist:<scopeId>-test`) instead.
 export const EYAS_UI_PARTITION = `persist:eyas-ui`;
+
+/** Characters a `shortScopeId()` result occupies on disk. */
+export const SCOPE_ID_LENGTH = 8;
+
+/**
+ * Hashes a projectId/testId down to 8 hex characters for use in on-disk paths.
+ *
+ * Windows caps most paths at 260 characters, and Chromium nests deeply beneath the
+ * profile root — `Partitions/<name>/IndexedDB/https_<host>_0.indexeddb.leveldb/
+ * MANIFEST-000001` alone runs past 60 characters before the host is counted. Spending
+ * a 64-character projectId and a 36-character testId on the base (EYAS-334) pushed
+ * that total over the cap for any host longer than 7 characters, so IndexedDB, Service
+ * Worker script caches, and Shared Dictionary all failed to open — leveldb creates its
+ * LOCK/LOG then dies on the MANIFEST write, which surfaces as `UnknownError`.
+ *
+ * Hashed rather than truncated: human-authored ids routinely share a prefix
+ * (`session-test-a` / `session-test-b`), and a prefix collision would silently merge
+ * two tests' storage into one profile.
+ *
+ * FNV-1a — this picks a directory name, it is not a security boundary.
+ */
+export function shortScopeId(value: ScopeId): ScopeSegment {
+	let hash = 0x811c9dc5;
+	for (let i = 0; i < value.length; i++) {
+		hash ^= value.charCodeAt(i);
+		hash = Math.imul(hash, 0x01000193) >>> 0;
+	}
+	return hash.toString(16).padStart(SCOPE_ID_LENGTH, `0`);
+}
 
 /**
  * Builds the session partition string for the test layer.
@@ -72,5 +101,5 @@ export const EYAS_UI_PARTITION = `persist:eyas-ui`;
  * handlers, webRequest interception) so they all resolve to the same session.
  */
 export function getTestPartition(testId?: TestId): SessionPartition {
-	return `persist:${testId || `default`}-test`;
+	return `persist:${shortScopeId(testId || `default`)}-test`;
 }

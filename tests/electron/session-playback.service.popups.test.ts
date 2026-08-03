@@ -18,7 +18,7 @@ const isLoading = vi.fn().mockReturnValue(false);
 const toggleEyasUI = vi.fn();
 
 vi.mock(`@core/session-recorder.service.js`, () => ({
-	default: { getSession: vi.fn(), setReplaying: vi.fn() }
+	default: { getSession: vi.fn(), setReplaying: vi.fn(), isUnknownSchema: vi.fn().mockReturnValue(false) }
 }));
 
 const { getPopupWebContents, closePopup, closeAllPopups, setReplayPopupIdQueue, clearReplayPopupIdQueue, hideAllRecordingOverlays, showAllRecordingOverlays } = vi.hoisted(() => ({

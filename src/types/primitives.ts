@@ -36,9 +36,21 @@ export type EventType = string;
 export type IsComputable = boolean;
 export type CanProceed = boolean;
 export type IsLocked = boolean;
+/** Whether a recorded key is the character half of a chord (Ctrl+A) rather than text to type. */
+export type IsCommandChord = boolean;
+/** Whether a provisionally-buffered recording step was successfully withdrawn. */
+export type IsRetracted = boolean;
+/** Whether a recorded keystroke is one an `input` event may yet supersede. */
+export type IsRetractable = boolean;
+/** Whether a session's schema version is one this build knows how to read. */
+export type IsUnknownSchema = boolean;
+/** An `eyasSchemaVersion` as it arrives off disk — before it's known to be one we understand. */
+export type SchemaVersion = string;
 export type Count = number;
 export type StepCount = number;
 export type StepIndex = number;
+/** CDP's packed representation of the modifier keys held during an input event. */
+export type CdpModifierMask = number;
 export type TimerId = ReturnType<typeof setTimeout>;
 type MetadataKey = string;
 export type CacheKey = string;
@@ -66,6 +78,8 @@ export type ModalId = string;
 export type ThemeSource = string;
 export type MenuAccelerator = string;
 export type LabelString = string;
+/** Human-readable multi-line detail shown in a tooltip or expanded panel. */
+export type DetailText = string;
 export type TimeString = string;
 export type IconName = string;
 export type StepId = string;
@@ -108,10 +122,17 @@ export type HashString = string;
 export type TestId = string;
 export type ProcessId = number;
 export type SessionPartition = string;
+
+/** A projectId or testId being reduced to an on-disk profile segment. */
+export type ScopeId = string;
+
+/** The fixed-length hashed segment a ScopeId becomes inside a filesystem path. */
+export type ScopeSegment = string;
 export type DeviceId = string;
 export type Username = string;
 export type PasswordPlain = string;
 export type PasswordHex = string;
+export type WasSeeded = boolean;
 export type SessionId = string;
 export type PopupId = string;
 export type WebContentsId = number;

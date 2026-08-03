@@ -264,6 +264,26 @@ export async function emitIpcMessage(electronApp, channel, ...args) {
 }
 
 /**
+ * Calls an `ipcMain.handle()` handler directly in the main process and returns its
+ * resolved value. `emitIpcMessage` only reaches `ipcMain.on()` listeners — `invoke`
+ * channels are stored separately and are otherwise only reachable from a renderer
+ * that has `ipcRenderer` (i.e. a preload), which Playwright cannot enter.
+ * @param {import('@playwright/test').ElectronApplication} electronApp
+ * @param {string} channel
+ * @param {any} payload
+ */
+export async function invokeIpcHandler(electronApp, channel, payload) {
+	return electronApp.evaluate(async ({ ipcMain }, { channel, payload }) => {
+		if (!ipcMain._invokeHandlers) {
+			throw new Error(`Electron no longer exposes ipcMain._invokeHandlers — invokeIpcHandler() needs updating`);
+		}
+		const handler = ipcMain._invokeHandlers.get(channel);
+		if (!handler) throw new Error(`No ipcMain.handle() handler registered for "${channel}"`);
+		return handler({}, payload);
+	}, { channel, payload });
+}
+
+/**
  * Emits an IPC message from the main process to all renderer windows.
  * @param {import('@playwright/test').ElectronApplication} electronApp
  * @param {string} channel

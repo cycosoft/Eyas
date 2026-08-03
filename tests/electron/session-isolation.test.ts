@@ -4,6 +4,8 @@ import { windowService } from '@core/window.service.js';
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { CoreMockLayer, CoreMockWindow, CoreMockTestLayer } from '@test-registry/eyas-core.mocks.js';
 import type { Rectangle } from '@registry/core.js';
+import type { TestId } from '@registry/primitives.js';
+import { getTestPartition } from '@scripts/constants.js';
 
 // Mock electron using constructible functions/classes with explicit return types and backticks
 vi.mock(`electron`, () => {
@@ -170,7 +172,7 @@ describe(`Session Isolation (UI & Test Layers)`, () => {
 			// First call should be for test layer (inside createAppWindow)
 			const testLayerArgs = mockWebContentsView.mock.calls[0]?.[0];
 			expect(testLayerArgs).toBeDefined();
-			expect(testLayerArgs?.webPreferences?.partition).toBe(`persist:custom-test-id-test`);
+			expect(testLayerArgs?.webPreferences?.partition).toBe(getTestPartition(`custom-test-id` as TestId));
 
 			// Second call should be for eyas UI layer (inside initEyasLayer)
 			// The UI layer is app-wide by design (not test-scoped)
@@ -188,7 +190,7 @@ describe(`Session Isolation (UI & Test Layers)`, () => {
 			const mockWebContentsView = vi.mocked(WebContentsView);
 			const testLayerArgs = mockWebContentsView.mock.calls[0]?.[0];
 			expect(testLayerArgs).toBeDefined();
-			expect(testLayerArgs?.webPreferences?.partition).toBe(`persist:default-test`);
+			expect(testLayerArgs?.webPreferences?.partition).toBe(getTestPartition());
 
 			const eyasLayerArgs = mockWebContentsView.mock.calls[1]?.[0];
 			expect(eyasLayerArgs).toBeDefined();

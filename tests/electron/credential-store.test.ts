@@ -32,6 +32,7 @@ vi.mock(`electron`, () => ({
 }));
 
 import credentialStore from '@core/credential-store.js';
+import { safeStorage } from 'electron';
 
 let tmpFile: FileSystemPath;
 
@@ -114,5 +115,43 @@ describe(`Credential Store TDD Tests`, () => {
 			{ origin: `https://example.com`, username: `user1` },
 			{ origin: `https://another.com`, username: `user2` }
 		]));
+	});
+});
+
+describe(`Key rotation`, () => {
+	test(`getCredentials() re-encrypts entries flagged with shouldReEncrypt`, async () => {
+		await credentialStore.load();
+		await credentialStore.saveCredential(`project-1`, `https://example.com`, `user1`, `pass1`);
+
+		const beforeHex = (await readJson(tmpFile))[`project-1`][`https://example.com`][0].passwordHex;
+
+		// Simulate Chromium signalling that a better key is available: the value still
+		// decrypts, but the ciphertext should be rewritten under the current key.
+		vi.mocked(safeStorage.decryptStringAsync).mockImplementationOnce(async () => ({
+			result: `pass1`,
+			shouldReEncrypt: true
+		}));
+		vi.mocked(safeStorage.encryptStringAsync).mockImplementationOnce(async () => Buffer.from(`rotated-ciphertext`, `utf8`));
+
+		const credentials = await credentialStore.getCredentials(`project-1`, `https://example.com`);
+
+		// The caller still gets usable plaintext...
+		expect(credentials).toEqual([{ username: `user1`, passwordPlain: `pass1` }]);
+
+		// ...and the stored ciphertext has been rewritten.
+		const afterHex = (await readJson(tmpFile))[`project-1`][`https://example.com`][0].passwordHex;
+		expect(afterHex).not.toBe(beforeHex);
+		expect(Buffer.from(afterHex, `hex`).toString(`utf8`)).toBe(`rotated-ciphertext`);
+	});
+
+	test(`getCredentials() leaves storage untouched when no rotation is signalled`, async () => {
+		await credentialStore.load();
+		await credentialStore.saveCredential(`project-1`, `https://example.com`, `user1`, `pass1`);
+
+		const beforeHex = (await readJson(tmpFile))[`project-1`][`https://example.com`][0].passwordHex;
+		await credentialStore.getCredentials(`project-1`, `https://example.com`);
+		const afterHex = (await readJson(tmpFile))[`project-1`][`https://example.com`][0].passwordHex;
+
+		expect(afterHex).toBe(beforeHex);
 	});
 });

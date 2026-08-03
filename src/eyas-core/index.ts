@@ -19,8 +19,10 @@ import { updateService } from './update.service.js';
 import { menuService } from './menu.service.js';
 import { windowService } from './window.service.js';
 import { instanceLockService } from './instance-lock.service.js';
+import { safeStorageKeyService } from './safe-storage-key.service.js';
 import { awaitInitialDeepLink } from './deep-link-handler.js';
 import { LOAD_TYPES } from '@scripts/constants.js';
+import { sessionPathService } from './session-path.service.js';
 
 import { initIpcHandlers } from './ipc-handlers.js';
 import {
@@ -129,7 +131,13 @@ async function initElectronCore(): Promise<void> {
 	const projectId = (ctx.$config?.meta.projectId || `default`) as ProjectId;
 	const testId = (ctx.$config?.meta.testId || `default`) as TestId;
 
-	app.setPath(`sessionData`, _path.join(app.getPath(`sessionData`), projectId, testId));
+	const sessionDataDir = sessionPathService.getSessionDataDir(projectId, testId);
+	// Seed the app-wide safeStorage key into this session's profile *before* handing
+	// the directory to Chromium — otherwise each project+build generates its own key
+	// on Windows and credentials.json (which is app-wide) becomes undecryptable.
+	await safeStorageKeyService.seedSessionKey(sessionDataDir);
+
+	app.setPath(`sessionData`, sessionDataDir);
 
 	// Only one instance may run a given project+build at a time (EYAS-334) —
 	// everything else is allowed to run concurrently as independent processes.
@@ -140,7 +148,16 @@ async function initElectronCore(): Promise<void> {
 	}
 
 	// start the electron layer
-	app.whenReady().then(handleAppReady);
+	app.whenReady().then(async () => {
+		await handleAppReady();
+
+		// First run only: adopt the key Chromium just generated as the canonical one.
+		// Chromium flushes `Local State` lazily, so this polls in the background rather
+		// than blocking startup.
+		safeStorageKeyService.captureCanonicalKey(sessionDataDir).catch(err => {
+			console.error(`[ELECTRON-CORE] failed to capture the safeStorage key:`, err);
+		});
+	});
 }
 
 /**

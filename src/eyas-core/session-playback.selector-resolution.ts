@@ -187,6 +187,29 @@ export function buildChangeScript(candidates: SelectorGroup, value: VariableValu
 	return _serialize(_dispatchChange, _RESOLVER_DEPENDENCIES, [candidates, value]);
 }
 
+/**
+ * Reads a contenteditable root's current text so replay can *check* it against what was recorded.
+ * Deliberately a pure read: the counterpart to _dispatchChange writes, but an editor is the thing
+ * under test rather than an input being driven, and writing the recorded text back would overwrite
+ * whatever the app actually produced — hiding both replay infidelity and genuine app regressions.
+ * Comparison and normalization live in session-playback.assertions.ts, where they're testable
+ * without a browser.
+ *
+ * `null` means no candidate resolved, which the caller reports distinctly from wrong text.
+ */
+function _readEditableText(candidates: SelectorGroup): VariableValue | null {
+	for (const candidate of candidates) {
+		const matches = _candidatesForSelector(candidate);
+		if (matches.length === 0) { continue; }
+		return (matches[0] as HTMLElement).innerText;
+	}
+	return null;
+}
+
+export function buildEditableTextProbeScript(candidates: SelectorGroup): JsSnippet {
+	return _serialize(_readEditableText, _RESOLVER_DEPENDENCIES, [candidates]);
+}
+
 // Splices a single keystroke into document.activeElement's value at the recorded cursor position
 // (rather than dispatching an inert CDP key event) — see _dispatchKeyDown in
 // session-playback.service.ts for why per-keystroke replay is done this way instead of snapping to
