@@ -5,7 +5,26 @@ import fs from 'fs-extra';
 const { outputJson } = fs;
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { EyasRecordingEnvelope, RecordingStep, LegacySelectorGroup } from '@registry/recording.js';
-import type { ProjectId, TestId, FilePath, DomainUrl, SessionId, IsActive, PopupId } from '@registry/primitives.js';
+import type { ProjectId, TestId, FilePath, DomainUrl, SessionId, IsActive, PopupId, IsUnknownSchema, SchemaVersion } from '@registry/primitives.js';
+
+const CURRENT_SCHEMA_VERSION = `1.2.0`;
+
+/**
+ * Every `eyasSchemaVersion` this build can read. Deliberately a membership test rather than an
+ * ordered comparison: "newer than us" is the case that matters, but a missing or malformed version
+ * is indistinguishable from it in consequence, and an ordered compare passes both silently
+ * (`undefined` parses to NaN, and every NaN comparison is false).
+ */
+const KNOWN_SCHEMA_VERSIONS = new Set<SchemaVersion>([`1.0.0`, `1.1.0`, CURRENT_SCHEMA_VERSION]);
+
+/**
+ * Whether a session was written by a build this one doesn't understand. Read as a raw string on
+ * purpose — the envelope's type says only the known versions exist, which is exactly the assumption
+ * a file from a newer build breaks.
+ */
+function isUnknownSchema(session: EyasRecordingEnvelope): IsUnknownSchema {
+	return !KNOWN_SCHEMA_VERSIONS.has(session.eyasSchemaVersion as SchemaVersion);
+}
 
 let _session: EyasRecordingEnvelope | null = null;
 let _sessionFilePath: FilePath | null = null;
@@ -77,7 +96,7 @@ async function startSession(ctx: CoreContext): Promise<void> {
 	const startedAt = Date.now();
 
 	_session = {
-		eyasSchemaVersion: `1.2.0`,
+		eyasSchemaVersion: CURRENT_SCHEMA_VERSION,
 		projectId,
 		sessionId,
 		title: new Date(startedAt).toISOString(),
@@ -168,7 +187,8 @@ export {
 	stopRecording,
 	getSession,
 	setReplaying,
-	isReplaying
+	isReplaying,
+	isUnknownSchema
 };
 
 export default {
@@ -181,5 +201,6 @@ export default {
 	isReplaying,
 	getActiveSession,
 	getSession,
+	isUnknownSchema,
 	_setSessionsDir
 };

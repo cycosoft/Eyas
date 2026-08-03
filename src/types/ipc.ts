@@ -1,4 +1,4 @@
-import type { ProjectId, DomainUrl, IsActive, SettingKey, HashString, Username, PasswordPlain, ZoomFactor, StepCount } from './primitives.js';
+import type { ProjectId, DomainUrl, IsActive, SettingKey, HashString, Username, PasswordPlain, ZoomFactor, StepCount, DetailText } from './primitives.js';
 import type { EnvironmentChoice, Viewport, ViewportSize, EnvironmentChoiceWithTitle } from './core.js';
 import type { NavItem } from './components.js';
 import type { RecordingStep, ReplayMismatch } from './recording.js';
@@ -187,6 +187,12 @@ export type RecorderPlaybackStatusPayload = {
 	 * still have findings, and a failed one can have gathered some before it threw.
 	 */
 	mismatches?: ReplayMismatch[];
+	/**
+	 * Set on `playing` when the session was written by a build newer than this one, so the tester is
+	 * told *before* watching a replay that may be structurally incomplete rather than after. Sent
+	 * only when there's something to say — a normal run's `playing` payload is unchanged.
+	 */
+	schemaWarning?: DetailText;
 	status: `playing` | `stopped` | `failed`;
 	totalSteps?: StepCount;
 };

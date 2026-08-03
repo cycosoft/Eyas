@@ -158,4 +158,35 @@ describe(`AppHeaderRecordingControls`, () => {
 		expect(wrapper.find(`[data-qa="recording-playback-error"]`).exists()).toBe(true);
 		expect(wrapper.find(`[data-qa="recording-playback-mismatches"]`).exists()).toBe(true);
 	});
+
+	// A session from a newer build replays with its unrecognized steps skipped. That's survivable, but
+	// only if the tester knows — otherwise a structurally incomplete run looks like a clean one.
+	test(`shows nothing when the session is one this build can read`, () => {
+		wrapper = mountWithStatus(`stopped`, `playing`);
+
+		expect(wrapper.find(`[data-qa="recording-playback-schema-warning"]`).exists()).toBe(false);
+	});
+
+	test(`warns that a replay may be incomplete when the session came from a newer build`, async () => {
+		wrapper = mountWithStatus(`stopped`, `playing`);
+		useRecordingStore().playbackSchemaWarning = `This recording was made by a newer version of Eyas (format 9.9.9).`;
+		await wrapper.vm.$nextTick();
+
+		const warning = wrapper.find(`[data-qa="recording-playback-schema-warning"]`);
+		expect(warning.exists()).toBe(true);
+		// the version is what makes it actionable — "something's off" alone isn't worth interrupting for
+		expect(warning.text()).toContain(`9.9.9`);
+	});
+
+	test(`shows the schema warning next to the findings it explains, not instead of them`, async () => {
+		wrapper = mountWithStatus(`stopped`, `stopped`);
+		const store = useRecordingStore();
+		store.playbackSchemaWarning = `Made by a newer version.`;
+		store.playbackMismatches = [MISMATCH];
+		await wrapper.vm.$nextTick();
+
+		// skipped steps are a plausible *cause* of the mismatches below them, so the two belong together
+		expect(wrapper.find(`[data-qa="recording-playback-schema-warning"]`).exists()).toBe(true);
+		expect(wrapper.find(`[data-qa="recording-playback-mismatches"]`).exists()).toBe(true);
+	});
 });

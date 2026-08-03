@@ -11,6 +11,7 @@ export default defineStore(`recording`, {
 		completedSteps: 0,
 		playbackError: null,
 		playbackMismatches: [],
+		playbackSchemaWarning: null,
 		playbackStatus: null,
 		sessionId: null,
 		status: null,
@@ -47,6 +48,7 @@ export default defineStore(`recording`, {
 				this.playbackStatus = null;
 				this.playbackError = null;
 				this.playbackMismatches = [];
+				this.playbackSchemaWarning = null;
 				this.completedSteps = 0;
 				this.totalSteps = 0;
 			}
@@ -58,6 +60,10 @@ export default defineStore(`recording`, {
 			// a run reports its findings once, at the end — `playing` is the start of a new run, so it
 			// clears the previous one's rather than leaving them on screen next to a fresh progress ring
 			this.playbackMismatches = payload.status === `playing` ? [] : (payload.mismatches ?? []);
+			// only the `playing` payload carries this, and it has to outlive that payload — the run it
+			// warns about is still degraded once it finishes, and the end is when the tester reads the
+			// results. Falling back to `?? null` on every status would clear it at exactly that moment.
+			if (payload.status === `playing`) { this.playbackSchemaWarning = payload.schemaWarning ?? null; }
 			this.completedSteps = payload.completedSteps ?? this.completedSteps;
 			this.totalSteps = payload.totalSteps ?? this.totalSteps;
 			if (payload.status !== `playing`) {

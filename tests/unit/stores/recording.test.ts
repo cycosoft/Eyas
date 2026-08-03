@@ -109,4 +109,37 @@ describe(`useRecordingStore`, () => {
 		expect(store.mismatchSummary.split(`\n`)).toHaveLength(6);
 		expect(store.mismatchSummary).toContain(`...and 3 more`);
 	});
+
+	test(`setPlaybackStatus stores the schema warning sent when a replay starts`, () => {
+		const store = useRecordingStore();
+		store.setPlaybackStatus({ status: `playing`, schemaWarning: `Made by a newer version.` });
+		expect(store.playbackSchemaWarning).toBe(`Made by a newer version.`);
+	});
+
+	test(`the schema warning outlives the run it describes, since only its end is worth reading`, () => {
+		const store = useRecordingStore();
+		store.setPlaybackStatus({ status: `playing`, schemaWarning: `Made by a newer version.` });
+
+		// only the `playing` payload carries the field — if `stopped` were allowed to fall back to null
+		// it would clear the warning at exactly the moment the tester turns to read the results, which
+		// is the one moment "the replay may be incomplete" actually matters
+		store.setPlaybackStatus({ status: `stopped`, mismatches: [MISMATCH] });
+
+		expect(store.playbackSchemaWarning).toBe(`Made by a newer version.`);
+	});
+
+	test(`a new replay of a readable session clears the previous run's schema warning`, () => {
+		const store = useRecordingStore();
+		store.setPlaybackStatus({ status: `playing`, schemaWarning: `Made by a newer version.` });
+
+		store.setPlaybackStatus({ status: `playing` });
+
+		expect(store.playbackSchemaWarning).toBeNull();
+	});
+
+	test(`an ordinary replay reports no schema warning`, () => {
+		const store = useRecordingStore();
+		store.setPlaybackStatus({ status: `playing` });
+		expect(store.playbackSchemaWarning).toBeNull();
+	});
 });

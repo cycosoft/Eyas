@@ -270,8 +270,11 @@ export type LegacySelectorGroup = {
  *   instead of per-character {@link KeyDownStep}s. Bumped even though the step type is additive,
  *   because the *suppression* isn't: an older build skips the step type it doesn't recognize
  *   (session-playback.service.ts _dispatchStep) and finds no keystrokes behind it, so a rich-text
- *   editor replays empty rather than degrading gracefully. Nothing reads the version to guard
- *   against that yet — see TODO.md — but the boundary is recorded so it can.
+ *   editor replays empty rather than degrading gracefully.
+ *
+ * A version outside this union was written by a newer build than the one reading it — which is what
+ * makes the field worth having. session-recorder.service.ts (isUnknownSchema) tests membership
+ * rather than ordering, so a corrupt or absent version warns too, and replay says so up front.
  *
  * Reading older sessions is unaffected in both directions this build cares about: a 1.1.0 session
  * still carries its keystrokes and replays exactly as before, so there is nothing to migrate.

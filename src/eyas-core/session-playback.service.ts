@@ -1,6 +1,7 @@
 import type { CoreContext } from '@registry/eyas-core.js';
-import type { RecordingStep, InputStep, KeyDownStep } from '@registry/recording.js';
+import type { RecordingStep, InputStep, KeyDownStep, EyasRecordingEnvelope } from '@registry/recording.js';
 import type { SessionId, DurationMS, DomainUrl, PopupId, StepCount, StepIndex } from '@registry/primitives.js';
+import type { RecorderPlaybackStatusPayload } from '@registry/ipc.js';
 import type { ReplaySpeedMode } from '@registry/settings.js';
 import sessionRecorderService from './session-recorder.service.js';
 import { getPopupWebContents, closePopup, closeAllPopups, setReplayPopupIdQueue, clearReplayPopupIdQueue, hideAllRecordingOverlays, showAllRecordingOverlays } from './window.popups.js';
@@ -166,7 +167,22 @@ async function _teardownPopups(): Promise<void> {
 	try { await closeAllPopups(); } catch { /* best-effort teardown */ }
 }
 
-async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebContents, steps: RecordingStep[], startUrl: DomainUrl | null): Promise<void> {
+/**
+ * The up-front warning for a session this build can't fully read, as a status-payload fragment.
+ * Omitted when there's nothing to say, so an ordinary run's `playing` payload is unchanged.
+ *
+ * Replay still proceeds: the unknown step types are skipped (see _dispatchStep's default branch),
+ * which for a 1.2.0 session on a 1.1.0 build means a rich-text editor replays empty. That's a
+ * degraded run, but a degraded run the tester has been told about beats refusing to play at all.
+ */
+function _schemaWarningPayload(session: EyasRecordingEnvelope): Partial<RecorderPlaybackStatusPayload> {
+	if (!sessionRecorderService.isUnknownSchema(session)) { return {}; }
+	return { schemaWarning: `This recording was made by a newer version of Eyas (format ${session.eyasSchemaVersion}). Steps this version doesn't recognize will be skipped, so the replay may be incomplete.` };
+}
+
+async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebContents, session: EyasRecordingEnvelope): Promise<void> {
+	const steps = session.recording.steps;
+	const startUrl: DomainUrl | null = session.startUrl;
 	// a stopPlayback() call with no replay in progress must not bleed into this new one
 	_abortRequested = false;
 	resetModifiers();
@@ -179,7 +195,7 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 	setReplayPopupIdQueue(_orderedPopupIds(steps));
 	ctx.toggleEyasUI(true); showAllRecordingOverlays();
 	const stepActions = computeStepActions(steps);
-	sendPlaybackStatus(ctx, { status: `playing`, completedSteps: 0 as StepCount, totalSteps: stepActions.totalActions });
+	sendPlaybackStatus(ctx, { status: `playing`, completedSteps: 0 as StepCount, totalSteps: stepActions.totalActions, ..._schemaWarningPayload(session) });
 	try {
 		// the session's steps only capture navigations that occurred *during* recording — if
 		// playback starts from a different view than recording did, replay the starting view first
@@ -247,7 +263,7 @@ async function playSession(ctx: CoreContext, sessionId: SessionId): Promise<void
 		return;
 	}
 
-	await _dispatchAllSteps(ctx, webContents, session.recording.steps, session.startUrl);
+	await _dispatchAllSteps(ctx, webContents, session);
 }
 
 export default { playSession, stopPlayback };

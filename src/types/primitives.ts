@@ -42,6 +42,10 @@ export type IsCommandChord = boolean;
 export type IsRetracted = boolean;
 /** Whether a recorded keystroke is one an `input` event may yet supersede. */
 export type IsRetractable = boolean;
+/** Whether a session's schema version is one this build knows how to read. */
+export type IsUnknownSchema = boolean;
+/** An `eyasSchemaVersion` as it arrives off disk — before it's known to be one we understand. */
+export type SchemaVersion = string;
 export type Count = number;
 export type StepCount = number;
 export type StepIndex = number;

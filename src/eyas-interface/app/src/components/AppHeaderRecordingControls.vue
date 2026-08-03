@@ -33,6 +33,16 @@
 			Replay failed
 			<v-tooltip activator="parent" location="bottom">{{ playbackError }}</v-tooltip>
 		</span>
+		<!--
+			Set when the replay starts, and deliberately left up for the rest of the run: it explains why
+			the results below it may be incomplete, so it has to still be there when they're read.
+		-->
+		<span v-if="playbackSchemaWarning" class="playback-schema-warning mx-1" data-qa="recording-playback-schema-warning">
+			<v-icon icon="mdi-alert-outline" size="small" />
+			<v-tooltip activator="parent" location="bottom">
+				<span class="mismatch-detail">{{ playbackSchemaWarning }}</span>
+			</v-tooltip>
+		</span>
 		<!-- shown alongside a failure, not instead of it: a replay can fail *and* have findings -->
 		<span v-if="mismatchCount > 0" class="playback-mismatch mx-1" data-qa="recording-playback-mismatches">
 			{{ mismatchCount }} mismatch{{ mismatchCount === 1 ? '' : 'es' }}
@@ -49,7 +59,7 @@ import type { ChannelName } from '@registry/primitives.js';
 import useRecordingStore from '@/stores/recording.js';
 
 const recordingStore = useRecordingStore();
-const { isRecording, isStopped, isPlaying, playbackProgress, playbackError, mismatchCount, mismatchSummary } = storeToRefs(recordingStore);
+const { isRecording, isStopped, isPlaying, playbackProgress, playbackError, mismatchCount, mismatchSummary, playbackSchemaWarning } = storeToRefs(recordingStore);
 
 function stopRecording(): void {
 	window.eyas?.send(`recorder-stop` as ChannelName);
@@ -75,6 +85,8 @@ function startNewRecording(): void {
 .playback-error { font-size: 12px; color: #e53935; }
 /* amber, not red: a mismatch is a finding to look at, not a broken replay */
 .playback-mismatch { font-size: 12px; color: #fb8c00; cursor: default; }
+/* same amber as a mismatch — both mean "look at this", neither means the replay broke */
+.playback-schema-warning { color: #fb8c00; cursor: default; }
 .mismatch-detail { font-size: 11px; margin: 0; white-space: pre-wrap; font-family: inherit; }
 .playback-progress { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
 .playback-progress rect {

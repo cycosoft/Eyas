@@ -3,7 +3,8 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { remove, readJson, pathExists, outputJson } from 'fs-extra';
 import type { CoreContext } from '@registry/eyas-core.js';
-import type { FilePath } from '@registry/primitives.js';
+import type { FilePath, SchemaVersion } from '@registry/primitives.js';
+import type { EyasRecordingEnvelope } from '@registry/recording.js';
 
 vi.mock(`electron`, () => ({
 	app: {
@@ -285,5 +286,60 @@ describe(`sessionRecorderService.stopRecording`, () => {
 		service.stopRecording(ctx);
 
 		expect(ctx.$eyasLayer?.webContents?.send).toHaveBeenCalledWith(`recorder-status-updated`, expect.objectContaining({ isRecording: false }));
+	});
+});
+
+// ─── isUnknownSchema ──────────────────────────────────────────────────────────
+
+/**
+ * Builds an envelope carrying an arbitrary version string. The cast is the point of the guard: the
+ * envelope type says only the known versions exist, and a file written by a newer build is exactly
+ * the case that breaks that assumption.
+ */
+function makeVersionedSession(version: SchemaVersion): EyasRecordingEnvelope {
+	return {
+		eyasSchemaVersion: version,
+		projectId: `test-proj`,
+		sessionId: `sess-1`,
+		title: `t`,
+		status: `stopped`,
+		startedAt: 0,
+		stoppedAt: 1,
+		startUrl: null,
+		viewport: { width: 1024, height: 768 },
+		components: {},
+		recording: { title: `t`, steps: [] }
+	} as unknown as EyasRecordingEnvelope;
+}
+
+describe(`sessionRecorderService.isUnknownSchema`, () => {
+	test.each([`1.0.0`, `1.1.0`, `1.2.0`])(`accepts %s, a version this build can read`, version => {
+		expect(service.isUnknownSchema(makeVersionedSession(version))).toBe(false);
+	});
+
+	test(`flags a session written by a newer build, which is what the guard exists for`, () => {
+		// the concrete hazard: 1.2.0's editableInput steps are skipped by a 1.1.0 build, so a rich-text
+		// editor replays empty. The next bump will do the same to this build unless it says so first
+		expect(service.isUnknownSchema(makeVersionedSession(`1.3.0`))).toBe(true);
+	});
+
+	test.each([
+		[`a missing version`, undefined],
+		[`an empty version`, ``],
+		[`a truncated version`, `1.2`],
+		[`a non-numeric version`, `next`]
+	])(`flags %s rather than treating it as readable`, (_label, version) => {
+		// membership, not ordering, is what catches these — an ordered compare parses them to NaN, and
+		// every NaN comparison is false, so all four would pass silently as "not newer than us"
+		expect(service.isUnknownSchema(makeVersionedSession(version as SchemaVersion))).toBe(true);
+	});
+
+	test(`accepts the version startSession actually writes, so a fresh recording never self-warns`, async () => {
+		const ctx = makeCtx();
+		await service.startSession(ctx);
+
+		const session = service.getActiveSession();
+		expect(session).not.toBeNull();
+		expect(service.isUnknownSchema(session as EyasRecordingEnvelope)).toBe(false);
 	});
 });

@@ -17,7 +17,7 @@ const removeListener = vi.fn();
 const isLoading = vi.fn().mockReturnValue(false);
 
 vi.mock(`@core/session-recorder.service.js`, () => ({
-	default: { getSession: vi.fn(), setReplaying: vi.fn() }
+	default: { getSession: vi.fn(), setReplaying: vi.fn(), isUnknownSchema: vi.fn().mockReturnValue(false) }
 }));
 
 vi.mock(`@core/settings-service.js`, () => ({

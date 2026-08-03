@@ -15,7 +15,7 @@ const sendCommand = vi.fn().mockResolvedValue(undefined);
 const executeJavaScript = vi.fn().mockResolvedValue(undefined);
 
 vi.mock(`@core/session-recorder.service.js`, () => ({
-	default: { getSession: vi.fn(), setReplaying: vi.fn() }
+	default: { getSession: vi.fn(), setReplaying: vi.fn(), isUnknownSchema: vi.fn().mockReturnValue(false) }
 }));
 
 vi.mock(`@core/window.popups.js`, () => ({
