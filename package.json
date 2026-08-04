@@ -4,15 +4,13 @@
   "type": "module",
   "description": "Simplified Hands-on Testing for Web Applications",
   "main": "./out/main/index.js",
-  "packageName": "Eyas Desktop",
-  "author": "Cycosoft, LLC (https://cycosoft.com)",
-  "homepage": "https://github.com/cycosoft/Eyas/releases",
-  "publishConfig": {
-    "access": "public"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/cycosoft/Eyas.git"
+	"packageName": "Eyas Desktop",
+	"author": "Cycosoft, LLC (https://cycosoft.com)",
+	"homepage": "https://github.com/cycosoft/Eyas/releases",
+	"publishConfig": { "access": "public" },
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/cycosoft/Eyas.git"
   },
   "scripts": {
     "_______________DEV_______________": "",
@@ -91,7 +89,6 @@
   },
   "devDependencies": {
     "@electron-toolkit/tsconfig": "^2.0.0",
-    "@eslint/js": "^10.0.1",
     "@fontsource/manrope": "^5.3.0",
     "@mdi/font": "^7.4.47",
     "@playwright/test": "^1.62.1",
@@ -107,15 +104,13 @@
     "dotenv-cli": "^11.0.0",
     "electron": "^43.2.0",
     "electron-builder": "^26.15.3",
-    "electron-vite": "^5.0.0",
-    "eslint": "^10.8.0",
-    "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-jsonc": "^3.3.0",
-    "eslint-plugin-vue": "^10.10.0",
-    "globals": "^17.8.0",
-    "happy-dom": "^20.11.1",
-    "knip": "^6.30.0",
-    "npm-check-updates": "^23.0.0",
+		"electron-vite": "^5.0.0",
+		"eslint": "^10.8.0",
+		"eslint-plugin-import": "^2.32.0",
+		"eslint-plugin-vue": "^10.10.0",
+		"happy-dom": "^20.11.1",
+		"knip": "^6.30.0",
+		"npm-check-updates": "^23.0.0",
     "pinia": "^4.0.2",
     "sass": "^1.102.0",
     "tsx": "^4.23.1",
@@ -128,12 +123,10 @@
     "vue": "^3.5.40",
     "vue-eslint-parser": "^10.4.1",
     "vue-tsc": "^3.3.9",
-    "vuetify": "^4.1.7"
-  },
-  "overrides": {
-    "eslint-plugin-import": {
-      "eslint": "$eslint"
-    },
-    "semver": "$semver"
-  }
+		"vuetify": "^4.1.7"
+	},
+	"overrides": {
+		"eslint-plugin-import": { "eslint": "$eslint" },
+		"semver": "$semver"
+	}
 }
