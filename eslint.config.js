@@ -1,11 +1,11 @@
 import tseslint from 'typescript-eslint';
 import pluginVue from 'eslint-plugin-vue';
 import pluginImport from 'eslint-plugin-import';
-import { base } from '@cycosoft/eslint-config/base';
-import { vue } from '@cycosoft/eslint-config/vue';
-import { electron } from '@cycosoft/eslint-config/electron';
-import { tests } from '@cycosoft/eslint-config/tests';
-import { baseSelectors } from '@cycosoft/eslint-config/restricted-syntax';
+import { base } from '@cycosoft/eslint/base';
+import { vue } from '@cycosoft/eslint/vue';
+import { electron } from '@cycosoft/eslint/electron';
+import { tests } from '@cycosoft/eslint/tests';
+import { baseSelectors } from '@cycosoft/eslint/restricted-syntax';
 
 export default tseslint.config(
 	{
