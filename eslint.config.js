@@ -4,6 +4,7 @@ import pluginImport from 'eslint-plugin-import';
 import { base } from '@cycosoft/eslint-config/base';
 import { vue } from '@cycosoft/eslint-config/vue';
 import { electron } from '@cycosoft/eslint-config/electron';
+import { tests } from '@cycosoft/eslint-config/tests';
 import { baseSelectors } from '@cycosoft/eslint-config/restricted-syntax';
 
 export default tseslint.config(
@@ -26,6 +27,7 @@ export default tseslint.config(
 	...base,
 	...vue,
 	...electron,
+	...tests,
 
 	{
 		// Eyas-specific globals and TS project wiring
