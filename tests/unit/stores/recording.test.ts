@@ -142,4 +142,63 @@ describe(`useRecordingStore`, () => {
 		store.setPlaybackStatus({ status: `playing` });
 		expect(store.playbackSchemaWarning).toBeNull();
 	});
+
+	const SUMMARY = { sessionId: `s1`, title: `t`, status: `stopped` as const, startedAt: 1, stoppedAt: 2, stepCount: 0 };
+
+	test(`setSessionsList stores the sessions received from the recorder-list-sessions IPC reply`, () => {
+		const store = useRecordingStore();
+		store.setSessionsList([SUMMARY]);
+		expect(store.savedSessions).toEqual([SUMMARY]);
+	});
+
+	test(`selectedSession resolves the summary matching the selected sessionId`, () => {
+		const store = useRecordingStore();
+		store.setSessionsList([SUMMARY]);
+		store.selectSession(`s1`);
+		expect(store.selectedSession).toEqual(SUMMARY);
+	});
+
+	test(`selectedSession is null when nothing is selected`, () => {
+		const store = useRecordingStore();
+		store.setSessionsList([SUMMARY]);
+		expect(store.selectedSession).toBeNull();
+	});
+
+	test(`selectSession clears any previously loaded detail so the old session's steps don't flash before the new ones load`, () => {
+		const store = useRecordingStore();
+		store.setSelectedSessionDetail({ sessionId: `s1`, recording: { title: `t`, steps: [] } } as never);
+		store.selectSession(`s1`);
+		expect(store.selectedSessionDetail).toBeNull();
+	});
+
+	test(`setSelectedSessionDetail ignores a reply for a session that is no longer selected`, () => {
+		const store = useRecordingStore();
+		store.selectSession(`s1`);
+		store.setSelectedSessionDetail({ sessionId: `stale-id`, recording: { title: `t`, steps: [] } } as never);
+		expect(store.selectedSessionDetail).toBeNull();
+	});
+
+	test(`backToBrowser clears the selected session and its loaded detail`, () => {
+		const store = useRecordingStore();
+		store.setSessionsList([SUMMARY]);
+		store.selectSession(`s1`);
+		store.setSelectedSessionDetail({ sessionId: `s1`, recording: { title: `t`, steps: [] } } as never);
+
+		store.backToBrowser();
+
+		expect(store.selectedSession).toBeNull();
+		expect(store.selectedSessionDetail).toBeNull();
+	});
+
+	test(`togglePanel clears the selected session when the panel closes`, () => {
+		const store = useRecordingStore();
+		store.setSessionsList([SUMMARY]);
+		store.selectSession(`s1`);
+		store.isPanelOpen = true;
+
+		store.togglePanel();
+
+		expect(store.isPanelOpen).toBe(false);
+		expect(store.selectedSession).toBeNull();
+	});
 });

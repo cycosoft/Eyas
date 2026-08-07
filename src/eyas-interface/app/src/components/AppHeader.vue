@@ -208,7 +208,7 @@ import { onMounted, watch, toRefs, computed } from 'vue';
 import { useTheme } from 'vuetify';
 import type { ChannelName } from '@registry/primitives.js';
 import type { RecorderStatusPayload } from '@registry/recording.js';
-import type { RecorderPlaybackStatusPayload } from '@registry/ipc.js';
+import type { RecorderPlaybackStatusPayload, RecorderSessionsListedPayload, RecorderSessionLoadedPayload } from '@registry/ipc.js';
 import {
 	groups, state, browserControls, isControlDisabled, handleBrowserControlClick,
 	goBack, goForward, reload, goHome, handleBroadcastClick, activate,
@@ -245,6 +245,8 @@ onMounted(() => {
 	window.eyas?.receive(`update-status-updated` as ChannelName, handleUpdateStatusUpdate);
 	window.eyas?.receive(`recorder-status-updated` as ChannelName, (...args: unknown[]) => recordingStore.setFromIpc(args[0] as RecorderStatusPayload));
 	window.eyas?.receive(`recorder-playback-status` as ChannelName, (...args: unknown[]) => recordingStore.setPlaybackStatus(args[0] as RecorderPlaybackStatusPayload));
+	window.eyas?.receive(`recorder-sessions-listed` as ChannelName, (...args: unknown[]) => recordingStore.setSessionsList(args[0] as RecorderSessionsListedPayload));
+	window.eyas?.receive(`recorder-session-loaded` as ChannelName, (...args: unknown[]) => recordingStore.setSelectedSessionDetail(args[0] as RecorderSessionLoadedPayload));
 });
 // expose for testing
 defineExpose({

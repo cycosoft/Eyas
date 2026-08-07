@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron';
 import type { CoreContext } from '@registry/eyas-core.js';
-import type { RecorderFlushStepsPayload, RecorderReplayRequestPayload } from '@registry/ipc.js';
+import type { RecorderFlushStepsPayload, RecorderReplayRequestPayload, RecorderGetSessionPayload } from '@registry/ipc.js';
 import type { SessionId } from '@registry/primitives.js';
 import * as sessionRecorderService from './session-recorder.service.js';
 import sessionPlaybackService from './session-playback.service.js';
@@ -35,5 +35,21 @@ export function initRecorderIpcListeners(ctx: CoreContext): void {
 
 	ipcMain.on(`recorder-replay-stop`, () => {
 		sessionPlaybackService.stopPlayback();
+	});
+
+	ipcMain.on(`recorder-list-sessions`, () => {
+		sessionRecorderService.listSessions(ctx).then(sessions => {
+			ctx.$eyasLayer?.webContents?.send(`recorder-sessions-listed`, sessions);
+		}).catch(err => {
+			console.error(`[IPC-HANDLERS-RECORDER] failed to list sessions:`, err);
+		});
+	});
+
+	ipcMain.on(`recorder-get-session`, (_event, payload: RecorderGetSessionPayload) => {
+		sessionRecorderService.getSession(ctx, payload.sessionId as SessionId).then(session => {
+			ctx.$eyasLayer?.webContents?.send(`recorder-session-loaded`, session);
+		}).catch(err => {
+			console.error(`[IPC-HANDLERS-RECORDER] failed to load session:`, err);
+		});
 	});
 }

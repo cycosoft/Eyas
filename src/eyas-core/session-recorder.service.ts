@@ -5,6 +5,7 @@ import fs from 'fs-extra';
 const { outputJson } = fs;
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { EyasRecordingEnvelope, RecordingStep, LegacySelectorGroup } from '@registry/recording.js';
+import type { RecordingSessionSummary } from '@registry/ipc.js';
 import type { ProjectId, TestId, FilePath, DomainUrl, SessionId, IsActive, PopupId, IsUnknownSchema, SchemaVersion } from '@registry/primitives.js';
 
 const CURRENT_SCHEMA_VERSION = `1.2.0`;
@@ -179,6 +180,54 @@ async function getSession(ctx: CoreContext, sessionId: SessionId): Promise<EyasR
 	return _upgradeSession(await fs.readJson(savedPath));
 }
 
+/** Reads a session file into a listing summary, or null if it's missing or unreadable — a corrupt/partial file must not blank the whole listing. */
+async function _readSummary(filePath: FilePath): Promise<RecordingSessionSummary | null> {
+	try {
+		if (!(await fs.pathExists(filePath))) { return null; }
+		const session: EyasRecordingEnvelope = await fs.readJson(filePath);
+		return {
+			sessionId: session.sessionId,
+			title: session.title,
+			status: session.status,
+			startedAt: session.startedAt,
+			stoppedAt: session.stoppedAt,
+			stepCount: session.recording.steps.length
+		};
+	} catch (err) {
+		console.error(`[SESSION-RECORDER-SERVICE] skipping unreadable session file ${filePath}:`, err);
+		return null;
+	}
+}
+
+/** Lists every recording found for the current project — one per testId's active-session.json, plus anything already in `saved/` — newest first. Missing directories yield an empty list rather than an error, since a fresh install has no sessions dir at all. */
+async function listSessions(ctx: CoreContext): Promise<RecordingSessionSummary[]> {
+	const projectId = (ctx.$config?.meta.projectId || `default`) as ProjectId;
+	const projectDir = _path.join(_sessionsDir(), projectId);
+	if (!(await fs.pathExists(projectDir))) { return []; }
+
+	const entries = await fs.readdir(projectDir, { withFileTypes: true });
+	const summaries: RecordingSessionSummary[] = [];
+
+	for (const entry of entries) {
+		if (!entry.isDirectory()) { continue; }
+
+		if (entry.name === `saved`) {
+			const savedDir = _path.join(projectDir, `saved`);
+			const savedFiles = await fs.readdir(savedDir);
+			for (const file of savedFiles) {
+				const summary = await _readSummary(_path.join(savedDir, file) as FilePath);
+				if (summary) { summaries.push(summary); }
+			}
+			continue;
+		}
+
+		const summary = await _readSummary(_path.join(projectDir, entry.name, `active-session.json`) as FilePath);
+		if (summary) { summaries.push(summary); }
+	}
+
+	return summaries.sort((a, b) => b.startedAt - a.startedAt);
+}
+
 export {
 	startSession,
 	appendSteps,
@@ -186,6 +235,7 @@ export {
 	appendCloseWindowStep,
 	stopRecording,
 	getSession,
+	listSessions,
 	setReplaying,
 	isReplaying,
 	isUnknownSchema
@@ -201,6 +251,7 @@ export default {
 	isReplaying,
 	getActiveSession,
 	getSession,
+	listSessions,
 	isUnknownSchema,
 	_setSessionsDir
 };

@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia';
 import type { RecordingState } from '@/types/recording.js';
-import type { IsActive, ProgressRatio, Count, DetailText } from '@registry/primitives.js';
+import type { IsActive, ProgressRatio, Count, DetailText, SessionId } from '@registry/primitives.js';
 
 const MISMATCH_DETAIL_LIMIT: Count = 5;
 import type { RecorderStatusPayload } from '@registry/recording.js';
-import type { RecorderPlaybackStatusPayload } from '@registry/ipc.js';
+import type { RecorderPlaybackStatusPayload, RecorderSessionsListedPayload, RecorderSessionLoadedPayload, RecordingSessionSummary } from '@registry/ipc.js';
 
 export default defineStore(`recording`, {
 	state: (): RecordingState => ({
@@ -14,6 +14,9 @@ export default defineStore(`recording`, {
 		playbackMismatches: [],
 		playbackSchemaWarning: null,
 		playbackStatus: null,
+		savedSessions: [],
+		selectedSessionDetail: null,
+		selectedSessionId: null,
 		sessionId: null,
 		status: null,
 		totalSteps: 0
@@ -38,12 +41,39 @@ export default defineStore(`recording`, {
 			const hidden: Count = state.playbackMismatches.length - lines.length;
 			if (hidden > 0) { lines.push(`...and ${hidden} more`); }
 			return lines.join(`\n`);
-		}
+		},
+
+		selectedSession: (state): RecordingSessionSummary | null => (
+			state.savedSessions.find(session => session.sessionId === state.selectedSessionId) ?? null
+		)
 	},
 
 	actions: {
 		togglePanel(): void {
 			this.isPanelOpen = !this.isPanelOpen;
+			if (!this.isPanelOpen) {
+				this.selectedSessionId = null;
+				this.selectedSessionDetail = null;
+			}
+		},
+
+		setSessionsList(payload: RecorderSessionsListedPayload): void {
+			this.savedSessions = payload;
+		},
+
+		selectSession(sessionId: SessionId): void {
+			this.selectedSessionId = sessionId;
+			this.selectedSessionDetail = null;
+		},
+
+		setSelectedSessionDetail(payload: RecorderSessionLoadedPayload): void {
+			if (payload?.sessionId !== this.selectedSessionId) { return; }
+			this.selectedSessionDetail = payload;
+		},
+
+		backToBrowser(): void {
+			this.selectedSessionId = null;
+			this.selectedSessionDetail = null;
 		},
 
 		setFromIpc(payload: RecorderStatusPayload): void {

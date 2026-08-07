@@ -260,6 +260,62 @@ describe(`sessionRecorderService.getSession`, () => {
 	});
 });
 
+// ─── listSessions ───────────────────────────────────────────────────────────
+
+describe(`sessionRecorderService.listSessions`, () => {
+	test(`returns an empty list when the project has never recorded a session`, async () => {
+		const ctx = makeCtx();
+		const sessions = await service.listSessions(ctx);
+		expect(sessions).toEqual([]);
+	});
+
+	test(`lists a summary for each testId's active-session.json under the project, newest first`, async () => {
+		const ctx = makeCtx();
+		await outputJson(join(tmpDir, `test-proj`, `run-a`, `active-session.json`), {
+			sessionId: `session-a`, title: `2024-01-01T00:00:00.000Z`, status: `stopped`,
+			startedAt: 1000, stoppedAt: 2000, recording: { steps: [{ type: `navigate`, url: `x`, timestamp: 1 }] }
+		});
+		await outputJson(join(tmpDir, `test-proj`, `run-b`, `active-session.json`), {
+			sessionId: `session-b`, title: `2024-02-01T00:00:00.000Z`, status: `recording`,
+			startedAt: 5000, stoppedAt: null, recording: { steps: [] }
+		});
+
+		const sessions = await service.listSessions(ctx);
+
+		expect(sessions).toEqual([
+			{ sessionId: `session-b`, title: `2024-02-01T00:00:00.000Z`, status: `recording`, startedAt: 5000, stoppedAt: null, stepCount: 0 },
+			{ sessionId: `session-a`, title: `2024-01-01T00:00:00.000Z`, status: `stopped`, startedAt: 1000, stoppedAt: 2000, stepCount: 1 }
+		]);
+	});
+
+	test(`skips a malformed session file instead of failing the whole listing`, async () => {
+		const ctx = makeCtx();
+		await outputJson(join(tmpDir, `test-proj`, `run-good`, `active-session.json`), {
+			sessionId: `session-good`, title: `2024-01-01T00:00:00.000Z`, status: `stopped`,
+			startedAt: 1000, stoppedAt: 2000, recording: { steps: [] }
+		});
+		// missing 'recording' throws when the service reads .recording.steps.length — the case a
+		// truncated or hand-edited file produces
+		await outputJson(join(tmpDir, `test-proj`, `run-bad`, `active-session.json`), { sessionId: `session-bad`, status: `stopped` });
+
+		const sessions = await service.listSessions(ctx);
+
+		expect(sessions.map(s => s.sessionId)).toEqual([`session-good`]);
+	});
+
+	test(`includes recordings already written to sessions/{projectId}/saved/`, async () => {
+		const ctx = makeCtx();
+		await outputJson(join(tmpDir, `test-proj`, `saved`, `saved-session.json`), {
+			sessionId: `saved-session`, title: `2024-03-01T00:00:00.000Z`, status: `stopped`,
+			startedAt: 9000, stoppedAt: 9500, recording: { steps: [] }
+		});
+
+		const sessions = await service.listSessions(ctx);
+
+		expect(sessions.map(s => s.sessionId)).toEqual([`saved-session`]);
+	});
+});
+
 // ─── stopRecording ──────────────────────────────────────────────────────────
 
 describe(`sessionRecorderService.stopRecording`, () => {

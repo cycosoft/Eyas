@@ -1,7 +1,7 @@
 import type { ProjectId, DomainUrl, IsActive, SettingKey, HashString, Username, PasswordPlain, ZoomFactor, StepCount, DetailText } from './primitives.js';
 import type { EnvironmentChoice, Viewport, ViewportSize, EnvironmentChoiceWithTitle } from './core.js';
 import type { NavItem } from './components.js';
-import type { RecordingStep, ReplayMismatch } from './recording.js';
+import type { RecordingStep, ReplayMismatch, EyasRecordingEnvelope } from './recording.js';
 
 /** Payload for selecting a test environment */
 export type EnvironmentSelectedPayload = DomainUrl | EnvironmentChoice;
@@ -58,7 +58,9 @@ export const VALID_SEND_CHANNELS = [
 	`recorder-stop`,
 	`recorder-record-start`,
 	`recorder-replay-request`,
-	`recorder-replay-stop`
+	`recorder-replay-stop`,
+	`recorder-list-sessions`,
+	`recorder-get-session`
 ] as const;
 
 export const VALID_RECEIVE_CHANNELS = [
@@ -82,7 +84,9 @@ export const VALID_RECEIVE_CHANNELS = [
 	`show-no-update-modal`,
 	`show-save-credential-modal`,
 	`recorder-status-updated`,
-	`recorder-playback-status`
+	`recorder-playback-status`,
+	`recorder-sessions-listed`,
+	`recorder-session-loaded`
 ] as const;
 
 /** Payload for the 'navigation-state-updated' IPC event */
@@ -196,4 +200,29 @@ export type RecorderPlaybackStatusPayload = {
 	status: `playing` | `stopped` | `failed`;
 	totalSteps?: StepCount;
 };
+
+/**
+ * Lightweight listing entry for a saved/active recording, sent over `recorder-sessions-listed`
+ * instead of the full envelope — the browser view only needs enough to render a row, not every
+ * step, so a session with thousands of steps doesn't get serialized just to list it.
+ */
+export type RecordingSessionSummary = {
+	sessionId: string;
+	title: string;
+	status: `recording` | `stopped`;
+	startedAt: number;
+	stoppedAt: number | null;
+	stepCount: StepCount;
+};
+
+/** Payload for the 'recorder-sessions-listed' IPC event */
+export type RecorderSessionsListedPayload = RecordingSessionSummary[];
+
+/** Payload for the 'recorder-get-session' IPC event */
+export type RecorderGetSessionPayload = {
+	sessionId: string;
+};
+
+/** Payload for the 'recorder-session-loaded' IPC event; null when the requested session no longer exists on disk. */
+export type RecorderSessionLoadedPayload = EyasRecordingEnvelope | null;
 
