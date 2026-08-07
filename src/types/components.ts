@@ -7,6 +7,7 @@ type ModalType = `modal` | `dialog`;
 export type ModalBackgroundProps = {
 	modelValue: IsVisible;
 	contentVisible: IsVisible;
+	scrim?: IsVisible;
 }
 
 export type ModalWrapperProps = {
@@ -21,6 +22,7 @@ export type ModalWrapperEmits = {
 
 export type EyasModalProps = {
 	modelValue: IsVisible;
+	mode?: `modal` | `panel`;
 }
 
 export type EyasModalEmits = {

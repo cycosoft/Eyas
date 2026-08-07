@@ -9,6 +9,7 @@ import type { RecorderPlaybackStatusPayload } from '@registry/ipc.js';
 export default defineStore(`recording`, {
 	state: (): RecordingState => ({
 		completedSteps: 0,
+		isPanelOpen: false,
 		playbackError: null,
 		playbackMismatches: [],
 		playbackSchemaWarning: null,
@@ -41,6 +42,10 @@ export default defineStore(`recording`, {
 	},
 
 	actions: {
+		togglePanel(): void {
+			this.isPanelOpen = !this.isPanelOpen;
+		},
+
 		setFromIpc(payload: RecorderStatusPayload): void {
 			this.status = payload.isRecording ? `recording` : `stopped`;
 			this.sessionId = payload.sessionId;

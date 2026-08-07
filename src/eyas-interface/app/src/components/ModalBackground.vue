@@ -2,7 +2,7 @@
 	<v-overlay
 		class="custom-background"
 		:model-value="modelValue"
-		:scrim="true"
+		:scrim="scrim"
 		@after-leave="emit(`after-leave`)"
 	>
 		<template v-if="contentVisible">
@@ -29,7 +29,9 @@ type Emits = {
 	[`after-leave`]: [];
 };
 
-defineProps<ModalBackgroundProps>();
+withDefaults(defineProps<ModalBackgroundProps>(), {
+	scrim: true
+});
 const emit = defineEmits<Emits>();
 
 const openInBrowser = (url: DomainUrl): void => {

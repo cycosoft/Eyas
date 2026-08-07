@@ -178,6 +178,28 @@ describe(`AppHeaderRecordingControls`, () => {
 		expect(warning.text()).toContain(`9.9.9`);
 	});
 
+	test(`shows the panel toggle button even when idle (neither recording nor stopped)`, () => {
+		wrapper = mountWithStatus(null, null);
+
+		expect(wrapper.find(`[data-qa="btn-recording-panel-toggle"]`).exists()).toBe(true);
+	});
+
+	test(`keeps the panel toggle button visible while recording`, () => {
+		wrapper = mountWithStatus(`recording`, null);
+
+		expect(wrapper.find(`[data-qa="btn-recording-panel-toggle"]`).exists()).toBe(true);
+	});
+
+	test(`toggles the recording store's panel-open flag when clicked`, async () => {
+		wrapper = mountWithStatus(null, null);
+		const store = useRecordingStore();
+		const togglePanel = vi.spyOn(store, `togglePanel`);
+
+		await wrapper.find(`[data-qa="btn-recording-panel-toggle"]`).trigger(`click`);
+
+		expect(togglePanel).toHaveBeenCalled();
+	});
+
 	test(`shows the schema warning next to the findings it explains, not instead of them`, async () => {
 		wrapper = mountWithStatus(`stopped`, `stopped`);
 		const store = useRecordingStore();

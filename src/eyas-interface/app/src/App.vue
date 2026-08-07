@@ -13,6 +13,7 @@
 		<WhatsNewModal />
 		<UpdateReadyModal />
 		<NoUpdateModal />
+		<RecordingPanel />
 	</v-app>
 </template>
 
@@ -35,6 +36,7 @@ import SaveCredentialModal from '@/components/SaveCredentialModal.vue';
 import WhatsNewModal from '@/components/WhatsNewModal.vue';
 import UpdateReadyModal from '@/components/UpdateReadyModal.vue';
 import NoUpdateModal from '@/components/NoUpdateModal.vue';
+import RecordingPanel from '@/components/RecordingPanel.vue';
 import changelogData from '@/CHANGELOG.json';
 import type { ChannelName } from '@registry/primitives.js';
 

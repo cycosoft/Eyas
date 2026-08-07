@@ -2,18 +2,21 @@
 	<ModalBackground
 		:model-value="modelValue"
 		:content-visible="backgroundContentVisible"
+		:scrim="showScrim"
 		@after-leave="hideUi"
 	>
 		<v-dialog
 			:model-value="modelValue"
-			max-width="850"
-			width="65vw"
-			min-width="320"
+			:max-width="props.mode === `panel` ? undefined : 850"
+			:width="props.mode === `panel` ? undefined : '65vw'"
+			:min-width="props.mode === `panel` ? undefined : 320"
+			:content-class="props.mode === `panel` ? `eyas-modal-panel-content` : undefined"
+			:style="props.mode === `panel` ? panelStyle : undefined"
 			persistent
 			:scrim="false"
 			@update:model-value="emit(`update:modelValue`, $event)"
 		>
-			<v-card class="eyas-modal">
+			<v-card class="eyas-modal" :class="{ 'eyas-modal--panel': props.mode === `panel` }">
 				<div v-if="$slots.title" class="eyas-modal__header">
 					<slot name="title" />
 				</div>
@@ -33,11 +36,15 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import ModalStore from '@/stores/modals.js';
+import useRecordingStore from '@/stores/recording.js';
 import ModalBackground from '@/components/ModalBackground.vue';
+import { EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
 import type { EyasModalProps, EyasModalEmits } from '@registry/components.js';
 import type { ModalId, IsVisible, ChannelName } from '@registry/primitives.js';
 
-const props = defineProps<EyasModalProps>();
+const props = withDefaults(defineProps<EyasModalProps>(), {
+	mode: `modal`
+});
 
 const emit = defineEmits<EyasModalEmits>();
 
@@ -46,6 +53,18 @@ const id = ref<ModalId>(window.crypto.randomUUID() as ModalId);
 const backgroundContentVisible = computed((): IsVisible => {
 	return ModalStore().lastOpenedById === id.value;
 });
+
+const showScrim = computed((): IsVisible => {
+	// a panel stays out of the way of an in-progress test rather than dimming it, so the tester can
+	// still watch the recording/replay happen underneath
+	if (props.mode !== `panel`) { return true; }
+	const recordingStore = useRecordingStore();
+	return !(recordingStore.isRecording || recordingStore.isPlaying);
+});
+
+const panelStyle = {
+	'--eyas-panel-top': `calc(${EYAS_HEADER_HEIGHT}px + 1rem)`
+};
 
 watch(() => props.modelValue, (isOpen: IsVisible) => {
 	if (isOpen) {
@@ -88,6 +107,23 @@ watch(() => ModalStore().closeAllCounter, () => {
 	display: flex !important;
 	flex-direction: column !important;
 	max-height: 90vh !important;
+}
+
+.eyas-modal--panel {
+	max-height: none !important;
+	height: auto;
+	width: 100%;
+}
+
+:deep(.eyas-modal-panel-content) {
+	position: fixed !important;
+	top: var(--eyas-panel-top);
+	right: 1rem;
+	bottom: 1rem;
+	left: auto !important;
+	transform: none !important;
+	width: 380px;
+	max-width: 380px;
 }
 
 .eyas-modal__header {
