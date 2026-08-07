@@ -55,11 +55,11 @@ const backgroundContentVisible = computed((): IsVisible => {
 });
 
 const showScrim = computed((): IsVisible => {
-	// a panel stays out of the way of an in-progress test rather than dimming it, so the tester can
-	// still watch the recording/replay happen underneath
+	// a panel stays out of the way of an in-progress replay rather than dimming it, so the tester can
+	// still watch the run happen underneath; recording is unaffected since nothing to watch is on screen
 	if (props.mode !== `panel`) { return true; }
 	const recordingStore = useRecordingStore();
-	return !(recordingStore.isRecording || recordingStore.isPlaying);
+	return !recordingStore.isPlaying;
 });
 
 const panelStyle = {

@@ -50,11 +50,11 @@ describe(`EyasModal`, () => {
 		expect(wrapper.findComponent({ name: `VOverlay` }).props(`scrim`)).toBe(true);
 	});
 
-	test(`suppresses the scrim in panel mode while a recording is in progress`, () => {
+	test(`still shows the scrim in panel mode while a recording is in progress, since replay is the only case where dimming would hide something worth watching`, () => {
 		useRecordingStore().status = `recording`;
 		const wrapper = mountModal({ modelValue: true, mode: `panel` });
 
-		expect(wrapper.findComponent({ name: `VOverlay` }).props(`scrim`)).toBe(false);
+		expect(wrapper.findComponent({ name: `VOverlay` }).props(`scrim`)).toBe(true);
 	});
 
 	test(`suppresses the scrim in panel mode while a replay is in progress`, () => {
