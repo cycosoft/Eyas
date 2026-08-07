@@ -258,6 +258,16 @@ describe(`sessionRecorderService.getSession`, () => {
 		const loaded = await service.getSession(ctx, `some-old-unrelated-id` as never);
 		expect(loaded).toBeNull();
 	});
+
+	test(`finds a session recorded under a different testId than the one currently active, since listSessions surfaces every testId's recording for the project`, async () => {
+		const ctx = makeCtx();
+		const otherPath = join(tmpDir, `test-proj`, `other-test-run`, `active-session.json`);
+		await outputJson(otherPath, { sessionId: `other-run-session`, projectId: `test-proj`, status: `stopped`, recording: { steps: [] } });
+
+		const loaded = await service.getSession(ctx, `other-run-session` as never);
+
+		expect(loaded?.sessionId).toBe(`other-run-session`);
+	});
 });
 
 // ─── listSessions ───────────────────────────────────────────────────────────

@@ -166,18 +166,27 @@ async function getSession(ctx: CoreContext, sessionId: SessionId): Promise<EyasR
 	if (_session?.sessionId === sessionId) { return _session; }
 
 	const projectId = (ctx.$config?.meta.projectId || `default`) as ProjectId;
-	const testId = (ctx.$config?.meta.testId || `default`) as TestId;
 
-	const activePath = _activeSessionPath(projectId, testId);
-	if (await fs.pathExists(activePath)) {
+	const savedPath = _savedSessionPath(projectId, sessionId);
+	if (await fs.pathExists(savedPath)) { return _upgradeSession(await fs.readJson(savedPath)); }
+
+	// listSessions surfaces every testId's active-session.json for this project, not just the
+	// currently-running test's — so a requested session may live under any of them.
+	const projectDir = _path.join(_sessionsDir(), projectId);
+	if (!(await fs.pathExists(projectDir))) { return null; }
+
+	const entries = await fs.readdir(projectDir, { withFileTypes: true });
+	for (const entry of entries) {
+		if (!entry.isDirectory() || entry.name === `saved`) { continue; }
+
+		const activePath = _activeSessionPath(projectId, entry.name as TestId);
+		if (!(await fs.pathExists(activePath))) { continue; }
+
 		const active: EyasRecordingEnvelope = await fs.readJson(activePath);
 		if (active.sessionId === sessionId) { return _upgradeSession(active); }
 	}
 
-	const savedPath = _savedSessionPath(projectId, sessionId);
-	if (!(await fs.pathExists(savedPath))) { return null; }
-
-	return _upgradeSession(await fs.readJson(savedPath));
+	return null;
 }
 
 /** Reads a session file into a listing summary, or null if it's missing or unreadable — a corrupt/partial file must not blank the whole listing. */
