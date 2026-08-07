@@ -86,7 +86,8 @@ export const VALID_RECEIVE_CHANNELS = [
 	`recorder-status-updated`,
 	`recorder-playback-status`,
 	`recorder-sessions-listed`,
-	`recorder-session-loaded`
+	`recorder-session-loaded`,
+	`recorder-replay-finished`
 ] as const;
 
 /** Payload for the 'navigation-state-updated' IPC event */

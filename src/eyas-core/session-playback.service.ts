@@ -1,6 +1,6 @@
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { RecordingStep, InputStep, KeyDownStep, EyasRecordingEnvelope } from '@registry/recording.js';
-import type { SessionId, DurationMS, DomainUrl, PopupId, StepCount, StepIndex } from '@registry/primitives.js';
+import type { SessionId, DurationMS, DomainUrl, PopupId, StepCount, StepIndex, ChannelName } from '@registry/primitives.js';
 import type { RecorderPlaybackStatusPayload } from '@registry/ipc.js';
 import type { ReplaySpeedMode } from '@registry/settings.js';
 import sessionRecorderService from './session-recorder.service.js';
@@ -247,7 +247,13 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 		// under it, or the ring gets clipped mid-fade instead of animating away. Not awaited: playback
 		// has already finished and reported its final status by this point, so the collapse shouldn't
 		// hold up playSession()'s own caller
-		setTimeout(() => { ctx.toggleEyasUI(false, true); hideAllRecordingOverlays(); }, TEST_RUNNING_RING_FADE_MS);
+		// Collapsing is left to the renderer rather than forced here with toggleEyasUI(false, true):
+		// that call unconditionally broadcasts close-modals, which would yank the session panel shut
+		// even when the tester left it open to review the run that just finished.
+		setTimeout(() => {
+			ctx.$eyasLayer?.webContents?.send(`recorder-replay-finished` as ChannelName);
+			hideAllRecordingOverlays();
+		}, TEST_RUNNING_RING_FADE_MS);
 		try { webContents.debugger.detach(); } catch { /* not attached */ }
 	}
 }
