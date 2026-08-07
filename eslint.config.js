@@ -1,10 +1,11 @@
-import globals from 'globals';
-import pluginJs from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import pluginVue from 'eslint-plugin-vue';
-import vueEslintParser from 'vue-eslint-parser';
 import pluginImport from 'eslint-plugin-import';
-import eslintPluginJsonc from 'eslint-plugin-jsonc';
+import { base } from '@cycosoft/eslint/base';
+import { vue } from '@cycosoft/eslint/vue';
+import { electron } from '@cycosoft/eslint/electron';
+import { tests } from '@cycosoft/eslint/tests';
+import { baseSelectors } from '@cycosoft/eslint/restricted-syntax';
 
 export default tseslint.config(
 	{
@@ -23,169 +24,58 @@ export default tseslint.config(
 		]
 	},
 
-	// Base JS configuration
-	pluginJs.configs.recommended,
+	...base,
+	...vue,
+	...electron,
+	...tests,
 
 	{
-		// Global Language Options
+		// Eyas-specific globals and TS project wiring
 		languageOptions: {
 			globals: {
-				...globals.commonjs,
-				...globals.browser,
-				...globals.node,
 				eyas: `readonly`
 			},
 			parserOptions: {
-				ecmaVersion: `latest`,
-				sourceType: `module`
+				project: [`./tsconfig.node.json`, `./tsconfig.web.json`],
+				tsconfigRootDir: import.meta.dirname
 			}
 		}
 	},
 
-	// TypeScript Configurations
-	...tseslint.configs.recommended.map(config => ({
-		...config,
-		files: [`**/*.ts`, `**/*.vue`]
-	})),
-
-	// Vue Configurations
-	...pluginVue.configs[`flat/recommended`].map(config => ({
-		...config,
-		files: [`**/*.vue`]
-	})),
-
 	{
-		// TypeScript and Vue parser setup
-		files: [`**/*.ts`, `**/*.vue`],
-		languageOptions: {
-			parser: vueEslintParser,
-			parserOptions: {
-				parser: tseslint.parser,
-				project: [`./tsconfig.node.json`, `./tsconfig.web.json`], // Specified for accuracy
-				tsconfigRootDir: import.meta.dirname,
-				sourceType: `module`,
-				extraFileExtensions: [`.vue`]
-			}
-		},
-		rules: {
-			'@typescript-eslint/consistent-type-imports': `error`,
-			'@typescript-eslint/explicit-function-return-type': `error`
-		}
-	},
-
-	{
-		// Global Plugins and Rules
+		// Eyas-specific rule overrides
 		files: [`**/*.js`, `**/*.mjs`, `**/*.ts`, `**/*.vue`, `**/*.cjs`],
 		plugins: {
 			vue: pluginVue,
-			'@typescript-eslint': tseslint.plugin,
 			import: pluginImport
 		},
 		rules: {
-			// Basic Rules
-			'no-console': `off`,
 			'no-debugger': process.env.NODE_ENV === `production` ? `error` : `off`,
-			'no-unused-vars': `off`, // Handled by @typescript-eslint version
-			'no-redeclare': `off`, // Can be noisy with globals in separate configs
-			complexity: [`error`, 15],
-			'max-lines': [`error`, 300],
-			'max-lines-per-function': [`error`, { max: 50, skipBlankLines: true, skipComments: true, IIFEs: true }],
-			'max-params': [`error`, 4],
-			'import/max-dependencies': [`warn`, { max: 25 }],
+			'@typescript-eslint/no-var-requires': `warn`,
+
 			'no-restricted-imports': [`error`, {
 				patterns: [{
 					group: [`**/../**`, `../**`],
 					message: `Use path aliases (@core, @scripts, @registry, @assets, @interface, @setup, @root) instead of relative parent imports.`
 				}]
 			}],
-
-			// TS specific rule overrides
-			'@typescript-eslint/no-unused-vars': [`warn`, {
-				argsIgnorePattern: `^_`,
-				varsIgnorePattern: `^_`
-			}],
-			'@typescript-eslint/no-explicit-any': `error`, // No more "cheating" with any
-			'@typescript-eslint/no-require-imports': `warn`,
-			'@typescript-eslint/no-var-requires': `warn`,
-			'@typescript-eslint/consistent-type-definitions': [`error`, `type`],
-			'@typescript-eslint/no-non-null-assertion': `error`,
-
-			// Import Rules
-			'import/no-commonjs': `error`,
 			'import/no-relative-parent-imports': `warn`,
-			'import/extensions': [`error`, `always`, {
-				ignorePackages: true,
-				ts: `never`,
-				tsx: `never`,
-				js: `always`
-			}],
 
-			// Formatting Rules (User Preference: Tabs, Backticks, Always Semi)
-			indent: [`error`, `tab`],
-			quotes: [`error`, `backtick`],
-			semi: [`error`, `always`],
-			'comma-dangle': [`error`, `never`],
-			'quote-props': [`error`, `as-needed`],
-			'prefer-const': [`error`],
-			'arrow-parens': [`error`, `as-needed`],
-			'no-spaced-func': [`error`],
-			'no-trailing-spaces': [`error`],
-			'spaced-comment': [`error`, `always`],
-
-			// Restrict require('electron') with a helpful message
 			'no-restricted-syntax': [
 				`error`,
+				...baseSelectors,
 				{
 					selector: `CallExpression[callee.name='require'][arguments.0.value='electron']`,
 					message: `Do not use require('electron'). Import 'electronPath' from 'tests/e2e/eyas-utils.mjs' instead.`
 				},
 				{
-					selector: `ImportDeclaration[source.type='TemplateLiteral']`,
-					message: `Static imports must use standard quotes (single or double), not backticks.`
-				},
-				{
-					selector: `Identifier[name='__dirname']`,
-					message: `__dirname is not defined in ESM. Use import.meta.url or a helper instead.`
-				},
-				{
-					selector: `TSTypeLiteral:not(TSTypeAliasDeclaration > TSTypeLiteral)`,
-					message: `Do not use inline object types. Define a named interface/type in src/types/ instead.`
-				},
-				{
-					selector: `:matches(TSNumberKeyword, TSBooleanKeyword, TSStringKeyword, TSArrayType > :matches(TSNumberKeyword, TSBooleanKeyword, TSStringKeyword)):not(TSTypeAliasDeclaration *)`,
-					message: `Do not use raw primitives (or arrays of primitives) in type annotations or casts. Define a semantic type alias in src/types/ (e.g., type ViewportWidth = number) to provide context and maintainability.`
-				},
-				{
 					selector: `CallExpression[callee.property.name=/^(send|receive)$/]:matches([callee.object.name='eyas'], [callee.object.property.name='eyas']) > :matches(Literal, TemplateLiteral):first-child`,
 					message: `IPC channels must be typed using 'ChannelName'. Please use a cast (e.g., 'channel-name' as ChannelName) to ensure type safety and project-wide consistency.`
-				}
-			],
-
-			// Vue Specific Rules
-			'vue/no-static-inline-styles': `error`,
-			'vue/html-indent': [`error`, `tab`, {
-				alignAttributesVertically: false
-			}],
-			'vue/max-attributes-per-line': `off`,
-			'vue/multi-word-component-names': `off`,
-			'vue/component-api-style': [`error`, [`script-setup`]],
-			'vue/max-lines-per-block': [`error`, {
-				script: 150,
-				style: 100
-			}],
-			'vue/no-restricted-syntax': [
-				`error`,
-				{
-					selector: `VAttribute[directive=false][key.name='title']`,
-					message: `The 'title' attribute is not allowed on HTML elements as it cannot be styled and may be clipped in the Eyas Desktop UI. Use 'v-tooltip' instead once we have a solution for view bounds.`
-				},
-				{
-					selector: `VAttribute[directive=true][key.name.name='bind'][key.argument.name='title']`,
-					message: `Binding to 'title' is not allowed as it cannot be styled and may be clipped in the Eyas Desktop UI. Use 'v-tooltip' instead once we have a solution for view bounds.`
 				}
 			]
 		}
 	},
+
 	{
 		// Test-specific rules
 		files: [
@@ -203,18 +93,11 @@ export default tseslint.config(
 			// Warn about dynamic imports in test files - they are slower than static imports in Vitest
 			'no-restricted-syntax': [
 				`error`,
+				...baseSelectors,
 				{
 					// Match: await import('...') - ImportExpression is the AST node type for import()
 					selector: `AwaitExpression > ImportExpression`,
 					message: `Dynamic imports are slower than static imports. Use static imports instead for better performance.`
-				},
-				{
-					selector: `TSTypeLiteral:not(TSTypeAliasDeclaration > TSTypeLiteral)`,
-					message: `Do not use inline object types. Define a named interface/type in src/types/ instead.`
-				},
-				{
-					selector: `:matches(TSNumberKeyword, TSBooleanKeyword, TSStringKeyword, TSArrayType > :matches(TSNumberKeyword, TSBooleanKeyword, TSStringKeyword)):not(TSTypeAliasDeclaration *)`,
-					message: `Do not use raw primitives (or arrays of primitives) in type annotations or casts. Define a semantic type alias in src/types/ (e.g., type ViewportWidth = number) to provide context and maintainability.`
 				},
 				{
 					selector: `CallExpression[callee.property.name=/^(send|receive)$/]:matches([callee.object.name='eyas'], [callee.object.property.name='eyas']) > :matches(Literal, TemplateLiteral):first-child`,
@@ -251,22 +134,6 @@ export default tseslint.config(
 					message: `Conversion in progress: please rename this file to .ts.`
 				}
 			]
-		}
-	},
-
-	...eslintPluginJsonc.configs[`flat/recommended-with-json`],
-	{
-		files: [`**/*.json`],
-		rules: {
-			'jsonc/indent': [`error`, `tab`],
-			'jsonc/object-curly-newline': [`error`, {
-				multiline: true,
-				minProperties: 2
-			}],
-			'jsonc/object-property-newline': [`error`, {
-				allowAllPropertiesOnSameLine: true
-			}],
-			'jsonc/object-curly-spacing': [`error`, `always`]
 		}
 	}
 );

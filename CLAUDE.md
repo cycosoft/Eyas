@@ -87,37 +87,21 @@ Refer to module-level `AGENTS.md` files for area-specific patterns and constrain
 
 ## Claude Code Skills
 
-This project includes 18 reusable Claude Code skills in `.claude/skills/` organized by domain. They auto-invoke based on task context and provide domain-specific guidance.
-
-### Planning & Strategy
-- `/cognitive-pre-processor` — Strategic Narrative Planning before implementation
-- `/stakeholder-perspectives` — Persona-driven alignment checks (QA engineers, release engineers, CI/CD, app developers)
-
-### Configuration & Setup
-- `/claude-code-standards` — Official Claude Code configuration and best practices
-- `/config-audit` — Configuration optimization and redundancy detection
-- `/directory-semantics` — Directory structure and purpose disambiguation
+This project includes 7 Eyas-specific Claude Code skills in `.claude/skills/`. They auto-invoke based on task context and provide domain-specific guidance.
 
 ### Development & Implementation
 - `/vue-interface-standards` — Vue 3 components and Composition API
-- `/refactoring-patterns` — Code organization and line-limit resolution patterns
 - `/electron-core-standards` — Electron main process architecture and IPC patterns
 
 ### Testing & Quality
-- `/bdd-planning` — BDD test case headers before implementation
-- `/bdd-philosophy` — BDD mindset (Discovery/Formulation/Automation)
 - `/testing-standards` — Vitest execution, mocking, and test organization
 - `/type-registry-standards` — Type definitions and registry organization
-- `/typescript-gotchas` — Advanced patterns and debugging pitfalls
 
 ### Platform & Tooling
 - `/electron-e2e-testing` — Playwright E2E test strategies and synchronization
-- `/feature-flagging` — Logic bypassing and feature flag patterns
 - `/active-test-content-gating` — Post-mortem on visibility gating patterns
 
-### Efficiency & Quality
-- `/efficiency-tiers` — Development efficiency tiers (Tier 0–3) and verification gates
-- `/perform-post-mortem` — Retrospective protocol and technical debt capture
+Generic, project-agnostic skills (planning, BDD philosophy, post-mortems, refactoring patterns, TypeScript gotchas, feature flagging, config/directory auditing) now live at the user level (`~/.claude/skills/`) and apply automatically without needing an entry here — see `.claude/skills/README.md` for the full breakdown of what moved.
 
 **See `.claude/skills/README.md` for the complete skills index and auto-invocation triggers.**
 
@@ -125,9 +109,7 @@ This project includes 18 reusable Claude Code skills in `.claude/skills/` organi
 
 - **Adding a Vue component**: See `/vue-interface-standards` skill and `src/eyas-interface/app/src/components/AGENTS.md`
 - **Modifying Electron core**: See `/electron-core-standards` skill and `src/eyas-core/AGENTS.md`
-- **Writing tests**: See `/testing-standards` and `/bdd-philosophy` skills
-- **Refactoring large files**: See `/refactoring-patterns` skill
-- **Planning a feature**: See `/cognitive-pre-processor` skill for Strategic Narrative template
+- **Writing tests**: See `/testing-standards` skill
 
 ## Development Environment
 

@@ -1,6 +1,6 @@
 # Claude Code Skills for Eyas
 
-This directory contains 18 reusable Claude Code skills organized by domain. Each skill provides domain-specific guidance, standards, and protocols for the Eyas project.
+This directory contains 7 project-specific Claude Code skills for the Eyas project. Generic, project-agnostic skills that used to live here have moved to the user level (`~/.claude/skills/`) so they apply across all repos — see "Moved to User Level" below.
 
 ## Skill Sourcing
 
@@ -11,37 +11,6 @@ These are kept in sync by explicit manual updates, not automation. If you modify
 
 ## Skills Index
 
-### Planning & Strategy
-Skills for thinking through problems before implementation.
-
-- **`/cognitive-pre-processor`** — Strategic Narrative Planning
-  - **Purpose**: Mental modeling, decision frameworks, and verification before implementation
-  - **Use when**: Starting feature development, major refactoring, or architectural decisions
-  - **Provides**: Step-by-step planning protocol, strategic narrative template, stakeholder alignment
-
-- **`/stakeholder-perspectives`** — Persona-Driven Alignment (internal self-check)
-  - **Purpose**: Quick internal empathy simulation to sanity-check features/UI against target personas — not a real stakeholder consultation
-  - **Use when**: Starting feature development, planning major UI changes, or making architectural decisions
-  - **Provides**: Stakeholder persona profiles (QA engineers, release engineers, CI/CD integrators, Electron app developers), alignment checklist
-
-### Configuration & Project Setup
-Skills for managing project configuration and structure.
-
-- **`/claude-code-standards`** — Official Claude Code Configuration
-  - **Purpose**: Caches official Claude Code documentation, standards, and best practices to eliminate research
-  - **Use when**: Setting up Claude Code configuration, defining new skills, troubleshooting auto-invocation, or optimizing CLAUDE.md
-  - **Provides**: Frontmatter field definitions, auto-invocation mechanics, CLAUDE.md structure patterns
-
-- **`/config-audit`** — Configuration Optimization & Audit
-  - **Purpose**: Identify redundant fields, default values, and format violations across configuration files
-  - **Use when**: Reviewing multiple config files, reducing token cost, standardizing formats, or batch cleanup
-  - **Provides**: Audit workflow, redundancy detection, batch remediation patterns
-
-- **`/directory-semantics`** — Directory Structure & Purpose
-  - **Purpose**: Disambiguate why directories exist and clarify relationships between similar folders
-  - **Use when**: Understanding directory layouts, documenting folder purposes, or organizing multi-system structures
-  - **Provides**: Disambiguation patterns, ownership documentation, `.agents/` vs `.claude/` clarification
-
 ### Development & Implementation
 
 - **`/vue-interface-standards`** — Vue 3 Components & Composition API
@@ -50,11 +19,6 @@ Skills for managing project configuration and structure.
   - **Applies to**: `src/eyas-interface/**/*.vue`
   - **Provides**: Component patterns, prop design, state management, Vitest execution
 
-- **`/refactoring-patterns`** — Code Organization & Abstraction
-  - **Purpose**: Refactoring patterns including proxy pattern, logic extraction, and domain-first splitting
-  - **Use when**: Refactoring code exceeding `max-lines`, extracting logic, or improving code organization
-  - **Provides**: Incremental wrapping strategy, proxy patterns, state extraction, platform utility abstraction
-
 - **`/electron-core-standards`** — Electron Main Process Architecture
   - **Purpose**: Architectural standards and IPC communication patterns for the Electron main process
   - **Use when**: Implementing or modifying main-process logic in `src/eyas-core/`, or designing new IPC channels
@@ -62,16 +26,6 @@ Skills for managing project configuration and structure.
   - **Provides**: IPC patterns, functional module organization, error handling, object liveness guards (CRITICAL)
 
 ### Testing & Quality
-
-- **`/bdd-planning`** — Mandatory BDD Planning Gate
-  - **Purpose**: Convert implementation plans into empty BDD test cases (it.todo) before writing product code
-  - **Use when**: Before writing or editing any product code for a feature, bug fix, or behavior change
-  - **Provides**: Requirement extraction, BDD scaffold structure, iterative development cycle
-
-- **`/bdd-philosophy`** — BDD Mindset & Practices
-  - **Purpose**: BDD philosophy, Discovery/Formulation/Automation practices, and behavior-focused testing mindset
-  - **Use when**: Starting test-driven development, reviewing test failures from behavioral perspective, or coaching on BDD principles
-  - **Provides**: Three core practices, behavior vs. implementation distinctions, common anti-patterns, happy+sad path strategy
 
 - **`/testing-standards`** — BDD Testing Protocols & Execution
   - **Purpose**: BDD testing patterns, Vitest execution, mocking protocols, and test organization standards
@@ -85,11 +39,6 @@ Skills for managing project configuration and structure.
   - **Applies to**: `src/types/**/*.ts`
   - **Provides**: Naming conventions, file organization, registry-first strategy, alphabetical sorting
 
-- **`/typescript-gotchas`** — Debugging & Common Pitfalls
-  - **Purpose**: Advanced TypeScript patterns, mocking pitfalls, event handler quirks, and debugging type narrowing issues
-  - **Use when**: Debugging type errors, fixing mocking issues, or troubleshooting test failures related to typing
-  - **Provides**: Type leak prevention, test narrowing safety, API migration awareness, module-level constant mocking
-
 ### Platform & Tooling
 
 - **`/electron-e2e-testing`** — Playwright E2E Test Strategies
@@ -98,29 +47,20 @@ Skills for managing project configuration and structure.
   - **Applies to**: `tests/e2e/**/*.spec.mjs`
   - **Provides**: Process management, first-run modal handling, event-driven testing, macOS window resize gotchas
 
-- **`/feature-flagging`** — Logic Bypassing & Feature Flags
-  - **Purpose**: Standards for bypassing logic via feature flags while satisfying strict TSC unreachable code checks
-  - **Use when**: Temporarily disabling features, investigating logic flow, or implementing "coming soon" features
-  - **Provides**: Boolean toggle patterns, block comment patterns, centralized flag registry, cleanup requirements
-
 - **`/active-test-content-gating`** — Active Test Content Visibility (Post-Mortem)
   - **Purpose**: Architectural post-mortem and operational guidelines for implementing active test content visibility gating in UI components
   - **Use when**: Debugging or extending AppHeader/AppHeaderOmniHub, handling Electron IPC payloads, or troubleshooting Vitest state leaks
   - **Provides**: Production code efficiency patterns, test state isolation mandatory pattern, token reduction strategies
 
-### Efficiency & Quality Gates
+## Moved to User Level
 
-- **`/efficiency-tiers`** — Development Efficiency Tiers
-  - **Purpose**: Definitions of development efficiency tiers (Diagnostic, Cosmetic, Functional, Integration) and verification gates
-  - **Use when**: Determining the level of verification required for a task, or applying zero-gate diagnostic logging
-  - **Provides**: Tier definitions (Tier 0–3), workflow patterns, verification/bypass rules for each tier
+These were generic enough to apply beyond Eyas and now live in `~/.claude/skills/` (some merged with equivalents from other projects):
 
-### Documentation & Retrospectives
+- `/cognitive-pre-processor`, `/efficiency-tiers`, `/config-audit`, `/directory-semantics`, `/claude-code-standards`, `/bdd-philosophy` — moved as-is (project-agnostic already)
+- `/bdd-planning`, `/stakeholder-perspectives` (merged into user-level `stakeholder-review`), `/perform-post-mortem` (merged into user-level `post-mortem`) — merged with equivalent skills from other projects
+- `/feature-flagging`, `/refactoring-patterns`, `/typescript-gotchas` — generalized (removed Eyas-specific paths/naming) and moved
 
-- **`/perform-post-mortem`** — Retrospective Protocol
-  - **Purpose**: Post-mortem protocol for capturing technical debt, workflow improvements, and lessons learned
-  - **Use when**: After completing major features, debugging complex issues, or experiencing test failures
-  - **Provides**: Post-mortem template, churn analysis, reusable pattern extraction, assessment structure
+These are auto-loaded for every project without needing to live here.
 
 ## Auto-Invocation
 
@@ -128,22 +68,10 @@ These skills are configured to auto-invoke when Claude Code detects relevant key
 
 ```
 /active-test-content-gating
-/bdd-planning
-/bdd-philosophy
-/claude-code-standards
-/cognitive-pre-processor
-/config-audit
-/directory-semantics
-/efficiency-tiers
 /electron-core-standards
 /electron-e2e-testing
-/feature-flagging
-/perform-post-mortem
-/refactoring-patterns
-/stakeholder-perspectives
 /testing-standards
 /type-registry-standards
-/typescript-gotchas
 /vue-interface-standards
 ```
 
