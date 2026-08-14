@@ -51,12 +51,32 @@
 			<p v-if="!selectedSessionDetail" class="font-body text-body-2 text-grey-darken-1" data-qa="recording-detail-loading">
 				Loading steps...
 			</p>
-			<ol v-else-if="selectedSessionDetail.recording.steps.length > 0" class="step-timeline" data-qa="recording-detail-steps">
-				<li v-for="(step, index) in selectedSessionDetail.recording.steps" :key="index" class="step-timeline__item">
-					<span class="step-timeline__marker" />
-					<span class="font-body text-body-2 text-on-surface">{{ describeStep(step) }}</span>
-				</li>
-			</ol>
+			<v-timeline
+				v-else-if="selectedSessionDetail.recording.steps.length > 0"
+				data-qa="recording-detail-steps"
+				density="compact"
+				align="start"
+				side="end"
+				truncate-line="both"
+				line-color="grey-lighten-2"
+			>
+				<v-timeline-item
+					v-for="(step, index) in selectedSessionDetail.recording.steps"
+					:key="index"
+					:icon="stepIcon(step)"
+					icon-color="white"
+					dot-color="primary"
+					size="small"
+					fill-dot
+				>
+					<div class="font-body text-body-2 font-weight-medium text-on-surface" data-qa="recording-step-title">
+						{{ describeStep(step) }}
+					</div>
+					<div v-if="stepDetail(step)" class="font-body text-caption text-grey-darken-1" data-qa="recording-step-detail">
+						{{ stepDetail(step) }}
+					</div>
+				</v-timeline-item>
+			</v-timeline>
 			<p v-else class="font-body text-body-2 text-grey-darken-1" data-qa="recording-detail-empty">
 				This recording has no steps.
 			</p>
@@ -69,7 +89,7 @@ import { computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import EyasModal from '@/components/EyasModal.vue';
 import useRecordingStore from '@/stores/recording.js';
-import type { IsVisible, ChannelName } from '@registry/primitives.js';
+import type { IsVisible, ChannelName, IconName } from '@registry/primitives.js';
 import type { RecordingStep } from '@registry/recording.js';
 import type { RecorderGetSessionPayload, RecordingSessionSummary } from '@registry/ipc.js';
 import type { DetailText } from '@registry/primitives.js';
@@ -119,6 +139,32 @@ function describeStep(step: RecordingStep): DetailText {
 	case `navigate`: return `Navigate to ${step.url}`;
 	case `closeWindow`: return `Close window`;
 	default: return `Step`;
+	}
+}
+
+function stepIcon(step: RecordingStep): IconName {
+	switch (step.type) {
+	case `click`: return step.button === `secondary` ? `mdi-cursor-default-click-outline` : `mdi-cursor-default-click`;
+	case `change`: return `mdi-form-textbox`;
+	case `editableChange`: return `mdi-text-box-edit-outline`;
+	case `editableInput`: return `mdi-text-box-edit-outline`;
+	case `keyDown`: return `mdi-keyboard-outline`;
+	case `keyUp`: return `mdi-keyboard-outline`;
+	case `scroll`: return `mdi-gesture-swipe-vertical`;
+	case `navigate`: return `mdi-compass-outline`;
+	case `closeWindow`: return `mdi-close-box-outline`;
+	default: return `mdi-circle-small`;
+	}
+}
+
+function stepDetail(step: RecordingStep): DetailText | undefined {
+	switch (step.type) {
+	case `click`: return step.selectors[0];
+	case `change`: return step.value;
+	case `editableChange`: return step.text;
+	case `editableInput`: return step.data;
+	case `scroll`: return `x: ${step.x}, y: ${step.y}`;
+	default: return undefined;
 	}
 }
 </script>
@@ -171,24 +217,7 @@ function describeStep(step: RecordingStep): DetailText {
 	cursor: pointer;
 }
 
-.step-timeline {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-}
-
-.step-timeline__item {
-	display: flex;
-	align-items: center;
-	gap: 0.75rem;
-	padding: 0.4rem 0;
-}
-
-.step-timeline__marker {
-	width: 8px;
-	height: 8px;
-	border-radius: 50%;
-	background: #9e9e9e;
-	flex-shrink: 0;
+:deep(.v-timeline-item__body) {
+	overflow-wrap: anywhere;
 }
 </style>

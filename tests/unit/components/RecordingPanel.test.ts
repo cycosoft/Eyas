@@ -106,6 +106,64 @@ describe(`RecordingPanel`, () => {
 		expect(document.querySelector(`[data-qa="recording-detail-steps"]`)?.textContent).toContain(`Navigate to https://example.com`);
 	});
 
+	test(`shows a distinct icon and the target selector as subtext for a click step`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, status: `stopped`, startedAt: 1, stoppedAt: 2, stepCount: 1 }];
+		await activeWrapper?.vm.$nextTick();
+		document.querySelector<HTMLElement>(`[data-qa="recording-row-s1"]`)?.click();
+		await activeWrapper?.vm.$nextTick();
+
+		store.selectedSessionDetail = {
+			sessionId: `s1`,
+			recording: { title: `x`, steps: [{ type: `click`, selectors: [`aria/Submit`], offsetX: 1, offsetY: 1, timestamp: 1 }] }
+		} as never;
+		await activeWrapper?.vm.$nextTick();
+
+		expect(document.querySelector(`[data-qa="recording-step-title"]`)?.textContent?.trim()).toBe(`Click`);
+		expect(document.querySelector(`[data-qa="recording-step-detail"]`)?.textContent?.trim()).toBe(`aria/Submit`);
+		expect(document.querySelector(`.mdi-cursor-default-click`)).not.toBeNull();
+	});
+
+	test(`shows the entered value as subtext for a text-entry step`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, status: `stopped`, startedAt: 1, stoppedAt: 2, stepCount: 1 }];
+		await activeWrapper?.vm.$nextTick();
+		document.querySelector<HTMLElement>(`[data-qa="recording-row-s1"]`)?.click();
+		await activeWrapper?.vm.$nextTick();
+
+		store.selectedSessionDetail = {
+			sessionId: `s1`,
+			recording: { title: `x`, steps: [{ type: `change`, selectors: [`aria/Email`], value: `test@example.com`, timestamp: 1 }] }
+		} as never;
+		await activeWrapper?.vm.$nextTick();
+
+		expect(document.querySelector(`[data-qa="recording-step-title"]`)?.textContent?.trim()).toBe(`Enter text`);
+		expect(document.querySelector(`[data-qa="recording-step-detail"]`)?.textContent?.trim()).toBe(`test@example.com`);
+	});
+
+	test(`omits the subtext line for a step with no extra context to show`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, status: `stopped`, startedAt: 1, stoppedAt: 2, stepCount: 1 }];
+		await activeWrapper?.vm.$nextTick();
+		document.querySelector<HTMLElement>(`[data-qa="recording-row-s1"]`)?.click();
+		await activeWrapper?.vm.$nextTick();
+
+		store.selectedSessionDetail = {
+			sessionId: `s1`,
+			recording: { title: `x`, steps: [{ type: `keyDown`, key: `Enter`, timestamp: 1 }] }
+		} as never;
+		await activeWrapper?.vm.$nextTick();
+
+		expect(document.querySelector(`[data-qa="recording-step-title"]`)?.textContent?.trim()).toBe(`Key press: Enter`);
+		expect(document.querySelector(`[data-qa="recording-step-detail"]`)).toBeNull();
+	});
+
 	test(`the header shows the recording's title once a recording is selected, with no date subtext when the title is just the date`, async () => {
 		mountPanel();
 		const store = useRecordingStore();
