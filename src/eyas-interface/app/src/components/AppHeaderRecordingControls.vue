@@ -53,7 +53,7 @@
 			</span>
 		</template>
 		<v-btn icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" data-qa="btn-recording-panel-toggle" @click="togglePanel">
-			<v-icon icon="mdi-format-list-bulleted" size="small" />
+			<v-icon icon="mdi-dock-right" size="small" />
 			<v-tooltip activator="parent" location="bottom">
 				Manage Recordings
 			</v-tooltip>
