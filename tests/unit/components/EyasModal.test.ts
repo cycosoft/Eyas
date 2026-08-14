@@ -63,4 +63,31 @@ describe(`EyasModal`, () => {
 
 		expect(wrapper.findComponent({ name: `VOverlay` }).props(`scrim`)).toBe(false);
 	});
+
+	test(`fades the panel while a replay is in progress`, () => {
+		useRecordingStore().playbackStatus = `playing`;
+		mountModal({ modelValue: true, mode: `panel` });
+
+		expect(document.querySelector(`[data-qa="eyas-modal-card"]`)?.classList.contains(`eyas-modal--faded`)).toBe(true);
+	});
+
+	test(`does not fade the panel when idle`, () => {
+		mountModal({ modelValue: true, mode: `panel` });
+
+		expect(document.querySelector(`[data-qa="eyas-modal-card"]`)?.classList.contains(`eyas-modal--faded`)).toBe(false);
+	});
+
+	test(`does not fade the panel while a recording is actively being captured, since there's no replay on screen to compete for attention`, () => {
+		useRecordingStore().status = `recording`;
+		mountModal({ modelValue: true, mode: `panel` });
+
+		expect(document.querySelector(`[data-qa="eyas-modal-card"]`)?.classList.contains(`eyas-modal--faded`)).toBe(false);
+	});
+
+	test(`never fades the centered modal layout, even during a replay`, () => {
+		useRecordingStore().playbackStatus = `playing`;
+		mountModal({ modelValue: true, mode: `modal` });
+
+		expect(document.querySelector(`[data-qa="eyas-modal-card"]`)?.classList.contains(`eyas-modal--faded`)).toBe(false);
+	});
 });

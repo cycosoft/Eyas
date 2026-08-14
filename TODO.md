@@ -2,7 +2,6 @@
 
 - update changelog
 - what do the status badges mean next to the tests in the panel?
-- fade the panel while recording is active
 
 # Future
 

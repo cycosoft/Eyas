@@ -16,7 +16,11 @@
 			:scrim="false"
 			@update:model-value="emit(`update:modelValue`, $event)"
 		>
-			<v-card class="eyas-modal" :class="{ 'eyas-modal--panel': props.mode === `panel` }">
+			<v-card
+				class="eyas-modal"
+				:class="{ 'eyas-modal--panel': props.mode === `panel`, 'eyas-modal--faded': fadeDuringPlayback }"
+				data-qa="eyas-modal-card"
+			>
 				<div v-if="$slots.title" class="eyas-modal__header">
 					<slot name="title" />
 				</div>
@@ -49,6 +53,7 @@ const props = withDefaults(defineProps<EyasModalProps>(), {
 const emit = defineEmits<EyasModalEmits>();
 
 const id = ref<ModalId>(window.crypto.randomUUID() as ModalId);
+const recordingStore = useRecordingStore();
 
 const backgroundContentVisible = computed((): IsVisible => {
 	return ModalStore().lastOpenedById === id.value;
@@ -58,8 +63,14 @@ const showScrim = computed((): IsVisible => {
 	// a panel stays out of the way of an in-progress replay rather than dimming it, so the tester can
 	// still watch the run happen underneath; recording is unaffected since nothing to watch is on screen
 	if (props.mode !== `panel`) { return true; }
-	const recordingStore = useRecordingStore();
 	return !recordingStore.isPlaying;
+});
+
+// the scrim is already suppressed during a replay so the tester can watch it happen underneath (see
+// showScrim above); the panel itself still dims out of the way so it doesn't compete for attention,
+// but comes back to full opacity on hover so the tester can still glance at it without moving it
+const fadeDuringPlayback = computed((): IsVisible => {
+	return props.mode === `panel` && recordingStore.isPlaying;
 });
 
 const panelStyle = {
@@ -113,6 +124,15 @@ watch(() => ModalStore().closeAllCounter, () => {
 	max-height: none !important;
 	height: auto;
 	width: 100%;
+}
+
+.eyas-modal--faded {
+	opacity: 0.4;
+	transition: opacity 0.15s ease;
+}
+
+.eyas-modal--faded:hover {
+	opacity: 1;
 }
 
 :deep(.eyas-modal-panel-content) {
