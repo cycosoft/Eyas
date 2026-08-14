@@ -37,7 +37,7 @@
 		<div v-else data-qa="recording-panel-detail">
 			<button type="button" class="back-link font-body text-body-2 mb-3" data-qa="btn-recording-panel-back" @click="recordingStore.backToBrowser">
 				<v-icon icon="mdi-arrow-left" size="small" />
-				Back to Browser
+				All Recordings
 			</button>
 
 			<h3 class="font-headline text-subtitle-1 font-weight-bold text-on-surface mb-1" data-qa="recording-detail-title">
