@@ -3,6 +3,7 @@ import { mount, type VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import AppHeader from '@/components/AppHeader.vue';
 import useModalsStore from '@/stores/modals.js';
+import useRecordingStore from '@/stores/recording.js';
 import { state } from '@/components/AppHeader.logic.js';
 import type { WindowWithEyas, ChannelName, NavigationStatePayload } from '@registry/ipc.js';
 import type { AppHeaderVM } from '@registry/components.js';
@@ -150,6 +151,26 @@ describe(`AppHeader System Bar`, () => {
 			modalsStore.untrack(`test-modal`);
 			await wrapper.vm.$nextTick();
 			expect(titleSpan.classes()).toContain(`text-disabled`);
+		});
+
+		test(`does not scrim the title while a recording panel replay is in progress`, async () => {
+			const modalsStore = useModalsStore();
+			const recordingStore = useRecordingStore();
+			const systemBar = wrapper.find(`.v-system-bar`);
+			const titleSpan = systemBar.find(`span`);
+
+			modalsStore.track(`recording-panel`);
+			recordingStore.setPlaybackStatus({ status: `playing` });
+			await wrapper.vm.$nextTick();
+
+			expect(titleSpan.classes()).toContain(`text-disabled`);
+			expect(titleSpan.classes()).not.toContain(`scrim-active-text`);
+
+			recordingStore.setPlaybackStatus({ status: `stopped` });
+			await wrapper.vm.$nextTick();
+
+			expect(titleSpan.classes()).toContain(`scrim-active-text`);
+			expect(titleSpan.classes()).not.toContain(`text-disabled`);
 		});
 
 		test(`applies platform-specific class to system bar`, async () => {

@@ -7,7 +7,7 @@
 		@mouseenter="handleHeaderMouseEnter"
 		@mouseleave="handleHeaderMouseLeave"
 	>
-		<span :class="['system-bar-title', modalsStore.hasVisibleModals ? 'scrim-active-text' : 'text-disabled']">{{ displayAppTitle }}</span>
+		<span :class="['system-bar-title', scrimActive ? 'scrim-active-text' : 'text-disabled']">{{ displayAppTitle }}</span>
 	</v-system-bar>
 	<v-app-bar
 		density="compact"
@@ -231,9 +231,12 @@ function adjustZoomLevel(direction: `in` | `out` | `reset`): void {
 	window.eyas?.send(`adjust-zoom` as ChannelName, direction);
 }
 const theme = useTheme();
+// mirrors EyasModal's showScrim exception: the recording panel hides its scrim during an in-progress
+// replay so the tester can watch the run happen underneath, and the header should match that
+const scrimActive = computed(() => modalsStore.hasVisibleModals && !recordingStore.isPlaying);
 const overlayColors = computed(() => {
 	const isDark = theme.global.current.value.dark;
-	return modalsStore.hasVisibleModals ? { color: isDark ? `#141414` : `#949597`, symbolColor: `#ffffff` }
+	return scrimActive.value ? { color: isDark ? `#141414` : `#949597`, symbolColor: `#ffffff` }
 		: isDark ? { color: `#212121`, symbolColor: `#ffffff` } : { color: `#f7f9fb`, symbolColor: `#191c1e` };
 });
 watch(menu, isOpen => { if (!isOpen) { delayedClose(); state.activeGroup = null; } });
