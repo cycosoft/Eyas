@@ -69,10 +69,10 @@
 					size="small"
 					fill-dot
 				>
-					<div class="font-body text-body-2 font-weight-medium text-on-surface" data-qa="recording-step-title">
+					<div class="font-body text-body-2 font-weight-medium text-on-surface step-timeline-title" data-qa="recording-step-title">
 						{{ describeStep(step) }}
 					</div>
-					<div v-if="stepDetail(step)" class="font-body text-caption text-grey-darken-1" data-qa="recording-step-detail">
+					<div v-if="stepDetail(step)" class="font-body text-caption text-grey-darken-1 step-timeline-detail" data-qa="recording-step-detail">
 						{{ stepDetail(step) }}
 					</div>
 				</v-timeline-item>
@@ -90,7 +90,7 @@ import { storeToRefs } from 'pinia';
 import EyasModal from '@/components/EyasModal.vue';
 import useRecordingStore from '@/stores/recording.js';
 import type { IsVisible, ChannelName, IconName } from '@registry/primitives.js';
-import type { RecordingStep } from '@registry/recording.js';
+import type { RecordingStep, ScopedSelectorPayload, SelectorGroup } from '@registry/recording.js';
 import type { RecorderGetSessionPayload, RecordingSessionSummary } from '@registry/ipc.js';
 import type { DetailText } from '@registry/primitives.js';
 
@@ -136,7 +136,7 @@ function describeStep(step: RecordingStep): DetailText {
 	case `keyDown`: return `Key press: ${step.key}`;
 	case `keyUp`: return `Key release: ${step.key}`;
 	case `scroll`: return `Scroll`;
-	case `navigate`: return `Navigate to ${step.url}`;
+	case `navigate`: return `Navigate to`;
 	case `closeWindow`: return `Close window`;
 	default: return `Step`;
 	}
@@ -159,12 +159,49 @@ function stepIcon(step: RecordingStep): IconName {
 
 function stepDetail(step: RecordingStep): DetailText | undefined {
 	switch (step.type) {
-	case `click`: return step.selectors[0];
+	case `click`: return humanizeSelector(step.selectors);
 	case `change`: return step.value;
 	case `editableChange`: return step.text;
 	case `editableInput`: return step.data;
 	case `scroll`: return `x: ${step.x}, y: ${step.y}`;
+	case `navigate`: return humanizeUrl(step.url);
 	default: return undefined;
+	}
+}
+
+/**
+ * Turns a step's best selector candidate into plain English — testers don't care that we matched via
+ * `aria/Submit`, only that it was "Submit". Falls back to the raw candidate for a bare CSS selector,
+ * which has no prefix to strip.
+ */
+function humanizeSelector(selectors: SelectorGroup): DetailText | undefined {
+	const selector = selectors[0];
+	if (!selector) { return undefined; }
+
+	const separatorIndex = selector.indexOf(`/`);
+	if (separatorIndex === -1) { return selector; }
+
+	const prefix = selector.slice(0, separatorIndex);
+	const value = selector.slice(separatorIndex + 1);
+
+	if (prefix === `scoped-aria` || prefix === `scoped-text`) {
+		try {
+			return (JSON.parse(value) as ScopedSelectorPayload).name;
+		} catch {
+			return value;
+		}
+	}
+
+	return value || selector;
+}
+
+/** Shows only the part of a navigated-to URL a tester cares about: the path, not the domain they were already on. */
+function humanizeUrl(url: DetailText): DetailText {
+	try {
+		const parsed = new URL(url);
+		return `${parsed.pathname}${parsed.search}` || `/`;
+	} catch {
+		return url;
 	}
 }
 </script>
@@ -219,5 +256,17 @@ function stepDetail(step: RecordingStep): DetailText | undefined {
 
 :deep(.v-timeline-item__body) {
 	overflow-wrap: anywhere;
+	padding-block-end: 0.75rem;
+}
+
+.step-timeline-title {
+	font-size: 0.8125rem;
+	line-height: 1.3;
+}
+
+.step-timeline-detail {
+	font-size: 0.75rem;
+	line-height: 1.3;
+	margin-top: 0.125rem;
 }
 </style>

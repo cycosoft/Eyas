@@ -103,7 +103,8 @@ describe(`RecordingPanel`, () => {
 		} as never;
 		await activeWrapper?.vm.$nextTick();
 
-		expect(document.querySelector(`[data-qa="recording-detail-steps"]`)?.textContent).toContain(`Navigate to https://example.com`);
+		expect(document.querySelector(`[data-qa="recording-step-title"]`)?.textContent?.trim()).toBe(`Navigate to`);
+		expect(document.querySelector(`[data-qa="recording-step-detail"]`)?.textContent?.trim()).toBe(`/`);
 	});
 
 	test(`shows a distinct icon and the target selector as subtext for a click step`, async () => {
@@ -122,8 +123,48 @@ describe(`RecordingPanel`, () => {
 		await activeWrapper?.vm.$nextTick();
 
 		expect(document.querySelector(`[data-qa="recording-step-title"]`)?.textContent?.trim()).toBe(`Click`);
-		expect(document.querySelector(`[data-qa="recording-step-detail"]`)?.textContent?.trim()).toBe(`aria/Submit`);
+		expect(document.querySelector(`[data-qa="recording-step-detail"]`)?.textContent?.trim()).toBe(`Submit`);
 		expect(document.querySelector(`.mdi-cursor-default-click`)).not.toBeNull();
+	});
+
+	test(`resolves a scoped selector's plain-English name rather than its raw JSON payload`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, status: `stopped`, startedAt: 1, stoppedAt: 2, stepCount: 1 }];
+		await activeWrapper?.vm.$nextTick();
+		document.querySelector<HTMLElement>(`[data-qa="recording-row-s1"]`)?.click();
+		await activeWrapper?.vm.$nextTick();
+
+		store.selectedSessionDetail = {
+			sessionId: `s1`,
+			recording: {
+				title: `x`,
+				steps: [{ type: `click`, selectors: [`scoped-aria/${JSON.stringify({ scope: `nav`, name: `Viewport` })}`], offsetX: 1, offsetY: 1, timestamp: 1 }]
+			}
+		} as never;
+		await activeWrapper?.vm.$nextTick();
+
+		expect(document.querySelector(`[data-qa="recording-step-detail"]`)?.textContent?.trim()).toBe(`Viewport`);
+	});
+
+	test(`shows only the path of a navigation, not the domain the tester was already on`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, status: `stopped`, startedAt: 1, stoppedAt: 2, stepCount: 1 }];
+		await activeWrapper?.vm.$nextTick();
+		document.querySelector<HTMLElement>(`[data-qa="recording-row-s1"]`)?.click();
+		await activeWrapper?.vm.$nextTick();
+
+		store.selectedSessionDetail = {
+			sessionId: `s1`,
+			recording: { title: `x`, steps: [{ type: `navigate`, url: `https://dev.eyas.cycosoft.com/demo/viewport/index.html`, timestamp: 1 }] }
+		} as never;
+		await activeWrapper?.vm.$nextTick();
+
+		expect(document.querySelector(`[data-qa="recording-step-title"]`)?.textContent?.trim()).toBe(`Navigate to`);
+		expect(document.querySelector(`[data-qa="recording-step-detail"]`)?.textContent?.trim()).toBe(`/demo/viewport/index.html`);
 	});
 
 	test(`shows the entered value as subtext for a text-entry step`, async () => {
