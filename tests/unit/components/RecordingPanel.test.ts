@@ -106,7 +106,33 @@ describe(`RecordingPanel`, () => {
 		expect(document.querySelector(`[data-qa="recording-detail-steps"]`)?.textContent).toContain(`Navigate to https://example.com`);
 	});
 
-	test(`clicking Back to Browser returns from the detail view to the list`, async () => {
+	test(`the header shows the recording's title once a recording is selected, with no date subtext when the title is just the date`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		const startedAt = 1700000000000;
+		store.savedSessions = [{ sessionId: `s1`, title: new Date(startedAt).toISOString(), status: `stopped`, startedAt, stoppedAt: 2, stepCount: 0 }];
+		store.selectedSessionId = `s1`;
+		await activeWrapper?.vm.$nextTick();
+
+		expect(document.querySelector(`[data-qa="recording-panel-title"]`)?.textContent?.trim()).toBe(new Date(startedAt).toLocaleString());
+		expect(document.querySelector(`[data-qa="recording-detail-meta"]`)).toBeNull();
+	});
+
+	test(`the header shows a custom recording title with the test date as subtext when they differ`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		const startedAt = 1700000000000;
+		store.savedSessions = [{ sessionId: `s1`, title: `Checkout flow smoke test`, status: `stopped`, startedAt, stoppedAt: 2, stepCount: 0 }];
+		store.selectedSessionId = `s1`;
+		await activeWrapper?.vm.$nextTick();
+
+		expect(document.querySelector(`[data-qa="recording-panel-title"]`)?.textContent?.trim()).toBe(`Checkout flow smoke test`);
+		expect(document.querySelector(`[data-qa="recording-detail-meta"]`)?.textContent?.trim()).toBe(new Date(startedAt).toLocaleString());
+	});
+
+	test(`clicking All Recordings returns from the detail view to the list`, async () => {
 		mountPanel();
 		const store = useRecordingStore();
 		store.isPanelOpen = true;

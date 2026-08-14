@@ -3,7 +3,7 @@
 		<template #title>
 			<div class="d-flex align-center justify-space-between">
 				<h2 class="font-headline text-h6 font-weight-bold text-on-surface" data-qa="recording-panel-title">
-					{{ savedSessions.length.toLocaleString() }} Recordings
+					{{ selectedSession ? formatTitle(selectedSession.title) : `${savedSessions.length.toLocaleString()} Recordings` }}
 				</h2>
 				<v-btn icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" data-qa="btn-recording-panel-close" @click="close">
 					<v-icon icon="mdi-close" size="small" />
@@ -40,11 +40,12 @@
 				All Recordings
 			</button>
 
-			<h3 class="font-headline text-subtitle-1 font-weight-bold text-on-surface mb-1" data-qa="recording-detail-title">
-				{{ formatTitle(selectedSession.title) }}
-			</h3>
-			<p class="font-body text-caption text-grey-darken-1 mb-4" data-qa="recording-detail-meta">
-				ID: {{ selectedSession.sessionId }}
+			<p
+				v-if="testDate !== formatTitle(selectedSession.title)"
+				class="font-body text-caption text-grey-darken-1 mb-4"
+				data-qa="recording-detail-meta"
+			>
+				{{ testDate }}
 			</p>
 
 			<p v-if="!selectedSessionDetail" class="font-body text-body-2 text-grey-darken-1" data-qa="recording-detail-loading">
@@ -101,6 +102,10 @@ function formatTitle(isoTitle: RecordingSessionSummary[`title`]): DetailText {
 	const parsed = new Date(isoTitle);
 	return Number.isNaN(parsed.getTime()) ? isoTitle : parsed.toLocaleString();
 }
+
+const testDate = computed<DetailText | undefined>(() => {
+	return selectedSession.value ? new Date(selectedSession.value.startedAt).toLocaleString() : undefined;
+});
 
 function describeStep(step: RecordingStep): DetailText {
 	switch (step.type) {
