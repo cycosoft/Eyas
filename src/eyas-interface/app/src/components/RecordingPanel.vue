@@ -3,7 +3,7 @@
 		<template #title>
 			<div class="d-flex align-center justify-space-between">
 				<h2 class="font-headline text-h6 font-weight-bold text-on-surface" data-qa="recording-panel-title">
-					Manage Recordings
+					{{ savedSessions.length.toLocaleString() }} Recordings
 				</h2>
 				<v-btn icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" data-qa="btn-recording-panel-close" @click="close">
 					<v-icon icon="mdi-close" size="small" />
@@ -12,23 +12,6 @@
 		</template>
 
 		<div v-if="!selectedSession" data-qa="recording-panel-browser">
-			<div class="d-flex align-center justify-space-between mb-3">
-				<span class="font-body text-caption text-grey-darken-1" data-qa="recording-panel-total">
-					{{ savedSessions.length }} total
-				</span>
-			</div>
-
-			<v-text-field
-				disabled
-				density="compact"
-				variant="outlined"
-				placeholder="Global Search (Ctrl + K)"
-				prepend-inner-icon="mdi-magnify"
-				hide-details
-				class="mb-3"
-				data-qa="recording-panel-search"
-			/>
-
 			<p v-if="savedSessions.length === 0" class="font-body text-body-2 text-grey-darken-1" data-qa="recording-panel-empty">
 				No recordings found yet. Start a recording to see it listed here.
 			</p>

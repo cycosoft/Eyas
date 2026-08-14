@@ -132,10 +132,19 @@ watch(() => ModalStore().closeAllCounter, () => {
 	text-align: center;
 }
 
+.eyas-modal--panel .eyas-modal__header {
+	padding: 1rem 1rem 0.75rem;
+	text-align: left;
+}
+
 .eyas-modal__body {
 	flex-grow: 1 !important;
 	overflow-y: auto !important;
 	padding: 0 2rem 1.5rem !important;
+}
+
+.eyas-modal--panel .eyas-modal__body {
+	padding: 0 1rem 1rem !important;
 }
 
 .eyas-modal__body::-webkit-scrollbar {

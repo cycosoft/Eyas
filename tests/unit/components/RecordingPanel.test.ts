@@ -31,8 +31,21 @@ describe(`RecordingPanel`, () => {
 
 		return activeWrapper?.vm.$nextTick().then(() => {
 			expect(document.querySelector(`.eyas-modal--panel`)).not.toBeNull();
-			expect(document.querySelector(`[data-qa="recording-panel-title"]`)?.textContent).toContain(`Manage Recordings`);
+			expect(document.querySelector(`[data-qa="recording-panel-title"]`)?.textContent).toContain(`Recordings`);
 		});
+	});
+
+	test(`shows the saved recording count merged into the header title`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		store.savedSessions = [
+			{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, status: `stopped`, startedAt: 1, stoppedAt: 2, stepCount: 3 },
+			{ sessionId: `s2`, title: `2024-02-01T00:00:00.000Z`, status: `recording`, startedAt: 2, stoppedAt: null, stepCount: 0 }
+		];
+		await activeWrapper?.vm.$nextTick();
+
+		expect(document.querySelector(`[data-qa="recording-panel-title"]`)?.textContent?.trim()).toBe(`2 Recordings`);
 	});
 
 	test(`clicking the close button clears the panel-open flag`, async () => {
