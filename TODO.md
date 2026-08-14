@@ -1,7 +1,7 @@
 # TODO
 
 - update changelog
-- what do the status badges mean next to the tests in the panel?
+- what do the status badges mean next to the tests in the panel? (change this to represent the last test status - red = failed, green = passed, gray = not run)
 
 # Future
 
