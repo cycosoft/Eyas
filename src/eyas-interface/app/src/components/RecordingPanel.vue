@@ -1,10 +1,22 @@
 <template>
 	<EyasModal v-model="isOpen" mode="panel">
 		<template #title>
-			<div class="d-flex align-center justify-space-between">
-				<h2 class="font-headline text-h6 font-weight-bold text-on-surface" data-qa="recording-panel-title">
-					{{ selectedSession ? formatTitle(selectedSession.title) : `${savedSessions.length.toLocaleString()} Recordings` }}
-				</h2>
+			<div class="d-flex align-start justify-space-between">
+				<div class="flex-grow-1 recording-panel-title-column">
+					<button
+						v-if="selectedSession"
+						type="button"
+						class="back-link font-body text-body-2 mb-2"
+						data-qa="btn-recording-panel-back"
+						@click="recordingStore.backToBrowser"
+					>
+						<v-icon icon="mdi-arrow-left" size="small" />
+						All Recordings
+					</button>
+					<h2 class="font-headline text-h6 font-weight-bold text-on-surface" data-qa="recording-panel-title">
+						{{ selectedSession ? formatTitle(selectedSession.title) : `${savedSessions.length.toLocaleString()} Recordings` }}
+					</h2>
+				</div>
 				<v-btn icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" data-qa="btn-recording-panel-close" @click="close">
 					<v-icon icon="mdi-close" size="small" />
 				</v-btn>
@@ -35,11 +47,6 @@
 		</div>
 
 		<div v-else data-qa="recording-panel-detail">
-			<button type="button" class="back-link font-body text-body-2 mb-3" data-qa="btn-recording-panel-back" @click="recordingStore.backToBrowser">
-				<v-icon icon="mdi-arrow-left" size="small" />
-				All Recordings
-			</button>
-
 			<p
 				v-if="testDate !== formatTitle(selectedSession.title)"
 				class="font-body text-caption text-grey-darken-1 mb-4"
@@ -242,6 +249,10 @@ function humanizeUrl(url: DetailText): DetailText {
 
 .status-dot--recording { background: #e53935; }
 .status-dot--stopped { background: #9e9e9e; }
+
+.recording-panel-title-column {
+	min-width: 0;
+}
 
 .back-link {
 	display: flex;
