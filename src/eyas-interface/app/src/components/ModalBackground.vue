@@ -3,6 +3,7 @@
 		class="custom-background"
 		:model-value="modelValue"
 		:scrim="scrim"
+		persistent
 		@after-leave="emit(`after-leave`)"
 	>
 		<template v-if="contentVisible">

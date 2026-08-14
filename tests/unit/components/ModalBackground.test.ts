@@ -18,4 +18,12 @@ describe(`ModalBackground`, () => {
 
 		expect(wrapper.findComponent({ name: `VOverlay` }).props(`scrim`)).toBe(false);
 	});
+
+	test(`is persistent, so a stray click on the slotted content it doesn't contain can't desync its internal active state from the caller's model-value`, () => {
+		const wrapper = mount(ModalBackground, {
+			props: { modelValue: true, contentVisible: false }
+		});
+
+		expect(wrapper.findComponent({ name: `VOverlay` }).props(`persistent`)).toBe(true);
+	});
 });
