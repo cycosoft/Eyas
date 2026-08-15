@@ -50,12 +50,12 @@ describe(`sessionRecorderService.startSession`, () => {
 		expect(session?.recording.steps).toEqual([]);
 	});
 
-	test(`writes the session file to disk immediately at {userData}/sessions/{projectId}/{testId}/active-session.json with status 'recording'`, async () => {
+	test(`writes the session file to disk immediately at {userData}/sessions/{projectId}/{sessionId}.json with status 'recording'`, async () => {
 		const ctx = makeCtx();
 		await service.startSession(ctx);
 
 		const session = service.getActiveSession();
-		const expectedPath = join(tmpDir, `test-proj`, `test-run`, `active-session.json`);
+		const expectedPath = join(tmpDir, `test-proj`, `${session?.sessionId}.json`);
 
 		expect(await pathExists(expectedPath)).toBe(true);
 		const written = await readJson(expectedPath);
@@ -63,7 +63,7 @@ describe(`sessionRecorderService.startSession`, () => {
 		expect(written.sessionId).toBe(session?.sessionId);
 	});
 
-	test(`overwrites the previous active-session.json rather than leaving it as an orphaned file when a new recording starts`, async () => {
+	test(`writes each new recording to its own file rather than overwriting a previous one, since every session is keyed by its own sessionId`, async () => {
 		const ctx = makeCtx();
 		await service.startSession(ctx);
 		const firstSessionId = service.getActiveSession()?.sessionId;
@@ -71,11 +71,9 @@ describe(`sessionRecorderService.startSession`, () => {
 		await service.startSession(ctx);
 		const secondSessionId = service.getActiveSession()?.sessionId;
 
-		const expectedPath = join(tmpDir, `test-proj`, `test-run`, `active-session.json`);
-		const written = await readJson(expectedPath);
-		expect(written.sessionId).toBe(secondSessionId);
-		expect(written.sessionId).not.toBe(firstSessionId);
-		expect(await pathExists(join(tmpDir, `test-proj`, `test-run`, `${firstSessionId}.json`))).toBe(false);
+		expect(await pathExists(join(tmpDir, `test-proj`, `${firstSessionId}.json`))).toBe(true);
+		expect(await pathExists(join(tmpDir, `test-proj`, `${secondSessionId}.json`))).toBe(true);
+		expect(firstSessionId).not.toBe(secondSessionId);
 	});
 
 	test(`sends recorder-status-updated to the eyas layer with { isRecording: true, sessionId }`, async () => {
@@ -112,7 +110,7 @@ describe(`sessionRecorderService.appendSteps`, () => {
 	test(`writes the full envelope to disk using fs-extra outputJson after appending`, async () => {
 		const ctx = makeCtx();
 		await service.startSession(ctx);
-		const expectedPath = join(tmpDir, `test-proj`, `test-run`, `active-session.json`);
+		const expectedPath = join(tmpDir, `test-proj`, `${service.getActiveSession()?.sessionId}.json`);
 
 		service.appendSteps([{ type: `click`, selectors: [`#foo`], offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
 		await new Promise(resolve => setTimeout(resolve, 20));
@@ -124,7 +122,7 @@ describe(`sessionRecorderService.appendSteps`, () => {
 	test(`sequentializes writes so concurrent flushes do not race (mirrors settings-service.ts save() queue pattern)`, async () => {
 		const ctx = makeCtx();
 		await service.startSession(ctx);
-		const expectedPath = join(tmpDir, `test-proj`, `test-run`, `active-session.json`);
+		const expectedPath = join(tmpDir, `test-proj`, `${service.getActiveSession()?.sessionId}.json`);
 
 		for (let i = 0; i < 10; i++) {
 			service.appendSteps([{ type: `click`, selectors: [`#${i}`], offsetX: 0, offsetY: 0, timestamp: Date.now() }] as never);
@@ -226,8 +224,9 @@ describe(`sessionRecorderService.getSession`, () => {
 	test(`reads the session from disk by projectId when it isn't the active in-memory session`, async () => {
 		const ctx = makeCtx();
 		await service.startSession(ctx);
-		const session = service.getActiveSession();
-		const sessionId = session?.sessionId ?? ``;
+		const sessionId = service.getActiveSession()?.sessionId ?? ``;
+
+		// re-pointing at the same dir clears in-memory state (see _setSessionsDir), forcing a genuine disk read
 		service._setSessionsDir(tmpDir);
 
 		const loaded = await service.getSession(ctx, sessionId as never);
@@ -240,33 +239,23 @@ describe(`sessionRecorderService.getSession`, () => {
 		expect(loaded).toBeNull();
 	});
 
-	test(`falls back to sessions/{projectId}/saved/{sessionId}.json when the id doesn't match the current active session`, async () => {
+	test(`reads a stopped session written directly to sessions/{projectId}/{sessionId}.json when the id doesn't match the current active session`, async () => {
 		const ctx = makeCtx();
 		await service.startSession(ctx);
 
-		const savedPath = join(tmpDir, `test-proj`, `saved`, `saved-session-id.json`);
-		await outputJson(savedPath, { sessionId: `saved-session-id`, status: `stopped` });
+		const stoppedPath = join(tmpDir, `test-proj`, `stopped-session-id.json`);
+		await outputJson(stoppedPath, { sessionId: `stopped-session-id`, status: `stopped` });
 
-		const loaded = await service.getSession(ctx, `saved-session-id` as never);
-		expect(loaded?.sessionId).toBe(`saved-session-id`);
+		const loaded = await service.getSession(ctx, `stopped-session-id` as never);
+		expect(loaded?.sessionId).toBe(`stopped-session-id`);
 	});
 
-	test(`returns null for a stale id that matches neither the active session nor a saved one`, async () => {
+	test(`returns null for a stale id that matches neither the active session nor one on disk`, async () => {
 		const ctx = makeCtx();
 		await service.startSession(ctx);
 
 		const loaded = await service.getSession(ctx, `some-old-unrelated-id` as never);
 		expect(loaded).toBeNull();
-	});
-
-	test(`finds a session recorded under a different testId than the one currently active, since listSessions surfaces every testId's recording for the project`, async () => {
-		const ctx = makeCtx();
-		const otherPath = join(tmpDir, `test-proj`, `other-test-run`, `active-session.json`);
-		await outputJson(otherPath, { sessionId: `other-run-session`, projectId: `test-proj`, status: `stopped`, recording: { steps: [] } });
-
-		const loaded = await service.getSession(ctx, `other-run-session` as never);
-
-		expect(loaded?.sessionId).toBe(`other-run-session`);
 	});
 });
 
@@ -279,13 +268,13 @@ describe(`sessionRecorderService.listSessions`, () => {
 		expect(sessions).toEqual([]);
 	});
 
-	test(`lists a summary for each testId's active-session.json under the project, newest first`, async () => {
+	test(`lists a summary for each session file directly under the project, newest first`, async () => {
 		const ctx = makeCtx();
-		await outputJson(join(tmpDir, `test-proj`, `run-a`, `active-session.json`), {
+		await outputJson(join(tmpDir, `test-proj`, `session-a.json`), {
 			sessionId: `session-a`, title: `2024-01-01T00:00:00.000Z`, status: `stopped`,
 			startedAt: 1000, stoppedAt: 2000, recording: { steps: [{ type: `navigate`, url: `x`, timestamp: 1 }] }
 		});
-		await outputJson(join(tmpDir, `test-proj`, `run-b`, `active-session.json`), {
+		await outputJson(join(tmpDir, `test-proj`, `session-b.json`), {
 			sessionId: `session-b`, title: `2024-02-01T00:00:00.000Z`, status: `recording`,
 			startedAt: 5000, stoppedAt: null, recording: { steps: [] }
 		});
@@ -300,29 +289,33 @@ describe(`sessionRecorderService.listSessions`, () => {
 
 	test(`skips a malformed session file instead of failing the whole listing`, async () => {
 		const ctx = makeCtx();
-		await outputJson(join(tmpDir, `test-proj`, `run-good`, `active-session.json`), {
+		await outputJson(join(tmpDir, `test-proj`, `session-good.json`), {
 			sessionId: `session-good`, title: `2024-01-01T00:00:00.000Z`, status: `stopped`,
 			startedAt: 1000, stoppedAt: 2000, recording: { steps: [] }
 		});
 		// missing 'recording' throws when the service reads .recording.steps.length — the case a
 		// truncated or hand-edited file produces
-		await outputJson(join(tmpDir, `test-proj`, `run-bad`, `active-session.json`), { sessionId: `session-bad`, status: `stopped` });
+		await outputJson(join(tmpDir, `test-proj`, `session-bad.json`), { sessionId: `session-bad`, status: `stopped` });
 
 		const sessions = await service.listSessions(ctx);
 
 		expect(sessions.map(s => s.sessionId)).toEqual([`session-good`]);
 	});
 
-	test(`includes recordings already written to sessions/{projectId}/saved/`, async () => {
+	test(`ignores leftover legacy testId directories from before recordings were scoped by projectId only`, async () => {
 		const ctx = makeCtx();
-		await outputJson(join(tmpDir, `test-proj`, `saved`, `saved-session.json`), {
-			sessionId: `saved-session`, title: `2024-03-01T00:00:00.000Z`, status: `stopped`,
+		await outputJson(join(tmpDir, `test-proj`, `session-flat.json`), {
+			sessionId: `session-flat`, title: `2024-03-01T00:00:00.000Z`, status: `stopped`,
 			startedAt: 9000, stoppedAt: 9500, recording: { steps: [] }
+		});
+		await outputJson(join(tmpDir, `test-proj`, `old-test-run`, `active-session.json`), {
+			sessionId: `legacy-session`, title: `2024-03-01T00:00:00.000Z`, status: `recording`,
+			startedAt: 9000, stoppedAt: null, recording: { steps: [] }
 		});
 
 		const sessions = await service.listSessions(ctx);
 
-		expect(sessions.map(s => s.sessionId)).toEqual([`saved-session`]);
+		expect(sessions.map(s => s.sessionId)).toEqual([`session-flat`]);
 	});
 });
 
@@ -332,7 +325,7 @@ describe(`sessionRecorderService.stopRecording`, () => {
 	test(`sets status to 'stopped' and stoppedAt to the current timestamp on the session file`, async () => {
 		const ctx = makeCtx();
 		await service.startSession(ctx);
-		const expectedPath = join(tmpDir, `test-proj`, `test-run`, `active-session.json`);
+		const expectedPath = join(tmpDir, `test-proj`, `${service.getActiveSession()?.sessionId}.json`);
 
 		service.stopRecording(ctx);
 		await new Promise(resolve => setTimeout(resolve, 20));

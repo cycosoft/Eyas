@@ -6,7 +6,7 @@ const { outputJson } = fs;
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { EyasRecordingEnvelope, RecordingStep, LegacySelectorGroup } from '@registry/recording.js';
 import type { RecordingSessionSummary } from '@registry/ipc.js';
-import type { ProjectId, TestId, FilePath, DomainUrl, SessionId, IsActive, PopupId, IsUnknownSchema, SchemaVersion } from '@registry/primitives.js';
+import type { ProjectId, FilePath, DomainUrl, SessionId, IsActive, PopupId, IsUnknownSchema, SchemaVersion } from '@registry/primitives.js';
 
 const CURRENT_SCHEMA_VERSION = `1.2.0`;
 
@@ -47,14 +47,9 @@ function _generateSessionId(): SessionId {
 	return randomUUID() as SessionId;
 }
 
-/** Only one recording is ever active at a time, so it lives at a fixed path per project+testId instead of one file per UUID — starting a new recording overwrites it, leaving nothing to clean up. Scoped by testId (not just projectId) so concurrent Eyas instances running different test builds against the same project don't overwrite each other's active recording. */
-function _activeSessionPath(projectId: ProjectId, testId: TestId): FilePath {
-	return _path.join(_sessionsDir(), projectId, testId, `active-session.json`) as FilePath;
-}
-
-/** Future "saved recordings" location: not yet written to, but getSession already checks it so that feature won't need to change this function's by-ID contract again. Scoped by projectId only (not testId) so a saved recording can be replayed against any build of the project it was made on. */
-function _savedSessionPath(projectId: ProjectId, sessionId: SessionId): FilePath {
-	return _path.join(_sessionsDir(), projectId, `saved`, `${sessionId}.json`) as FilePath;
+/** Every session — in-progress or finished — lives at a flat path keyed by its own unique sessionId, scoped by projectId only. No testId axis: testId is per-build metadata, not a stable workspace identity, and scoping by it caused build swaps to abandon orphaned in-progress files that never got cleaned up. Since sessionId is unique from the moment a recording starts, there's nothing to overwrite and no cross-instance collision to guard against. */
+function _sessionPath(projectId: ProjectId, sessionId: SessionId): FilePath {
+	return _path.join(_sessionsDir(), projectId, `${sessionId}.json`) as FilePath;
 }
 
 function _isLegacySelectorGroup(selectors: unknown): selectors is LegacySelectorGroup {
@@ -92,7 +87,6 @@ function _persist(): Promise<void> {
 /** Starts a new recording session and writes the session file to disk immediately. */
 async function startSession(ctx: CoreContext): Promise<void> {
 	const projectId = (ctx.$config?.meta.projectId || `default`) as ProjectId;
-	const testId = (ctx.$config?.meta.testId || `default`) as TestId;
 	const sessionId = _generateSessionId();
 	const startedAt = Date.now();
 
@@ -110,7 +104,7 @@ async function startSession(ctx: CoreContext): Promise<void> {
 		recording: { title: new Date(startedAt).toISOString(), steps: [] }
 	};
 
-	_sessionFilePath = _activeSessionPath(projectId, testId);
+	_sessionFilePath = _sessionPath(projectId, sessionId);
 	await _persist();
 
 	ctx.$eyasLayer?.webContents?.send(`recorder-status-updated`, { isRecording: true, sessionId });
@@ -167,26 +161,10 @@ async function getSession(ctx: CoreContext, sessionId: SessionId): Promise<EyasR
 
 	const projectId = (ctx.$config?.meta.projectId || `default`) as ProjectId;
 
-	const savedPath = _savedSessionPath(projectId, sessionId);
-	if (await fs.pathExists(savedPath)) { return _upgradeSession(await fs.readJson(savedPath)); }
+	const sessionPath = _sessionPath(projectId, sessionId);
+	if (!(await fs.pathExists(sessionPath))) { return null; }
 
-	// listSessions surfaces every testId's active-session.json for this project, not just the
-	// currently-running test's — so a requested session may live under any of them.
-	const projectDir = _path.join(_sessionsDir(), projectId);
-	if (!(await fs.pathExists(projectDir))) { return null; }
-
-	const entries = await fs.readdir(projectDir, { withFileTypes: true });
-	for (const entry of entries) {
-		if (!entry.isDirectory() || entry.name === `saved`) { continue; }
-
-		const activePath = _activeSessionPath(projectId, entry.name as TestId);
-		if (!(await fs.pathExists(activePath))) { continue; }
-
-		const active: EyasRecordingEnvelope = await fs.readJson(activePath);
-		if (active.sessionId === sessionId) { return _upgradeSession(active); }
-	}
-
-	return null;
+	return _upgradeSession(await fs.readJson(sessionPath));
 }
 
 /** Reads a session file into a listing summary, or null if it's missing or unreadable — a corrupt/partial file must not blank the whole listing. */
@@ -208,7 +186,7 @@ async function _readSummary(filePath: FilePath): Promise<RecordingSessionSummary
 	}
 }
 
-/** Lists every recording found for the current project — one per testId's active-session.json, plus anything already in `saved/` — newest first. Missing directories yield an empty list rather than an error, since a fresh install has no sessions dir at all. */
+/** Lists every recording found for the current project — one file per sessionId, directly under sessions/{projectId}/ — newest first. Missing directory yields an empty list rather than an error, since a fresh install has no sessions dir at all. Non-JSON entries (e.g. leftover legacy testId directories from before recordings were scoped by projectId only) are skipped. */
 async function listSessions(ctx: CoreContext): Promise<RecordingSessionSummary[]> {
 	const projectId = (ctx.$config?.meta.projectId || `default`) as ProjectId;
 	const projectDir = _path.join(_sessionsDir(), projectId);
@@ -218,19 +196,9 @@ async function listSessions(ctx: CoreContext): Promise<RecordingSessionSummary[]
 	const summaries: RecordingSessionSummary[] = [];
 
 	for (const entry of entries) {
-		if (!entry.isDirectory()) { continue; }
+		if (!entry.isFile() || !entry.name.endsWith(`.json`)) { continue; }
 
-		if (entry.name === `saved`) {
-			const savedDir = _path.join(projectDir, `saved`);
-			const savedFiles = await fs.readdir(savedDir);
-			for (const file of savedFiles) {
-				const summary = await _readSummary(_path.join(savedDir, file) as FilePath);
-				if (summary) { summaries.push(summary); }
-			}
-			continue;
-		}
-
-		const summary = await _readSummary(_path.join(projectDir, entry.name, `active-session.json`) as FilePath);
+		const summary = await _readSummary(_path.join(projectDir, entry.name) as FilePath);
 		if (summary) { summaries.push(summary); }
 	}
 
