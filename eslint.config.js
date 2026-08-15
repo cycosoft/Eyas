@@ -36,7 +36,11 @@ export default tseslint.config(
 				eyas: `readonly`
 			},
 			parserOptions: {
-				project: [`./tsconfig.node.json`, `./tsconfig.web.json`],
+				// projectService (rather than the classic `project` array) avoids a race in
+				// typescript-eslint's classic mode where `eslint --fix`'s multi-pass verify against many
+				// files intermittently produced "none of those TSConfigs include this file" parsing
+				// errors for .vue files — nondeterministic, not tied to any particular file's content.
+				projectService: true,
 				tsconfigRootDir: import.meta.dirname
 			}
 		}
