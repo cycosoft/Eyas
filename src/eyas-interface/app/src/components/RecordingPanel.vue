@@ -119,15 +119,21 @@ watch(isOpen, open => {
 	if (open) { window.eyas?.send(`recorder-list-sessions` as ChannelName); }
 }, { immediate: true });
 
+// Refreshes lastRunOutcome the moment a watched playback finishes, so a row doesn't sit stale until the panel is closed and reopened.
+watch(() => recordingStore.playbackStatus, (status, prevStatus) => {
+	if (isOpen.value && prevStatus === `playing` && status !== `playing`) { window.eyas?.send(`recorder-list-sessions` as ChannelName); }
+});
+
 watch(selectedSession, session => {
 	if (session) {
 		window.eyas?.send(`recorder-get-session` as ChannelName, { sessionId: session.sessionId } as RecorderGetSessionPayload);
 	}
 });
 
-/** Live blink takes priority over last-run status, and is local-instance only — recording state was intentionally kept per-instance, never shared across Eyas processes (see session-recorder.service.ts). */
-function dotClassFor(session: RecordingSessionSummary): `blinking` | `passed` | `failed` | `neutral` {
-	if (recordingStore.isRecording && recordingStore.sessionId === session.sessionId) { return `blinking`; }
+// Live blink takes priority over last-run status, and is local-instance only (recording/playback state is never shared across Eyas processes).
+function dotClassFor(session: RecordingSessionSummary): `recording` | `playing` | `passed` | `failed` | `neutral` {
+	if (recordingStore.isRecording && recordingStore.sessionId === session.sessionId) { return `recording`; }
+	if (recordingStore.isPlaying && recordingStore.sessionId === session.sessionId) { return `playing`; }
 	if (session.lastRunOutcome === `passed`) { return `passed`; }
 	if (session.lastRunOutcome === `failed`) { return `failed`; }
 	return `neutral`;
@@ -184,11 +190,7 @@ function stepDetail(step: RecordingStep): DetailText | undefined {
 	}
 }
 
-/**
- * Turns a step's best selector candidate into plain English — testers don't care that we matched via
- * `aria/Submit`, only that it was "Submit". Falls back to the raw candidate for a bare CSS selector,
- * which has no prefix to strip.
- */
+// Turns a step's best selector candidate into plain English — testers only care that it was "Submit", not that it matched via `aria/Submit`. Falls back to the raw candidate for a bare CSS selector, which has no prefix to strip.
 function humanizeSelector(selectors: SelectorGroup): DetailText | undefined {
 	const selector = selectors[0];
 	if (!selector) { return undefined; }
@@ -258,8 +260,9 @@ function humanizeUrl(url: DetailText): DetailText {
 .status-dot--neutral { background: #9e9e9e; }
 .status-dot--passed { background: #43a047; }
 .status-dot--failed { background: #e53935; }
-/* same color/timing as the header's recording indicator (AppHeaderRecordingControls.vue) — scoped styles can't be shared across components, so this mirrors it rather than importing it */
-.status-dot--blinking { background: #e53935; animation: recording-pulse 1.5s infinite; }
+/* recording/playing timing mirrors the header's recording indicator (AppHeaderRecordingControls.vue) — scoped styles can't be shared across components */
+.status-dot--recording { background: #e53935; animation: recording-pulse 1.5s infinite; }
+.status-dot--playing { background: rgb(var(--v-theme-primary)); animation: recording-pulse 1.5s infinite; }
 @keyframes recording-pulse { 0% { opacity: 1; } 50% { opacity: 0.35; } 100% { opacity: 1; } }
 
 .recording-panel-title-column {

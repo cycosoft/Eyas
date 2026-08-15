@@ -1,4 +1,4 @@
-import { describe, test, expect, afterEach } from 'vitest';
+import { describe, test, expect, afterEach, type Mock } from 'vitest';
 import { mount, type VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import RecordingPanel from '@/components/RecordingPanel.vue';
@@ -285,7 +285,7 @@ describe(`RecordingPanel`, () => {
 		store.sessionId = `s1`;
 		await activeWrapper?.vm.$nextTick();
 
-		expect(document.querySelector(`[data-qa="recording-row-s1"] .status-dot`)?.classList).toContain(`status-dot--blinking`);
+		expect(document.querySelector(`[data-qa="recording-row-s1"] .status-dot`)?.classList).toContain(`status-dot--recording`);
 	});
 
 	test(`does not blink a row for a recording happening elsewhere, even while this instance is recording something else`, async () => {
@@ -298,5 +298,54 @@ describe(`RecordingPanel`, () => {
 		await activeWrapper?.vm.$nextTick();
 
 		expect(document.querySelector(`[data-qa="recording-row-s1"] .status-dot`)?.classList).toContain(`status-dot--neutral`);
+	});
+
+	test(`shows a blue playing dot for the row currently being replayed in this instance`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1, lastRunOutcome: `failed` }];
+		store.sessionId = `s1`;
+		store.playbackStatus = `playing`;
+		await activeWrapper?.vm.$nextTick();
+
+		expect(document.querySelector(`[data-qa="recording-row-s1"] .status-dot`)?.classList).toContain(`status-dot--playing`);
+	});
+
+	test(`refetches the recordings list when a watched playback finishes while the panel is open`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		store.sessionId = `s1`;
+		await activeWrapper?.vm.$nextTick();
+
+		const sendSpy = window.eyas?.send as Mock;
+		const callsBefore = sendSpy.mock.calls.length;
+
+		store.playbackStatus = `playing`;
+		await activeWrapper?.vm.$nextTick();
+		store.playbackStatus = `stopped`;
+		await activeWrapper?.vm.$nextTick();
+
+		const listCalls = sendSpy.mock.calls.slice(callsBefore).filter(call => call[0] === `recorder-list-sessions`);
+		expect(listCalls.length).toBe(1);
+	});
+
+	test(`does not refetch the recordings list when playback finishes while the panel is closed`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.sessionId = `s1`;
+		await activeWrapper?.vm.$nextTick();
+
+		const sendSpy = window.eyas?.send as Mock;
+		const callsBefore = sendSpy.mock.calls.length;
+
+		store.playbackStatus = `playing`;
+		await activeWrapper?.vm.$nextTick();
+		store.playbackStatus = `stopped`;
+		await activeWrapper?.vm.$nextTick();
+
+		const listCalls = sendSpy.mock.calls.slice(callsBefore).filter(call => call[0] === `recorder-list-sessions`);
+		expect(listCalls.length).toBe(0);
 	});
 });
