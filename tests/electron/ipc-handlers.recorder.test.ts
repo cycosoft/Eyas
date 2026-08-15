@@ -135,7 +135,7 @@ describe(`recorder-list-sessions IPC handler`, () => {
 	test(`sends the resolved session list back over recorder-sessions-listed`, async () => {
 		const send = vi.fn();
 		const ctx = { $eyasLayer: { webContents: { send } } } as unknown as CoreContext;
-		const summaries = [{ sessionId: `s1`, title: `t`, status: `stopped`, startedAt: 1, stoppedAt: 2, stepCount: 0 }];
+		const summaries = [{ sessionId: `s1`, title: `t`, startedAt: 1, stoppedAt: 2, stepCount: 0 }];
 		listSessions.mockResolvedValue(summaries);
 		initRecorderIpcListeners(ctx);
 

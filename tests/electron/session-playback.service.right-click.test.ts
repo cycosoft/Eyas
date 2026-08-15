@@ -37,7 +37,6 @@ function makeSession(steps: EyasRecordingEnvelope[`recording`][`steps`]): EyasRe
 		projectId: `test-proj`,
 		sessionId: `sess-1`,
 		title: `2026-01-01T00:00:00.000Z`,
-		status: `stopped`,
 		startedAt: 0,
 		stoppedAt: 1,
 		startUrl: null,

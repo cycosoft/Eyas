@@ -210,7 +210,6 @@ export type RecorderPlaybackStatusPayload = {
 export type RecordingSessionSummary = {
 	sessionId: string;
 	title: string;
-	status: `recording` | `stopped`;
 	startedAt: number;
 	stoppedAt: number | null;
 	stepCount: StepCount;

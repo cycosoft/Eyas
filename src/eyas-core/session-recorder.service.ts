@@ -32,6 +32,9 @@ let _sessionFilePath: FilePath | null = null;
 let _sessionsDirOverride: FilePath | null = null;
 let _isReplaying = false;
 
+/** What this instance is doing right now — ephemeral, never persisted. The saved recording file is a pure blueprint with no opinion about it. */
+let _mode: `idle` | `recording` = `idle`;
+
 function _sessionsDir(): FilePath {
 	return _sessionsDirOverride ?? _path.join(app.getPath(`userData`), `sessions`);
 }
@@ -41,6 +44,7 @@ function _setSessionsDir(dir: FilePath | null): void {
 	_sessionsDirOverride = dir;
 	_session = null;
 	_sessionFilePath = null;
+	_mode = `idle`;
 }
 
 function _generateSessionId(): SessionId {
@@ -95,7 +99,6 @@ async function startSession(ctx: CoreContext): Promise<void> {
 		projectId,
 		sessionId,
 		title: new Date(startedAt).toISOString(),
-		status: `recording`,
 		startedAt,
 		stoppedAt: null,
 		startUrl: (ctx.$testLayer?.webContents?.getURL() || null) as DomainUrl | null,
@@ -105,6 +108,7 @@ async function startSession(ctx: CoreContext): Promise<void> {
 	};
 
 	_sessionFilePath = _sessionPath(projectId, sessionId);
+	_mode = `recording`;
 	await _persist();
 
 	ctx.$eyasLayer?.webContents?.send(`recorder-status-updated`, { isRecording: true, sessionId });
@@ -112,21 +116,21 @@ async function startSession(ctx: CoreContext): Promise<void> {
 
 /** Appends flushed steps from the recorder preload to the active session and persists. */
 function appendSteps(steps: RecordingStep[]): void {
-	if (!_session || _session.status !== `recording` || _isReplaying || steps.length === 0) { return; }
+	if (!_session || _mode !== `recording` || _isReplaying || steps.length === 0) { return; }
 	_session.recording.steps.push(...steps);
 	_persist();
 }
 
 /** Appends a NavigateStep captured from the main-process webContents navigation events. */
 function appendNavigateStep(url: DomainUrl): void {
-	if (!_session || _session.status !== `recording` || _isReplaying) { return; }
+	if (!_session || _mode !== `recording` || _isReplaying) { return; }
 	_session.recording.steps.push({ type: `navigate`, url, timestamp: Date.now() });
 	_persist();
 }
 
 /** Appends a CloseWindowStep captured from a tracked popup's 'closed' event. */
 function appendCloseWindowStep(popupId: PopupId): void {
-	if (!_session || _session.status !== `recording` || _isReplaying) { return; }
+	if (!_session || _mode !== `recording` || _isReplaying) { return; }
 	_session.recording.steps.push({ type: `closeWindow`, popupId, timestamp: Date.now() });
 	_persist();
 }
@@ -144,8 +148,8 @@ function isReplaying(): IsActive {
 /** Stops the active recording session, finalizing status and persisting to disk. */
 function stopRecording(ctx: CoreContext): void {
 	if (!_session) { return; }
-	_session.status = `stopped`;
 	_session.stoppedAt = Date.now();
+	_mode = `idle`;
 	_persist();
 
 	ctx.$eyasLayer?.webContents?.send(`recorder-status-updated`, { isRecording: false, sessionId: _session.sessionId });
@@ -175,7 +179,6 @@ async function _readSummary(filePath: FilePath): Promise<RecordingSessionSummary
 		return {
 			sessionId: session.sessionId,
 			title: session.title,
-			status: session.status,
 			startedAt: session.startedAt,
 			stoppedAt: session.stoppedAt,
 			stepCount: session.recording.steps.length

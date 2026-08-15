@@ -100,7 +100,7 @@ test.describe(`Session Recording — keystroke capture and replay`, () => {
 		await uiPage.locator(`[data-qa="btn-recording-stop"]`).click();
 
 		const session = await readLatestSession(electronApp);
-		expect(session.status).toBe(`stopped`);
+		expect(typeof session.stoppedAt).toBe(`number`);
 
 		// the editor's text comes from the browser's account of each edit, not from keystrokes —
 		// which is what lets a paste or an autocorrect be recorded at all

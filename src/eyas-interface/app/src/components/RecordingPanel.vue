@@ -36,7 +36,7 @@
 					:data-qa="`recording-row-${session.sessionId}`"
 					@click="recordingStore.selectSession(session.sessionId)"
 				>
-					<span class="status-dot" :class="`status-dot--${session.status}`" />
+					<span class="status-dot status-dot--neutral" />
 					<span class="recording-row__info">
 						<span class="font-body text-body-2 font-weight-medium text-on-surface">{{ formatTitle(session.title) }}</span>
 						<span class="font-body text-caption text-grey-darken-1">{{ session.stepCount }} step{{ session.stepCount === 1 ? `` : `s` }}</span>
@@ -247,8 +247,7 @@ function humanizeUrl(url: DetailText): DetailText {
 	flex-shrink: 0;
 }
 
-.status-dot--recording { background: #e53935; }
-.status-dot--stopped { background: #9e9e9e; }
+.status-dot--neutral { background: #9e9e9e; }
 
 .recording-panel-title-column {
 	min-width: 0;

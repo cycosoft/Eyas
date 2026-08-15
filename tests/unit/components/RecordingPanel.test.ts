@@ -40,8 +40,8 @@ describe(`RecordingPanel`, () => {
 		const store = useRecordingStore();
 		store.isPanelOpen = true;
 		store.savedSessions = [
-			{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, status: `stopped`, startedAt: 1, stoppedAt: 2, stepCount: 3 },
-			{ sessionId: `s2`, title: `2024-02-01T00:00:00.000Z`, status: `recording`, startedAt: 2, stoppedAt: null, stepCount: 0 }
+			{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 3 },
+			{ sessionId: `s2`, title: `2024-02-01T00:00:00.000Z`, startedAt: 2, stoppedAt: null, stepCount: 0 }
 		];
 		await activeWrapper?.vm.$nextTick();
 
@@ -75,8 +75,8 @@ describe(`RecordingPanel`, () => {
 		const store = useRecordingStore();
 		store.isPanelOpen = true;
 		store.savedSessions = [
-			{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, status: `stopped`, startedAt: 1, stoppedAt: 2, stepCount: 3 },
-			{ sessionId: `s2`, title: `2024-02-01T00:00:00.000Z`, status: `recording`, startedAt: 2, stoppedAt: null, stepCount: 0 }
+			{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 3 },
+			{ sessionId: `s2`, title: `2024-02-01T00:00:00.000Z`, startedAt: 2, stoppedAt: null, stepCount: 0 }
 		];
 		await activeWrapper?.vm.$nextTick();
 
@@ -88,7 +88,7 @@ describe(`RecordingPanel`, () => {
 		mountPanel();
 		const store = useRecordingStore();
 		store.isPanelOpen = true;
-		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, status: `stopped`, startedAt: 1, stoppedAt: 2, stepCount: 1 }];
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1 }];
 		await activeWrapper?.vm.$nextTick();
 
 		document.querySelector<HTMLElement>(`[data-qa="recording-row-s1"]`)?.click();
@@ -111,7 +111,7 @@ describe(`RecordingPanel`, () => {
 		mountPanel();
 		const store = useRecordingStore();
 		store.isPanelOpen = true;
-		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, status: `stopped`, startedAt: 1, stoppedAt: 2, stepCount: 1 }];
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1 }];
 		await activeWrapper?.vm.$nextTick();
 		document.querySelector<HTMLElement>(`[data-qa="recording-row-s1"]`)?.click();
 		await activeWrapper?.vm.$nextTick();
@@ -131,7 +131,7 @@ describe(`RecordingPanel`, () => {
 		mountPanel();
 		const store = useRecordingStore();
 		store.isPanelOpen = true;
-		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, status: `stopped`, startedAt: 1, stoppedAt: 2, stepCount: 1 }];
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1 }];
 		await activeWrapper?.vm.$nextTick();
 		document.querySelector<HTMLElement>(`[data-qa="recording-row-s1"]`)?.click();
 		await activeWrapper?.vm.$nextTick();
@@ -152,7 +152,7 @@ describe(`RecordingPanel`, () => {
 		mountPanel();
 		const store = useRecordingStore();
 		store.isPanelOpen = true;
-		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, status: `stopped`, startedAt: 1, stoppedAt: 2, stepCount: 1 }];
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1 }];
 		await activeWrapper?.vm.$nextTick();
 		document.querySelector<HTMLElement>(`[data-qa="recording-row-s1"]`)?.click();
 		await activeWrapper?.vm.$nextTick();
@@ -171,7 +171,7 @@ describe(`RecordingPanel`, () => {
 		mountPanel();
 		const store = useRecordingStore();
 		store.isPanelOpen = true;
-		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, status: `stopped`, startedAt: 1, stoppedAt: 2, stepCount: 1 }];
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1 }];
 		await activeWrapper?.vm.$nextTick();
 		document.querySelector<HTMLElement>(`[data-qa="recording-row-s1"]`)?.click();
 		await activeWrapper?.vm.$nextTick();
@@ -190,7 +190,7 @@ describe(`RecordingPanel`, () => {
 		mountPanel();
 		const store = useRecordingStore();
 		store.isPanelOpen = true;
-		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, status: `stopped`, startedAt: 1, stoppedAt: 2, stepCount: 1 }];
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1 }];
 		await activeWrapper?.vm.$nextTick();
 		document.querySelector<HTMLElement>(`[data-qa="recording-row-s1"]`)?.click();
 		await activeWrapper?.vm.$nextTick();
@@ -210,7 +210,7 @@ describe(`RecordingPanel`, () => {
 		const store = useRecordingStore();
 		store.isPanelOpen = true;
 		const startedAt = 1700000000000;
-		store.savedSessions = [{ sessionId: `s1`, title: new Date(startedAt).toISOString(), status: `stopped`, startedAt, stoppedAt: 2, stepCount: 0 }];
+		store.savedSessions = [{ sessionId: `s1`, title: new Date(startedAt).toISOString(), startedAt, stoppedAt: 2, stepCount: 0 }];
 		store.selectedSessionId = `s1`;
 		await activeWrapper?.vm.$nextTick();
 
@@ -223,7 +223,7 @@ describe(`RecordingPanel`, () => {
 		const store = useRecordingStore();
 		store.isPanelOpen = true;
 		const startedAt = 1700000000000;
-		store.savedSessions = [{ sessionId: `s1`, title: `Checkout flow smoke test`, status: `stopped`, startedAt, stoppedAt: 2, stepCount: 0 }];
+		store.savedSessions = [{ sessionId: `s1`, title: `Checkout flow smoke test`, startedAt, stoppedAt: 2, stepCount: 0 }];
 		store.selectedSessionId = `s1`;
 		await activeWrapper?.vm.$nextTick();
 
@@ -235,7 +235,7 @@ describe(`RecordingPanel`, () => {
 		mountPanel();
 		const store = useRecordingStore();
 		store.isPanelOpen = true;
-		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, status: `stopped`, startedAt: 1, stoppedAt: 2, stepCount: 0 }];
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 0 }];
 		store.selectedSessionId = `s1`;
 		await activeWrapper?.vm.$nextTick();
 

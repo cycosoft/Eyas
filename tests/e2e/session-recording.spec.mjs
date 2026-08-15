@@ -67,7 +67,7 @@ test.describe(`Session Recording — iframe capture`, () => {
 		await uiPage.locator(`[data-qa="btn-recording-stop"]`).click();
 
 		const session = await readLatestSession(electronApp);
-		expect(session.status).toBe(`stopped`);
+		expect(typeof session.stoppedAt).toBe(`number`);
 
 		const frameClickStep = session.recording.steps.find(
 			s => s.type === `click` && s.selectors?.[0] === `aria/Frame button`
@@ -102,7 +102,7 @@ test.describe(`Session Recording — iframe capture`, () => {
 		await uiPage.locator(`[data-qa="btn-recording-stop"]`).click();
 
 		const session = await readLatestSession(electronApp);
-		expect(session.status).toBe(`stopped`);
+		expect(typeof session.stoppedAt).toBe(`number`);
 
 		const topClickStep = session.recording.steps.find(
 			s => s.type === `click` && s.selectors?.[0] === `aria/Top-level button`
@@ -208,7 +208,7 @@ test.describe(`Session Recording — Replay`, () => {
 		await uiPage.locator(`[data-qa="btn-recording-stop"]`).click();
 
 		const session = await readLatestSession(electronApp);
-		expect(session.status).toBe(`stopped`);
+		expect(typeof session.stoppedAt).toBe(`number`);
 
 		const popupClickStep = session.recording.steps.find(
 			s => s.type === `click` && s.selectors?.[0] === `aria/Bottom popup button`
@@ -405,7 +405,7 @@ test.describe(`Session Recording — Replay`, () => {
 		await expect(uiPage.locator(`[data-qa="btn-recording-replay"]`)).toBeVisible();
 
 		const session = await readLatestSession(electronApp);
-		expect(session.status).toBe(`stopped`);
+		expect(typeof session.stoppedAt).toBe(`number`);
 
 		// the click on the README link must have been captured at all — guards against the
 		// separate (already-fixed) flush-timing bug regressing
