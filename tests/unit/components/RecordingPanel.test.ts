@@ -40,8 +40,8 @@ describe(`RecordingPanel`, () => {
 		const store = useRecordingStore();
 		store.isPanelOpen = true;
 		store.savedSessions = [
-			{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 3 },
-			{ sessionId: `s2`, title: `2024-02-01T00:00:00.000Z`, startedAt: 2, stoppedAt: null, stepCount: 0 }
+			{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 3, lastRunOutcome: null },
+			{ sessionId: `s2`, title: `2024-02-01T00:00:00.000Z`, startedAt: 2, stoppedAt: null, stepCount: 0, lastRunOutcome: null }
 		];
 		await activeWrapper?.vm.$nextTick();
 
@@ -75,8 +75,8 @@ describe(`RecordingPanel`, () => {
 		const store = useRecordingStore();
 		store.isPanelOpen = true;
 		store.savedSessions = [
-			{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 3 },
-			{ sessionId: `s2`, title: `2024-02-01T00:00:00.000Z`, startedAt: 2, stoppedAt: null, stepCount: 0 }
+			{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 3, lastRunOutcome: null },
+			{ sessionId: `s2`, title: `2024-02-01T00:00:00.000Z`, startedAt: 2, stoppedAt: null, stepCount: 0, lastRunOutcome: null }
 		];
 		await activeWrapper?.vm.$nextTick();
 
@@ -88,7 +88,7 @@ describe(`RecordingPanel`, () => {
 		mountPanel();
 		const store = useRecordingStore();
 		store.isPanelOpen = true;
-		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1 }];
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1, lastRunOutcome: null }];
 		await activeWrapper?.vm.$nextTick();
 
 		document.querySelector<HTMLElement>(`[data-qa="recording-row-s1"]`)?.click();
@@ -111,7 +111,7 @@ describe(`RecordingPanel`, () => {
 		mountPanel();
 		const store = useRecordingStore();
 		store.isPanelOpen = true;
-		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1 }];
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1, lastRunOutcome: null }];
 		await activeWrapper?.vm.$nextTick();
 		document.querySelector<HTMLElement>(`[data-qa="recording-row-s1"]`)?.click();
 		await activeWrapper?.vm.$nextTick();
@@ -131,7 +131,7 @@ describe(`RecordingPanel`, () => {
 		mountPanel();
 		const store = useRecordingStore();
 		store.isPanelOpen = true;
-		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1 }];
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1, lastRunOutcome: null }];
 		await activeWrapper?.vm.$nextTick();
 		document.querySelector<HTMLElement>(`[data-qa="recording-row-s1"]`)?.click();
 		await activeWrapper?.vm.$nextTick();
@@ -152,7 +152,7 @@ describe(`RecordingPanel`, () => {
 		mountPanel();
 		const store = useRecordingStore();
 		store.isPanelOpen = true;
-		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1 }];
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1, lastRunOutcome: null }];
 		await activeWrapper?.vm.$nextTick();
 		document.querySelector<HTMLElement>(`[data-qa="recording-row-s1"]`)?.click();
 		await activeWrapper?.vm.$nextTick();
@@ -171,7 +171,7 @@ describe(`RecordingPanel`, () => {
 		mountPanel();
 		const store = useRecordingStore();
 		store.isPanelOpen = true;
-		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1 }];
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1, lastRunOutcome: null }];
 		await activeWrapper?.vm.$nextTick();
 		document.querySelector<HTMLElement>(`[data-qa="recording-row-s1"]`)?.click();
 		await activeWrapper?.vm.$nextTick();
@@ -190,7 +190,7 @@ describe(`RecordingPanel`, () => {
 		mountPanel();
 		const store = useRecordingStore();
 		store.isPanelOpen = true;
-		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1 }];
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1, lastRunOutcome: null }];
 		await activeWrapper?.vm.$nextTick();
 		document.querySelector<HTMLElement>(`[data-qa="recording-row-s1"]`)?.click();
 		await activeWrapper?.vm.$nextTick();
@@ -210,7 +210,7 @@ describe(`RecordingPanel`, () => {
 		const store = useRecordingStore();
 		store.isPanelOpen = true;
 		const startedAt = 1700000000000;
-		store.savedSessions = [{ sessionId: `s1`, title: new Date(startedAt).toISOString(), startedAt, stoppedAt: 2, stepCount: 0 }];
+		store.savedSessions = [{ sessionId: `s1`, title: new Date(startedAt).toISOString(), startedAt, stoppedAt: 2, stepCount: 0, lastRunOutcome: null }];
 		store.selectedSessionId = `s1`;
 		await activeWrapper?.vm.$nextTick();
 
@@ -223,7 +223,7 @@ describe(`RecordingPanel`, () => {
 		const store = useRecordingStore();
 		store.isPanelOpen = true;
 		const startedAt = 1700000000000;
-		store.savedSessions = [{ sessionId: `s1`, title: `Checkout flow smoke test`, startedAt, stoppedAt: 2, stepCount: 0 }];
+		store.savedSessions = [{ sessionId: `s1`, title: `Checkout flow smoke test`, startedAt, stoppedAt: 2, stepCount: 0, lastRunOutcome: null }];
 		store.selectedSessionId = `s1`;
 		await activeWrapper?.vm.$nextTick();
 
@@ -235,7 +235,7 @@ describe(`RecordingPanel`, () => {
 		mountPanel();
 		const store = useRecordingStore();
 		store.isPanelOpen = true;
-		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 0 }];
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 0, lastRunOutcome: null }];
 		store.selectedSessionId = `s1`;
 		await activeWrapper?.vm.$nextTick();
 
@@ -244,5 +244,59 @@ describe(`RecordingPanel`, () => {
 
 		expect(document.querySelector(`[data-qa="recording-panel-browser"]`)).not.toBeNull();
 		expect(document.querySelector(`[data-qa="recording-panel-detail"]`)).toBeNull();
+	});
+
+	test(`shows a neutral dot for a recording that has never been played`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1, lastRunOutcome: null }];
+		await activeWrapper?.vm.$nextTick();
+
+		expect(document.querySelector(`[data-qa="recording-row-s1"] .status-dot`)?.classList).toContain(`status-dot--neutral`);
+	});
+
+	test(`shows a green dot for a recording whose most recent run passed`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1, lastRunOutcome: `passed` }];
+		await activeWrapper?.vm.$nextTick();
+
+		expect(document.querySelector(`[data-qa="recording-row-s1"] .status-dot`)?.classList).toContain(`status-dot--passed`);
+	});
+
+	test(`shows a red dot for a recording whose most recent run failed or never finished`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1, lastRunOutcome: `failed` }];
+		await activeWrapper?.vm.$nextTick();
+
+		expect(document.querySelector(`[data-qa="recording-row-s1"] .status-dot`)?.classList).toContain(`status-dot--failed`);
+	});
+
+	test(`shows a blinking dot for the row currently being recorded in this instance, regardless of its last run status`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: null, stepCount: 1, lastRunOutcome: `passed` }];
+		store.status = `recording`;
+		store.sessionId = `s1`;
+		await activeWrapper?.vm.$nextTick();
+
+		expect(document.querySelector(`[data-qa="recording-row-s1"] .status-dot`)?.classList).toContain(`status-dot--blinking`);
+	});
+
+	test(`does not blink a row for a recording happening elsewhere, even while this instance is recording something else`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1, lastRunOutcome: null }];
+		store.status = `recording`;
+		store.sessionId = `s2`;
+		await activeWrapper?.vm.$nextTick();
+
+		expect(document.querySelector(`[data-qa="recording-row-s1"] .status-dot`)?.classList).toContain(`status-dot--neutral`);
 	});
 });

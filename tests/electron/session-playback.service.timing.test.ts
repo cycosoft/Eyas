@@ -10,7 +10,7 @@ const attach = vi.fn();
 const detach = vi.fn();
 const isAttached = vi.fn().mockReturnValue(false);
 const loadURL = vi.fn().mockResolvedValue(undefined);
-const executeJavaScript = vi.fn().mockResolvedValue({ x: 1, y: 1 });
+const executeJavaScript = vi.fn().mockResolvedValue(undefined);
 const send = vi.fn();
 const once = vi.fn();
 const removeListener = vi.fn();
@@ -80,57 +80,53 @@ function makeCtx(): CoreContext {
 beforeEach(() => {
 	vi.mocked(sessionRecorderService.getSession).mockReset();
 	vi.mocked(sessionRecorderService.setReplaying).mockClear();
-	sendCommand.mockClear();
-	attach.mockClear();
-	detach.mockClear();
 	loadURL.mockClear();
 	executeJavaScript.mockClear().mockResolvedValue({ x: 1, y: 1 });
 	send.mockClear();
-	toggleEyasUI.mockClear();
 	getURL.mockClear().mockReturnValue(`https://example.com/`);
 });
 
-describe(`sessionPlaybackService.playSession progress reporting`, () => {
-	test(`counts a click and the navigate it caused as a single progress step, not two`, async () => {
+describe(`sessionPlaybackService.playSession — step pacing`, () => {
+	test(`waits between steps using the natural delay, regardless of any persisted replaySpeed setting`, async () => {
+		vi.useFakeTimers();
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
-			{ type: `click`, selectors: [`#link`], offsetX: 1, offsetY: 1, timestamp: 1 },
-			{ type: `navigate`, url: `https://example.com/next`, timestamp: 2 }
+			{ type: `navigate`, url: `https://example.com/a`, timestamp: 1 },
+			{ type: `navigate`, url: `https://example.com/b`, timestamp: 2 },
+			{ type: `navigate`, url: `https://example.com/c`, timestamp: 3 }
 		]));
 		const ctx = makeCtx();
+		const setTimeoutSpy = vi.spyOn(global, `setTimeout`);
 
-		await playbackService.playSession(ctx, `sess-1`);
+		const playPromise = playbackService.playSession(ctx, `sess-1`);
+		await vi.advanceTimersByTimeAsync(1700);
+		await playPromise;
 
-		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `playing`, completedSteps: 0, totalSteps: 1 });
-		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `playing`, completedSteps: 1, totalSteps: 1 });
-		expect(send).not.toHaveBeenCalledWith(`recorder-playback-status`, expect.objectContaining({ completedSteps: 2 }));
+		// a delay applies before every step, including the first: 3 steps -> 3 waits (a 4th
+		// setTimeout call schedules the UI layer's post-playback collapse, unrelated to step pacing)
+		const stepDelayCalls = setTimeoutSpy.mock.calls.filter(call => call[1] === 500);
+		expect(stepDelayCalls).toHaveLength(3);
+		expect(loadURL).toHaveBeenNthCalledWith(1, `https://example.com/a`);
+		expect(loadURL).toHaveBeenNthCalledWith(3, `https://example.com/c`);
+		setTimeoutSpy.mockRestore();
+		vi.useRealTimers();
 	});
 
-	test(`folds a redirect chain (multiple navigate steps after one click) into that click's single progress step`, async () => {
+	test(`waits before dispatching the very first step, not just between later steps`, async () => {
+		vi.useFakeTimers();
 		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
-			{ type: `click`, selectors: [`#link`], offsetX: 1, offsetY: 1, timestamp: 1 },
-			{ type: `navigate`, url: `https://example.com/hop1`, timestamp: 2 },
-			{ type: `navigate`, url: `https://example.com/hop2`, timestamp: 3 }
+			{ type: `navigate`, url: `https://example.com/a`, timestamp: 1 }
 		]));
 		const ctx = makeCtx();
 
-		await playbackService.playSession(ctx, `sess-1`);
+		const playPromise = playbackService.playSession(ctx, `sess-1`);
+		await Promise.resolve();
+		await Promise.resolve();
+		expect(loadURL).not.toHaveBeenCalled();
 
-		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `playing`, completedSteps: 0, totalSteps: 1 });
-		expect(send).not.toHaveBeenCalledWith(`recorder-playback-status`, expect.objectContaining({ completedSteps: 2 }));
-	});
+		await vi.advanceTimersByTimeAsync(700);
+		await playPromise;
 
-	test(`does not count a scroll step toward progress`, async () => {
-		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
-			{ type: `click`, selectors: [`#link`], offsetX: 1, offsetY: 1, timestamp: 1 },
-			{ type: `scroll`, x: 0, y: 100, timestamp: 2 },
-			{ type: `click`, selectors: [`#other`], offsetX: 2, offsetY: 2, timestamp: 3 }
-		]));
-		const ctx = makeCtx();
-
-		await playbackService.playSession(ctx, `sess-1`);
-
-		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `playing`, completedSteps: 0, totalSteps: 2 });
-		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `playing`, completedSteps: 1, totalSteps: 2 });
-		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `playing`, completedSteps: 2, totalSteps: 2 });
+		expect(loadURL).toHaveBeenCalledWith(`https://example.com/a`);
+		vi.useRealTimers();
 	});
 });

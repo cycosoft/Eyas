@@ -13,6 +13,7 @@ vi.mock(`electron`, () => ({
 }));
 
 import service from '@core/session-recorder.service.js';
+import runHistoryService from '@core/run-history.service.js';
 
 let tmpDir: FilePath;
 
@@ -28,10 +29,12 @@ function makeCtx(overrides: Partial<CoreContext> = {}): CoreContext {
 beforeEach(() => {
 	tmpDir = join(tmpdir(), `eyas-session-recorder-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 	service._setSessionsDir(tmpDir);
+	runHistoryService._setSessionsDir(tmpDir);
 });
 
 afterEach(async () => {
 	service._setSessionsDir(null);
+	runHistoryService._setSessionsDir(null);
 	await remove(tmpDir).catch(() => { });
 });
 
@@ -305,8 +308,8 @@ describe(`sessionRecorderService.listSessions`, () => {
 		const sessions = await service.listSessions(ctx);
 
 		expect(sessions).toEqual([
-			{ sessionId: `session-b`, title: `2024-02-01T00:00:00.000Z`, startedAt: 5000, stoppedAt: null, stepCount: 0 },
-			{ sessionId: `session-a`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1000, stoppedAt: 2000, stepCount: 1 }
+			{ sessionId: `session-b`, title: `2024-02-01T00:00:00.000Z`, startedAt: 5000, stoppedAt: null, stepCount: 0, lastRunOutcome: null },
+			{ sessionId: `session-a`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1000, stoppedAt: 2000, stepCount: 1, lastRunOutcome: null }
 		]);
 	});
 

@@ -171,6 +171,16 @@ test.describe(`Session Recording — Replay`, () => {
 			catch { return null; }
 		}, { timeout: 10000 }).toBe(`2`);
 		await expect(uiPage.locator(`[data-qa="recording-playback-error"]`)).not.toBeVisible();
+
+		// a successful replay writes a passed run to the project's run history — the Recordings
+		// panel dot should reflect that on the next listing, not just live recording state. The click
+		// counter updates as soon as the click step dispatches, but playback still has a completion
+		// hold and its run-history bookkeeping left to do — wait for the "replay again" control to
+		// reappear (playbackStatus leaving 'playing') before that's guaranteed to have happened.
+		await expect(uiPage.locator(`[data-qa="btn-recording-replay"]`)).toBeVisible();
+		await uiPage.locator(`[data-qa="btn-recording-panel-toggle"]`).click();
+		const dot = uiPage.locator(`[data-qa="recording-panel-list"] li .status-dot`).first();
+		await expect(dot).toHaveClass(/status-dot--passed/);
 	});
 
 	test(`captures and replays scroll + click actions inside a popup window, then auto-closes it, hitting the exact button the user clicked`, async () => {

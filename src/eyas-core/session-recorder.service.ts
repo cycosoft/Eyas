@@ -7,6 +7,7 @@ import type { CoreContext } from '@registry/eyas-core.js';
 import type { EyasRecordingEnvelope, RecordingStep, LegacySelectorGroup } from '@registry/recording.js';
 import type { RecordingSessionSummary } from '@registry/ipc.js';
 import type { ProjectId, FilePath, DomainUrl, SessionId, IsActive, PopupId, IsUnknownSchema, SchemaVersion } from '@registry/primitives.js';
+import runHistoryService from './run-history.service.js';
 
 const CURRENT_SCHEMA_VERSION = `1.2.0`;
 
@@ -171,17 +172,19 @@ async function getSession(ctx: CoreContext, sessionId: SessionId): Promise<EyasR
 	return _upgradeSession(await fs.readJson(sessionPath));
 }
 
-/** Reads a session file into a listing summary, or null if it's missing or unreadable — a corrupt/partial file must not blank the whole listing. */
-async function _readSummary(filePath: FilePath): Promise<RecordingSessionSummary | null> {
+/** Reads a session file into a listing summary, or null if it's missing or unreadable — a corrupt/partial file must not blank the whole listing. Takes projectId from the caller (which already knows it from the directory being scanned) rather than the file's own contents, so a hand-edited or legacy file missing that field still resolves the right runs.sqlite. */
+async function _readSummary(filePath: FilePath, projectId: ProjectId): Promise<RecordingSessionSummary | null> {
 	try {
 		if (!(await fs.pathExists(filePath))) { return null; }
 		const session: EyasRecordingEnvelope = await fs.readJson(filePath);
+		const lastRun = await runHistoryService.getLastRunForRecording(projectId, session.sessionId);
 		return {
 			sessionId: session.sessionId,
 			title: session.title,
 			startedAt: session.startedAt,
 			stoppedAt: session.stoppedAt,
-			stepCount: session.recording.steps.length
+			stepCount: session.recording.steps.length,
+			lastRunOutcome: lastRun?.outcome ?? null
 		};
 	} catch (err) {
 		console.error(`[SESSION-RECORDER-SERVICE] skipping unreadable session file ${filePath}:`, err);
@@ -201,7 +204,7 @@ async function listSessions(ctx: CoreContext): Promise<RecordingSessionSummary[]
 	for (const entry of entries) {
 		if (!entry.isFile() || !entry.name.endsWith(`.json`)) { continue; }
 
-		const summary = await _readSummary(_path.join(projectDir, entry.name) as FilePath);
+		const summary = await _readSummary(_path.join(projectDir, entry.name) as FilePath, projectId);
 		if (summary) { summaries.push(summary); }
 	}
 

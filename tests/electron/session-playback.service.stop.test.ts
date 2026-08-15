@@ -20,6 +20,14 @@ vi.mock(`@core/session-recorder.service.js`, () => ({
 	default: { getSession: vi.fn(), setReplaying: vi.fn(), isUnknownSchema: vi.fn().mockReturnValue(false) }
 }));
 
+vi.mock(`@core/run-history.service.js`, () => ({
+	default: {
+		startRun: vi.fn().mockResolvedValue(`run-1`),
+		recordStepStart: vi.fn().mockResolvedValue(undefined),
+		finishRun: vi.fn().mockResolvedValue(undefined)
+	}
+}));
+
 vi.mock(`@core/settings-service.js`, () => ({
 	default: { get: vi.fn().mockReturnValue(`no-delay`) }
 }));
@@ -45,6 +53,7 @@ vi.mock(`@core/window.popups.js`, () => ({
 }));
 
 import sessionRecorderService from '@core/session-recorder.service.js';
+import runHistoryService from '@core/run-history.service.js';
 import settingsService from '@core/settings-service.js';
 import playbackService from '@core/session-playback.service.js';
 
@@ -100,6 +109,9 @@ beforeEach(() => {
 	closeAllPopups.mockClear().mockResolvedValue(undefined);
 	setReplayPopupIdQueue.mockClear();
 	clearReplayPopupIdQueue.mockClear();
+	vi.mocked(runHistoryService.startRun).mockClear();
+	vi.mocked(runHistoryService.recordStepStart).mockClear();
+	vi.mocked(runHistoryService.finishRun).mockClear();
 });
 
 describe(`sessionPlaybackService.stopPlayback`, () => {
@@ -116,6 +128,9 @@ describe(`sessionPlaybackService.stopPlayback`, () => {
 
 		expect(loadURL).toHaveBeenCalledTimes(1);
 		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `stopped` });
+		// a user-initiated stop leaves the run row without an outcome — same "never finished" state a
+		// crash would leave, so the dot has no way to tell the two apart, which is the intent
+		expect(runHistoryService.finishRun).not.toHaveBeenCalled();
 	});
 
 	test(`still runs the same cleanup as a normal completion (debugger detach, popup queue cleared, replaying flag cleared)`, async () => {

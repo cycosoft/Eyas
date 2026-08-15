@@ -134,6 +134,7 @@ export type PasswordPlain = string;
 export type PasswordHex = string;
 export type WasSeeded = boolean;
 export type SessionId = string;
+export type RunId = string;
 export type PopupId = string;
 export type WebContentsId = number;
 

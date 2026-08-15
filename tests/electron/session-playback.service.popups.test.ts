@@ -21,6 +21,14 @@ vi.mock(`@core/session-recorder.service.js`, () => ({
 	default: { getSession: vi.fn(), setReplaying: vi.fn(), isUnknownSchema: vi.fn().mockReturnValue(false) }
 }));
 
+vi.mock(`@core/run-history.service.js`, () => ({
+	default: {
+		startRun: vi.fn().mockResolvedValue(`run-1`),
+		recordStepStart: vi.fn().mockResolvedValue(undefined),
+		finishRun: vi.fn().mockResolvedValue(undefined)
+	}
+}));
+
 const { getPopupWebContents, closePopup, closeAllPopups, setReplayPopupIdQueue, clearReplayPopupIdQueue, hideAllRecordingOverlays, showAllRecordingOverlays } = vi.hoisted(() => ({
 	getPopupWebContents: vi.fn(),
 	closePopup: vi.fn().mockResolvedValue(undefined),

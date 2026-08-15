@@ -143,7 +143,7 @@ describe(`useRecordingStore`, () => {
 		expect(store.playbackSchemaWarning).toBeNull();
 	});
 
-	const SUMMARY = { sessionId: `s1`, title: `t`, status: `stopped` as const, startedAt: 1, stoppedAt: 2, stepCount: 0 };
+	const SUMMARY = { sessionId: `s1`, title: `t`, startedAt: 1, stoppedAt: 2, stepCount: 0, lastRunOutcome: null };
 
 	test(`setSessionsList stores the sessions received from the recorder-list-sessions IPC reply`, () => {
 		const store = useRecordingStore();
