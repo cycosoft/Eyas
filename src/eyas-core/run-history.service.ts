@@ -20,6 +20,7 @@ type LastRunSummary = { outcome: RunOutcome | null };
 type RunRow = { runId: RunId; endedAt: TimestampMS | null };
 type FailureCountRow = { failureCount: number };
 type StepOutcomeRow = { stepIndex: StepIndex; outcome: RunOutcome };
+type ColumnInfoRow = { name: string };
 
 /**
  * Per-step outcomes for a recording's most recent run, for the detail view's step icons.
@@ -69,8 +70,16 @@ function _openDb(projectId: ProjectId): DatabaseSync {
 		);
 		CREATE INDEX IF NOT EXISTS runs_by_recording ON runs (recordingId, startedAt);
 	`);
+	_migrateAddOutcomeColumn(db);
 	_dbsByProjectId.set(projectId, db);
 	return db;
+}
+
+/** `CREATE TABLE IF NOT EXISTS` doesn't add columns to a table that already existed before `outcome` was introduced — without this, every pre-existing `runs.sqlite` throws `no such column: outcome` on every query. */
+function _migrateAddOutcomeColumn(db: DatabaseSync): void {
+	const columns = db.prepare(`PRAGMA table_info(run_steps)`).all() as ColumnInfoRow[];
+	if (columns.some(column => column.name === `outcome`)) { return; }
+	db.exec(`ALTER TABLE run_steps ADD COLUMN outcome TEXT NOT NULL DEFAULT 'passed'`);
 }
 
 /** Opens a new run for a recording and returns its runId. `endedAt` stays null until `finishRun` is called — a crash or user-initiated stop simply never calls it, which is what marks the run as never having finished. */

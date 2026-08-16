@@ -1,7 +1,8 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { remove } from 'fs-extra';
+import { remove, ensureDirSync } from 'fs-extra';
+import { DatabaseSync } from 'node:sqlite';
 import type { FilePath } from '@registry/primitives.js';
 
 vi.mock(`electron`, () => ({
@@ -112,6 +113,24 @@ describe(`runHistoryService.getStepOutcomes`, () => {
 		const secondRunId = await service.startRun(`proj-1`, `rec-1`);
 		await service.recordStepStart(`proj-1`, secondRunId, 0);
 		await service.finishRun(`proj-1`, secondRunId);
+
+		const result = await service.getStepOutcomes(`proj-1`, `rec-1`);
+		expect(result).toEqual({ finished: true, outcomes: { 0: `passed` } });
+	});
+
+	test(`migrates a pre-existing runs.sqlite created before the outcome column existed, instead of throwing 'no such column: outcome'`, async () => {
+		const projectDir = join(tmpDir, `proj-1`);
+		ensureDirSync(projectDir);
+		const legacyDb = new DatabaseSync(join(projectDir, `runs.sqlite`));
+		legacyDb.exec(`
+			CREATE TABLE runs (runId TEXT PRIMARY KEY, recordingId TEXT NOT NULL, startedAt INTEGER NOT NULL, endedAt INTEGER);
+			CREATE TABLE run_steps (runId TEXT NOT NULL, stepIndex INTEGER NOT NULL, happenedAt INTEGER NOT NULL);
+		`);
+		legacyDb.close();
+
+		const runId = await service.startRun(`proj-1`, `rec-1`);
+		await service.recordStepStart(`proj-1`, runId, 0);
+		await service.finishRun(`proj-1`, runId);
 
 		const result = await service.getStepOutcomes(`proj-1`, `rec-1`);
 		expect(result).toEqual({ finished: true, outcomes: { 0: `passed` } });
