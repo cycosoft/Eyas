@@ -46,7 +46,7 @@
 			</ul>
 		</div>
 
-		<div v-else data-qa="recording-panel-detail">
+		<div v-else ref="detailContainerEl" data-qa="recording-panel-detail">
 			<p
 				v-if="testDate !== formatTitle(selectedSession.title)"
 				class="font-body text-caption text-grey-darken-1 mb-4"
@@ -77,11 +77,18 @@
 					fill-dot
 					:class="`step-dot--${stepDotClass(index)}`"
 				>
-					<div class="font-body text-body-2 font-weight-medium text-on-surface step-timeline-title" data-qa="recording-step-title">
-						{{ describeStep(step) }}
-					</div>
-					<div v-if="stepDetail(step)" class="font-body text-caption text-grey-darken-1 step-timeline-detail" data-qa="recording-step-detail">
-						{{ stepDetail(step) }}
+					<!--
+						v-timeline-item's own root renders with `display: contents` (VTimeline.css), which
+						generates no box — getBoundingClientRect/scrollIntoView on that element are unreliable
+						across Chromium versions. This wrapper div is a real boxed descendant to anchor on instead.
+					-->
+					<div :data-step-index="index">
+						<div class="font-body text-body-2 font-weight-medium text-on-surface step-timeline-title" data-qa="recording-step-title">
+							{{ describeStep(step) }}
+						</div>
+						<div v-if="stepDetail(step)" class="font-body text-caption text-grey-darken-1 step-timeline-detail" data-qa="recording-step-detail">
+							{{ stepDetail(step) }}
+						</div>
 					</div>
 				</v-timeline-item>
 			</v-timeline>
@@ -93,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import EyasModal from '@/components/EyasModal.vue';
 import useRecordingStore from '@/stores/recording.js';
@@ -153,6 +160,18 @@ function dotClassFor(session: RecordingSessionSummary): `recording` | `playing` 
 // instance happens to be recording/playing something else (which can't currently overlap this
 // view being open on it, but the guard is cheap and keeps the intent explicit).
 const isActiveSession = computed<IsActive>(() => !!selectedSession.value && recordingStore.sessionId === selectedSession.value.sessionId);
+
+const detailContainerEl = ref<HTMLElement | null>(null);
+
+// Keeps the actively-dispatching step visible while a watched playback runs, so the tester doesn't
+// have to manually scroll the detail view to follow along. Only follows the panel's own active
+// session (isActiveSession), matching the view-anchored scoping used for step icon coloring above.
+watch(() => recordingStore.currentStepIndex, async currentStepIndex => {
+	if (currentStepIndex === null || !isActiveSession.value || !recordingStore.isPlaying) { return; }
+	await nextTick();
+	const stepEl = detailContainerEl.value?.querySelector(`[data-step-index="${currentStepIndex}"]`);
+	stepEl?.scrollIntoView({ behavior: `smooth`, block: `center` });
+});
 
 function stepDotClass(stepIndex: StepIndex): StepDotClass {
 	const totalSteps = (selectedSessionDetail.value?.recording.steps.length ?? 0) as Count;

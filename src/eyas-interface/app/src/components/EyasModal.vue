@@ -121,8 +121,11 @@ watch(() => ModalStore().closeAllCounter, () => {
 }
 
 .eyas-modal--panel {
+	/* .eyas-modal-panel-content (below) is position:fixed with both top and bottom set, giving it a
+	   real bounded height — height:100% here lets the card fill that box instead of growing with its
+	   own content, so .eyas-modal__body's overflow-y:auto has an actual overflow to scroll. */
 	max-height: none !important;
-	height: auto;
+	height: 100%;
 	width: 100%;
 }
 

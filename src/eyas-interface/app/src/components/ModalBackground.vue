@@ -48,6 +48,12 @@ const openInBrowser = (url: DomainUrl): void => {
 	// disable highlighting of background content
 	user-select: none;
 
+	// this box spans the full window (including the header) purely to position the corner
+	// logo — without this, its empty area silently swallows clicks on whatever sits beneath
+	// it (e.g. the header's Replay button) whenever a modal/panel is open, since only the
+	// logo itself needs to stay clickable
+	pointer-events: none;
+
 	.bottom-right {
 		display: flex;
 		height: 100%;
@@ -59,6 +65,7 @@ const openInBrowser = (url: DomainUrl): void => {
 		margin-right: 1.5rem;
 		margin-bottom: 0.5rem;
 		width: 175px;
+		pointer-events: auto;
 	}
 }
 </style>
