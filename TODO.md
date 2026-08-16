@@ -1,6 +1,7 @@
 # TODO
 
 - update changelog
+- consider auto-opening the recording panel on replay failure
 
 # Future
 
