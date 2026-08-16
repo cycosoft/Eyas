@@ -45,3 +45,11 @@ export function stepDotClassFor(index: StepIndex, recording: RecordingArgs | nul
 
 	return runStepOutcomes?.[index] ?? `neutral`;
 }
+
+/** Lowest step index recorded as `failed` in a finished run's outcomes, or undefined if none did. */
+export function firstFailingStepIndex(outcomes: RunStepOutcomes): StepIndex | undefined {
+	return Object.keys(outcomes)
+		.map(Number)
+		.filter(index => outcomes[index] === `failed`)
+		.sort((a, b) => a - b)[0];
+}

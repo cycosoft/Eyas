@@ -104,10 +104,11 @@ import { computed, nextTick, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import EyasModal from '@/components/EyasModal.vue';
 import useRecordingStore from '@/stores/recording.js';
-import { stepDotClassFor, stepDotColorFor, type StepDotClass } from '@/utils/step-dot.utils.js';
+import { stepDotClassFor, stepDotColorFor, firstFailingStepIndex, type StepDotClass } from '@/utils/step-dot.utils.js';
 import { describeStep, stepIcon, stepDetail } from '@/utils/step-format.utils.js';
 import type { IsVisible, IsActive, ChannelName, Count } from '@registry/primitives.js';
-import type { RecordingSessionSummary } from '@registry/ipc.js';
+import type { RecordingSessionSummary, RecorderRunStepsLoadedPayload } from '@registry/ipc.js';
+import type { EyasRecordingEnvelope } from '@registry/recording.js';
 import type { DetailText, StepIndex } from '@registry/primitives.js';
 
 const recordingStore = useRecordingStore();
@@ -183,6 +184,17 @@ watch(() => recordingStore.currentStepIndex, async currentStepIndex => {
 	const stepEl = detailContainerEl.value?.querySelector(`[data-step-index="${currentStepIndex}"]`);
 	stepEl?.scrollIntoView({ behavior: `smooth`, block: `center` });
 });
+// A failed run auto-opens straight into this detail view (see setPlaybackStatus); its two loads can
+// resolve in either order, so this waits on whichever loads second, or the scroll could be dropped.
+async function scrollToFirstFailureIfPending(outcomes: RecorderRunStepsLoadedPayload, detail: EyasRecordingEnvelope | null): Promise<void> {
+	if (!outcomes?.finished || !detail || recordingStore.pendingFailureScrollSessionId !== outcomes.sessionId) { return; }
+	recordingStore.clearPendingFailureScroll();
+	const firstFailingIndex = firstFailingStepIndex(outcomes.outcomes);
+	if (firstFailingIndex === undefined) { return; }
+	await nextTick();
+	detailContainerEl.value?.querySelector(`[data-step-index="${firstFailingIndex}"]`)?.scrollIntoView({ behavior: `smooth`, block: `center` });
+}
+watch([(): RecorderRunStepsLoadedPayload => recordingStore.runStepOutcomes, selectedSessionDetail], ([outcomes, detail]): void => void scrollToFirstFailureIfPending(outcomes, detail));
 
 function stepDotClass(stepIndex: StepIndex): StepDotClass {
 	const totalSteps = (selectedSessionDetail.value?.recording.steps.length ?? 0) as Count;

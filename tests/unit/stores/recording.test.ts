@@ -235,4 +235,63 @@ describe(`useRecordingStore`, () => {
 		expect(store.isPanelOpen).toBe(true);
 		expect(store.selectedSessionId).toBeNull();
 	});
+
+	test(`setPlaybackStatus opens the panel and selects the session when a replay fails with a thrown error while the panel is closed`, () => {
+		const store = useRecordingStore();
+		store.setSessionsList([SUMMARY]);
+		store.sessionId = `s1` as never;
+
+		store.setPlaybackStatus({ status: `failed`, error: `boom` });
+
+		expect(store.isPanelOpen).toBe(true);
+		expect(store.selectedSessionId).toBe(`s1`);
+		expect(store.pendingFailureScrollSessionId).toBe(`s1`);
+	});
+
+	test(`setPlaybackStatus opens the panel and selects the session when a replay stops with mismatches while the panel is closed`, () => {
+		const store = useRecordingStore();
+		store.setSessionsList([SUMMARY]);
+		store.sessionId = `s1` as never;
+
+		store.setPlaybackStatus({ status: `stopped`, mismatches: [MISMATCH] });
+
+		expect(store.isPanelOpen).toBe(true);
+		expect(store.selectedSessionId).toBe(`s1`);
+		expect(store.pendingFailureScrollSessionId).toBe(`s1`);
+	});
+
+	test(`setPlaybackStatus does not touch the panel when a replay finishes cleanly`, () => {
+		const store = useRecordingStore();
+		store.setSessionsList([SUMMARY]);
+		store.sessionId = `s1` as never;
+
+		store.setPlaybackStatus({ status: `stopped` });
+
+		expect(store.isPanelOpen).toBe(false);
+		expect(store.selectedSessionId).toBeNull();
+		expect(store.pendingFailureScrollSessionId).toBeNull();
+	});
+
+	test(`setPlaybackStatus does not reopen or reselect when the panel is already open`, () => {
+		const store = useRecordingStore();
+		store.setSessionsList([SUMMARY]);
+		store.sessionId = `s1` as never;
+		store.isPanelOpen = true;
+
+		store.setPlaybackStatus({ status: `failed`, error: `boom` });
+
+		expect(store.selectedSessionId).toBeNull();
+		expect(store.pendingFailureScrollSessionId).toBeNull();
+	});
+
+	test(`clearPendingFailureScroll clears the one-shot marker`, () => {
+		const store = useRecordingStore();
+		store.setSessionsList([SUMMARY]);
+		store.sessionId = `s1` as never;
+		store.setPlaybackStatus({ status: `failed`, error: `boom` });
+
+		store.clearPendingFailureScroll();
+
+		expect(store.pendingFailureScrollSessionId).toBeNull();
+	});
 });

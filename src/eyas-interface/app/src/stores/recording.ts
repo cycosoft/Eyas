@@ -11,6 +11,7 @@ export default defineStore(`recording`, {
 		completedSteps: 0,
 		currentStepIndex: null,
 		isPanelOpen: false,
+		pendingFailureScrollSessionId: null,
 		playbackError: null,
 		playbackMismatches: [],
 		playbackSchemaWarning: null,
@@ -86,6 +87,10 @@ export default defineStore(`recording`, {
 			this.runStepOutcomes = payload;
 		},
 
+		clearPendingFailureScroll(): void {
+			this.pendingFailureScrollSessionId = null;
+		},
+
 		backToBrowser(): void {
 			this.selectedSessionId = null;
 			this.selectedSessionDetail = null;
@@ -126,6 +131,17 @@ export default defineStore(`recording`, {
 				this.completedSteps = 0;
 				this.totalSteps = 0;
 			}
+			this.openOnFailureIfPanelClosed(payload.status);
+		},
+
+		// A failed run that finished while the tester wasn't looking should announce itself, rather
+		// than sitting behind a closed panel until they happen to notice and go find it themselves.
+		openOnFailureIfPanelClosed(status: RecorderPlaybackStatusPayload[`status`]): void {
+			const justFailed = status === `failed` || (status === `stopped` && this.playbackMismatches.length > 0);
+			if (!justFailed || this.isPanelOpen || !this.sessionId) { return; }
+			this.isPanelOpen = true;
+			this.selectSession(this.sessionId);
+			this.pendingFailureScrollSessionId = this.sessionId;
 		}
 	}
 });
