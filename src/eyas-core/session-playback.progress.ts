@@ -1,5 +1,5 @@
 import type { CoreContext } from '@registry/eyas-core.js';
-import type { RecordingStep, StepActionMap, StepActionIndex } from '@registry/recording.js';
+import type { RecordingStep, StepActionMap, StepActionIndex, ReplayMismatch } from '@registry/recording.js';
 import type { RecorderPlaybackStatusPayload } from '@registry/ipc.js';
 import type { StepCount, StepIndex } from '@registry/primitives.js';
 
@@ -31,9 +31,19 @@ export function computeStepActions(steps: RecordingStep[]): StepActionMap {
 	return { actionIndexes, totalActions: actionCount as StepCount };
 }
 
-/** Reports progress for a just-dispatched step, unless it doesn't count as its own action (see computeStepActions). */
-export function reportStepProgress(ctx: CoreContext, actions: StepActionMap, stepIndex: StepIndex): void {
+/**
+ * Reports progress for a just-dispatched step, always carrying `currentStepIndex` and the
+ * mismatches accumulated so far (for the detail view's per-step live icons) — but only advancing
+ * the progress ring's `completedSteps`/`totalSteps` when the step counts as its own action (see
+ * computeStepActions), same as before this field was added.
+ */
+export function reportStepProgress(ctx: CoreContext, actions: StepActionMap, stepIndex: StepIndex, mismatchesSoFar: ReplayMismatch[]): void {
 	const actionIndex: StepActionIndex = actions.actionIndexes[stepIndex];
-	if (actionIndex === -1) { return; }
-	sendPlaybackStatus(ctx, { status: `playing`, completedSteps: (actionIndex + 1) as StepCount, totalSteps: actions.totalActions });
+	const payload: RecorderPlaybackStatusPayload = { status: `playing`, currentStepIndex: stepIndex };
+	if (mismatchesSoFar.length > 0) { payload.mismatches = mismatchesSoFar; }
+	if (actionIndex !== -1) {
+		payload.completedSteps = (actionIndex + 1) as StepCount;
+		payload.totalSteps = actions.totalActions;
+	}
+	sendPlaybackStatus(ctx, payload);
 }

@@ -47,7 +47,7 @@ describe(`sessionRecorderService._setSessionsDir`, () => {
 
 		service._setSessionsDir(tmpDir);
 
-		service.appendSteps([{ type: `click`, selectors: [`#foo`], offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
+		service.appendSteps(ctx, [{ type: `click`, selectors: [`#foo`], offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
 		expect(service.getActiveSession()).toBeNull();
 	});
 });
@@ -84,7 +84,7 @@ describe(`sessionRecorderService.startSession`, () => {
 		const ctx = makeCtx();
 		await service.startSession(ctx);
 
-		service.appendSteps([{ type: `click`, selectors: [`#foo`], offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
+		service.appendSteps(ctx, [{ type: `click`, selectors: [`#foo`], offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
 
 		expect(service.getActiveSession()?.recording.steps).toHaveLength(1);
 	});
@@ -119,7 +119,7 @@ describe(`sessionRecorderService.appendSteps`, () => {
 		await service.startSession(ctx);
 		service.stopRecording(ctx);
 
-		service.appendSteps([{ type: `click`, selectors: [`#foo`], offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
+		service.appendSteps(ctx, [{ type: `click`, selectors: [`#foo`], offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
 
 		expect(service.getActiveSession()?.recording.steps).toHaveLength(0);
 	});
@@ -128,7 +128,7 @@ describe(`sessionRecorderService.appendSteps`, () => {
 		const ctx = makeCtx();
 		await service.startSession(ctx);
 
-		service.appendSteps([{ type: `click`, selectors: [`#foo`], offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
+		service.appendSteps(ctx, [{ type: `click`, selectors: [`#foo`], offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
 
 		expect(service.getActiveSession()?.recording.steps).toHaveLength(1);
 	});
@@ -138,7 +138,7 @@ describe(`sessionRecorderService.appendSteps`, () => {
 		await service.startSession(ctx);
 		const expectedPath = join(tmpDir, `test-proj`, `${service.getActiveSession()?.sessionId}.json`);
 
-		service.appendSteps([{ type: `click`, selectors: [`#foo`], offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
+		service.appendSteps(ctx, [{ type: `click`, selectors: [`#foo`], offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
 		await new Promise(resolve => setTimeout(resolve, 20));
 
 		const written = await readJson(expectedPath);
@@ -151,13 +151,24 @@ describe(`sessionRecorderService.appendSteps`, () => {
 		const expectedPath = join(tmpDir, `test-proj`, `${service.getActiveSession()?.sessionId}.json`);
 
 		for (let i = 0; i < 10; i++) {
-			service.appendSteps([{ type: `click`, selectors: [`#${i}`], offsetX: 0, offsetY: 0, timestamp: Date.now() }] as never);
+			service.appendSteps(ctx, [{ type: `click`, selectors: [`#${i}`], offsetX: 0, offsetY: 0, timestamp: Date.now() }] as never);
 		}
 		await new Promise(resolve => setTimeout(resolve, 50));
 
 		expect(service.getActiveSession()?.recording.steps).toHaveLength(10);
 		const written = await readJson(expectedPath);
 		expect(written.recording.steps).toHaveLength(10);
+	});
+
+	test(`broadcasts the updated session on 'recorder-session-loaded', so a detail view already open on it sees new steps live`, async () => {
+		const ctx = makeCtx();
+		await service.startSession(ctx);
+		const send = ctx.$eyasLayer?.webContents?.send as ReturnType<typeof vi.fn>;
+		send.mockClear();
+
+		service.appendSteps(ctx, [{ type: `click`, selectors: [`#foo`], offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
+
+		expect(send).toHaveBeenCalledWith(`recorder-session-loaded`, expect.objectContaining({ sessionId: service.getActiveSession()?.sessionId }));
 	});
 });
 
@@ -168,7 +179,7 @@ describe(`sessionRecorderService.appendNavigateStep`, () => {
 		const ctx = makeCtx();
 		await service.startSession(ctx);
 
-		service.appendNavigateStep(`https://example.com` as never);
+		service.appendNavigateStep(ctx, `https://example.com` as never);
 
 		const steps = service.getActiveSession()?.recording.steps;
 		expect(steps).toHaveLength(1);
@@ -181,7 +192,7 @@ describe(`sessionRecorderService.appendNavigateStep`, () => {
 		await service.startSession(ctx);
 
 		service.setReplaying(true);
-		service.appendNavigateStep(`https://example.com` as never);
+		service.appendNavigateStep(ctx, `https://example.com` as never);
 		service.setReplaying(false);
 
 		expect(service.getActiveSession()?.recording.steps).toHaveLength(0);
@@ -192,7 +203,7 @@ describe(`sessionRecorderService.appendNavigateStep`, () => {
 		await service.startSession(ctx);
 		service.stopRecording(ctx);
 
-		service.appendNavigateStep(`https://example.com` as never);
+		service.appendNavigateStep(ctx, `https://example.com` as never);
 
 		expect(service.getActiveSession()?.recording.steps).toHaveLength(0);
 	});
@@ -205,7 +216,7 @@ describe(`sessionRecorderService.appendCloseWindowStep`, () => {
 		const ctx = makeCtx();
 		await service.startSession(ctx);
 
-		service.appendCloseWindowStep(`popup-1` as never);
+		service.appendCloseWindowStep(ctx, `popup-1` as never);
 
 		const steps = service.getActiveSession()?.recording.steps;
 		expect(steps).toHaveLength(1);
@@ -218,7 +229,7 @@ describe(`sessionRecorderService.appendCloseWindowStep`, () => {
 		await service.startSession(ctx);
 
 		service.setReplaying(true);
-		service.appendCloseWindowStep(`popup-1` as never);
+		service.appendCloseWindowStep(ctx, `popup-1` as never);
 		service.setReplaying(false);
 
 		expect(service.getActiveSession()?.recording.steps).toHaveLength(0);
@@ -229,7 +240,7 @@ describe(`sessionRecorderService.appendCloseWindowStep`, () => {
 		await service.startSession(ctx);
 		service.stopRecording(ctx);
 
-		service.appendCloseWindowStep(`popup-1` as never);
+		service.appendCloseWindowStep(ctx, `popup-1` as never);
 
 		expect(service.getActiveSession()?.recording.steps).toHaveLength(0);
 	});
@@ -362,7 +373,7 @@ describe(`sessionRecorderService.stopRecording`, () => {
 		expect(written.status).toBeUndefined();
 
 		// once idle, further steps aren't appended — proves _mode gated the write, not just a stale check
-		service.appendSteps([{ type: `click`, selectors: [`#foo`], offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
+		service.appendSteps(ctx, [{ type: `click`, selectors: [`#foo`], offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
 		expect(service.getActiveSession()?.recording.steps).toHaveLength(0);
 	});
 

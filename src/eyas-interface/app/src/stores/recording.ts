@@ -4,16 +4,18 @@ import type { IsActive, ProgressRatio, Count, DetailText, SessionId } from '@reg
 
 const MISMATCH_DETAIL_LIMIT: Count = 5;
 import type { RecorderStatusPayload } from '@registry/recording.js';
-import type { RecorderPlaybackStatusPayload, RecorderSessionsListedPayload, RecorderSessionLoadedPayload, RecordingSessionSummary } from '@registry/ipc.js';
+import type { RecorderPlaybackStatusPayload, RecorderSessionsListedPayload, RecorderSessionLoadedPayload, RecorderRunStepsLoadedPayload, RecordingSessionSummary } from '@registry/ipc.js';
 
 export default defineStore(`recording`, {
 	state: (): RecordingState => ({
 		completedSteps: 0,
+		currentStepIndex: null,
 		isPanelOpen: false,
 		playbackError: null,
 		playbackMismatches: [],
 		playbackSchemaWarning: null,
 		playbackStatus: null,
+		runStepOutcomes: null,
 		savedSessions: [],
 		selectedSessionDetail: null,
 		selectedSessionId: null,
@@ -64,6 +66,7 @@ export default defineStore(`recording`, {
 		selectSession(sessionId: SessionId): void {
 			this.selectedSessionId = sessionId;
 			this.selectedSessionDetail = null;
+			this.runStepOutcomes = null;
 		},
 
 		setSelectedSessionDetail(payload: RecorderSessionLoadedPayload): void {
@@ -71,9 +74,15 @@ export default defineStore(`recording`, {
 			this.selectedSessionDetail = payload;
 		},
 
+		setRunStepOutcomes(payload: RecorderRunStepsLoadedPayload): void {
+			if (payload?.sessionId !== this.selectedSessionId) { return; }
+			this.runStepOutcomes = payload;
+		},
+
 		backToBrowser(): void {
 			this.selectedSessionId = null;
 			this.selectedSessionDetail = null;
+			this.runStepOutcomes = null;
 		},
 
 		setFromIpc(payload: RecorderStatusPayload): void {
@@ -86,21 +95,26 @@ export default defineStore(`recording`, {
 				this.playbackSchemaWarning = null;
 				this.completedSteps = 0;
 				this.totalSteps = 0;
+				this.currentStepIndex = null;
 			}
 		},
 
 		setPlaybackStatus(payload: RecorderPlaybackStatusPayload): void {
+			// a step's mismatch, if any, is already known by the time that step's `playing` payload
+			// arrives, so findings accumulate across the run now instead of arriving all at once at the
+			// end — clear only on the transition into a new run, or a later step's progress event would
+			// wipe an earlier step's already-reported finding
+			if (payload.status === `playing` && this.playbackStatus !== `playing`) { this.playbackMismatches = []; }
 			this.playbackStatus = payload.status;
 			this.playbackError = payload.status === `failed` ? (payload.error ?? `Playback failed.`) : null;
-			// a run reports its findings once, at the end — `playing` is the start of a new run, so it
-			// clears the previous one's rather than leaving them on screen next to a fresh progress ring
-			this.playbackMismatches = payload.status === `playing` ? [] : (payload.mismatches ?? []);
+			this.playbackMismatches = payload.status === `playing` ? (payload.mismatches ?? this.playbackMismatches) : (payload.mismatches ?? []);
 			// only the `playing` payload carries this, and it has to outlive that payload — the run it
 			// warns about is still degraded once it finishes, and the end is when the tester reads the
 			// results. Falling back to `?? null` on every status would clear it at exactly that moment.
 			if (payload.status === `playing`) { this.playbackSchemaWarning = payload.schemaWarning ?? null; }
 			this.completedSteps = payload.completedSteps ?? this.completedSteps;
 			this.totalSteps = payload.totalSteps ?? this.totalSteps;
+			this.currentStepIndex = payload.status === `playing` ? (payload.currentStepIndex ?? this.currentStepIndex) : null;
 			if (payload.status !== `playing`) {
 				this.completedSteps = 0;
 				this.totalSteps = 0;

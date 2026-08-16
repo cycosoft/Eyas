@@ -115,25 +115,34 @@ async function startSession(ctx: CoreContext): Promise<void> {
 	ctx.$eyasLayer?.webContents?.send(`recorder-status-updated`, { isRecording: true, sessionId });
 }
 
+/** Pushes the in-progress session to the eyas layer so a detail view already open on it (see RecordingPanel.vue) reflects newly-appended steps live, instead of the snapshot from whenever it was first opened. Reuses the existing 'recorder-session-loaded' channel — the store's setSelectedSessionDetail already no-ops for a session that isn't the one currently selected, so broadcasting unconditionally here is safe. */
+function _broadcastSessionUpdate(ctx: CoreContext): void {
+	if (!_session) { return; }
+	ctx.$eyasLayer?.webContents?.send(`recorder-session-loaded`, _session);
+}
+
 /** Appends flushed steps from the recorder preload to the active session and persists. */
-function appendSteps(steps: RecordingStep[]): void {
+function appendSteps(ctx: CoreContext, steps: RecordingStep[]): void {
 	if (!_session || _mode !== `recording` || _isReplaying || steps.length === 0) { return; }
 	_session.recording.steps.push(...steps);
 	_persist();
+	_broadcastSessionUpdate(ctx);
 }
 
 /** Appends a NavigateStep captured from the main-process webContents navigation events. */
-function appendNavigateStep(url: DomainUrl): void {
+function appendNavigateStep(ctx: CoreContext, url: DomainUrl): void {
 	if (!_session || _mode !== `recording` || _isReplaying) { return; }
 	_session.recording.steps.push({ type: `navigate`, url, timestamp: Date.now() });
 	_persist();
+	_broadcastSessionUpdate(ctx);
 }
 
 /** Appends a CloseWindowStep captured from a tracked popup's 'closed' event. */
-function appendCloseWindowStep(popupId: PopupId): void {
+function appendCloseWindowStep(ctx: CoreContext, popupId: PopupId): void {
 	if (!_session || _mode !== `recording` || _isReplaying) { return; }
 	_session.recording.steps.push({ type: `closeWindow`, popupId, timestamp: Date.now() });
 	_persist();
+	_broadcastSessionUpdate(ctx);
 }
 
 /** Marks whether a replay is currently dispatching, so its own navigation isn't re-recorded. */

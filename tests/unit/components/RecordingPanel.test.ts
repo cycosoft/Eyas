@@ -348,4 +348,129 @@ describe(`RecordingPanel`, () => {
 		const listCalls = sendSpy.mock.calls.slice(callsBefore).filter(call => call[0] === `recorder-list-sessions`);
 		expect(listCalls.length).toBe(0);
 	});
+
+	function selectSessionWithTwoSteps(store: ReturnType<typeof useRecordingStore>): void {
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 2, lastRunOutcome: `passed` }];
+		store.selectedSessionId = `s1`;
+		store.selectedSessionDetail = {
+			sessionId: `s1`,
+			recording: {
+				title: `x`,
+				steps: [
+					{ type: `click`, selectors: [`#a`], offsetX: 1, offsetY: 1, timestamp: 1 },
+					{ type: `click`, selectors: [`#b`], offsetX: 1, offsetY: 1, timestamp: 2 }
+				]
+			}
+		} as never;
+	}
+
+	test(`blinks the last step blue while this session is actively recording`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		selectSessionWithTwoSteps(store);
+		store.status = `recording`;
+		store.sessionId = `s1`;
+		await activeWrapper?.vm.$nextTick();
+
+		expect(document.querySelectorAll(`.step-dot--recording`).length).toBe(1);
+		expect(document.querySelectorAll(`.step-dot--recording-active`).length).toBe(1);
+	});
+
+	test(`during playback, blinks the active step grey and leaves unreached steps neutral`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		selectSessionWithTwoSteps(store);
+		store.sessionId = `s1`;
+		store.playbackStatus = `playing`;
+		store.currentStepIndex = 0;
+		await activeWrapper?.vm.$nextTick();
+
+		expect(document.querySelectorAll(`.step-dot--playing-active`).length).toBe(1);
+		expect(document.querySelectorAll(`.step-dot--neutral`).length).toBe(1);
+	});
+
+	test(`during playback, a step behind the active one shows red once its mismatch is known live, without waiting for the run to finish`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		selectSessionWithTwoSteps(store);
+		store.sessionId = `s1`;
+		store.playbackStatus = `playing`;
+		store.currentStepIndex = 1;
+		store.playbackMismatches = [{ selector: `#a`, expected: `x`, actual: `y`, stepIndex: 0 }];
+		await activeWrapper?.vm.$nextTick();
+
+		expect(document.querySelectorAll(`.step-dot--failed`).length).toBe(1);
+	});
+
+	test(`when idle, colors steps from the last finished run's persisted outcomes`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		selectSessionWithTwoSteps(store);
+		store.runStepOutcomes = { sessionId: `s1`, finished: true, outcomes: { 0: `passed`, 1: `failed` } };
+		await activeWrapper?.vm.$nextTick();
+
+		expect(document.querySelectorAll(`.step-dot--passed`).length).toBe(1);
+		expect(document.querySelectorAll(`.step-dot--failed`).length).toBe(1);
+	});
+
+	test(`when idle and the recording has never been run, all steps stay neutral`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		selectSessionWithTwoSteps(store);
+		store.runStepOutcomes = null;
+		await activeWrapper?.vm.$nextTick();
+
+		expect(document.querySelectorAll(`.step-dot--neutral`).length).toBe(2);
+	});
+
+	test(`when the last run was aborted (never finished), steps stay neutral rather than showing a misleading partial pass`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		selectSessionWithTwoSteps(store);
+		store.runStepOutcomes = { sessionId: `s1`, finished: false, outcomes: { 0: `passed` } };
+		await activeWrapper?.vm.$nextTick();
+
+		expect(document.querySelectorAll(`.step-dot--neutral`).length).toBe(2);
+	});
+
+	test(`step icons stay neutral for a session that is not the one actively recording/playing in this instance`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		selectSessionWithTwoSteps(store);
+		store.status = `recording`;
+		store.sessionId = `some-other-session`;
+		await activeWrapper?.vm.$nextTick();
+
+		expect(document.querySelectorAll(`.step-dot--recording`).length).toBe(0);
+		expect(document.querySelectorAll(`.step-dot--recording-active`).length).toBe(0);
+		expect(document.querySelectorAll(`.step-dot--neutral`).length).toBe(2);
+	});
+
+	test(`refetches this session's run steps when a watched playback finishes while its detail view is open`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		selectSessionWithTwoSteps(store);
+		store.sessionId = `s1`;
+		await activeWrapper?.vm.$nextTick();
+
+		const sendSpy = window.eyas?.send as Mock;
+		const callsBefore = sendSpy.mock.calls.length;
+
+		store.playbackStatus = `playing`;
+		await activeWrapper?.vm.$nextTick();
+		store.playbackStatus = `stopped`;
+		await activeWrapper?.vm.$nextTick();
+
+		const runStepsCalls = sendSpy.mock.calls.slice(callsBefore).filter(call => call[0] === `recorder-get-run-steps`);
+		expect(runStepsCalls.length).toBe(1);
+		expect(runStepsCalls[0]?.[1]).toEqual({ sessionId: `s1` });
+	});
 });

@@ -79,7 +79,7 @@ async function _runSteps({ webContents, session, runId, ctx, stepActions, stepDe
 			await runHistoryService.recordStepFailure(session.projectId, runId, i as StepIndex);
 			throw err;
 		}
-		reportStepProgress(ctx, stepActions, i);
+		reportStepProgress(ctx, stepActions, i, getMismatches());
 	}
 	return false;
 }

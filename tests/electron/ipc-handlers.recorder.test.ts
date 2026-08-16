@@ -69,7 +69,7 @@ describe(`recorder-flush-steps IPC handler`, () => {
 
 		handler({ sender: { id: 1 } }, [step]);
 
-		expect(appendSteps).toHaveBeenCalledWith([step]);
+		expect(appendSteps).toHaveBeenCalledWith({}, [step]);
 	});
 
 	test(`tags every step in the flush with the popupId resolved from the sending webContents, overriding any client-supplied value`, () => {
@@ -79,7 +79,7 @@ describe(`recorder-flush-steps IPC handler`, () => {
 
 		handler({ sender: { id: 5 } }, [step]);
 
-		expect(appendSteps).toHaveBeenCalledWith([{ ...step, popupId: `popup-a` }]);
+		expect(appendSteps).toHaveBeenCalledWith({}, [{ ...step, popupId: `popup-a` }]);
 	});
 });
 

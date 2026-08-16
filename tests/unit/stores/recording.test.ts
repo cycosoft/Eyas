@@ -88,6 +88,17 @@ describe(`useRecordingStore`, () => {
 		expect(store.mismatchCount).toBe(0);
 	});
 
+	test(`setPlaybackStatus accumulates mismatches across successive playing payloads within one run, rather than resetting on each step`, () => {
+		const store = useRecordingStore();
+		store.setPlaybackStatus({ status: `playing`, currentStepIndex: 0 });
+		store.setPlaybackStatus({ status: `playing`, currentStepIndex: 1, mismatches: [MISMATCH] });
+
+		// a later step's `playing` payload carrying no new mismatches must not wipe an earlier step's finding
+		store.setPlaybackStatus({ status: `playing`, currentStepIndex: 2 });
+
+		expect(store.mismatchCount).toBe(1);
+	});
+
 	test(`mismatchSummary describes what was expected against what was found`, () => {
 		const store = useRecordingStore();
 		store.setPlaybackStatus({ status: `stopped`, mismatches: [MISMATCH] });

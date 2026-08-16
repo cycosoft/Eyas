@@ -19,6 +19,15 @@ type LastRunSummary = { outcome: RunOutcome | null };
 
 type RunRow = { runId: RunId; endedAt: TimestampMS | null };
 type FailureCountRow = { failureCount: number };
+type StepOutcomeRow = { stepIndex: StepIndex; outcome: RunOutcome };
+
+/**
+ * Per-step outcomes for a recording's most recent run, for the detail view's step icons.
+ * `finished: false` (no `endedAt` yet — crash or user-stop) means `outcomes` is a partial picture
+ * of an interrupted run, not a verdict on the steps it happened to reach — callers should treat
+ * this the same as "never run" rather than trusting the partial data.
+ */
+type StepOutcomes = { finished: boolean; outcomes: Partial<Record<StepIndex, RunOutcome>> };
 
 let _dbsByProjectId = new Map<ProjectId, DatabaseSync>();
 let _dbDirOverride: FilePath | null = null;
@@ -108,4 +117,20 @@ async function getLastRunForRecording(projectId: ProjectId, recordingId: Session
 	return { outcome: failures.failureCount > 0 ? `failed` : `passed` };
 }
 
-export default { startRun, recordStepStart, recordStepFailure, finishRun, getLastRunForRecording, _setSessionsDir };
+/** Per-step outcomes for a recording's most recent run, for the detail view's step icons. `null` if the recording has never been played. */
+async function getStepOutcomes(projectId: ProjectId, recordingId: SessionId): Promise<StepOutcomes | null> {
+	const db = _openDb(projectId);
+	const run = db.prepare(`SELECT runId, endedAt FROM runs WHERE recordingId = ? ORDER BY startedAt DESC LIMIT 1`)
+		.get(recordingId) as RunRow | undefined;
+
+	if (!run) { return null; }
+
+	const rows = db.prepare(`SELECT stepIndex, outcome FROM run_steps WHERE runId = ?`)
+		.all(run.runId) as StepOutcomeRow[];
+	const outcomes: Partial<Record<StepIndex, RunOutcome>> = {};
+	for (const row of rows) { outcomes[row.stepIndex] = row.outcome; }
+
+	return { finished: run.endedAt !== null, outcomes };
+}
+
+export default { startRun, recordStepStart, recordStepFailure, finishRun, getLastRunForRecording, getStepOutcomes, _setSessionsDir };

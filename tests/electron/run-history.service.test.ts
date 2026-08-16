@@ -77,3 +77,43 @@ describe(`runHistoryService.getLastRunForRecording`, () => {
 		expect(result).toBeNull();
 	});
 });
+
+describe(`runHistoryService.getStepOutcomes`, () => {
+	test(`returns null for a recording that has never been played`, async () => {
+		const result = await service.getStepOutcomes(`proj-1`, `rec-1`);
+		expect(result).toBeNull();
+	});
+
+	test(`returns finished:true with each step's outcome for a completed run`, async () => {
+		const runId = await service.startRun(`proj-1`, `rec-1`);
+		await service.recordStepStart(`proj-1`, runId, 0);
+		await service.recordStepStart(`proj-1`, runId, 1);
+		await service.recordStepFailure(`proj-1`, runId, 1);
+		await service.finishRun(`proj-1`, runId);
+
+		const result = await service.getStepOutcomes(`proj-1`, `rec-1`);
+		expect(result).toEqual({ finished: true, outcomes: { 0: `passed`, 1: `failed` } });
+	});
+
+	test(`returns finished:false for a run that never called finishRun, even though some steps recorded`, async () => {
+		const runId = await service.startRun(`proj-1`, `rec-1`);
+		await service.recordStepStart(`proj-1`, runId, 0);
+
+		const result = await service.getStepOutcomes(`proj-1`, `rec-1`);
+		expect(result).toEqual({ finished: false, outcomes: { 0: `passed` } });
+	});
+
+	test(`reflects the most recently started run's steps, not an earlier run's`, async () => {
+		const firstRunId = await service.startRun(`proj-1`, `rec-1`);
+		await service.recordStepStart(`proj-1`, firstRunId, 0);
+		await service.recordStepFailure(`proj-1`, firstRunId, 0);
+		await service.finishRun(`proj-1`, firstRunId);
+
+		const secondRunId = await service.startRun(`proj-1`, `rec-1`);
+		await service.recordStepStart(`proj-1`, secondRunId, 0);
+		await service.finishRun(`proj-1`, secondRunId);
+
+		const result = await service.getStepOutcomes(`proj-1`, `rec-1`);
+		expect(result).toEqual({ finished: true, outcomes: { 0: `passed` } });
+	});
+});

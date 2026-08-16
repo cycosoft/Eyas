@@ -101,8 +101,8 @@ describe(`sessionPlaybackService.playSession progress reporting`, () => {
 
 		await playbackService.playSession(ctx, `sess-1`);
 
-		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `playing`, completedSteps: 0, totalSteps: 1 });
-		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `playing`, completedSteps: 1, totalSteps: 1 });
+		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, expect.objectContaining({ status: `playing`, completedSteps: 0, totalSteps: 1 }));
+		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, expect.objectContaining({ status: `playing`, completedSteps: 1, totalSteps: 1 }));
 		expect(send).not.toHaveBeenCalledWith(`recorder-playback-status`, expect.objectContaining({ completedSteps: 2 }));
 	});
 
@@ -116,7 +116,7 @@ describe(`sessionPlaybackService.playSession progress reporting`, () => {
 
 		await playbackService.playSession(ctx, `sess-1`);
 
-		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `playing`, completedSteps: 0, totalSteps: 1 });
+		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, expect.objectContaining({ status: `playing`, completedSteps: 0, totalSteps: 1 }));
 		expect(send).not.toHaveBeenCalledWith(`recorder-playback-status`, expect.objectContaining({ completedSteps: 2 }));
 	});
 
@@ -130,8 +130,21 @@ describe(`sessionPlaybackService.playSession progress reporting`, () => {
 
 		await playbackService.playSession(ctx, `sess-1`);
 
-		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `playing`, completedSteps: 0, totalSteps: 2 });
-		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `playing`, completedSteps: 1, totalSteps: 2 });
-		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `playing`, completedSteps: 2, totalSteps: 2 });
+		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, expect.objectContaining({ status: `playing`, completedSteps: 0, totalSteps: 2 }));
+		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, expect.objectContaining({ status: `playing`, completedSteps: 1, totalSteps: 2 }));
+		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, expect.objectContaining({ status: `playing`, completedSteps: 2, totalSteps: 2 }));
+	});
+
+	test(`advances currentStepIndex with every dispatched step, including ones that don't count toward the progress ring`, async () => {
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `click`, selectors: [`#link`], offsetX: 1, offsetY: 1, timestamp: 1 },
+			{ type: `scroll`, x: 0, y: 100, timestamp: 2 }
+		]));
+		const ctx = makeCtx();
+
+		await playbackService.playSession(ctx, `sess-1`);
+
+		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, expect.objectContaining({ status: `playing`, currentStepIndex: 0 }));
+		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, expect.objectContaining({ status: `playing`, currentStepIndex: 1 }));
 	});
 });

@@ -132,6 +132,8 @@ export type DeviceId = string;
 export type Username = string;
 export type PasswordPlain = string;
 export type PasswordHex = string;
+/** A CSS hex color string, e.g. `#43a047`, for props (like Vuetify's `dot-color`) that take a color as a plain string rather than a theme token. */
+export type ColorHex = string;
 export type WasSeeded = boolean;
 export type SessionId = string;
 export type RunId = string;

@@ -72,9 +72,10 @@
 					:key="index"
 					:icon="stepIcon(step)"
 					icon-color="white"
-					dot-color="primary"
+					:dot-color="stepDotColorFor(stepDotClass(index))"
 					size="small"
 					fill-dot
+					:class="`step-dot--${stepDotClass(index)}`"
 				>
 					<div class="font-body text-body-2 font-weight-medium text-on-surface step-timeline-title" data-qa="recording-step-title">
 						{{ describeStep(step) }}
@@ -96,10 +97,11 @@ import { computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import EyasModal from '@/components/EyasModal.vue';
 import useRecordingStore from '@/stores/recording.js';
-import type { IsVisible, ChannelName, IconName } from '@registry/primitives.js';
-import type { RecordingStep, ScopedSelectorPayload, SelectorGroup } from '@registry/recording.js';
-import type { RecorderGetSessionPayload, RecordingSessionSummary } from '@registry/ipc.js';
-import type { DetailText } from '@registry/primitives.js';
+import { stepDotClassFor, stepDotColorFor, type StepDotClass } from '@/utils/step-dot.utils.js';
+import { describeStep, stepIcon, stepDetail } from '@/utils/step-format.utils.js';
+import type { IsVisible, IsActive, ChannelName, Count } from '@registry/primitives.js';
+import type { RecordingSessionSummary } from '@registry/ipc.js';
+import type { DetailText, StepIndex } from '@registry/primitives.js';
 
 const recordingStore = useRecordingStore();
 const { savedSessions, selectedSession, selectedSessionDetail } = storeToRefs(recordingStore);
@@ -120,13 +122,20 @@ watch(isOpen, open => {
 }, { immediate: true });
 
 // Refreshes lastRunOutcome the moment a watched playback finishes, so a row doesn't sit stale until the panel is closed and reopened.
+// Also refetches this session's per-step outcomes for the detail view's icons, which would
+// otherwise keep showing the *previous* run's colors the instant isPlaying flips false.
 watch(() => recordingStore.playbackStatus, (status, prevStatus) => {
-	if (isOpen.value && prevStatus === `playing` && status !== `playing`) { window.eyas?.send(`recorder-list-sessions` as ChannelName); }
+	if (!isOpen.value || prevStatus !== `playing` || status === `playing`) { return; }
+	window.eyas?.send(`recorder-list-sessions` as ChannelName);
+	if (selectedSession.value) {
+		window.eyas?.send(`recorder-get-run-steps` as ChannelName, { sessionId: selectedSession.value.sessionId } as RecorderGetRunStepsPayload);
+	}
 });
 
 watch(selectedSession, session => {
 	if (session) {
 		window.eyas?.send(`recorder-get-session` as ChannelName, { sessionId: session.sessionId } as RecorderGetSessionPayload);
+		window.eyas?.send(`recorder-get-run-steps` as ChannelName, { sessionId: session.sessionId } as RecorderGetRunStepsPayload);
 	}
 });
 
@@ -139,6 +148,22 @@ function dotClassFor(session: RecordingSessionSummary): `recording` | `playing` 
 	return `neutral`;
 }
 
+// View-anchored: only colors icons for the detail view's own session, matching the currently
+// active recording/playback instance — a different session's icons stay neutral even if this
+// instance happens to be recording/playing something else (which can't currently overlap this
+// view being open on it, but the guard is cheap and keeps the intent explicit).
+const isActiveSession = computed<IsActive>(() => !!selectedSession.value && recordingStore.sessionId === selectedSession.value.sessionId);
+
+function stepDotClass(stepIndex: StepIndex): StepDotClass {
+	const totalSteps = (selectedSessionDetail.value?.recording.steps.length ?? 0) as Count;
+	const recording = isActiveSession.value && recordingStore.isRecording ? { totalSteps } : null;
+	const playing = isActiveSession.value && recordingStore.isPlaying
+		? { currentStepIndex: recordingStore.currentStepIndex, playbackMismatches: recordingStore.playbackMismatches }
+		: null;
+	const runStepOutcomes = recordingStore.runStepOutcomes?.finished ? recordingStore.runStepOutcomes.outcomes : null;
+	return stepDotClassFor(stepIndex, recording, playing, runStepOutcomes);
+}
+
 function formatTitle(isoTitle: RecordingSessionSummary[`title`]): DetailText {
 	const parsed = new Date(isoTitle);
 	return Number.isNaN(parsed.getTime()) ? isoTitle : parsed.toLocaleString();
@@ -148,79 +173,6 @@ const testDate = computed<DetailText | undefined>(() => {
 	return selectedSession.value ? new Date(selectedSession.value.startedAt).toLocaleString() : undefined;
 });
 
-function describeStep(step: RecordingStep): DetailText {
-	switch (step.type) {
-	case `click`: return step.button === `secondary` ? `Right click` : `Click`;
-	case `change`: return `Enter text`;
-	case `editableChange`: return `Edit rich text`;
-	case `editableInput`: return `Type into editor`;
-	case `keyDown`: return `Key press: ${step.key}`;
-	case `keyUp`: return `Key release: ${step.key}`;
-	case `scroll`: return `Scroll`;
-	case `navigate`: return `Navigate to`;
-	case `closeWindow`: return `Close window`;
-	default: return `Step`;
-	}
-}
-
-function stepIcon(step: RecordingStep): IconName {
-	switch (step.type) {
-	case `click`: return step.button === `secondary` ? `mdi-cursor-default-click-outline` : `mdi-cursor-default-click`;
-	case `change`: return `mdi-form-textbox`;
-	case `editableChange`: return `mdi-text-box-edit-outline`;
-	case `editableInput`: return `mdi-text-box-edit-outline`;
-	case `keyDown`: return `mdi-keyboard-outline`;
-	case `keyUp`: return `mdi-keyboard-outline`;
-	case `scroll`: return `mdi-gesture-swipe-vertical`;
-	case `navigate`: return `mdi-compass-outline`;
-	case `closeWindow`: return `mdi-close-box-outline`;
-	default: return `mdi-circle-small`;
-	}
-}
-
-function stepDetail(step: RecordingStep): DetailText | undefined {
-	switch (step.type) {
-	case `click`: return humanizeSelector(step.selectors);
-	case `change`: return step.value;
-	case `editableChange`: return step.text;
-	case `editableInput`: return step.data;
-	case `scroll`: return `x: ${step.x}, y: ${step.y}`;
-	case `navigate`: return humanizeUrl(step.url);
-	default: return undefined;
-	}
-}
-
-// Turns a step's best selector candidate into plain English — testers only care that it was "Submit", not that it matched via `aria/Submit`. Falls back to the raw candidate for a bare CSS selector, which has no prefix to strip.
-function humanizeSelector(selectors: SelectorGroup): DetailText | undefined {
-	const selector = selectors[0];
-	if (!selector) { return undefined; }
-
-	const separatorIndex = selector.indexOf(`/`);
-	if (separatorIndex === -1) { return selector; }
-
-	const prefix = selector.slice(0, separatorIndex);
-	const value = selector.slice(separatorIndex + 1);
-
-	if (prefix === `scoped-aria` || prefix === `scoped-text`) {
-		try {
-			return (JSON.parse(value) as ScopedSelectorPayload).name;
-		} catch {
-			return value;
-		}
-	}
-
-	return value || selector;
-}
-
-/** Shows only the part of a navigated-to URL a tester cares about: the path, not the domain they were already on. */
-function humanizeUrl(url: DetailText): DetailText {
-	try {
-		const parsed = new URL(url);
-		return `${parsed.pathname}${parsed.search}` || `/`;
-	} catch {
-		return url;
-	}
-}
 </script>
 
 <style scoped>
@@ -283,6 +235,14 @@ function humanizeUrl(url: DetailText): DetailText {
 :deep(.v-timeline-item__body) {
 	overflow-wrap: anywhere;
 	padding-block-end: 0.75rem;
+}
+
+/* Per-step blink — base color already comes from the bound dot-color prop (stepDotColorFor);
+   Vuetify's dot-color alone can't carry an animation, so the pulse is layered on via :deep(),
+   reusing the same @keyframes recording-pulse the list row's blinking dot already uses. */
+.step-dot--recording-active :deep(.v-timeline-divider__dot),
+.step-dot--playing-active :deep(.v-timeline-divider__dot) {
+	animation: recording-pulse 1.5s infinite;
 }
 
 .step-timeline-title {
