@@ -1,6 +1,7 @@
 # TODO
 
 - update changelog
+- the recording list needs to be scrolled back to the position it was at when you left that view
 - consider auto-opening the recording panel on replay failure
 
 # Future
