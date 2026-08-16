@@ -1,13 +1,13 @@
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { RecordingStep, EyasRecordingEnvelope } from '@registry/recording.js';
-import type { SessionId, RunId, DurationMS, DomainUrl, StepCount, StepIndex, ChannelName } from '@registry/primitives.js';
+import type { SessionId, RunId, DurationMS, DomainUrl, StepCount, StepIndex, ChannelName, ProjectId } from '@registry/primitives.js';
 import type { RecorderPlaybackStatusPayload } from '@registry/ipc.js';
 import type { ReplaySpeedMode } from '@registry/settings.js';
 import sessionRecorderService from './session-recorder.service.js';
 import runHistoryService from './run-history.service.js';
 import { closeAllPopups, setReplayPopupIdQueue, clearReplayPopupIdQueue, hideAllRecordingOverlays, showAllRecordingOverlays } from './window.popups.js';
 import { resetModifiers } from './session-playback.keystrokes.js';
-import { resetMismatches, mismatchPayload } from './session-playback.assertions.js';
+import { resetMismatches, mismatchPayload, getMismatches } from './session-playback.assertions.js';
 import { sendPlaybackStatus, computeStepActions, reportStepProgress } from './session-playback.progress.js';
 import { _dispatchStep, _orderedPopupIds, _waitForPaint, _delay } from './session-playback.step-dispatch.js';
 import { TEST_RUNNING_RING_FADE_MS, PLAYBACK_COMPLETE_HOLD_MS } from '@scripts/constants.js';
@@ -65,7 +65,7 @@ type RunStepsArgs = {
 	stepDelayMs: DurationMS;
 };
 
-/** Dispatches every step in order, recording each one's start in the run's history first. Returns whether the run was aborted (stopPlayback()) partway through, so the caller can skip the "it finished" bookkeeping for both the run and its popups. */
+/** Dispatches every step in order, recording each one's start in the run's history first. A step that throws is recorded as a failure before the exception propagates, so `run_steps` stays self-consistent for a reader that never consults `runs.outcome`. Returns whether the run was aborted (stopPlayback()) partway through, so the caller can skip the "it finished" bookkeeping for both the run and its popups. */
 async function _runSteps({ webContents, session, runId, ctx, stepActions, stepDelayMs }: RunStepsArgs): Promise<WasAborted> {
 	const steps = session.recording.steps;
 	for (let i = 0; i < steps.length; i++) {
@@ -73,10 +73,25 @@ async function _runSteps({ webContents, session, runId, ctx, stepActions, stepDe
 		const delayMs = KEYSTROKE_STEP_TYPES.has(steps[i].type) ? KEYSTROKE_DELAY_MS : stepDelayMs;
 		if (delayMs > 0) { await _delay(delayMs); }
 		await runHistoryService.recordStepStart(session.projectId, runId, i as StepIndex);
-		await _dispatchStep(webContents, steps[i], i);
+		try {
+			await _dispatchStep(webContents, steps[i], i);
+		} catch (err) {
+			await runHistoryService.recordStepFailure(session.projectId, runId, i as StepIndex);
+			throw err;
+		}
 		reportStepProgress(ctx, stepActions, i);
 	}
 	return false;
+}
+
+/** Persists every step a soft-assertion mismatch was found on, so the run's derived outcome (see run-history.service.ts) reflects findings that didn't throw. */
+async function _persistMismatchOutcomes(projectId: ProjectId, runId: RunId): Promise<void> {
+	const seenStepIndexes = new Set<StepIndex>();
+	for (const mismatch of getMismatches()) {
+		if (seenStepIndexes.has(mismatch.stepIndex)) { continue; }
+		seenStepIndexes.add(mismatch.stepIndex);
+		await runHistoryService.recordStepFailure(projectId, runId, mismatch.stepIndex);
+	}
 }
 
 async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebContents, session: EyasRecordingEnvelope): Promise<void> {
@@ -127,11 +142,15 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 		// before this "stopped" status resets/hides the progress ring — otherwise both status
 		// updates land in the same tick and the ring's last visible frame is one step short of full
 		if (!aborted) { await _delay(PLAYBACK_COMPLETE_HOLD_MS); }
-		// a user-initiated stop leaves the run row without an outcome — same "never finished" state a
+		// a user-initiated stop leaves the run row without an endedAt — same "never finished" state a
 		// crash would leave, since the tester only cares that it didn't complete, not why
-		if (!aborted && runId) { await runHistoryService.finishRun(session.projectId, runId, `passed`); }
-		// a replay that finished can still have findings — assertions don't abort the run (see
-		// session-playback.assertions.ts), so the end of it is the first chance to report them
+		if (!aborted && runId) {
+			// a replay that finished can still have findings — assertions don't abort the run (see
+			// session-playback.assertions.ts) — persisted before finishRun so the derived outcome
+			// (run-history.service.ts) already reflects them once the run reads as finished
+			await _persistMismatchOutcomes(session.projectId, runId);
+			await runHistoryService.finishRun(session.projectId, runId);
+		}
 		sendPlaybackStatus(ctx, { status: `stopped`, ...mismatchPayload() });
 	} catch (err) {
 		const error = err instanceof Error ? err.message : String(err);
@@ -139,7 +158,12 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 		// aborted recording never reached its closeWindow step for, the same way a failed Playwright/
 		// Cypress test still tears down its browser context, before reporting the failure
 		await _teardownPopups();
-		if (runId) { await runHistoryService.finishRun(session.projectId, runId, `failed`); }
+		if (runId) {
+			// findings gathered before the throw are still worth persisting — the step that failed
+			// (recorded by _runSteps) doesn't invalidate assertions that already ran on earlier steps
+			await _persistMismatchOutcomes(session.projectId, runId);
+			await runHistoryService.finishRun(session.projectId, runId);
+		}
 		// findings gathered before the throw are still worth surfacing — the step that failed doesn't
 		// invalidate the assertions that already ran
 		sendPlaybackStatus(ctx, { status: `failed`, error, ...mismatchPayload() });

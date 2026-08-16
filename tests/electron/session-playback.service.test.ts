@@ -25,6 +25,7 @@ vi.mock(`@core/run-history.service.js`, () => ({
 	default: {
 		startRun: vi.fn().mockResolvedValue(`run-1`),
 		recordStepStart: vi.fn().mockResolvedValue(undefined),
+		recordStepFailure: vi.fn().mockResolvedValue(undefined),
 		finishRun: vi.fn().mockResolvedValue(undefined)
 	}
 }));
@@ -441,7 +442,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 
 		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `stopped` });
 		expect(detach).toHaveBeenCalled();
-		expect(runHistoryService.finishRun).toHaveBeenCalledWith(`test-proj`, `run-1`, `passed`);
+		expect(runHistoryService.finishRun).toHaveBeenCalledWith(`test-proj`, `run-1`);
 	});
 
 	test(`sends 'failed' status with the error message when a step dispatch throws, and detaches the debugger`, async () => {
@@ -455,7 +456,8 @@ describe(`sessionPlaybackService.playSession`, () => {
 
 		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `failed`, error: `boom` });
 		expect(detach).toHaveBeenCalled();
-		expect(runHistoryService.finishRun).toHaveBeenCalledWith(`test-proj`, `run-1`, `failed`);
+		expect(runHistoryService.recordStepFailure).toHaveBeenCalledWith(`test-proj`, `run-1`, 0);
+		expect(runHistoryService.finishRun).toHaveBeenCalledWith(`test-proj`, `run-1`);
 	});
 
 	test(`sends 'failed' status when no session is found for the given sessionId`, async () => {
