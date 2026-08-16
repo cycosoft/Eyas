@@ -72,4 +72,62 @@ describe(`RecordingPanel playback auto-scroll`, () => {
 
 		expect(scrollSpy).not.toHaveBeenCalled();
 	});
+
+	test(`stops following once the tester manually scrolls, for the rest of that run`, async () => {
+		const wrapper = mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		selectSessionWithTwoSteps(store);
+		store.sessionId = `s1`;
+		store.playbackStatus = `playing`;
+		store.currentStepIndex = 0;
+		await wrapper.vm.$nextTick();
+		await wrapper.vm.$nextTick();
+
+		const stepEl = document.querySelector(`[data-step-index="1"]`) as HTMLElement;
+		const scrollSpy = vi.fn();
+		stepEl.scrollIntoView = scrollSpy;
+
+		document.querySelector(`[data-qa="recording-panel-detail"]`)?.dispatchEvent(new Event(`wheel`, { bubbles: true }));
+		await wrapper.vm.$nextTick();
+
+		store.currentStepIndex = 1;
+		await wrapper.vm.$nextTick();
+		await wrapper.vm.$nextTick();
+
+		expect(scrollSpy).not.toHaveBeenCalled();
+	});
+
+	test(`resumes following on the next playback run's first step`, async () => {
+		const wrapper = mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		selectSessionWithTwoSteps(store);
+		store.sessionId = `s1`;
+		store.playbackStatus = `playing`;
+		store.currentStepIndex = 0;
+		await wrapper.vm.$nextTick();
+		await wrapper.vm.$nextTick();
+
+		document.querySelector(`[data-qa="recording-panel-detail"]`)?.dispatchEvent(new Event(`wheel`, { bubbles: true }));
+		await wrapper.vm.$nextTick();
+
+		// run ends, then a fresh run begins at step 0 again
+		store.playbackStatus = null;
+		store.currentStepIndex = null;
+		await wrapper.vm.$nextTick();
+		store.playbackStatus = `playing`;
+		store.currentStepIndex = 0;
+		await wrapper.vm.$nextTick();
+
+		const stepEl = document.querySelector(`[data-step-index="1"]`) as HTMLElement;
+		const scrollSpy = vi.fn();
+		stepEl.scrollIntoView = scrollSpy;
+
+		store.currentStepIndex = 1;
+		await wrapper.vm.$nextTick();
+		await wrapper.vm.$nextTick();
+
+		expect(scrollSpy).toHaveBeenCalledWith({ behavior: `smooth`, block: `center` });
+	});
 });

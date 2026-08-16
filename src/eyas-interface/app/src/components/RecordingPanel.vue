@@ -46,7 +46,7 @@
 			</ul>
 		</div>
 
-		<div v-else ref="detailContainerEl" data-qa="recording-panel-detail">
+		<div v-else ref="detailContainerEl" data-qa="recording-panel-detail" @wheel="interruptAutoScroll" @touchmove="interruptAutoScroll">
 			<p
 				v-if="testDate !== formatTitle(selectedSession.title)"
 				class="font-body text-caption text-grey-darken-1 mb-4"
@@ -163,11 +163,22 @@ const isActiveSession = computed<IsActive>(() => !!selectedSession.value && reco
 
 const detailContainerEl = ref<HTMLElement | null>(null);
 
+// Once the tester manually scrolls mid-run, auto-follow stops for the rest of that run rather than
+// fighting them or silently resuming — they've deliberately taken over. Reset on the next run's
+// first step so a fresh playback always starts out following again.
+let autoScrollInterrupted = false;
+
+function interruptAutoScroll(): void {
+	autoScrollInterrupted = true;
+}
+
 // Keeps the actively-dispatching step visible while a watched playback runs, so the tester doesn't
 // have to manually scroll the detail view to follow along. Only follows the panel's own active
 // session (isActiveSession), matching the view-anchored scoping used for step icon coloring above.
 watch(() => recordingStore.currentStepIndex, async currentStepIndex => {
 	if (currentStepIndex === null || !isActiveSession.value || !recordingStore.isPlaying) { return; }
+	if (currentStepIndex === 0) { autoScrollInterrupted = false; }
+	if (autoScrollInterrupted) { return; }
 	await nextTick();
 	const stepEl = detailContainerEl.value?.querySelector(`[data-step-index="${currentStepIndex}"]`);
 	stepEl?.scrollIntoView({ behavior: `smooth`, block: `center` });
