@@ -56,6 +56,13 @@ export default defineStore(`recording`, {
 			if (!this.isPanelOpen) {
 				this.selectedSessionId = null;
 				this.selectedSessionDetail = null;
+				return;
+			}
+			// opening onto an already-running playback should drop straight into that recording's
+			// detail view rather than the browser list, so the tester doesn't have to hunt for the
+			// row that's actively blinking
+			if (this.isPlaying && this.sessionId) {
+				this.selectSession(this.sessionId);
 			}
 		},
 

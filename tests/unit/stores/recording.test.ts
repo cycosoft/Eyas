@@ -212,4 +212,27 @@ describe(`useRecordingStore`, () => {
 		expect(store.isPanelOpen).toBe(false);
 		expect(store.selectedSession).toBeNull();
 	});
+
+	test(`togglePanel drills into the actively-playing session's detail view when opened mid-run`, () => {
+		const store = useRecordingStore();
+		store.setSessionsList([SUMMARY]);
+		store.sessionId = `s1` as never;
+		store.setPlaybackStatus({ status: `playing`, completedSteps: 0, totalSteps: 2 } as never);
+
+		store.togglePanel();
+
+		expect(store.isPanelOpen).toBe(true);
+		expect(store.selectedSessionId).toBe(`s1`);
+	});
+
+	test(`togglePanel opens to the browser list when nothing is playing`, () => {
+		const store = useRecordingStore();
+		store.setSessionsList([SUMMARY]);
+		store.sessionId = `s1` as never;
+
+		store.togglePanel();
+
+		expect(store.isPanelOpen).toBe(true);
+		expect(store.selectedSessionId).toBeNull();
+	});
 });
