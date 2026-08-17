@@ -7,7 +7,7 @@
 		@mouseenter="handleHeaderMouseEnter"
 		@mouseleave="handleHeaderMouseLeave"
 	>
-		<span :class="['system-bar-title', modalsStore.hasVisibleModals ? 'scrim-active-text' : 'text-disabled']">{{ displayAppTitle }}</span>
+		<span :class="['system-bar-title', scrimActive ? 'scrim-active-text' : 'text-disabled']">{{ displayAppTitle }}</span>
 	</v-system-bar>
 	<v-app-bar
 		density="compact"
@@ -208,7 +208,7 @@ import { onMounted, watch, toRefs, computed } from 'vue';
 import { useTheme } from 'vuetify';
 import type { ChannelName } from '@registry/primitives.js';
 import type { RecorderStatusPayload } from '@registry/recording.js';
-import type { RecorderPlaybackStatusPayload } from '@registry/ipc.js';
+import type { RecorderPlaybackStatusPayload, RecorderSessionsListedPayload, RecorderSessionLoadedPayload, RecorderRunStepsLoadedPayload } from '@registry/ipc.js';
 import {
 	groups, state, browserControls, isControlDisabled, handleBrowserControlClick,
 	goBack, goForward, reload, goHome, handleBroadcastClick, activate,
@@ -231,9 +231,12 @@ function adjustZoomLevel(direction: `in` | `out` | `reset`): void {
 	window.eyas?.send(`adjust-zoom` as ChannelName, direction);
 }
 const theme = useTheme();
+// mirrors EyasModal's showScrim exception: the recording panel hides its scrim during an in-progress
+// replay so the tester can watch the run happen underneath, and the header should match that
+const scrimActive = computed(() => modalsStore.hasVisibleModals && !recordingStore.isPlaying);
 const overlayColors = computed(() => {
 	const isDark = theme.global.current.value.dark;
-	return modalsStore.hasVisibleModals ? { color: isDark ? `#141414` : `#949597`, symbolColor: `#ffffff` }
+	return scrimActive.value ? { color: isDark ? `#141414` : `#949597`, symbolColor: `#ffffff` }
 		: isDark ? { color: `#212121`, symbolColor: `#ffffff` } : { color: `#f7f9fb`, symbolColor: `#191c1e` };
 });
 watch(menu, isOpen => { if (!isOpen) { delayedClose(); state.activeGroup = null; } });
@@ -245,6 +248,12 @@ onMounted(() => {
 	window.eyas?.receive(`update-status-updated` as ChannelName, handleUpdateStatusUpdate);
 	window.eyas?.receive(`recorder-status-updated` as ChannelName, (...args: unknown[]) => recordingStore.setFromIpc(args[0] as RecorderStatusPayload));
 	window.eyas?.receive(`recorder-playback-status` as ChannelName, (...args: unknown[]) => recordingStore.setPlaybackStatus(args[0] as RecorderPlaybackStatusPayload));
+	window.eyas?.receive(`recorder-sessions-listed` as ChannelName, (...args: unknown[]) => recordingStore.setSessionsList(args[0] as RecorderSessionsListedPayload));
+	window.eyas?.receive(`recorder-session-loaded` as ChannelName, (...args: unknown[]) => recordingStore.setSelectedSessionDetail(args[0] as RecorderSessionLoadedPayload));
+	window.eyas?.receive(`recorder-run-steps-loaded` as ChannelName, (...args: unknown[]) => recordingStore.setRunStepOutcomes(args[0] as RecorderRunStepsLoadedPayload));
+	// route through the same hasVisibleModals-guarded close used on header mouseleave, so a replay
+	// finishing doesn't yank the session panel shut out from under a tester reviewing it
+	window.eyas?.receive(`recorder-replay-finished` as ChannelName, delayedClose);
 });
 // expose for testing
 defineExpose({

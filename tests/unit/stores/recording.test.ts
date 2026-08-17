@@ -88,6 +88,17 @@ describe(`useRecordingStore`, () => {
 		expect(store.mismatchCount).toBe(0);
 	});
 
+	test(`setPlaybackStatus accumulates mismatches across successive playing payloads within one run, rather than resetting on each step`, () => {
+		const store = useRecordingStore();
+		store.setPlaybackStatus({ status: `playing`, currentStepIndex: 0 });
+		store.setPlaybackStatus({ status: `playing`, currentStepIndex: 1, mismatches: [MISMATCH] });
+
+		// a later step's `playing` payload carrying no new mismatches must not wipe an earlier step's finding
+		store.setPlaybackStatus({ status: `playing`, currentStepIndex: 2 });
+
+		expect(store.mismatchCount).toBe(1);
+	});
+
 	test(`mismatchSummary describes what was expected against what was found`, () => {
 		const store = useRecordingStore();
 		store.setPlaybackStatus({ status: `stopped`, mismatches: [MISMATCH] });
@@ -141,5 +152,146 @@ describe(`useRecordingStore`, () => {
 		const store = useRecordingStore();
 		store.setPlaybackStatus({ status: `playing` });
 		expect(store.playbackSchemaWarning).toBeNull();
+	});
+
+	const SUMMARY = { sessionId: `s1`, title: `t`, startedAt: 1, stoppedAt: 2, stepCount: 0, lastRunOutcome: null };
+
+	test(`setSessionsList stores the sessions received from the recorder-list-sessions IPC reply`, () => {
+		const store = useRecordingStore();
+		store.setSessionsList([SUMMARY]);
+		expect(store.savedSessions).toEqual([SUMMARY]);
+	});
+
+	test(`selectedSession resolves the summary matching the selected sessionId`, () => {
+		const store = useRecordingStore();
+		store.setSessionsList([SUMMARY]);
+		store.selectSession(`s1`);
+		expect(store.selectedSession).toEqual(SUMMARY);
+	});
+
+	test(`selectedSession is null when nothing is selected`, () => {
+		const store = useRecordingStore();
+		store.setSessionsList([SUMMARY]);
+		expect(store.selectedSession).toBeNull();
+	});
+
+	test(`selectSession clears any previously loaded detail so the old session's steps don't flash before the new ones load`, () => {
+		const store = useRecordingStore();
+		store.setSelectedSessionDetail({ sessionId: `s1`, recording: { title: `t`, steps: [] } } as never);
+		store.selectSession(`s1`);
+		expect(store.selectedSessionDetail).toBeNull();
+	});
+
+	test(`setSelectedSessionDetail ignores a reply for a session that is no longer selected`, () => {
+		const store = useRecordingStore();
+		store.selectSession(`s1`);
+		store.setSelectedSessionDetail({ sessionId: `stale-id`, recording: { title: `t`, steps: [] } } as never);
+		expect(store.selectedSessionDetail).toBeNull();
+	});
+
+	test(`backToBrowser clears the selected session and its loaded detail`, () => {
+		const store = useRecordingStore();
+		store.setSessionsList([SUMMARY]);
+		store.selectSession(`s1`);
+		store.setSelectedSessionDetail({ sessionId: `s1`, recording: { title: `t`, steps: [] } } as never);
+
+		store.backToBrowser();
+
+		expect(store.selectedSession).toBeNull();
+		expect(store.selectedSessionDetail).toBeNull();
+	});
+
+	test(`togglePanel clears the selected session when the panel closes`, () => {
+		const store = useRecordingStore();
+		store.setSessionsList([SUMMARY]);
+		store.selectSession(`s1`);
+		store.isPanelOpen = true;
+
+		store.togglePanel();
+
+		expect(store.isPanelOpen).toBe(false);
+		expect(store.selectedSession).toBeNull();
+	});
+
+	test(`togglePanel drills into the actively-playing session's detail view when opened mid-run`, () => {
+		const store = useRecordingStore();
+		store.setSessionsList([SUMMARY]);
+		store.sessionId = `s1` as never;
+		store.setPlaybackStatus({ status: `playing`, completedSteps: 0, totalSteps: 2 } as never);
+
+		store.togglePanel();
+
+		expect(store.isPanelOpen).toBe(true);
+		expect(store.selectedSessionId).toBe(`s1`);
+	});
+
+	test(`togglePanel opens to the browser list when nothing is playing`, () => {
+		const store = useRecordingStore();
+		store.setSessionsList([SUMMARY]);
+		store.sessionId = `s1` as never;
+
+		store.togglePanel();
+
+		expect(store.isPanelOpen).toBe(true);
+		expect(store.selectedSessionId).toBeNull();
+	});
+
+	test(`setPlaybackStatus opens the panel and selects the session when a replay fails with a thrown error while the panel is closed`, () => {
+		const store = useRecordingStore();
+		store.setSessionsList([SUMMARY]);
+		store.sessionId = `s1` as never;
+
+		store.setPlaybackStatus({ status: `failed`, error: `boom` });
+
+		expect(store.isPanelOpen).toBe(true);
+		expect(store.selectedSessionId).toBe(`s1`);
+		expect(store.pendingFailureScrollSessionId).toBe(`s1`);
+	});
+
+	test(`setPlaybackStatus opens the panel and selects the session when a replay stops with mismatches while the panel is closed`, () => {
+		const store = useRecordingStore();
+		store.setSessionsList([SUMMARY]);
+		store.sessionId = `s1` as never;
+
+		store.setPlaybackStatus({ status: `stopped`, mismatches: [MISMATCH] });
+
+		expect(store.isPanelOpen).toBe(true);
+		expect(store.selectedSessionId).toBe(`s1`);
+		expect(store.pendingFailureScrollSessionId).toBe(`s1`);
+	});
+
+	test(`setPlaybackStatus does not touch the panel when a replay finishes cleanly`, () => {
+		const store = useRecordingStore();
+		store.setSessionsList([SUMMARY]);
+		store.sessionId = `s1` as never;
+
+		store.setPlaybackStatus({ status: `stopped` });
+
+		expect(store.isPanelOpen).toBe(false);
+		expect(store.selectedSessionId).toBeNull();
+		expect(store.pendingFailureScrollSessionId).toBeNull();
+	});
+
+	test(`setPlaybackStatus does not reopen or reselect when the panel is already open`, () => {
+		const store = useRecordingStore();
+		store.setSessionsList([SUMMARY]);
+		store.sessionId = `s1` as never;
+		store.isPanelOpen = true;
+
+		store.setPlaybackStatus({ status: `failed`, error: `boom` });
+
+		expect(store.selectedSessionId).toBeNull();
+		expect(store.pendingFailureScrollSessionId).toBeNull();
+	});
+
+	test(`clearPendingFailureScroll clears the one-shot marker`, () => {
+		const store = useRecordingStore();
+		store.setSessionsList([SUMMARY]);
+		store.sessionId = `s1` as never;
+		store.setPlaybackStatus({ status: `failed`, error: `boom` });
+
+		store.clearPendingFailureScroll();
+
+		expect(store.pendingFailureScrollSessionId).toBeNull();
 	});
 });

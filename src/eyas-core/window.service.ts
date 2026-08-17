@@ -80,7 +80,7 @@ function initTestWebContentsListeners(
 				ctx.setIsInitializing(false);
 				ctx.setMenu();
 			}
-			sessionRecorderService.appendNavigateStep(url);
+			sessionRecorderService.appendNavigateStep(ctx, url);
 			ctx.updateNavigationState();
 		}
 	});
@@ -135,7 +135,7 @@ export const windowService: WindowService = {
 		ctx.setTestLayer(testLayer);
 		testLayer.webContents.session.registerPreloadScript({ type: `frame`, filePath: $paths.testPreload });
 		testLayer.webContents.session.registerPreloadScript({ type: `frame`, filePath: $paths.recorderPreload });
-		registerPopupTracking(testLayer.webContents);
+		registerPopupTracking(ctx, testLayer.webContents);
 		registerShortcutListeners(ctx, testLayer.webContents);
 		window.contentView.addChildView(testLayer);
 		testLayer.setBounds({

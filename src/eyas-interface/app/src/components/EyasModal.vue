@@ -2,18 +2,25 @@
 	<ModalBackground
 		:model-value="modelValue"
 		:content-visible="backgroundContentVisible"
+		:scrim="showScrim"
 		@after-leave="hideUi"
 	>
 		<v-dialog
 			:model-value="modelValue"
-			max-width="850"
-			width="65vw"
-			min-width="320"
+			:max-width="props.mode === `panel` ? undefined : 850"
+			:width="props.mode === `panel` ? undefined : '65vw'"
+			:min-width="props.mode === `panel` ? undefined : 320"
+			:content-class="props.mode === `panel` ? `eyas-modal-panel-content` : undefined"
+			:style="props.mode === `panel` ? panelStyle : undefined"
 			persistent
 			:scrim="false"
 			@update:model-value="emit(`update:modelValue`, $event)"
 		>
-			<v-card class="eyas-modal">
+			<v-card
+				class="eyas-modal"
+				:class="{ 'eyas-modal--panel': props.mode === `panel`, 'eyas-modal--faded': fadeDuringPlayback }"
+				data-qa="eyas-modal-card"
+			>
 				<div v-if="$slots.title" class="eyas-modal__header">
 					<slot name="title" />
 				</div>
@@ -33,19 +40,42 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import ModalStore from '@/stores/modals.js';
+import useRecordingStore from '@/stores/recording.js';
 import ModalBackground from '@/components/ModalBackground.vue';
+import { EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
 import type { EyasModalProps, EyasModalEmits } from '@registry/components.js';
 import type { ModalId, IsVisible, ChannelName } from '@registry/primitives.js';
 
-const props = defineProps<EyasModalProps>();
+const props = withDefaults(defineProps<EyasModalProps>(), {
+	mode: `modal`
+});
 
 const emit = defineEmits<EyasModalEmits>();
 
 const id = ref<ModalId>(window.crypto.randomUUID() as ModalId);
+const recordingStore = useRecordingStore();
 
 const backgroundContentVisible = computed((): IsVisible => {
 	return ModalStore().lastOpenedById === id.value;
 });
+
+const showScrim = computed((): IsVisible => {
+	// a panel stays out of the way of an in-progress replay rather than dimming it, so the tester can
+	// still watch the run happen underneath; recording is unaffected since nothing to watch is on screen
+	if (props.mode !== `panel`) { return true; }
+	return !recordingStore.isPlaying;
+});
+
+// the scrim is already suppressed during a replay so the tester can watch it happen underneath (see
+// showScrim above); the panel itself still dims out of the way so it doesn't compete for attention,
+// but comes back to full opacity on hover so the tester can still glance at it without moving it
+const fadeDuringPlayback = computed((): IsVisible => {
+	return props.mode === `panel` && recordingStore.isPlaying;
+});
+
+const panelStyle = {
+	'--eyas-panel-top': `calc(${EYAS_HEADER_HEIGHT}px + 1rem)`
+};
 
 watch(() => props.modelValue, (isOpen: IsVisible) => {
 	if (isOpen) {
@@ -90,16 +120,54 @@ watch(() => ModalStore().closeAllCounter, () => {
 	max-height: 90vh !important;
 }
 
+.eyas-modal--panel {
+	/* .eyas-modal-panel-content (below) is position:fixed with both top and bottom set, giving it a
+	   real bounded height — height:100% here lets the card fill that box instead of growing with its
+	   own content, so .eyas-modal__body's overflow-y:auto has an actual overflow to scroll. */
+	max-height: none !important;
+	height: 100%;
+	width: 100%;
+}
+
+.eyas-modal--faded {
+	opacity: 0.4;
+	transition: opacity 0.15s ease;
+}
+
+.eyas-modal--faded:hover {
+	opacity: 1;
+}
+
+:deep(.eyas-modal-panel-content) {
+	position: fixed !important;
+	top: var(--eyas-panel-top);
+	right: 1rem;
+	bottom: 1rem;
+	left: auto !important;
+	transform: none !important;
+	width: 380px;
+	max-width: 380px;
+}
+
 .eyas-modal__header {
 	flex-shrink: 0;
 	padding: 2rem 2rem 1.5rem;
 	text-align: center;
 }
 
+.eyas-modal--panel .eyas-modal__header {
+	padding: 1rem 1rem 0.75rem;
+	text-align: left;
+}
+
 .eyas-modal__body {
 	flex-grow: 1 !important;
 	overflow-y: auto !important;
 	padding: 0 2rem 1.5rem !important;
+}
+
+.eyas-modal--panel .eyas-modal__body {
+	padding: 0 1rem 1rem !important;
 }
 
 .eyas-modal__body::-webkit-scrollbar {

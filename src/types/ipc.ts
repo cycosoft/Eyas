@@ -1,7 +1,7 @@
-import type { ProjectId, DomainUrl, IsActive, SettingKey, HashString, Username, PasswordPlain, ZoomFactor, StepCount, DetailText } from './primitives.js';
+import type { ProjectId, DomainUrl, IsActive, SettingKey, HashString, Username, PasswordPlain, ZoomFactor, StepCount, StepIndex, DetailText } from './primitives.js';
 import type { EnvironmentChoice, Viewport, ViewportSize, EnvironmentChoiceWithTitle } from './core.js';
 import type { NavItem } from './components.js';
-import type { RecordingStep, ReplayMismatch } from './recording.js';
+import type { RecordingStep, ReplayMismatch, EyasRecordingEnvelope } from './recording.js';
 
 /** Payload for selecting a test environment */
 export type EnvironmentSelectedPayload = DomainUrl | EnvironmentChoice;
@@ -58,7 +58,10 @@ export const VALID_SEND_CHANNELS = [
 	`recorder-stop`,
 	`recorder-record-start`,
 	`recorder-replay-request`,
-	`recorder-replay-stop`
+	`recorder-replay-stop`,
+	`recorder-list-sessions`,
+	`recorder-get-session`,
+	`recorder-get-run-steps`
 ] as const;
 
 export const VALID_RECEIVE_CHANNELS = [
@@ -82,7 +85,11 @@ export const VALID_RECEIVE_CHANNELS = [
 	`show-no-update-modal`,
 	`show-save-credential-modal`,
 	`recorder-status-updated`,
-	`recorder-playback-status`
+	`recorder-playback-status`,
+	`recorder-sessions-listed`,
+	`recorder-session-loaded`,
+	`recorder-replay-finished`,
+	`recorder-run-steps-loaded`
 ] as const;
 
 /** Payload for the 'navigation-state-updated' IPC event */
@@ -181,6 +188,8 @@ export type RecorderFlushStepsPayload = RecordingStep[];
 /** Payload for the 'recorder-playback-status' IPC event */
 export type RecorderPlaybackStatusPayload = {
 	completedSteps?: StepCount;
+	/** The step currently dispatching, for per-step live UI (e.g. the detail-view timeline). Only set on `playing`. */
+	currentStepIndex?: StepIndex;
 	error?: string;
 	/**
 	 * Recorded expectations that didn't hold. Distinct from `error`: a replay can finish cleanly and
@@ -196,4 +205,51 @@ export type RecorderPlaybackStatusPayload = {
 	status: `playing` | `stopped` | `failed`;
 	totalSteps?: StepCount;
 };
+
+/**
+ * Lightweight listing entry for a saved/active recording, sent over `recorder-sessions-listed`
+ * instead of the full envelope — the browser view only needs enough to render a row, not every
+ * step, so a session with thousands of steps doesn't get serialized just to list it.
+ */
+export type RecordingSessionSummary = {
+	sessionId: string;
+	title: string;
+	startedAt: number;
+	stoppedAt: number | null;
+	stepCount: StepCount;
+	/** Verdict of this recording's most recent playback run, or null if it has never been played. A run that never finished (crash, hang, user stop) reads back as `failed` — see run-history.service.ts. */
+	lastRunOutcome: `passed` | `failed` | null;
+};
+
+/** Payload for the 'recorder-sessions-listed' IPC event */
+export type RecorderSessionsListedPayload = RecordingSessionSummary[];
+
+/** Payload for the 'recorder-get-session' IPC event */
+export type RecorderGetSessionPayload = {
+	sessionId: string;
+};
+
+/** Payload for the 'recorder-session-loaded' IPC event; null when the requested session no longer exists on disk. */
+export type RecorderSessionLoadedPayload = EyasRecordingEnvelope | null;
+
+/** Payload for the 'recorder-get-run-steps' IPC event */
+export type RecorderGetRunStepsPayload = {
+	sessionId: string;
+};
+
+/** Per-step outcome map for a run, keyed by StepIndex. */
+export type RunStepOutcomes = Partial<Record<StepIndex, `passed` | `failed`>>;
+
+/**
+ * Payload for the 'recorder-run-steps-loaded' IPC event; null when the recording has never been
+ * played. `finished: false` means the run tracked here never called `endedAt` (crash/user-stop) —
+ * `outcomes` is a partial picture of an interrupted run and should render as if never run, not
+ * trusted per-step, so it doesn't visibly contradict the recording's overall (red) dot.
+ */
+type RunStepsLoaded = {
+	sessionId: string;
+	finished: boolean;
+	outcomes: RunStepOutcomes;
+};
+export type RecorderRunStepsLoadedPayload = RunStepsLoaded | null;
 

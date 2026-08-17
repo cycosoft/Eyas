@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
 import { WebContentsView } from 'electron';
+import type { CoreContext } from '@registry/eyas-core.js';
 import type { PopupId, WebContentsId, EyasProtocolUrl } from '@registry/primitives.js';
 import sessionRecorderService from './session-recorder.service.js';
 import { EYAS_UI_PARTITION } from '@scripts/constants.js';
@@ -103,7 +104,7 @@ export function getPopupIdForWebContents(webContents: Electron.WebContents): Pop
 	return _popupIdByWebContentsId.get(webContents.id);
 }
 
-export function registerPopupTracking(testWebContents: Electron.WebContents): void {
+export function registerPopupTracking(ctx: CoreContext, testWebContents: Electron.WebContents): void {
 	testWebContents.on(`did-create-window`, win => {
 		const popupId = (_replayIdQueue?.length ? _replayIdQueue.shift() : undefined) ?? randomUUID() as PopupId;
 		const webContentsId = win.webContents.id;
@@ -122,7 +123,7 @@ export function registerPopupTracking(testWebContents: Electron.WebContents): vo
 			_popupIdByWebContentsId.delete(webContentsId);
 			_recordingLayers.delete(popupId);
 			try { win.webContents.debugger.detach(); } catch { /* already detached / destroyed */ }
-			sessionRecorderService.appendCloseWindowStep(popupId);
+			sessionRecorderService.appendCloseWindowStep(ctx, popupId);
 		});
 	});
 }

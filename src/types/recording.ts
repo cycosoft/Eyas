@@ -284,7 +284,6 @@ export type EyasRecordingEnvelope = {
 	projectId: ProjectId;
 	sessionId: string;
 	title: string;
-	status: `recording` | `stopped`;
 	startedAt: TimestampMS;
 	stoppedAt: TimestampMS | null;
 	startUrl: DomainUrl | null;

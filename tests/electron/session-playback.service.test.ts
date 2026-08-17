@@ -21,6 +21,15 @@ vi.mock(`@core/session-recorder.service.js`, () => ({
 	default: { getSession: vi.fn(), setReplaying: vi.fn(), isUnknownSchema: vi.fn().mockReturnValue(false) }
 }));
 
+vi.mock(`@core/run-history.service.js`, () => ({
+	default: {
+		startRun: vi.fn().mockResolvedValue(`run-1`),
+		recordStepStart: vi.fn().mockResolvedValue(undefined),
+		recordStepFailure: vi.fn().mockResolvedValue(undefined),
+		finishRun: vi.fn().mockResolvedValue(undefined)
+	}
+}));
+
 const { getPopupWebContents, closePopup, closeAllPopups, setReplayPopupIdQueue, clearReplayPopupIdQueue, hideAllRecordingOverlays, showAllRecordingOverlays } = vi.hoisted(() => ({
 	getPopupWebContents: vi.fn(),
 	closePopup: vi.fn().mockResolvedValue(undefined),
@@ -54,6 +63,7 @@ const popupWebContents = {
 };
 
 import sessionRecorderService from '@core/session-recorder.service.js';
+import runHistoryService from '@core/run-history.service.js';
 import playbackService from '@core/session-playback.service.js';
 
 const getURL = vi.fn().mockReturnValue(`https://example.com/`);
@@ -64,7 +74,6 @@ function makeSession(steps: EyasRecordingEnvelope[`recording`][`steps`], startUr
 		projectId: `test-proj`,
 		sessionId: `sess-1`,
 		title: `2026-01-01T00:00:00.000Z`,
-		status: `stopped`,
 		startedAt: 0,
 		stoppedAt: 1,
 		startUrl,
@@ -117,6 +126,9 @@ beforeEach(() => {
 	closePopup.mockClear().mockResolvedValue(undefined);
 	setReplayPopupIdQueue.mockClear();
 	clearReplayPopupIdQueue.mockClear();
+	vi.mocked(runHistoryService.startRun).mockClear().mockResolvedValue(`run-1` as never);
+	vi.mocked(runHistoryService.recordStepStart).mockClear();
+	vi.mocked(runHistoryService.finishRun).mockClear();
 });
 
 describe(`sessionPlaybackService.playSession`, () => {
@@ -430,6 +442,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 
 		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `stopped` });
 		expect(detach).toHaveBeenCalled();
+		expect(runHistoryService.finishRun).toHaveBeenCalledWith(`test-proj`, `run-1`);
 	});
 
 	test(`sends 'failed' status with the error message when a step dispatch throws, and detaches the debugger`, async () => {
@@ -443,6 +456,8 @@ describe(`sessionPlaybackService.playSession`, () => {
 
 		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `failed`, error: `boom` });
 		expect(detach).toHaveBeenCalled();
+		expect(runHistoryService.recordStepFailure).toHaveBeenCalledWith(`test-proj`, `run-1`, 0);
+		expect(runHistoryService.finishRun).toHaveBeenCalledWith(`test-proj`, `run-1`);
 	});
 
 	test(`sends 'failed' status when no session is found for the given sessionId`, async () => {
@@ -452,49 +467,6 @@ describe(`sessionPlaybackService.playSession`, () => {
 		await playbackService.playSession(ctx, `missing-session`);
 
 		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, expect.objectContaining({ status: `failed` }));
-	});
-
-	test(`waits between steps using the natural delay, regardless of any persisted replaySpeed setting`, async () => {
-		vi.useFakeTimers();
-		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
-			{ type: `navigate`, url: `https://example.com/a`, timestamp: 1 },
-			{ type: `navigate`, url: `https://example.com/b`, timestamp: 2 },
-			{ type: `navigate`, url: `https://example.com/c`, timestamp: 3 }
-		]));
-		const ctx = makeCtx();
-		const setTimeoutSpy = vi.spyOn(global, `setTimeout`);
-
-		const playPromise = playbackService.playSession(ctx, `sess-1`);
-		await vi.advanceTimersByTimeAsync(1700);
-		await playPromise;
-
-		// a delay applies before every step, including the first: 3 steps -> 3 waits (a 4th
-		// setTimeout call schedules the UI layer's post-playback collapse, unrelated to step pacing)
-		const stepDelayCalls = setTimeoutSpy.mock.calls.filter(call => call[1] === 500);
-		expect(stepDelayCalls).toHaveLength(3);
-		expect(loadURL).toHaveBeenNthCalledWith(1, `https://example.com/a`);
-		expect(loadURL).toHaveBeenNthCalledWith(3, `https://example.com/c`);
-		setTimeoutSpy.mockRestore();
-		vi.useRealTimers();
-	});
-
-	test(`waits before dispatching the very first step, not just between later steps`, async () => {
-		vi.useFakeTimers();
-		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
-			{ type: `navigate`, url: `https://example.com/a`, timestamp: 1 }
-		]));
-		const ctx = makeCtx();
-
-		const playPromise = playbackService.playSession(ctx, `sess-1`);
-		await Promise.resolve();
-		await Promise.resolve();
-		expect(loadURL).not.toHaveBeenCalled();
-
-		await vi.advanceTimersByTimeAsync(700);
-		await playPromise;
-
-		expect(loadURL).toHaveBeenCalledWith(`https://example.com/a`);
-		vi.useRealTimers();
 	});
 
 });

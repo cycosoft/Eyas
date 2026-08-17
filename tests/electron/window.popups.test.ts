@@ -1,5 +1,8 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
+import type { CoreContext } from '@registry/eyas-core.js';
 import type { PopupId } from '@registry/primitives.js';
+
+const fakeCtx = {} as CoreContext;
 
 const { randomUUID, appendCloseWindowStep, isReplaying } = vi.hoisted(() => ({
 	randomUUID: vi.fn(),
@@ -134,7 +137,7 @@ describe(`window.popups.ts`, () => {
 	test(`assigns each newly created popup a unique id, resolvable via getPopupIdForWebContents, and attaches its CDP debugger`, () => {
 		randomUUID.mockReturnValueOnce(`popup-a`);
 		const testWebContents = makeTestWebContents();
-		registerPopupTracking(testWebContents as never);
+		registerPopupTracking(fakeCtx, testWebContents as never);
 		const popup = makeFakePopup();
 
 		testWebContents._emitCreateWindow(popup);
@@ -146,7 +149,7 @@ describe(`window.popups.ts`, () => {
 	test(`tracks two simultaneously open popups independently, each resolvable by its own id via getPopupWebContents`, () => {
 		randomUUID.mockReturnValueOnce(`popup-a`).mockReturnValueOnce(`popup-b`);
 		const testWebContents = makeTestWebContents();
-		registerPopupTracking(testWebContents as never);
+		registerPopupTracking(fakeCtx, testWebContents as never);
 		const popupA = makeFakePopup();
 		const popupB = makeFakePopup();
 
@@ -160,7 +163,7 @@ describe(`window.popups.ts`, () => {
 	test(`removes a popup from tracking, detaches its debugger, and appends a closeWindow step with that popup's id when it's closed during recording`, () => {
 		randomUUID.mockReturnValueOnce(`popup-a`);
 		const testWebContents = makeTestWebContents();
-		registerPopupTracking(testWebContents as never);
+		registerPopupTracking(fakeCtx, testWebContents as never);
 		const popup = makeFakePopup();
 		testWebContents._emitCreateWindow(popup);
 
@@ -168,13 +171,13 @@ describe(`window.popups.ts`, () => {
 
 		expect(popup.webContents.debugger.detach).toHaveBeenCalled();
 		expect(getPopupWebContents(`popup-a` as PopupId)).toBeNull();
-		expect(appendCloseWindowStep).toHaveBeenCalledWith(`popup-a`);
+		expect(appendCloseWindowStep).toHaveBeenCalledWith(fakeCtx, `popup-a`);
 	});
 
 	test(`still appends the closeWindow step when the popup's webContents.id getter throws, as it does on a real destroyed BrowserWindow`, () => {
 		randomUUID.mockReturnValueOnce(`popup-a`);
 		const testWebContents = makeTestWebContents();
-		registerPopupTracking(testWebContents as never);
+		registerPopupTracking(fakeCtx, testWebContents as never);
 		const popup = makeFakePopup();
 		testWebContents._emitCreateWindow(popup);
 		Object.defineProperty(popup.webContents, `id`, {
@@ -183,7 +186,7 @@ describe(`window.popups.ts`, () => {
 
 		popup._emitClosed();
 
-		expect(appendCloseWindowStep).toHaveBeenCalledWith(`popup-a`);
+		expect(appendCloseWindowStep).toHaveBeenCalledWith(fakeCtx, `popup-a`);
 	});
 
 	test(`getPopupIdForWebContents returns undefined for a webContents that isn't a tracked popup (e.g. the main test layer)`, () => {
@@ -193,7 +196,7 @@ describe(`window.popups.ts`, () => {
 	test(`stops resolving a popup's webContents to its id once the popup has closed`, () => {
 		randomUUID.mockReturnValueOnce(`popup-a`);
 		const testWebContents = makeTestWebContents();
-		registerPopupTracking(testWebContents as never);
+		registerPopupTracking(fakeCtx, testWebContents as never);
 		const popup = makeFakePopup();
 		testWebContents._emitCreateWindow(popup);
 
@@ -209,7 +212,7 @@ describe(`window.popups.ts`, () => {
 	test(`closePopup closes the exact matching popup by id and resolves once it's closed, leaving other open popups untouched`, async () => {
 		randomUUID.mockReturnValueOnce(`popup-a`).mockReturnValueOnce(`popup-b`);
 		const testWebContents = makeTestWebContents();
-		registerPopupTracking(testWebContents as never);
+		registerPopupTracking(fakeCtx, testWebContents as never);
 		const popupA = makeFakePopup();
 		const popupB = makeFakePopup();
 		testWebContents._emitCreateWindow(popupA);
@@ -229,7 +232,7 @@ describe(`window.popups.ts`, () => {
 	test(`closeAllPopups closes every currently-tracked popup`, async () => {
 		randomUUID.mockReturnValueOnce(`popup-a`).mockReturnValueOnce(`popup-b`);
 		const testWebContents = makeTestWebContents();
-		registerPopupTracking(testWebContents as never);
+		registerPopupTracking(fakeCtx, testWebContents as never);
 		const popupA = makeFakePopup();
 		const popupB = makeFakePopup();
 		testWebContents._emitCreateWindow(popupA);
@@ -249,7 +252,7 @@ describe(`window.popups.ts`, () => {
 		randomUUID.mockReturnValue(`should-not-be-used`);
 		setReplayPopupIdQueue([`popup-a` as PopupId, `popup-b` as PopupId]);
 		const testWebContents = makeTestWebContents();
-		registerPopupTracking(testWebContents as never);
+		registerPopupTracking(fakeCtx, testWebContents as never);
 		const popupOne = makeFakePopup();
 		const popupTwo = makeFakePopup();
 
@@ -266,7 +269,7 @@ describe(`window.popups.ts`, () => {
 		clearReplayPopupIdQueue();
 		randomUUID.mockReturnValueOnce(`popup-fresh`);
 		const testWebContents = makeTestWebContents();
-		registerPopupTracking(testWebContents as never);
+		registerPopupTracking(fakeCtx, testWebContents as never);
 		const popup = makeFakePopup();
 
 		testWebContents._emitCreateWindow(popup);
@@ -277,7 +280,7 @@ describe(`window.popups.ts`, () => {
 	test(`creates a recording-layer overlay for every newly created popup, attached to the popup and collapsed by default`, () => {
 		randomUUID.mockReturnValueOnce(`popup-a`);
 		const testWebContents = makeTestWebContents();
-		registerPopupTracking(testWebContents as never);
+		registerPopupTracking(fakeCtx, testWebContents as never);
 		const popup = makeFakePopup();
 
 		testWebContents._emitCreateWindow(popup);
@@ -291,7 +294,7 @@ describe(`window.popups.ts`, () => {
 		isReplaying.mockReturnValue(true);
 		randomUUID.mockReturnValueOnce(`popup-a`);
 		const testWebContents = makeTestWebContents();
-		registerPopupTracking(testWebContents as never);
+		registerPopupTracking(fakeCtx, testWebContents as never);
 		const popup = makeFakePopup();
 
 		testWebContents._emitCreateWindow(popup);
@@ -302,7 +305,7 @@ describe(`window.popups.ts`, () => {
 	test(`showRecordingOverlay expands a popup's recording layer to the popup's full content size`, () => {
 		randomUUID.mockReturnValueOnce(`popup-a`);
 		const testWebContents = makeTestWebContents();
-		registerPopupTracking(testWebContents as never);
+		registerPopupTracking(fakeCtx, testWebContents as never);
 		const popup = makeFakePopup();
 		testWebContents._emitCreateWindow(popup);
 
@@ -314,7 +317,7 @@ describe(`window.popups.ts`, () => {
 	test(`hideRecordingOverlay collapses a popup's recording layer back to zero height`, () => {
 		randomUUID.mockReturnValueOnce(`popup-a`);
 		const testWebContents = makeTestWebContents();
-		registerPopupTracking(testWebContents as never);
+		registerPopupTracking(fakeCtx, testWebContents as never);
 		const popup = makeFakePopup();
 		testWebContents._emitCreateWindow(popup);
 		showRecordingOverlay(`popup-a` as PopupId);
@@ -327,7 +330,7 @@ describe(`window.popups.ts`, () => {
 	test(`showAllRecordingOverlays expands every tracked popup's recording layer, e.g. a popup left open from a previous replay`, () => {
 		randomUUID.mockReturnValueOnce(`popup-a`).mockReturnValueOnce(`popup-b`);
 		const testWebContents = makeTestWebContents();
-		registerPopupTracking(testWebContents as never);
+		registerPopupTracking(fakeCtx, testWebContents as never);
 		const popupA = makeFakePopup();
 		const popupB = makeFakePopup();
 		testWebContents._emitCreateWindow(popupA);
@@ -342,7 +345,7 @@ describe(`window.popups.ts`, () => {
 	test(`hideAllRecordingOverlays collapses every tracked popup's recording layer`, () => {
 		randomUUID.mockReturnValueOnce(`popup-a`).mockReturnValueOnce(`popup-b`);
 		const testWebContents = makeTestWebContents();
-		registerPopupTracking(testWebContents as never);
+		registerPopupTracking(fakeCtx, testWebContents as never);
 		const popupA = makeFakePopup();
 		const popupB = makeFakePopup();
 		testWebContents._emitCreateWindow(popupA);
@@ -359,7 +362,7 @@ describe(`window.popups.ts`, () => {
 	test(`keeps a shown recording layer's width in sync when the popup is resized, without collapsing it`, () => {
 		randomUUID.mockReturnValueOnce(`popup-a`);
 		const testWebContents = makeTestWebContents();
-		registerPopupTracking(testWebContents as never);
+		registerPopupTracking(fakeCtx, testWebContents as never);
 		const popup = makeFakePopup();
 		testWebContents._emitCreateWindow(popup);
 		showRecordingOverlay(`popup-a` as PopupId);
@@ -373,7 +376,7 @@ describe(`window.popups.ts`, () => {
 	test(`a resize on a collapsed (not currently shown) recording layer stays collapsed`, () => {
 		randomUUID.mockReturnValueOnce(`popup-a`);
 		const testWebContents = makeTestWebContents();
-		registerPopupTracking(testWebContents as never);
+		registerPopupTracking(fakeCtx, testWebContents as never);
 		const popup = makeFakePopup();
 		testWebContents._emitCreateWindow(popup);
 		popup.getContentSize.mockReturnValue([1000, 700]);
@@ -386,7 +389,7 @@ describe(`window.popups.ts`, () => {
 	test(`no longer resizes or shows a popup's recording layer once the popup has closed`, () => {
 		randomUUID.mockReturnValueOnce(`popup-a`);
 		const testWebContents = makeTestWebContents();
-		registerPopupTracking(testWebContents as never);
+		registerPopupTracking(fakeCtx, testWebContents as never);
 		const popup = makeFakePopup();
 		testWebContents._emitCreateWindow(popup);
 		popup._emitClosed();

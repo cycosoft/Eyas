@@ -5,7 +5,9 @@ import fs from 'fs-extra';
 const { outputJson } = fs;
 import type { CoreContext } from '@registry/eyas-core.js';
 import type { EyasRecordingEnvelope, RecordingStep, LegacySelectorGroup } from '@registry/recording.js';
-import type { ProjectId, TestId, FilePath, DomainUrl, SessionId, IsActive, PopupId, IsUnknownSchema, SchemaVersion } from '@registry/primitives.js';
+import type { RecordingSessionSummary } from '@registry/ipc.js';
+import type { ProjectId, FilePath, DomainUrl, SessionId, IsActive, PopupId, IsUnknownSchema, SchemaVersion } from '@registry/primitives.js';
+import runHistoryService from './run-history.service.js';
 
 const CURRENT_SCHEMA_VERSION = `1.2.0`;
 
@@ -31,6 +33,9 @@ let _sessionFilePath: FilePath | null = null;
 let _sessionsDirOverride: FilePath | null = null;
 let _isReplaying = false;
 
+/** What this instance is doing right now — ephemeral, never persisted. The saved recording file is a pure blueprint with no opinion about it. */
+let _mode: `idle` | `recording` = `idle`;
+
 function _sessionsDir(): FilePath {
 	return _sessionsDirOverride ?? _path.join(app.getPath(`userData`), `sessions`);
 }
@@ -40,20 +45,16 @@ function _setSessionsDir(dir: FilePath | null): void {
 	_sessionsDirOverride = dir;
 	_session = null;
 	_sessionFilePath = null;
+	_mode = `idle`;
 }
 
 function _generateSessionId(): SessionId {
 	return randomUUID() as SessionId;
 }
 
-/** Only one recording is ever active at a time, so it lives at a fixed path per project+testId instead of one file per UUID — starting a new recording overwrites it, leaving nothing to clean up. Scoped by testId (not just projectId) so concurrent Eyas instances running different test builds against the same project don't overwrite each other's active recording. */
-function _activeSessionPath(projectId: ProjectId, testId: TestId): FilePath {
-	return _path.join(_sessionsDir(), projectId, testId, `active-session.json`) as FilePath;
-}
-
-/** Future "saved recordings" location: not yet written to, but getSession already checks it so that feature won't need to change this function's by-ID contract again. Scoped by projectId only (not testId) so a saved recording can be replayed against any build of the project it was made on. */
-function _savedSessionPath(projectId: ProjectId, sessionId: SessionId): FilePath {
-	return _path.join(_sessionsDir(), projectId, `saved`, `${sessionId}.json`) as FilePath;
+/** Every session — in-progress or finished — lives at a flat path keyed by its own unique sessionId, scoped by projectId only. No testId axis: testId is per-build metadata, not a stable workspace identity, and scoping by it caused build swaps to abandon orphaned in-progress files that never got cleaned up. Since sessionId is unique from the moment a recording starts, there's nothing to overwrite and no cross-instance collision to guard against. */
+function _sessionPath(projectId: ProjectId, sessionId: SessionId): FilePath {
+	return _path.join(_sessionsDir(), projectId, `${sessionId}.json`) as FilePath;
 }
 
 function _isLegacySelectorGroup(selectors: unknown): selectors is LegacySelectorGroup {
@@ -91,7 +92,6 @@ function _persist(): Promise<void> {
 /** Starts a new recording session and writes the session file to disk immediately. */
 async function startSession(ctx: CoreContext): Promise<void> {
 	const projectId = (ctx.$config?.meta.projectId || `default`) as ProjectId;
-	const testId = (ctx.$config?.meta.testId || `default`) as TestId;
 	const sessionId = _generateSessionId();
 	const startedAt = Date.now();
 
@@ -100,7 +100,6 @@ async function startSession(ctx: CoreContext): Promise<void> {
 		projectId,
 		sessionId,
 		title: new Date(startedAt).toISOString(),
-		status: `recording`,
 		startedAt,
 		stoppedAt: null,
 		startUrl: (ctx.$testLayer?.webContents?.getURL() || null) as DomainUrl | null,
@@ -109,31 +108,41 @@ async function startSession(ctx: CoreContext): Promise<void> {
 		recording: { title: new Date(startedAt).toISOString(), steps: [] }
 	};
 
-	_sessionFilePath = _activeSessionPath(projectId, testId);
+	_sessionFilePath = _sessionPath(projectId, sessionId);
+	_mode = `recording`;
 	await _persist();
 
 	ctx.$eyasLayer?.webContents?.send(`recorder-status-updated`, { isRecording: true, sessionId });
 }
 
+/** Pushes the in-progress session to the eyas layer so a detail view already open on it (see RecordingPanel.vue) reflects newly-appended steps live, instead of the snapshot from whenever it was first opened. Reuses the existing 'recorder-session-loaded' channel — the store's setSelectedSessionDetail already no-ops for a session that isn't the one currently selected, so broadcasting unconditionally here is safe. */
+function _broadcastSessionUpdate(ctx: CoreContext): void {
+	if (!_session) { return; }
+	ctx.$eyasLayer?.webContents?.send(`recorder-session-loaded`, _session);
+}
+
 /** Appends flushed steps from the recorder preload to the active session and persists. */
-function appendSteps(steps: RecordingStep[]): void {
-	if (!_session || _session.status !== `recording` || _isReplaying || steps.length === 0) { return; }
+function appendSteps(ctx: CoreContext, steps: RecordingStep[]): void {
+	if (!_session || _mode !== `recording` || _isReplaying || steps.length === 0) { return; }
 	_session.recording.steps.push(...steps);
 	_persist();
+	_broadcastSessionUpdate(ctx);
 }
 
 /** Appends a NavigateStep captured from the main-process webContents navigation events. */
-function appendNavigateStep(url: DomainUrl): void {
-	if (!_session || _session.status !== `recording` || _isReplaying) { return; }
+function appendNavigateStep(ctx: CoreContext, url: DomainUrl): void {
+	if (!_session || _mode !== `recording` || _isReplaying) { return; }
 	_session.recording.steps.push({ type: `navigate`, url, timestamp: Date.now() });
 	_persist();
+	_broadcastSessionUpdate(ctx);
 }
 
 /** Appends a CloseWindowStep captured from a tracked popup's 'closed' event. */
-function appendCloseWindowStep(popupId: PopupId): void {
-	if (!_session || _session.status !== `recording` || _isReplaying) { return; }
+function appendCloseWindowStep(ctx: CoreContext, popupId: PopupId): void {
+	if (!_session || _mode !== `recording` || _isReplaying) { return; }
 	_session.recording.steps.push({ type: `closeWindow`, popupId, timestamp: Date.now() });
 	_persist();
+	_broadcastSessionUpdate(ctx);
 }
 
 /** Marks whether a replay is currently dispatching, so its own navigation isn't re-recorded. */
@@ -149,8 +158,8 @@ function isReplaying(): IsActive {
 /** Stops the active recording session, finalizing status and persisting to disk. */
 function stopRecording(ctx: CoreContext): void {
 	if (!_session) { return; }
-	_session.status = `stopped`;
 	_session.stoppedAt = Date.now();
+	_mode = `idle`;
 	_persist();
 
 	ctx.$eyasLayer?.webContents?.send(`recorder-status-updated`, { isRecording: false, sessionId: _session.sessionId });
@@ -165,18 +174,50 @@ async function getSession(ctx: CoreContext, sessionId: SessionId): Promise<EyasR
 	if (_session?.sessionId === sessionId) { return _session; }
 
 	const projectId = (ctx.$config?.meta.projectId || `default`) as ProjectId;
-	const testId = (ctx.$config?.meta.testId || `default`) as TestId;
 
-	const activePath = _activeSessionPath(projectId, testId);
-	if (await fs.pathExists(activePath)) {
-		const active: EyasRecordingEnvelope = await fs.readJson(activePath);
-		if (active.sessionId === sessionId) { return _upgradeSession(active); }
+	const sessionPath = _sessionPath(projectId, sessionId);
+	if (!(await fs.pathExists(sessionPath))) { return null; }
+
+	return _upgradeSession(await fs.readJson(sessionPath));
+}
+
+/** Reads a session file into a listing summary, or null if it's missing or unreadable — a corrupt/partial file must not blank the whole listing. Takes projectId from the caller (which already knows it from the directory being scanned) rather than the file's own contents, so a hand-edited or legacy file missing that field still resolves the right runs.sqlite. */
+async function _readSummary(filePath: FilePath, projectId: ProjectId): Promise<RecordingSessionSummary | null> {
+	try {
+		if (!(await fs.pathExists(filePath))) { return null; }
+		const session: EyasRecordingEnvelope = await fs.readJson(filePath);
+		const lastRun = await runHistoryService.getLastRunForRecording(projectId, session.sessionId);
+		return {
+			sessionId: session.sessionId,
+			title: session.title,
+			startedAt: session.startedAt,
+			stoppedAt: session.stoppedAt,
+			stepCount: session.recording.steps.length,
+			lastRunOutcome: lastRun?.outcome ?? null
+		};
+	} catch (err) {
+		console.error(`[SESSION-RECORDER-SERVICE] skipping unreadable session file ${filePath}:`, err);
+		return null;
+	}
+}
+
+/** Lists every recording found for the current project — one file per sessionId, directly under sessions/{projectId}/ — newest first. Missing directory yields an empty list rather than an error, since a fresh install has no sessions dir at all. Non-JSON entries (e.g. leftover legacy testId directories from before recordings were scoped by projectId only) are skipped. */
+async function listSessions(ctx: CoreContext): Promise<RecordingSessionSummary[]> {
+	const projectId = (ctx.$config?.meta.projectId || `default`) as ProjectId;
+	const projectDir = _path.join(_sessionsDir(), projectId);
+	if (!(await fs.pathExists(projectDir))) { return []; }
+
+	const entries = await fs.readdir(projectDir, { withFileTypes: true });
+	const summaries: RecordingSessionSummary[] = [];
+
+	for (const entry of entries) {
+		if (!entry.isFile() || !entry.name.endsWith(`.json`)) { continue; }
+
+		const summary = await _readSummary(_path.join(projectDir, entry.name) as FilePath, projectId);
+		if (summary) { summaries.push(summary); }
 	}
 
-	const savedPath = _savedSessionPath(projectId, sessionId);
-	if (!(await fs.pathExists(savedPath))) { return null; }
-
-	return _upgradeSession(await fs.readJson(savedPath));
+	return summaries.sort((a, b) => b.startedAt - a.startedAt);
 }
 
 export {
@@ -186,6 +227,7 @@ export {
 	appendCloseWindowStep,
 	stopRecording,
 	getSession,
+	listSessions,
 	setReplaying,
 	isReplaying,
 	isUnknownSchema
@@ -201,6 +243,7 @@ export default {
 	isReplaying,
 	getActiveSession,
 	getSession,
+	listSessions,
 	isUnknownSchema,
 	_setSessionsDir
 };
