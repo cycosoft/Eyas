@@ -1,5 +1,11 @@
 [
 	{
+		"version": "26.8.5202",
+		"items": [
+			{ "text": "🟢 Added a panel to view recordings, their steps, and pass/fail state." }
+		]
+	},
+	{
 		"version": "26.8.5201",
 		"items": [
 			{ "text": "🟢 Support for launching multiple eyas instances with different test ids" },

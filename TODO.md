@@ -1,11 +1,10 @@
 # TODO
 
-- update changelog
-- the recording list needs to be scrolled back to the position it was at when you left that view
-- consider auto-opening the recording panel on replay failure
+-
 
 # Future
 
-- recording state redesign (phased plan). Root cause: recording state was conflated with the saved recording file itself (session-recorder.service.ts scoped active-session.json by projectId+testId, where testId is per-build metadata) — every build swap abandoned the previous build's in-progress recording with no way for it to ever transition out of status: recording, which is why the recordings list showed stale red dots. Decided against a cross-instance edit lock (reintroduces the same "stuck forever if a holder disappears" failure shape as the original bug); if silent-overwrite protection is wanted later, use optimistic concurrency (version/updatedAt check on save) instead. A crash-recovery pointer (recordingId + mode) was considered for Phase 2 but dropped — recording steps are already flushed to disk on every append, so a crash loses no data, and nothing yet consumes "was I mid-recording when I last quit"; revisit only alongside a future resume/discard-draft feature. Phase 3 (run-history.service.ts, SQLite via node:sqlite, one runs.sqlite per projectId) now backs the Recordings panel dot with real last-run status (red = failed/never finished, green = passed, gray = not run) and a live blink while this instance is recording that row — a user-initiated stop is deliberately indistinguishable from a crash (both just leave the run's endedAt unset).
-  - Phase 4 — stats UI: surface playback history stats (pass/fail rate, run duration trends, per-step timing derived from run_steps.happenedAt deltas) in the interface, now that Phase 3 data exists.
-- window.eyas.receive() (src/scripts/event-bridge.ts) does a bare ipcRenderer.on with no dedupe/cleanup; components that call it in onMounted with no matching onUnmounted removeListener stack duplicate listeners across Vite HMR reloads in dev (harmless in production since components like AppHeader mount once). Consider adding cleanup, e.g. onUnmounted(() => window.eyas?.removeListener(...)), across the ~15 components that use receive()
+- the recording list needs to be scrolled back to the position it was at when you left that view
+- give each step a number in the recording steps view
+- recording state redesign Phase 4 — stats UI: surface playback history stats (pass/fail rate, run duration trends, per-step timing derived from run_steps.happenedAt deltas) in the interface, now that Phase 3 data exists.
+- window.eyas.receive() (src/scripts/event-bridge.ts) does a bare ipcRenderer.on with no dedupe/cleanup; components that call it in onMounted with no matching onUnmounted removeListener stack duplicate listeners across Vite HMR reloads in dev. Consider adding cleanup, e.g. onUnmounted(() => window.eyas?.removeListener(...)), across the ~15 components that use receive()
