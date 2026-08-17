@@ -253,7 +253,7 @@ describe(`RecordingPanel`, () => {
 		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1, lastRunOutcome: null }];
 		await activeWrapper?.vm.$nextTick();
 
-		expect(document.querySelector(`[data-qa="recording-row-s1"] .status-dot`)?.classList).toContain(`status-dot--neutral`);
+		expect(document.querySelector(`[data-qa="recording-row-s1"]`)?.classList).toContain(`recording-card--neutral`);
 	});
 
 	test(`shows a green dot for a recording whose most recent run passed`, async () => {
@@ -263,7 +263,7 @@ describe(`RecordingPanel`, () => {
 		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1, lastRunOutcome: `passed` }];
 		await activeWrapper?.vm.$nextTick();
 
-		expect(document.querySelector(`[data-qa="recording-row-s1"] .status-dot`)?.classList).toContain(`status-dot--passed`);
+		expect(document.querySelector(`[data-qa="recording-row-s1"]`)?.classList).toContain(`recording-card--passed`);
 	});
 
 	test(`shows a red dot for a recording whose most recent run failed or never finished`, async () => {
@@ -273,7 +273,7 @@ describe(`RecordingPanel`, () => {
 		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1, lastRunOutcome: `failed` }];
 		await activeWrapper?.vm.$nextTick();
 
-		expect(document.querySelector(`[data-qa="recording-row-s1"] .status-dot`)?.classList).toContain(`status-dot--failed`);
+		expect(document.querySelector(`[data-qa="recording-row-s1"]`)?.classList).toContain(`recording-card--failed`);
 	});
 
 	test(`shows a blinking dot for the row currently being recorded in this instance, regardless of its last run status`, async () => {
@@ -285,7 +285,7 @@ describe(`RecordingPanel`, () => {
 		store.sessionId = `s1`;
 		await activeWrapper?.vm.$nextTick();
 
-		expect(document.querySelector(`[data-qa="recording-row-s1"] .status-dot`)?.classList).toContain(`status-dot--recording`);
+		expect(document.querySelector(`[data-qa="recording-row-s1"]`)?.classList).toContain(`recording-card--recording`);
 	});
 
 	test(`does not blink a row for a recording happening elsewhere, even while this instance is recording something else`, async () => {
@@ -297,7 +297,7 @@ describe(`RecordingPanel`, () => {
 		store.sessionId = `s2`;
 		await activeWrapper?.vm.$nextTick();
 
-		expect(document.querySelector(`[data-qa="recording-row-s1"] .status-dot`)?.classList).toContain(`status-dot--neutral`);
+		expect(document.querySelector(`[data-qa="recording-row-s1"]`)?.classList).toContain(`recording-card--neutral`);
 	});
 
 	test(`shows a blue playing dot for the row currently being replayed in this instance`, async () => {
@@ -309,7 +309,7 @@ describe(`RecordingPanel`, () => {
 		store.playbackStatus = `playing`;
 		await activeWrapper?.vm.$nextTick();
 
-		expect(document.querySelector(`[data-qa="recording-row-s1"] .status-dot`)?.classList).toContain(`status-dot--playing`);
+		expect(document.querySelector(`[data-qa="recording-row-s1"]`)?.classList).toContain(`recording-card--playing`);
 	});
 
 	test(`refetches the recordings list when a watched playback finishes while the panel is open`, async () => {

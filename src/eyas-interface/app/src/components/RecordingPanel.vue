@@ -32,16 +32,24 @@
 				<li
 					v-for="session in savedSessions"
 					:key="session.sessionId"
-					class="recording-row"
+					class="recording-card"
+					:class="`recording-card--${dotClassFor(session)}`"
 					:data-qa="`recording-row-${session.sessionId}`"
 					@click="recordingStore.selectSession(session.sessionId)"
 				>
-					<span class="status-dot" :class="`status-dot--${dotClassFor(session)}`" />
-					<span class="recording-row__info">
-						<span class="font-body text-body-2 font-weight-medium text-on-surface">{{ formatTitle(session.title) }}</span>
-						<span class="font-body text-caption text-grey-darken-1">{{ session.stepCount }} step{{ session.stepCount === 1 ? `` : `s` }}</span>
+					<span class="recording-card__icon" :class="`recording-card__icon--${dotClassFor(session)}`">
+						<v-icon :icon="cardIconFor(session)" size="small" />
 					</span>
-					<v-icon icon="mdi-chevron-right" size="small" />
+					<span class="recording-card__info">
+						<span class="font-body text-body-2 font-weight-medium text-on-surface">{{ formatTitle(session.title) }}</span>
+						<span class="font-body text-caption text-grey-darken-1">
+							{{ session.stepCount }} step{{ session.stepCount === 1 ? `` : `s` }}
+							<span v-if="statusLabelFor(session)" class="recording-card__status" :class="`recording-card__status--${dotClassFor(session)}`">
+								&nbsp;&bull; {{ statusLabelFor(session) }}
+							</span>
+						</span>
+					</span>
+					<v-icon icon="mdi-chevron-right" size="small" class="recording-card__chevron" />
 				</li>
 			</ul>
 		</div>
@@ -206,6 +214,23 @@ function stepDotClass(stepIndex: StepIndex): StepDotClass {
 	return stepDotClassFor(stepIndex, recording, playing, runStepOutcomes);
 }
 
+function cardIconFor(session: RecordingSessionSummary): `mdi-chart-bar` | `mdi-circle` | `mdi-alert-circle-outline` | `mdi-play-circle-outline` {
+	const status = dotClassFor(session);
+	if (status === `playing`) { return `mdi-chart-bar`; }
+	if (status === `recording`) { return `mdi-circle`; }
+	if (status === `failed`) { return `mdi-alert-circle-outline`; }
+	return `mdi-play-circle-outline`;
+}
+
+function statusLabelFor(session: RecordingSessionSummary): `PLAYING` | `RECORDING` | `FAILED` | `PASSED` | `` {
+	const status = dotClassFor(session);
+	if (status === `playing`) { return `PLAYING`; }
+	if (status === `recording`) { return `RECORDING`; }
+	if (status === `failed`) { return `FAILED`; }
+	if (status === `passed`) { return `PASSED`; }
+	return ``;
+}
+
 function formatTitle(isoTitle: RecordingSessionSummary[`title`]): DetailText {
 	const parsed = new Date(isoTitle);
 	return Number.isNaN(parsed.getTime()) ? isoTitle : parsed.toLocaleString();
@@ -222,41 +247,80 @@ const testDate = computed<DetailText | undefined>(() => {
 	list-style: none;
 	margin: 0;
 	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
 }
 
-.recording-row {
+.recording-card {
 	display: flex;
 	align-items: center;
 	gap: 0.75rem;
-	padding: 0.5rem 0.25rem;
-	border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+	padding: 0.75rem;
+	border: 1px solid rgba(0, 0, 0, 0.08);
+	border-radius: 12px;
+	background: rgb(var(--v-theme-surface));
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 	cursor: pointer;
+	transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
-.recording-row:hover {
-	background: rgba(0, 0, 0, 0.03);
+.recording-card:hover {
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
-.recording-row__info {
+.recording-card--playing {
+	border-color: rgb(var(--v-theme-primary));
+}
+
+.recording-card--failed {
+	border-left: 4px solid #e53935;
+}
+
+.recording-card__icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 8px;
+	flex-shrink: 0;
+	background: rgba(0, 0, 0, 0.06);
+	color: rgba(0, 0, 0, 0.6);
+}
+
+.recording-card__icon--playing { background: rgba(var(--v-theme-primary), 0.12); color: rgb(var(--v-theme-primary)); }
+.recording-card__icon--recording,
+.recording-card__icon--failed { background: rgba(229, 57, 53, 0.12); color: #e53935; }
+.recording-card__icon--passed { background: rgba(67, 160, 71, 0.12); color: #43a047; }
+/* recording timing mirrors the header's recording indicator (AppHeaderRecordingControls.vue) — scoped styles can't be shared across components */
+.recording-card__icon--recording :deep(.v-icon) { animation: recording-pulse 1.5s infinite; }
+
+.recording-card__info {
 	display: flex;
 	flex-direction: column;
 	flex-grow: 1;
 	min-width: 0;
 }
 
-.status-dot {
-	width: 8px;
-	height: 8px;
-	border-radius: 50%;
-	flex-shrink: 0;
+.recording-card__info .text-caption {
+	font-size: 0.6875rem !important;
 }
 
-.status-dot--neutral { background: #9e9e9e; }
-.status-dot--passed { background: #43a047; }
-.status-dot--failed { background: #e53935; }
+.recording-card__chevron {
+	flex-shrink: 0;
+	color: rgba(0, 0, 0, 0.35);
+}
+
+.recording-card__status {
+	font-weight: 600;
+}
+
+.recording-card__status--passed { color: #43a047; }
+.recording-card__status--failed { color: #e53935; }
 /* recording/playing timing mirrors the header's recording indicator (AppHeaderRecordingControls.vue) — scoped styles can't be shared across components */
-.status-dot--recording { background: #e53935; animation: recording-pulse 1.5s infinite; }
-.status-dot--playing { background: rgb(var(--v-theme-primary)); animation: recording-pulse 1.5s infinite; }
+.recording-card__status--recording { color: #e53935; animation: recording-pulse 1.5s infinite; }
+.recording-card__status--playing { color: rgb(var(--v-theme-primary)); animation: recording-pulse 1.5s infinite; }
 @keyframes recording-pulse { 0% { opacity: 1; } 50% { opacity: 0.35; } 100% { opacity: 1; } }
 
 .recording-panel-title-column {

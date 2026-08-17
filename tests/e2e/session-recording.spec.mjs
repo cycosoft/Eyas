@@ -179,8 +179,8 @@ test.describe(`Session Recording — Replay`, () => {
 		// reappear (playbackStatus leaving 'playing') before that's guaranteed to have happened.
 		await expect(uiPage.locator(`[data-qa="btn-recording-replay"]`)).toBeVisible();
 		await uiPage.locator(`[data-qa="btn-recording-panel-toggle"]`).click();
-		const dot = uiPage.locator(`[data-qa="recording-panel-list"] li .status-dot`).first();
-		await expect(dot).toHaveClass(/status-dot--passed/);
+		const card = uiPage.locator(`[data-qa="recording-panel-list"] li`).first();
+		await expect(card).toHaveClass(/recording-card--passed/);
 	});
 
 	test(`captures and replays scroll + click actions inside a popup window, then auto-closes it, hitting the exact button the user clicked`, async () => {
