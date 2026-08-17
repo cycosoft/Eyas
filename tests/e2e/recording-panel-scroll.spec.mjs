@@ -83,8 +83,9 @@ test.describe(`Recording panel detail view — real scroll`, () => {
 		// active, so the header's Replay button isn't reachable while the panel is already open
 		await uiPage.locator(`[data-qa="btn-recording-replay"]`).click();
 
+		// opening onto an already-running playback drills straight into that session's detail view
+		// (see recording.ts's togglePanel), so there's no browser-list row to click through here
 		await uiPage.locator(`[data-qa="btn-recording-panel-toggle"]`).click();
-		await uiPage.locator(`[data-qa="recording-panel-list"] li`).first().click();
 		await expect(uiPage.locator(`[data-qa="recording-detail-steps"]`)).toBeVisible();
 
 		const scrollArea = uiPage.locator(`.eyas-modal__body`);
@@ -118,9 +119,11 @@ test.describe(`Recording panel detail view — real scroll`, () => {
 
 		// the panel's own scrim is suppressed during playback, but the separate full-screen
 		// background-logo overlay (ModalBackground.vue) used to have no pointer-events guard on its
-		// empty area, silently eating clicks on header controls sitting beneath it, like this one
+		// empty area, silently eating clicks on header controls sitting beneath it, like this one.
+		// Opening onto an already-running playback drills straight into that session's detail view
+		// (see recording.ts's togglePanel), so there's no browser list here to assert on.
 		await uiPage.locator(`[data-qa="btn-recording-panel-toggle"]`).click();
-		await expect(uiPage.locator(`[data-qa="recording-panel-browser"]`)).toBeVisible();
+		await expect(uiPage.locator(`[data-qa="recording-detail-steps"]`)).toBeVisible();
 
 		await uiPage.locator(`[data-qa="btn-recording-playback-stop"]`).click({ timeout: 5000 });
 		await expect(uiPage.locator(`[data-qa="btn-recording-playback-stop"]`)).not.toBeVisible();
