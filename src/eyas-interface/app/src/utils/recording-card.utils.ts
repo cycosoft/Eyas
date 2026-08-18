@@ -2,11 +2,12 @@ import type { ColorHex } from '@registry/primitives.js';
 
 export type RecordingCardStatus = `recording` | `playing` | `passed` | `failed` | `neutral`;
 
-export function cardIconFor(status: RecordingCardStatus): `mdi-chart-bar` | `mdi-circle` | `mdi-alert-circle-outline` | `mdi-play-circle-outline` {
+export function cardIconFor(status: RecordingCardStatus): `mdi-chart-bar` | `mdi-circle` | `mdi-alert-circle-outline` | `mdi-check-circle-outline` | `mdi-clock-outline` {
 	if (status === `playing`) { return `mdi-chart-bar`; }
 	if (status === `recording`) { return `mdi-circle`; }
 	if (status === `failed`) { return `mdi-alert-circle-outline`; }
-	return `mdi-play-circle-outline`;
+	if (status === `passed`) { return `mdi-check-circle-outline`; }
+	return `mdi-clock-outline`;
 }
 
 export function accentColorFor(status: RecordingCardStatus): ColorHex {

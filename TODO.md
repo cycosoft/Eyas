@@ -1,6 +1,8 @@
 # TODO
 
 - i should be able to hit escape to close the recording panel
+- npm run check
+- update changelog
 
 # Future
 
