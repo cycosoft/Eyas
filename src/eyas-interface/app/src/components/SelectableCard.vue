@@ -101,4 +101,40 @@ withDefaults(defineProps<SelectableCardProps>(), {
 	flex-grow: 1;
 	min-width: 0;
 }
+
+/*
+	Generic hover-swap for trailing slot content: a resting affordance (e.g. a chevron) that's
+	replaced by an action only reachable on hover (e.g. a button), overlaid so swapping never
+	shifts layout.
+*/
+.selectable-card__trailing {
+	position: relative;
+	width: 28px;
+	height: 28px;
+	flex-shrink: 0;
+}
+
+.selectable-card__trailing-rest,
+.selectable-card__trailing-hover {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: opacity 0.15s ease-in-out;
+}
+
+.selectable-card__trailing-hover {
+	opacity: 0;
+	pointer-events: none;
+}
+
+.selectable-card:hover .selectable-card__trailing-rest {
+	opacity: 0;
+}
+
+.selectable-card:hover .selectable-card__trailing-hover {
+	opacity: 1;
+	pointer-events: auto;
+}
 </style>

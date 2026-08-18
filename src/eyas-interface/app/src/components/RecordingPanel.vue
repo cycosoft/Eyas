@@ -51,7 +51,19 @@
 						</span>
 					</span>
 					<template #trailing>
-						<v-icon icon="mdi-chevron-right" size="small" class="recording-card__chevron" />
+						<span class="selectable-card__trailing">
+							<v-icon icon="mdi-chevron-right" size="small" class="recording-card__chevron selectable-card__trailing-rest" />
+							<button
+								type="button"
+								class="recording-card__action selectable-card__trailing-hover"
+								:class="`recording-card__action--${dotClassFor(session)}`"
+								:disabled="isRowActionDisabled(session)"
+								:data-qa="`recording-row-action-${session.sessionId}`"
+								@click.stop="onActionClick(session)"
+							>
+								<v-icon :icon="actionIconFor(dotClassFor(session))" size="small" />
+							</button>
+						</span>
 					</template>
 				</SelectableCard>
 			</ul>
@@ -118,7 +130,7 @@ import SelectableCard from '@/components/SelectableCard.vue';
 import useRecordingStore from '@/stores/recording.js';
 import { stepDotClassFor, stepDotColorFor, firstFailingStepIndex, type StepDotClass } from '@/utils/step-dot.utils.js';
 import { describeStep, stepIcon, stepDetail } from '@/utils/step-format.utils.js';
-import { cardIconFor, accentColorFor, statusLabelFor, type RecordingCardStatus } from '@/utils/recording-card.utils.js';
+import { cardIconFor, accentColorFor, actionIconFor, statusLabelFor, type RecordingCardStatus } from '@/utils/recording-card.utils.js';
 import type { IsVisible, IsActive, ChannelName, Count } from '@registry/primitives.js';
 import type { RecordingSessionSummary, RecorderRunStepsLoadedPayload } from '@registry/ipc.js';
 import type { EyasRecordingEnvelope } from '@registry/recording.js';
@@ -167,6 +179,27 @@ function dotClassFor(session: RecordingSessionSummary): RecordingCardStatus {
 	if (session.lastRunOutcome === `passed`) { return `passed`; }
 	if (session.lastRunOutcome === `failed`) { return `failed`; }
 	return `neutral`;
+}
+
+// Only one recording/playback instance can run at a time app-wide, so a play button on any row
+// other than the one currently busy would either be ignored or fight the active run.
+function isRowActionDisabled(session: RecordingSessionSummary): IsActive {
+	const status = dotClassFor(session);
+	if (status === `recording` || status === `playing`) { return false; }
+	return (recordingStore.isRecording || recordingStore.isPlaying) && recordingStore.sessionId !== session.sessionId;
+}
+
+function onActionClick(session: RecordingSessionSummary): void {
+	const status = dotClassFor(session);
+	if (status === `recording`) {
+		window.eyas?.send(`recorder-stop` as ChannelName);
+		return;
+	}
+	if (status === `playing`) {
+		window.eyas?.send(`recorder-replay-stop` as ChannelName);
+		return;
+	}
+	window.eyas?.send(`recorder-replay-request` as ChannelName, { sessionId: session.sessionId });
 }
 
 // View-anchored: only colors icons for the detail view's own session, matching the currently
@@ -231,28 +264,19 @@ const testDate = computed<DetailText | undefined>(() => {
 </script>
 
 <style scoped>
-.recording-list {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	display: flex;
-	flex-direction: column;
-	gap: 0.75rem;
-}
+.recording-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.75rem; }
 
 /* recording timing mirrors the header's recording indicator (AppHeaderRecordingControls.vue) — scoped styles can't be shared across components */
-.recording-card--recording .recording-card__icon-glyph {
-	animation: recording-pulse 1.5s infinite;
-}
+.recording-card--recording .recording-card__icon-glyph { animation: recording-pulse 1.5s infinite; }
 
-.recording-card :deep(.selectable-card__content) .text-caption {
-	font-size: 0.6875rem !important;
-}
+.recording-card :deep(.selectable-card__content) .text-caption { font-size: 0.6875rem !important; }
 
-.recording-card__chevron { flex-shrink: 0; color: rgba(0, 0, 0, 0.35); }
-
+.recording-card__chevron { color: rgba(0, 0, 0, 0.35); }
+.recording-card__action { border: none; border-radius: 8px; background: transparent; color: rgba(0, 0, 0, 0.6); cursor: pointer; }
+.recording-card__action--recording { background-color: #e53935; color: #ffffff; }
+.recording-card__action--playing { background-color: rgba(25, 28, 30, 0.08); color: rgba(25, 28, 30, 0.7); }
+.recording-card__action:disabled { cursor: default; color: rgba(0, 0, 0, 0.25); pointer-events: none; }
 .recording-card__status { font-weight: 600; }
-
 .recording-card__status--passed { color: #43a047; }
 .recording-card__status--failed { color: #e53935; }
 /* recording/playing timing mirrors the header's recording indicator (AppHeaderRecordingControls.vue) — scoped styles can't be shared across components */
@@ -261,39 +285,16 @@ const testDate = computed<DetailText | undefined>(() => {
 @keyframes recording-pulse { 0% { opacity: 1; } 50% { opacity: 0.35; } 100% { opacity: 1; } }
 
 .recording-panel-title-column { min-width: 0; }
+.back-link { display: flex; align-items: center; gap: 0.25rem; background: none; border: none; padding: 0; color: var(--modal-primary, #58A1D6); cursor: pointer; }
 
-.back-link {
-	display: flex;
-	align-items: center;
-	gap: 0.25rem;
-	background: none;
-	border: none;
-	padding: 0;
-	color: var(--modal-primary, #58A1D6);
-	cursor: pointer;
-}
-
-:deep(.v-timeline-item__body) {
-	overflow-wrap: anywhere;
-	padding-block-end: 0.75rem;
-}
+:deep(.v-timeline-item__body) { overflow-wrap: anywhere; padding-block-end: 0.75rem; }
 
 /* Per-step blink — base color already comes from the bound dot-color prop (stepDotColorFor);
    Vuetify's dot-color alone can't carry an animation, so the pulse is layered on via :deep(),
    reusing the same @keyframes recording-pulse the list row's blinking dot already uses. */
 .step-dot--recording-active :deep(.v-timeline-divider__dot),
-.step-dot--playing-active :deep(.v-timeline-divider__dot) {
-	animation: recording-pulse 1.5s infinite;
-}
+.step-dot--playing-active :deep(.v-timeline-divider__dot) { animation: recording-pulse 1.5s infinite; }
 
-.step-timeline-title {
-	font-size: 0.8125rem;
-	line-height: 1.3;
-}
-
-.step-timeline-detail {
-	font-size: 0.75rem;
-	line-height: 1.3;
-	margin-top: 0.125rem;
-}
+.step-timeline-title { font-size: 0.8125rem; line-height: 1.3; }
+.step-timeline-detail { font-size: 0.75rem; line-height: 1.3; margin-top: 0.125rem; }
 </style>

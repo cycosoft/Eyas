@@ -17,6 +17,11 @@ export function accentColorFor(status: RecordingCardStatus): ColorHex {
 	return `#9e9e9e`;
 }
 
+export function actionIconFor(status: RecordingCardStatus): `mdi-stop` | `mdi-play` {
+	if (status === `recording` || status === `playing`) { return `mdi-stop`; }
+	return `mdi-play`;
+}
+
 export function statusLabelFor(status: RecordingCardStatus): `PLAYING` | `RECORDING` | `FAILED` | `PASSED` | `` {
 	if (status === `playing`) { return `PLAYING`; }
 	if (status === `recording`) { return `RECORDING`; }
