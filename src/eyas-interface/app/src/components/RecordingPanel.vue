@@ -274,7 +274,6 @@ const testDate = computed<DetailText | undefined>(() => {
 .recording-card--recording .recording-card__icon-glyph { animation: recording-pulse 1.5s infinite; }
 .recording-card :deep(.selectable-card__content) .text-caption { font-size: 0.6875rem !important; }
 .recording-card__chevron { color: rgba(0, 0, 0, 0.35); }
-.recording-card__action.v-btn--variant-plain { opacity: 1; }
 .recording-card__action--recording { background-color: #e53935; color: #ffffff; }
 .recording-card__action--playing { background-color: rgba(25, 28, 30, 0.08); color: rgba(25, 28, 30, 0.7); }
 .recording-card__action.v-btn--disabled { color: rgba(0, 0, 0, 0.25); }
