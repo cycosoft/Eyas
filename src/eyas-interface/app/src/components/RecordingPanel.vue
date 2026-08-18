@@ -36,6 +36,7 @@
 					class="recording-card"
 					:class="`recording-card--${dotClassFor(session)}`"
 					:accent-color="accentColorFor(dotClassFor(session))"
+					persist-icon
 					:data-qa="`recording-row-${session.sessionId}`"
 					@click="recordingStore.selectSession(session.sessionId)"
 				>

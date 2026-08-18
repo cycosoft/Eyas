@@ -2,7 +2,7 @@
 	<component
 		:is="tag"
 		class="selectable-card"
-		:class="{ 'selectable-card--accent': persistAccent, 'selectable-card--loading': loading }"
+		:class="{ 'selectable-card--accent': persistAccent, 'selectable-card--icon-accent': persistIcon, 'selectable-card--loading': loading }"
 		:style="{ '--selectable-card-accent': accentColor }"
 		:type="tag === `button` ? `button` : undefined"
 		:disabled="tag === `button` && (disabled || loading) ? true : undefined"
@@ -25,6 +25,7 @@ type SelectableCardProps = {
 	tag?: `button` | `li`;
 	accentColor?: ColorHex;
 	persistAccent?: IsActive;
+	persistIcon?: IsActive;
 	loading?: IsActive;
 	disabled?: IsActive;
 };
@@ -33,6 +34,7 @@ withDefaults(defineProps<SelectableCardProps>(), {
 	tag: `button`,
 	accentColor: `#58A1D6`,
 	persistAccent: false,
+	persistIcon: false,
 	loading: false,
 	disabled: false
 });
@@ -74,7 +76,8 @@ withDefaults(defineProps<SelectableCardProps>(), {
 }
 
 .selectable-card:hover .selectable-card__icon,
-.selectable-card--accent .selectable-card__icon {
+.selectable-card--accent .selectable-card__icon,
+.selectable-card--icon-accent .selectable-card__icon {
 	background-color: color-mix(in srgb, var(--selectable-card-accent) 10%, transparent);
 	color: var(--selectable-card-accent);
 }

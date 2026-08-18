@@ -13,7 +13,7 @@ export function accentColorFor(status: RecordingCardStatus): ColorHex {
 	if (status === `passed`) { return `#43a047`; }
 	if (status === `failed` || status === `recording`) { return `#e53935`; }
 	if (status === `playing`) { return `rgb(var(--v-theme-primary))`; }
-	return `rgba(25, 28, 30, 0.4)`;
+	return `#9e9e9e`;
 }
 
 export function statusLabelFor(status: RecordingCardStatus): `PLAYING` | `RECORDING` | `FAILED` | `PASSED` | `` {
