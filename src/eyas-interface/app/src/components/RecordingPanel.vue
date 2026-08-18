@@ -29,28 +29,30 @@
 			</p>
 
 			<ul v-else class="recording-list" data-qa="recording-panel-list">
-				<li
+				<SelectableCard
 					v-for="session in savedSessions"
 					:key="session.sessionId"
+					tag="li"
 					class="recording-card"
 					:class="`recording-card--${dotClassFor(session)}`"
+					:accent-color="accentColorFor(dotClassFor(session))"
 					:data-qa="`recording-row-${session.sessionId}`"
 					@click="recordingStore.selectSession(session.sessionId)"
 				>
-					<span class="recording-card__icon" :class="`recording-card__icon--${dotClassFor(session)}`">
-						<v-icon :icon="cardIconFor(session)" size="small" />
-					</span>
-					<span class="recording-card__info">
-						<span class="font-body text-body-2 font-weight-medium text-on-surface">{{ formatTitle(session.title) }}</span>
-						<span class="font-body text-caption text-grey-darken-1">
-							{{ session.stepCount }} step{{ session.stepCount === 1 ? `` : `s` }}
-							<span v-if="statusLabelFor(session)" class="recording-card__status" :class="`recording-card__status--${dotClassFor(session)}`">
-								&nbsp;&bull; {{ statusLabelFor(session) }}
-							</span>
+					<template #icon>
+						<v-icon :icon="cardIconFor(dotClassFor(session))" size="small" class="recording-card__icon-glyph" />
+					</template>
+					<span class="font-body text-body-2 font-weight-medium text-on-surface">{{ formatTitle(session.title) }}</span>
+					<span class="font-body text-caption text-grey-darken-1">
+						{{ session.stepCount }} step{{ session.stepCount === 1 ? `` : `s` }}
+						<span v-if="statusLabelFor(dotClassFor(session))" class="recording-card__status" :class="`recording-card__status--${dotClassFor(session)}`">
+							&nbsp;&bull; {{ statusLabelFor(dotClassFor(session)) }}
 						</span>
 					</span>
-					<v-icon icon="mdi-chevron-right" size="small" class="recording-card__chevron" />
-				</li>
+					<template #trailing>
+						<v-icon icon="mdi-chevron-right" size="small" class="recording-card__chevron" />
+					</template>
+				</SelectableCard>
 			</ul>
 		</div>
 
@@ -111,9 +113,11 @@
 import { computed, nextTick, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import EyasModal from '@/components/EyasModal.vue';
+import SelectableCard from '@/components/SelectableCard.vue';
 import useRecordingStore from '@/stores/recording.js';
 import { stepDotClassFor, stepDotColorFor, firstFailingStepIndex, type StepDotClass } from '@/utils/step-dot.utils.js';
 import { describeStep, stepIcon, stepDetail } from '@/utils/step-format.utils.js';
+import { cardIconFor, accentColorFor, statusLabelFor, type RecordingCardStatus } from '@/utils/recording-card.utils.js';
 import type { IsVisible, IsActive, ChannelName, Count } from '@registry/primitives.js';
 import type { RecordingSessionSummary, RecorderRunStepsLoadedPayload } from '@registry/ipc.js';
 import type { EyasRecordingEnvelope } from '@registry/recording.js';
@@ -156,7 +160,7 @@ watch(selectedSession, session => {
 });
 
 // Live blink takes priority over last-run status, and is local-instance only (recording/playback state is never shared across Eyas processes).
-function dotClassFor(session: RecordingSessionSummary): `recording` | `playing` | `passed` | `failed` | `neutral` {
+function dotClassFor(session: RecordingSessionSummary): RecordingCardStatus {
 	if (recordingStore.isRecording && recordingStore.sessionId === session.sessionId) { return `recording`; }
 	if (recordingStore.isPlaying && recordingStore.sessionId === session.sessionId) { return `playing`; }
 	if (session.lastRunOutcome === `passed`) { return `passed`; }
@@ -214,23 +218,6 @@ function stepDotClass(stepIndex: StepIndex): StepDotClass {
 	return stepDotClassFor(stepIndex, recording, playing, runStepOutcomes);
 }
 
-function cardIconFor(session: RecordingSessionSummary): `mdi-chart-bar` | `mdi-circle` | `mdi-alert-circle-outline` | `mdi-play-circle-outline` {
-	const status = dotClassFor(session);
-	if (status === `playing`) { return `mdi-chart-bar`; }
-	if (status === `recording`) { return `mdi-circle`; }
-	if (status === `failed`) { return `mdi-alert-circle-outline`; }
-	return `mdi-play-circle-outline`;
-}
-
-function statusLabelFor(session: RecordingSessionSummary): `PLAYING` | `RECORDING` | `FAILED` | `PASSED` | `` {
-	const status = dotClassFor(session);
-	if (status === `playing`) { return `PLAYING`; }
-	if (status === `recording`) { return `RECORDING`; }
-	if (status === `failed`) { return `FAILED`; }
-	if (status === `passed`) { return `PASSED`; }
-	return ``;
-}
-
 function formatTitle(isoTitle: RecordingSessionSummary[`title`]): DetailText {
 	const parsed = new Date(isoTitle);
 	return Number.isNaN(parsed.getTime()) ? isoTitle : parsed.toLocaleString();
@@ -252,69 +239,18 @@ const testDate = computed<DetailText | undefined>(() => {
 	gap: 0.75rem;
 }
 
-.recording-card {
-	display: flex;
-	align-items: center;
-	gap: 0.75rem;
-	padding: 0.75rem;
-	border: 1px solid rgba(0, 0, 0, 0.08);
-	border-radius: 12px;
-	background: rgb(var(--v-theme-surface));
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-	cursor: pointer;
-	transition: box-shadow 0.15s ease, border-color 0.15s ease;
-}
-
-.recording-card:hover {
-	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-}
-
-.recording-card--playing {
-	border-color: rgb(var(--v-theme-primary));
-}
-
-.recording-card--failed {
-	border-left: 4px solid #e53935;
-}
-
-.recording-card__icon {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 36px;
-	height: 36px;
-	border-radius: 8px;
-	flex-shrink: 0;
-	background: rgba(0, 0, 0, 0.06);
-	color: rgba(0, 0, 0, 0.6);
-}
-
-.recording-card__icon--playing { background: rgba(var(--v-theme-primary), 0.12); color: rgb(var(--v-theme-primary)); }
-.recording-card__icon--recording,
-.recording-card__icon--failed { background: rgba(229, 57, 53, 0.12); color: #e53935; }
-.recording-card__icon--passed { background: rgba(67, 160, 71, 0.12); color: #43a047; }
 /* recording timing mirrors the header's recording indicator (AppHeaderRecordingControls.vue) — scoped styles can't be shared across components */
-.recording-card__icon--recording :deep(.v-icon) { animation: recording-pulse 1.5s infinite; }
-
-.recording-card__info {
-	display: flex;
-	flex-direction: column;
-	flex-grow: 1;
-	min-width: 0;
+.recording-card--recording .recording-card__icon-glyph {
+	animation: recording-pulse 1.5s infinite;
 }
 
-.recording-card__info .text-caption {
+.recording-card :deep(.selectable-card__content) .text-caption {
 	font-size: 0.6875rem !important;
 }
 
-.recording-card__chevron {
-	flex-shrink: 0;
-	color: rgba(0, 0, 0, 0.35);
-}
+.recording-card__chevron { flex-shrink: 0; color: rgba(0, 0, 0, 0.35); }
 
-.recording-card__status {
-	font-weight: 600;
-}
+.recording-card__status { font-weight: 600; }
 
 .recording-card__status--passed { color: #43a047; }
 .recording-card__status--failed { color: #e53935; }
@@ -323,9 +259,7 @@ const testDate = computed<DetailText | undefined>(() => {
 .recording-card__status--playing { color: rgb(var(--v-theme-primary)); animation: recording-pulse 1.5s infinite; }
 @keyframes recording-pulse { 0% { opacity: 1; } 50% { opacity: 0.35; } 100% { opacity: 1; } }
 
-.recording-panel-title-column {
-	min-width: 0;
-}
+.recording-panel-title-column { min-width: 0; }
 
 .back-link {
 	display: flex;
