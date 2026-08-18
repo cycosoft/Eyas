@@ -5,6 +5,8 @@
 - update changelog
 - other recording buttons are disabled while some other acion is happening, consider flexibility in this
 - show the button all the time if that recording has an active action
+- should not be able to play a recording with no steps, so they will never be green or have a history
+- should be able to sort tests by name, creation date, last run date
 
 # Future
 

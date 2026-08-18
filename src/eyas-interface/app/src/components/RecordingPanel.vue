@@ -53,16 +53,20 @@
 					<template #trailing>
 						<span class="selectable-card__trailing">
 							<v-icon icon="mdi-chevron-right" size="small" class="recording-card__chevron selectable-card__trailing-rest" />
-							<button
-								type="button"
-								class="recording-card__action selectable-card__trailing-hover"
+							<v-btn
+								icon
+								variant="plain"
+								:ripple="false"
+								density="compact"
+								rounded="lg"
+								class="mx-0 recording-card__action selectable-card__trailing-hover"
 								:class="`recording-card__action--${dotClassFor(session)}`"
 								:disabled="isRowActionDisabled(session)"
 								:data-qa="`recording-row-action-${session.sessionId}`"
 								@click.stop="onActionClick(session)"
 							>
 								<v-icon :icon="actionIconFor(dotClassFor(session))" size="small" />
-							</button>
+							</v-btn>
 						</span>
 					</template>
 				</SelectableCard>
@@ -268,14 +272,12 @@ const testDate = computed<DetailText | undefined>(() => {
 
 /* recording timing mirrors the header's recording indicator (AppHeaderRecordingControls.vue) — scoped styles can't be shared across components */
 .recording-card--recording .recording-card__icon-glyph { animation: recording-pulse 1.5s infinite; }
-
 .recording-card :deep(.selectable-card__content) .text-caption { font-size: 0.6875rem !important; }
-
 .recording-card__chevron { color: rgba(0, 0, 0, 0.35); }
-.recording-card__action { border: none; border-radius: 8px; background: transparent; color: rgba(0, 0, 0, 0.6); cursor: pointer; }
+.recording-card__action.v-btn--variant-plain { opacity: 1; }
 .recording-card__action--recording { background-color: #e53935; color: #ffffff; }
 .recording-card__action--playing { background-color: rgba(25, 28, 30, 0.08); color: rgba(25, 28, 30, 0.7); }
-.recording-card__action:disabled { cursor: default; color: rgba(0, 0, 0, 0.25); pointer-events: none; }
+.recording-card__action.v-btn--disabled { color: rgba(0, 0, 0, 0.25); }
 .recording-card__status { font-weight: 600; }
 .recording-card__status--passed { color: #43a047; }
 .recording-card__status--failed { color: #e53935; }
@@ -288,13 +290,11 @@ const testDate = computed<DetailText | undefined>(() => {
 .back-link { display: flex; align-items: center; gap: 0.25rem; background: none; border: none; padding: 0; color: var(--modal-primary, #58A1D6); cursor: pointer; }
 
 :deep(.v-timeline-item__body) { overflow-wrap: anywhere; padding-block-end: 0.75rem; }
-
 /* Per-step blink — base color already comes from the bound dot-color prop (stepDotColorFor);
    Vuetify's dot-color alone can't carry an animation, so the pulse is layered on via :deep(),
    reusing the same @keyframes recording-pulse the list row's blinking dot already uses. */
 .step-dot--recording-active :deep(.v-timeline-divider__dot),
 .step-dot--playing-active :deep(.v-timeline-divider__dot) { animation: recording-pulse 1.5s infinite; }
-
 .step-timeline-title { font-size: 0.8125rem; line-height: 1.3; }
 .step-timeline-detail { font-size: 0.75rem; line-height: 1.3; margin-top: 0.125rem; }
 </style>

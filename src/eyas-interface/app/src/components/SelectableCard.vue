@@ -105,17 +105,18 @@ withDefaults(defineProps<SelectableCardProps>(), {
 /*
 	Generic hover-swap for trailing slot content: a resting affordance (e.g. a chevron) that's
 	replaced by an action only reachable on hover (e.g. a button), overlaid so swapping never
-	shifts layout.
+	shifts layout. Slotted content is owned by the parent's template scope, not this component's,
+	so every selector reaching into the trailing slot needs :deep() or it silently never matches.
 */
-.selectable-card__trailing {
+.selectable-card :deep(.selectable-card__trailing) {
 	position: relative;
 	width: 28px;
 	height: 28px;
 	flex-shrink: 0;
 }
 
-.selectable-card__trailing-rest,
-.selectable-card__trailing-hover {
+.selectable-card :deep(.selectable-card__trailing-rest),
+.selectable-card :deep(.selectable-card__trailing-hover) {
 	position: absolute;
 	inset: 0;
 	display: flex;
@@ -124,16 +125,16 @@ withDefaults(defineProps<SelectableCardProps>(), {
 	transition: opacity 0.15s ease-in-out;
 }
 
-.selectable-card__trailing-hover {
+.selectable-card :deep(.selectable-card__trailing-hover) {
 	opacity: 0;
 	pointer-events: none;
 }
 
-.selectable-card:hover .selectable-card__trailing-rest {
+.selectable-card:hover :deep(.selectable-card__trailing-rest) {
 	opacity: 0;
 }
 
-.selectable-card:hover .selectable-card__trailing-hover {
+.selectable-card:hover :deep(.selectable-card__trailing-hover) {
 	opacity: 1;
 	pointer-events: auto;
 }
