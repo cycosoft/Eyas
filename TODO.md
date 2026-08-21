@@ -1,6 +1,5 @@
 # TODO
 
-- i should be able to hit escape to close the recording panel
 - npm run check
 - update changelog
 - other recording buttons are disabled while some other acion is happening, consider flexibility in this
