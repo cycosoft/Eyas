@@ -186,6 +186,9 @@ watch(() => ModalStore().closeAllCounter, () => {
 	padding: 0 1rem 1rem !important;
 }
 
+/* Recording detail view only (list centers fine as-is): wider base padding keeps the faded/narrowed step timeline centered. */
+.eyas-modal--panel .eyas-modal__body:has([data-qa="recording-panel-detail"]) { padding: 0 2rem 1.5rem !important; }
+
 .eyas-modal__body::-webkit-scrollbar {
 	width: 4px;
 }

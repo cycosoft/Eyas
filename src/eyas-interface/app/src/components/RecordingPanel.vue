@@ -286,14 +286,11 @@ const testDate = computed<DetailText | undefined>(() => {
 
 .recording-panel-title-column { min-width: 0; }
 .back-link { display: flex; align-items: center; gap: 0.25rem; background: none; border: none; padding: 0; color: var(--modal-primary, #58A1D6); cursor: pointer; }
-
 /* Panel narrows while dimmed during playback (see EyasModal's fadeDuringPlayback); hide text so it doesn't wrap illegibly. Hover restores width and text together. */
 .eyas-modal-panel-content--faded:not(:hover) .recording-panel-text { display: none; }
-
 :deep(.v-timeline-item__body) { overflow-wrap: anywhere; padding-block-end: 0.75rem; }
-/* Per-step blink layered on via :deep() since Vuetify's dot-color prop alone can't carry an animation. */
-.step-dot--recording-active :deep(.v-timeline-divider__dot),
-.step-dot--playing-active :deep(.v-timeline-divider__dot) { animation: recording-pulse 1.5s infinite; }
+/* Per-step blink via :deep() since Vuetify's dot-color prop alone can't carry an animation. */
+.step-dot--recording-active :deep(.v-timeline-divider__dot), .step-dot--playing-active :deep(.v-timeline-divider__dot) { animation: recording-pulse 1.5s infinite; }
 .step-timeline-title { font-size: 0.8125rem; line-height: 1.3; }
 .step-timeline-detail { font-size: 0.75rem; line-height: 1.3; margin-top: 0.125rem; }
 </style>

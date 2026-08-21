@@ -9,8 +9,8 @@
 - when we delete a recording, it also needs to delete all the history associated with that recording.
 - the code that pins the active playing recording to the top should also have the same behavior for the bottom
 - I'm unable to stop a playback when a new window is being stepped through
-- the collapsed recording detail content needs centered
 - test in a consumer app
+- do no save a recording if no steps were recorded
 
 # Future
 
