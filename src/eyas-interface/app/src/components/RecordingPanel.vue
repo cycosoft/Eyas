@@ -34,7 +34,7 @@
 					:key="session.sessionId"
 					tag="li"
 					class="recording-card"
-					:class="`recording-card--${dotClassFor(session)}`"
+					:class="[`recording-card--${dotClassFor(session)}`, { 'recording-card--pinned': isPinned(session) }]"
 					:accent-color="accentColorFor(dotClassFor(session))"
 					persist-icon
 					:data-qa="`recording-row-${session.sessionId}`"
@@ -186,8 +186,13 @@ function dotClassFor(session: RecordingSessionSummary): RecordingCardStatus {
 	return `neutral`;
 }
 
-// Only one recording/playback instance can run at a time app-wide, so a play button on any row
-// other than the one currently busy would either be ignored or fight the active run.
+// Keeps the actively recording/playing row in view regardless of where it sits in the sorted list.
+function isPinned(session: RecordingSessionSummary): IsActive {
+	const status = dotClassFor(session);
+	return status === `recording` || status === `playing`;
+}
+
+// Only one recording/playback instance can run app-wide, so a play button on any other busy row would be ignored or fight the active run.
 function isRowActionDisabled(session: RecordingSessionSummary): IsActive {
 	const status = dotClassFor(session);
 	if (status === `recording` || status === `playing`) { return false; }
@@ -207,26 +212,19 @@ function onActionClick(session: RecordingSessionSummary): void {
 	window.eyas?.send(`recorder-replay-request` as ChannelName, { sessionId: session.sessionId });
 }
 
-// View-anchored: only colors icons for the detail view's own session, matching the currently
-// active recording/playback instance — a different session's icons stay neutral even if this
-// instance happens to be recording/playing something else (which can't currently overlap this
-// view being open on it, but the guard is cheap and keeps the intent explicit).
+// View-anchored: only colors icons for the detail view's own session, matching the active recording/playback instance; other sessions stay neutral.
 const isActiveSession = computed<IsActive>(() => !!selectedSession.value && recordingStore.sessionId === selectedSession.value.sessionId);
 
 const detailContainerEl = ref<HTMLElement | null>(null);
 
-// Once the tester manually scrolls mid-run, auto-follow stops for the rest of that run rather than
-// fighting them or silently resuming — they've deliberately taken over. Reset on the next run's
-// first step so a fresh playback always starts out following again.
+// Once the tester manually scrolls mid-run, auto-follow stops for the rest of that run. Reset on the next run's first step.
 let autoScrollInterrupted = false;
 
 function interruptAutoScroll(): void {
 	autoScrollInterrupted = true;
 }
 
-// Keeps the actively-dispatching step visible while a watched playback runs, so the tester doesn't
-// have to manually scroll the detail view to follow along. Only follows the panel's own active
-// session (isActiveSession), matching the view-anchored scoping used for step icon coloring above.
+// Keeps the actively-dispatching step visible while a watched playback runs. Only follows the panel's own active session, matching the scoping used for step icon coloring above.
 watch(() => recordingStore.currentStepIndex, async currentStepIndex => {
 	if (currentStepIndex === null || !isActiveSession.value || !recordingStore.isPlaying) { return; }
 	if (currentStepIndex === 0) { autoScrollInterrupted = false; }
@@ -273,6 +271,7 @@ const testDate = computed<DetailText | undefined>(() => {
 
 /* recording timing mirrors the header's recording indicator (AppHeaderRecordingControls.vue) — scoped styles can't be shared across components */
 .recording-card--recording .recording-card__icon-glyph { animation: recording-pulse 1.5s infinite; }
+.recording-card--pinned { position: sticky; top: 0; z-index: 1; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18); background-color: #ffffff; }
 .recording-card :deep(.selectable-card__content) .text-caption { font-size: 0.6875rem !important; }
 .recording-card__chevron { color: rgba(0, 0, 0, 0.35); }
 .recording-card__action--recording { background-color: #e53935; color: #ffffff; }
