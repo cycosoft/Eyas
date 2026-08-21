@@ -117,11 +117,12 @@ describe(`sessionRecorderService.appendSteps`, () => {
 	test(`is a no-op after stopRecording, so steps flushed post-stop aren't appended to the already-stopped session`, async () => {
 		const ctx = makeCtx();
 		await service.startSession(ctx);
+		service.appendSteps(ctx, [{ type: `click`, selectors: [`#first`], offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
 		service.stopRecording(ctx);
 
 		service.appendSteps(ctx, [{ type: `click`, selectors: [`#foo`], offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
 
-		expect(service.getActiveSession()?.recording.steps).toHaveLength(0);
+		expect(service.getActiveSession()?.recording.steps).toHaveLength(1);
 	});
 
 	test(`appends flushed steps to the in-memory steps[] array of the current envelope`, async () => {
@@ -201,11 +202,12 @@ describe(`sessionRecorderService.appendNavigateStep`, () => {
 	test(`is a no-op after stopRecording, so navigation to a new view after stopping isn't appended to the already-stopped session`, async () => {
 		const ctx = makeCtx();
 		await service.startSession(ctx);
+		service.appendNavigateStep(ctx, `https://first.example.com` as never);
 		service.stopRecording(ctx);
 
 		service.appendNavigateStep(ctx, `https://example.com` as never);
 
-		expect(service.getActiveSession()?.recording.steps).toHaveLength(0);
+		expect(service.getActiveSession()?.recording.steps).toHaveLength(1);
 	});
 });
 
@@ -238,11 +240,12 @@ describe(`sessionRecorderService.appendCloseWindowStep`, () => {
 	test(`is a no-op after stopRecording, so a popup closing after stopping isn't appended to the already-stopped session`, async () => {
 		const ctx = makeCtx();
 		await service.startSession(ctx);
+		service.appendCloseWindowStep(ctx, `popup-first` as never);
 		service.stopRecording(ctx);
 
 		service.appendCloseWindowStep(ctx, `popup-1` as never);
 
-		expect(service.getActiveSession()?.recording.steps).toHaveLength(0);
+		expect(service.getActiveSession()?.recording.steps).toHaveLength(1);
 	});
 });
 
@@ -362,6 +365,7 @@ describe(`sessionRecorderService.stopRecording`, () => {
 	test(`sets stoppedAt to the current timestamp on the session file and returns this instance to idle`, async () => {
 		const ctx = makeCtx();
 		await service.startSession(ctx);
+		service.appendSteps(ctx, [{ type: `click`, selectors: [`#foo`], offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
 		const expectedPath = join(tmpDir, `test-proj`, `${service.getActiveSession()?.sessionId}.json`);
 
 		service.stopRecording(ctx);
@@ -373,18 +377,43 @@ describe(`sessionRecorderService.stopRecording`, () => {
 		expect(written.status).toBeUndefined();
 
 		// once idle, further steps aren't appended — proves _mode gated the write, not just a stale check
-		service.appendSteps(ctx, [{ type: `click`, selectors: [`#foo`], offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
-		expect(service.getActiveSession()?.recording.steps).toHaveLength(0);
+		service.appendSteps(ctx, [{ type: `click`, selectors: [`#bar`], offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
+		expect(service.getActiveSession()?.recording.steps).toHaveLength(1);
 	});
 
 	test(`sends recorder-status-updated with { isRecording: false }`, async () => {
 		const ctx = makeCtx();
 		await service.startSession(ctx);
+		service.appendSteps(ctx, [{ type: `click`, selectors: [`#foo`], offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
 		vi.mocked(ctx.$eyasLayer?.webContents?.send as ReturnType<typeof vi.fn>).mockClear();
 
 		service.stopRecording(ctx);
 
 		expect(ctx.$eyasLayer?.webContents?.send).toHaveBeenCalledWith(`recorder-status-updated`, expect.objectContaining({ isRecording: false }));
+	});
+
+	test(`discards the session and deletes its file when no steps were recorded, instead of saving an empty recording`, async () => {
+		const ctx = makeCtx();
+		await service.startSession(ctx);
+		const expectedPath = join(tmpDir, `test-proj`, `${service.getActiveSession()?.sessionId}.json`);
+		expect(await pathExists(expectedPath)).toBe(true);
+
+		service.stopRecording(ctx);
+		await new Promise(resolve => setTimeout(resolve, 20));
+
+		expect(service.getActiveSession()).toBeNull();
+		expect(await pathExists(expectedPath)).toBe(false);
+	});
+
+	test(`still reports recorder-status-updated with { isRecording: false } when discarding an empty session`, async () => {
+		const ctx = makeCtx();
+		await service.startSession(ctx);
+		const sessionId = service.getActiveSession()?.sessionId;
+		vi.mocked(ctx.$eyasLayer?.webContents?.send as ReturnType<typeof vi.fn>).mockClear();
+
+		service.stopRecording(ctx);
+
+		expect(ctx.$eyasLayer?.webContents?.send).toHaveBeenCalledWith(`recorder-status-updated`, { isRecording: false, sessionId });
 	});
 });
 
