@@ -136,3 +136,29 @@ describe(`runHistoryService.getStepOutcomes`, () => {
 		expect(result).toEqual({ finished: true, outcomes: { 0: `passed` } });
 	});
 });
+
+describe(`runHistoryService.deleteRecordingHistory`, () => {
+	test(`removes every run and its steps for the given recording, so its last-run status reads back as never played`, async () => {
+		const runId = await service.startRun(`proj-1`, `rec-1`);
+		await service.recordStepStart(`proj-1`, runId, 0);
+		await service.finishRun(`proj-1`, runId);
+
+		await service.deleteRecordingHistory(`proj-1`, `rec-1`);
+
+		expect(await service.getLastRunForRecording(`proj-1`, `rec-1`)).toBeNull();
+		expect(await service.getStepOutcomes(`proj-1`, `rec-1`)).toBeNull();
+	});
+
+	test(`leaves another recording's history in the same project untouched`, async () => {
+		const runId = await service.startRun(`proj-1`, `rec-2`);
+		await service.finishRun(`proj-1`, runId);
+
+		await service.deleteRecordingHistory(`proj-1`, `rec-1`);
+
+		expect(await service.getLastRunForRecording(`proj-1`, `rec-2`)).toEqual({ outcome: `passed` });
+	});
+
+	test(`does not throw for a recording that was never played`, async () => {
+		await expect(service.deleteRecordingHistory(`proj-1`, `rec-1`)).resolves.toBeUndefined();
+	});
+});

@@ -4,7 +4,7 @@ import type { IsActive, ProgressRatio, Count, DetailText, SessionId } from '@reg
 
 const MISMATCH_DETAIL_LIMIT: Count = 5;
 import type { RecorderStatusPayload } from '@registry/recording.js';
-import type { RecorderPlaybackStatusPayload, RecorderSessionsListedPayload, RecorderSessionLoadedPayload, RecorderRunStepsLoadedPayload, RecordingSessionSummary } from '@registry/ipc.js';
+import type { RecorderPlaybackStatusPayload, RecorderSessionsListedPayload, RecorderSessionLoadedPayload, RecorderRunStepsLoadedPayload, RecorderSessionDeletedPayload, RecordingSessionSummary } from '@registry/ipc.js';
 
 export default defineStore(`recording`, {
 	state: (): RecordingState => ({
@@ -95,6 +95,14 @@ export default defineStore(`recording`, {
 			this.selectedSessionId = null;
 			this.selectedSessionDetail = null;
 			this.runStepOutcomes = null;
+		},
+
+		// Always drops the deleted session from the list; only navigates back to the browser view if
+		// it was the one currently open, so a stale confirmation doesn't yank the tester off a
+		// different session they've since navigated to.
+		removeDeletedSession(payload: RecorderSessionDeletedPayload): void {
+			this.savedSessions = this.savedSessions.filter(session => session.sessionId !== payload.sessionId);
+			if (this.selectedSessionId === payload.sessionId) { this.backToBrowser(); }
 		},
 
 		setFromIpc(payload: RecorderStatusPayload): void {

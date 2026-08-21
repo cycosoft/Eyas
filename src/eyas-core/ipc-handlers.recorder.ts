@@ -1,11 +1,25 @@
 import { ipcMain } from 'electron';
 import type { CoreContext } from '@registry/eyas-core.js';
-import type { RecorderFlushStepsPayload, RecorderReplayRequestPayload, RecorderGetSessionPayload, RecorderGetRunStepsPayload } from '@registry/ipc.js';
+import type { RecorderFlushStepsPayload, RecorderReplayRequestPayload, RecorderGetSessionPayload, RecorderGetRunStepsPayload, RecorderDeleteSessionPayload } from '@registry/ipc.js';
 import type { ProjectId, SessionId } from '@registry/primitives.js';
 import * as sessionRecorderService from './session-recorder.service.js';
 import sessionPlaybackService from './session-playback.service.js';
 import runHistoryService from './run-history.service.js';
 import { getPopupIdForWebContents } from './window.popups.js';
+
+// Deletes a saved recording's file and its run history together, then tells the interface it's gone.
+function deleteSession(ctx: CoreContext, payload: RecorderDeleteSessionPayload): void {
+	const projectId = (ctx.$config?.meta.projectId || `default`) as ProjectId;
+	const sessionId = payload.sessionId as SessionId;
+	Promise.all([
+		sessionRecorderService.deleteSession(ctx, sessionId),
+		runHistoryService.deleteRecordingHistory(projectId, sessionId)
+	]).then(() => {
+		ctx.$eyasLayer?.webContents?.send(`recorder-session-deleted`, { sessionId });
+	}).catch(err => {
+		console.error(`[IPC-HANDLERS-RECORDER] failed to delete session:`, err);
+	});
+}
 
 // Initializes recorder-related IPC listeners.
 export function initRecorderIpcListeners(ctx: CoreContext): void {
@@ -63,4 +77,6 @@ export function initRecorderIpcListeners(ctx: CoreContext): void {
 			console.error(`[IPC-HANDLERS-RECORDER] failed to load run steps:`, err);
 		});
 	});
+
+	ipcMain.on(`recorder-delete-session`, (_event, payload: RecorderDeleteSessionPayload) => deleteSession(ctx, payload));
 }

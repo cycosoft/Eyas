@@ -18,7 +18,7 @@
 						<v-icon icon="mdi-dots-vertical" size="small" />
 						<v-menu v-model="isDetailMenuOpen" activator="parent" location="bottom end">
 							<v-list density="compact" rounded="lg" border>
-								<v-list-item slim data-qa="recording-detail-menu-delete">Delete Recording</v-list-item>
+								<v-list-item slim :disabled="isSelectedSessionBusy" data-qa="recording-detail-menu-delete" @click="deleteSelectedSession">Delete Recording</v-list-item>
 							</v-list>
 						</v-menu>
 					</v-btn>
@@ -140,7 +140,7 @@ import { stepDotClassFor, stepDotColorFor, firstFailingStepIndex, type StepDotCl
 import { describeStep, stepIcon, stepDetail } from '@/utils/step-format.utils.js';
 import { cardIconFor, accentColorFor, actionIconFor, statusLabelFor, type RecordingCardStatus } from '@/utils/recording-card.utils.js';
 import type { IsVisible, IsActive, ChannelName, Count } from '@registry/primitives.js';
-import type { RecordingSessionSummary, RecorderRunStepsLoadedPayload } from '@registry/ipc.js';
+import type { RecordingSessionSummary, RecorderRunStepsLoadedPayload, RecorderDeleteSessionPayload } from '@registry/ipc.js';
 import type { EyasRecordingEnvelope } from '@registry/recording.js';
 import type { DetailText, StepIndex } from '@registry/primitives.js';
 
@@ -149,14 +149,10 @@ const { savedSessions, selectedSession, selectedSessionDetail } = storeToRefs(re
 
 const isOpen = computed<IsVisible>({
 	get: () => recordingStore.isPanelOpen,
-	set: (value: IsVisible) => {
-		recordingStore.isPanelOpen = value;
-	}
+	set: (value: IsVisible) => { recordingStore.isPanelOpen = value; }
 });
 
-const close = (): void => {
-	recordingStore.isPanelOpen = false;
-};
+const close = (): void => { recordingStore.isPanelOpen = false; };
 
 watch(isOpen, open => {
 	if (open) { window.eyas?.send(`recorder-list-sessions` as ChannelName); }
@@ -204,14 +200,8 @@ function isRowActionDisabled(session: RecordingSessionSummary): IsActive {
 
 function onActionClick(session: RecordingSessionSummary): void {
 	const status = dotClassFor(session);
-	if (status === `recording`) {
-		window.eyas?.send(`recorder-stop` as ChannelName);
-		return;
-	}
-	if (status === `playing`) {
-		window.eyas?.send(`recorder-replay-stop` as ChannelName);
-		return;
-	}
+	if (status === `recording`) { window.eyas?.send(`recorder-stop` as ChannelName); return; }
+	if (status === `playing`) { window.eyas?.send(`recorder-replay-stop` as ChannelName); return; }
 	window.eyas?.send(`recorder-replay-request` as ChannelName, { sessionId: session.sessionId });
 }
 
@@ -220,6 +210,16 @@ const isActiveSession = computed<IsActive>(() => !!selectedSession.value && reco
 
 const detailContainerEl = ref<HTMLElement | null>(null);
 const isDetailMenuOpen = ref<IsActive>(false);
+
+// A recording that's actively recording or replaying can't be deleted out from under itself — there'd be nothing left in core to stop it, and the store would keep reading its now-stale status.
+const isSelectedSessionBusy = computed<IsActive>(() => isActiveSession.value && (recordingStore.isRecording || recordingStore.isPlaying));
+
+function deleteSelectedSession(): void {
+	isDetailMenuOpen.value = false;
+	const sessionId = selectedSession.value?.sessionId;
+	if (!sessionId || isSelectedSessionBusy.value || !window.confirm(`Delete this recording and its run history? This can't be undone.`)) { return; }
+	window.eyas?.send(`recorder-delete-session` as ChannelName, { sessionId } as RecorderDeleteSessionPayload);
+}
 
 // Once the tester manually scrolls mid-run, auto-follow stops for the rest of that run. Reset on the next run's first step.
 let autoScrollInterrupted = false;

@@ -61,7 +61,8 @@ export const VALID_SEND_CHANNELS = [
 	`recorder-replay-stop`,
 	`recorder-list-sessions`,
 	`recorder-get-session`,
-	`recorder-get-run-steps`
+	`recorder-get-run-steps`,
+	`recorder-delete-session`
 ] as const;
 
 export const VALID_RECEIVE_CHANNELS = [
@@ -89,7 +90,8 @@ export const VALID_RECEIVE_CHANNELS = [
 	`recorder-sessions-listed`,
 	`recorder-session-loaded`,
 	`recorder-replay-finished`,
-	`recorder-run-steps-loaded`
+	`recorder-run-steps-loaded`,
+	`recorder-session-deleted`
 ] as const;
 
 /** Payload for the 'navigation-state-updated' IPC event */
@@ -254,4 +256,14 @@ type RunStepsLoaded = {
 	outcomes: RunStepOutcomes;
 };
 export type RecorderRunStepsLoadedPayload = RunStepsLoaded | null;
+
+/** Payload for the 'recorder-delete-session' IPC event */
+export type RecorderDeleteSessionPayload = {
+	sessionId: string;
+};
+
+/** Payload for the 'recorder-session-deleted' IPC event */
+export type RecorderSessionDeletedPayload = {
+	sessionId: string;
+};
 

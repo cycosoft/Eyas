@@ -208,7 +208,7 @@ import { onMounted, watch, toRefs, computed } from 'vue';
 import { useTheme } from 'vuetify';
 import type { ChannelName } from '@registry/primitives.js';
 import type { RecorderStatusPayload } from '@registry/recording.js';
-import type { RecorderPlaybackStatusPayload, RecorderSessionsListedPayload, RecorderSessionLoadedPayload, RecorderRunStepsLoadedPayload } from '@registry/ipc.js';
+import type { RecorderPlaybackStatusPayload, RecorderSessionsListedPayload, RecorderSessionLoadedPayload, RecorderRunStepsLoadedPayload, RecorderSessionDeletedPayload } from '@registry/ipc.js';
 import {
 	groups, state, browserControls, isControlDisabled, handleBrowserControlClick,
 	goBack, goForward, reload, goHome, handleBroadcastClick, activate,
@@ -251,6 +251,7 @@ onMounted(() => {
 	window.eyas?.receive(`recorder-sessions-listed` as ChannelName, (...args: unknown[]) => recordingStore.setSessionsList(args[0] as RecorderSessionsListedPayload));
 	window.eyas?.receive(`recorder-session-loaded` as ChannelName, (...args: unknown[]) => recordingStore.setSelectedSessionDetail(args[0] as RecorderSessionLoadedPayload));
 	window.eyas?.receive(`recorder-run-steps-loaded` as ChannelName, (...args: unknown[]) => recordingStore.setRunStepOutcomes(args[0] as RecorderRunStepsLoadedPayload));
+	window.eyas?.receive(`recorder-session-deleted` as ChannelName, (...args: unknown[]) => recordingStore.removeDeletedSession(args[0] as RecorderSessionDeletedPayload));
 	// route through the same hasVisibleModals-guarded close used on header mouseleave, so a replay
 	// finishing doesn't yank the session panel shut out from under a tester reviewing it
 	window.eyas?.receive(`recorder-replay-finished` as ChannelName, delayedClose);

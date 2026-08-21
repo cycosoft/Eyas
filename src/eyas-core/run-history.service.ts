@@ -150,4 +150,13 @@ async function getStepOutcomes(projectId: ProjectId, recordingId: SessionId): Pr
 	return { finished: run.endedAt !== null, outcomes };
 }
 
-export default { startRun, recordStepStart, recordStepFailure, finishRun, getLastRunForRecording, getStepOutcomes, _setSessionsDir };
+/** Deletes every run (and its steps) recorded for a recording — called when the recording itself is deleted, so no orphaned history outlives it. */
+async function deleteRecordingHistory(projectId: ProjectId, recordingId: SessionId): Promise<void> {
+	const db = _openDb(projectId);
+	const runs = db.prepare(`SELECT runId FROM runs WHERE recordingId = ?`).all(recordingId) as RunRow[];
+	const deleteSteps = db.prepare(`DELETE FROM run_steps WHERE runId = ?`);
+	for (const run of runs) { deleteSteps.run(run.runId); }
+	db.prepare(`DELETE FROM runs WHERE recordingId = ?`).run(recordingId);
+}
+
+export default { startRun, recordStepStart, recordStepFailure, finishRun, getLastRunForRecording, getStepOutcomes, deleteRecordingHistory, _setSessionsDir };
