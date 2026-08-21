@@ -1,5 +1,5 @@
 <template>
-	<EyasModal v-model="visible">
+	<EyasModal v-model="visible" :close-on-escape="false">
 		<template #title>
 			<h2 class="font-headline text-h5 font-weight-bold text-on-surface tracking-tight mb-2" data-qa="environment-modal-title">
 				Choose Test Environment

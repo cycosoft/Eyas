@@ -110,4 +110,38 @@ describe(`EyasModal`, () => {
 
 		expect(document.querySelector(`.eyas-modal-panel-content`)?.classList.contains(`eyas-modal-panel-content--faded`)).toBe(false);
 	});
+
+	test(`allows escape and click-outside to close the dialog by default`, () => {
+		const wrapper = mountModal({ modelValue: true });
+
+		expect(wrapper.findComponent({ name: `VDialog` }).props(`persistent`)).toBe(false);
+	});
+
+	test(`disables escape and click-outside closing when closeOnEscape is false`, () => {
+		const wrapper = mountModal({ modelValue: true, closeOnEscape: false });
+
+		expect(wrapper.findComponent({ name: `VDialog` }).props(`persistent`)).toBe(true);
+	});
+
+	test(`does not hide the app UI layer when the last dialog closes while a replay is in progress`, () => {
+		const recordingStore = useRecordingStore();
+		recordingStore.playbackStatus = `playing`;
+		const wrapper = mountModal({ modelValue: true, mode: `panel` });
+		wrapper.findComponent({ name: `ModalBackground` }).vm.$emit(`after-leave`);
+
+		expect(window.eyas?.send).not.toHaveBeenCalledWith(`hide-ui`, expect.anything());
+	});
+
+	test(`hides the app UI layer once the in-progress replay finishes with no dialogs left open`, async () => {
+		const recordingStore = useRecordingStore();
+		recordingStore.playbackStatus = `playing`;
+		const wrapper = mountModal({ modelValue: true, mode: `panel` });
+		await wrapper.setProps({ modelValue: false });
+		wrapper.findComponent({ name: `ModalBackground` }).vm.$emit(`after-leave`);
+
+		recordingStore.playbackStatus = `stopped`;
+		await wrapper.vm.$nextTick();
+
+		expect(window.eyas?.send).toHaveBeenCalledWith(`hide-ui`);
+	});
 });

@@ -23,6 +23,7 @@ export type ModalWrapperEmits = {
 export type EyasModalProps = {
 	modelValue: IsVisible;
 	mode?: `modal` | `panel`;
+	closeOnEscape?: IsVisible;
 }
 
 export type EyasModalEmits = {

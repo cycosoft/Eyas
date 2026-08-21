@@ -12,7 +12,7 @@
 			:min-width="props.mode === `panel` ? undefined : 320"
 			:content-class="props.mode === `panel` ? panelContentClass : undefined"
 			:style="props.mode === `panel` ? panelStyle : undefined"
-			persistent
+			:persistent="!props.closeOnEscape"
 			:scrim="false"
 			@update:model-value="emit(`update:modelValue`, $event)"
 		>
@@ -47,7 +47,8 @@ import type { EyasModalProps, EyasModalEmits } from '@registry/components.js';
 import type { ModalId, IsVisible, ChannelName, ElementClassList } from '@registry/primitives.js';
 
 const props = withDefaults(defineProps<EyasModalProps>(), {
-	mode: `modal`
+	mode: `modal`,
+	closeOnEscape: true
 });
 
 const emit = defineEmits<EyasModalEmits>();
@@ -89,10 +90,20 @@ watch(() => props.modelValue, (isOpen: IsVisible) => {
 
 const hideUi = (): void => {
 	// hide the UI if there are no other dialogs open. Triggered by ModalBackground's @after-leave hook.
-	if (!ModalStore().hasVisibleModals) {
+	// A replay in progress must stay visible even with every dialog closed (e.g. click-outside closed
+	// the panel) - only the run itself stopping (see the isPlaying watch below) may hide the layer then.
+	if (!ModalStore().hasVisibleModals && !recordingStore.isPlaying) {
 		window.eyas?.send(`hide-ui` as ChannelName);
 	}
 };
+
+// Catches the case hideUi's own check above bails on: a replay finishing while every dialog is
+// already closed, which needs its own trigger to hide the layer once the run is actually done.
+watch(() => recordingStore.isPlaying, (isPlaying: IsVisible) => {
+	if (!isPlaying && !ModalStore().hasVisibleModals) {
+		window.eyas?.send(`hide-ui` as ChannelName);
+	}
+});
 
 watch(() => ModalStore().closeAllCounter, () => {
 	emit(`update:modelValue`, false);
