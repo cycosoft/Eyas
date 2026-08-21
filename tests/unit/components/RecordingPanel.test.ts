@@ -84,15 +84,26 @@ describe(`RecordingPanel`, () => {
 		expect(document.querySelector(`[data-qa="recording-row-s1"]`)?.textContent).toContain(`3 steps`);
 	});
 
-	test(`disables the play button on a row for a recording with no steps`, async () => {
+	test(`hides the play button on a row for a recording with no steps`, async () => {
 		mountPanel();
 		const store = useRecordingStore();
 		store.isPanelOpen = true;
 		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 0, lastRunOutcome: null }];
 		await activeWrapper?.vm.$nextTick();
 
-		const actionButton = document.querySelector<HTMLButtonElement>(`[data-qa="recording-row-action-s1"]`);
-		expect(actionButton?.disabled).toBe(true);
+		expect(document.querySelector(`[data-qa="recording-row-action-s1"]`)).toBeNull();
+	});
+
+	test(`still shows the stop button for a row that is actively recording, even before it has any steps yet`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: null, stepCount: 0, lastRunOutcome: null }];
+		store.status = `recording`;
+		store.sessionId = `s1`;
+		await activeWrapper?.vm.$nextTick();
+
+		expect(document.querySelector(`[data-qa="recording-row-action-s1"]`)).not.toBeNull();
 	});
 
 	test(`clicking a recording switches to its detail view and renders its real steps`, async () => {

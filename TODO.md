@@ -10,6 +10,7 @@
 
 # Future
 
+- should be able to pin the recording panel to full opacity (make default behavior)
 - should be able to sort tests by name, creation date, last run date
 - show last run relative timestamp on recording list
 - the recording list needs to be scrolled back to the position it was at when you left that view
