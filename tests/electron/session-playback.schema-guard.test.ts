@@ -88,7 +88,8 @@ beforeEach(() => {
 describe(`sessionPlaybackService.playSession — unreadable schema versions`, () => {
 	test(`warns before dispatching anything, naming the format the tester would need to match`, async () => {
 		vi.mocked(sessionRecorderService.isUnknownSchema).mockReturnValue(true);
-		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession(`9.9.9`));
+		const step: ClickStep = { type: `click`, selectors: [`#save`], offsetX: 12, offsetY: 34, timestamp: 1 };
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession(`9.9.9`, [step]));
 
 		await playbackService.playSession(makeCtx(), `sess-1`);
 

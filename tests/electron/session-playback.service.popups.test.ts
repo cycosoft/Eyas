@@ -1,6 +1,6 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import type { CoreContext } from '@registry/eyas-core.js';
-import type { EyasRecordingEnvelope } from '@registry/recording.js';
+import type { EyasRecordingEnvelope, ScrollStep } from '@registry/recording.js';
 import type { DomainUrl, PopupId } from '@registry/primitives.js';
 
 vi.mock(`electron`, () => ({}));
@@ -202,7 +202,8 @@ describe(`sessionPlaybackService.playSession — popup routing`, () => {
 	// manually during recording, must still be covered by its overlay on the *next* replay, not
 	// just popups newly created during that replay's own dispatch
 	test(`shows every already-tracked popup's recording-layer overlay at the start of a replay, not just popups newly created during it`, async () => {
-		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([]));
+		const step: ScrollStep = { type: `scroll`, x: 0, y: 0, timestamp: 1 };
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([step]));
 		const ctx = makeCtx();
 
 		await playbackService.playSession(ctx, `sess-1`);

@@ -84,6 +84,17 @@ describe(`RecordingPanel`, () => {
 		expect(document.querySelector(`[data-qa="recording-row-s1"]`)?.textContent).toContain(`3 steps`);
 	});
 
+	test(`disables the play button on a row for a recording with no steps`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 0, lastRunOutcome: null }];
+		await activeWrapper?.vm.$nextTick();
+
+		const actionButton = document.querySelector<HTMLButtonElement>(`[data-qa="recording-row-action-s1"]`);
+		expect(actionButton?.disabled).toBe(true);
+	});
+
 	test(`clicking a recording switches to its detail view and renders its real steps`, async () => {
 		mountPanel();
 		const store = useRecordingStore();

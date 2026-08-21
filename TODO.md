@@ -5,14 +5,13 @@
 - update changelog
 - other recording buttons are disabled while some other acion is happening, consider flexibility in this
 - show the button all the time if that recording has an active action
-- should not be able to play a recording with no steps, so they will never be green or have a history
-- should be able to sort tests by name, creation date, last run date
-- what context should the recording controls in the header have if you played back a different recording
 - there seems to be a performance hit when running a test and trying to interact with the recording panel
-- show last run relative timestamp on recording list
+- what context should the recording controls in the header have if you played back a different recording
 
 # Future
 
+- should be able to sort tests by name, creation date, last run date
+- show last run relative timestamp on recording list
 - the recording list needs to be scrolled back to the position it was at when you left that view
 - give each step a number in the recording steps view
 - recording state redesign Phase 4 — stats UI: surface playback history stats (pass/fail rate, run duration trends, per-step timing derived from run_steps.happenedAt deltas) in the interface, now that Phase 3 data exists.

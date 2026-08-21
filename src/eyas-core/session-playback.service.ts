@@ -196,6 +196,12 @@ async function playSession(ctx: CoreContext, sessionId: SessionId): Promise<void
 		sendPlaybackStatus(ctx, { status: `failed`, error: `Session ${sessionId} was not found.`, sessionId });
 		return;
 	}
+	// a stepless recording has nothing to dispatch and can never pass — reject it here too, not
+	// just in the renderer's disabled button, since this IPC handler is reachable independent of it
+	if (session.recording.steps.length === 0) {
+		sendPlaybackStatus(ctx, { status: `failed`, error: `This recording has no steps to play.`, sessionId });
+		return;
+	}
 
 	await _dispatchAllSteps(ctx, webContents, session);
 }

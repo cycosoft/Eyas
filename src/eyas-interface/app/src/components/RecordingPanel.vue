@@ -190,6 +190,7 @@ function dotClassFor(session: RecordingSessionSummary): RecordingCardStatus {
 function isRowActionDisabled(session: RecordingSessionSummary): IsActive {
 	const status = dotClassFor(session);
 	if (status === `recording` || status === `playing`) { return false; }
+	if (session.stepCount === 0) { return true; } // a stepless recording has nothing to replay
 	return (recordingStore.isRecording || recordingStore.isPlaying) && recordingStore.sessionId !== session.sessionId;
 }
 
