@@ -1,25 +1,28 @@
 <template>
 	<EyasModal v-model="isOpen" mode="panel">
 		<template #title>
-			<div class="d-flex align-start justify-end">
-				<div class="flex-grow-1 recording-panel-title-column recording-panel-text">
-					<button
-						v-if="selectedSession"
-						type="button"
-						class="back-link font-body text-body-2 mb-2"
-						data-qa="btn-recording-panel-back"
-						@click="recordingStore.backToBrowser"
-					>
+			<div class="d-flex flex-column recording-panel-text">
+				<div class="d-flex align-start justify-end">
+					<button v-if="selectedSession" type="button" class="back-link font-body text-body-2 mb-2 flex-grow-1" data-qa="btn-recording-panel-back" @click="recordingStore.backToBrowser">
 						<v-icon icon="mdi-arrow-left" size="small" />
 						All Recordings
 					</button>
-					<h2 class="font-headline text-h6 font-weight-bold text-on-surface" data-qa="recording-panel-title">
-						{{ selectedSession ? formatTitle(selectedSession.title) : `${savedSessions.length.toLocaleString()} Recordings` }}
-					</h2>
+					<h2 v-else class="font-headline text-h6 font-weight-bold text-on-surface flex-grow-1" data-qa="recording-panel-title">{{ `${savedSessions.length.toLocaleString()} Recordings` }}</h2>
+					<v-btn icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" data-qa="btn-recording-panel-close" @click="close">
+						<v-icon icon="mdi-close" size="small" />
+					</v-btn>
 				</div>
-				<v-btn icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" data-qa="btn-recording-panel-close" @click="close">
-					<v-icon icon="mdi-close" size="small" />
-				</v-btn>
+				<div v-if="selectedSession" class="d-flex align-center justify-space-between recording-panel-title-column">
+					<h2 class="font-headline text-h6 font-weight-bold text-on-surface" data-qa="recording-panel-title">{{ formatTitle(selectedSession.title) }}</h2>
+					<v-btn icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" data-qa="btn-recording-detail-menu">
+						<v-icon icon="mdi-dots-vertical" size="small" />
+						<v-menu v-model="isDetailMenuOpen" activator="parent" location="bottom end">
+							<v-list density="compact" rounded="lg" border>
+								<v-list-item slim data-qa="recording-detail-menu-delete">Delete Recording</v-list-item>
+							</v-list>
+						</v-menu>
+					</v-btn>
+				</div>
 			</div>
 		</template>
 
@@ -216,6 +219,7 @@ function onActionClick(session: RecordingSessionSummary): void {
 const isActiveSession = computed<IsActive>(() => !!selectedSession.value && recordingStore.sessionId === selectedSession.value.sessionId);
 
 const detailContainerEl = ref<HTMLElement | null>(null);
+const isDetailMenuOpen = ref<IsActive>(false);
 
 // Once the tester manually scrolls mid-run, auto-follow stops for the rest of that run. Reset on the next run's first step.
 let autoScrollInterrupted = false;
