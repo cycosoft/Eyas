@@ -90,4 +90,24 @@ describe(`EyasModal`, () => {
 
 		expect(document.querySelector(`[data-qa="eyas-modal-card"]`)?.classList.contains(`eyas-modal--faded`)).toBe(false);
 	});
+
+	test(`narrows the panel alongside the fade while a replay is in progress`, () => {
+		useRecordingStore().playbackStatus = `playing`;
+		mountModal({ modelValue: true, mode: `panel` });
+
+		expect(document.querySelector(`.eyas-modal-panel-content`)?.classList.contains(`eyas-modal-panel-content--faded`)).toBe(true);
+	});
+
+	test(`does not narrow the panel when idle`, () => {
+		mountModal({ modelValue: true, mode: `panel` });
+
+		expect(document.querySelector(`.eyas-modal-panel-content`)?.classList.contains(`eyas-modal-panel-content--faded`)).toBe(false);
+	});
+
+	test(`does not narrow the panel while a recording is actively being captured`, () => {
+		useRecordingStore().status = `recording`;
+		mountModal({ modelValue: true, mode: `panel` });
+
+		expect(document.querySelector(`.eyas-modal-panel-content`)?.classList.contains(`eyas-modal-panel-content--faded`)).toBe(false);
+	});
 });

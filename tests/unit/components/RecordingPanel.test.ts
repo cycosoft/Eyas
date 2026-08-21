@@ -82,6 +82,7 @@ describe(`RecordingPanel`, () => {
 
 		expect(document.querySelectorAll(`[data-qa="recording-panel-list"] li`).length).toBe(2);
 		expect(document.querySelector(`[data-qa="recording-row-s1"]`)?.textContent).toContain(`3 steps`);
+		expect(document.querySelector(`[data-qa="recording-row-s1"]`)?.querySelectorAll(`.recording-panel-text`).length).toBe(2);
 	});
 
 	test(`hides the play button on a row for a recording with no steps`, async () => {
@@ -127,6 +128,7 @@ describe(`RecordingPanel`, () => {
 
 		expect(document.querySelector(`[data-qa="recording-step-title"]`)?.textContent?.trim()).toBe(`Navigate to`);
 		expect(document.querySelector(`[data-qa="recording-step-detail"]`)?.textContent?.trim()).toBe(`/`);
+		expect(document.querySelectorAll(`[data-qa="recording-step-title"].recording-panel-text, [data-qa="recording-step-detail"].recording-panel-text`).length).toBe(2);
 	});
 
 	test(`shows a distinct icon and the target selector as subtext for a click step`, async () => {

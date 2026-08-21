@@ -1,8 +1,8 @@
 <template>
 	<EyasModal v-model="isOpen" mode="panel">
 		<template #title>
-			<div class="d-flex align-start justify-space-between">
-				<div class="flex-grow-1 recording-panel-title-column">
+			<div class="d-flex align-start justify-end">
+				<div class="flex-grow-1 recording-panel-title-column recording-panel-text">
 					<button
 						v-if="selectedSession"
 						type="button"
@@ -24,7 +24,7 @@
 		</template>
 
 		<div v-if="!selectedSession" data-qa="recording-panel-browser">
-			<p v-if="savedSessions.length === 0" class="font-body text-body-2 text-grey-darken-1" data-qa="recording-panel-empty">
+			<p v-if="savedSessions.length === 0" class="font-body text-body-2 text-grey-darken-1 recording-panel-text" data-qa="recording-panel-empty">
 				No recordings found yet. Start a recording to see it listed here.
 			</p>
 
@@ -43,8 +43,8 @@
 					<template #icon>
 						<v-icon :icon="cardIconFor(dotClassFor(session))" size="small" class="recording-card__icon-glyph" />
 					</template>
-					<span class="font-body text-body-2 font-weight-medium text-on-surface">{{ formatTitle(session.title) }}</span>
-					<span class="font-body text-caption text-grey-darken-1">
+					<span class="font-body text-body-2 font-weight-medium text-on-surface recording-panel-text">{{ formatTitle(session.title) }}</span>
+					<span class="font-body text-caption text-grey-darken-1 recording-panel-text">
 						{{ session.stepCount }} step{{ session.stepCount === 1 ? `` : `s` }}
 						<span v-if="statusLabelFor(dotClassFor(session))" class="recording-card__status" :class="`recording-card__status--${dotClassFor(session)}`">
 							&nbsp;&bull; {{ statusLabelFor(dotClassFor(session)) }}
@@ -77,13 +77,13 @@
 		<div v-else ref="detailContainerEl" data-qa="recording-panel-detail" @wheel="interruptAutoScroll" @touchmove="interruptAutoScroll">
 			<p
 				v-if="testDate !== formatTitle(selectedSession.title)"
-				class="font-body text-caption text-grey-darken-1 mb-4"
+				class="font-body text-caption text-grey-darken-1 mb-4 recording-panel-text"
 				data-qa="recording-detail-meta"
 			>
 				{{ testDate }}
 			</p>
 
-			<p v-if="!selectedSessionDetail" class="font-body text-body-2 text-grey-darken-1" data-qa="recording-detail-loading">
+			<p v-if="!selectedSessionDetail" class="font-body text-body-2 text-grey-darken-1 recording-panel-text" data-qa="recording-detail-loading">
 				Loading steps...
 			</p>
 			<v-timeline
@@ -111,16 +111,16 @@
 						across Chromium versions. This wrapper div is a real boxed descendant to anchor on instead.
 					-->
 					<div :data-step-index="index">
-						<div class="font-body text-body-2 font-weight-medium text-on-surface step-timeline-title" data-qa="recording-step-title">
+						<div class="font-body text-body-2 font-weight-medium text-on-surface step-timeline-title recording-panel-text" data-qa="recording-step-title">
 							{{ describeStep(step) }}
 						</div>
-						<div v-if="stepDetail(step)" class="font-body text-caption text-grey-darken-1 step-timeline-detail" data-qa="recording-step-detail">
+						<div v-if="stepDetail(step)" class="font-body text-caption text-grey-darken-1 step-timeline-detail recording-panel-text" data-qa="recording-step-detail">
 							{{ stepDetail(step) }}
 						</div>
 					</div>
 				</v-timeline-item>
 			</v-timeline>
-			<p v-else class="font-body text-body-2 text-grey-darken-1" data-qa="recording-detail-empty">
+			<p v-else class="font-body text-body-2 text-grey-darken-1 recording-panel-text" data-qa="recording-detail-empty">
 				This recording has no steps.
 			</p>
 		</div>
@@ -269,7 +269,8 @@ const testDate = computed<DetailText | undefined>(() => {
 <style scoped>
 .recording-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.75rem; }
 
-/* recording timing mirrors the header's recording indicator (AppHeaderRecordingControls.vue) — scoped styles can't be shared across components */
+/* recording/playing timing mirrors the header's recording indicator (AppHeaderRecordingControls.vue) — scoped styles can't be shared across components */
+@keyframes recording-pulse { 0% { opacity: 1; } 50% { opacity: 0.35; } 100% { opacity: 1; } }
 .recording-card--recording .recording-card__icon-glyph { animation: recording-pulse 1.5s infinite; }
 .recording-card--pinned { position: sticky; top: 0; z-index: 1; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18); background-color: #ffffff; }
 .recording-card :deep(.selectable-card__content) .text-caption { font-size: 0.6875rem !important; }
@@ -280,18 +281,17 @@ const testDate = computed<DetailText | undefined>(() => {
 .recording-card__status { font-weight: 600; }
 .recording-card__status--passed { color: #43a047; }
 .recording-card__status--failed { color: #e53935; }
-/* recording/playing timing mirrors the header's recording indicator (AppHeaderRecordingControls.vue) — scoped styles can't be shared across components */
 .recording-card__status--recording { color: #e53935; animation: recording-pulse 1.5s infinite; }
 .recording-card__status--playing { color: rgb(var(--v-theme-primary)); animation: recording-pulse 1.5s infinite; }
-@keyframes recording-pulse { 0% { opacity: 1; } 50% { opacity: 0.35; } 100% { opacity: 1; } }
 
 .recording-panel-title-column { min-width: 0; }
 .back-link { display: flex; align-items: center; gap: 0.25rem; background: none; border: none; padding: 0; color: var(--modal-primary, #58A1D6); cursor: pointer; }
 
+/* Panel narrows while dimmed during playback (see EyasModal's fadeDuringPlayback); hide text so it doesn't wrap illegibly. Hover restores width and text together. */
+.eyas-modal-panel-content--faded:not(:hover) .recording-panel-text { display: none; }
+
 :deep(.v-timeline-item__body) { overflow-wrap: anywhere; padding-block-end: 0.75rem; }
-/* Per-step blink — base color already comes from the bound dot-color prop (stepDotColorFor);
-   Vuetify's dot-color alone can't carry an animation, so the pulse is layered on via :deep(),
-   reusing the same @keyframes recording-pulse the list row's blinking dot already uses. */
+/* Per-step blink layered on via :deep() since Vuetify's dot-color prop alone can't carry an animation. */
 .step-dot--recording-active :deep(.v-timeline-divider__dot),
 .step-dot--playing-active :deep(.v-timeline-divider__dot) { animation: recording-pulse 1.5s infinite; }
 .step-timeline-title { font-size: 0.8125rem; line-height: 1.3; }
