@@ -79,6 +79,49 @@ describe(`runHistoryService.getLastRunForRecording`, () => {
 	});
 });
 
+describe(`runHistoryService.recordStepStart batching`, () => {
+	test(`does not require an explicit flush to see fewer than a full batch's steps — read paths flush what's pending`, async () => {
+		const runId = await service.startRun(`proj-1`, `rec-1`);
+		for (let i = 0; i < 3; i++) { await service.recordStepStart(`proj-1`, runId, i); }
+		await service.finishRun(`proj-1`, runId);
+
+		const result = await service.getStepOutcomes(`proj-1`, `rec-1`);
+		expect(result).toEqual({ finished: true, outcomes: { 0: `passed`, 1: `passed`, 2: `passed` } });
+	});
+
+	test(`flushPendingSteps makes an in-progress run's steps readable before finishRun is ever called`, async () => {
+		const runId = await service.startRun(`proj-1`, `rec-1`);
+		await service.recordStepStart(`proj-1`, runId, 0);
+		await service.recordStepStart(`proj-1`, runId, 1);
+		await service.flushPendingSteps(runId);
+
+		const result = await service.getStepOutcomes(`proj-1`, `rec-1`);
+		expect(result).toEqual({ finished: false, outcomes: { 0: `passed`, 1: `passed` } });
+	});
+
+	test(`writing 12 steps auto-flushes the first batch of 10 and finishRun flushes the remaining 2`, async () => {
+		const runId = await service.startRun(`proj-1`, `rec-1`);
+		for (let i = 0; i < 12; i++) { await service.recordStepStart(`proj-1`, runId, i); }
+		await service.finishRun(`proj-1`, runId);
+
+		const result = await service.getStepOutcomes(`proj-1`, `rec-1`);
+		expect(result?.finished).toBe(true);
+		expect(Object.keys(result?.outcomes ?? {})).toHaveLength(12);
+		for (let i = 0; i < 12; i++) { expect(result?.outcomes[i]).toBe(`passed`); }
+	});
+
+	test(`a stopped/aborted run still records every step it reached once flushed, not just full batches`, async () => {
+		const runId = await service.startRun(`proj-1`, `rec-1`);
+		await service.recordStepStart(`proj-1`, runId, 0);
+		await service.recordStepStart(`proj-1`, runId, 1);
+		// no finishRun — this simulates a user-stopped run, which only flushes explicitly
+		await service.flushPendingSteps(runId);
+
+		const result = await service.getStepOutcomes(`proj-1`, `rec-1`);
+		expect(result).toEqual({ finished: false, outcomes: { 0: `passed`, 1: `passed` } });
+	});
+});
+
 describe(`runHistoryService.getStepOutcomes`, () => {
 	test(`returns null for a recording that has never been played`, async () => {
 		const result = await service.getStepOutcomes(`proj-1`, `rec-1`);

@@ -37,11 +37,19 @@ function _dbDir(): FilePath {
 	return _dbDirOverride ?? _path.join(app.getPath(`userData`), `sessions`) as FilePath;
 }
 
+/** Vitest runs in-process, so nothing else stands between a forgotten `_setSessionsDir()` call and this service opening (or creating) a real `runs.sqlite` under whatever `app.getPath('userData')` resolves to. e2e is exempt — Playwright launches Eyas as a separate process with `--user-data-dir` pointed at a temp dir, which redirects `app.getPath('userData')` itself before this module ever runs. */
+function _assertNotRealDbUnderTest(): void {
+	if (process.env.VITEST && _dbDirOverride === null) {
+		throw new Error(`run-history.service: refusing to open the real userData database during a Vitest run. Call service._setSessionsDir(tmpDir) in beforeEach, or mock '@core/run-history.service.js' entirely.`);
+	}
+}
+
 /** Test-only hook: overrides the sessions directory and closes any open connections so a fresh directory isn't cross-contaminated by a stale in-memory connection cache. */
 function _setSessionsDir(dir: FilePath | null): void {
 	_dbDirOverride = dir;
 	for (const db of _dbsByProjectId.values()) { db.close(); }
 	_dbsByProjectId = new Map();
+	_pendingStepsByRun = new Map();
 }
 
 /** `runs.sqlite` lives alongside sessions/{projectId}/*.json — a sibling of the recording files it describes, not nested under them. */
@@ -50,6 +58,7 @@ function _dbPath(projectId: ProjectId): FilePath {
 }
 
 function _openDb(projectId: ProjectId): DatabaseSync {
+	_assertNotRealDbUnderTest();
 	const existing = _dbsByProjectId.get(projectId);
 	if (existing) { return existing; }
 
@@ -91,22 +100,66 @@ async function startRun(projectId: ProjectId, recordingId: SessionId): Promise<R
 	return runId;
 }
 
-/** Records that a step began dispatching. Written on start, not completion — a step is an instantaneous action, so this is also what lets a hung/crashed run reveal exactly which step it got to. Optimistically `passed`; flipped by `recordStepFailure` if the step mismatches or throws. */
-async function recordStepStart(projectId: ProjectId, runId: RunId, stepIndex: StepIndex): Promise<void> {
-	const db = _openDb(projectId);
-	db.prepare(`INSERT INTO run_steps (runId, stepIndex, happenedAt) VALUES (?, ?, ?)`)
-		.run(runId, stepIndex, Date.now() as TimestampMS);
+type PendingStep = { projectId: ProjectId; stepIndex: StepIndex; happenedAt: TimestampMS };
+
+// A hard synchronous INSERT per step (node:sqlite has no async I/O to yield on) was blocking the
+// playback loop between every single step, stuttering the whole app during a run. Batching to disk
+// every N steps, off the step-dispatch tick via setImmediate, trades exact crash-recovery
+// granularity (a hard crash mid-batch loses the tail's start times) for that not happening at all.
+const STEP_BATCH_SIZE = 10;
+let _pendingStepsByRun = new Map<RunId, PendingStep[]>();
+
+/** Writes every buffered step-start row for a run in one transaction, then clears its buffer. Safe to call with nothing pending (no-op) — callers that need the DB to reflect a run's steps so far (recordStepFailure, finishRun, an aborted run) call this first rather than assuming a batch has already landed. */
+function _flushPendingSteps(runId: RunId): void {
+	const pending = _pendingStepsByRun.get(runId);
+	if (!pending || pending.length === 0) { return; }
+	// only cleared on a confirmed write — left in place on any failure (including _openDb throwing
+	// before a transaction even opens) so the rows aren't lost, just retried on the next flush
+	_pendingStepsByRun.delete(runId);
+	try {
+		const db = _openDb(pending[0].projectId);
+		const insert = db.prepare(`INSERT INTO run_steps (runId, stepIndex, happenedAt) VALUES (?, ?, ?)`);
+		db.exec(`BEGIN`);
+		try {
+			for (const step of pending) { insert.run(runId, step.stepIndex, step.happenedAt); }
+			db.exec(`COMMIT`);
+		} catch (err) {
+			db.exec(`ROLLBACK`);
+			throw err;
+		}
+	} catch (err) {
+		_pendingStepsByRun.set(runId, pending);
+		throw err;
+	}
 }
 
-/** Flips a step's recorded outcome to `failed` — a soft-assertion mismatch (replay continues) or a thrown exception (replay stops) on that step. */
+/** Flushes a run's buffered step-start rows to disk. Exported so playback can force a write at points the batch size alone wouldn't reach — an aborted (user-stopped) run in particular never calls finishRun, which would otherwise be the only remaining flush point. */
+async function flushPendingSteps(runId: RunId): Promise<void> {
+	_flushPendingSteps(runId);
+}
+
+/** Records that a step began dispatching. Buffered in memory and written in batches of STEP_BATCH_SIZE (see _flushPendingSteps) rather than one INSERT per step — a hung/crashed run still reveals roughly where it got to, just rounded down to its last flushed batch instead of the exact step. Optimistically `passed`; flipped by `recordStepFailure` if the step mismatches or throws. Not awaited by the caller's step loop: the batch write itself is deferred off this tick via setImmediate so a full batch's INSERTs never land in the same tick as step dispatch. */
+async function recordStepStart(projectId: ProjectId, runId: RunId, stepIndex: StepIndex): Promise<void> {
+	const pending = _pendingStepsByRun.get(runId) ?? [];
+	pending.push({ projectId, stepIndex, happenedAt: Date.now() as TimestampMS });
+	_pendingStepsByRun.set(runId, pending);
+
+	if (pending.length >= STEP_BATCH_SIZE) {
+		setImmediate(() => { try { _flushPendingSteps(runId); } catch { /* next flush (batch/failure/finish) retries with the same buffered rows */ } });
+	}
+}
+
+/** Flips a step's recorded outcome to `failed` — a soft-assertion mismatch (replay continues) or a thrown exception (replay stops) on that step. Flushes first: the failing step's own row may still be sitting in the in-memory batch buffer rather than in the table this UPDATE targets. */
 async function recordStepFailure(projectId: ProjectId, runId: RunId, stepIndex: StepIndex): Promise<void> {
+	_flushPendingSteps(runId);
 	const db = _openDb(projectId);
 	db.prepare(`UPDATE run_steps SET outcome = 'failed' WHERE runId = ? AND stepIndex = ?`)
 		.run(runId, stepIndex);
 }
 
-/** Marks a run as finished (sets `endedAt`). Only called on a natural finish or a caught failure — never on user-stop or crash, so those stay recoverable as "never finished". The pass/fail verdict itself is never cached here — it's always derived by iterating `run_steps` (see `getLastRunForRecording`), since playback continues past soft-assertion mismatches and a cached run-level flag would drift from the per-step reality. */
+/** Marks a run as finished (sets `endedAt`). Flushes first, same reason as recordStepFailure. Only called on a natural finish or a caught failure — never on user-stop or crash, so those stay recoverable as "never finished". The pass/fail verdict itself is never cached here — it's always derived by iterating `run_steps` (see `getLastRunForRecording`), since playback continues past soft-assertion mismatches and a cached run-level flag would drift from the per-step reality. */
 async function finishRun(projectId: ProjectId, runId: RunId): Promise<void> {
+	_flushPendingSteps(runId);
 	const db = _openDb(projectId);
 	db.prepare(`UPDATE runs SET endedAt = ? WHERE runId = ?`)
 		.run(Date.now() as TimestampMS, runId);
@@ -119,6 +172,8 @@ async function getLastRunForRecording(projectId: ProjectId, recordingId: Session
 		.get(recordingId) as RunRow | undefined;
 
 	if (!run) { return null; }
+	// endedAt is only ever set by finishRun, which flushes first — a finished run's run_steps rows
+	// are guaranteed to already be on disk, never sitting in the in-memory batch buffer
 	if (run.endedAt === null) { return { outcome: `failed` }; }
 
 	const failures = db.prepare(`SELECT COUNT(*) AS failureCount FROM run_steps WHERE runId = ? AND outcome = 'failed'`)
@@ -133,6 +188,8 @@ async function getStepOutcomes(projectId: ProjectId, recordingId: SessionId): Pr
 		.get(recordingId) as RunRow | undefined;
 
 	if (!run) { return null; }
+	// a still-running run's tail may only exist in the in-memory batch buffer, not this table yet
+	_flushPendingSteps(run.runId);
 
 	const rows = db.prepare(`SELECT stepIndex, outcome FROM run_steps WHERE runId = ?`)
 		.all(run.runId) as StepOutcomeRow[];
@@ -142,4 +199,4 @@ async function getStepOutcomes(projectId: ProjectId, recordingId: SessionId): Pr
 	return { finished: run.endedAt !== null, outcomes };
 }
 
-export default { startRun, recordStepStart, recordStepFailure, finishRun, getLastRunForRecording, getStepOutcomes, _setSessionsDir };
+export default { startRun, recordStepStart, recordStepFailure, finishRun, flushPendingSteps, getLastRunForRecording, getStepOutcomes, _setSessionsDir };

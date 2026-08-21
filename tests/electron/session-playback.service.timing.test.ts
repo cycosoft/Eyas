@@ -26,7 +26,8 @@ vi.mock(`@core/run-history.service.js`, () => ({
 		startRun: vi.fn().mockResolvedValue(`run-1`),
 		recordStepStart: vi.fn().mockResolvedValue(undefined),
 		recordStepFailure: vi.fn().mockResolvedValue(undefined),
-		finishRun: vi.fn().mockResolvedValue(undefined)
+		finishRun: vi.fn().mockResolvedValue(undefined),
+		flushPendingSteps: vi.fn().mockResolvedValue(undefined)
 	}
 }));
 

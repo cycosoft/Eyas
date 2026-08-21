@@ -9,6 +9,9 @@
 - what context should the recording controls in the header have if you played back a different recording
 - when a playback is stopped by the user, it should not count as failed. that play through history item should be deleted.
 - when we delete a recording, it also needs to delete all the history associated with that recording.
+- use a worker thread to manage database writes
+- the code that pins the active playing recording to the top should also have the same behavior for the bottom
+- I'm unable to stop a playback when a new window is being stepped through
 
 # Future
 
