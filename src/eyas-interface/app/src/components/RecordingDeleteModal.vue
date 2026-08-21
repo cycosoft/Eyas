@@ -1,5 +1,5 @@
 <template>
-	<EyasModal v-model="visible">
+	<EyasModal v-model="visible" size="compact">
 		<template #title>
 			<h2 class="font-headline text-h5 font-weight-bold text-on-surface tracking-tight" data-qa="recording-delete-modal-title">
 				Delete this recording?

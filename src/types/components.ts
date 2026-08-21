@@ -24,6 +24,7 @@ export type EyasModalProps = {
 	modelValue: IsVisible;
 	mode?: `modal` | `panel`;
 	closeOnEscape?: IsVisible;
+	size?: `default` | `compact`;
 }
 
 export type EyasModalEmits = {

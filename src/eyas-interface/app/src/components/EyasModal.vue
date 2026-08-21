@@ -7,8 +7,8 @@
 	>
 		<v-dialog
 			:model-value="modelValue"
-			:max-width="props.mode === `panel` ? undefined : 850"
-			:width="props.mode === `panel` ? undefined : '65vw'"
+			:max-width="props.mode === `panel` ? undefined : (props.size === `compact` ? 420 : 850)"
+			:width="props.mode === `panel` ? undefined : (props.size === `compact` ? 'fit-content' : '65vw')"
 			:min-width="props.mode === `panel` ? undefined : 320"
 			:content-class="props.mode === `panel` ? panelContentClass : undefined"
 			:style="props.mode === `panel` ? panelStyle : undefined"
@@ -48,7 +48,8 @@ import type { ModalId, IsVisible, ChannelName, ElementClassList } from '@registr
 
 const props = withDefaults(defineProps<EyasModalProps>(), {
 	mode: `modal`,
-	closeOnEscape: true
+	closeOnEscape: true,
+	size: `default`
 });
 
 const emit = defineEmits<EyasModalEmits>();
