@@ -236,7 +236,7 @@ describe(`sessionPlaybackService.playSession — popup routing`, () => {
 
 		await playbackService.playSession(ctx, `sess-1`);
 
-		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `failed`, error: `boom` });
+		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `failed`, error: `boom`, sessionId: `sess-1` });
 	});
 
 	test(`closes tracked popups even when a step throws before reaching the recorded closeWindow step`, async () => {

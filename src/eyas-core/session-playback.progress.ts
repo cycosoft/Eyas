@@ -37,9 +37,17 @@ export function computeStepActions(steps: RecordingStep[]): StepActionMap {
  * the progress ring's `completedSteps`/`totalSteps` when the step counts as its own action (see
  * computeStepActions), same as before this field was added.
  */
-export function reportStepProgress(ctx: CoreContext, actions: StepActionMap, stepIndex: StepIndex, mismatchesSoFar: ReplayMismatch[]): void {
+type ReportStepProgressArgs = {
+	ctx: CoreContext;
+	actions: StepActionMap;
+	stepIndex: StepIndex;
+	mismatchesSoFar: ReplayMismatch[];
+	sessionId: RecorderPlaybackStatusPayload[`sessionId`];
+};
+
+export function reportStepProgress({ ctx, actions, stepIndex, mismatchesSoFar, sessionId }: ReportStepProgressArgs): void {
 	const actionIndex: StepActionIndex = actions.actionIndexes[stepIndex];
-	const payload: RecorderPlaybackStatusPayload = { status: `playing`, currentStepIndex: stepIndex };
+	const payload: RecorderPlaybackStatusPayload = { status: `playing`, currentStepIndex: stepIndex, sessionId };
 	if (mismatchesSoFar.length > 0) { payload.mismatches = mismatchesSoFar; }
 	if (actionIndex !== -1) {
 		payload.completedSteps = (actionIndex + 1) as StepCount;

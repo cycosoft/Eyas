@@ -8,6 +8,8 @@
 - should not be able to play a recording with no steps, so they will never be green or have a history
 - should be able to sort tests by name, creation date, last run date
 - what context should the recording controls in the header have if you played back a different recording
+- there seems to be a performance hit when running a test and trying to interact with the recording panel
+- show last run relative timestamp on recording list
 
 # Future
 

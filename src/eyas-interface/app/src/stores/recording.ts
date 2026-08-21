@@ -118,20 +118,27 @@ export default defineStore(`recording`, {
 			// wipe an earlier step's already-reported finding
 			if (payload.status === `playing` && this.playbackStatus !== `playing`) { this.playbackMismatches = []; }
 			this.playbackStatus = payload.status;
+			this.sessionId = payload.sessionId ?? this.sessionId;
 			this.playbackError = payload.status === `failed` ? (payload.error ?? `Playback failed.`) : null;
 			this.playbackMismatches = payload.status === `playing` ? (payload.mismatches ?? this.playbackMismatches) : (payload.mismatches ?? []);
 			// only the `playing` payload carries this, and it has to outlive that payload — the run it
 			// warns about is still degraded once it finishes, and the end is when the tester reads the
 			// results. Falling back to `?? null` on every status would clear it at exactly that moment.
 			if (payload.status === `playing`) { this.playbackSchemaWarning = payload.schemaWarning ?? null; }
-			this.completedSteps = payload.completedSteps ?? this.completedSteps;
-			this.totalSteps = payload.totalSteps ?? this.totalSteps;
 			this.currentStepIndex = payload.status === `playing` ? (payload.currentStepIndex ?? this.currentStepIndex) : null;
+			this.applyProgressCounts(payload);
+			this.openOnFailureIfPanelClosed(payload.status);
+		},
+
+		// split out of setPlaybackStatus purely to keep that method's branching under the lint complexity cap
+		applyProgressCounts(payload: RecorderPlaybackStatusPayload): void {
 			if (payload.status !== `playing`) {
 				this.completedSteps = 0;
 				this.totalSteps = 0;
+				return;
 			}
-			this.openOnFailureIfPanelClosed(payload.status);
+			this.completedSteps = payload.completedSteps ?? this.completedSteps;
+			this.totalSteps = payload.totalSteps ?? this.totalSteps;
 		},
 
 		// A failed run that finished while the tester wasn't looking should announce itself, rather

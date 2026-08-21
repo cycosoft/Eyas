@@ -1,4 +1,4 @@
-import type { ProjectId, DomainUrl, IsActive, SettingKey, HashString, Username, PasswordPlain, ZoomFactor, StepCount, StepIndex, DetailText } from './primitives.js';
+import type { ProjectId, DomainUrl, IsActive, SettingKey, HashString, Username, PasswordPlain, ZoomFactor, StepCount, StepIndex, DetailText, SessionId } from './primitives.js';
 import type { EnvironmentChoice, Viewport, ViewportSize, EnvironmentChoiceWithTitle } from './core.js';
 import type { NavItem } from './components.js';
 import type { RecordingStep, ReplayMismatch, EyasRecordingEnvelope } from './recording.js';
@@ -202,6 +202,8 @@ export type RecorderPlaybackStatusPayload = {
 	 * only when there's something to say — a normal run's `playing` payload is unchanged.
 	 */
 	schemaWarning?: DetailText;
+	/** The session this status update is for — lets the renderer know which row is actually playing rather than assuming it's whichever session it last recorded. */
+	sessionId?: SessionId;
 	status: `playing` | `stopped` | `failed`;
 	totalSteps?: StepCount;
 };

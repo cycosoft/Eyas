@@ -139,7 +139,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 		await playbackService.playSession(ctx, `sess-1`);
 
 		expect(attach).toHaveBeenCalled();
-		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `playing`, completedSteps: 0, totalSteps: 0 });
+		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `playing`, completedSteps: 0, totalSteps: 0, sessionId: `sess-1` });
 	});
 
 
@@ -440,7 +440,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 
 		await playbackService.playSession(ctx, `sess-1`);
 
-		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `stopped` });
+		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `stopped`, sessionId: `sess-1` });
 		expect(detach).toHaveBeenCalled();
 		expect(runHistoryService.finishRun).toHaveBeenCalledWith(`test-proj`, `run-1`);
 	});
@@ -454,7 +454,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 
 		await playbackService.playSession(ctx, `sess-1`);
 
-		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `failed`, error: `boom` });
+		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `failed`, error: `boom`, sessionId: `sess-1` });
 		expect(detach).toHaveBeenCalled();
 		expect(runHistoryService.recordStepFailure).toHaveBeenCalledWith(`test-proj`, `run-1`, 0);
 		expect(runHistoryService.finishRun).toHaveBeenCalledWith(`test-proj`, `run-1`);

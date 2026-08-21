@@ -128,7 +128,7 @@ describe(`sessionPlaybackService.stopPlayback`, () => {
 		await playbackService.playSession(ctx, `sess-1`);
 
 		expect(loadURL).toHaveBeenCalledTimes(1);
-		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `stopped` });
+		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `stopped`, sessionId: `sess-1` });
 		// a user-initiated stop leaves the run row without an outcome — same "never finished" state a
 		// crash would leave, so the dot has no way to tell the two apart, which is the intent
 		expect(runHistoryService.finishRun).not.toHaveBeenCalled();

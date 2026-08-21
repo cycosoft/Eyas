@@ -79,7 +79,7 @@ async function _runSteps({ webContents, session, runId, ctx, stepActions, stepDe
 			await runHistoryService.recordStepFailure(session.projectId, runId, i as StepIndex);
 			throw err;
 		}
-		reportStepProgress(ctx, stepActions, i, getMismatches());
+		reportStepProgress({ ctx, actions: stepActions, stepIndex: i, mismatchesSoFar: getMismatches(), sessionId: session.sessionId });
 	}
 	return false;
 }
@@ -109,7 +109,7 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 	setReplayPopupIdQueue(_orderedPopupIds(steps));
 	ctx.toggleEyasUI(true); showAllRecordingOverlays();
 	const stepActions = computeStepActions(steps);
-	sendPlaybackStatus(ctx, { status: `playing`, completedSteps: 0 as StepCount, totalSteps: stepActions.totalActions, ..._schemaWarningPayload(session) });
+	sendPlaybackStatus(ctx, { status: `playing`, completedSteps: 0 as StepCount, totalSteps: stepActions.totalActions, sessionId: session.sessionId, ..._schemaWarningPayload(session) });
 	// declared here (rather than inline where it's assigned) so both the try body and the catch
 	// block below can report against the same run
 	let runId: RunId | undefined;
@@ -151,7 +151,7 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 			await _persistMismatchOutcomes(session.projectId, runId);
 			await runHistoryService.finishRun(session.projectId, runId);
 		}
-		sendPlaybackStatus(ctx, { status: `stopped`, ...mismatchPayload() });
+		sendPlaybackStatus(ctx, { status: `stopped`, sessionId: session.sessionId, ...mismatchPayload() });
 	} catch (err) {
 		const error = err instanceof Error ? err.message : String(err);
 		// a thrown step still fails the replay (no continue-on-error) — but tear down any popups the
@@ -166,7 +166,7 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 		}
 		// findings gathered before the throw are still worth surfacing — the step that failed doesn't
 		// invalidate the assertions that already ran
-		sendPlaybackStatus(ctx, { status: `failed`, error, ...mismatchPayload() });
+		sendPlaybackStatus(ctx, { status: `failed`, error, sessionId: session.sessionId, ...mismatchPayload() });
 	} finally {
 		_abortRequested = false;
 		sessionRecorderService.setReplaying(false);
@@ -193,7 +193,7 @@ async function playSession(ctx: CoreContext, sessionId: SessionId): Promise<void
 
 	const session = await sessionRecorderService.getSession(ctx, sessionId);
 	if (!session) {
-		sendPlaybackStatus(ctx, { status: `failed`, error: `Session ${sessionId} was not found.` });
+		sendPlaybackStatus(ctx, { status: `failed`, error: `Session ${sessionId} was not found.`, sessionId });
 		return;
 	}
 
