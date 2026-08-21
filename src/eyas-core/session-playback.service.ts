@@ -135,10 +135,6 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 		runId = await runHistoryService.startRun(session.projectId, session.sessionId);
 
 		const aborted = await _runSteps({ webContents, session, runId, ctx, stepActions, stepDelayMs });
-		// recordStepStart batches writes (see run-history.service.ts) — finishRun below flushes for a
-		// natural finish, but an aborted run never reaches it, so the last partial batch needs an
-		// explicit flush here or a user-stopped run's tail steps never make it to disk at all
-		await runHistoryService.flushPendingSteps(runId);
 		// a user-initiated stop can land anywhere in the step list, same as a thrown step — tear down
 		// any popups the recording never reached its closeWindow step for before reporting stopped
 		if (aborted) { await _teardownPopups(); }
