@@ -10,6 +10,7 @@
 
 # Future
 
+- animate the icon for the recordings that are playing back inside the recordings list
 - should be able to pin the recording panel to full opacity (make default behavior)
 - should be able to sort tests by name, creation date, last run date
 - show last run relative timestamp on recording list
