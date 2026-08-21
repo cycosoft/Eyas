@@ -7,18 +7,24 @@
 						<v-icon icon="mdi-arrow-left" size="small" />
 						All Recordings
 					</button>
-					<h2 v-else class="font-headline text-h6 font-weight-bold text-on-surface flex-grow-1" data-qa="recording-panel-title">{{ `${savedSessions.length.toLocaleString()} Recordings` }}</h2>
+					<h2 v-else class="font-headline text-h6 font-weight-bold text-on-surface flex-grow-1" data-qa="recording-panel-title">
+						{{ `${savedSessions.length.toLocaleString()} Recordings` }}
+					</h2>
 					<v-btn icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" data-qa="btn-recording-panel-close" @click="close">
 						<v-icon icon="mdi-close" size="small" />
 					</v-btn>
 				</div>
 				<div v-if="selectedSession" class="d-flex align-center justify-space-between recording-panel-title-column">
-					<h2 class="font-headline text-h6 font-weight-bold text-on-surface" data-qa="recording-panel-title">{{ formatTitle(selectedSession.title) }}</h2>
+					<h2 class="font-headline text-h6 font-weight-bold text-on-surface" data-qa="recording-panel-title">
+						{{ formatTitle(selectedSession.title) }}
+					</h2>
 					<v-btn icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" data-qa="btn-recording-detail-menu">
 						<v-icon icon="mdi-dots-vertical" size="small" />
 						<v-menu v-model="isDetailMenuOpen" activator="parent" location="bottom end">
 							<v-list density="compact" rounded="lg" border>
-								<v-list-item slim :disabled="isSelectedSessionBusy" data-qa="recording-detail-menu-delete" @click="deleteSelectedSession">Delete Recording</v-list-item>
+								<v-list-item slim :disabled="isSelectedSessionBusy" data-qa="recording-detail-menu-delete" @click="deleteSelectedSession">
+									Delete Recording
+								</v-list-item>
 							</v-list>
 						</v-menu>
 					</v-btn>
@@ -128,19 +134,24 @@
 			</p>
 		</div>
 	</EyasModal>
+
+	<RecordingDeleteModal v-model="isDeleteConfirmOpen" @confirm="confirmDeleteSelectedSession" />
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import EyasModal from '@/components/EyasModal.vue';
+import RecordingDeleteModal from '@/components/RecordingDeleteModal.vue';
 import SelectableCard from '@/components/SelectableCard.vue';
 import useRecordingStore from '@/stores/recording.js';
+import useRecordingDeletion from '@/composables/useRecordingDeletion.js';
+import useRecordingRowStatus from '@/composables/useRecordingRowStatus.js';
 import { stepDotClassFor, stepDotColorFor, firstFailingStepIndex, type StepDotClass } from '@/utils/step-dot.utils.js';
 import { describeStep, stepIcon, stepDetail } from '@/utils/step-format.utils.js';
-import { cardIconFor, accentColorFor, actionIconFor, statusLabelFor, type RecordingCardStatus } from '@/utils/recording-card.utils.js';
+import { cardIconFor, accentColorFor, actionIconFor, statusLabelFor } from '@/utils/recording-card.utils.js';
 import type { IsVisible, IsActive, ChannelName, Count } from '@registry/primitives.js';
-import type { RecordingSessionSummary, RecorderRunStepsLoadedPayload, RecorderDeleteSessionPayload } from '@registry/ipc.js';
+import type { RecordingSessionSummary, RecorderRunStepsLoadedPayload } from '@registry/ipc.js';
 import type { EyasRecordingEnvelope } from '@registry/recording.js';
 import type { DetailText, StepIndex } from '@registry/primitives.js';
 
@@ -176,34 +187,7 @@ watch(selectedSession, session => {
 	}
 });
 
-// Live blink takes priority over last-run status, and is local-instance only (recording/playback state is never shared across Eyas processes).
-function dotClassFor(session: RecordingSessionSummary): RecordingCardStatus {
-	if (recordingStore.isRecording && recordingStore.sessionId === session.sessionId) { return `recording`; }
-	if (recordingStore.isPlaying && recordingStore.sessionId === session.sessionId) { return `playing`; }
-	if (session.lastRunOutcome === `passed`) { return `passed`; }
-	if (session.lastRunOutcome === `failed`) { return `failed`; }
-	return `neutral`;
-}
-
-// Keeps the actively recording/playing row in view regardless of where it sits in the sorted list.
-function isPinned(session: RecordingSessionSummary): IsActive {
-	const status = dotClassFor(session);
-	return status === `recording` || status === `playing`;
-}
-
-// Only one recording/playback instance can run app-wide, so a play button on any other busy row would be ignored or fight the active run.
-function isRowActionDisabled(session: RecordingSessionSummary): IsActive {
-	const status = dotClassFor(session);
-	if (status === `recording` || status === `playing`) { return false; }
-	return (recordingStore.isRecording || recordingStore.isPlaying) && recordingStore.sessionId !== session.sessionId;
-}
-
-function onActionClick(session: RecordingSessionSummary): void {
-	const status = dotClassFor(session);
-	if (status === `recording`) { window.eyas?.send(`recorder-stop` as ChannelName); return; }
-	if (status === `playing`) { window.eyas?.send(`recorder-replay-stop` as ChannelName); return; }
-	window.eyas?.send(`recorder-replay-request` as ChannelName, { sessionId: session.sessionId });
-}
+const { dotClassFor, isPinned, isRowActionDisabled, onActionClick } = useRecordingRowStatus(recordingStore);
 
 // View-anchored: only colors icons for the detail view's own session, matching the active recording/playback instance; other sessions stay neutral.
 const isActiveSession = computed<IsActive>(() => !!selectedSession.value && recordingStore.sessionId === selectedSession.value.sessionId);
@@ -211,15 +195,12 @@ const isActiveSession = computed<IsActive>(() => !!selectedSession.value && reco
 const detailContainerEl = ref<HTMLElement | null>(null);
 const isDetailMenuOpen = ref<IsActive>(false);
 
-// A recording that's actively recording or replaying can't be deleted out from under itself — there'd be nothing left in core to stop it, and the store would keep reading its now-stale status.
-const isSelectedSessionBusy = computed<IsActive>(() => isActiveSession.value && (recordingStore.isRecording || recordingStore.isPlaying));
-
-function deleteSelectedSession(): void {
-	isDetailMenuOpen.value = false;
-	const sessionId = selectedSession.value?.sessionId;
-	if (!sessionId || isSelectedSessionBusy.value || !window.confirm(`Delete this recording and its run history? This can't be undone.`)) { return; }
-	window.eyas?.send(`recorder-delete-session` as ChannelName, { sessionId } as RecorderDeleteSessionPayload);
-}
+const {
+	isDeleteConfirmOpen,
+	isSelectedSessionBusy,
+	deleteSelectedSession,
+	confirmDeleteSelectedSession
+} = useRecordingDeletion(recordingStore, selectedSession, isActiveSession, isDetailMenuOpen);
 
 // Once the tester manually scrolls mid-run, auto-follow stops for the rest of that run. Reset on the next run's first step.
 let autoScrollInterrupted = false;

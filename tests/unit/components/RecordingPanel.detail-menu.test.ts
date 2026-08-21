@@ -55,17 +55,19 @@ describe(`RecordingPanel detail header context menu`, () => {
 		return store;
 	}
 
-	test(`sends a delete request for the selected recording when Delete Recording is confirmed`, async () => {
-		window.confirm = vi.fn().mockReturnValue(true);
+	test(`sends a delete request for the selected recording when the delete confirmation dialog is confirmed`, async () => {
 		mountPanel();
 		selectRecording();
 		await activeWrapper?.vm.$nextTick();
 		(activeWrapper?.vm as unknown as RecordingPanelDetailMenuExposed).isDetailMenuOpen = true;
 		await activeWrapper?.vm.$nextTick();
+		(document.querySelector(`[data-qa="recording-detail-menu-delete"]`) as HTMLElement)?.click();
+		await activeWrapper?.vm.$nextTick();
 
+		expect(document.querySelector(`[data-qa="recording-delete-modal-title"]`)).not.toBeNull();
 		const sendSpy = window.eyas?.send as Mock;
 		const callsBefore = sendSpy.mock.calls.length;
-		(document.querySelector(`[data-qa="recording-detail-menu-delete"]`) as HTMLElement)?.click();
+		(document.querySelector(`[data-qa="btn-confirm-delete-recording"]`) as HTMLElement)?.click();
 		await activeWrapper?.vm.$nextTick();
 
 		const deleteCalls = sendSpy.mock.calls.slice(callsBefore).filter(call => call[0] === `recorder-delete-session`);
@@ -73,21 +75,44 @@ describe(`RecordingPanel detail header context menu`, () => {
 		expect(deleteCalls[0]?.[1]).toEqual({ sessionId: `s1` });
 	});
 
-	test(`does not send a delete request when the confirmation is declined`, async () => {
-		window.confirm = vi.fn().mockReturnValue(false);
+	test(`does not send a delete request when the delete confirmation dialog is cancelled`, async () => {
 		mountPanel();
 		selectRecording();
 		await activeWrapper?.vm.$nextTick();
 		(activeWrapper?.vm as unknown as RecordingPanelDetailMenuExposed).isDetailMenuOpen = true;
 		await activeWrapper?.vm.$nextTick();
+		(document.querySelector(`[data-qa="recording-detail-menu-delete"]`) as HTMLElement)?.click();
+		await activeWrapper?.vm.$nextTick();
 
 		const sendSpy = window.eyas?.send as Mock;
 		const callsBefore = sendSpy.mock.calls.length;
-		(document.querySelector(`[data-qa="recording-detail-menu-delete"]`) as HTMLElement)?.click();
+		(document.querySelector(`[data-qa="btn-cancel-delete-recording"]`) as HTMLElement)?.click();
 		await activeWrapper?.vm.$nextTick();
 
 		const deleteCalls = sendSpy.mock.calls.slice(callsBefore).filter(call => call[0] === `recorder-delete-session`);
 		expect(deleteCalls.length).toBe(0);
+	});
+
+	test(`does not delete a recording that started replaying while its confirmation dialog was still open`, async () => {
+		mountPanel();
+		const store = selectRecording();
+		await activeWrapper?.vm.$nextTick();
+		(activeWrapper?.vm as unknown as RecordingPanelDetailMenuExposed).isDetailMenuOpen = true;
+		await activeWrapper?.vm.$nextTick();
+		(document.querySelector(`[data-qa="recording-detail-menu-delete"]`) as HTMLElement)?.click();
+		await activeWrapper?.vm.$nextTick();
+
+		store.status = `stopped`;
+		store.sessionId = `s1`;
+		store.setPlaybackStatus({ status: `playing`, sessionId: `s1` });
+		await activeWrapper?.vm.$nextTick();
+
+		const sendSpy = window.eyas?.send as Mock;
+		const callsBefore = sendSpy.mock.calls.length;
+		(document.querySelector(`[data-qa="btn-confirm-delete-recording"]`) as HTMLElement)?.click();
+		await activeWrapper?.vm.$nextTick();
+
+		expect(sendSpy.mock.calls.slice(callsBefore).some(call => call[0] === `recorder-delete-session`)).toBe(false);
 	});
 
 	test(`disables Delete Recording while the selected recording is actively recording or replaying in this instance`, async () => {

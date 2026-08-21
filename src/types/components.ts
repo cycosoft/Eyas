@@ -30,6 +30,11 @@ export type EyasModalEmits = {
 	(e: `update:modelValue`, value: IsVisible): void;
 }
 
+export type RecordingDeleteModalEmits = {
+	(e: `confirm`): void;
+	(e: `update:modelValue`, value: IsVisible): void;
+}
+
 
 /**
  * Type helper for the Vue component's ViewModel in tests.
