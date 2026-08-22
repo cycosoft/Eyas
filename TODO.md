@@ -9,6 +9,7 @@
 - the code that pins the active playing recording to the top should also have the same behavior for the bottom
 - I'm unable to stop a playback when a new window is being stepped through
 - test in a consumer app
+- after confirming deletion of a recording, do not close the recording panel
 
 # Future
 
