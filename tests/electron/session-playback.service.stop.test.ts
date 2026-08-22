@@ -222,3 +222,81 @@ describe(`sessionPlaybackService.stopPlayback`, () => {
 		expect(closeAllPopups).toHaveBeenCalled();
 	});
 });
+
+describe(`playSession concurrency guard`, () => {
+	test(`starting playback of a second session stops the first session's run before the second session's steps dispatch, and persists the first run as 'stopped'`, async () => {
+		// sessionA has two steps so the abort can land *between* them: step 0 actually dispatches
+		// (proving A was really mid-run, not just queued), step 1 never does (proving the abort check
+		// at the top of the loop — not a full pass through the steps — is what stops it).
+		const sessionA = makeSession([
+			{ type: `navigate`, url: `https://example.com/a1`, timestamp: 1 },
+			{ type: `navigate`, url: `https://example.com/a2`, timestamp: 2 }
+		]);
+		const sessionB = makeSession([
+			{ type: `navigate`, url: `https://example.com/b`, timestamp: 1 }
+		]);
+		sessionB.sessionId = `sess-2`;
+		vi.mocked(sessionRecorderService.getSession).mockImplementation(async (_ctx, sessionId) => (
+			sessionId === `sess-1` ? sessionA : sessionB
+		));
+		vi.mocked(runHistoryService.startRun).mockResolvedValueOnce(`run-1`).mockResolvedValueOnce(`run-2`);
+
+		const ctx = makeCtx();
+		let resolveLoadUrl!: () => void;
+		loadURL.mockImplementationOnce(() => new Promise<void>(resolve => { resolveLoadUrl = resolve; }));
+
+		const playPromiseA = playbackService.playSession(ctx, `sess-1`);
+		await vi.waitFor(() => expect(loadURL).toHaveBeenCalledTimes(1));
+
+		// A is now paused mid-dispatch of its first step — this is where a second caller (another
+		// row's play button) would interrupt it.
+		const playPromiseB = playbackService.playSession(ctx, `sess-2`);
+		resolveLoadUrl();
+		await Promise.all([playPromiseA, playPromiseB]);
+
+		// only step 0's navigation was ever dispatched (plus B's own step 3) — A's step 1 never
+		// dispatched, because the abort was already flagged by the time the loop re-checked it
+		expect(loadURL).toHaveBeenCalledTimes(2);
+		expect(loadURL).not.toHaveBeenCalledWith(`https://example.com/a2`);
+		expect(runHistoryService.markStopped).toHaveBeenCalledWith(`test-proj`, `run-1`);
+		expect(runHistoryService.finishRun).toHaveBeenCalledWith(`test-proj`, `run-2`);
+		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, expect.objectContaining({ status: `stopped`, sessionId: `sess-1` }));
+
+		// B's own steps didn't start loading until *after* A's run was persisted as stopped
+		const markStoppedOrder = vi.mocked(runHistoryService.markStopped).mock.invocationCallOrder[0];
+		const sessionBLoadCallIndex = vi.mocked(sessionRecorderService.getSession).mock.calls.findIndex(call => call[1] === `sess-2`);
+		const sessionBLoadOrder = vi.mocked(sessionRecorderService.getSession).mock.invocationCallOrder[sessionBLoadCallIndex];
+		expect(sessionBLoadOrder).toBeGreaterThan(markStoppedOrder);
+	});
+
+	test(`calling playSession again for the session that's already playing does not throw`, async () => {
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `navigate`, url: `https://example.com/a`, timestamp: 1 },
+			{ type: `navigate`, url: `https://example.com/b`, timestamp: 2 }
+		], `https://example.com/other` as DomainUrl));
+
+		const ctx = makeCtx();
+		let resolveLoadUrl!: () => void;
+		loadURL.mockImplementationOnce(() => new Promise<void>(resolve => { resolveLoadUrl = resolve; }));
+
+		const playPromiseA = playbackService.playSession(ctx, `sess-1`);
+		await vi.waitFor(() => expect(loadURL).toHaveBeenCalledTimes(1));
+
+		const playPromiseB = playbackService.playSession(ctx, `sess-1`);
+		resolveLoadUrl();
+
+		await expect(Promise.all([playPromiseA, playPromiseB])).resolves.not.toThrow();
+	});
+
+	test(`starting playback while none is active does not wait on anything from a prior run`, async () => {
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `navigate`, url: `https://example.com/a`, timestamp: 1 }
+		]));
+
+		const ctx = makeCtx();
+		await playbackService.playSession(ctx, `sess-1`);
+
+		expect(runHistoryService.markStopped).not.toHaveBeenCalled();
+		expect(runHistoryService.finishRun).toHaveBeenCalledWith(`test-proj`, `run-1`);
+	});
+});

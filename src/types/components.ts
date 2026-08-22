@@ -36,6 +36,11 @@ export type RecordingDeleteModalEmits = {
 	(e: `update:modelValue`, value: IsVisible): void;
 }
 
+export type RecordingInterruptModalEmits = {
+	(e: `confirm`): void;
+	(e: `update:modelValue`, value: IsVisible): void;
+}
+
 
 /**
  * Type helper for the Vue component's ViewModel in tests.

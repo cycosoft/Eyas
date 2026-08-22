@@ -3,6 +3,7 @@ import { mount, type VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import RecordingPanel from '@/components/RecordingPanel.vue';
 import useRecordingStore from '@/stores/recording.js';
+import type { RecorderReplayRequestPayload } from '@registry/ipc.js';
 
 describe(`RecordingPanel row trailing action button`, () => {
 	let activeWrapper: VueWrapper | undefined;
@@ -151,7 +152,7 @@ describe(`RecordingPanel row trailing action button`, () => {
 		expect(store.selectedSessionId).toBeNull();
 	});
 
-	test(`disables a row's play button while a different session is recording elsewhere in this instance`, async () => {
+	test(`does not disable a row's play button while a different session is recording elsewhere in this instance`, async () => {
 		mountPanel();
 		const store = useRecordingStore();
 		store.isPanelOpen = true;
@@ -160,10 +161,43 @@ describe(`RecordingPanel row trailing action button`, () => {
 		store.sessionId = `some-other-session`;
 		await activeWrapper?.vm.$nextTick();
 
-		expect(actionButton()?.disabled).toBe(true);
+		expect(actionButton()?.disabled).toBe(false);
 	});
 
-	test(`does not send a replay request when a disabled play button is clicked`, async () => {
+	test(`does not disable a row's play button while a different session is playing elsewhere in this instance`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1, lastRunOutcome: null }];
+		store.sessionId = `some-other-session`;
+		store.playbackStatus = `playing`;
+		await activeWrapper?.vm.$nextTick();
+
+		expect(actionButton()?.disabled).toBe(false);
+	});
+
+	test(`clicking another row's play button while a different session is playing sends a replay request for it directly, without a confirmation dialog`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1, lastRunOutcome: null }];
+		store.sessionId = `some-other-session`;
+		store.playbackStatus = `playing`;
+		await activeWrapper?.vm.$nextTick();
+
+		const sendSpy = window.eyas?.send as Mock;
+		const callsBefore = sendSpy.mock.calls.length;
+
+		actionButton()?.click();
+		await activeWrapper?.vm.$nextTick();
+
+		const replayCalls = sendSpy.mock.calls.slice(callsBefore).filter(call => call[0] === `recorder-replay-request`);
+		expect(replayCalls.length).toBe(1);
+		expect(replayCalls[0]?.[1]).toEqual({ sessionId: `s1` });
+		expect(document.querySelector(`[data-qa="recording-interrupt-modal-title"]`)).toBeNull();
+	});
+
+	test(`clicking another row's play button while a different session is recording opens the interrupt confirmation instead of sending a replay request`, async () => {
 		mountPanel();
 		const store = useRecordingStore();
 		store.isPanelOpen = true;
@@ -178,9 +212,52 @@ describe(`RecordingPanel row trailing action button`, () => {
 		actionButton()?.click();
 		await activeWrapper?.vm.$nextTick();
 
+		expect(document.querySelector(`[data-qa="recording-interrupt-modal-title"]`)).not.toBeNull();
 		const replayCalls = sendSpy.mock.calls.slice(callsBefore).filter(call => call[0] === `recorder-replay-request`);
 		expect(replayCalls.length).toBe(0);
-		expect(store.selectedSessionId).toBeNull();
+	});
+
+	test(`confirming the interrupt dialog stops the active recording and starts the originally-clicked session`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1, lastRunOutcome: null }];
+		store.status = `recording`;
+		store.sessionId = `some-other-session`;
+		await activeWrapper?.vm.$nextTick();
+		actionButton()?.click();
+		await activeWrapper?.vm.$nextTick();
+
+		const sendSpy = window.eyas?.send as Mock;
+		const callsBefore = sendSpy.mock.calls.length;
+
+		(document.querySelector(`[data-qa="btn-confirm-interrupt-recording"]`) as HTMLElement)?.click();
+		await activeWrapper?.vm.$nextTick();
+
+		const calls = sendSpy.mock.calls.slice(callsBefore);
+		expect(calls.some(call => call[0] === `recorder-stop`)).toBe(true);
+		expect(calls.some(call => call[0] === `recorder-replay-request` && (call[1] as RecorderReplayRequestPayload)?.sessionId === `s1`)).toBe(true);
+	});
+
+	test(`cancelling the interrupt dialog leaves the active recording running and starts nothing`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1, lastRunOutcome: null }];
+		store.status = `recording`;
+		store.sessionId = `some-other-session`;
+		await activeWrapper?.vm.$nextTick();
+		actionButton()?.click();
+		await activeWrapper?.vm.$nextTick();
+
+		const sendSpy = window.eyas?.send as Mock;
+		const callsBefore = sendSpy.mock.calls.length;
+
+		(document.querySelector(`[data-qa="btn-cancel-interrupt-recording"]`) as HTMLElement)?.click();
+		await activeWrapper?.vm.$nextTick();
+
+		expect(sendSpy.mock.calls.slice(callsBefore).length).toBe(0);
+		expect(store.status).toBe(`recording`);
 	});
 
 	test(`leaves every row's play button enabled when nothing is recording or playing`, async () => {

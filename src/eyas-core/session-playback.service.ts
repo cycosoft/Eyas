@@ -15,6 +15,10 @@ import { TEST_RUNNING_RING_FADE_MS, PLAYBACK_COMPLETE_HOLD_MS } from '@scripts/c
 const CDP_DEBUGGER_VERSION = `1.3`;
 
 let _abortRequested = false;
+// Tracks the in-progress _dispatchAllSteps call (if any) so a second playSession() can wait for it
+// to fully wind down before starting — without this, the new call's `_abortRequested = false` reset
+// (see _dispatchAllSteps) would un-abort the outgoing run mid-loop, and both would dispatch at once.
+let _activeRun: Promise<void> | null = null;
 
 /** Requests that the in-progress replay (if any) stop before dispatching its next step. */
 function stopPlayback(): void {
@@ -197,11 +201,7 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 	}
 }
 
-/** Loads a stopped session and dispatches its steps into the test layer via the CDP debugger. */
-async function playSession(ctx: CoreContext, sessionId: SessionId): Promise<void> {
-	const webContents = ctx.$testLayer?.webContents;
-	if (!webContents) { return; }
-
+async function _loadAndDispatch(ctx: CoreContext, webContents: Electron.WebContents, sessionId: SessionId): Promise<void> {
 	const session = await sessionRecorderService.getSession(ctx, sessionId);
 	if (!session) {
 		sendPlaybackStatus(ctx, { status: `failed`, error: `Session ${sessionId} was not found.`, sessionId });
@@ -215,6 +215,29 @@ async function playSession(ctx: CoreContext, sessionId: SessionId): Promise<void
 	}
 
 	await _dispatchAllSteps(ctx, webContents, session);
+}
+
+/** Loads a stopped session and dispatches its steps into the test layer via the CDP debugger. */
+async function playSession(ctx: CoreContext, sessionId: SessionId): Promise<void> {
+	const webContents = ctx.$testLayer?.webContents;
+	if (!webContents) { return; }
+
+	// a busy caller (another row's play button, or this one clicked again) must not be allowed to
+	// dispatch alongside the run already in flight — wait for it to actually finish stopping first.
+	// No `await` may sit between this check and the `_activeRun = run` assignment below, or a second
+	// concurrent call could read `_activeRun` as still-null in that gap and skip the wait entirely.
+	if (_activeRun) {
+		stopPlayback();
+		await _activeRun;
+	}
+
+	const run = _loadAndDispatch(ctx, webContents, sessionId);
+	_activeRun = run;
+	try {
+		await run;
+	} finally {
+		if (_activeRun === run) { _activeRun = null; }
+	}
 }
 
 export default { playSession, stopPlayback };

@@ -336,43 +336,6 @@ describe(`RecordingPanel`, () => {
 		expect(document.querySelector(`[data-qa="recording-row-s1"]`)?.classList).toContain(`recording-card--playing`);
 	});
 
-	test(`refetches the recordings list when a watched playback finishes while the panel is open`, async () => {
-		mountPanel();
-		const store = useRecordingStore();
-		store.isPanelOpen = true;
-		store.sessionId = `s1`;
-		await activeWrapper?.vm.$nextTick();
-
-		const sendSpy = window.eyas?.send as Mock;
-		const callsBefore = sendSpy.mock.calls.length;
-
-		store.playbackStatus = `playing`;
-		await activeWrapper?.vm.$nextTick();
-		store.playbackStatus = `stopped`;
-		await activeWrapper?.vm.$nextTick();
-
-		const listCalls = sendSpy.mock.calls.slice(callsBefore).filter(call => call[0] === `recorder-list-sessions`);
-		expect(listCalls.length).toBe(1);
-	});
-
-	test(`does not refetch the recordings list when playback finishes while the panel is closed`, async () => {
-		mountPanel();
-		const store = useRecordingStore();
-		store.sessionId = `s1`;
-		await activeWrapper?.vm.$nextTick();
-
-		const sendSpy = window.eyas?.send as Mock;
-		const callsBefore = sendSpy.mock.calls.length;
-
-		store.playbackStatus = `playing`;
-		await activeWrapper?.vm.$nextTick();
-		store.playbackStatus = `stopped`;
-		await activeWrapper?.vm.$nextTick();
-
-		const listCalls = sendSpy.mock.calls.slice(callsBefore).filter(call => call[0] === `recorder-list-sessions`);
-		expect(listCalls.length).toBe(0);
-	});
-
 	function selectSessionWithTwoSteps(store: ReturnType<typeof useRecordingStore>): void {
 		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 2, lastRunOutcome: `passed` }];
 		store.selectedSessionId = `s1`;

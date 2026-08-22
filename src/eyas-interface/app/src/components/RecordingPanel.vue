@@ -71,7 +71,6 @@
 								rounded="lg"
 								class="mx-0 recording-card__action selectable-card__trailing-hover"
 								:class="`recording-card__action--${dotClassFor(session)}`"
-								:disabled="isRowActionDisabled(session)"
 								:data-qa="`recording-row-action-${session.sessionId}`"
 								@click.stop="onActionClick(session)"
 							>
@@ -136,6 +135,7 @@
 
 		<!-- Nested (not a template sibling) so Vuetify's provide/inject overlay stack treats it as a child dialog — a sibling left the panel as its own "local top", closing itself on any click inside this one. -->
 		<RecordingDeleteModal v-model="isDeleteConfirmOpen" @confirm="confirmDeleteSelectedSession" />
+		<RecordingInterruptModal v-model="isInterruptConfirmOpen" @confirm="confirmInterrupt" />
 	</EyasModal>
 </template>
 
@@ -144,6 +144,7 @@ import { computed, nextTick, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import EyasModal from '@/components/EyasModal.vue';
 import RecordingDeleteModal from '@/components/RecordingDeleteModal.vue';
+import RecordingInterruptModal from '@/components/RecordingInterruptModal.vue';
 import SelectableCard from '@/components/SelectableCard.vue';
 import useRecordingStore from '@/stores/recording.js';
 import useRecordingDeletion from '@/composables/useRecordingDeletion.js';
@@ -155,6 +156,7 @@ import type { IsVisible, IsActive, ChannelName, Count } from '@registry/primitiv
 import type { RecordingSessionSummary, RecorderRunStepsLoadedPayload } from '@registry/ipc.js';
 import type { EyasRecordingEnvelope } from '@registry/recording.js';
 import type { DetailText, StepIndex } from '@registry/primitives.js';
+import type { RecordingState } from '@/types/recording.js';
 
 const recordingStore = useRecordingStore();
 const { savedSessions, selectedSession, selectedSessionDetail } = storeToRefs(recordingStore);
@@ -173,8 +175,13 @@ watch(isOpen, open => {
 // Refreshes lastRunOutcome the moment a watched playback finishes, so a row doesn't sit stale until the panel is closed and reopened.
 // Also refetches this session's per-step outcomes for the detail view's icons, which would
 // otherwise keep showing the *previous* run's colors the instant isPlaying flips false.
-watch(() => recordingStore.playbackStatus, (status, prevStatus) => {
-	if (!isOpen.value || prevStatus !== `playing` || status === `playing`) { return; }
+// Watches sessionId alongside status (not status alone): an interrupted playback's `stopped` and the
+// session that interrupted it starting `playing` can both land before Vue's next flush, so a
+// status-only watcher would see playing -> playing and skip the refresh the interrupted row needs.
+watch([(): RecordingState[`playbackStatus`] => recordingStore.playbackStatus, (): RecordingState[`sessionId`] => recordingStore.sessionId], ([status, sessionId], [prevStatus, prevSessionId]): void => {
+	if (!isOpen.value || prevStatus !== `playing`) { return; }
+	const interruptedByAnotherSession = sessionId !== prevSessionId;
+	if (status === `playing` && !interruptedByAnotherSession) { return; }
 	window.eyas?.send(`recorder-list-sessions` as ChannelName);
 	if (selectedSession.value) {
 		window.eyas?.send(`recorder-get-run-steps` as ChannelName, { sessionId: selectedSession.value.sessionId } as RecorderGetRunStepsPayload);
@@ -188,7 +195,7 @@ watch(selectedSession, session => {
 	}
 });
 
-const { dotClassFor, isPinned, isRowActionDisabled, onActionClick } = useRecordingRowStatus(recordingStore);
+const { dotClassFor, isPinned, onActionClick, isInterruptConfirmOpen, confirmInterrupt } = useRecordingRowStatus(recordingStore);
 
 // View-anchored: only colors icons for the detail view's own session, matching the active recording/playback instance; other sessions stay neutral.
 const isActiveSession = computed<IsActive>(() => !!selectedSession.value && recordingStore.sessionId === selectedSession.value.sessionId);
@@ -263,7 +270,6 @@ const testDate = computed<DetailText | undefined>(() => {
 .recording-card__chevron { color: rgba(0, 0, 0, 0.35); }
 .recording-card__action--recording { background-color: #e53935; color: #ffffff; }
 .recording-card__action--playing { background-color: rgba(25, 28, 30, 0.08); color: rgba(25, 28, 30, 0.7); }
-.recording-card__action.v-btn--disabled { color: rgba(0, 0, 0, 0.25); }
 .recording-card__status { font-weight: 600; }
 .recording-card__status--passed { color: #43a047; }
 .recording-card__status--failed { color: #e53935; }

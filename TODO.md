@@ -2,11 +2,10 @@
 
 - npm run check
 - update changelog
-- other recording buttons are disabled while some other acion is happening, consider flexibility in this
-- show the button all the time if that recording has an active action
 - what context should the recording controls in the header have if you played back a different recording
 - I'm unable to stop a playback when a new window is being stepped through
 - test in a consumer app
+- change "STOPPED" status to "INTERRUPTED"
 
 # Future
 
