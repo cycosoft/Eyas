@@ -258,7 +258,7 @@ const testDate = computed<DetailText | undefined>(() => {
 /* recording/playing timing mirrors the header's recording indicator (AppHeaderRecordingControls.vue) — scoped styles can't be shared across components */
 @keyframes recording-pulse { 0% { opacity: 1; } 50% { opacity: 0.35; } 100% { opacity: 1; } }
 .recording-card--recording .recording-card__icon-glyph { animation: recording-pulse 1.5s infinite; }
-.recording-card--pinned { position: sticky; top: 0; z-index: 1; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18); background-color: #ffffff; }
+.recording-card--pinned { position: sticky; top: 0; bottom: 0; z-index: 1; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18); background-color: #ffffff; }
 .recording-card :deep(.selectable-card__content) .text-caption { font-size: 0.6875rem !important; }
 .recording-card__chevron { color: rgba(0, 0, 0, 0.35); }
 .recording-card__action--recording { background-color: #e53935; color: #ffffff; }
