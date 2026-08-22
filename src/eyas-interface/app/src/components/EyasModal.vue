@@ -89,6 +89,17 @@ watch(() => props.modelValue, (isOpen: IsVisible) => {
 	}
 }, { immediate: true });
 
+// A modal opening must expand the app UI layer itself rather than assume the header's mouseenter
+// handler already did it - the layer can be collapsed with the mouse sitting perfectly still (e.g.
+// closing a prior modal via scrim click), so no new hover event ever re-triggers show-ui. Every
+// EyasModal instance stays mounted across open/close (v-model toggling, never v-if), so a real
+// false -> true transition is the correct and only signal to watch for.
+watch(() => props.modelValue, (isOpen: IsVisible, wasOpen: IsVisible) => {
+	if (isOpen && !wasOpen) {
+		window.eyas?.send(`show-ui` as ChannelName);
+	}
+});
+
 const hideUi = (): void => {
 	// hide the UI if there are no other dialogs open. Triggered by ModalBackground's @after-leave hook.
 	// A replay in progress must stay visible even with every dialog closed (e.g. click-outside closed
