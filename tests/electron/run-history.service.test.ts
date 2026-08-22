@@ -50,12 +50,31 @@ describe(`runHistoryService.getLastRunForRecording`, () => {
 		expect(result).toEqual({ outcome: `failed` });
 	});
 
-	test(`surfaces a run that never called finishRun (crash or user stop) as failed, since it never completed`, async () => {
+	test(`surfaces a run that never called finishRun or markStopped (crash) as failed, since it never completed and was never explicitly stopped`, async () => {
 		const runId = await service.startRun(`proj-1`, `rec-1`);
 		await service.recordStepStart(`proj-1`, runId, 0);
 
 		const result = await service.getLastRunForRecording(`proj-1`, `rec-1`);
 		expect(result).toEqual({ outcome: `failed` });
+	});
+
+	test(`surfaces a run marked stopped via markStopped as stopped, not failed`, async () => {
+		const runId = await service.startRun(`proj-1`, `rec-1`);
+		await service.recordStepStart(`proj-1`, runId, 0);
+		await service.markStopped(`proj-1`, runId);
+
+		const result = await service.getLastRunForRecording(`proj-1`, `rec-1`);
+		expect(result).toEqual({ outcome: `stopped` });
+	});
+
+	test(`keeps a stopped run's outcome as stopped even if some of its steps had recorded failures`, async () => {
+		const runId = await service.startRun(`proj-1`, `rec-1`);
+		await service.recordStepStart(`proj-1`, runId, 0);
+		await service.recordStepFailure(`proj-1`, runId, 0);
+		await service.markStopped(`proj-1`, runId);
+
+		const result = await service.getLastRunForRecording(`proj-1`, `rec-1`);
+		expect(result).toEqual({ outcome: `stopped` });
 	});
 
 	test(`returns the most recently started run for a recording, not the first one ever played`, async () => {
@@ -99,6 +118,15 @@ describe(`runHistoryService.getStepOutcomes`, () => {
 	test(`returns finished:false for a run that never called finishRun, even though some steps recorded`, async () => {
 		const runId = await service.startRun(`proj-1`, `rec-1`);
 		await service.recordStepStart(`proj-1`, runId, 0);
+
+		const result = await service.getStepOutcomes(`proj-1`, `rec-1`);
+		expect(result).toEqual({ finished: false, outcomes: { 0: `passed` } });
+	});
+
+	test(`returns finished:false for a run marked stopped, same as any other run that never finished`, async () => {
+		const runId = await service.startRun(`proj-1`, `rec-1`);
+		await service.recordStepStart(`proj-1`, runId, 0);
+		await service.markStopped(`proj-1`, runId);
 
 		const result = await service.getStepOutcomes(`proj-1`, `rec-1`);
 		expect(result).toEqual({ finished: false, outcomes: { 0: `passed` } });

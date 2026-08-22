@@ -266,6 +266,7 @@ const testDate = computed<DetailText | undefined>(() => {
 .recording-card__status { font-weight: 600; }
 .recording-card__status--passed { color: #43a047; }
 .recording-card__status--failed { color: #e53935; }
+.recording-card__status--stopped { color: #757575; }
 .recording-card__status--recording { color: #e53935; animation: recording-pulse 1.5s infinite; }
 .recording-card__status--playing { color: rgb(var(--v-theme-primary)); animation: recording-pulse 1.5s infinite; }
 

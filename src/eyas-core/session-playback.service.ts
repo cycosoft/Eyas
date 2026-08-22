@@ -142,8 +142,9 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 		// before this "stopped" status resets/hides the progress ring — otherwise both status
 		// updates land in the same tick and the ring's last visible frame is one step short of full
 		if (!aborted) { await _delay(PLAYBACK_COMPLETE_HOLD_MS); }
-		// a user-initiated stop leaves the run row without an endedAt — same "never finished" state a
-		// crash would leave, since the tester only cares that it didn't complete, not why
+		// a user-initiated stop is explicitly marked so getLastRunForRecording can read it back as
+		// `stopped` — neither a pass nor a fail — rather than collapsing it to `failed` like a crash
+		if (aborted && runId) { await runHistoryService.markStopped(session.projectId, runId); }
 		if (!aborted && runId) {
 			// a replay that finished can still have findings — assertions don't abort the run (see
 			// session-playback.assertions.ts) — persisted before finishRun so the derived outcome
@@ -158,15 +159,25 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 		// aborted recording never reached its closeWindow step for, the same way a failed Playwright/
 		// Cypress test still tears down its browser context, before reporting the failure
 		await _teardownPopups();
-		if (runId) {
-			// findings gathered before the throw are still worth persisting — the step that failed
-			// (recorded by _runSteps) doesn't invalidate assertions that already ran on earlier steps
-			await _persistMismatchOutcomes(session.projectId, runId);
-			await runHistoryService.finishRun(session.projectId, runId);
+		// stopPlayback() only stops the loop between steps (see _runSteps) — a step already in flight
+		// when the user hits stop can still throw afterward, landing here instead of the normal
+		// aborted-return path. _abortRequested (not yet reset — that's finally, below) is what tells
+		// this apart from a genuine failure: a user-requested stop is still a stop, not a failure, even
+		// when it races a throwing step.
+		if (_abortRequested) {
+			if (runId) { await runHistoryService.markStopped(session.projectId, runId); }
+			sendPlaybackStatus(ctx, { status: `stopped`, sessionId: session.sessionId, ...mismatchPayload() });
+		} else {
+			if (runId) {
+				// findings gathered before the throw are still worth persisting — the step that failed
+				// (recorded by _runSteps) doesn't invalidate assertions that already ran on earlier steps
+				await _persistMismatchOutcomes(session.projectId, runId);
+				await runHistoryService.finishRun(session.projectId, runId);
+			}
+			// findings gathered before the throw are still worth surfacing — the step that failed
+			// doesn't invalidate the assertions that already ran
+			sendPlaybackStatus(ctx, { status: `failed`, error, sessionId: session.sessionId, ...mismatchPayload() });
 		}
-		// findings gathered before the throw are still worth surfacing — the step that failed doesn't
-		// invalidate the assertions that already ran
-		sendPlaybackStatus(ctx, { status: `failed`, error, sessionId: session.sessionId, ...mismatchPayload() });
 	} finally {
 		_abortRequested = false;
 		sessionRecorderService.setReplaying(false);

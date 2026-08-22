@@ -19,6 +19,7 @@ export default function useRecordingRowStatus(recordingStore: RecordingStore): R
 		if (recordingStore.isPlaying && recordingStore.sessionId === session.sessionId) { return `playing`; }
 		if (session.lastRunOutcome === `passed`) { return `passed`; }
 		if (session.lastRunOutcome === `failed`) { return `failed`; }
+		if (session.lastRunOutcome === `stopped`) { return `stopped`; }
 		return `neutral`;
 	}
 

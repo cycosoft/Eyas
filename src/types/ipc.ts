@@ -221,8 +221,8 @@ export type RecordingSessionSummary = {
 	startedAt: number;
 	stoppedAt: number | null;
 	stepCount: StepCount;
-	/** Verdict of this recording's most recent playback run, or null if it has never been played. A run that never finished (crash, hang, user stop) reads back as `failed` — see run-history.service.ts. */
-	lastRunOutcome: `passed` | `failed` | null;
+	/** Verdict of this recording's most recent playback run, or null if it has never been played. A run the user explicitly stopped reads back as `stopped`; a run that never finished for any other reason (crash, hang) still reads back as `failed` — see run-history.service.ts. */
+	lastRunOutcome: `passed` | `failed` | `stopped` | null;
 };
 
 /** Payload for the 'recorder-sessions-listed' IPC event */

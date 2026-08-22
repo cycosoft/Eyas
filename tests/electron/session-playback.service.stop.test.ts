@@ -25,7 +25,8 @@ vi.mock(`@core/run-history.service.js`, () => ({
 		startRun: vi.fn().mockResolvedValue(`run-1`),
 		recordStepStart: vi.fn().mockResolvedValue(undefined),
 		recordStepFailure: vi.fn().mockResolvedValue(undefined),
-		finishRun: vi.fn().mockResolvedValue(undefined)
+		finishRun: vi.fn().mockResolvedValue(undefined),
+		markStopped: vi.fn().mockResolvedValue(undefined)
 	}
 }));
 
@@ -113,6 +114,7 @@ beforeEach(() => {
 	vi.mocked(runHistoryService.startRun).mockClear();
 	vi.mocked(runHistoryService.recordStepStart).mockClear();
 	vi.mocked(runHistoryService.finishRun).mockClear();
+	vi.mocked(runHistoryService.markStopped).mockClear();
 });
 
 describe(`sessionPlaybackService.stopPlayback`, () => {
@@ -129,9 +131,10 @@ describe(`sessionPlaybackService.stopPlayback`, () => {
 
 		expect(loadURL).toHaveBeenCalledTimes(1);
 		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `stopped`, sessionId: `sess-1` });
-		// a user-initiated stop leaves the run row without an outcome — same "never finished" state a
-		// crash would leave, so the dot has no way to tell the two apart, which is the intent
+		// a user-initiated stop is marked explicitly, so the dot reads it as `stopped` rather than
+		// collapsing to the `failed` state a crash would leave
 		expect(runHistoryService.finishRun).not.toHaveBeenCalled();
+		expect(runHistoryService.markStopped).toHaveBeenCalledWith(`test-proj`, `run-1`);
 	});
 
 	test(`still runs the same cleanup as a normal completion (debugger detach, popup queue cleared, replaying flag cleared)`, async () => {
@@ -182,6 +185,28 @@ describe(`sessionPlaybackService.stopPlayback`, () => {
 		await playbackService.playSession(ctx, `sess-1`);
 
 		expect(loadURL).toHaveBeenCalledTimes(2);
+	});
+
+	test(`still reports 'stopped' (not 'failed') when stopPlayback() races an in-flight step that goes on to throw`, async () => {
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([
+			{ type: `keyDown`, key: `a`, timestamp: 1 },
+			{ type: `keyDown`, key: `b`, timestamp: 2 }
+		]));
+		// simulates the user pressing stop while this step's CDP command is in flight, and that
+		// in-flight command then rejecting (e.g. a torn-down popup) rather than the loop simply
+		// noticing the abort flag on its next iteration
+		sendCommand.mockImplementationOnce(async () => {
+			playbackService.stopPlayback();
+			throw new Error(`boom`);
+		});
+		const ctx = makeCtx();
+
+		await playbackService.playSession(ctx, `sess-1`);
+
+		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, expect.objectContaining({ status: `stopped` }));
+		expect(send).not.toHaveBeenCalledWith(`recorder-playback-status`, expect.objectContaining({ status: `failed` }));
+		expect(runHistoryService.markStopped).toHaveBeenCalledWith(`test-proj`, `run-1`);
+		expect(runHistoryService.finishRun).not.toHaveBeenCalled();
 	});
 
 	test(`tears down any tracked popups before reporting 'stopped' when the replay is aborted mid-way, same as a thrown-step failure`, async () => {
