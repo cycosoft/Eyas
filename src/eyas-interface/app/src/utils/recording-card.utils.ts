@@ -26,11 +26,11 @@ export function actionIconFor(status: RecordingCardStatus): `mdi-stop` | `mdi-pl
 	return `mdi-play`;
 }
 
-export function statusLabelFor(status: RecordingCardStatus): `PLAYING` | `RECORDING` | `FAILED` | `PASSED` | `STOPPED` | `` {
+export function statusLabelFor(status: RecordingCardStatus): `PLAYING` | `RECORDING` | `FAILED` | `PASSED` | `INTERRUPTED` | `` {
 	if (status === `playing`) { return `PLAYING`; }
 	if (status === `recording`) { return `RECORDING`; }
 	if (status === `failed`) { return `FAILED`; }
 	if (status === `passed`) { return `PASSED`; }
-	if (status === `stopped`) { return `STOPPED`; }
+	if (status === `stopped`) { return `INTERRUPTED`; }
 	return ``;
 }
