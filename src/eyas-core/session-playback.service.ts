@@ -98,6 +98,35 @@ async function _persistMismatchOutcomes(projectId: ProjectId, runId: RunId): Pro
 	}
 }
 
+/** Wraps up a run that reached the end of its step loop (as opposed to throwing) — either aborted by the user or a natural finish. */
+async function _finishRun(ctx: CoreContext, session: EyasRecordingEnvelope, runId: RunId | undefined, aborted: WasAborted): Promise<void> {
+	if (aborted) {
+		// report the stop to the UI immediately — popup teardown below can take a while (a slow
+		// or stuck popup), and the tester's "stop" press should register right away rather than
+		// leaving the header stuck on "playing" until cleanup finishes
+		sendPlaybackStatus(ctx, { status: `stopped`, sessionId: session.sessionId, ...mismatchPayload() });
+		// a user-initiated stop can land anywhere in the step list, same as a thrown step — tear
+		// down any popups the recording never reached its closeWindow step for
+		await _teardownPopups();
+		// a user-initiated stop is explicitly marked so getLastRunForRecording can read it back as
+		// `stopped` — neither a pass nor a fail — rather than collapsing it to `failed` like a crash
+		if (runId) { await runHistoryService.markStopped(session.projectId, runId); }
+		return;
+	}
+	// on a natural finish, hold briefly so the renderer actually paints the 100%-complete frame
+	// before this "stopped" status resets/hides the progress ring — otherwise both status
+	// updates land in the same tick and the ring's last visible frame is one step short of full
+	await _delay(PLAYBACK_COMPLETE_HOLD_MS);
+	if (runId) {
+		// a replay that finished can still have findings — assertions don't abort the run (see
+		// session-playback.assertions.ts) — persisted before finishRun so the derived outcome
+		// (run-history.service.ts) already reflects them once the run reads as finished
+		await _persistMismatchOutcomes(session.projectId, runId);
+		await runHistoryService.finishRun(session.projectId, runId);
+	}
+	sendPlaybackStatus(ctx, { status: `stopped`, sessionId: session.sessionId, ...mismatchPayload() });
+}
+
 async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebContents, session: EyasRecordingEnvelope): Promise<void> {
 	const steps = session.recording.steps;
 	const startUrl: DomainUrl | null = session.startUrl;
@@ -139,24 +168,7 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 		runId = await runHistoryService.startRun(session.projectId, session.sessionId);
 
 		const aborted = await _runSteps({ webContents, session, runId, ctx, stepActions, stepDelayMs });
-		// a user-initiated stop can land anywhere in the step list, same as a thrown step — tear down
-		// any popups the recording never reached its closeWindow step for before reporting stopped
-		if (aborted) { await _teardownPopups(); }
-		// on a natural finish, hold briefly so the renderer actually paints the 100%-complete frame
-		// before this "stopped" status resets/hides the progress ring — otherwise both status
-		// updates land in the same tick and the ring's last visible frame is one step short of full
-		if (!aborted) { await _delay(PLAYBACK_COMPLETE_HOLD_MS); }
-		// a user-initiated stop is explicitly marked so getLastRunForRecording can read it back as
-		// `stopped` — neither a pass nor a fail — rather than collapsing it to `failed` like a crash
-		if (aborted && runId) { await runHistoryService.markStopped(session.projectId, runId); }
-		if (!aborted && runId) {
-			// a replay that finished can still have findings — assertions don't abort the run (see
-			// session-playback.assertions.ts) — persisted before finishRun so the derived outcome
-			// (run-history.service.ts) already reflects them once the run reads as finished
-			await _persistMismatchOutcomes(session.projectId, runId);
-			await runHistoryService.finishRun(session.projectId, runId);
-		}
-		sendPlaybackStatus(ctx, { status: `stopped`, sessionId: session.sessionId, ...mismatchPayload() });
+		await _finishRun(ctx, session, runId, aborted);
 	} catch (err) {
 		const error = err instanceof Error ? err.message : String(err);
 		// a thrown step still fails the replay (no continue-on-error) — but tear down any popups the

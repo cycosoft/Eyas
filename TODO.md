@@ -3,7 +3,6 @@
 - npm run check
 - update changelog
 - what context should the recording controls in the header have if you played back a different recording
-- I'm unable to stop a playback when a new window is being stepped through
 - test in a consumer app
 
 # Future
