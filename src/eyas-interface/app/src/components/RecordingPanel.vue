@@ -133,9 +133,10 @@
 				This recording has no steps.
 			</p>
 		</div>
-	</EyasModal>
 
-	<RecordingDeleteModal v-model="isDeleteConfirmOpen" @confirm="confirmDeleteSelectedSession" />
+		<!-- Nested (not a template sibling) so Vuetify's provide/inject overlay stack treats it as a child dialog — a sibling left the panel as its own "local top", closing itself on any click inside this one. -->
+		<RecordingDeleteModal v-model="isDeleteConfirmOpen" @confirm="confirmDeleteSelectedSession" />
+	</EyasModal>
 </template>
 
 <script setup lang="ts">
