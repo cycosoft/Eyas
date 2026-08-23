@@ -3,10 +3,10 @@
 - npm run check
 - update changelog
 - test in a consumer app
-- consider showing the recording name in the tooltip for the eyas recorder replay button
 
 # Future
 
+- consider showing the recording name in the tooltip for the eyas recorder replay button
 - animate the icon for the recordings that are playing back inside the recordings list
 - should be able to pin the recording panel to full opacity (make default behavior)
 - should be able to sort tests by name, creation date, last run date

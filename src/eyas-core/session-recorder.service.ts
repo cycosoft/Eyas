@@ -164,6 +164,7 @@ function stopRecording(ctx: CoreContext): void {
 		const filePath = _sessionFilePath;
 		_saveQueue = _saveQueue.then(async () => {
 			if (filePath) { await fs.remove(filePath); }
+			ctx.$eyasLayer?.webContents?.send(`recorder-session-deleted`, { sessionId });
 		}).catch(err => {
 			console.error(`[SESSION-RECORDER-SERVICE] discard failed:`, err);
 		});

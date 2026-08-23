@@ -415,6 +415,29 @@ describe(`sessionRecorderService.stopRecording`, () => {
 
 		expect(ctx.$eyasLayer?.webContents?.send).toHaveBeenCalledWith(`recorder-status-updated`, { isRecording: false, sessionId });
 	});
+
+	test(`also sends recorder-session-deleted with that session's id when discarding an empty session, so the interface's active-session context clears the same way an explicit delete does`, async () => {
+		const ctx = makeCtx();
+		await service.startSession(ctx);
+		const sessionId = service.getActiveSession()?.sessionId;
+
+		service.stopRecording(ctx);
+		await new Promise(resolve => setTimeout(resolve, 20));
+
+		expect(ctx.$eyasLayer?.webContents?.send).toHaveBeenCalledWith(`recorder-session-deleted`, { sessionId });
+	});
+
+	test(`does not send recorder-session-deleted when the session had steps and was saved normally`, async () => {
+		const ctx = makeCtx();
+		await service.startSession(ctx);
+		service.appendSteps(ctx, [{ type: `click`, selectors: [`#foo`], offsetX: 1, offsetY: 2, timestamp: Date.now() }] as never);
+		vi.mocked(ctx.$eyasLayer?.webContents?.send as ReturnType<typeof vi.fn>).mockClear();
+
+		service.stopRecording(ctx);
+		await new Promise(resolve => setTimeout(resolve, 20));
+
+		expect(ctx.$eyasLayer?.webContents?.send).not.toHaveBeenCalledWith(`recorder-session-deleted`, expect.anything());
+	});
 });
 
 // ─── isUnknownSchema ──────────────────────────────────────────────────────────
