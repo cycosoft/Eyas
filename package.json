@@ -109,7 +109,7 @@
 		"eslint": "^10.8.1",
 		"eslint-plugin-import": "^2.32.0",
 		"eslint-plugin-vue": "^10.10.0",
-		"happy-dom": "^20.11.2",
+		"happy-dom": "^20.11.6",
 		"knip": "^6.32.2",
 		"npm-check-updates": "^23.0.2",
 		"pinia": "^4.0.3",

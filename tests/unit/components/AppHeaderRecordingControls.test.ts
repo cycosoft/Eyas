@@ -4,6 +4,7 @@ import { createPinia, setActivePinia, type Pinia } from 'pinia';
 import AppHeaderRecordingControls from '@/components/AppHeaderRecordingControls.vue';
 import useRecordingStore from '@/stores/recording.js';
 import type { WindowWithEyas } from '@registry/ipc.js';
+import type { SessionId } from '@registry/primitives.js';
 
 describe(`AppHeaderRecordingControls`, () => {
 	let wrapper: VueWrapper;
@@ -20,10 +21,11 @@ describe(`AppHeaderRecordingControls`, () => {
 		};
 	});
 
-	function mountWithStatus(status: `recording` | `stopped` | null, playbackStatus: `playing` | `stopped` | `failed` | null = null): VueWrapper {
+	function mountWithStatus(status: `recording` | `stopped` | null, playbackStatus: `playing` | `stopped` | `failed` | null = null, sessionId: SessionId | null = `s1` as SessionId): VueWrapper {
 		const store = useRecordingStore();
 		store.status = status;
 		store.playbackStatus = playbackStatus;
+		store.sessionId = sessionId;
 		return mount(AppHeaderRecordingControls, {
 			global: {
 				plugins: [pinia],
@@ -210,5 +212,53 @@ describe(`AppHeaderRecordingControls`, () => {
 		// skipped steps are a plausible *cause* of the mismatches below them, so the two belong together
 		expect(wrapper.find(`[data-qa="recording-playback-schema-warning"]`).exists()).toBe(true);
 		expect(wrapper.find(`[data-qa="recording-playback-mismatches"]`).exists()).toBe(true);
+	});
+
+	describe(`Once the active session has been deleted (sessionId cleared, status still 'stopped')`, () => {
+		test(`Then it hides the Replay button, even though status is still 'stopped'`, () => {
+			wrapper = mountWithStatus(`stopped`, null, null);
+
+			expect(wrapper.find(`[data-qa="btn-recording-replay"]`).exists()).toBe(false);
+		});
+
+		test(`Then it does not render the playback error chip, even if a stale playbackError value exists`, async () => {
+			wrapper = mountWithStatus(`stopped`, `failed`, null);
+			useRecordingStore().playbackError = `boom`;
+			await wrapper.vm.$nextTick();
+
+			expect(wrapper.find(`[data-qa="recording-playback-error"]`).exists()).toBe(false);
+		});
+
+		test(`Then it does not render the mismatch count chip, even if stale playbackMismatches exist`, async () => {
+			wrapper = mountWithStatus(`stopped`, `stopped`, null);
+			useRecordingStore().playbackMismatches = [MISMATCH];
+			await wrapper.vm.$nextTick();
+
+			expect(wrapper.find(`[data-qa="recording-playback-mismatches"]`).exists()).toBe(false);
+		});
+
+		test(`Then it does not render the schema warning chip, even if a stale playbackSchemaWarning value exists`, async () => {
+			wrapper = mountWithStatus(`stopped`, `playing`, null);
+			useRecordingStore().playbackSchemaWarning = `Made by a newer version.`;
+			await wrapper.vm.$nextTick();
+
+			expect(wrapper.find(`[data-qa="recording-playback-schema-warning"]`).exists()).toBe(false);
+		});
+
+		test(`Then the New Recording button is still visible and enabled`, () => {
+			wrapper = mountWithStatus(`stopped`, null, null);
+
+			const button = wrapper.find(`[data-qa="btn-recording-record-again"]`);
+			expect(button.exists()).toBe(true);
+			expect(button.attributes(`disabled`)).toBeUndefined();
+		});
+
+		test(`Then the Recordings Panel toggle button is still visible and enabled`, () => {
+			wrapper = mountWithStatus(`stopped`, null, null);
+
+			const button = wrapper.find(`[data-qa="btn-recording-panel-toggle"]`);
+			expect(button.exists()).toBe(true);
+			expect(button.attributes(`disabled`)).toBeUndefined();
+		});
 	});
 });

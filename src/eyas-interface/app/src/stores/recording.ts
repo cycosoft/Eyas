@@ -103,6 +103,20 @@ export default defineStore(`recording`, {
 		removeDeletedSession(payload: RecorderSessionDeletedPayload): void {
 			this.savedSessions = this.savedSessions.filter(session => session.sessionId !== payload.sessionId);
 			if (this.selectedSessionId === payload.sessionId) { this.backToBrowser(); }
+
+			// The header's Replay button and playback chips key off sessionId independent of the panel,
+			// so deleting the session they're currently pointed at must clear that context too - status
+			// stays 'stopped' so New Recording/the panel toggle remain usable, only the run-tied UI goes.
+			if (this.sessionId === payload.sessionId) {
+				this.sessionId = null;
+				this.playbackStatus = null;
+				this.playbackError = null;
+				this.playbackMismatches = [];
+				this.playbackSchemaWarning = null;
+				this.currentStepIndex = null;
+				this.completedSteps = 0;
+				this.totalSteps = 0;
+			}
 		},
 
 		setFromIpc(payload: RecorderStatusPayload): void {

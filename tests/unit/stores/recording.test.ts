@@ -294,4 +294,146 @@ describe(`useRecordingStore`, () => {
 
 		expect(store.pendingFailureScrollSessionId).toBeNull();
 	});
+
+	describe(`removeDeletedSession clearing the active run context`, () => {
+		describe(`Given the deleted session is the currently active one (idle/stopped)`, () => {
+			function setUpActiveRunContext(): ReturnType<typeof useRecordingStore> {
+				const store = useRecordingStore();
+				store.setFromIpc({ isRecording: false, sessionId: `s1` });
+				store.setPlaybackStatus({ status: `failed`, error: `boom`, mismatches: [MISMATCH], schemaWarning: `Made by a newer version.`, currentStepIndex: 2, completedSteps: 3, totalSteps: 5 });
+				return store;
+			}
+
+			test(`Then it clears sessionId back to null`, () => {
+				const store = setUpActiveRunContext();
+				store.removeDeletedSession({ sessionId: `s1` });
+				expect(store.sessionId).toBeNull();
+			});
+
+			test(`Then it clears playbackStatus back to null`, () => {
+				const store = setUpActiveRunContext();
+				store.removeDeletedSession({ sessionId: `s1` });
+				expect(store.playbackStatus).toBeNull();
+			});
+
+			test(`Then it clears playbackError back to null`, () => {
+				const store = setUpActiveRunContext();
+				store.removeDeletedSession({ sessionId: `s1` });
+				expect(store.playbackError).toBeNull();
+			});
+
+			test(`Then it clears playbackMismatches back to an empty array`, () => {
+				const store = setUpActiveRunContext();
+				store.removeDeletedSession({ sessionId: `s1` });
+				expect(store.playbackMismatches).toEqual([]);
+			});
+
+			test(`Then it clears playbackSchemaWarning back to null`, () => {
+				const store = setUpActiveRunContext();
+				store.removeDeletedSession({ sessionId: `s1` });
+				expect(store.playbackSchemaWarning).toBeNull();
+			});
+
+			test(`Then it clears currentStepIndex back to null`, () => {
+				const store = setUpActiveRunContext();
+				store.removeDeletedSession({ sessionId: `s1` });
+				expect(store.currentStepIndex).toBeNull();
+			});
+
+			test(`Then it resets completedSteps and totalSteps back to 0`, () => {
+				const store = setUpActiveRunContext();
+				store.removeDeletedSession({ sessionId: `s1` });
+				expect(store.completedSteps).toBe(0);
+				expect(store.totalSteps).toBe(0);
+			});
+
+			test(`Then it leaves status as 'stopped', not null`, () => {
+				const store = setUpActiveRunContext();
+				store.removeDeletedSession({ sessionId: `s1` });
+				expect(store.status).toBe(`stopped`);
+			});
+		});
+
+		describe(`Given the deleted session is the currently active one and a playback is still in progress`, () => {
+			test(`Then it still clears sessionId and every playback-status field, with no special-casing for isPlaying`, () => {
+				const store = useRecordingStore();
+				store.setFromIpc({ isRecording: false, sessionId: `s1` });
+				store.setPlaybackStatus({ status: `playing`, completedSteps: 2, totalSteps: 5, currentStepIndex: 1 });
+				expect(store.isPlaying).toBe(true);
+
+				store.removeDeletedSession({ sessionId: `s1` });
+
+				expect(store.sessionId).toBeNull();
+				expect(store.playbackStatus).toBeNull();
+				expect(store.currentStepIndex).toBeNull();
+				expect(store.completedSteps).toBe(0);
+				expect(store.totalSteps).toBe(0);
+			});
+		});
+
+		describe(`Given the deleted session is not the currently active one (sad path)`, () => {
+			function setUpActiveRunContext(): ReturnType<typeof useRecordingStore> {
+				const store = useRecordingStore();
+				store.setFromIpc({ isRecording: false, sessionId: `s1` });
+				store.setPlaybackStatus({ status: `playing`, schemaWarning: `Made by a newer version.`, currentStepIndex: 2, completedSteps: 3, totalSteps: 5, mismatches: [MISMATCH] });
+				return store;
+			}
+
+			test(`Then it leaves sessionId untouched`, () => {
+				const store = setUpActiveRunContext();
+				store.removeDeletedSession({ sessionId: `other-session` });
+				expect(store.sessionId).toBe(`s1`);
+			});
+
+			test(`Then it leaves playbackStatus, playbackError, playbackMismatches, playbackSchemaWarning, currentStepIndex, completedSteps, and totalSteps untouched`, () => {
+				const store = setUpActiveRunContext();
+				store.removeDeletedSession({ sessionId: `other-session` });
+				expect(store.playbackStatus).toBe(`playing`);
+				expect(store.playbackError).toBeNull();
+				expect(store.playbackMismatches).toEqual([MISMATCH]);
+				expect(store.playbackSchemaWarning).toBe(`Made by a newer version.`);
+				expect(store.currentStepIndex).toBe(2);
+				expect(store.completedSteps).toBe(3);
+				expect(store.totalSteps).toBe(5);
+			});
+
+			test(`Then it still removes the deleted session from savedSessions, as before`, () => {
+				const store = setUpActiveRunContext();
+				store.setSessionsList([SUMMARY, { ...SUMMARY, sessionId: `other-session` }]);
+
+				store.removeDeletedSession({ sessionId: `other-session` });
+
+				expect(store.savedSessions).toEqual([SUMMARY]);
+			});
+
+			test(`Then it still resets selectedSessionId/selectedSessionDetail/runStepOutcomes when the deleted session was the selected one, as before`, () => {
+				const store = setUpActiveRunContext();
+				store.setSessionsList([{ ...SUMMARY, sessionId: `other-session` }]);
+				store.selectSession(`other-session` as never);
+				store.setSelectedSessionDetail({ sessionId: `other-session`, recording: { title: `t`, steps: [] } } as never);
+
+				store.removeDeletedSession({ sessionId: `other-session` });
+
+				expect(store.selectedSessionId).toBeNull();
+				expect(store.selectedSessionDetail).toBeNull();
+			});
+		});
+	});
+
+	describe(`Recovering the active session after it was cleared`, () => {
+		describe(`Given the active session's context was cleared by a delete`, () => {
+			describe(`When a new recording starts`, () => {
+				test(`Then setFromIpc establishes a fresh, non-null sessionId`, () => {
+					const store = useRecordingStore();
+					store.setFromIpc({ isRecording: false, sessionId: `s1` });
+					store.removeDeletedSession({ sessionId: `s1` });
+					expect(store.sessionId).toBeNull();
+
+					store.setFromIpc({ isRecording: true, sessionId: `s2` });
+
+					expect(store.sessionId).toBe(`s2`);
+				});
+			});
+		});
+	});
 });

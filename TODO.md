@@ -2,8 +2,8 @@
 
 - npm run check
 - update changelog
-- what context should the recording controls in the header have if you played back a different recording
 - test in a consumer app
+- consider showing the recording name in the tooltip for the eyas recorder replay button
 
 # Future
 
