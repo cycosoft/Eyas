@@ -7,12 +7,12 @@
 	>
 		<v-dialog
 			:model-value="modelValue"
-			:max-width="props.mode === `panel` ? undefined : 850"
-			:width="props.mode === `panel` ? undefined : '65vw'"
+			:max-width="props.mode === `panel` ? undefined : (props.size === `compact` ? 420 : 850)"
+			:width="props.mode === `panel` ? undefined : (props.size === `compact` ? 'fit-content' : '65vw')"
 			:min-width="props.mode === `panel` ? undefined : 320"
-			:content-class="props.mode === `panel` ? `eyas-modal-panel-content` : undefined"
+			:content-class="props.mode === `panel` ? panelContentClass : undefined"
 			:style="props.mode === `panel` ? panelStyle : undefined"
-			persistent
+			:persistent="!props.closeOnEscape"
 			:scrim="false"
 			@update:model-value="emit(`update:modelValue`, $event)"
 		>
@@ -44,10 +44,12 @@ import useRecordingStore from '@/stores/recording.js';
 import ModalBackground from '@/components/ModalBackground.vue';
 import { EYAS_HEADER_HEIGHT } from '@scripts/constants.js';
 import type { EyasModalProps, EyasModalEmits } from '@registry/components.js';
-import type { ModalId, IsVisible, ChannelName } from '@registry/primitives.js';
+import type { ModalId, IsVisible, ChannelName, ElementClassList } from '@registry/primitives.js';
 
 const props = withDefaults(defineProps<EyasModalProps>(), {
-	mode: `modal`
+	mode: `modal`,
+	closeOnEscape: true,
+	size: `default`
 });
 
 const emit = defineEmits<EyasModalEmits>();
@@ -60,17 +62,19 @@ const backgroundContentVisible = computed((): IsVisible => {
 });
 
 const showScrim = computed((): IsVisible => {
-	// a panel stays out of the way of an in-progress replay rather than dimming it, so the tester can
-	// still watch the run happen underneath; recording is unaffected since nothing to watch is on screen
+	// a panel stays out of the way of an in-progress replay rather than dimming it, so the tester can still watch the run happen underneath
 	if (props.mode !== `panel`) { return true; }
 	return !recordingStore.isPlaying;
 });
 
-// the scrim is already suppressed during a replay so the tester can watch it happen underneath (see
-// showScrim above); the panel itself still dims out of the way so it doesn't compete for attention,
-// but comes back to full opacity on hover so the tester can still glance at it without moving it
+// the panel dims/narrows out of the way during a replay instead, restoring on hover so the tester can still glance at it without moving it
 const fadeDuringPlayback = computed((): IsVisible => {
 	return props.mode === `panel` && recordingStore.isPlaying;
+});
+
+// Narrows the panel alongside the opacity fade above; :hover in CSS restores width and opacity together.
+const panelContentClass = computed((): ElementClassList => {
+	return fadeDuringPlayback.value ? [`eyas-modal-panel-content`, `eyas-modal-panel-content--faded`] : [`eyas-modal-panel-content`];
 });
 
 const panelStyle = {
@@ -85,13 +89,33 @@ watch(() => props.modelValue, (isOpen: IsVisible) => {
 	}
 }, { immediate: true });
 
+// A modal opening must expand the app UI layer itself rather than assume the header's mouseenter
+// handler already did it - the layer can be collapsed with the mouse sitting perfectly still (e.g.
+// closing a prior modal via scrim click), so no new hover event ever re-triggers show-ui. Every
+// EyasModal instance stays mounted across open/close (v-model toggling, never v-if), so a real
+// false -> true transition is the correct and only signal to watch for.
+watch(() => props.modelValue, (isOpen: IsVisible, wasOpen: IsVisible) => {
+	if (isOpen && !wasOpen) {
+		window.eyas?.send(`show-ui` as ChannelName);
+	}
+});
+
 const hideUi = (): void => {
-	// hide the UI if there are no other dialogs open. Triggered by the
-	// ModalBackground's @after-leave hook to ensure the overlay is fully gone.
-	if (!ModalStore().hasVisibleModals) {
+	// hide the UI if there are no other dialogs open. Triggered by ModalBackground's @after-leave hook.
+	// A replay in progress must stay visible even with every dialog closed (e.g. click-outside closed
+	// the panel) - only the run itself stopping (see the isPlaying watch below) may hide the layer then.
+	if (!ModalStore().hasVisibleModals && !recordingStore.isPlaying) {
 		window.eyas?.send(`hide-ui` as ChannelName);
 	}
 };
+
+// Catches the case hideUi's own check above bails on: a replay finishing while every dialog is
+// already closed, which needs its own trigger to hide the layer once the run is actually done.
+watch(() => recordingStore.isPlaying, (isPlaying: IsVisible) => {
+	if (!isPlaying && !ModalStore().hasVisibleModals) {
+		window.eyas?.send(`hide-ui` as ChannelName);
+	}
+});
 
 watch(() => ModalStore().closeAllCounter, () => {
 	emit(`update:modelValue`, false);
@@ -147,7 +171,11 @@ watch(() => ModalStore().closeAllCounter, () => {
 	transform: none !important;
 	width: 380px;
 	max-width: 380px;
+	transition: width 0.15s ease, max-width 0.15s ease;
 }
+
+:deep(.eyas-modal-panel-content--faded) { width: 100px; max-width: 100px; }
+:deep(.eyas-modal-panel-content--faded:hover) { width: 380px; max-width: 380px; }
 
 .eyas-modal__header {
 	flex-shrink: 0;
@@ -169,6 +197,9 @@ watch(() => ModalStore().closeAllCounter, () => {
 .eyas-modal--panel .eyas-modal__body {
 	padding: 0 1rem 1rem !important;
 }
+
+/* Recording detail view only (list centers fine as-is): wider base padding keeps the faded/narrowed step timeline centered. */
+.eyas-modal--panel .eyas-modal__body:has([data-qa="recording-panel-detail"]) { padding: 0 2rem 1.5rem !important; }
 
 .eyas-modal__body::-webkit-scrollbar {
 	width: 4px;

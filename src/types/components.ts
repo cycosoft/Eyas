@@ -23,9 +23,21 @@ export type ModalWrapperEmits = {
 export type EyasModalProps = {
 	modelValue: IsVisible;
 	mode?: `modal` | `panel`;
+	closeOnEscape?: IsVisible;
+	size?: `default` | `compact`;
 }
 
 export type EyasModalEmits = {
+	(e: `update:modelValue`, value: IsVisible): void;
+}
+
+export type RecordingDeleteModalEmits = {
+	(e: `confirm`): void;
+	(e: `update:modelValue`, value: IsVisible): void;
+}
+
+export type RecordingInterruptModalEmits = {
+	(e: `confirm`): void;
 	(e: `update:modelValue`, value: IsVisible): void;
 }
 

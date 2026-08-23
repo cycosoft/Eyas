@@ -133,13 +133,24 @@ beforeEach(() => {
 
 describe(`sessionPlaybackService.playSession`, () => {
 	test(`attaches the CDP debugger to the test layer and sends 'playing' status before dispatch`, async () => {
-		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([]));
+		const step: ClickStep = { type: `click`, selectors: [`#save`], offsetX: 12, offsetY: 34, timestamp: 1 };
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([step]));
 		const ctx = makeCtx();
 
 		await playbackService.playSession(ctx, `sess-1`);
 
 		expect(attach).toHaveBeenCalled();
-		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `playing`, completedSteps: 0, totalSteps: 0 });
+		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `playing`, completedSteps: 0, totalSteps: 1, sessionId: `sess-1` });
+	});
+
+	test(`rejects a recording with no steps instead of dispatching, since it can never pass`, async () => {
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([]));
+		const ctx = makeCtx();
+
+		await playbackService.playSession(ctx, `sess-1`);
+
+		expect(attach).not.toHaveBeenCalled();
+		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `failed`, error: `This recording has no steps to play.`, sessionId: `sess-1` });
 	});
 
 
@@ -435,12 +446,13 @@ describe(`sessionPlaybackService.playSession`, () => {
 	});
 
 	test(`sends 'stopped' status and detaches the debugger after all steps dispatch successfully`, async () => {
-		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([]));
+		const step: ScrollStep = { type: `scroll`, x: 42, y: 84, timestamp: 1 };
+		vi.mocked(sessionRecorderService.getSession).mockResolvedValue(makeSession([step]));
 		const ctx = makeCtx();
 
 		await playbackService.playSession(ctx, `sess-1`);
 
-		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `stopped` });
+		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `stopped`, sessionId: `sess-1` });
 		expect(detach).toHaveBeenCalled();
 		expect(runHistoryService.finishRun).toHaveBeenCalledWith(`test-proj`, `run-1`);
 	});
@@ -454,7 +466,7 @@ describe(`sessionPlaybackService.playSession`, () => {
 
 		await playbackService.playSession(ctx, `sess-1`);
 
-		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `failed`, error: `boom` });
+		expect(send).toHaveBeenCalledWith(`recorder-playback-status`, { status: `failed`, error: `boom`, sessionId: `sess-1` });
 		expect(detach).toHaveBeenCalled();
 		expect(runHistoryService.recordStepFailure).toHaveBeenCalledWith(`test-proj`, `run-1`, 0);
 		expect(runHistoryService.finishRun).toHaveBeenCalledWith(`test-proj`, `run-1`);

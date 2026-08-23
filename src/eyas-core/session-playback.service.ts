@@ -15,6 +15,10 @@ import { TEST_RUNNING_RING_FADE_MS, PLAYBACK_COMPLETE_HOLD_MS } from '@scripts/c
 const CDP_DEBUGGER_VERSION = `1.3`;
 
 let _abortRequested = false;
+// Tracks the in-progress _dispatchAllSteps call (if any) so a second playSession() can wait for it
+// to fully wind down before starting — without this, the new call's `_abortRequested = false` reset
+// (see _dispatchAllSteps) would un-abort the outgoing run mid-loop, and both would dispatch at once.
+let _activeRun: Promise<void> | null = null;
 
 /** Requests that the in-progress replay (if any) stop before dispatching its next step. */
 function stopPlayback(): void {
@@ -79,7 +83,7 @@ async function _runSteps({ webContents, session, runId, ctx, stepActions, stepDe
 			await runHistoryService.recordStepFailure(session.projectId, runId, i as StepIndex);
 			throw err;
 		}
-		reportStepProgress(ctx, stepActions, i, getMismatches());
+		reportStepProgress({ ctx, actions: stepActions, stepIndex: i, mismatchesSoFar: getMismatches(), sessionId: session.sessionId });
 	}
 	return false;
 }
@@ -92,6 +96,35 @@ async function _persistMismatchOutcomes(projectId: ProjectId, runId: RunId): Pro
 		seenStepIndexes.add(mismatch.stepIndex);
 		await runHistoryService.recordStepFailure(projectId, runId, mismatch.stepIndex);
 	}
+}
+
+/** Wraps up a run that reached the end of its step loop (as opposed to throwing) — either aborted by the user or a natural finish. */
+async function _finishRun(ctx: CoreContext, session: EyasRecordingEnvelope, runId: RunId | undefined, aborted: WasAborted): Promise<void> {
+	if (aborted) {
+		// report the stop to the UI immediately — popup teardown below can take a while (a slow
+		// or stuck popup), and the tester's "stop" press should register right away rather than
+		// leaving the header stuck on "playing" until cleanup finishes
+		sendPlaybackStatus(ctx, { status: `stopped`, sessionId: session.sessionId, ...mismatchPayload() });
+		// a user-initiated stop can land anywhere in the step list, same as a thrown step — tear
+		// down any popups the recording never reached its closeWindow step for
+		await _teardownPopups();
+		// a user-initiated stop is explicitly marked so getLastRunForRecording can read it back as
+		// `stopped` — neither a pass nor a fail — rather than collapsing it to `failed` like a crash
+		if (runId) { await runHistoryService.markStopped(session.projectId, runId); }
+		return;
+	}
+	// on a natural finish, hold briefly so the renderer actually paints the 100%-complete frame
+	// before this "stopped" status resets/hides the progress ring — otherwise both status
+	// updates land in the same tick and the ring's last visible frame is one step short of full
+	await _delay(PLAYBACK_COMPLETE_HOLD_MS);
+	if (runId) {
+		// a replay that finished can still have findings — assertions don't abort the run (see
+		// session-playback.assertions.ts) — persisted before finishRun so the derived outcome
+		// (run-history.service.ts) already reflects them once the run reads as finished
+		await _persistMismatchOutcomes(session.projectId, runId);
+		await runHistoryService.finishRun(session.projectId, runId);
+	}
+	sendPlaybackStatus(ctx, { status: `stopped`, sessionId: session.sessionId, ...mismatchPayload() });
 }
 
 async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebContents, session: EyasRecordingEnvelope): Promise<void> {
@@ -109,7 +142,7 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 	setReplayPopupIdQueue(_orderedPopupIds(steps));
 	ctx.toggleEyasUI(true); showAllRecordingOverlays();
 	const stepActions = computeStepActions(steps);
-	sendPlaybackStatus(ctx, { status: `playing`, completedSteps: 0 as StepCount, totalSteps: stepActions.totalActions, ..._schemaWarningPayload(session) });
+	sendPlaybackStatus(ctx, { status: `playing`, completedSteps: 0 as StepCount, totalSteps: stepActions.totalActions, sessionId: session.sessionId, ..._schemaWarningPayload(session) });
 	// declared here (rather than inline where it's assigned) so both the try body and the catch
 	// block below can report against the same run
 	let runId: RunId | undefined;
@@ -135,38 +168,32 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 		runId = await runHistoryService.startRun(session.projectId, session.sessionId);
 
 		const aborted = await _runSteps({ webContents, session, runId, ctx, stepActions, stepDelayMs });
-		// a user-initiated stop can land anywhere in the step list, same as a thrown step — tear down
-		// any popups the recording never reached its closeWindow step for before reporting stopped
-		if (aborted) { await _teardownPopups(); }
-		// on a natural finish, hold briefly so the renderer actually paints the 100%-complete frame
-		// before this "stopped" status resets/hides the progress ring — otherwise both status
-		// updates land in the same tick and the ring's last visible frame is one step short of full
-		if (!aborted) { await _delay(PLAYBACK_COMPLETE_HOLD_MS); }
-		// a user-initiated stop leaves the run row without an endedAt — same "never finished" state a
-		// crash would leave, since the tester only cares that it didn't complete, not why
-		if (!aborted && runId) {
-			// a replay that finished can still have findings — assertions don't abort the run (see
-			// session-playback.assertions.ts) — persisted before finishRun so the derived outcome
-			// (run-history.service.ts) already reflects them once the run reads as finished
-			await _persistMismatchOutcomes(session.projectId, runId);
-			await runHistoryService.finishRun(session.projectId, runId);
-		}
-		sendPlaybackStatus(ctx, { status: `stopped`, ...mismatchPayload() });
+		await _finishRun(ctx, session, runId, aborted);
 	} catch (err) {
 		const error = err instanceof Error ? err.message : String(err);
 		// a thrown step still fails the replay (no continue-on-error) — but tear down any popups the
 		// aborted recording never reached its closeWindow step for, the same way a failed Playwright/
 		// Cypress test still tears down its browser context, before reporting the failure
 		await _teardownPopups();
-		if (runId) {
-			// findings gathered before the throw are still worth persisting — the step that failed
-			// (recorded by _runSteps) doesn't invalidate assertions that already ran on earlier steps
-			await _persistMismatchOutcomes(session.projectId, runId);
-			await runHistoryService.finishRun(session.projectId, runId);
+		// stopPlayback() only stops the loop between steps (see _runSteps) — a step already in flight
+		// when the user hits stop can still throw afterward, landing here instead of the normal
+		// aborted-return path. _abortRequested (not yet reset — that's finally, below) is what tells
+		// this apart from a genuine failure: a user-requested stop is still a stop, not a failure, even
+		// when it races a throwing step.
+		if (_abortRequested) {
+			if (runId) { await runHistoryService.markStopped(session.projectId, runId); }
+			sendPlaybackStatus(ctx, { status: `stopped`, sessionId: session.sessionId, ...mismatchPayload() });
+		} else {
+			if (runId) {
+				// findings gathered before the throw are still worth persisting — the step that failed
+				// (recorded by _runSteps) doesn't invalidate assertions that already ran on earlier steps
+				await _persistMismatchOutcomes(session.projectId, runId);
+				await runHistoryService.finishRun(session.projectId, runId);
+			}
+			// findings gathered before the throw are still worth surfacing — the step that failed
+			// doesn't invalidate the assertions that already ran
+			sendPlaybackStatus(ctx, { status: `failed`, error, sessionId: session.sessionId, ...mismatchPayload() });
 		}
-		// findings gathered before the throw are still worth surfacing — the step that failed doesn't
-		// invalidate the assertions that already ran
-		sendPlaybackStatus(ctx, { status: `failed`, error, ...mismatchPayload() });
 	} finally {
 		_abortRequested = false;
 		sessionRecorderService.setReplaying(false);
@@ -186,18 +213,43 @@ async function _dispatchAllSteps(ctx: CoreContext, webContents: Electron.WebCont
 	}
 }
 
+async function _loadAndDispatch(ctx: CoreContext, webContents: Electron.WebContents, sessionId: SessionId): Promise<void> {
+	const session = await sessionRecorderService.getSession(ctx, sessionId);
+	if (!session) {
+		sendPlaybackStatus(ctx, { status: `failed`, error: `Session ${sessionId} was not found.`, sessionId });
+		return;
+	}
+	// a stepless recording has nothing to dispatch and can never pass — reject it here too, not
+	// just in the renderer's disabled button, since this IPC handler is reachable independent of it
+	if (session.recording.steps.length === 0) {
+		sendPlaybackStatus(ctx, { status: `failed`, error: `This recording has no steps to play.`, sessionId });
+		return;
+	}
+
+	await _dispatchAllSteps(ctx, webContents, session);
+}
+
 /** Loads a stopped session and dispatches its steps into the test layer via the CDP debugger. */
 async function playSession(ctx: CoreContext, sessionId: SessionId): Promise<void> {
 	const webContents = ctx.$testLayer?.webContents;
 	if (!webContents) { return; }
 
-	const session = await sessionRecorderService.getSession(ctx, sessionId);
-	if (!session) {
-		sendPlaybackStatus(ctx, { status: `failed`, error: `Session ${sessionId} was not found.` });
-		return;
+	// a busy caller (another row's play button, or this one clicked again) must not be allowed to
+	// dispatch alongside the run already in flight — wait for it to actually finish stopping first.
+	// No `await` may sit between this check and the `_activeRun = run` assignment below, or a second
+	// concurrent call could read `_activeRun` as still-null in that gap and skip the wait entirely.
+	if (_activeRun) {
+		stopPlayback();
+		await _activeRun;
 	}
 
-	await _dispatchAllSteps(ctx, webContents, session);
+	const run = _loadAndDispatch(ctx, webContents, sessionId);
+	_activeRun = run;
+	try {
+		await run;
+	} finally {
+		if (_activeRun === run) { _activeRun = null; }
+	}
 }
 
 export default { playSession, stopPlayback };

@@ -23,14 +23,14 @@
 						New Recording
 					</v-tooltip>
 				</v-btn>
-				<v-btn icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" data-qa="btn-recording-replay" @click="replayRecording">
+				<v-btn v-if="sessionId" icon variant="plain" :ripple="false" density="compact" class="mx-0" rounded="lg" data-qa="btn-recording-replay" @click="replayRecording">
 					<v-icon icon="mdi-refresh" size="small" />
 					<v-tooltip activator="parent" location="bottom">
 						Replay Recording
 					</v-tooltip>
 				</v-btn>
 			</template>
-			<span v-if="playbackError" class="playback-error mx-1" data-qa="recording-playback-error">
+			<span v-if="playbackError && sessionId" class="playback-error mx-1" data-qa="recording-playback-error">
 				Replay failed
 				<v-tooltip activator="parent" location="bottom">{{ playbackError }}</v-tooltip>
 			</span>
@@ -38,14 +38,14 @@
 				Set when the replay starts, and deliberately left up for the rest of the run: it explains why
 				the results below it may be incomplete, so it has to still be there when they're read.
 			-->
-			<span v-if="playbackSchemaWarning" class="playback-schema-warning mx-1" data-qa="recording-playback-schema-warning">
+			<span v-if="playbackSchemaWarning && sessionId" class="playback-schema-warning mx-1" data-qa="recording-playback-schema-warning">
 				<v-icon icon="mdi-alert-outline" size="small" />
 				<v-tooltip activator="parent" location="bottom">
 					<span class="mismatch-detail">{{ playbackSchemaWarning }}</span>
 				</v-tooltip>
 			</span>
 			<!-- shown alongside a failure, not instead of it: a replay can fail *and* have findings -->
-			<span v-if="mismatchCount > 0" class="playback-mismatch mx-1" data-qa="recording-playback-mismatches">
+			<span v-if="mismatchCount > 0 && sessionId" class="playback-mismatch mx-1" data-qa="recording-playback-mismatches">
 				{{ mismatchCount }} mismatch{{ mismatchCount === 1 ? '' : 'es' }}
 				<v-tooltip activator="parent" location="bottom">
 					<pre class="mismatch-detail">{{ mismatchSummary }}</pre>
@@ -67,7 +67,7 @@ import type { ChannelName } from '@registry/primitives.js';
 import useRecordingStore from '@/stores/recording.js';
 
 const recordingStore = useRecordingStore();
-const { isRecording, isStopped, isPlaying, playbackProgress, playbackError, mismatchCount, mismatchSummary, playbackSchemaWarning } = storeToRefs(recordingStore);
+const { isRecording, isStopped, isPlaying, playbackProgress, playbackError, mismatchCount, mismatchSummary, playbackSchemaWarning, sessionId } = storeToRefs(recordingStore);
 
 function stopRecording(): void {
 	window.eyas?.send(`recorder-stop` as ChannelName);

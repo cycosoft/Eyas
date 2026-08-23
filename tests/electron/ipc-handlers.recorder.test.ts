@@ -4,12 +4,17 @@ import type { CoreContext } from '@registry/eyas-core.js';
 import type { ClickStep } from '@registry/recording.js';
 import type { PopupId, ChannelName } from '@registry/primitives.js';
 
-const { getPopupIdForWebContents, appendSteps, startSession, listSessions, getSession } = vi.hoisted(() => ({
+const { getPopupIdForWebContents, appendSteps, startSession, listSessions, getSession, deleteSession } = vi.hoisted(() => ({
 	getPopupIdForWebContents: vi.fn(),
 	appendSteps: vi.fn(),
 	startSession: vi.fn().mockResolvedValue(undefined),
 	listSessions: vi.fn().mockResolvedValue([]),
-	getSession: vi.fn().mockResolvedValue(null)
+	getSession: vi.fn().mockResolvedValue(null),
+	deleteSession: vi.fn().mockResolvedValue(undefined)
+}));
+
+const { deleteRecordingHistory } = vi.hoisted(() => ({
+	deleteRecordingHistory: vi.fn().mockResolvedValue(undefined)
 }));
 
 vi.mock(`electron`, () => ({
@@ -25,7 +30,12 @@ vi.mock(`../../src/eyas-core/session-recorder.service.js`, () => ({
 	stopRecording: vi.fn(),
 	startSession,
 	listSessions,
-	getSession
+	getSession,
+	deleteSession
+}));
+
+vi.mock(`../../src/eyas-core/run-history.service.js`, () => ({
+	default: { getStepOutcomes: vi.fn().mockResolvedValue(null), deleteRecordingHistory }
 }));
 
 const { stopPlayback } = vi.hoisted(() => ({
@@ -175,5 +185,36 @@ describe(`recorder-get-session IPC handler`, () => {
 
 		expect(getSession).toHaveBeenCalledWith(ctx, `s1`);
 		expect(send).toHaveBeenCalledWith(`recorder-session-loaded`, session);
+	});
+});
+
+describe(`recorder-delete-session IPC handler`, () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		deleteSession.mockResolvedValue(undefined);
+		deleteRecordingHistory.mockResolvedValue(undefined);
+	});
+
+	test(`deletes the recording's file and its run history, then confirms over recorder-session-deleted`, async () => {
+		const send = vi.fn();
+		const ctx = { $eyasLayer: { webContents: { send } } } as unknown as CoreContext;
+		initRecorderIpcListeners(ctx);
+
+		getHandler(`recorder-delete-session`)({}, { sessionId: `s1` });
+		await Promise.resolve();
+		await Promise.resolve();
+
+		expect(deleteSession).toHaveBeenCalledWith(ctx, `s1`);
+		expect(deleteRecordingHistory).toHaveBeenCalledWith(`default`, `s1`);
+		expect(send).toHaveBeenCalledWith(`recorder-session-deleted`, { sessionId: `s1` });
+	});
+
+	test(`does not throw when deletion fails`, async () => {
+		const ctx = {} as CoreContext;
+		deleteSession.mockRejectedValue(new Error(`disk error`));
+		initRecorderIpcListeners(ctx);
+
+		expect(() => getHandler(`recorder-delete-session`)({}, { sessionId: `s1` })).not.toThrow();
+		await Promise.resolve();
 	});
 });

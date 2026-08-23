@@ -155,14 +155,32 @@ function isReplaying(): IsActive {
 	return _isReplaying;
 }
 
-/** Stops the active recording session, finalizing status and persisting to disk. */
+/** Stops the active recording session. A session with no recorded steps is discarded rather than saved — startSession already wrote an empty file to disk, so that file is removed instead of finalized. */
 function stopRecording(ctx: CoreContext): void {
 	if (!_session) { return; }
+	const sessionId = _session.sessionId;
+
+	if (_session.recording.steps.length === 0) {
+		const filePath = _sessionFilePath;
+		_saveQueue = _saveQueue.then(async () => {
+			if (filePath) { await fs.remove(filePath); }
+			ctx.$eyasLayer?.webContents?.send(`recorder-session-deleted`, { sessionId });
+		}).catch(err => {
+			console.error(`[SESSION-RECORDER-SERVICE] discard failed:`, err);
+		});
+		_session = null;
+		_sessionFilePath = null;
+		_mode = `idle`;
+
+		ctx.$eyasLayer?.webContents?.send(`recorder-status-updated`, { isRecording: false, sessionId });
+		return;
+	}
+
 	_session.stoppedAt = Date.now();
 	_mode = `idle`;
 	_persist();
 
-	ctx.$eyasLayer?.webContents?.send(`recorder-status-updated`, { isRecording: false, sessionId: _session.sessionId });
+	ctx.$eyasLayer?.webContents?.send(`recorder-status-updated`, { isRecording: false, sessionId });
 }
 
 function getActiveSession(): EyasRecordingEnvelope | null {
@@ -220,12 +238,35 @@ async function listSessions(ctx: CoreContext): Promise<RecordingSessionSummary[]
 	return summaries.sort((a, b) => b.startedAt - a.startedAt);
 }
 
+/** Deletes a saved recording's file from disk. Clears the in-memory session first if it's the one being deleted, so a stray persist queued behind this doesn't resurrect the file. */
+async function deleteSession(ctx: CoreContext, sessionId: SessionId): Promise<void> {
+	// Deleting the session this instance is actively recording must also tell the renderer it's no
+	// longer recording — otherwise recordingStore.status keeps reading `recording` (indicator still
+	// pulsing, every other row's play button still disabled) with nothing left in core to stop.
+	if (_session?.sessionId === sessionId) {
+		_session = null;
+		_sessionFilePath = null;
+		_mode = `idle`;
+		ctx.$eyasLayer?.webContents?.send(`recorder-status-updated`, { isRecording: false, sessionId });
+	}
+
+	const projectId = (ctx.$config?.meta.projectId || `default`) as ProjectId;
+	const sessionPath = _sessionPath(projectId, sessionId);
+	_saveQueue = _saveQueue.then(async () => {
+		await fs.remove(sessionPath);
+	}).catch(err => {
+		console.error(`[SESSION-RECORDER-SERVICE] delete failed:`, err);
+	});
+	await _saveQueue;
+}
+
 export {
 	startSession,
 	appendSteps,
 	appendNavigateStep,
 	appendCloseWindowStep,
 	stopRecording,
+	deleteSession,
 	getSession,
 	listSessions,
 	setReplaying,
@@ -239,6 +280,7 @@ export default {
 	appendNavigateStep,
 	appendCloseWindowStep,
 	stopRecording,
+	deleteSession,
 	setReplaying,
 	isReplaying,
 	getActiveSession,

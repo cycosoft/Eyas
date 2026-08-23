@@ -1,11 +1,15 @@
 import { randomUUID } from 'crypto';
 import { WebContentsView } from 'electron';
 import type { CoreContext } from '@registry/eyas-core.js';
-import type { PopupId, WebContentsId, EyasProtocolUrl } from '@registry/primitives.js';
+import type { PopupId, WebContentsId, EyasProtocolUrl, DurationMS } from '@registry/primitives.js';
 import sessionRecorderService from './session-recorder.service.js';
 import { EYAS_UI_PARTITION } from '@scripts/constants.js';
 
 const CDP_DEBUGGER_VERSION = `1.3`;
+
+// a popup that never fires `closed` (stuck renderer, OS-level hang) must not wedge replay-stop
+// teardown forever — force-destroy it past this point rather than let closeAllPopups() hang
+const POPUP_CLOSE_TIMEOUT_MS = 3000 as DurationMS;
 
 const _openPopups = new Map<PopupId, Electron.BrowserWindow>();
 
@@ -26,7 +30,17 @@ const _popupIdByWebContentsId = new Map<WebContentsId, PopupId>();
 let _replayIdQueue: PopupId[] | null = null;
 
 function _waitForClosed(win: Electron.BrowserWindow): Promise<void> {
-	return new Promise(resolve => win.once(`closed`, () => resolve()));
+	return new Promise(resolve => {
+		const timer = setTimeout(() => {
+			// close() never delivered `closed` in time — force it so teardown can't hang indefinitely
+			if (!win.isDestroyed()) { win.destroy(); }
+			resolve();
+		}, POPUP_CLOSE_TIMEOUT_MS);
+		win.once(`closed`, () => {
+			clearTimeout(timer);
+			resolve();
+		});
+	});
 }
 
 function _recordingLayerUrl(): EyasProtocolUrl {

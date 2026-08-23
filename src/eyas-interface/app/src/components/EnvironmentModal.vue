@@ -1,5 +1,5 @@
 <template>
-	<EyasModal v-model="visible">
+	<EyasModal v-model="visible" :close-on-escape="false">
 		<template #title>
 			<h2 class="font-headline text-h5 font-weight-bold text-on-surface tracking-tight mb-2" data-qa="environment-modal-title">
 				Choose Test Environment
@@ -10,34 +10,28 @@
 		</template>
 
 		<div class="domains-list custom-scrollbar">
-			<v-btn
+			<SelectableCard
 				v-for="(domain, index) in domains"
 				:key="index"
-				class="w-full text-left justify-start py-4 px-4 mb-3 rounded-lg env-btn"
-				:class="{ 'active-env': loadingIndex === index }"
-				variant="flat"
+				class="env-btn mb-3"
+				:persist-accent="loadingIndex === index"
 				:loading="loadingIndex === index"
-				block
 				data-qa="btn-env"
 				@click="onSelectEnvironment(domain, index)"
 			>
-				<template #prepend>
-					<div class="icon-box mr-4" :class="{ 'active-icon-box': loadingIndex === index }">
-						<v-icon size="22">
-							{{ getIcon(domain) }}
-						</v-icon>
-					</div>
+				<template #icon>
+					<v-icon size="22">
+						{{ getIcon(domain) }}
+					</v-icon>
 				</template>
 
-				<div class="d-flex flex-column align-start">
-					<span class="font-headline font-weight-bold text-body-1 text-high-emphasis">
-						{{ domain.title }}
-					</span>
-					<span class="font-body text-caption text-grey env-url text-body-small">
-						{{ domain.url }}
-					</span>
-				</div>
-			</v-btn>
+				<span class="font-headline font-weight-bold text-body-1 text-high-emphasis">
+					{{ domain.title }}
+				</span>
+				<span class="font-body text-caption text-grey env-url text-body-small">
+					{{ domain.url }}
+				</span>
+			</SelectableCard>
 		</div>
 
 		<v-alert
@@ -67,6 +61,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import EyasModal from '@/components/EyasModal.vue';
+import SelectableCard from '@/components/SelectableCard.vue';
 import type { EnvironmentChoiceWithTitle } from '@registry/core.js';
 import type { IsVisible, ListIndex, IsActive, ProjectId, ChannelName, HashString, LabelString } from '@registry/primitives.js';
 
@@ -155,43 +150,9 @@ defineExpose({
 	overflow-y: auto;
 }
 
-.env-btn {
-	text-transform: none !important;
-	letter-spacing: normal !important;
-	height: auto !important;
-	background-color: rgba(255, 255, 255, 0.6) !important;
-	border: 2px solid transparent !important;
-	border-left: 4px solid transparent !important;
-	transition: all 0.2s ease-in-out;
-}
-
-.env-btn:hover, .active-env {
-	background-color: #ffffff !important;
-	border-color: rgba(88, 161, 214, 0.3) !important;
-	border-left-color: #58A1D6 !important;
-	box-shadow: 0px 3px 3px rgba(88, 161, 214, 0.15) !important;
-	transform: translateY(-1px);
-}
-
-.env-btn:hover .icon-box, .active-env .icon-box {
-	background-color: rgba(88, 161, 214, 0.1) !important;
-	color: #58A1D6 !important;
-}
-
-.env-btn:hover .env-url, .active-env .env-url {
-	color: #58A1D6 !important;
-}
-
-.icon-box {
-	width: 40px;
-	height: 40px;
-	border-radius: 8px;
-	background-color: rgba(25, 28, 30, 0.05);
-	color: rgba(25, 28, 30, 0.6);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	transition: all 0.2s ease-in-out;
+.env-btn:hover .env-url,
+.env-btn.selectable-card--accent .env-url {
+	color: #58A1D6;
 }
 
 .custom-scrollbar::-webkit-scrollbar {

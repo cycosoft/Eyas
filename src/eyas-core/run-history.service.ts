@@ -5,21 +5,22 @@ import fsExtra from 'fs-extra';
 import { DatabaseSync } from 'node:sqlite';
 import type { ProjectId, SessionId, RunId, FilePath, StepIndex, TimestampMS } from '@registry/primitives.js';
 
-type RunOutcome = `passed` | `failed`;
+type RunOutcome = `passed` | `failed` | `stopped`;
 
 /**
- * The dot-facing verdict for a recording's most recent run. A run that never reached `finishRun`
- * (crashed, hung, or was stopped by the user) reads back with `endedAt === null` — collapsed here
- * to `failed` rather than surfaced as its own state, since the user only cares that it didn't
- * complete, not why. Otherwise derived by iterating that run's `run_steps` rather than trusting a
- * cached run-level value — playback continues past a soft-assertion mismatch (it's not a hard-stop
- * runner), so a run can finish "naturally" while a step inside it still failed.
+ * The dot-facing verdict for a recording's most recent run. A run the user explicitly stopped
+ * (see `markStopped`) reads back as `stopped` — neither a pass nor a fail, since it never ran to
+ * completion by the tester's own choice. A run that never reached `finishRun` or `markStopped`
+ * (crashed or hung) still reads as `failed`, since that case has no user intent to distinguish it
+ * from an incomplete/broken run. Otherwise derived by iterating that run's `run_steps` rather than
+ * trusting a cached run-level value — playback continues past a soft-assertion mismatch (it's not
+ * a hard-stop runner), so a run can finish "naturally" while a step inside it still failed.
  */
 type LastRunSummary = { outcome: RunOutcome | null };
 
-type RunRow = { runId: RunId; endedAt: TimestampMS | null };
+type RunRow = { runId: RunId; endedAt: TimestampMS | null; stoppedByUser: number };
 type FailureCountRow = { failureCount: number };
-type StepOutcomeRow = { stepIndex: StepIndex; outcome: RunOutcome };
+type StepOutcomeRow = { stepIndex: StepIndex; outcome: `passed` | `failed` };
 type ColumnInfoRow = { name: string };
 
 /**
@@ -28,13 +29,20 @@ type ColumnInfoRow = { name: string };
  * of an interrupted run, not a verdict on the steps it happened to reach — callers should treat
  * this the same as "never run" rather than trusting the partial data.
  */
-type StepOutcomes = { finished: boolean; outcomes: Partial<Record<StepIndex, RunOutcome>> };
+type StepOutcomes = { finished: boolean; outcomes: Partial<Record<StepIndex, `passed` | `failed`>> };
 
 let _dbsByProjectId = new Map<ProjectId, DatabaseSync>();
 let _dbDirOverride: FilePath | null = null;
 
 function _dbDir(): FilePath {
 	return _dbDirOverride ?? _path.join(app.getPath(`userData`), `sessions`) as FilePath;
+}
+
+/** Vitest runs in-process, so nothing else stands between a forgotten `_setSessionsDir()` call and this service opening (or creating) a real `runs.sqlite` under whatever `app.getPath('userData')` resolves to. e2e is exempt — Playwright launches Eyas as a separate process with `--user-data-dir` pointed at a temp dir, which redirects `app.getPath('userData')` itself before this module ever runs. */
+function _assertNotRealDbUnderTest(): void {
+	if (process.env.VITEST && _dbDirOverride === null) {
+		throw new Error(`run-history.service: refusing to open the real userData database during a Vitest run. Call service._setSessionsDir(tmpDir) in beforeEach, or mock '@core/run-history.service.js' entirely.`);
+	}
 }
 
 /** Test-only hook: overrides the sessions directory and closes any open connections so a fresh directory isn't cross-contaminated by a stale in-memory connection cache. */
@@ -50,6 +58,7 @@ function _dbPath(projectId: ProjectId): FilePath {
 }
 
 function _openDb(projectId: ProjectId): DatabaseSync {
+	_assertNotRealDbUnderTest();
 	const existing = _dbsByProjectId.get(projectId);
 	if (existing) { return existing; }
 
@@ -60,7 +69,8 @@ function _openDb(projectId: ProjectId): DatabaseSync {
 			runId TEXT PRIMARY KEY,
 			recordingId TEXT NOT NULL,
 			startedAt INTEGER NOT NULL,
-			endedAt INTEGER
+			endedAt INTEGER,
+			stoppedByUser INTEGER NOT NULL DEFAULT 0
 		);
 		CREATE TABLE IF NOT EXISTS run_steps (
 			runId TEXT NOT NULL,
@@ -71,6 +81,7 @@ function _openDb(projectId: ProjectId): DatabaseSync {
 		CREATE INDEX IF NOT EXISTS runs_by_recording ON runs (recordingId, startedAt);
 	`);
 	_migrateAddOutcomeColumn(db);
+	_migrateAddStoppedByUserColumn(db);
 	_dbsByProjectId.set(projectId, db);
 	return db;
 }
@@ -82,6 +93,13 @@ function _migrateAddOutcomeColumn(db: DatabaseSync): void {
 	db.exec(`ALTER TABLE run_steps ADD COLUMN outcome TEXT NOT NULL DEFAULT 'passed'`);
 }
 
+/** Same rationale as `_migrateAddOutcomeColumn`, for the `runs.stoppedByUser` column introduced alongside the `stopped` outcome. */
+function _migrateAddStoppedByUserColumn(db: DatabaseSync): void {
+	const columns = db.prepare(`PRAGMA table_info(runs)`).all() as ColumnInfoRow[];
+	if (columns.some(column => column.name === `stoppedByUser`)) { return; }
+	db.exec(`ALTER TABLE runs ADD COLUMN stoppedByUser INTEGER NOT NULL DEFAULT 0`);
+}
+
 /** Opens a new run for a recording and returns its runId. `endedAt` stays null until `finishRun` is called — a crash or user-initiated stop simply never calls it, which is what marks the run as never having finished. */
 async function startRun(projectId: ProjectId, recordingId: SessionId): Promise<RunId> {
 	const runId = randomUUID() as RunId;
@@ -91,7 +109,7 @@ async function startRun(projectId: ProjectId, recordingId: SessionId): Promise<R
 	return runId;
 }
 
-/** Records that a step began dispatching. Written on start, not completion — a step is an instantaneous action, so this is also what lets a hung/crashed run reveal exactly which step it got to. Optimistically `passed`; flipped by `recordStepFailure` if the step mismatches or throws. */
+/** Records that a step began dispatching. Optimistically `passed`; flipped by `recordStepFailure` if the step mismatches or throws. */
 async function recordStepStart(projectId: ProjectId, runId: RunId, stepIndex: StepIndex): Promise<void> {
 	const db = _openDb(projectId);
 	db.prepare(`INSERT INTO run_steps (runId, stepIndex, happenedAt) VALUES (?, ?, ?)`)
@@ -112,13 +130,20 @@ async function finishRun(projectId: ProjectId, runId: RunId): Promise<void> {
 		.run(Date.now() as TimestampMS, runId);
 }
 
-/** The verdict for a recording's most recent run, for the Recordings panel dot. Null if the recording has never been played. A run that never finished (`endedAt` still null) reads as `failed`. Otherwise, `failed` if any of its steps failed, else `passed` — derived by iterating `run_steps` rather than trusting a cached value. */
+/** Marks a run as explicitly stopped by the user (mid-playback). Distinct from `finishRun`: `endedAt` stays null (the run never completed), but `stoppedByUser` records that the interruption was intentional rather than a crash, so `getLastRunForRecording` can surface `stopped` instead of collapsing it to `failed`. */
+async function markStopped(projectId: ProjectId, runId: RunId): Promise<void> {
+	const db = _openDb(projectId);
+	db.prepare(`UPDATE runs SET stoppedByUser = 1 WHERE runId = ?`).run(runId);
+}
+
+/** The verdict for a recording's most recent run, for the Recordings panel dot. Null if the recording has never been played. A run the user explicitly stopped (see `markStopped`) reads as `stopped`. A run that never finished for any other reason (crash/hang, `endedAt` still null) reads as `failed`. Otherwise, `failed` if any of its steps failed, else `passed` — derived by iterating `run_steps` rather than trusting a cached value. */
 async function getLastRunForRecording(projectId: ProjectId, recordingId: SessionId): Promise<LastRunSummary | null> {
 	const db = _openDb(projectId);
-	const run = db.prepare(`SELECT runId, endedAt FROM runs WHERE recordingId = ? ORDER BY startedAt DESC LIMIT 1`)
+	const run = db.prepare(`SELECT runId, endedAt, stoppedByUser FROM runs WHERE recordingId = ? ORDER BY startedAt DESC LIMIT 1`)
 		.get(recordingId) as RunRow | undefined;
 
 	if (!run) { return null; }
+	if (run.stoppedByUser) { return { outcome: `stopped` }; }
 	if (run.endedAt === null) { return { outcome: `failed` }; }
 
 	const failures = db.prepare(`SELECT COUNT(*) AS failureCount FROM run_steps WHERE runId = ? AND outcome = 'failed'`)
@@ -130,16 +155,25 @@ async function getLastRunForRecording(projectId: ProjectId, recordingId: Session
 async function getStepOutcomes(projectId: ProjectId, recordingId: SessionId): Promise<StepOutcomes | null> {
 	const db = _openDb(projectId);
 	const run = db.prepare(`SELECT runId, endedAt FROM runs WHERE recordingId = ? ORDER BY startedAt DESC LIMIT 1`)
-		.get(recordingId) as RunRow | undefined;
+		.get(recordingId) as Pick<RunRow, `runId` | `endedAt`> | undefined;
 
 	if (!run) { return null; }
 
 	const rows = db.prepare(`SELECT stepIndex, outcome FROM run_steps WHERE runId = ?`)
 		.all(run.runId) as StepOutcomeRow[];
-	const outcomes: Partial<Record<StepIndex, RunOutcome>> = {};
+	const outcomes: Partial<Record<StepIndex, `passed` | `failed`>> = {};
 	for (const row of rows) { outcomes[row.stepIndex] = row.outcome; }
 
 	return { finished: run.endedAt !== null, outcomes };
 }
 
-export default { startRun, recordStepStart, recordStepFailure, finishRun, getLastRunForRecording, getStepOutcomes, _setSessionsDir };
+/** Deletes every run (and its steps) recorded for a recording — called when the recording itself is deleted, so no orphaned history outlives it. */
+async function deleteRecordingHistory(projectId: ProjectId, recordingId: SessionId): Promise<void> {
+	const db = _openDb(projectId);
+	const runs = db.prepare(`SELECT runId FROM runs WHERE recordingId = ?`).all(recordingId) as RunRow[];
+	const deleteSteps = db.prepare(`DELETE FROM run_steps WHERE runId = ?`);
+	for (const run of runs) { deleteSteps.run(run.runId); }
+	db.prepare(`DELETE FROM runs WHERE recordingId = ?`).run(recordingId);
+}
+
+export default { startRun, recordStepStart, recordStepFailure, finishRun, markStopped, getLastRunForRecording, getStepOutcomes, deleteRecordingHistory, _setSessionsDir };

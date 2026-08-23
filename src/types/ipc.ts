@@ -1,4 +1,4 @@
-import type { ProjectId, DomainUrl, IsActive, SettingKey, HashString, Username, PasswordPlain, ZoomFactor, StepCount, StepIndex, DetailText } from './primitives.js';
+import type { ProjectId, DomainUrl, IsActive, SettingKey, HashString, Username, PasswordPlain, ZoomFactor, StepCount, StepIndex, DetailText, SessionId } from './primitives.js';
 import type { EnvironmentChoice, Viewport, ViewportSize, EnvironmentChoiceWithTitle } from './core.js';
 import type { NavItem } from './components.js';
 import type { RecordingStep, ReplayMismatch, EyasRecordingEnvelope } from './recording.js';
@@ -61,7 +61,8 @@ export const VALID_SEND_CHANNELS = [
 	`recorder-replay-stop`,
 	`recorder-list-sessions`,
 	`recorder-get-session`,
-	`recorder-get-run-steps`
+	`recorder-get-run-steps`,
+	`recorder-delete-session`
 ] as const;
 
 export const VALID_RECEIVE_CHANNELS = [
@@ -89,7 +90,8 @@ export const VALID_RECEIVE_CHANNELS = [
 	`recorder-sessions-listed`,
 	`recorder-session-loaded`,
 	`recorder-replay-finished`,
-	`recorder-run-steps-loaded`
+	`recorder-run-steps-loaded`,
+	`recorder-session-deleted`
 ] as const;
 
 /** Payload for the 'navigation-state-updated' IPC event */
@@ -202,6 +204,8 @@ export type RecorderPlaybackStatusPayload = {
 	 * only when there's something to say — a normal run's `playing` payload is unchanged.
 	 */
 	schemaWarning?: DetailText;
+	/** The session this status update is for — lets the renderer know which row is actually playing rather than assuming it's whichever session it last recorded. */
+	sessionId?: SessionId;
 	status: `playing` | `stopped` | `failed`;
 	totalSteps?: StepCount;
 };
@@ -217,8 +221,8 @@ export type RecordingSessionSummary = {
 	startedAt: number;
 	stoppedAt: number | null;
 	stepCount: StepCount;
-	/** Verdict of this recording's most recent playback run, or null if it has never been played. A run that never finished (crash, hang, user stop) reads back as `failed` — see run-history.service.ts. */
-	lastRunOutcome: `passed` | `failed` | null;
+	/** Verdict of this recording's most recent playback run, or null if it has never been played. A run the user explicitly stopped reads back as `stopped`; a run that never finished for any other reason (crash, hang) still reads back as `failed` — see run-history.service.ts. */
+	lastRunOutcome: `passed` | `failed` | `stopped` | null;
 };
 
 /** Payload for the 'recorder-sessions-listed' IPC event */
@@ -252,4 +256,14 @@ type RunStepsLoaded = {
 	outcomes: RunStepOutcomes;
 };
 export type RecorderRunStepsLoadedPayload = RunStepsLoaded | null;
+
+/** Payload for the 'recorder-delete-session' IPC event */
+export type RecorderDeleteSessionPayload = {
+	sessionId: string;
+};
+
+/** Payload for the 'recorder-session-deleted' IPC event */
+export type RecorderSessionDeletedPayload = {
+	sessionId: string;
+};
 

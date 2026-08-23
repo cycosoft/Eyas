@@ -4,7 +4,7 @@ import type { IsActive, ProgressRatio, Count, DetailText, SessionId } from '@reg
 
 const MISMATCH_DETAIL_LIMIT: Count = 5;
 import type { RecorderStatusPayload } from '@registry/recording.js';
-import type { RecorderPlaybackStatusPayload, RecorderSessionsListedPayload, RecorderSessionLoadedPayload, RecorderRunStepsLoadedPayload, RecordingSessionSummary } from '@registry/ipc.js';
+import type { RecorderPlaybackStatusPayload, RecorderSessionsListedPayload, RecorderSessionLoadedPayload, RecorderRunStepsLoadedPayload, RecorderSessionDeletedPayload, RecordingSessionSummary } from '@registry/ipc.js';
 
 export default defineStore(`recording`, {
 	state: (): RecordingState => ({
@@ -97,6 +97,28 @@ export default defineStore(`recording`, {
 			this.runStepOutcomes = null;
 		},
 
+		// Always drops the deleted session from the list; only navigates back to the browser view if
+		// it was the one currently open, so a stale confirmation doesn't yank the tester off a
+		// different session they've since navigated to.
+		removeDeletedSession(payload: RecorderSessionDeletedPayload): void {
+			this.savedSessions = this.savedSessions.filter(session => session.sessionId !== payload.sessionId);
+			if (this.selectedSessionId === payload.sessionId) { this.backToBrowser(); }
+
+			// The header's Replay button and playback chips key off sessionId independent of the panel,
+			// so deleting the session they're currently pointed at must clear that context too - status
+			// stays 'stopped' so New Recording/the panel toggle remain usable, only the run-tied UI goes.
+			if (this.sessionId === payload.sessionId) {
+				this.sessionId = null;
+				this.playbackStatus = null;
+				this.playbackError = null;
+				this.playbackMismatches = [];
+				this.playbackSchemaWarning = null;
+				this.currentStepIndex = null;
+				this.completedSteps = 0;
+				this.totalSteps = 0;
+			}
+		},
+
 		setFromIpc(payload: RecorderStatusPayload): void {
 			this.status = payload.isRecording ? `recording` : `stopped`;
 			this.sessionId = payload.sessionId;
@@ -118,20 +140,27 @@ export default defineStore(`recording`, {
 			// wipe an earlier step's already-reported finding
 			if (payload.status === `playing` && this.playbackStatus !== `playing`) { this.playbackMismatches = []; }
 			this.playbackStatus = payload.status;
+			this.sessionId = payload.sessionId ?? this.sessionId;
 			this.playbackError = payload.status === `failed` ? (payload.error ?? `Playback failed.`) : null;
 			this.playbackMismatches = payload.status === `playing` ? (payload.mismatches ?? this.playbackMismatches) : (payload.mismatches ?? []);
 			// only the `playing` payload carries this, and it has to outlive that payload — the run it
 			// warns about is still degraded once it finishes, and the end is when the tester reads the
 			// results. Falling back to `?? null` on every status would clear it at exactly that moment.
 			if (payload.status === `playing`) { this.playbackSchemaWarning = payload.schemaWarning ?? null; }
-			this.completedSteps = payload.completedSteps ?? this.completedSteps;
-			this.totalSteps = payload.totalSteps ?? this.totalSteps;
 			this.currentStepIndex = payload.status === `playing` ? (payload.currentStepIndex ?? this.currentStepIndex) : null;
+			this.applyProgressCounts(payload);
+			this.openOnFailureIfPanelClosed(payload.status);
+		},
+
+		// split out of setPlaybackStatus purely to keep that method's branching under the lint complexity cap
+		applyProgressCounts(payload: RecorderPlaybackStatusPayload): void {
 			if (payload.status !== `playing`) {
 				this.completedSteps = 0;
 				this.totalSteps = 0;
+				return;
 			}
-			this.openOnFailureIfPanelClosed(payload.status);
+			this.completedSteps = payload.completedSteps ?? this.completedSteps;
+			this.totalSteps = payload.totalSteps ?? this.totalSteps;
 		},
 
 		// A failed run that finished while the tester wasn't looking should announce itself, rather

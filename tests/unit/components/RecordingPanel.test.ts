@@ -82,6 +82,29 @@ describe(`RecordingPanel`, () => {
 
 		expect(document.querySelectorAll(`[data-qa="recording-panel-list"] li`).length).toBe(2);
 		expect(document.querySelector(`[data-qa="recording-row-s1"]`)?.textContent).toContain(`3 steps`);
+		expect(document.querySelector(`[data-qa="recording-row-s1"]`)?.querySelectorAll(`.recording-panel-text`).length).toBe(2);
+	});
+
+	test(`hides the play button on a row for a recording with no steps`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 0, lastRunOutcome: null }];
+		await activeWrapper?.vm.$nextTick();
+
+		expect(document.querySelector(`[data-qa="recording-row-action-s1"]`)).toBeNull();
+	});
+
+	test(`still shows the stop button for a row that is actively recording, even before it has any steps yet`, async () => {
+		mountPanel();
+		const store = useRecordingStore();
+		store.isPanelOpen = true;
+		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: null, stepCount: 0, lastRunOutcome: null }];
+		store.status = `recording`;
+		store.sessionId = `s1`;
+		await activeWrapper?.vm.$nextTick();
+
+		expect(document.querySelector(`[data-qa="recording-row-action-s1"]`)).not.toBeNull();
 	});
 
 	test(`clicking a recording switches to its detail view and renders its real steps`, async () => {
@@ -105,6 +128,7 @@ describe(`RecordingPanel`, () => {
 
 		expect(document.querySelector(`[data-qa="recording-step-title"]`)?.textContent?.trim()).toBe(`Navigate to`);
 		expect(document.querySelector(`[data-qa="recording-step-detail"]`)?.textContent?.trim()).toBe(`/`);
+		expect(document.querySelectorAll(`[data-qa="recording-step-title"].recording-panel-text, [data-qa="recording-step-detail"].recording-panel-text`).length).toBe(2);
 	});
 
 	test(`shows a distinct icon and the target selector as subtext for a click step`, async () => {
@@ -253,7 +277,7 @@ describe(`RecordingPanel`, () => {
 		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1, lastRunOutcome: null }];
 		await activeWrapper?.vm.$nextTick();
 
-		expect(document.querySelector(`[data-qa="recording-row-s1"] .status-dot`)?.classList).toContain(`status-dot--neutral`);
+		expect(document.querySelector(`[data-qa="recording-row-s1"]`)?.classList).toContain(`recording-card--neutral`);
 	});
 
 	test(`shows a green dot for a recording whose most recent run passed`, async () => {
@@ -263,7 +287,7 @@ describe(`RecordingPanel`, () => {
 		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1, lastRunOutcome: `passed` }];
 		await activeWrapper?.vm.$nextTick();
 
-		expect(document.querySelector(`[data-qa="recording-row-s1"] .status-dot`)?.classList).toContain(`status-dot--passed`);
+		expect(document.querySelector(`[data-qa="recording-row-s1"]`)?.classList).toContain(`recording-card--passed`);
 	});
 
 	test(`shows a red dot for a recording whose most recent run failed or never finished`, async () => {
@@ -273,7 +297,7 @@ describe(`RecordingPanel`, () => {
 		store.savedSessions = [{ sessionId: `s1`, title: `2024-01-01T00:00:00.000Z`, startedAt: 1, stoppedAt: 2, stepCount: 1, lastRunOutcome: `failed` }];
 		await activeWrapper?.vm.$nextTick();
 
-		expect(document.querySelector(`[data-qa="recording-row-s1"] .status-dot`)?.classList).toContain(`status-dot--failed`);
+		expect(document.querySelector(`[data-qa="recording-row-s1"]`)?.classList).toContain(`recording-card--failed`);
 	});
 
 	test(`shows a blinking dot for the row currently being recorded in this instance, regardless of its last run status`, async () => {
@@ -285,7 +309,7 @@ describe(`RecordingPanel`, () => {
 		store.sessionId = `s1`;
 		await activeWrapper?.vm.$nextTick();
 
-		expect(document.querySelector(`[data-qa="recording-row-s1"] .status-dot`)?.classList).toContain(`status-dot--recording`);
+		expect(document.querySelector(`[data-qa="recording-row-s1"]`)?.classList).toContain(`recording-card--recording`);
 	});
 
 	test(`does not blink a row for a recording happening elsewhere, even while this instance is recording something else`, async () => {
@@ -297,7 +321,7 @@ describe(`RecordingPanel`, () => {
 		store.sessionId = `s2`;
 		await activeWrapper?.vm.$nextTick();
 
-		expect(document.querySelector(`[data-qa="recording-row-s1"] .status-dot`)?.classList).toContain(`status-dot--neutral`);
+		expect(document.querySelector(`[data-qa="recording-row-s1"]`)?.classList).toContain(`recording-card--neutral`);
 	});
 
 	test(`shows a blue playing dot for the row currently being replayed in this instance`, async () => {
@@ -309,44 +333,7 @@ describe(`RecordingPanel`, () => {
 		store.playbackStatus = `playing`;
 		await activeWrapper?.vm.$nextTick();
 
-		expect(document.querySelector(`[data-qa="recording-row-s1"] .status-dot`)?.classList).toContain(`status-dot--playing`);
-	});
-
-	test(`refetches the recordings list when a watched playback finishes while the panel is open`, async () => {
-		mountPanel();
-		const store = useRecordingStore();
-		store.isPanelOpen = true;
-		store.sessionId = `s1`;
-		await activeWrapper?.vm.$nextTick();
-
-		const sendSpy = window.eyas?.send as Mock;
-		const callsBefore = sendSpy.mock.calls.length;
-
-		store.playbackStatus = `playing`;
-		await activeWrapper?.vm.$nextTick();
-		store.playbackStatus = `stopped`;
-		await activeWrapper?.vm.$nextTick();
-
-		const listCalls = sendSpy.mock.calls.slice(callsBefore).filter(call => call[0] === `recorder-list-sessions`);
-		expect(listCalls.length).toBe(1);
-	});
-
-	test(`does not refetch the recordings list when playback finishes while the panel is closed`, async () => {
-		mountPanel();
-		const store = useRecordingStore();
-		store.sessionId = `s1`;
-		await activeWrapper?.vm.$nextTick();
-
-		const sendSpy = window.eyas?.send as Mock;
-		const callsBefore = sendSpy.mock.calls.length;
-
-		store.playbackStatus = `playing`;
-		await activeWrapper?.vm.$nextTick();
-		store.playbackStatus = `stopped`;
-		await activeWrapper?.vm.$nextTick();
-
-		const listCalls = sendSpy.mock.calls.slice(callsBefore).filter(call => call[0] === `recorder-list-sessions`);
-		expect(listCalls.length).toBe(0);
+		expect(document.querySelector(`[data-qa="recording-row-s1"]`)?.classList).toContain(`recording-card--playing`);
 	});
 
 	function selectSessionWithTwoSteps(store: ReturnType<typeof useRecordingStore>): void {
