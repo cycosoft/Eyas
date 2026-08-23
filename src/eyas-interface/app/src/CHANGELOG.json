@@ -4,7 +4,8 @@
 		"items": [
 			{ "text": "🟢 Added a panel to view recordings, their steps, and pass/fail state." },
 			{ "text": "🟢 Allow deleteing recordings" },
-			{ "text": "🟣 Move logo attribution to About menu" }
+			{ "text": "🟣 Move logo attribution to About menu" },
+			{ "text": "🟣 Update dependencies" }
 		]
 	},
 	{
