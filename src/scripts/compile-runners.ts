@@ -7,7 +7,6 @@ import fs from "fs-extra";
 import type { Platform } from "electron-builder";
 import builder from "electron-builder";
 import { exec } from "child_process";
-import { pathToFileURL } from "url";
 import { getElectronBuilderConfig } from "./electron-builder-config.js";
 import type { SourcePath, IsActive } from "@registry/primitives.js";
 import { isMac as platformIsMac, isWindows as platformIsWin } from "./platform-utils.js";
@@ -39,7 +38,8 @@ export async function compileRunners(): Promise<void> {
 		appleTeamId: process.env.APPLE_TEAM_ID || ``,
 		buildRoot: consumerRoot,
 		runnersRoot,
-		provisioningProfile: process.env.PROVISIONING_PROFILE_PATH || ``
+		provisioningProfile: process.env.PROVISIONING_PROFILE_PATH || ``,
+		azureSignOptions: getAzureSignOptions()
 	});
 
 	const builtFiles = await builder.build({
@@ -56,7 +56,13 @@ type BuildPaths = {
 	icon: SourcePath;
 	iconDbWin: SourcePath;
 	iconDbMac: SourcePath;
-	codesignWin: SourcePath;
+}
+
+type AzureSignOptions = {
+	publisherName: SourcePath;
+	endpoint: SourcePath;
+	certificateProfileName: SourcePath;
+	codeSigningAccountName: SourcePath;
 }
 
 /**
@@ -65,13 +71,28 @@ type BuildPaths = {
  * @returns {BuildPaths} The paths for the project.
  */
 function getPaths(consumerRoot: SourcePath): BuildPaths {
-	const codesignPath = path.join(consumerRoot, `out`, `main`, `scripts`, `codesign-win.js`);
 	return {
 		icon: path.join(consumerRoot, `src`, `eyas-assets`, `eyas-logo.png`),
 		iconDbWin: path.join(consumerRoot, `src`, `eyas-assets`, `eyas-db.ico`),
-		iconDbMac: path.join(consumerRoot, `src`, `eyas-assets`, `eyas-db.icns`),
-		codesignWin: platformIsWin ? (pathToFileURL(codesignPath).href as SourcePath) : (codesignPath as SourcePath)
+		iconDbMac: path.join(consumerRoot, `src`, `eyas-assets`, `eyas-db.icns`)
 	};
+}
+
+/**
+ * Gets the Azure Trusted Signing options from the environment, if configured.
+ * @returns {AzureSignOptions | undefined} The Azure sign options, or undefined if not configured.
+ */
+function getAzureSignOptions(): AzureSignOptions | undefined {
+	const publisherName = process.env.AZURE_CERT_PUBLISHER_NAME;
+	const endpoint = process.env.AZURE_CODE_SIGNING_ENDPOINT;
+	const certificateProfileName = process.env.AZURE_CERTIFICATE_PROFILE_NAME;
+	const codeSigningAccountName = process.env.AZURE_CODE_SIGNING_ACCOUNT_NAME;
+
+	if (!publisherName || !endpoint || !certificateProfileName || !codeSigningAccountName) {
+		return undefined;
+	}
+
+	return { publisherName, endpoint, certificateProfileName, codeSigningAccountName } as AzureSignOptions;
 }
 
 /**

@@ -32,7 +32,6 @@
 		"compile:mac:installer": "npm run compile:build && cross-env PUBLISH_TYPE=installer EYAS_OPEN_RUNNERS=true npm run compile:runner && npm run sign:mac:pkg && npm run notarize:pkg:output && npm run notarize:staple:pkg",
 		"compile:installer": "npm run compile:build && cross-env PUBLISH_TYPE=installer EYAS_OPEN_RUNNERS=true npm run compile:runner",
 		"_____________SIGNING_____________": "",
-		"sign:win": "signtool sign /debug /n \"Open Source Developer, Eric Higginson\" /t http://time.certum.pl/ /fd sha256 /v ./dist/runners/Start.exe",
 		"sign:win:verify": "signtool verify /pa ./dist/runners/Start.exe",
 		"sign:mac:pkg": "dotenv -c -- npm run _encapsulated_sign:mac:pkg",
 		"sign:mac:verify": "codesign -dvvv ./.runners/mac-arm64/Eyas.app",

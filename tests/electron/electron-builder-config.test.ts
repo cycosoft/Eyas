@@ -5,8 +5,14 @@ import type { GenericRecord } from '@registry/primitives.js';
 const basePaths = {
 	icon: `/fake/out/eyas-assets/eyas-logo.png`,
 	iconDbWin: `/fake/out/eyas-assets/eyas-db.ico`,
-	iconDbMac: `/fake/out/eyas-assets/eyas-db.icns`,
-	codesignWin: `/fake/src/scripts/codesign-win.js`
+	iconDbMac: `/fake/out/eyas-assets/eyas-db.icns`
+};
+
+const baseAzureSignOptions = {
+	publisherName: `CN=Eric Higginson`,
+	endpoint: `https://weu.codesigning.azure.net/`,
+	certificateProfileName: `eyas-cert-profile`,
+	codeSigningAccountName: `eyas-signing`
 };
 
 const baseOptions = {
@@ -18,7 +24,8 @@ const baseOptions = {
 	runnerName: `Eyas`,
 	appleTeamId: ``,
 	buildRoot: `/fake/out`,
-	runnersRoot: `/fake/.runners`
+	runnersRoot: `/fake/.runners`,
+	azureSignOptions: baseAzureSignOptions
 };
 
 describe(`getElectronBuilderConfig`, () => {
@@ -60,7 +67,7 @@ describe(`getElectronBuilderConfig`, () => {
 		expect((config.win as GenericRecord).sign).toBeUndefined();
 	});
 
-	test(`win uses signtoolOptions.sign when not dev`, () => {
+	test(`win uses azureSignOptions when not dev and options are provided`, () => {
 		const config = getElectronBuilderConfig({
 			...baseOptions,
 			isWin: true,
@@ -68,11 +75,10 @@ describe(`getElectronBuilderConfig`, () => {
 		});
 		expect(config.win).toBeDefined();
 		if (!config.win) throw new Error(`win is undefined`);
-		expect(config.win.signtoolOptions).toBeDefined();
-		expect(config.win.signtoolOptions?.sign).toBe(basePaths.codesignWin);
+		expect((config.win as GenericRecord).azureSignOptions).toEqual(baseAzureSignOptions);
 	});
 
-	test(`win has no signtoolOptions when dev`, () => {
+	test(`win has no azureSignOptions when dev`, () => {
 		const config = getElectronBuilderConfig({
 			...baseOptions,
 			isWin: true,
@@ -80,7 +86,19 @@ describe(`getElectronBuilderConfig`, () => {
 		});
 		expect(config.win).toBeDefined();
 		if (!config.win) throw new Error(`win is undefined`);
-		expect(config.win.signtoolOptions).toBeUndefined();
+		expect((config.win as GenericRecord).azureSignOptions).toBeUndefined();
+	});
+
+	test(`win has no azureSignOptions when not configured`, () => {
+		const config = getElectronBuilderConfig({
+			...baseOptions,
+			isWin: true,
+			isDev: false,
+			azureSignOptions: undefined
+		});
+		expect(config.win).toBeDefined();
+		if (!config.win) throw new Error(`win is undefined`);
+		expect((config.win as GenericRecord).azureSignOptions).toBeUndefined();
 	});
 
 	test(`mac target is array with pkg and zip when isInstaller and isMac`, () => {
