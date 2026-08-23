@@ -2,7 +2,9 @@
 	{
 		"version": "26.8.5202",
 		"items": [
-			{ "text": "🟢 Added a panel to view recordings, their steps, and pass/fail state." }
+			{ "text": "🟢 Added a panel to view recordings, their steps, and pass/fail state." },
+			{ "text": "🟢 Allow deleteing recordings" },
+			{ "text": "🟣 Move logo attribution to About menu" }
 		]
 	},
 	{
