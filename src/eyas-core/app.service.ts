@@ -55,6 +55,7 @@ Runner: v${ctx._appVersion}
 🏢 © ${yearRange} Cycosoft, LLC
 🌐 https://cycosoft.com
 🆘 https://github.com/cycosoft/Eyas/issues
+🎨 Logo source design by Freepik: https://www.freepik.com/free-vector/eagle-logo-design-template_45007164.htm
 `
 			});
 		}
