@@ -99,7 +99,6 @@ export type PortString = string;
 export type DomainUrl = string;
 export type ResponseBody = string;
 export type { ChannelName } from './ipc.js';
-export type CommandLine = string;
 export type CommandLineArgs = string[];
 
 // UI Measurements

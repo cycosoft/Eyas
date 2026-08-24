@@ -5,7 +5,13 @@ type BuildPaths = {
 	icon: SourcePath;
 	iconDbWin: SourcePath;
 	iconDbMac: SourcePath;
-	codesignWin: SourcePath;
+}
+
+type AzureSignOptions = {
+	publisherName: LabelString;
+	endpoint: LabelString;
+	certificateProfileName: LabelString;
+	codeSigningAccountName: LabelString;
 }
 
 type BuildOptions = {
@@ -19,6 +25,7 @@ type BuildOptions = {
 	buildRoot?: SourcePath;
 	runnersRoot: SourcePath;
 	provisioningProfile?: SourcePath;
+	azureSignOptions?: AzureSignOptions;
 }
 
 /**
@@ -123,7 +130,7 @@ function getWinConfig(options: BuildOptions): Configuration[`win`] {
 	return {
 		target: options.isInstaller ? `nsis` : `portable`,
 		icon: options.paths.icon,
-		...(options.isDev ? {} : { signtoolOptions: { sign: options.paths.codesignWin } as NonNullable<Configuration[`win`]>[`signtoolOptions`] })
+		...(options.isDev || !options.azureSignOptions ? {} : { azureSignOptions: options.azureSignOptions })
 	};
 }
 
